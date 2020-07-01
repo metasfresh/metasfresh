@@ -50,7 +50,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
-public abstract class AbstractAllocationStrategy implements IAllocationStrategy
+abstract class AbstractAllocationStrategy implements IAllocationStrategy
 {
 	// Services
 	protected final AllocationStrategySupportingServicesFacade services;
