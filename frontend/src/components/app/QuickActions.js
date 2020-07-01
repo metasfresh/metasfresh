@@ -114,16 +114,12 @@ export class QuickActions extends Component {
 
     if (inModal === false && prevProps.inModal === true) {
       // gained focus after sub-modal closed
-      this.setState({
-        loading: false,
-      });
+      this.setState({ loading: false });
     }
 
     if (inBackground === true && prevProps.inBackground === false) {
       // gained focus after modal closed
-      this.setState({
-        loading: false,
-      });
+      this.setState({ loading: false });
     }
   };
 
@@ -192,9 +188,7 @@ export class QuickActions extends Component {
       return;
     }
 
-    this.setState({
-      loading: true,
-    });
+    this.setState({ loading: true });
 
     openModal(
       action.caption,
@@ -213,7 +207,7 @@ export class QuickActions extends Component {
       childView.viewSelectedIds
     );
 
-    this.toggleDropdown();
+    this.toggleDropdown(action);
   };
 
   /**
@@ -316,59 +310,44 @@ export class QuickActions extends Component {
    * @method toggleDropdown
    * @summary Toggles the dropdown element
    */
-  toggleDropdown = () => {
-    this.setState({
-      isDropdownOpen: !this.state.isDropdownOpen,
-    });
+  toggleDropdown = (action = null) => {
+    const { actions } = this.props;
+    if (action && actions && actions[0].processId === action.processId) {
+      this.setState({ isDropdownOpen: false }); // hide the dropdown when first action is clicked
+      return;
+    }
+    this.setState({ isDropdownOpen: !this.state.isDropdownOpen });
   };
 
   /**
    * @method showListTooltip
    * @summary Forces hide of the dropdown element
    */
-  hideDropdown = () => {
-    this.setState({ isDropdownOpen: false });
-  };
+  hideDropdown = () => this.setState({ isDropdownOpen: false });
 
   /**
    * @method showListTooltip
    * @summary Shows list tooltip
    */
-  showListTooltip = () => {
-    this.setState({
-      listTooltip: true,
-    });
-  };
+  showListTooltip = () => this.setState({ listTooltip: true });
 
   /**
    * @method hideListTooltip
    * @summary hides list tooltip
    */
-  hideListTooltip = () => {
-    this.setState({
-      listTooltip: false,
-    });
-  };
+  hideListTooltip = () => this.setState({ listTooltip: false });
 
   /**
    * @method showBtnTooltip
    * @summary Shows button tooltip
    */
-  showBtnTooltip = () => {
-    this.setState({
-      btnTooltip: true,
-    });
-  };
+  showBtnTooltip = () => this.setState({ btnTooltip: true });
 
   /**
    * @method hideBtnTooltip
    * @summary Hides button tooltip
    */
-  hideBtnTooltip = () => {
-    this.setState({
-      btnTooltip: false,
-    });
-  };
+  hideBtnTooltip = () => this.setState({ btnTooltip: false });
 
   /**
    * @method render
