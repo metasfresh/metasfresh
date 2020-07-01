@@ -947,8 +947,6 @@ function updateStatus(responseData) {
 /*
  * It updates store for single field value modification, like handleChange
  * in MasterWidget
- * @todo TODO: from my observations, this is triggered multiple times even
- * when just one field was changed - Kuba
  */
 export function updatePropertyValue({
   property,
