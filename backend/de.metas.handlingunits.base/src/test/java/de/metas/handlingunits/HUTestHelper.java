@@ -1320,7 +1320,7 @@ public class HUTestHelper
 		return referencedModel;
 	}
 
-	public AbstractAllocationSourceDestination createDummySourceDestination(
+	public GenericAllocationSourceDestination createDummySourceDestination(
 			final ProductId productId,
 			final BigDecimal qtyCapacity,
 			final boolean fullyLoaded)
@@ -1328,7 +1328,7 @@ public class HUTestHelper
 		return createDummySourceDestination(productId, qtyCapacity, uomEach, fullyLoaded);
 	}
 
-	public AbstractAllocationSourceDestination createDummySourceDestination(
+	public GenericAllocationSourceDestination createDummySourceDestination(
 			final ProductId productId,
 			final BigDecimal qtyCapacity,
 			final I_C_UOM uom,
