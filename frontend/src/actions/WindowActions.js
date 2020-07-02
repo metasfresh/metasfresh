@@ -520,7 +520,8 @@ export function createWindow(
       const tabs = data.includedTabsInfo;
       let docId = data.id;
 
-      if (tabs) {
+      // we don't create table for advanced edit
+      if (tabs && !isAdvanced) {
         Object.values(tabs).forEach((tab) => {
           const tabId = tab.tabId || tab.tabid;
           const tableId = getTableId({ windowId: windowType, docId, tabId });
@@ -583,7 +584,7 @@ export function createWindow(
         .then(({ data }) => {
           const layoutTabs = data.tabs;
 
-          if (layoutTabs) {
+          if (layoutTabs && !isAdvanced) {
             Object.values(layoutTabs).forEach((tab) => {
               const { tabId } = tab;
               const tableId = getTableId({
