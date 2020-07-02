@@ -2,7 +2,8 @@ import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 
-import { discardNewRow, discardNewDocument, getTabRequest } from '../../api';
+import { discardNewRequest, getTabRequest } from '../../api';
+import { getTableId } from '../../reducers/tables';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
@@ -97,7 +98,7 @@ export default class MasterWindow extends PureComponent {
     }
   }
 
-  // TODO: Everything apart of removing event listeners should be woved to the container
+  // TODO: Figure out if we can handle `not saved` via redux+middleware
   componentWillUnmount() {
     const {
       master,
@@ -115,7 +116,7 @@ export default class MasterWindow extends PureComponent {
       const result = window.confirm('Do you really want to leave?');
 
       if (result) {
-        discardNewDocument({ windowType, documentId });
+        discardNewRequest({ windowType, documentId });
       } else {
         push(pathname);
       }
@@ -151,7 +152,7 @@ export default class MasterWindow extends PureComponent {
 
   /**
    * @method closeModalCallback
-   * @summary ToDo: Describe the method.
+   * @summary handler for closing the modal window
    */
   closeModalCallback = ({
     isNew,
@@ -161,7 +162,23 @@ export default class MasterWindow extends PureComponent {
     rowId,
   } = {}) => {
     if (isNew) {
-      return discardNewRow({ windowType, documentId, tabId, rowId });
+      const { updateTabRowsData } = this.props;
+      const tableId = getTableId({
+        windowId: windowType,
+        docId: documentId,
+        tabId,
+      });
+
+      return discardNewRequest({
+        windowId: windowType,
+        documentId,
+        tabId,
+        rowId,
+      }).then(() => {
+        updateTabRowsData(tableId, {
+          removed: { [`${rowId}`]: true },
+        });
+      });
     }
   };
 
@@ -417,4 +434,5 @@ MasterWindow.propTypes = {
   attachFileAction: PropTypes.func,
   sortTab: PropTypes.func,
   push: PropTypes.func,
+  updateTabRowsData: PropTypes.func.isRequired,
 };
