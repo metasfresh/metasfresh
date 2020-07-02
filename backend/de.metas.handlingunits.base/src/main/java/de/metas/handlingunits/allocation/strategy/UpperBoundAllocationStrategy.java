@@ -4,13 +4,13 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.AllocationDirection;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Capacity;
 import lombok.NonNull;
@@ -62,8 +62,8 @@ class UpperBoundAllocationStrategy extends AbstractAllocationStrategy
 			@NonNull final IAllocationRequest request)
 	{
 		// Prevent allocating on a included HU item
-		final String itemType = services.getItemType(item);
-		if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
+		final HUItemType itemType = services.getItemType(item);
+		if (HUItemType.HandlingUnit.equals(itemType))
 		{
 			if (services.isDeveloperMode())
 			{

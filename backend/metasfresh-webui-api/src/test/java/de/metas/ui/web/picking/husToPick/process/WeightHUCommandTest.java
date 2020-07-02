@@ -106,8 +106,8 @@ public class WeightHUCommandTest
 		saveRecord(org);
 		// orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
-		I_M_Warehouse warehouse = BusinessTestHelper.createWarehouse("warehouse");
-		I_M_Locator locator = BusinessTestHelper.createLocator("locator", warehouse);
+		final I_M_Warehouse warehouse = BusinessTestHelper.createWarehouse("warehouse");
+		final I_M_Locator locator = BusinessTestHelper.createLocator("locator", warehouse);
 		locatorId = LocatorId.ofRecord(locator);
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);

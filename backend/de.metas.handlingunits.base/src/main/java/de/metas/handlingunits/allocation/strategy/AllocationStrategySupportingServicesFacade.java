@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -62,9 +64,24 @@ public class AllocationStrategySupportingServicesFacade
 		return getHandlingUnitsDAO().retrieveVirtualPI(ctx);
 	}
 
-	public boolean isPureVirtual(final I_M_HU_Item huItem)
+	public I_M_HU_Item getFirstNotPureVirtualItem(@NonNull final I_M_HU_Item item)
 	{
-		return handlingUnitsBL.isPureVirtual(huItem);
+		final IHandlingUnitsDAO handlingUnitsDAO = getHandlingUnitsDAO();
+
+		I_M_HU_Item itemFirstNotPureVirtual = item;
+		while (itemFirstNotPureVirtual != null && handlingUnitsBL.isPureVirtual(itemFirstNotPureVirtual))
+		{
+			final I_M_HU parentHU = itemFirstNotPureVirtual.getM_HU();
+			itemFirstNotPureVirtual = handlingUnitsDAO.retrieveParentItem(parentHU);
+		}
+
+		// shall not happen
+		if (itemFirstNotPureVirtual == null)
+		{
+			throw new AdempiereException("No not pure virtual HU item found for " + item);
+		}
+
+		return itemFirstNotPureVirtual;
 	}
 
 	public boolean isVirtual(final I_M_HU_Item item)
@@ -77,14 +94,9 @@ public class AllocationStrategySupportingServicesFacade
 		return getHandlingUnitsDAO().retrieveItems(hu);
 	}
 
-	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)
+	public HUItemType getItemType(final I_M_HU_Item item)
 	{
-		return Services.get(IHandlingUnitsDAO.class).retrieveParentItem(hu);
-	}
-
-	public String getItemType(final I_M_HU_Item item)
-	{
-		return handlingUnitsBL.getItemType(item);
+		return HUItemType.ofCode(handlingUnitsBL.getItemType(item));
 	}
 
 	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item)

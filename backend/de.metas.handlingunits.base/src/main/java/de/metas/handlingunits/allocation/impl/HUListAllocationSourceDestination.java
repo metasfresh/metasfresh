@@ -50,6 +50,7 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
 import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -72,20 +73,27 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	/** @return single HU allocation source/destination */
 	public static HUListAllocationSourceDestination of(@NonNull final I_M_HU hu)
 	{
-		return new HUListAllocationSourceDestination(ImmutableList.of(hu));
+		return new HUListAllocationSourceDestination(ImmutableList.of(hu), AllocationStrategyType.DEFAULT);
+	}
+
+	public static HUListAllocationSourceDestination of(
+			@NonNull final I_M_HU hu,
+			@NonNull final AllocationStrategyType allocationStrategyType)
+	{
+		return new HUListAllocationSourceDestination(ImmutableList.of(hu), allocationStrategyType);
 	}
 
 	public static HUListAllocationSourceDestination ofHUId(@NonNull final HuId huId)
 	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsRepo = Services.get(IHandlingUnitsBL.class);
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
-		return of(hu);
+		return new HUListAllocationSourceDestination(ImmutableList.of(hu), AllocationStrategyType.DEFAULT);
 	}
 
 	/** @return multi-HUs allocation source/destination */
 	public static HUListAllocationSourceDestination of(final Collection<I_M_HU> sourceHUs)
 	{
-		return new HUListAllocationSourceDestination(sourceHUs);
+		return new HUListAllocationSourceDestination(ImmutableList.copyOf(sourceHUs), AllocationStrategyType.DEFAULT);
 	}
 
 	// Services
@@ -95,6 +103,8 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	private final ImmutableList<I_M_HU> sourceHUs;
 	private final int lastIndex;
 	private int currentIndex = -1;
+
+	private final AllocationStrategyType allocationStrategyType;
 
 	private I_M_HU currentHU = null;
 
@@ -106,10 +116,27 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	/** see {@link #setStoreCUQtyBeforeProcessing(boolean)} */
 	private boolean storeCUQtyBeforeProcessing = true;
 
-	private HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
+	private HUListAllocationSourceDestination(
+			@NonNull final ImmutableList<I_M_HU> sourceHUs,
+			@NonNull final AllocationStrategyType allocationStrategyType)
 	{
-		this.sourceHUs = ImmutableList.copyOf(sourceHUs);
+		this.sourceHUs = sourceHUs;
 		lastIndex = sourceHUs.size() - 1;
+
+		this.allocationStrategyType = allocationStrategyType;
+		this.storeCUQtyBeforeProcessing = computeStoreCUQtyBeforeProcessing(allocationStrategyType);
+	}
+
+	private static boolean computeStoreCUQtyBeforeProcessing(@NonNull final AllocationStrategyType allocationStrategyType)
+	{
+		if (AllocationStrategyType.UNIFORM.equals(allocationStrategyType))
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	public boolean isDestroyEmptyHUs()
@@ -210,7 +237,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			}
 
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
-			final IAllocationStrategy allocationStrategy = allocationStrategyFactory.createAllocationStrategy(direction);
+			final IAllocationStrategy allocationStrategy = allocationStrategyFactory.createAllocationStrategy(direction, allocationStrategyType);
 			final IAllocationResult currentResult = allocationStrategy.execute(currentHU, currentRequest);
 
 			AllocationUtils.mergeAllocationResult(result, currentResult);

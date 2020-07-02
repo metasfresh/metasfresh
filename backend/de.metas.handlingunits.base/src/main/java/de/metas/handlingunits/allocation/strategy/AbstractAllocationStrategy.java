@@ -27,8 +27,11 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -41,11 +44,9 @@ import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -67,7 +68,7 @@ abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	}
 
 	@Override
-	public final IAllocationResult execute(
+	public IAllocationResult execute(
 			@NonNull final I_M_HU hu,
 			@NonNull final IAllocationRequest request)
 	{
@@ -94,11 +95,11 @@ abstract class AbstractAllocationStrategy implements IAllocationStrategy
 
 			//
 			// Gets ItemType
-			final String itemType = services.getItemType(item);
+			final HUItemType itemType = services.getItemType(item);
 
 			//
 			// Allocate to/from material item
-			if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType))
+			if (HUItemType.Material.equals(itemType))
 			{
 				final IAllocationRequest materialItemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
 				final IAllocationResult itemResult = allocateOnMaterialItem(item, materialItemRequest);
@@ -106,8 +107,8 @@ abstract class AbstractAllocationStrategy implements IAllocationStrategy
 			}
 			//
 			// Allocate to/from included handling units
-			else if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType)
-					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType))
+			else if (HUItemType.HandlingUnit.equals(itemType)
+					|| HUItemType.HUAggregate.equals(itemType))
 			{
 				final IAllocationRequest itemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
 
@@ -135,7 +136,7 @@ abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	/**
 	 * Allocate/Deallocate given request to given item of ItemType=Material.
 	 */
-	private IAllocationResult allocateOnMaterialItem(
+	protected IAllocationResult allocateOnMaterialItem(
 			@NonNull final I_M_HU_Item item,
 			@NonNull final IAllocationRequest request)
 	{
@@ -318,17 +319,9 @@ abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	@NonNull
 	private final IHUTransactionCandidate createHUTransaction(
 			@NonNull final IAllocationRequest requestActual,
-			final I_M_HU_Item vhuItem)
+			@Nullable final I_M_HU_Item vhuItem)
 	{
-		//
-		// Find out first HU Item which is not pure virtual
-		I_M_HU_Item itemFirstNotPureVirtual = vhuItem;
-		while (itemFirstNotPureVirtual != null && services.isPureVirtual(itemFirstNotPureVirtual))
-		{
-			final I_M_HU parentHU = itemFirstNotPureVirtual.getM_HU();
-			itemFirstNotPureVirtual = services.retrieveParentItem(parentHU);
-		}
-		Check.assumeNotNull(itemFirstNotPureVirtual, "itemFirstNotPureVirtual not null"); // shall not happen
+		final I_M_HU_Item itemFirstNotPureVirtual = services.getFirstNotPureVirtualItem(vhuItem);
 
 		final Object referencedModel = AllocationUtils.getReferencedModel(requestActual);
 		final Quantity qtyTrx = AllocationUtils.getQuantity(requestActual, direction);
