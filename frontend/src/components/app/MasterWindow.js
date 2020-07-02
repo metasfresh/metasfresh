@@ -160,6 +160,7 @@ export default class MasterWindow extends PureComponent {
     documentId,
     tabId,
     rowId,
+    saveStatus,
   } = {}) => {
     if (isNew) {
       const { updateTabRowsData } = this.props;
@@ -175,9 +176,12 @@ export default class MasterWindow extends PureComponent {
         tabId,
         rowId,
       }).then(() => {
-        updateTabRowsData(tableId, {
-          removed: { [`${rowId}`]: true },
-        });
+        // if modal was not saved, discard the new row
+        if (!saveStatus) {
+          updateTabRowsData(tableId, {
+            removed: { [`${rowId}`]: true },
+          });
+        }
       });
     }
   };

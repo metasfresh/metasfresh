@@ -256,7 +256,7 @@ class Modal extends Component {
    * @method closeModal
    * @summary ToDo: Describe the method.
    */
-  closeModal = () => {
+  closeModal = (saveStatus) => {
     // TODO: parentDataId (formerly relativeDataId) is not passed in as prop
     const {
       dispatch,
@@ -295,6 +295,7 @@ class Modal extends Component {
           documentId: dataId,
           tabId,
           rowId,
+          saveStatus,
         });
       }
 
@@ -320,17 +321,17 @@ class Modal extends Component {
 
   /**
    * @method handleClose
-   * @summary ToDo: Describe the method
+   * @summary Handle closing modal when the `done` button is clicked or `{esc}` key pressed
    */
   handleClose = () => {
     const { modalSaveStatus, modalType } = this.props;
 
     if (modalType === 'process') {
-      return this.closeModal();
+      return this.closeModal(modalSaveStatus);
     }
 
     if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
-      this.closeModal();
+      this.closeModal(modalSaveStatus);
     }
   };
 
