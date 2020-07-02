@@ -1,4 +1,4 @@
---DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison_With_PP_PI;
+DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison_With_PP_PI;
 
 CREATE OR REPLACE VIEW RV_fresh_PriceList_Comparison_With_PP_PI AS
 
@@ -138,9 +138,7 @@ GROUP BY pp.M_ProductPrice_ID, pp.AD_Client_ID, pp.Created, pp.CreatedBy, pp.Upd
 
 
 
---DROP VIEW IF EXISTS rv_fresh_pricelist 
-
---DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
+DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 
 CREATE OR REPLACE VIEW RV_fresh_PriceList_Comparison AS
 
