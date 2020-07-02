@@ -23,6 +23,7 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -30,7 +31,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
 
-public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
+public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedProcess
 {
 	private final ProductsToPickHelper productsToPickHelper = SpringContextHolder.instance.getBean(ProductsToPickHelper.class);
 
@@ -54,12 +55,32 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> result = productsToPickHelper.pick(getSelectedRows());
-
-		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
+		pick();
+		pack();
 
 		invalidateView();
 
 		return MSG_OK;
 	}
+
+	private void pick()
+	{
+		final ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> result = productsToPickHelper.pick(getSelectedRows());
+
+		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
+	}
+
+	private void pack()
+	{
+		final ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> result = productsToPickHelper.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
+
+		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
+	}
+
+	private HuPackingInstructionsId getHuPackingInstructionsId()
+	{
+		// TODO tbp: set the correct M_HU_PI here.
+		return HuPackingInstructionsId.ofRepoId(1);
+	}
+
 }
