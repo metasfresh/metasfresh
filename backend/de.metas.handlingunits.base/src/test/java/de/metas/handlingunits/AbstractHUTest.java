@@ -36,7 +36,10 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.junit.Before;
 import org.junit.Rule;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -53,8 +56,6 @@ import de.metas.notification.impl.NotificationRepository;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 
 public abstract class AbstractHUTest
 {

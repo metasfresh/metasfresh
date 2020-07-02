@@ -37,7 +37,7 @@ import lombok.ToString;
 @ToString
 public class PlainWeightable implements IWeightable
 {
-	private I_C_UOM uom;
+	private final I_C_UOM uom;
 	private BigDecimal weightGross;
 	private BigDecimal weightNet;
 	private final BigDecimal weightTareInitial;
@@ -58,6 +58,17 @@ public class PlainWeightable implements IWeightable
 		this.weightTare = CoalesceUtil.coalesce(weightTare, BigDecimal.ZERO);
 		this.weightTareInitial = this.weightTare;
 		this.weightTareAdjust = CoalesceUtil.coalesce(weightTareAdjust, BigDecimal.ZERO);
+	}
+
+	public static PlainWeightable copyOf(final IWeightable weightable)
+	{
+		return PlainWeightable.builder()
+				.uom(weightable.getWeightNetUOM())
+				.weightGross(weightable.hasWeightGross() ? weightable.getWeightGross() : BigDecimal.ZERO)
+				.weightNet(weightable.hasWeightNet() ? weightable.getWeightNet() : BigDecimal.ZERO)
+				.weightTare(weightable.hasWeightTare() ? weightable.getWeightTare() : BigDecimal.ZERO)
+				.weightTareAdjust(weightable.hasWeightTareAdjust() ? weightable.getWeightTareAdjust() : BigDecimal.ZERO)
+				.build();
 	}
 
 	@Override
