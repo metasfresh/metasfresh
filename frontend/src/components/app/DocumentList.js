@@ -65,27 +65,19 @@ export default class DocumentList extends Component {
   };
 
   /**
-   * @method updateQuickActions
-   * @summary ToDo: Describe the method.
-   */
-  updateQuickActions = (childSelection) => {
-    if (this.quickActionsComponent) {
-      this.quickActionsComponent.updateActions(childSelection);
-    }
-  };
-
-  /**
    * @method setTableRowEdited
    * @summary ToDo: Describe the method.
    * @todo TODO: This triggers re-fetching of quickactions. We should handle that via redux
    * or in the quickactions component somehow
    */
   setTableRowEdited = (val) => {
+    const { onUpdateQuickActions } = this.props;
+
     this.setState(
       {
         rowEdited: val,
       },
-      this.updateQuickActions
+      onUpdateQuickActions
     );
   };
 
@@ -103,14 +95,6 @@ export default class DocumentList extends Component {
     this.setState({
       toggleWidth: widthIdx,
     });
-  };
-
-  /**
-   * @method handleRefs
-   * @summary Store ref to the quick actions component
-   */
-  setQuickActionsRef = (ref) => {
-    this.quickActionsComponent = ref;
   };
 
   setTableRef = (ref) => {
@@ -164,6 +148,8 @@ export default class DocumentList extends Component {
       table,
       childSelected,
       parentSelected,
+      onUpdateQuickActions,
+      setQuickActionsComponentRef,
     } = this.props;
     const {
       staticFilters,
@@ -297,7 +283,7 @@ export default class DocumentList extends Component {
               <QuickActions
                 className="header-element align-items-center"
                 processStatus={processStatus}
-                ref={this.setQuickActionsRef}
+                ref={setQuickActionsComponentRef}
                 selected={selected}
                 viewId={viewId}
                 windowType={windowId}
@@ -343,7 +329,7 @@ export default class DocumentList extends Component {
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
                 onRowEdited={this.setTableRowEdited}
-                updateQuickActions={this.updateQuickActions}
+                updateQuickActions={onUpdateQuickActions}
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
                 mainTable={true}
@@ -433,4 +419,6 @@ DocumentList.propTypes = {
   onClearStaticFilters: PropTypes.func,
   onResetInitialFilters: PropTypes.func,
   onRedirectToNewDocument: PropTypes.func,
+  onUpdateQuickActions: PropTypes.func,
+  setQuickActionsComponentRef: PropTypes.func,
 };
