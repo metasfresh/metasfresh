@@ -1,14 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import Moment from 'moment-timezone';
 import _ from 'lodash';
 
 import { getZoomIntoWindow } from '../../api';
-import {
-  convertTimeStringToMoment,
-  formatDateWithZeros,
-} from '../../utils/documentListHelper';
+import { formatDateWithZeros } from '../../utils/documentListHelper';
 import {
   validatePrecision,
   formatValueByWidgetType,
