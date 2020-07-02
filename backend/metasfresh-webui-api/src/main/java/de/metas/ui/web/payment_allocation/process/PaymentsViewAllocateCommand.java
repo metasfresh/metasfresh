@@ -1,23 +1,40 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.payment_allocation.process;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -30,28 +47,14 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public class PaymentsViewAllocateCommand
 {
@@ -124,7 +127,7 @@ public class PaymentsViewAllocateCommand
 				: ImmutableList.of();
 
 		final ImmutableList<PayableDocument> invoiceDocuments = invoiceRows.stream()
-				.map(this::toPayableDocument)
+				.map(row -> toPayableDocument(row, paymentDocuments, moneyService, invoiceProcessingServiceCompanyService))
 				.collect(ImmutableList.toImmutableList());
 
 		return PaymentAllocationBuilder.newBuilder()
@@ -139,15 +142,12 @@ public class PaymentsViewAllocateCommand
 				.allowPurchaseSalesInvoiceCompensation(allowPurchaseSalesInvoiceCompensation);
 	}
 
-	private PayableDocument toPayableDocument(@NonNull final InvoiceRow row)
-	{
-		return toPayableDocument(row, moneyService);
-	}
-
 	@VisibleForTesting
 	static PayableDocument toPayableDocument(
 			@NonNull final InvoiceRow row,
-			@NonNull final MoneyService moneyService)
+			@NonNull final List<PaymentDocument> paymentDocuments,
+			@NonNull final MoneyService moneyService,
+			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
 	{
 		// NOTE: assuming InvoiceRow amounts are already CreditMemo adjusted,
 		// BUT they are not Sales/Purchase sign adjusted.
@@ -156,8 +156,37 @@ public class PaymentsViewAllocateCommand
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
 		final CurrencyId currencyId = openAmt.getCurrencyId();
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
-		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = row.getServiceFeeCalculation();
+		final CurrencyCode currencyCode = moneyService.getCurrencyCodeByCurrencyId(currencyId);
+		if (row.getServiceFeeAmt() != null && !Amount.zero(currencyCode).equals(row.getServiceFeeAmt()))
+		{
+			if (paymentDocuments.size() != 1)
+			{
+				throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
+			}
+
+			final PaymentDocument singlePaymentDocument = paymentDocuments.get(0);
+			final BPartnerId serviceCompanyBPartnerId = singlePaymentDocument.getBpartnerId();
+			final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(singlePaymentDocument.getDateTrx());
+
+			final Optional<InvoiceProcessingFeeCalculation> calculatedFeeOptional = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
+					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+							.orgId(row.getOrgId())
+							.paymentDate(paymentDate)
+							.customerId(row.getBPartnerId())
+							.invoiceId(row.getInvoiceId())
+							.feeAmountIncludingTax(row.getServiceFeeAmt())
+							.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
+							.build());
+
+			invoiceProcessingFeeCalculation = calculatedFeeOptional.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
+		}
+		else
+		{
+			invoiceProcessingFeeCalculation = null;
+		}
+
 		final Money invoiceProcessingFee = invoiceProcessingFeeCalculation != null
 				? moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax())
 				: Money.zero(currencyId);
@@ -204,6 +233,7 @@ public class PaymentsViewAllocateCommand
 				.paymentDirection(row.getPaymentDirection())
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
+				.dateTrx(row.getDateTrx())
 				.build();
 	}
 
