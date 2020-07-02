@@ -1,3 +1,20 @@
+DROP VIEW IF EXISTS RV_fresh_PriceList;
+
+DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report_With_PP_PI(numeric, numeric, numeric, character varying, text);
+
+DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying, text);
+
+
+
+DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text, p_show_product_price_pi_flag text)
+;
+
+
+
+DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text, p_show_product_price_pi_flag text)
+;
+
+
 DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison_With_PP_PI;
 DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 
@@ -315,8 +332,49 @@ Refactored in Tasks 07833 and 07915
 A view for a report that displays the same data as RV_fresh_PriceList but imroved to be able to filter by two Price list versions, to be able to compare them';
 
 
-DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report_With_PP_PI(numeric, numeric, numeric, character varying, text)
+
+
+
+
+CREATE OR REPLACE VIEW RV_fresh_PriceList AS
+SELECT
+	-- Mandatory Columns
+	plc.AD_Org_ID, plc.AD_Client_ID,
+	plc.Created, plc.CreatedBy,
+	plc.Updated, plc.UpdatedBy,
+	plc.IsActive,
+
+	-- Displayed pricelist data
+	plc.ProductCategory,
+	plc.ProductCategoryValue,
+	plc.M_Product_ID,
+	plc.Value,
+	plc.ProductName,
+	plc.IsSeasonFixedPrice,
+	plc.ItemProductName,
+	plc.PackingMaterialName,
+	plc.PriceStd,
+	plc.AltPriceStd,
+	plc.HasAltPrice,
+	plc.UOMSymbol,
+	plc.Attributes,
+
+	-- Filter Columns
+	plc.C_BPartner_ID,
+	plc.M_Pricelist_Version_ID,
+	plc.M_ProductPrice_ID
+FROM
+	RV_fresh_PriceList_Comparison plc 
+WHERE
+	plc.M_Pricelist_Version_ID = plc.Alt_PriceList_Version_ID
 ;
+
+COMMENT ON VIEW RV_fresh_PriceList IS '05956 Printformat for Pricelist (109054740508) 
+Refactored in Task 07833 and 07915
+A view for a report that displays all product prices of a BPartner, including the attribute prices and CU:TU relation';
+
+
+
 
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report_With_PP_PI(IN p_c_bpartner_id numeric,
                                                                             IN p_m_pricelist_version_id numeric,
@@ -408,9 +466,6 @@ $BODY$
 ;
 
 
-
-DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying, text)
-;
 
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report(IN p_c_bpartner_id numeric,
                                                                  IN p_m_pricelist_version_id numeric,
@@ -505,9 +560,6 @@ $BODY$
 
 
 
-
-DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text, p_show_product_price_pi_flag text)
-;
 
 CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric = NULL,
                                                                                   p_C_BP_Group_ID numeric = NULL,
@@ -661,9 +713,6 @@ FROM report.Current_Vs_Previous_Pricelist_Comparison_Report(2156515)
  */
 
 
-
-DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text, p_show_product_price_pi_flag text)
-;
 
 CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI(p_C_BPartner_ID numeric = NULL,
                                                                                     p_C_BP_Group_ID numeric = NULL,
