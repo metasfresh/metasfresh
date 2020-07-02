@@ -141,6 +141,21 @@ export function updateTableRowProperty({ tableId, rowId, change }) {
 }
 
 /**
+ * @method clearTableData
+ * @summary Remove all rows
+ *
+ * @param {string} id - table id
+ */
+export function clearTableData(id) {
+  return {
+    type: types.CLEAR_TABLE_DATA,
+    payload: {
+      id,
+    },
+  };
+}
+
+/**
  * @method createTableData
  * @summary Helper function to grab raw data and format/name it accordingly to
  * the values in the store.

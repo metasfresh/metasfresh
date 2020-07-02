@@ -259,6 +259,7 @@ const mapStateToProps = (state, props) => {
   }
 
   return {
+    tableId,
     rows: table.rows,
     columns: table.columns,
     selected: table.selected,
