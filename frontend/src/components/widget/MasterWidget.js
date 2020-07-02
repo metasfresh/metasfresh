@@ -51,17 +51,11 @@ class MasterWidget extends PureComponent {
    *          Used this in order to ditch the deprecated UNSAFE_componentWillReceiveProps
    */
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { widgetType } = nextProps;
     const { edited, widgetData } = prevState;
     let next = nextProps.widgetData[0].value;
     let hasNewData = widgetData[0] && !_.isEqual(widgetData[0].value, next);
 
-    let isUnconvertedDate =
-      next && dateParse.includes(widgetType) && !Moment.isMoment(next);
-
     if (!edited && hasNewData) {
-      next = isUnconvertedDate ? Moment(convertTimeStringToMoment(next)) : next;
-
       return { updated: true, data: next, widgetData: nextProps.widgetData };
     } else if (edited) {
       return { edited: false };
