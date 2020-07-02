@@ -39,6 +39,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -95,6 +96,12 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	HUExpectation(final ParentExpectationType parentExpectation)
 	{
 		super(parentExpectation);
+	}
+
+	public HUExpectation<ParentExpectationType> assertExpected(final String message, @NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		return assertExpected(message, hu);
 	}
 
 	public HUExpectation<ParentExpectationType> assertExpected(final String message, @NonNull final I_M_HU hu)
