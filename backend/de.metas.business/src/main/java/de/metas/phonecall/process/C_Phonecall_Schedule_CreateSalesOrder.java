@@ -1,6 +1,8 @@
 package de.metas.phonecall.process;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -8,13 +10,13 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
+import de.metas.organization.IOrgDAO;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
 import de.metas.phonecall.service.PhonecallScheduleRepository;
@@ -53,6 +55,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 	private final PhonecallScheduleRepository phonecallSchedueRepo = SpringContextHolder.instance.getBean(PhonecallScheduleRepository.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -71,8 +74,10 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 
 		final I_C_BPartner partnerRecord = bpartnerDAO.getById(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId());
 
-		final ZonedDateTime datePromisedEndOfDay = SystemTime.asLocalDate().atTime(LocalTime.MAX).atZone(SystemTime.zoneId());
-		
+		final LocalDate today = SystemTime.asLocalDate();
+		final ZoneId orgTimeZone = orgDAO.getTimeZone(phonecallSchedule.getOrgId());
+		final ZonedDateTime datePromisedEndOfDay = today.atTime(LocalTime.MAX).atZone(orgTimeZone);
+
 		final I_C_Order draftOrder = OrderFactory.newSalesOrder()
 				.shipBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId(),
 						phonecallSchedule.getBpartnerAndLocationId().getRepoId(),
