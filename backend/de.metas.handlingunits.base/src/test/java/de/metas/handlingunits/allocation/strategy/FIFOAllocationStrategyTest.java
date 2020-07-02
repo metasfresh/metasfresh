@@ -171,7 +171,7 @@ public class FIFOAllocationStrategyTest
 		//
 		// Create an empty HU
 		//@formatter:off
-		final HUExpectation<Object> newHUexpectation = new HUExpectation<>()
+		final HUExpectation<Object> newHUexpectation = HUExpectation.newExpectation()
 				.huStatus(X_M_HU.HUSTATUS_Planning)
 				.huPI(lutuConfig.piTU)
 				.newHUItemExpectation()
@@ -195,7 +195,7 @@ public class FIFOAllocationStrategyTest
 		// Test the result
 		final IMutable<I_M_HU> vhu1 = new Mutable<>();
 		//@formatter:off
-		final HUExpectation<Object> result_huExpectation = new HUExpectation<>()
+		final HUExpectation<Object> result_huExpectation = HUExpectation.newExpectation()
 				.huStatus(X_M_HU.HUSTATUS_Planning)
 				.huPI(lutuConfig.piTU)
 				.newHUItemExpectation()
@@ -263,7 +263,7 @@ public class FIFOAllocationStrategyTest
 		final IMutable<I_M_HU> vhu2 = new Mutable<>();
 		final IMutable<I_M_HU> vhu3 = new Mutable<>();
 		//@formatter:off
-		final HUExpectation<Object> huExpectation = new HUExpectation<>()
+		final HUExpectation<Object> huExpectation = HUExpectation.newExpectation()
 				.huStatus(X_M_HU.HUSTATUS_Planning)
 				.huPI(lutuConfig.piTU)
 				.newHUItemExpectation()
