@@ -74,7 +74,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.addOnlyActiveRecordsFilter()
 				//
 				// for given BP & Location
-				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID , null, params.getBPartnerLocationId().getBpartnerId())
+				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID, null, params.getBPartnerLocationId().getBpartnerId())
 				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_Location_ID, null, params.getBPartnerLocationId())
 				//
 				// DeliveryDateTimeMax <= given DeliveryDate
@@ -128,8 +128,8 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 			// fallback to what it used to be: In case there is no calculation time set, simply fetch the
 			// delivery date that is closest to the promiseDate
 			queryBuilder.orderBy()
-					.addColumn(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, Direction.Descending, Nulls.Last)
-					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Descending, Nulls.Last);
+					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Descending, Nulls.Last)
+					.addColumn(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
 		}
 
 		final I_M_DeliveryDay deliveryDay = queryBuilder
