@@ -331,14 +331,14 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		return handlingUnitsDAO.retrievePICurrentVersion(pi);
 	}
 
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> newHUItemExpectation()
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> item()
 	{
 		final HUItemExpectation<HUExpectation<ParentExpectationType>> expectation = new HUItemExpectation<>(this);
-		huItemExpectation(expectation);
+		item(expectation);
 		return expectation;
 	}
 
-	public HUExpectation<ParentExpectationType> huItemExpectation(@NonNull final HUItemExpectation<?> expectation)
+	public HUExpectation<ParentExpectationType> item(@NonNull final HUItemExpectation<?> expectation)
 	{
 		if (huItemExpectations == null)
 		{
@@ -348,21 +348,21 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		return this;
 	}
 
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> newHUItemExpectation(final I_M_HU_PI_Item piItem)
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> item(final I_M_HU_PI_Item piItem)
 	{
-		return newHUItemExpectation()
+		return item()
 				.huPIItem(piItem);
 	}
 
 	/**
-	 * Create and return an expectation for a VHU item. This is usually within a {@link HUItemExpectation#newIncludedVirtualHU()}.
+	 * Create and return an expectation for a VHU item. This is usually within a {@link HUItemExpectation#includedVirtualHU()}.
 	 * 
 	 * @return
 	 */
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> newVirtualHUItemExpectation()
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> virtualPIItem()
 	{
 		final I_M_HU_PI_Item virtualPIItem = handlingUnitsDAO.retrieveVirtualPIItem(Env.getCtx());
-		return newHUItemExpectation(virtualPIItem);
+		return item(virtualPIItem);
 	}
 
 	/**
@@ -372,7 +372,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	 * @return
 	 * @return {@link HUItemExpectation}; never return null
 	 */
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> huItemExpectation(@NonNull final I_M_HU_PI_Item piItem)
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> existingItem(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		Check.assumeNotNull(huItemExpectations, "huItemExpectations not null");
 

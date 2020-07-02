@@ -180,7 +180,7 @@ public class UniformAllocationStrategyTest
 			addQty(lu, "10", AllocationStrategyType.UNIFORM, lutuConfig);
 			// dumpHU("after +10", lu);
 			HUExpectation.newExpectation()
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HUAggregate)
 							.qtyTUs(40)
 							.includedHU(HUExpectation.newVirtualHU()
@@ -198,7 +198,7 @@ public class UniformAllocationStrategyTest
 			subtractQty(lu, "10", AllocationStrategyType.UNIFORM, lutuConfig);
 			// dumpHU("after -10", lu);
 			HUExpectation.newExpectation()
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HUAggregate)
 							.qtyTUs(40)
 							.includedHU(HUExpectation.newVirtualHU()
@@ -229,7 +229,7 @@ public class UniformAllocationStrategyTest
 			lu = createLU("400", lutuConfig);
 			// dumpHU("initial", lu);
 			HUExpectation.newExpectation()
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HUAggregate)
 							.qtyTUs(40)
 							.includedHU(HUExpectation.newVirtualHU()
@@ -243,7 +243,7 @@ public class UniformAllocationStrategyTest
 			subtractQty(lu, "1", AllocationStrategyType.FIFO, lutuConfig);
 			// dumpHU("after -1", lu);
 			HUExpectation.newExpectation()
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HandlingUnit)
 							.includedHU(HUExpectation.newExpectation()
 									.huPI(lutuConfig.piTU)
@@ -251,7 +251,7 @@ public class UniformAllocationStrategyTest
 											.product(lutuConfig.productId)
 											.qty("9")
 											.uom(lutuConfig.productUOM))))
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HUAggregate)
 							.qty("39")
 							.includedHU(HUExpectation.newVirtualHU()
@@ -268,7 +268,7 @@ public class UniformAllocationStrategyTest
 			addQty(lu, "10", AllocationStrategyType.UNIFORM, lutuConfig);
 			// dumpHU("after +10", lu);
 			HUExpectation.newExpectation()
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HandlingUnit)
 							.includedHU(HUExpectation.newExpectation()
 									.huPI(lutuConfig.piTU)
@@ -276,7 +276,7 @@ public class UniformAllocationStrategyTest
 											.product(lutuConfig.productId)
 											.qty("9.226")
 											.uom(lutuConfig.productUOM))))
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HUAggregate)
 							.qty("39")
 							.includedHU(HUExpectation.newVirtualHU()
@@ -293,7 +293,7 @@ public class UniformAllocationStrategyTest
 			subtractQty(lu, "10", AllocationStrategyType.UNIFORM, lutuConfig);
 			// dumpHU("after -10", lu);
 			HUExpectation.newExpectation()
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HandlingUnit)
 							.includedHU(HUExpectation.newExpectation()
 									.huPI(lutuConfig.piTU)
@@ -301,7 +301,7 @@ public class UniformAllocationStrategyTest
 											.product(lutuConfig.productId)
 											.qty("8.774")
 											.uom(lutuConfig.productUOM))))
-					.huItemExpectation(HUItemExpectation.newExpectation()
+					.item(HUItemExpectation.newExpectation()
 							.itemType(HUItemType.HUAggregate)
 							.qty("39")
 							.includedHU(HUExpectation.newVirtualHU()

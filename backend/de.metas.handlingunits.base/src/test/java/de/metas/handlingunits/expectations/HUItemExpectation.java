@@ -219,14 +219,14 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		return this._piItem;
 	}
 
-	public HUExpectation<HUItemExpectation<ParentExpectationType>> newIncludedHUExpectation()
+	public HUExpectation<HUItemExpectation<ParentExpectationType>> includedHU()
 	{
 		final HUExpectation<HUItemExpectation<ParentExpectationType>> expectation = new HUExpectation<>(this);
 		includedHU(expectation);
 		return expectation;
 	}
 
-	public HUItemExpectation<ParentExpectationType> includedHU(final HUExpectation<?> includedHU)
+	public HUItemExpectation<ParentExpectationType> includedHU(@NonNull final HUExpectation<?> includedHU)
 	{
 		if (includedHUExpectations == null)
 		{
@@ -248,10 +248,10 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 	 * 
 	 * @return
 	 */
-	public HUExpectation<HUItemExpectation<ParentExpectationType>> newIncludedVirtualHU()
+	public HUExpectation<HUItemExpectation<ParentExpectationType>> includedVirtualHU()
 	{
 		final I_M_HU_PI virtualPI = handlingUnitsDAO.retrieveVirtualPI(Env.getCtx());
-		return newIncludedHUExpectation()
+		return includedHU()
 				.huPI(virtualPI);
 	}
 
@@ -261,7 +261,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		return this;
 	}
 
-	public HUItemStorageExpectation<HUItemExpectation<ParentExpectationType>> newItemStorageExpectation()
+	public HUItemStorageExpectation<HUItemExpectation<ParentExpectationType>> storage()
 	{
 		final HUItemStorageExpectation<HUItemExpectation<ParentExpectationType>> expectation = new HUItemStorageExpectation<>(this);
 		if (itemStorageExpectations == null)
