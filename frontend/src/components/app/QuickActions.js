@@ -428,7 +428,7 @@ export class QuickActions extends Component {
             )}
           </div>
           <QuickActionsContextShortcuts
-            handleClick={shouldNotUpdate ? null : this.handleClick}
+            onAction={shouldNotUpdate ? null : this.onClick}
             stopPropagation={this.props.stopShortcutPropagation}
             onClick={this.toggleDropdown}
           />

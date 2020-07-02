@@ -67,7 +67,8 @@ export default class DocumentListContextShortcuts extends PureComponent {
 
   handleOpenNewTab = () => {
     const { selected, windowId, onOpenNewTab } = this.props;
-    onOpenNewTab(selected, windowId);
+
+    onOpenNewTab({ rowIds: selected, windowId });
   };
 
   handleAdvancedEdit = () => {
