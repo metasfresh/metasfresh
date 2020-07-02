@@ -1,10 +1,14 @@
 package de.metas.phonecall.process;
 
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -20,6 +24,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -66,6 +71,8 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 
 		final I_C_BPartner partnerRecord = bpartnerDAO.getById(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId());
 
+		final ZonedDateTime datePromisedEndOfDay = SystemTime.asLocalDate().atTime(LocalTime.MAX).atZone(SystemTime.zoneId());
+		
 		final I_C_Order draftOrder = OrderFactory.newSalesOrder()
 				.shipBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId(),
 						phonecallSchedule.getBpartnerAndLocationId().getRepoId(),
@@ -77,6 +84,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 				//
 				.docType(docTypeId)
 				.paymentTermId(partnerRecord.getC_PaymentTerm_ID())
+				.datePromised(datePromisedEndOfDay)
 				.createDraftOrderHeader();
 
 		final String adWindowId = null; // auto
