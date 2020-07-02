@@ -2,7 +2,7 @@
 name: Frontend
 about: This template shall help with our standard issue workflow
 title: ''
-labels: frontend
+labels: cmp:frontend
 assignees: ''
 
 ---
