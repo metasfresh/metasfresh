@@ -475,15 +475,12 @@ public class Login
 	 *
 	 * @param org org information
 	 * @param timestamp optional date
-	 * @param printerName optional printer info
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(
 			@NonNull final KeyNamePair org,
 			final java.sql.Timestamp timestamp)
 	{
-		Check.assumeNotNull(org, "Parameter org is not null");
-
 		final LoginContext ctx = getCtx();
 		final ClientId clientId = ctx.getClientId();
 		final UserId userId = ctx.getUserId();

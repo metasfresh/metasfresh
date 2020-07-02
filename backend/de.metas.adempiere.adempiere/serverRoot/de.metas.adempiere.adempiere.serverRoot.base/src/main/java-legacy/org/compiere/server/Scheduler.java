@@ -202,7 +202,7 @@ public class Scheduler extends AdempiereServer
 
 	private void doWork0()
 	{
-		// metas us1030 updating staus
+		// metas us1030 updating status
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, null);
 
 		m_summary = new StringBuffer(m_model.toString()).append(" - ");
@@ -364,13 +364,9 @@ public class Scheduler extends AdempiereServer
 	}
 
 	/**
-	 * Run Report
-	 *
-	 * @param process
 	 * @return summary
-	 * @throws Exception
 	 */
-	private String runReport(final ProcessInfo pi, final I_AD_Process process) throws Exception
+	private String runReport(final ProcessInfo pi, final I_AD_Process process)
 	{
 		log.debug("Run report: {}", process);
 
@@ -417,13 +413,9 @@ public class Scheduler extends AdempiereServer
 	}	// runReport
 
 	/**
-	 * Run Process
-	 *
-	 * @param process process
 	 * @return summary
-	 * @throws Exception
 	 */
-	private final String runProcess(final ProcessInfo pi) throws Exception
+	private final String runProcess(final ProcessInfo pi)
 	{
 		log.debug("Run process: {}", pi);
 
@@ -452,7 +444,6 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * Creates and setup the {@link ProcessInfo}.
 	 *
-	 * @param process
 	 * @see org.compiere.wf.MWFActivity#performWork(Trx)
 	 */
 	private static final ProcessInfo createProcessInfo(final Properties schedulerCtx, final MScheduler adScheduler)
@@ -469,13 +460,6 @@ public class Scheduler extends AdempiereServer
 		return pi;
 	}
 
-	/**
-	 * metas: c.ghita@metas.ro
-	 * method for run a task
-	 *
-	 * @param task
-	 * @return
-	 */
 	private String runTask(final MTask task)
 	{
 		final String summary = task.execute() + task.getTask().getErrorLog();
@@ -518,9 +502,6 @@ public class Scheduler extends AdempiereServer
 
 	/**
 	 * Fill Parameter
-	 *
-	 * @param pInstance process instance
-	 * @return
 	 */
 	private static List<ProcessInfoParameter> createProcessInfoParameters(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
@@ -656,14 +637,6 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * metas: c.ghita@metas.ro
 	 * notify trough mail in case of abnormal termination
-	 *
-	 * @param ok
-	 * @param from
-	 * @param subject
-	 * @param summary
-	 * @param logInfo
-	 * @param adTableId
-	 * @param recordId
 	 */
 
 	private void notify(
@@ -713,7 +686,7 @@ public class Scheduler extends AdempiereServer
 	}
 
 	/**
-	 * This implementation evaluated a cron pattern to do the scheduling. If the model's scheduling type is not "cron",
+	 * This implementation evaluates a cron pattern to do the scheduling. If the model's scheduling type is not "cron",
 	 * then the super classe's scheduling is used instead.
 	 */
 	@Override

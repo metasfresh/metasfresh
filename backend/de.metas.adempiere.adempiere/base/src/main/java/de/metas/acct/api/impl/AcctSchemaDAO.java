@@ -159,7 +159,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final I_C_AcctSchema_GL acctSchemaGL = retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
 		if (acctSchemaGL == null)
 		{
-			throw new AdempiereException("No " + I_C_AcctSchema_GL.class + " found for " + acctSchemaId);
+			throw new AdempiereException("No " + I_C_AcctSchema_GL.Table_Name + " found for " + acctSchemaId);
 		}
 
 		return AcctSchema.builder()

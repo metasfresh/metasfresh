@@ -36,10 +36,10 @@ FROM MD_Stock s
         WHERE hu.isactive = 'Y'
           AND M_HU_Item_Parent_ID IS NULL
 
-            /*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
+          /*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
           AND hu.HuStatus NOT IN ('P'/*Planning*/, 'D'/*Destroyed*/, 'E'/*Shipped*/)
           AND hus.Qty!=0 AND hus.IsActive='Y'
-            /* ignore storage data that was "hidden" by setting its AD_Client_ID to e.g. 99 */
+          /* ignore storage data that was "hidden" by setting its AD_Client_ID to e.g. 99 */
           AND hu.AD_Client_ID=1000000 AND hus.AD_Client_ID=1000000
         GROUP BY hu.AD_Client_ID,
                  hu.AD_Org_ID,
