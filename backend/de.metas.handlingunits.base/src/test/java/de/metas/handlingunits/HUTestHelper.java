@@ -68,6 +68,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
@@ -410,7 +411,7 @@ public class HUTestHelper
 		{
 			AdempiereTestHelper.get().init();
 		}
-		
+
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 
 		ctx = Env.getCtx();
@@ -1438,18 +1439,24 @@ public class HUTestHelper
 
 	/**
 	 *
-	 * @param huContext
+	 * @param huContextEffective
 	 * @param loadingUnitPIItem the PI item with type = HU that link's the LU's PI with the TU's PI. This methods passes it to the {@link ILUTUProducerAllocationDestination}.
 	 * @param tuPIItemProduct
 	 * @param totalQtyCU
-	 * @return
 	 */
-	public List<I_M_HU> createLUs(
-			@NonNull final IHUContext huContext,
+	@Builder(builderMethodName = "newLUs", builderClassName = "LUsBuilder")
+	private List<I_M_HU> createLUs(
+			@Nullable final IHUContext huContext,
 			@NonNull final I_M_HU_PI_Item loadingUnitPIItem,
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
-			@NonNull final BigDecimal totalQtyCU)
+			@NonNull final BigDecimal totalQtyCU,
+			@Nullable final LocatorId locatorId,
+			@Nullable final String huStatus)
 	{
+		final IHUContext huContextEffective = huContext != null
+				? huContext
+				: createMutableHUContextForProcessingOutOfTrx();
+
 		final BPartnerId bpartnerId = null;
 		final int bpartnerLocationId = -1;
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(tuPIItemProduct.getM_Product_ID());
@@ -1470,31 +1477,59 @@ public class HUTestHelper
 		luProducerDestination.setLUPI(loadingUnitPIItem.getM_HU_PI_Version().getM_HU_PI());
 		luProducerDestination.setLUItemPI(loadingUnitPIItem);
 		luProducerDestination.setMaxLUsInfinite(); // allow creating as much LUs as needed
+		if (locatorId != null)
+		{
+			luProducerDestination.setLocatorId(locatorId);
+		}
+		if (huStatus != null)
+		{
+			luProducerDestination.setHUStatus(huStatus);
+		}
 
 		//
 		// Create LUs
-		final List<I_M_HU> luHUs = createHUs(huContext, luProducerDestination, totalQtyCU);
+		final List<I_M_HU> luHUs = createHUs(huContextEffective, luProducerDestination, totalQtyCU);
 		return luHUs;
 	}
 
-	public I_M_HU createLU(final IHUContext huContext,
+	public class LUsBuilder
+	{
+		public HuId buildSingleLUId()
+		{
+			final I_M_HU lu = buildSingleLU();
+			return HuId.ofRepoId(lu.getM_HU_ID());
+		}
+
+		public I_M_HU buildSingleLU()
+		{
+			final List<I_M_HU> luHUs = this.build();
+			if (luHUs.isEmpty())
+			{
+				throw new IllegalStateException("We expected only one LU but we got none");
+			}
+			else if (luHUs.size() == 1)
+			{
+				return luHUs.get(0);
+			}
+			else
+			{
+				throw new IllegalStateException("We exected only one LU  but we got " + luHUs.size() + ": " + luHUs);
+			}
+		}
+	}
+
+	public I_M_HU createLU(
+			final IHUContext huContext,
 			final I_M_HU_PI_Item loadingUnitPIItem,
 			final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final BigDecimal totalQtyCU)
 	{
-		final List<I_M_HU> luHUs = createLUs(huContext, loadingUnitPIItem, tuPIItemProduct, totalQtyCU);
-		if (luHUs.isEmpty())
-		{
-			throw new IllegalStateException("We expected only one LU but we got none");
-		}
-		else if (luHUs.size() == 1)
-		{
-			return luHUs.get(0);
-		}
-		else
-		{
-			throw new IllegalStateException("We exected only one LU  but we got " + luHUs.size() + ": " + luHUs);
-		}
+		return newLUs()
+				.huContext(huContext)
+				.loadingUnitPIItem(loadingUnitPIItem)
+				.tuPIItemProduct(tuPIItemProduct)
+				.totalQtyCU(totalQtyCU)
+				.buildSingleLU();
 	}
 
 	public List<I_M_HU> retrieveAllHandlingUnits()

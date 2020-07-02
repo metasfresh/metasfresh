@@ -59,7 +59,7 @@ import lombok.NonNull;
 
 public class UniformAllocationStrategyTest
 {
-	private HUTestHelper huTestHelper;
+	private HUTestHelper helper;
 
 	@Builder
 	@SuppressWarnings("unused")
@@ -81,7 +81,7 @@ public class UniformAllocationStrategyTest
 	@BeforeEach
 	public void init()
 	{
-		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
+		helper = HUTestHelper.newInstanceOutOfTrx();
 	}
 
 	@Builder(builderMethodName = "lutuConfig", builderClassName = "$LUTUConfigBuilder")
@@ -93,14 +93,14 @@ public class UniformAllocationStrategyTest
 		final I_C_UOM productUOM = BusinessTestHelper.createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, uomPrecision.toInt());
 		final ProductId productId = BusinessTestHelper.createProductId("product", productUOM);
 
-		final I_M_HU_PI piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		final I_M_HU_PI piTU = helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item piTU_Item;
 		final I_M_HU_PI_Item_Product piTU_Item_Product;
 		if (qtyCUsPerTU != null)
 		{
-			piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
-			piTU_Item_Product = huTestHelper.assignProduct(
+			piTU_Item = helper.createHU_PI_Item_Material(piTU);
+			piTU_Item_Product = helper.assignProduct(
 					piTU_Item,
 					productId,
 					new BigDecimal(qtyCUsPerTU),
@@ -116,10 +116,10 @@ public class UniformAllocationStrategyTest
 		final I_M_HU_PI_Item piLU_Item;
 		if (qtyTUsPerLU != null)
 		{
-			piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 			{
 				final I_C_BPartner bpartner = null; // match any BP
-				piLU_Item = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, qtyTUsPerLU.toBigDecimal(), bpartner);
+				piLU_Item = helper.createHU_PI_Item_IncludedHU(piLU, piTU, qtyTUsPerLU.toBigDecimal(), bpartner);
 			}
 		}
 		else
@@ -146,12 +146,11 @@ public class UniformAllocationStrategyTest
 			@NonNull final String totalQtyCU,
 			@NonNull final LUTUConfig lutuConfig)
 	{
-		return huTestHelper.createLU(
-				huTestHelper.createMutableHUContextForProcessingOutOfTrx(),
-				lutuConfig.piLU_Item,
-				lutuConfig.piTU_Item_Product,
-				new BigDecimal(totalQtyCU) // totalQtyCU
-		);
+		return helper.newLUs()
+				.loadingUnitPIItem(lutuConfig.piLU_Item)
+				.tuPIItemProduct(lutuConfig.piTU_Item_Product)
+				.totalQtyCU(new BigDecimal(totalQtyCU))
+				.buildSingleLU();
 	}
 
 	@Nested
@@ -329,7 +328,7 @@ public class UniformAllocationStrategyTest
 			@NonNull final AllocationStrategyType allocationStrategyType,
 			@NonNull final LUTUConfig lutuConfig)
 	{
-		final GenericAllocationSourceDestination source = huTestHelper.createDummySourceDestination(
+		final GenericAllocationSourceDestination source = helper.createDummySourceDestination(
 				lutuConfig.productId,
 				Quantity.QTY_INFINITE,
 				lutuConfig.productUOM,
@@ -342,7 +341,7 @@ public class UniformAllocationStrategyTest
 
 		HULoader.of(source, destination)
 				.load(AllocationUtils.createAllocationRequestBuilder()
-						.setHUContext(huTestHelper.createMutableHUContextForProcessingOutOfTrx())
+						.setHUContext(helper.createMutableHUContextForProcessingOutOfTrx())
 						.setDateAsToday()
 						.setProduct(lutuConfig.productId)
 						.setQuantity(Quantity.of(qty, lutuConfig.productUOM))
@@ -357,7 +356,7 @@ public class UniformAllocationStrategyTest
 			@NonNull final AllocationStrategyType allocationStrategyType,
 			@NonNull final LUTUConfig lutuConfig)
 	{
-		final GenericAllocationSourceDestination destination = huTestHelper.createDummySourceDestination(
+		final GenericAllocationSourceDestination destination = helper.createDummySourceDestination(
 				lutuConfig.productId,
 				Quantity.QTY_INFINITE,
 				lutuConfig.productUOM,
@@ -370,7 +369,7 @@ public class UniformAllocationStrategyTest
 
 		HULoader.of(source, destination)
 				.load(AllocationUtils.createAllocationRequestBuilder()
-						.setHUContext(huTestHelper.createMutableHUContextForProcessingOutOfTrx())
+						.setHUContext(helper.createMutableHUContextForProcessingOutOfTrx())
 						.setDateAsToday()
 						.setProduct(lutuConfig.productId)
 						.setQuantity(Quantity.of(qty, lutuConfig.productUOM))
