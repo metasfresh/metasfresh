@@ -1,5 +1,5 @@
 import counterpart from 'counterpart';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import {
@@ -8,7 +8,12 @@ import {
 } from '../../actions/ViewAttributesActions';
 import RawWidget from '../widget/RawWidget';
 
-class SelectionAttributes extends Component {
+/**
+ * @file Class based component.
+ * @module DocumentList
+ * @extends PureComponent
+ */
+class SelectionAttributes extends PureComponent {
   componentDidUpdate = (prevProps) => {
     const {
       selected,
@@ -25,7 +30,7 @@ class SelectionAttributes extends Component {
     if (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) {
       DLWrapperSetData([], null, () => {
         DLWrapperSetLayout([], () => {
-          if (supportAttribute && selected && selected.length === 1) {
+          if (supportAttribute && selected.length === 1) {
             if (selected[0] == 0) {
               return;
             }
