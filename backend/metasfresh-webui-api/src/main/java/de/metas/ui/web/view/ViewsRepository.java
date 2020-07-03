@@ -1,9 +1,32 @@
 package de.metas.ui.web.view;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.MutableInt;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Repository;
+
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
+
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
@@ -20,26 +43,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.MutableInt;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -78,10 +81,11 @@ public class ViewsRepository implements IViewsRepository
 
 	private final ImmutableMap<WindowId, IViewsIndexStorage> viewsIndexStorages;
 	private final IViewsIndexStorage defaultViewsIndexStorage;
+	private final ViewsWebsocketSubscriptionsIndex websocketSubscriptionsIndex = new ViewsWebsocketSubscriptionsIndex();
 
 	/**
 	 * @param DO_NOT_DELETE_neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
-	 *                                        So, if you clean this up, please make sure that the webui-API still starts up ^^.
+	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
 	 */
 	public ViewsRepository(
 			@SuppressWarnings("unused") @NonNull final Adempiere DO_NOT_DELETE_neededForDBAccess,
@@ -184,6 +188,24 @@ public class ViewsRepository implements IViewsRepository
 		}
 
 		return map.build();
+	}
+
+	@Override
+	public void onTopicSubscribed(final String topicName, final String sessionId)
+	{
+		websocketSubscriptionsIndex.onTopicSubscribed(topicName, sessionId);
+	}
+
+	@Override
+	public void onTopicUnsubscribed(final String topicName, final String sessionId)
+	{
+		websocketSubscriptionsIndex.onTopicUnsubscribed(topicName, sessionId);
+	}
+
+	@Override
+	public boolean isWatchedByFrontend(final ViewId viewId)
+	{
+		return websocketSubscriptionsIndex.hasSubscriptions(viewId);
 	}
 
 	private IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -407,7 +429,8 @@ public class ViewsRepository implements IViewsRepository
 					.forEach(view -> {
 						try
 						{
-							view.notifyRecordsChanged(recordRefs);
+							final boolean watchedByFrontend = websocketSubscriptionsIndex.hasSubscriptions(view.getViewId());
+							view.notifyRecordsChanged(recordRefs, watchedByFrontend);
 							notifiedCount.incrementAndGet();
 						}
 						catch (final Exception ex)

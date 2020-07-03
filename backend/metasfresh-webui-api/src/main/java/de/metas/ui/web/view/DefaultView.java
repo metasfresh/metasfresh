@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -55,6 +56,7 @@ import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -182,10 +184,13 @@ public final class DefaultView implements IEditableView
 
 		//
 		// Cache
-		cache_rowsById = CCache.newLRUCache(
-				viewDataRepository.getTableName() + "#rowById#viewId=" + viewId, // cache name
-				100, // maxSize
-				2); // expireAfterMinutes
+		cache_rowsById = CCache.<DocumentId, IViewRow> builder()
+				.cacheMapType(CacheMapType.LRU)
+				.cacheName("ViewRows#" + viewId)
+				.additionalTableNameToResetFor(viewDataRepository.getTableName())
+				.initialCapacity(100) // i.e. max size
+				.expireMinutes(2)
+				.build();
 
 		logger.debug("View created: {}", this);
 	}
@@ -517,19 +522,26 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
+	public void notifyRecordsChanged(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend)
 	{
-		final Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, this);
+		final Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, watchedByFrontend, this);
 		if (rowIds.isEmpty())
 		{
 			return;
 		}
-
+		
 		//
 		// Schedule rows to be checked and added or removed from current view
 		if (refreshViewOnChangeEvents)
 		{
 			changedRowIdsToCheck.addChangedRows(rowIds);
+		}
+
+		if(watchedByFrontend)
+		{
+			// TODO: retain only those rowIds which are really part of the view
 		}
 
 		// Invalidate local rowsById cache
@@ -542,12 +554,7 @@ public final class DefaultView implements IEditableView
 
 	private void checkChangedRows()
 	{
-		if (!refreshViewOnChangeEvents)
-		{
-			return;
-		}
-
-		changedRowIdsToCheck.process(selectionsRef::removeRowIdsNotMatchingFilters);
+		changedRowIdsToCheck.process(selectionsRef::updateChangedRows);
 	}
 
 	@Override
@@ -623,24 +630,38 @@ public final class DefaultView implements IEditableView
 	//
 	//
 	//
+	@ToString
 	private static class ChangedRowIdsCollector
 	{
-		private final HashSet<DocumentId> rowIds = new HashSet<>();
+		private final HashSet<DocumentId> _rowIds = new HashSet<>();
 
-		public synchronized void process(@NonNull final Consumer<Set<DocumentId>> consumer)
+		public void process(@NonNull final Consumer<Set<DocumentId>> consumer)
 		{
+			final ImmutableSet<DocumentId> rowIds = getRowIdsAndClear();
 			if (rowIds.isEmpty())
 			{
 				return;
 			}
 
 			consumer.accept(rowIds);
-			rowIds.clear();
+		}
+
+		private synchronized ImmutableSet<DocumentId> getRowIdsAndClear()
+		{
+			if (_rowIds.isEmpty())
+			{
+				ImmutableSet.of();
+			}
+
+			final ImmutableSet<DocumentId> rowIdsCopy = ImmutableSet.copyOf(_rowIds);
+			_rowIds.clear();
+
+			return rowIdsCopy;
 		}
 
 		public synchronized void addChangedRows(@NonNull final Collection<DocumentId> rowIdsToAdd)
 		{
-			rowIds.addAll(rowIdsToAdd);
+			_rowIds.addAll(rowIdsToAdd);
 		}
 	}
 
@@ -739,13 +760,13 @@ public final class DefaultView implements IEditableView
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
-		
+
 		public Builder setDocumentReferenceId(DocumentReferenceId documentReferenceId)
 		{
 			this.documentReferenceId = documentReferenceId;
 			return this;
 		}
-		
+
 		private DocumentReferenceId getDocumentReferenceId()
 		{
 			return documentReferenceId;

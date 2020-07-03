@@ -32,10 +32,12 @@ import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -69,7 +71,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	private static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_UserSession = "/userSession";
 	private static final String TOPIC_Notifications = "/notifications";
-	private static final String TOPIC_View = "/view";
+	static final String TOPIC_View = "/view";
 	private static final String TOPIC_Document = "/document";
 	private static final String TOPIC_Board = "/board";
 	public static final String TOPIC_Dashboard = "/dashboard";
@@ -85,10 +87,24 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		return TOPIC_Notifications + "/" + adUserId.getRepoId();
 	}
 
-	public static final String buildViewNotificationsTopicName(final String viewId)
+	public static final String buildViewNotificationsTopicName(@NonNull final String viewId)
 	{
 		Check.assumeNotEmpty(viewId, "viewId is not empty");
 		return TOPIC_View + "/" + viewId;
+	}
+
+	public static String extractViewIdOrNull(@NonNull final String topicName)
+	{
+		if (topicName.startsWith(TOPIC_View)
+				&& topicName.length() > TOPIC_View.length() + 1)
+		{
+			final String viewId = topicName.substring(TOPIC_View.length() + 1);
+			return StringUtils.trimBlankToNull(viewId);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	public static final String buildDocumentTopicName(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
@@ -241,6 +257,8 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	{
 		@Autowired
 		private WebSocketProducersRegistry websocketProducersRegistry;
+		@Autowired
+		private IViewsRepository viewsRepo;
 
 		@Override
 		public void onApplicationEvent(final SessionSubscribeEvent event)
@@ -248,6 +266,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final String simpSessionId = extractSimpSessionId(event);
 			final String simpDestination = extractSimpDestination(event);
 			websocketProducersRegistry.onTopicSubscribed(simpSessionId, simpDestination);
+			viewsRepo.onTopicSubscribed(simpDestination, simpSessionId);
 
 			logger.debug("Subscribed to simpDestination={} [ simpSessionId={} ]", simpDestination, simpSessionId);
 		}
@@ -258,6 +277,8 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	{
 		@Autowired
 		private WebSocketProducersRegistry websocketProducersRegistry;
+		@Autowired
+		private IViewsRepository viewsRepo;
 
 		@Override
 		public void onApplicationEvent(final SessionUnsubscribeEvent event)
@@ -265,6 +286,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final String simpSessionId = extractSimpSessionId(event);
 			final String simpDestination = extractSimpDestination(event);
 			websocketProducersRegistry.onTopicUnsubscribed(simpSessionId, simpDestination);
+			viewsRepo.onTopicUnsubscribed(simpDestination, simpSessionId);
 
 			logger.debug("Unsubscribed from simpDestination={} [ simpSessionId={} ]", simpDestination != null ? simpDestination : "<null>", simpSessionId);
 		}

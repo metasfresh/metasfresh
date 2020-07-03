@@ -658,7 +658,9 @@ public final class SqlViewSelectionQueryBuilder
 		return SqlAndParams.of(sql, newViewId.getViewId(), fromSelectionId);
 	}
 
-	public String buildSqlWhereClause(final String selectionId, final DocumentIdsSelection rowIds)
+	public String buildSqlWhereClause(
+			@NonNull final String selectionId,
+			@NonNull final DocumentIdsSelection rowIds)
 	{
 		final String sqlTableName = getTableName();
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();

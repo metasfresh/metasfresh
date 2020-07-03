@@ -99,4 +99,10 @@ public interface IViewsRepository
 	{
 		notifyRecordsChanged(TableRecordReferenceSet.of(tableName, recordId));
 	}
+
+	boolean isWatchedByFrontend(ViewId viewId);
+
+	void onTopicSubscribed(String topicName, String sessionId);
+
+	void onTopicUnsubscribed(String topicName, String sessionId);
 }

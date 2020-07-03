@@ -78,7 +78,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentIdsSelection rowIds)
 	{
 		return newSqlViewSelectionQueryBuilder().buildSqlWhereClause(viewId.getViewId(), rowIds);
 	}

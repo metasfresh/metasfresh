@@ -305,7 +305,9 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
-	public final void notifyRecordsChanged(@NonNull final TableRecordReferenceSet recordRefs)
+	public final void notifyRecordsChanged(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend)
 	{
 		if (recordRefs.isEmpty())
 		{

@@ -191,14 +191,14 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return viewEvaluationCtxSupplier.get();
 	}
 
-	public void removeRowIdsNotMatchingFilters(final Set<DocumentId> rowIds)
+	public void updateChangedRows(@NonNull final Set<DocumentId> changedRowIds)
 	{
-		if (rowIds.isEmpty())
+		if (changedRowIds.isEmpty())
 		{
 			return;
 		}
 
-		computeCurrentSelectionsIfPresent(selections -> removeRowIdsNotMatchingFilters(selections, rowIds));
+		computeCurrentSelectionsIfPresent(selections -> removeRowIdsNotMatchingFilters(selections, changedRowIds));
 	}
 
 	private ViewRowIdsOrderedSelections removeRowIdsNotMatchingFilters(

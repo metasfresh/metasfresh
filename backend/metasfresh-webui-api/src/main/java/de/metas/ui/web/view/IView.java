@@ -210,7 +210,7 @@ public interface IView
 	/**
 	 * Notify the view that given record(s) has changed.
 	 */
-	void notifyRecordsChanged(TableRecordReferenceSet recordRefs);
+	void notifyRecordsChanged(TableRecordReferenceSet recordRefs, boolean watchedByFrontend);
 
 	/** @return actions which were registered particularly for this view instance */
 	default ViewActionDescriptorsList getActions()

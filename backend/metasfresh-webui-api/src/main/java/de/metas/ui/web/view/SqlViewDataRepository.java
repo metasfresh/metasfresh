@@ -137,10 +137,10 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	@Override
 	public String getSqlWhereClause(
-			final ViewId viewId,
-			final DocumentFilterList filters,
-			final DocumentIdsSelection rowIds,
-			final SqlOptions sqlOpts)
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentFilterList filters,
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final SqlOptions sqlOpts)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
@@ -158,7 +158,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			}
 		}
 
-		// Filter by rowIds
+		// Filter by view/rowIds
 		{
 			final String sqlFilterByRowIds = viewRowIdsOrderedSelectionFactory.getSqlWhereClause(viewId, rowIds);
 			if (!Check.isEmpty(sqlFilterByRowIds, true))
@@ -611,7 +611,10 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final ViewId viewId, final DocumentIdsSelection rowIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final Class<T> modelClass)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -654,8 +657,8 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	private Set<DocumentId> retrieveRowIdsMatchingFilters(
-			final ViewId viewId,
-			final DocumentFilterList filters,
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentFilterList filters,
 			@NonNull final Set<DocumentId> rowIds)
 	{
 		if (rowIds.isEmpty())
