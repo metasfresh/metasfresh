@@ -16,7 +16,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,11 +88,10 @@ public class ViewsRepository implements IViewsRepository
 	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
 	 */
 	public ViewsRepository(
-			@SuppressWarnings("unused") @NonNull final Adempiere DO_NOT_DELETE_neededForDBAccess,
 			@NonNull final List<IViewFactory> viewFactories,
 			@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NonNull final Optional<List<IViewsIndexStorage>> viewIndexStorages,
-			final SqlViewFactory defaultFactory,
-			final MenuTreeRepository menuTreeRepo)
+			@NonNull final SqlViewFactory defaultFactory,
+			@NonNull final MenuTreeRepository menuTreeRepo)
 	{
 		factories = createFactoriesMap(viewFactories);
 		factories.values().forEach(viewFactory -> viewFactory.setViewsRepository(this));
