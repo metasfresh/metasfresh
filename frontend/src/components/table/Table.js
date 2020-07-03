@@ -100,7 +100,6 @@ export default class Table extends PureComponent {
       updateQuickActions,
       selected,
       onSelect,
-      onDeselect,
     } = this.props;
     const id = item[keyProperty];
 
@@ -114,9 +113,14 @@ export default class Table extends PureComponent {
 
       if (selectMore || isMobileOrTablet) {
         if (isSelected) {
-          newSelection = onDeselect(id);
+          let afterDeselect = Array.isArray(selected)
+            ? selected.filter((selItem) => selItem !== id)
+            : id;
+          newSelection = onSelect(afterDeselect);
         } else {
-          newSelection = onSelect(id);
+          let newSelectionItems =
+            selected && !selected.includes(id) ? [...selected, id] : [id];
+          newSelection = onSelect(newSelectionItems);
         }
       } else if (selectRange) {
         if (isAnySelected) {
