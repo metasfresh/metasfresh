@@ -74,7 +74,7 @@ final class ViewsWebsocketSubscriptionsIndex
 	public boolean hasSubscriptions(final ViewId viewId)
 	{
 		final SessionIds sessionIds = sessionIdsByViewId.get(viewId);
-		return !sessionIds.isEmpty();
+		return sessionIds != null && !sessionIds.isEmpty();
 	}
 
 	@EqualsAndHashCode
