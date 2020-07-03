@@ -22,8 +22,10 @@
 
 package de.metas.ui.web.material.cockpit;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
@@ -39,8 +41,6 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 /**
  * This {@link IViewsIndexStorage} implementation is dedicated to storing {@link MaterialCockpitView}.
  * The actual work is done by an internal instance of {@link DefaultViewsRepositoryStorage}.
@@ -51,7 +51,7 @@ import javax.annotation.Nullable;
 @Service
 public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 {
-	private final DefaultViewsRepositoryStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
+	private final DefaultViewsRepositoryStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage(Duration.ofHours(1));
 
 	public MaterialCockpitViewsIndexStorage()
 	{

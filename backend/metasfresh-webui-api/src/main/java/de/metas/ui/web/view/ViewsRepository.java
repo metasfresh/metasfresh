@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -104,8 +105,8 @@ public class ViewsRepository implements IViewsRepository
 		this.defaultFactory = defaultFactory;
 		this.menuTreeRepo = menuTreeRepo;
 
-		final int viewExpirationTimeoutInMinutes = Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60);
-		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeoutInMinutes);
+		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60));
+		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeout);
 	}
 
 	@PostConstruct
