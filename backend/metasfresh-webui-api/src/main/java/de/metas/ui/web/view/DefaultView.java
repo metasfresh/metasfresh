@@ -537,7 +537,18 @@ public final class DefaultView implements IEditableView
 
 		// Collect event
 		// TODO: check which rowIds are contained in this view and fire events only for those
-		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
+		final ViewChangesCollector collector = ViewChangesCollector.getCurrentOrAutoflush();
+		if (rowIds.size() > 40)
+		{
+			// IMPORTANT: atm in case many rows were changed, avoid sending them to frontend.
+			// Better notify the frontend that the whole view changed,
+			// so the frontend would fetch the whole page instead of querying 1k of changed rows.
+			collector.collectFullyChanged(this);
+		}
+		else
+		{
+			collector.collectRowsChanged(this, rowIds);
+		}
 	}
 
 	private void checkChangedRows()
@@ -739,13 +750,13 @@ public final class DefaultView implements IEditableView
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
-		
+
 		public Builder setDocumentReferenceId(DocumentReferenceId documentReferenceId)
 		{
 			this.documentReferenceId = documentReferenceId;
 			return this;
 		}
-		
+
 		private DocumentReferenceId getDocumentReferenceId()
 		{
 			return documentReferenceId;
