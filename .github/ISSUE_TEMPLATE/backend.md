@@ -2,7 +2,7 @@
 name: Backend
 about: This template shall help with our standard issue workflow
 title: ''
-labels: ''
+labels: cmp:backend
 assignees: ''
 
 ---

@@ -1,48 +1,49 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.allocation.strategy;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
 
-import de.metas.handlingunits.IHUBuilder;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.AllocationDirection;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import lombok.NonNull;
 
-public class FIFOAllocationStrategy extends AbstractFIFOStrategy
+class FIFOAllocationStrategy extends AbstractAllocationStrategy
 {
-	public FIFOAllocationStrategy()
+	public FIFOAllocationStrategy(
+			@NonNull final AllocationDirection direction,
+			@NonNull final AllocationStrategySupportingServicesFacade services)
 	{
-		super(false); // outTrx=false
+		super(direction, services);
 	}
 
 	@Override
-	protected IAllocationResult allocateRemainingOnIncludedHUItem(final I_M_HU_Item item, final IAllocationRequest request)
+	protected IAllocationResult allocateRemainingOnIncludedHUItem(
+			@NonNull final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
+	{
+		if (getDirection().isInboundAllocation())
+		{
+			return allocateRemainingOnNewHUs(item, request);
+		}
+		else
+		{
+			// Do nothing because when this is called, we already did a "regular" deallocate from the given {@code item},
+			// so there is no "remaining" left.
+			return AllocationUtils.nullResult();
+		}
+	}
+
+	private IAllocationResult allocateRemainingOnNewHUs(
+			@NonNull final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
 	{
 		//
 		// Create initial result
@@ -77,13 +78,14 @@ public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 	/**
 	 * Creates a new included HU
 	 *
-	 * @param item
-	 * @param request triggering request
 	 * @return newly created HU or null if we cannot create HUs anymore
 	 */
-	private final I_M_HU createNewIncludedHU(final I_M_HU_Item item, final IAllocationRequest request)
+	@Nullable
+	private final I_M_HU createNewIncludedHU(
+			@NonNull final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
 	{
-		final IHUItemStorage storage = getHUStorageFactory(request).getStorage(item);
+		final IHUItemStorage storage = getHUItemStorage(item, request);
 		if (!storage.requestNewHU())
 		{
 			return null;
@@ -93,26 +95,23 @@ public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 		if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
 		{
 			// if we are to create an HU below an HUAggregate item, then we always create a VHU.
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-			includedHUDef = handlingUnitsDAO.retrieveVirtualPI(request.getHUContext().getCtx());
+			includedHUDef = services.getVirtualPI(request.getHUContext().getCtx());
 		}
 		else
 		{
-			includedHUDef = handlingUnitsBL.getPIItem(item).getIncluded_HU_PI();
+			includedHUDef = services.getIncluded_HU_PI(item);
 		}
 
 		// we cannot create an instance which has no included handling unit definition
 		Check.errorIf(includedHUDef == null, "Unable to get a M_HU_PI for the given request and item; request={}; item={}", request, item);
 
-		final IHUBuilder huBuilder = AllocationUtils.createHUBuilder(request);
-		huBuilder.setM_HU_Item_Parent(item);
-		final I_M_HU includedHU = huBuilder.create(includedHUDef);
-
-		return includedHU;
+		return AllocationUtils.createHUBuilder(request)
+				.setM_HU_Item_Parent(item)
+				.create(includedHUDef);
 	}
 
 	private final void destroyIncludedHU(final I_M_HU hu)
 	{
-		getHandlingUnitsDAO().delete(hu);
+		services.deleteHU(hu);
 	}
 }

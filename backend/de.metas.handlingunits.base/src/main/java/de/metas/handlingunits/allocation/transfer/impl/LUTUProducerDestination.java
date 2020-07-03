@@ -58,7 +58,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -487,9 +486,9 @@ public class LUTUProducerDestination
 	}
 
 	@Override
-	public CapacityInterface getCUPerTU(@NonNull final ProductId cuProductId)
+	public Capacity getCUPerTU(@NonNull final ProductId cuProductId)
 	{
-		final CapacityInterface tuCapacity = productId2tuCapacity.get(cuProductId);
+		final Capacity tuCapacity = productId2tuCapacity.get(cuProductId);
 		return tuCapacity;
 	}
 
@@ -785,20 +784,20 @@ public class LUTUProducerDestination
 	@Override
 	public Quantity calculateTotalQtyCU()
 	{
-		final CapacityInterface tuCapacity = getSingleCUPerTU();
+		final Capacity tuCapacity = getSingleCUPerTU();
 		return calculateTotalQtyCU(tuCapacity);
 	}
 
 	@Override
 	public Quantity calculateTotalQtyCU(final ProductId cuProductId)
 	{
-		final CapacityInterface tuCapacity = getCUPerTU(cuProductId);
+		final Capacity tuCapacity = getCUPerTU(cuProductId);
 		Check.assumeNotNull(tuCapacity, "tuCapacity defined for {}", cuProductId);
 
 		return calculateTotalQtyCU(tuCapacity);
 	}
 
-	private final Quantity calculateTotalQtyCU(final CapacityInterface tuCapacity)
+	private final Quantity calculateTotalQtyCU(final Capacity tuCapacity)
 	{
 		Check.assumeNotNull(tuCapacity, "tuCapacity not null");
 		final BigDecimal qtyCUsPerTU = tuCapacity.toBigDecimal();
