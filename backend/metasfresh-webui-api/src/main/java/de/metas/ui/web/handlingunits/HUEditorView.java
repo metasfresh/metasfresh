@@ -34,6 +34,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -286,7 +287,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds, final SqlOptions sqlOpts_NOTUSED)
+	public SqlViewRowsWhereClause getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds, final SqlOptions sqlOpts_NOTUSED)
 	{
 		return rowsBuffer.getSqlWhereClause(rowIds);
 	}

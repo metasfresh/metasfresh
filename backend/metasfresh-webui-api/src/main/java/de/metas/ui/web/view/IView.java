@@ -19,6 +19,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -192,7 +193,7 @@ public interface IView
 		return TableRecordReference.of(tableName, recordId);
 	}
 
-	String getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
+	SqlViewRowsWhereClause getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
 	default boolean hasAttributesSupport()
 	{
