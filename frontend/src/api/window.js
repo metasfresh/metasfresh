@@ -61,18 +61,11 @@ export function getZoomIntoWindow(
   );
 }
 
-export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
+export function discardNewRequest({ windowId, documentId, tabId, rowId } = {}) {
   return post(
-    config.API_URL +
-      '/window/' +
-      windowType +
-      '/' +
-      documentId +
-      '/' +
-      tabId +
-      '/' +
-      rowId +
-      '/discardChanges'
+    `${config.API_URL}/window/${windowId}/${documentId}${
+      tabId && rowId ? `/${tabId}/${rowId}` : ''
+    }/discardChanges`
   );
 }
 

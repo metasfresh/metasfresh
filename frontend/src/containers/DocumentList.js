@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { Map as iMap, Set as iSet } from 'immutable';
@@ -35,6 +35,7 @@ import {
 import { clearAllFilters } from '../actions/FiltersActions';
 import {
   closeListIncludedView,
+  setListIncludedView,
   setListId,
   setPagination as setListPagination,
   setSorting as setListSorting,
@@ -64,7 +65,7 @@ class DocumentListContainer extends Component {
       currentDevice.type === 'mobile' || currentDevice.type === 'tablet'
         ? 9999
         : 20;
-
+    this.quickActionsComponent = createRef();
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
@@ -170,7 +171,6 @@ class DocumentListContainer extends Component {
           if (included) {
             closeListIncludedView(includedView);
           }
-
           this.fetchLayoutAndData();
         }
       );
@@ -207,7 +207,7 @@ class DocumentListContainer extends Component {
           (response) => {
             const tableId = getTableId({ windowId, viewId });
             const toRows = table.rows;
-            const { pageColumnInfosByFieldName, filtersActive } = this.state;
+            const { pageColumnInfosByFieldName } = this.state;
 
             // merge changed rows with data in the store
             // TODO: I think we can move this to reducer
@@ -221,11 +221,7 @@ class DocumentListContainer extends Component {
             if (removedRows.length) {
               deselectTableItems(tableId, removedRows);
             } else {
-              if (filtersActive.size) {
-                this.filterCurrentView();
-              }
-
-              // force updating actions
+              // TODO: Quick actions should probably be handled via redux
               this.updateQuickActions();
             }
 
@@ -235,14 +231,18 @@ class DocumentListContainer extends Component {
       }
 
       if (fullyChanged === true) {
-        const tableId = getTableId({ windowId, viewId });
-
-        deselectTableItems(tableId, []);
-
         this.browseView();
         this.updateQuickActions();
       }
     });
+  };
+
+  /**
+   * @method setQuickActionsComponentRef
+   * @summary Store ref to the quick actions component
+   */
+  setQuickActionsComponentRef = (ref) => {
+    this.quickActionsComponent = ref;
   };
 
   /**
@@ -317,18 +317,21 @@ class DocumentListContainer extends Component {
             this.createNewView();
           }
 
-          setModalTitle && setModalTitle(response.data.caption);
-          if (
-            response.data &&
-            response.data.description &&
-            setModalDescription
-          ) {
-            setModalDescription(response.data.description);
+          if (response.data) {
+            if (response.data.caption) {
+              setModalTitle && setModalTitle(response.data.caption);
+            }
+            if (response.data.description) {
+              setModalDescription &&
+                setModalDescription(response.data.description);
+            }
           }
         }
       })
-      .catch(() => {
+      .catch((e) => {
         // TODO: Should we somehow handle errors here ?
+        // eslint-disable-next-line no-console
+        console.error(e);
       });
   };
 
@@ -394,8 +397,10 @@ class DocumentListContainer extends Component {
           this.getData(viewId, page, sort);
         }
       })
-      .catch(() => {
+      .catch((e) => {
         // TODO: Should we somehow handle errors here ?
+        // eslint-disable-next-line no-console
+        console.error(e);
       });
   };
 
@@ -438,8 +443,10 @@ class DocumentListContainer extends Component {
 
         this.mounted && this.getData(newViewId, page, sort, locationAreaSearch);
       })
-      .catch(() => {
+      .catch((e) => {
         // TODO: Should we somehow handle errors here ?
+        // eslint-disable-next-line no-console
+        console.error(e);
       });
   };
 
@@ -534,8 +541,10 @@ class DocumentListContainer extends Component {
 
         indicatorState('saved');
       })
-      .catch(() => {
+      .catch((e) => {
         // TODO: Should we somehow handle errors here ?
+        // eslint-disable-next-line no-console
+        console.error(e);
       });
   };
 
@@ -741,12 +750,15 @@ class DocumentListContainer extends Component {
       includedView &&
       includedView.windowType &&
       includedView.viewId;
+    const triggerSpinner = layout.supportAttributes
+      ? layoutPending
+      : layoutPending || pending;
 
     return (
       <DocumentList
         {...this.props}
         {...this.state}
-        triggerSpinner={layoutPending || pending}
+        triggerSpinner={triggerSpinner}
         hasIncluded={hasIncluded}
         onToggleState={this.toggleState}
         pageLength={this.pageLength}
@@ -760,6 +772,8 @@ class DocumentListContainer extends Component {
         onRedirectToNewDocument={this.onRedirectToNewDocument}
         onClearStaticFilters={this.clearStaticFilters}
         onResetInitialFilters={this.resetInitialFilters}
+        onUpdateQuickActions={this.updateQuickActions}
+        setQuickActionsComponentRef={this.setQuickActionsComponentRef}
       />
     );
   }
@@ -783,6 +797,7 @@ export default connect(
     deleteTable,
     indicatorState,
     closeListIncludedView,
+    setListIncludedView,
     setListPagination,
     setListSorting,
     setListId,

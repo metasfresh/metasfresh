@@ -883,6 +883,17 @@ export class RawWidget extends Component {
               precision={widgetField === 'CableLength' ? 2 : 1}
               step={subentity === 'quickInput' ? 0.1 : 1}
             />
+            {widgetData[0].devices && (
+              <div className="device-widget-wrapper">
+                <DevicesWidget
+                  devices={widgetData[0].devices}
+                  tabIndex={1}
+                  handleChange={(value) =>
+                    this.handlePatch && this.handlePatch(fields[0].field, value)
+                  }
+                />
+              </div>
+            )}
           </div>
         );
       case 'Number':

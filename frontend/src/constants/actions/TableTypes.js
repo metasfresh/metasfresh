@@ -57,3 +57,9 @@ export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';
  * @type {string} update single property of a table row
  */
 export const UPDATE_TABLE_ROW_PROPERTY = 'UPDATE_TABLE_ROW_PROPERTY';
+
+/**
+ * @constant
+ * @type {string} clear table rows and selections
+ */
+export const CLEAR_TABLE_DATA = 'CLEAR_TABLE_DATA';

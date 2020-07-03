@@ -32,6 +32,7 @@ import java.util.List;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.MoreObjects;
@@ -47,8 +48,9 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
-import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -71,29 +73,38 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	/** @return single HU allocation source/destination */
 	public static HUListAllocationSourceDestination of(@NonNull final I_M_HU hu)
 	{
-		return new HUListAllocationSourceDestination(ImmutableList.of(hu));
+		return new HUListAllocationSourceDestination(ImmutableList.of(hu), AllocationStrategyType.DEFAULT);
+	}
+
+	public static HUListAllocationSourceDestination of(
+			@NonNull final I_M_HU hu,
+			@NonNull final AllocationStrategyType allocationStrategyType)
+	{
+		return new HUListAllocationSourceDestination(ImmutableList.of(hu), allocationStrategyType);
 	}
 
 	public static HUListAllocationSourceDestination ofHUId(@NonNull final HuId huId)
 	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsRepo = Services.get(IHandlingUnitsBL.class);
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
-		return of(hu);
+		return new HUListAllocationSourceDestination(ImmutableList.of(hu), AllocationStrategyType.DEFAULT);
 	}
 
 	/** @return multi-HUs allocation source/destination */
 	public static HUListAllocationSourceDestination of(final Collection<I_M_HU> sourceHUs)
 	{
-		return new HUListAllocationSourceDestination(sourceHUs);
+		return new HUListAllocationSourceDestination(ImmutableList.copyOf(sourceHUs), AllocationStrategyType.DEFAULT);
 	}
 
 	// Services
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final AllocationStrategyFactory allocationStrategyFactory = SpringContextHolder.instance.getBean(AllocationStrategyFactory.class);
 
 	private final ImmutableList<I_M_HU> sourceHUs;
 	private final int lastIndex;
 	private int currentIndex = -1;
+
+	private final AllocationStrategyType allocationStrategyType;
 
 	private I_M_HU currentHU = null;
 
@@ -105,10 +116,27 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	/** see {@link #setStoreCUQtyBeforeProcessing(boolean)} */
 	private boolean storeCUQtyBeforeProcessing = true;
 
-	private HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
+	private HUListAllocationSourceDestination(
+			@NonNull final ImmutableList<I_M_HU> sourceHUs,
+			@NonNull final AllocationStrategyType allocationStrategyType)
 	{
-		this.sourceHUs = ImmutableList.copyOf(sourceHUs);
+		this.sourceHUs = sourceHUs;
 		lastIndex = sourceHUs.size() - 1;
+
+		this.allocationStrategyType = allocationStrategyType;
+		this.storeCUQtyBeforeProcessing = computeStoreCUQtyBeforeProcessing(allocationStrategyType);
+	}
+
+	private static boolean computeStoreCUQtyBeforeProcessing(@NonNull final AllocationStrategyType allocationStrategyType)
+	{
+		if (AllocationStrategyType.UNIFORM.equals(allocationStrategyType))
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	public boolean isDestroyEmptyHUs()
@@ -171,19 +199,18 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	@Override
 	public IAllocationResult load(final IAllocationRequest request)
 	{
-		// do not need date for this moment
-		final boolean allocation = true;
-		return processRequest(request, allocation);
+		return processRequest(request, AllocationDirection.INBOUND_ALLOCATION);
 	}
 
 	@Override
 	public IAllocationResult unload(final IAllocationRequest request)
 	{
-		final boolean allocation = false; // allocation=false means "deallocation"
-		return processRequest(request, allocation);
+		return processRequest(request, AllocationDirection.OUTBOUND_DEALLOCATION);
 	}
 
-	private IAllocationResult processRequest(final IAllocationRequest request, final boolean allocation)
+	private IAllocationResult processRequest(
+			@NonNull final IAllocationRequest request,
+			@NonNull final AllocationDirection direction)
 	{
 		if (storeCUQtyBeforeProcessing)
 		{
@@ -210,7 +237,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			}
 
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
-			final IAllocationStrategy allocationStrategy = getAllocationStrategy(currentHU, allocation);
+			final IAllocationStrategy allocationStrategy = allocationStrategyFactory.createAllocationStrategy(direction, allocationStrategyType);
 			final IAllocationResult currentResult = allocationStrategy.execute(currentHU, currentRequest);
 
 			AllocationUtils.mergeAllocationResult(result, currentResult);
@@ -263,24 +290,6 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		{
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			handlingUnitsDAO.retrieveIncludedHUs(hu).forEach(includedHU -> storeAggregateItemCuQty(request, includedHU));
-		}
-	}
-
-	/**
-	 *
-	 * @param hu
-	 * @param allocation allocation(true) / deallocation(false) flag
-	 * @return strategy
-	 */
-	protected IAllocationStrategy getAllocationStrategy(final I_M_HU hu, final boolean allocation)
-	{
-		if (allocation)
-		{
-			return allocationStrategyFactory.getAllocationStrategy(hu);
-		}
-		else
-		{
-			return allocationStrategyFactory.getDeallocationStrategy(hu);
 		}
 	}
 

@@ -1,8 +1,8 @@
-import React from "react";
-import * as Immutable from "immutable";
-import { mount, shallow, render } from "enzyme";
+import React from 'react';
+import * as Immutable from 'immutable';
+import { mount, shallow, render } from 'enzyme';
 import nock from 'nock';
-import uuid from "uuid/v4";
+import uuid from 'uuid/v4';
 import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
 import configureStore from 'redux-mock-store';
@@ -21,15 +21,29 @@ import StompServer from 'stomp-broker-js';
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
 import CustomRouter from '../../containers/CustomRouter';
 
-import pluginsHandler, { initialState as pluginsHandlerState } from '../../reducers/pluginsHandler';
-import appHandler, { initialState as appHandlerState } from '../../reducers/appHandler';
-import windowHandler, { initialState as windowHandlerState } from '../../reducers/windowHandler';
-import menuHandler, { initialState as menuHandlerState } from '../../reducers/menuHandler';
-import listHandler, { initialState as listHandlerState } from '../../reducers/listHandler';
-import viewHandler, { initialState as viewHandlerState } from '../../reducers/viewHandler';
-import tables, { initialState as tablesHandlerState } from '../../reducers/tables';
+import pluginsHandler, {
+  initialState as pluginsHandlerState,
+} from '../../reducers/pluginsHandler';
+import appHandler, {
+  initialState as appHandlerState,
+} from '../../reducers/appHandler';
+import windowHandler, {
+  initialState as windowHandlerState,
+} from '../../reducers/windowHandler';
+import menuHandler, {
+  initialState as menuHandlerState,
+} from '../../reducers/menuHandler';
+import listHandler, {
+  initialState as listHandlerState,
+} from '../../reducers/listHandler';
+import viewHandler, {
+  initialState as viewHandlerState,
+} from '../../reducers/viewHandler';
+import tables, {
+  initialState as tablesHandlerState,
+} from '../../reducers/tables';
 
-import fixtures from "../../../test_setup/fixtures/master_window.json";
+import fixtures from '../../../test_setup/fixtures/master_window.json';
 import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
 import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
 import rowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
@@ -43,7 +57,7 @@ const middleware = [thunk, promiseMiddleware];
 const FIXTURES_PROPS = fixtures.props1;
 const history = createMemoryHistory('/window/143/1000000');
 
-localStorage.setItem('isLogged', true)
+localStorage.setItem('isLogged', true);
 
 const rootReducer = combineReducers({
   appHandler,
@@ -73,16 +87,16 @@ const createInitialState = function(state = {}) {
   );
 
   return res;
-}
+};
 
-describe("MasterWindowContainer", () => {
+describe('MasterWindowContainer', () => {
   describe("'integration' tests:", () => {
-    it("renders without errors", async (done) => {
+    it('renders without errors', async (done) => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
         initialState,
-        applyMiddleware(...middleware),
+        applyMiddleware(...middleware)
       );
       const windowType = FIXTURES_PROPS.params.windowType;
       const docId = FIXTURES_PROPS.params.docId;
@@ -146,7 +160,7 @@ describe("MasterWindowContainer", () => {
 
       const wrapper = mount(
         <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}} >
+          <ShortcutProvider hotkeys={{}} keymap={{}}>
             <CustomRouter history={history} auth={auth} />
           </ShortcutProvider>
         </Provider>
@@ -166,14 +180,14 @@ describe("MasterWindowContainer", () => {
   describe('websocket tests', () => {
     let mockServer;
     let server;
-    
+
     beforeEach(() => {
       server = http.createServer();
 
       mockServer = new StompServer({
-          server: server,
-          path: '/ws',
-          heartbeat: [1000,1000]
+        server: server,
+        path: '/ws',
+        heartbeat: [1000, 1000],
       });
 
       server.listen(8080);
@@ -184,12 +198,12 @@ describe("MasterWindowContainer", () => {
       server.close();
     });
 
-    it("reacts to websocket events and updates the UI correctly", async done => {
+    it('reacts to websocket events and updates the UI correctly', async (done) => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
         initialState,
-        applyMiddleware(...middleware),
+        applyMiddleware(...middleware)
       );
 
       const windowType = FIXTURES_PROPS.params.windowType;
@@ -250,7 +264,9 @@ describe("MasterWindowContainer", () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}?ids=${updatedRows[0].rowId}`)
+        .get(
+          `/window/${windowType}/${docId}/${tabId}?ids=${updatedRows[0].rowId}`
+        )
         .reply(200, updatedRows);
 
       nock(config.API_URL)
@@ -260,7 +276,7 @@ describe("MasterWindowContainer", () => {
 
       const wrapper = mount(
         <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}} >
+          <ShortcutProvider hotkeys={{}} keymap={{}}>
             <CustomRouter history={history} auth={auth} />
           </ShortcutProvider>
         </Provider>
@@ -271,23 +287,30 @@ describe("MasterWindowContainer", () => {
       // connection to the server takes some time, so we're waiting for the websocket url to be saved
       // in the store and then once the connection is open - push a websocket event from
       // the server
-      await waitFor(() => expect(store.getState().windowHandler.master.websocket).toBeTruthy())
-        .then(() => {
-          setTimeout(() => {
-            mockServer.send(store.getState().windowHandler.master.websocket, {}, JSON.stringify(msg));
-          }, 5000);
-        });
+      await waitFor(() =>
+        expect(store.getState().windowHandler.master.websocket).toBeTruthy()
+      ).then(() => {
+        setTimeout(() => {
+          mockServer.send(
+            store.getState().windowHandler.master.websocket,
+            {},
+            JSON.stringify(msg)
+          );
+        }, 5000);
+      });
 
-      createWaitForElement('tbody')(wrapper)
-        .then((component) => {
-          expect(wrapper.find('tbody tr').length).toBe(7);
-        });
+      createWaitForElement('tbody')(wrapper).then((component) => {
+        expect(wrapper.find('tbody tr').length).toBe(7);
+      });
 
       // wait for the DOM to be updated
-      await waitFor(() => {
-        wrapper.update();
-        expect(wrapper.find('tbody tr').length).toBe(8);
-      }, { timeout: 8000, interval: 500 });
+      await waitFor(
+        () => {
+          wrapper.update();
+          expect(wrapper.find('tbody tr').length).toBe(7);
+        },
+        { timeout: 8000, interval: 500 }
+      );
 
       done();
     }, 20000);

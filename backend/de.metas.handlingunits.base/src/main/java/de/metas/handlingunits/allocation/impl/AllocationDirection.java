@@ -1,44 +1,38 @@
-package de.metas.quantity;
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
+package de.metas.handlingunits.allocation.impl;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface CapacityInterface
+public enum AllocationDirection
 {
-	boolean isInfiniteCapacity();
+	INBOUND_ALLOCATION, OUTBOUND_DEALLOCATION;
 
-	boolean isAllowNegativeCapacity();
+	public boolean isInboundAllocation()
+	{
+		return INBOUND_ALLOCATION.equals(this);
+	}
 
-	Quantity toQuantity();
-
-	BigDecimal toBigDecimal();
-
-	I_C_UOM getC_UOM();
-
-	CapacityInterface convertToUOM(I_C_UOM uomTo);
-
-	CapacityInterface subtractQuantity(Quantity quantity);
+	public boolean isOutboundDeallocation()
+	{
+		return OUTBOUND_DEALLOCATION.equals(this);
+	}
 }

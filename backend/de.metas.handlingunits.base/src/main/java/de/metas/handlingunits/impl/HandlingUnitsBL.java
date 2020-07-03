@@ -22,8 +22,6 @@
 
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +38,6 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -188,7 +185,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		//
 		// Try to destroy given HU (or some of it's children)
-		final IMutable<Boolean> destroyed = new Mutable<>(false);
+		final Mutable<Boolean> destroyed = new Mutable<>(false);
 		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContextInitial)
 				.run(huContext -> {
 					if (destroyIfEmptyStorage(huContext, huToDestroy))
@@ -483,7 +480,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final String parentItemType = getItemType(parentItem);
-		//noinspection RedundantIfStatement
+		// noinspection RedundantIfStatement
 		if (!X_M_HU_PI_Item.ITEMTYPE_Material.equals(parentItemType))
 		{
 			return false;
@@ -763,10 +760,32 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Nullable
 	@Override
-	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item huItem)
+	public I_M_HU_PI_Item getPIItem(@NonNull final I_M_HU_Item huItem)
 	{
-		final int piItemId = huItem.getM_HU_PI_Item_ID();
-		return piItemId > 0 ? loadOutOfTrx(piItemId, I_M_HU_PI_Item.class) : null;
+		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
+		return piItemId != null
+				? Services.get(IHandlingUnitsDAO.class).getPackingInstructionItemById(piItemId)
+				: null;
+	}
+
+	@NonNull
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
+	{
+		final I_M_HU_PI_Item piItem = getPIItem(huItem);
+		if (piItem == null)
+		{
+			throw new AdempiereException("No PI Item defined for " + huItem);
+		}
+
+		return getIncludedPI(piItem);
+	}
+
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsDAO.getIncludedPI(piItem);
 	}
 
 	@Override
@@ -820,7 +839,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
 		}
 
-		return parentPIItem.getIncluded_HU_PI();
+		return getIncludedPI(parentPIItem);
 	}
 
 	@Override
@@ -893,7 +912,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
 	{
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-		
+
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 

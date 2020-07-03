@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -58,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -323,9 +323,10 @@ class DesadvBLTest_addInOutLine
 		sscc18AttrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(sscc18AttrRecord);
 
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final I_M_HU_PI_Attribute sscc18HUPIAttributeRecord = huTestHelper
 				.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(sscc18AttrRecord)
-						.setM_HU_PI(huPIItemPallet.getIncluded_HU_PI()));
+						.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
 		final I_M_HU lu = huTestHelper.createLU(
 				huContext,
 				huPIItemPallet,
@@ -344,8 +345,8 @@ class DesadvBLTest_addInOutLine
 		saveRecord(bestBeforeAttrRecord);
 
 		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(bestBeforeAttrRecord)
-				.setM_HU_PI(huPIItemPallet.getIncluded_HU_PI()));
-		for (final I_M_HU childHU : Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu))
+				.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
+		for (final I_M_HU childHU : handlingUnitsDAO.retrieveIncludedHUs(lu))
 		{
 			final I_M_HU_Attribute childHUAttrRecord = newInstance(I_M_HU_Attribute.class);
 			childHUAttrRecord.setM_Attribute_ID(bestBeforeHUPIAttributeRecord.getM_Attribute_ID());

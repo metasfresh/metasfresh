@@ -520,7 +520,8 @@ export function createWindow(
       const tabs = data.includedTabsInfo;
       let docId = data.id;
 
-      if (tabs) {
+      // we don't create table for advanced edit
+      if (tabs && !isAdvanced) {
         Object.values(tabs).forEach((tab) => {
           const tabId = tab.tabId || tab.tabid;
           const tableId = getTableId({ windowId: windowType, docId, tabId });
@@ -583,7 +584,7 @@ export function createWindow(
         .then(({ data }) => {
           const layoutTabs = data.tabs;
 
-          if (layoutTabs) {
+          if (layoutTabs && !isAdvanced) {
             Object.values(layoutTabs).forEach((tab) => {
               const { tabId } = tab;
               const tableId = getTableId({
@@ -887,15 +888,8 @@ function updateData(doc, scope) {
   return (dispatch) => {
     Object.keys(doc).map((key) => {
       if (key === 'fieldsByName') {
-        Object.keys(doc.fieldsByName).map((fieldName) => {
-          dispatch(
-            updateDataFieldProperty(
-              fieldName,
-              doc.fieldsByName[fieldName],
-              scope
-            )
-          );
-        });
+        // update all data fields at once
+        dispatch(updateDataProperty('data', doc[key], scope));
       } else if (key === 'includedTabsInfo') {
         dispatch(updateDataIncludedTabsInfo('master', doc[key]));
       } else {
@@ -917,7 +911,10 @@ function mapDataToState(data, isModal, rowId) {
           }
         : item;
 
-      if (!(index === 0 && rowId === 'NEW') && !item.rowId) {
+      if (
+        !(index === 0 && rowId === 'NEW') &&
+        (!item.rowId || (isModal && item.rowId))
+      ) {
         dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
@@ -951,8 +948,6 @@ function updateStatus(responseData) {
 /*
  * It updates store for single field value modification, like handleChange
  * in MasterWidget
- * @todo TODO: from my observations, this is triggered multiple times even
- * when just one field was changed - Kuba
  */
 export function updatePropertyValue({
   property,
