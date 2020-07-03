@@ -43,7 +43,7 @@ import de.metas.util.Services;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	final IOrderDeliveryDayBL orderDeliveryDayBL = Services.get(IOrderDeliveryDayBL.class);
+	private final IOrderDeliveryDayBL orderDeliveryDayBL = Services.get(IOrderDeliveryDayBL.class);
 
 	@Init
 	public void setupCallouts()
