@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for InvoiceProcessingServiceCompany
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_InvoiceProcessingServiceCompany 
@@ -14,17 +14,10 @@ public interface I_InvoiceProcessingServiceCompany
     /** AD_Table_ID=541493 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 2 - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -37,7 +30,7 @@ public interface I_InvoiceProcessingServiceCompany
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -47,7 +40,7 @@ public interface I_InvoiceProcessingServiceCompany
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,8 +52,8 @@ public interface I_InvoiceProcessingServiceCompany
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -74,8 +67,8 @@ public interface I_InvoiceProcessingServiceCompany
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -87,7 +80,7 @@ public interface I_InvoiceProcessingServiceCompany
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -96,7 +89,7 @@ public interface I_InvoiceProcessingServiceCompany
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -108,29 +101,6 @@ public interface I_InvoiceProcessingServiceCompany
     public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Fee Percentage of Invoice Grand Total.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setFeePercentageOfGrandTotal (java.math.BigDecimal FeePercentageOfGrandTotal);
-
-	/**
-	 * Get Fee Percentage of Invoice Grand Total.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getFeePercentageOfGrandTotal();
-
-    /** Column definition for FeePercentageOfGrandTotal */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_FeePercentageOfGrandTotal = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "FeePercentageOfGrandTotal", null);
-    /** Column name FeePercentageOfGrandTotal */
-    public static final String COLUMNNAME_FeePercentageOfGrandTotal = "FeePercentageOfGrandTotal";
 
 	/**
 	 * Set Invoice Processing Service Company.
@@ -156,8 +126,8 @@ public interface I_InvoiceProcessingServiceCompany
     public static final String COLUMNNAME_InvoiceProcessingServiceCompany_ID = "InvoiceProcessingServiceCompany_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -166,8 +136,8 @@ public interface I_InvoiceProcessingServiceCompany
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -244,8 +214,8 @@ public interface I_InvoiceProcessingServiceCompany
     public static final String COLUMNNAME_ServiceInvoice_DocType_ID = "ServiceInvoice_DocType_ID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -259,8 +229,8 @@ public interface I_InvoiceProcessingServiceCompany
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -270,4 +240,27 @@ public interface I_InvoiceProcessingServiceCompany
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Valid From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setValidFrom (java.sql.Timestamp ValidFrom);
+
+	/**
+	 * Get Valid From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getValidFrom();
+
+    /** Column definition for ValidFrom */
+    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "ValidFrom", null);
+    /** Column name ValidFrom */
+    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
 }
