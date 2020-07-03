@@ -7,6 +7,6 @@
   "soProductQuantity": 20,
 
   "shipmentQuantityTypeOption": "Picked quantity",
-  "shipmentNotificationModalText": "Created: 1 WorkPackage Queue;",
+  "shipmentNotificationModalText": "Created: 1 Asynchronous WorkPackage Queue;",
   "expectedPackingStatus": "Shipped"
 }
