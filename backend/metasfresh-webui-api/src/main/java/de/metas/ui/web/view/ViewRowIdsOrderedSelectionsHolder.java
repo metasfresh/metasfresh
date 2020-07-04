@@ -44,7 +44,7 @@ import lombok.NonNull;
 
 final class ViewRowIdsOrderedSelectionsHolder
 {
-	private final IViewDataRepository viewDataRepository;
+	private final SqlViewDataRepository viewDataRepository;
 
 	private final ViewId viewId;
 	private final boolean applySecurityRestrictions;
@@ -57,7 +57,7 @@ final class ViewRowIdsOrderedSelectionsHolder
 
 	@Builder
 	private ViewRowIdsOrderedSelectionsHolder(
-			@NonNull final IViewDataRepository viewDataRepository,
+			@NonNull final SqlViewDataRepository viewDataRepository,
 			@NonNull final ViewId viewId,
 			final boolean applySecurityRestrictions,
 			@NonNull final DocumentFilterList stickyFilters,
@@ -251,5 +251,18 @@ final class ViewRowIdsOrderedSelectionsHolder
 				DocumentFilterList.EMPTY,
 				orderBys,
 				SqlDocumentFilterConverterContext.EMPTY);
+	}
+
+	public Set<DocumentId> retainExistingRowIds(@NonNull final Set<DocumentId> rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return viewDataRepository.retrieveRowIdsMatchingFilters(
+				viewId,
+				DocumentFilterList.EMPTY,
+				rowIds);
 	}
 }

@@ -20,7 +20,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -38,6 +38,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.websocket.WebsocketActiveSubscriptionsIndex;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
@@ -66,22 +67,21 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
+@Service
 public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
 
 	private final ImmutableMap<ViewFactoryKey, IViewFactory> factories;
 	private final SqlViewFactory defaultFactory;
-
 	private final MenuTreeRepository menuTreeRepo;
+	private final WebsocketActiveSubscriptionsIndex websocketActiveSubscriptionsIndex;
 
 	@Value("${metasfresh.webui.view.truncateOnStartUp:true}")
 	private boolean truncateSelectionOnStartUp;
 
 	private final ImmutableMap<WindowId, IViewsIndexStorage> viewsIndexStorages;
 	private final IViewsIndexStorage defaultViewsIndexStorage;
-	private final ViewsWebsocketSubscriptionsIndex websocketSubscriptionsIndex = new ViewsWebsocketSubscriptionsIndex();
 
 	/**
 	 * @param DO_NOT_DELETE_neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
@@ -91,7 +91,8 @@ public class ViewsRepository implements IViewsRepository
 			@NonNull final List<IViewFactory> viewFactories,
 			@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NonNull final Optional<List<IViewsIndexStorage>> viewIndexStorages,
 			@NonNull final SqlViewFactory defaultFactory,
-			@NonNull final MenuTreeRepository menuTreeRepo)
+			@NonNull final MenuTreeRepository menuTreeRepo,
+			@NonNull final WebsocketActiveSubscriptionsIndex websocketActiveSubscriptionsIndex)
 	{
 		factories = createFactoriesMap(viewFactories);
 		factories.values().forEach(viewFactory -> viewFactory.setViewsRepository(this));
@@ -102,6 +103,7 @@ public class ViewsRepository implements IViewsRepository
 		logger.info("Registered following view index storages: {}", this.viewsIndexStorages);
 		this.defaultFactory = defaultFactory;
 		this.menuTreeRepo = menuTreeRepo;
+		this.websocketActiveSubscriptionsIndex = websocketActiveSubscriptionsIndex;
 
 		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60));
 		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeout);
@@ -190,21 +192,9 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public void onTopicSubscribed(final String topicName, final String sessionId)
-	{
-		websocketSubscriptionsIndex.onTopicSubscribed(topicName, sessionId);
-	}
-
-	@Override
-	public void onTopicUnsubscribed(final String topicName, final String sessionId)
-	{
-		websocketSubscriptionsIndex.onTopicUnsubscribed(topicName, sessionId);
-	}
-
-	@Override
 	public boolean isWatchedByFrontend(final ViewId viewId)
 	{
-		return websocketSubscriptionsIndex.hasSubscriptions(viewId);
+		return websocketActiveSubscriptionsIndex.hasViewSubscriptions(viewId);
 	}
 
 	private IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -423,23 +413,41 @@ public class ViewsRepository implements IViewsRepository
 
 		try (final IAutoCloseable ignored = ViewChangesCollector.currentOrNewThreadLocalCollector())
 		{
-			final MutableInt notifiedCount = MutableInt.zero();
-			streamAllViews()
-					.forEach(view -> {
-						try
-						{
-							final boolean watchedByFrontend = websocketSubscriptionsIndex.hasSubscriptions(view.getViewId());
-							view.notifyRecordsChanged(recordRefs, watchedByFrontend);
-							notifiedCount.incrementAndGet();
-						}
-						catch (final Exception ex)
-						{
-							logger.warn("Failed calling notifyRecordsChanged for view={} with recordRefs={}. Ignored.", view, recordRefs, ex);
-						}
-					});
+			for (final IViewsIndexStorage viewsIndexStorage : viewsIndexStorages.values())
+			{
+				notifyRecordsChanged(recordRefs, viewsIndexStorage);
+			}
 
-			logger.debug("Notified {} views about changed records: {}", notifiedCount, recordRefs);
+			notifyRecordsChanged(recordRefs, defaultViewsIndexStorage);
 		}
+	}
+
+	private void notifyRecordsChanged(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			@NonNull final IViewsIndexStorage viewsIndexStorage)
+	{
+		final ImmutableList<IView> views = viewsIndexStorage.getAllViews();
+		if (views.isEmpty())
+		{
+			return;
+		}
+
+		final MutableInt notifiedCount = MutableInt.zero();
+		for (final IView view : views)
+		{
+			try
+			{
+				final boolean watchedByFrontend = websocketActiveSubscriptionsIndex.hasViewSubscriptions(view.getViewId());
+				view.notifyRecordsChanged(recordRefs, watchedByFrontend);
+				notifiedCount.incrementAndGet();
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed calling notifyRecordsChanged on view={} with recordRefs={}. Ignored.", view, recordRefs, ex);
+			}
+		}
+
+		logger.debug("Notified {} views in {} about changed records: {}", notifiedCount, viewsIndexStorage, recordRefs);
 	}
 
 	@lombok.Value(staticConstructor = "of")

@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 @lombok.Value
 public final class WebsocketEventLogRecord
 {
-	private final String destination;
+	private final WebsocketTopicName destination;
 	private final Object payload;
 
 	boolean isDestinationMatching(final String destinationFilter)
@@ -40,6 +40,6 @@ public final class WebsocketEventLogRecord
 			return true;
 		}
 
-		return destination.toLowerCase().contains(destinationFilter.toLowerCase().trim());
+		return destination.getAsString().toLowerCase().contains(destinationFilter.toLowerCase().trim());
 	}
 }

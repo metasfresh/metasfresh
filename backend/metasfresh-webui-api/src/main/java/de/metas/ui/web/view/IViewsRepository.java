@@ -101,8 +101,4 @@ public interface IViewsRepository
 	}
 
 	boolean isWatchedByFrontend(ViewId viewId);
-
-	void onTopicSubscribed(String topicName, String sessionId);
-
-	void onTopicUnsubscribed(String topicName, String sessionId);
 }

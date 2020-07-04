@@ -84,7 +84,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private final String tableName;
 	private final String tableAlias;
 	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
-	private final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName;
+	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 	private final SqlViewSelectData sqlViewSelect;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
@@ -643,7 +643,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		return viewRowIdsOrderedSelectionFactory.removeRowIdsFromSelection(selection, DocumentIdsSelection.of(notMatchingRowIds));
 	}
 
-	private Set<DocumentId> retrieveRowIdsMatchingFilters(
+	public Set<DocumentId> retrieveRowIdsMatchingFilters(
 			@NonNull final ViewId viewId,
 			@NonNull final DocumentFilterList filters,
 			@NonNull final Set<DocumentId> rowIds)
@@ -680,7 +680,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			final HashSet<DocumentId> matchingRowIds = new HashSet<>();
 			while (rs.next())
 			{
-				DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs);
+				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs);
 				if (rowId != null)
 				{
 					matchingRowIds.add(rowId);

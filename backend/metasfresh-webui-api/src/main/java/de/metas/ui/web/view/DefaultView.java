@@ -87,7 +87,7 @@ import lombok.ToString;
  */
 public final class DefaultView implements IEditableView
 {
-	public static Builder builder(final IViewDataRepository viewDataRepository)
+	public static Builder builder(final SqlViewDataRepository viewDataRepository)
 	{
 		return new Builder(viewDataRepository);
 	}
@@ -100,7 +100,7 @@ public final class DefaultView implements IEditableView
 	private static final Logger logger = LogManager.getLogger(DefaultView.class);
 
 	@Getter
-	private final IViewDataRepository viewDataRepository;
+	private final SqlViewDataRepository viewDataRepository;
 
 	@Getter
 	private final ViewId viewId;
@@ -527,12 +527,12 @@ public final class DefaultView implements IEditableView
 			@NonNull final TableRecordReferenceSet recordRefs,
 			final boolean watchedByFrontend)
 	{
-		final Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, watchedByFrontend, this);
+		Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, watchedByFrontend, this);
 		if (rowIds.isEmpty())
 		{
 			return;
 		}
-		
+
 		//
 		// Schedule rows to be checked and added or removed from current view
 		if (refreshViewOnChangeEvents)
@@ -540,27 +540,31 @@ public final class DefaultView implements IEditableView
 			changedRowIdsToCheck.addChangedRows(rowIds);
 		}
 
-		if(watchedByFrontend)
-		{
-			// TODO: retain only those rowIds which are really part of the view
-		}
-
 		// Invalidate local rowsById cache
 		cache_rowsById.removeAll(rowIds);
 
+		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
+		// TODO: introduce a SysConfig to be able to disable this feature
+		if (watchedByFrontend)
+		{
+			rowIds = selectionsRef.retainExistingRowIds(rowIds);
+		}
+
 		// Collect event
-		// TODO: check which rowIds are contained in this view and fire events only for those
-		final ViewChangesCollector collector = ViewChangesCollector.getCurrentOrAutoflush();
-		if (rowIds.size() >= 20)
+		if (rowIds.isEmpty())
+		{
+			// do nothing
+		}
+		else if (rowIds.size() >= 20)
 		{
 			// IMPORTANT: atm in case many rows were changed, avoid sending them to frontend.
 			// Better notify the frontend that the whole view changed,
 			// so the frontend would fetch the whole page instead of querying 1k of changed rows.
-			collector.collectFullyChanged(this);
+			ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
 		}
 		else
 		{
-			collector.collectRowsChanged(this, rowIds);
+			ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
 		}
 	}
 
@@ -691,7 +695,7 @@ public final class DefaultView implements IEditableView
 		private DocumentReferenceId documentReferenceId;
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
-		private final IViewDataRepository viewDataRepository;
+		private final SqlViewDataRepository viewDataRepository;
 
 		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
 		private LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
@@ -701,7 +705,7 @@ public final class DefaultView implements IEditableView
 
 		private boolean applySecurityRestrictions = true;
 
-		private Builder(@NonNull final IViewDataRepository viewDataRepository)
+		private Builder(@NonNull final SqlViewDataRepository viewDataRepository)
 		{
 			this.viewDataRepository = viewDataRepository;
 		}
@@ -789,7 +793,7 @@ public final class DefaultView implements IEditableView
 			return parentViewId;
 		}
 
-		private IViewDataRepository getViewDataRepository()
+		private SqlViewDataRepository getViewDataRepository()
 		{
 			return viewDataRepository;
 		}
