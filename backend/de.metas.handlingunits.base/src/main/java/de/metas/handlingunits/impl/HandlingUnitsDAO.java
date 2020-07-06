@@ -494,7 +494,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class)
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_IsDefaultForPicking, true)
 				.create()
-				.setOnlyActiveRecords(false) // return non-active also
+				.setOnlyActiveRecords(false) // also return inactive PIs
 				.first();
 	}
 
