@@ -22,6 +22,7 @@ import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -58,7 +59,10 @@ class PickingTerminalViewInvalidationAdvisor implements IViewInvalidationAdvisor
 	}
 
 	@Override
-	public Set<DocumentId> findAffectedRowIds(final TableRecordReferenceSet recordRefs, final IView view)
+	public Set<DocumentId> findAffectedRowIds(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend,
+			@NonNull IView view)
 	{
 		final Set<ShipmentScheduleId> shipmentScheduleIds = extractShipmentScheduleIds(recordRefs);
 		if (shipmentScheduleIds.isEmpty())
