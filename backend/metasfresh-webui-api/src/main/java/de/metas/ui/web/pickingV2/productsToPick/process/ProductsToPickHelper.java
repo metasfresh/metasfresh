@@ -35,7 +35,6 @@ import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Component;
@@ -68,19 +67,18 @@ class ProductsToPickHelper
 	}
 
 	@NonNull
-	public ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> pick(final List<ProductsToPickRow> selectedRows)
+	public ImmutableList<WebuiPickHUResult> pick(final List<ProductsToPickRow> selectedRows)
 	{
 		return streamRowsEligibleForPicking(selectedRows)
 				.map(row -> {
 					final PickHUResult result = pickingCandidateService.pickHU(createPickRequest(row));
-					return ImmutablePair.of(row.getId(), result.getPickingCandidate());
+					return WebuiPickHUResult.of(row.getId(), result.getPickingCandidate());
 				})
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final HuPackingInstructionsId huPackingInstructionsId)
+	public ImmutableList<WebuiPickHUResult> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final HuPackingInstructionsId huPackingInstructionsId)
 	{
-
 		final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = streamRowsEligibleForPacking(selectedRows)
 				.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
 
@@ -88,7 +86,7 @@ class ProductsToPickHelper
 		final List<PickingCandidate> pickingCandidates = pickingCandidateService.setHuPackingInstructionId(pickingCandidateIds, huPackingInstructionsId);
 
 		return pickingCandidates.stream()
-				.map(cand -> ImmutablePair.of(rowIdsByPickingCandidateId.get(cand.getId()), cand))
+				.map(cand -> WebuiPickHUResult.of(rowIdsByPickingCandidateId.get(cand.getId()), cand))
 				.collect(ImmutableList.toImmutableList());
 
 	}

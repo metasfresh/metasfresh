@@ -59,9 +59,9 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> result = productsToPickHelper.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
+		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
 
-		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
+		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 
 		invalidateView();
 

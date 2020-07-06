@@ -23,11 +23,8 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
@@ -54,9 +51,9 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> result = productsToPickHelper.pick(getSelectedRows());
+		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.pick(getSelectedRows());
 
-		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
+		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 
 		invalidateView();
 

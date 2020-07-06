@@ -26,15 +26,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedProcess
@@ -74,16 +71,16 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 
 	private void pick()
 	{
-		final ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> result = productsToPickHelper.pick(getSelectedRows());
+		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.pick(getSelectedRows());
 
-		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
+		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 	}
 
 	private void pack()
 	{
-		final ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> result = productsToPickHelper.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
+		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
 
-		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
+		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 	}
 
 	@NonNull
