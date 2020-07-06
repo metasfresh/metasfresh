@@ -41,6 +41,3 @@ BEGIN
 END
 $$
     LANGUAGE plpgsql;
-
---INSERT INTO public.ad_sysconfig (ad_sysconfig_id, ad_client_id, ad_org_id, created, updated, createdby, updatedby, isactive, name, value, description, entitytype, configurationlevel)
---VALUES (nextval('ad_sysconfig_seq'), 1000000, 1000000, '2020-07-02 12:08:04.000000', '2020-07-02 12:09:08.000000', 100, 100, 'N', 'ShowQRBill', 'Y', null, 'D', 'O');
