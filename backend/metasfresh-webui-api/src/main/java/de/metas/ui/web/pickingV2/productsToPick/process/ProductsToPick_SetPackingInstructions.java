@@ -28,6 +28,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
+import de.metas.ui.web.pickingV2.productsToPick.rows.WebuiPickHUResult;
 import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBasedProcess
@@ -59,7 +60,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	{
 		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
 
-		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
+		updateViewRowFromPickingCandidate(result);
 
 		invalidateView();
 

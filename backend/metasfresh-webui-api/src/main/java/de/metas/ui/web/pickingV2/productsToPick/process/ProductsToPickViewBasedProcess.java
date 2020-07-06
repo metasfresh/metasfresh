@@ -22,25 +22,21 @@
 
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
-import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
-import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickView;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.WebuiPickHUResult;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class ProductsToPickViewBasedProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
@@ -88,4 +84,8 @@ public abstract class ProductsToPickViewBasedProcess extends ViewBasedProcessTem
 		getView().updateViewRowFromPickingCandidate(rowId, pickingCandidate);
 	}
 
+	protected void updateViewRowFromPickingCandidate(@NonNull final ImmutableList<WebuiPickHUResult> pickHUResults)
+	{
+		pickHUResults.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
+	}
 }

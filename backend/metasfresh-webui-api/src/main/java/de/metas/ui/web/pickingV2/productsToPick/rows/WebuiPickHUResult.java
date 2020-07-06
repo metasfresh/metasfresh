@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.pickingV2.productsToPick.process;
+package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.ui.web.window.datatypes.DocumentId;

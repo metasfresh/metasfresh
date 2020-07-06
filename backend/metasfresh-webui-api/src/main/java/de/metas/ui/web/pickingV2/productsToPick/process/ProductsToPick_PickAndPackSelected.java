@@ -30,6 +30,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
+import de.metas.ui.web.pickingV2.productsToPick.rows.WebuiPickHUResult;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -74,14 +75,14 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 	{
 		final ImmutableList<WebuiPickHUResult> result = rowsService.pick(getSelectedRows());
 
-		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
+		updateViewRowFromPickingCandidate(result);
 	}
 
 	private void pack()
 	{
 		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
 
-		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
+		updateViewRowFromPickingCandidate(result);
 	}
 
 	@NonNull

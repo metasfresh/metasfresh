@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
+import de.metas.ui.web.pickingV2.productsToPick.rows.WebuiPickHUResult;
 import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
@@ -54,7 +55,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	{
 		final ImmutableList<WebuiPickHUResult> result = rowsService.pick(getSelectedRows());
 
-		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
+		updateViewRowFromPickingCandidate(result);
 
 		invalidateView();
 
