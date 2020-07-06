@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -324,7 +324,8 @@ public final class JSONDocument extends JSONDocumentBase
 	{
 		if (windowId != null && documentId != null)
 		{
-			return WebSocketConfig.buildDocumentTopicName(windowId, documentId);
+			return WebsocketTopicNames.buildDocumentTopicName(windowId, documentId)
+					.getAsString();
 		}
 		else
 		{
