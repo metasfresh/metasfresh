@@ -32,6 +32,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
@@ -62,6 +63,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 	@RunOutOfTrx
 	protected String doIt()
 	{
+		ensureDefaultPackingInstructionExists();
 		pick();
 		pack();
 
@@ -84,6 +86,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 		result.forEach(pair -> updateViewRowFromPickingCandidate(pair.getLeft(), pair.getRight()));
 	}
 
+	@NonNull
 	private HuPackingInstructionsId getHuPackingInstructionsId()
 	{
 		final I_M_HU_PI defaultPIForPicking = Services.get(IHandlingUnitsDAO.class).retrievePIDefaultForPicking();
@@ -93,6 +96,11 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 		}
 
 		return HuPackingInstructionsId.ofRepoId(defaultPIForPicking.getM_HU_PI_ID());
+	}
+
+	private void ensureDefaultPackingInstructionExists()
+	{
+		getHuPackingInstructionsId();
 	}
 
 }
