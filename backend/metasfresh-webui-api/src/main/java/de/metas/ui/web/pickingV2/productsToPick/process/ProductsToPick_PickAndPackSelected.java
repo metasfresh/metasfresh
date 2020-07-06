@@ -24,16 +24,23 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedProcess
 {
 	private final ProductsToPickHelper productsToPickHelper = SpringContextHolder.instance.getBean(ProductsToPickHelper.class);
+
+	private final AdMessageKey MSG_SET_DEFAULT_PACKING_INSTRUCTION = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickAndPackSelected.SetDefaultPackingInstruction");
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -79,8 +86,13 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 
 	private HuPackingInstructionsId getHuPackingInstructionsId()
 	{
-		// TODO tbp: set the correct M_HU_PI here.
-		return HuPackingInstructionsId.ofRepoId(1);
+		final I_M_HU_PI defaultPIForPicking = Services.get(IHandlingUnitsDAO.class).retrievePIDefaultForPicking();
+		if (defaultPIForPicking == null)
+		{
+			throw new AdempiereException(MSG_SET_DEFAULT_PACKING_INSTRUCTION);
+		}
+
+		return HuPackingInstructionsId.ofRepoId(defaultPIForPicking.getM_HU_PI_ID());
 	}
 
 }

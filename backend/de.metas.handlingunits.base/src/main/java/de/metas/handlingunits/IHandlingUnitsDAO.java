@@ -22,15 +22,19 @@
 
 package de.metas.handlingunits;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -42,21 +46,13 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.util.ISingletonService;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -76,7 +72,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * The ordering of HU-items before HU-aggregate-items is important when we deallocate from HUs, because we only want to "touch" the aggregate VHU if we need to.
 	 */
 	Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
-			.<I_M_HU_Item, Integer> comparing(
+			.<I_M_HU_Item, Integer>comparing(
 					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
 			.thenComparing(
 					queryOrderBy.getComparator(I_M_HU_Item.class));
@@ -187,7 +183,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
 	 *
-	 * @param version mandatory. Only return items that reference this version.
+	 * @param version    mandatory. Only return items that reference this version.
 	 * @param bpartnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMNNAME_C_BPartner_ID}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final BPartnerId bpartnerId);
@@ -216,6 +212,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI_Version retrievePIVersionById(final HuPackingInstructionsVersionId id);
 
 	List<I_M_HU_PI_Item> retrievePIItemsForPackingMaterial(final I_M_HU_PackingMaterial pm);
+
+	@Nullable
+	I_M_HU_PI retrievePIDefaultForPicking();
 
 	/**
 	 * Retrieve ALL PI Versions (active, not-active, current, not-current).

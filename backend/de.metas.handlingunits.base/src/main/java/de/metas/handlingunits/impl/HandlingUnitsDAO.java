@@ -488,6 +488,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	@Nullable
+	public I_M_HU_PI retrievePIDefaultForPicking()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class)
+				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_IsDefaultForPicking, true)
+				.create()
+				.setOnlyActiveRecords(false) // return non-active also
+				.first();
+	}
+
+	@Override
 	public List<I_M_HU_PI_Version> retrieveAllPIVersions(final I_M_HU_PI pi)
 	{
 		final int piId = pi.getM_HU_PI_ID();
