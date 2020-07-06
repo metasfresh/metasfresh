@@ -29,6 +29,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,7 +37,7 @@ import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedProcess
 {
-	private final ProductsToPickHelper productsToPickHelper = SpringContextHolder.instance.getBean(ProductsToPickHelper.class);
+	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
 
 	private final AdMessageKey MSG_SET_DEFAULT_PACKING_INSTRUCTION = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickAndPackSelected.SetDefaultPackingInstruction");
 
@@ -48,7 +49,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
 
-		if (!productsToPickHelper.anyRowsEligibleForPicking(getSelectedRows()))
+		if (!rowsService.anyRowsEligibleForPicking(getSelectedRows()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -71,14 +72,14 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 
 	private void pick()
 	{
-		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.pick(getSelectedRows());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.pick(getSelectedRows());
 
 		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 	}
 
 	private void pack()
 	{
-		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
 
 		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 	}

@@ -24,17 +24,15 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBasedProcess
 {
-	private final ProductsToPickHelper productsToPickHelper = SpringContextHolder.instance.getBean(ProductsToPickHelper.class);
+	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
 
 	@Param(parameterName = "M_HU_PI_ID", mandatory = true)
 	private int p_M_HU_PI_ID;
@@ -47,7 +45,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pack");
 		}
 
-		if (!productsToPickHelper.anyRowsEligibleForPacking(getSelectedRows()))
+		if (!rowsService.anyRowsEligibleForPacking(getSelectedRows()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible rows were selected");
 		}
@@ -59,7 +57,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
 
 		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 

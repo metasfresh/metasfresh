@@ -25,11 +25,12 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import org.compiere.SpringContextHolder;
 
 public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 {
-	private final ProductsToPickHelper productsToPickHelper = SpringContextHolder.instance.getBean(ProductsToPickHelper.class);
+	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -39,7 +40,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
 
-		if (!productsToPickHelper.anyRowsEligibleForPicking(getSelectedRows()))
+		if (!rowsService.anyRowsEligibleForPicking(getSelectedRows()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -51,7 +52,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<WebuiPickHUResult> result = productsToPickHelper.pick(getSelectedRows());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.pick(getSelectedRows());
 
 		result.forEach(r -> updateViewRowFromPickingCandidate(r.getDocumentId(), r.getPickingCandidate()));
 
