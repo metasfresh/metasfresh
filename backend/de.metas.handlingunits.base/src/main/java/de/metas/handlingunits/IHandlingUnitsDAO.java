@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -102,7 +103,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Gets Virtual PI
 	 *
-	 * @param ctx
 	 * @return virtual PI; never return null
 	 */
 	I_M_HU_PI retrieveVirtualPI(Properties ctx);
@@ -111,9 +111,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
-	 *
-	 * @param huContext
-	 * @return
 	 */
 	IHUBuilder createHUBuilder(IHUContext huContext);
 
@@ -135,9 +132,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
 
@@ -146,8 +140,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Creates and saves a {@link I_M_HU_Item} for the given {@code hu}, using the given {@code piItem} as its template.
 	 *
-	 * @param hu
-	 * @param piItem
 	 * @return created HU item
 	 */
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -164,9 +156,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Retrieve items that reference the given {@code hu}, ordered by {@link #HU_ITEMS_COMPARATOR}.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
 
