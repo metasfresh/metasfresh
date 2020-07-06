@@ -52,16 +52,10 @@ class ProductsToPickHelper
 	private final ProductsToPickRowsService productsToPickRowsService;
 
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
-	private PickingConfigV2 _pickingConfig; // lazy
 
 	protected final PickingConfigV2 getPickingConfig()
 	{
-		PickingConfigV2 pickingConfig = _pickingConfig;
-		if (pickingConfig == null)
-		{
-			pickingConfig = _pickingConfig = pickingConfigRepo.getPickingConfig();
-		}
-		return pickingConfig;
+		return pickingConfigRepo.getPickingConfig();
 	}
 
 	ProductsToPickHelper(final PickingCandidateService pickingCandidateService,
@@ -81,7 +75,7 @@ class ProductsToPickHelper
 					final PickHUResult result = pickingCandidateService.pickHU(createPickRequest(row));
 					return ImmutablePair.of(row.getId(), result.getPickingCandidate());
 				})
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public ImmutableList<ImmutablePair<DocumentId, PickingCandidate>> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final HuPackingInstructionsId huPackingInstructionsId)
@@ -95,7 +89,7 @@ class ProductsToPickHelper
 
 		return pickingCandidates.stream()
 				.map(cand -> ImmutablePair.of(rowIdsByPickingCandidateId.get(cand.getId()), cand))
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(ImmutableList.toImmutableList());
 
 	}
 
@@ -110,7 +104,6 @@ class ProductsToPickHelper
 				.stream()
 				.filter(ProductsToPickRow::isEligibleForPacking);
 	}
-
 
 	public boolean anyRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
 	{
