@@ -1,52 +1,23 @@
 package de.metas.process.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Process_Para;
-import org.compiere.model.I_AD_Process_Stats;
-import org.compiere.model.I_AD_Table_Process;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
-import ch.qos.logback.classic.Level;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessBasicInfo;
+import de.metas.process.ProcessParamBasicInfo;
+import de.metas.process.ProcessType;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.util.Check;
@@ -56,12 +27,52 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.element.api.IADElementDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Process_Stats;
+import org.compiere.model.I_AD_Table_Process;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class ADProcessDAO implements IADProcessDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADElementDAO elementDAO = Services.get(IADElementDAO.class);
 
 	@Override
 	public I_AD_Process getById(@NonNull final AdProcessId processId)
@@ -88,7 +99,7 @@ public class ADProcessDAO implements IADProcessDAO
 	@Cached(cacheName = I_AD_Process.Table_Name + "#by#Classname", expireMinutes = Cached.EXPIREMINUTES_Never)
 	public AdProcessId retrieveProcessIdByClassIfUnique(final String processClassname)
 	{
-		final Set<AdProcessId> processIds = Services.get(IQueryBL.class)
+		final Set<AdProcessId> processIds = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Process.class)
 				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClassname)
 				.addOnlyActiveRecordsFilter()
@@ -131,7 +142,7 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public AdProcessId retrieveProcessIdByValue(final String processValue)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Process.class)
 				.addEqualsFilter(I_AD_Process.COLUMN_Value, processValue)
 				.addOnlyActiveRecordsFilter()
@@ -142,7 +153,7 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public I_AD_Process retrieveProcessByValue(final Properties ctx, final String processValue)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Process.COLUMN_Value, processValue)
 				.addOnlyActiveRecordsFilter()
@@ -233,7 +244,6 @@ public class ADProcessDAO implements IADProcessDAO
 		//
 		// Fetch related processes from database and override the ones which we have registered here
 		{
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
 			final ImmutableMap<AdProcessId, RelatedProcessDescriptor> relatedProcessesFromAppDict = queryBL.createQueryBuilderOutOfTrx(I_AD_Table_Process.class)
 					.addEqualsFilter(I_AD_Table_Process.COLUMN_AD_Table_ID, key.getAdTableId())
 					.addInArrayFilter(I_AD_Table_Process.COLUMN_AD_Window_ID, null, key.getAdWindowId())
@@ -279,7 +289,7 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public I_AD_Process retrieveProcessByForm(final Properties ctx, final int AD_Form_ID)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Process.COLUMNNAME_AD_Form_ID, AD_Form_ID)
@@ -295,7 +305,7 @@ public class ADProcessDAO implements IADProcessDAO
 
 	private int retrieveProcessParaLastSeqNo(final int processId)
 	{
-		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class)
+		final Integer lastSeqNo = queryBL.createQueryBuilder(I_AD_Process_Para.class)
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, processId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -321,7 +331,7 @@ public class ADProcessDAO implements IADProcessDAO
 	@Cached(cacheName = I_AD_Process_Para.Table_Name + "#by#" + I_AD_Process_Para.COLUMNNAME_AD_Process_ID)
 	public Map<String, I_AD_Process_Para> retrieveProcessParameters(@CacheCtx final Properties ctx, final AdProcessId adProcessId, @CacheTrx final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_AD_Process_Para.class, ctx, trxName)
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, adProcessId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_Process_Para.COLUMNNAME_SeqNo)
@@ -334,7 +344,7 @@ public class ADProcessDAO implements IADProcessDAO
 	{
 		try
 		{
-			I_AD_Process_Stats processStats = Services.get(IQueryBL.class)
+			I_AD_Process_Stats processStats = queryBL
 					.createQueryBuilderOutOfTrx(I_AD_Process_Stats.class)
 					.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Client_ID, adClientId)
 					.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Process_ID, adProcessId)
@@ -575,5 +585,88 @@ public class ADProcessDAO implements IADProcessDAO
 		final I_AD_Process process = getById(id);
 		return InterfaceWrapperHelper.getModelTranslationMap(process)
 				.getColumnTrl(I_AD_Process.COLUMNNAME_Name, process.getName());
+	}
+
+	@NonNull
+	public ImmutableList<ProcessBasicInfo> getProcessesByType(@NonNull final Set<ProcessType> processTypeSet)
+	{
+		final Set<String> types = processTypeSet.stream().map(ProcessType::getCode).collect(Collectors.toSet());
+
+		final List<I_AD_Process> processes = queryBL.createQueryBuilder(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_Process.COLUMNNAME_Type, types)
+				.create()
+				.list();
+
+		if (processes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Set<Integer> processIDs = processes.stream().map(I_AD_Process::getAD_Process_ID).collect(Collectors.toSet());
+
+		final List<I_AD_Process_Para> processParams = queryBL.createQueryBuilder(I_AD_Process_Para.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, processIDs)
+				.create()
+				.list();
+
+		final Map<Integer, I_AD_Process> processByIdMap = Maps.uniqueIndex(processes, I_AD_Process::getAD_Process_ID);
+
+		final ImmutableListMultimap<Integer, I_AD_Process_Para> processParamByProcessIdMap =
+				Multimaps.index(processParams, I_AD_Process_Para::getAD_Process_ID);
+
+		return buildProcessBasicInfoList(processByIdMap, processParamByProcessIdMap);
+	}
+
+	private ImmutableList<ProcessBasicInfo> buildProcessBasicInfoList(
+			@NonNull final Map<Integer, I_AD_Process> processByIdMap,
+			@NonNull final ImmutableListMultimap<Integer, I_AD_Process_Para> processParamByProcessIdMap)
+	{
+		return processByIdMap.keySet()
+				.stream()
+				.map(processId -> {
+					final List<ProcessParamBasicInfo> params = processParamByProcessIdMap.get(processId)
+							.stream()
+							.map(this::buildProcessParamBasicInfo)
+							.collect(Collectors.toList());
+
+					return buildProcessBasicInfo(processByIdMap.get(processId), params);
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ProcessParamBasicInfo buildProcessParamBasicInfo(@NonNull final I_AD_Process_Para processPara)
+	{
+		final IModelTranslationMap processParamTrlMap;
+		if (processPara.getAD_Element_ID() <= 0)
+		{
+			processParamTrlMap = InterfaceWrapperHelper.getModelTranslationMap(processPara);
+		}
+		else
+		{
+			final I_AD_Element element = elementDAO.getById(processPara.getAD_Element_ID());
+
+			processParamTrlMap = InterfaceWrapperHelper.getModelTranslationMap(element);
+		}
+
+		return ProcessParamBasicInfo.builder()
+				.name(processParamTrlMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Name, processPara.getName()))
+				.description(processParamTrlMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Description, processPara.getDescription()))
+				.build();
+	}
+
+	private ProcessBasicInfo buildProcessBasicInfo(@NonNull final I_AD_Process adProcess, @Nullable final List<ProcessParamBasicInfo> paramBasicInfos)
+	{
+		final IModelTranslationMap processTrlMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
+
+		return ProcessBasicInfo.builder()
+				.processId(AdProcessId.ofRepoId(adProcess.getAD_Process_ID()))
+				.value(adProcess.getValue())
+				.name(processTrlMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
+				.description(processTrlMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getName()))
+				.type(ProcessType.ofCode(adProcess.getType()))
+				.parameters(paramBasicInfos)
+				.build();
 	}
 }
