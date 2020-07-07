@@ -322,4 +322,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
+
+	void save(@NonNull I_M_HU_PI huPi);
 }
