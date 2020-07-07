@@ -44,6 +44,7 @@
     "axios": "^0.18.1",
     "cypress-plugin-snapshots": "^1.2.6",
     "cypress-skip-and-only-ui": "^1.0.12",
+    "js-base64": "2.5.2",
     "immutable": "^4.0.0-rc.12",
     "luxon": "^1.11.4",
     "moment": "^2.24.0",
