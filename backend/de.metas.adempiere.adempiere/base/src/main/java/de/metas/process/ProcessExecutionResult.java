@@ -1,26 +1,5 @@
 package de.metas.process;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.print.MPrintFormat;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.MimeType;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -30,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
@@ -45,7 +23,25 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
-import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.print.MPrintFormat;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -166,6 +162,11 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiViewId = null;
 
+	@Getter
+	@Setter
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String jsonResult = null;
+
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
@@ -193,7 +194,8 @@ public class ProcessExecutionResult
 			@JsonProperty("recordsToOpen") @Nullable final RecordsToOpen recordsToOpen,
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
-			@JsonProperty("webuiViewId") final String webuiViewId)
+			@JsonProperty("webuiViewId") final String webuiViewId,
+			@JsonProperty("jsonResult") final String jsonResult)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
@@ -210,6 +212,7 @@ public class ProcessExecutionResult
 		this.webuiViewToOpen = webuiViewToOpen;
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
+		this.jsonResult = jsonResult;
 	}
 
 	@Override

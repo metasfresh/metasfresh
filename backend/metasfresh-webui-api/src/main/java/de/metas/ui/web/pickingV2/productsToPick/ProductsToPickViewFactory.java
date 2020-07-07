@@ -31,6 +31,7 @@ import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ProcessAll;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillNotPickSelected;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickAndPackSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
@@ -53,7 +54,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import java.util.ArrayList;
@@ -66,8 +66,13 @@ public class ProductsToPickViewFactory implements IViewFactory
 	private static final String MSG_PickCaption = "de.metas.ui.web.pickingV2.productsToPick.Pick.caption";
 	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
 
-	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
+	private final ProductsToPickRowsService rowsService;
 	private IViewsRepository viewsRepository;
+
+	public ProductsToPickViewFactory(final ProductsToPickRowsService rowsService)
+	{
+		this.rowsService = rowsService;
+	}
 
 	@Override
 	public void setViewsRepository(final IViewsRepository viewsRepository)
@@ -204,6 +209,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_MarkWillNotPickSelected.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_SetPackingInstructions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickAndPackSelected.class))
 				//
 				// Reviewer processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ProcessAll.class))

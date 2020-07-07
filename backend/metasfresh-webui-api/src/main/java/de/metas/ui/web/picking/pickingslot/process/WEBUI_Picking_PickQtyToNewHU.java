@@ -125,7 +125,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 	protected Optional<ProcessPreconditionsResolution> checkValidSelection()
 	{
-		if (!getSelectedRowIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId()
+	        || (getParentViewRowIdsSelection() != null
+				&& getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId()) )
 		{
 			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNotSingleSelection());
 		}

@@ -22,10 +22,13 @@
 
 package de.metas.ui.web.view;
 
-import de.metas.ui.web.window.datatypes.WindowId;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
-import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /**
  * Implementations of this interface are responsible of storing {@link IView} references for a particular window ID identified by {@link #getWindowId()}.
@@ -63,6 +66,11 @@ public interface IViewsIndexStorage
 	void closeById(ViewId viewId, ViewCloseAction closeAction);
 
 	Stream<IView> streamAllViews();
+
+	default ImmutableList<IView> getAllViews()
+	{
+		return streamAllViews().collect(ImmutableList.toImmutableList());
+	}
 
 	void invalidateView(ViewId viewId);
 

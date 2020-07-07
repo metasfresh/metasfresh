@@ -9,6 +9,7 @@ import org.adempiere.exceptions.DBException;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -48,7 +49,7 @@ public interface IViewDataRepository
 {
 	String getTableName();
 
-	String getSqlWhereClause(ViewId viewId, DocumentFilterList filters, DocumentIdsSelection rowIds, SqlOptions sqlOpts);
+	SqlViewRowsWhereClause getSqlWhereClause(ViewId viewId, DocumentFilterList filters, DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
 	Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName();
 
