@@ -54,7 +54,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import java.util.ArrayList;
@@ -67,8 +66,13 @@ public class ProductsToPickViewFactory implements IViewFactory
 	private static final String MSG_PickCaption = "de.metas.ui.web.pickingV2.productsToPick.Pick.caption";
 	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
 
-	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
+	private final ProductsToPickRowsService rowsService;
 	private IViewsRepository viewsRepository;
+
+	public ProductsToPickViewFactory(final ProductsToPickRowsService rowsService)
+	{
+		this.rowsService = rowsService;
+	}
 
 	@Override
 	public void setViewsRepository(final IViewsRepository viewsRepository)
