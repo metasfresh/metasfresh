@@ -41,6 +41,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
 
 	private final AdMessageKey MSG_SET_DEFAULT_PACKING_INSTRUCTION = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickAndPackSelected.SetDefaultPackingInstruction");
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -88,7 +89,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 	@NonNull
 	private HuPackingInstructionsId getHuPackingInstructionsId()
 	{
-		final I_M_HU_PI defaultPIForPicking = Services.get(IHandlingUnitsDAO.class).retrievePIDefaultForPicking();
+		final I_M_HU_PI defaultPIForPicking = handlingUnitsDAO.retrievePIDefaultForPicking();
 		if (defaultPIForPicking == null)
 		{
 			throw new AdempiereException(MSG_SET_DEFAULT_PACKING_INSTRUCTION);
