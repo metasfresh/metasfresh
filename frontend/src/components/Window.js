@@ -171,7 +171,7 @@ class Window extends PureComponent {
       layout: { windowId },
       newRow,
       tabsInfo,
-      sort,
+      onSortTable,
       allowShortcut,
       onRefreshTab,
     } = this.props;
@@ -206,12 +206,12 @@ class Window extends PureComponent {
             queryOnActivate={queryOnActivate}
             singleRowView={true}
             tabIndex={this.tabIndex.tabs}
+            sort={onSortTable}
             {...{
               caption,
               description,
               tabId,
               windowId,
-              sort,
               newRow,
               internalName,
             }}
@@ -257,7 +257,7 @@ class Window extends PureComponent {
               description,
               tabId,
               windowId,
-              sort,
+              onSortTable,
               newRow,
               internalName,
             }}
@@ -471,7 +471,7 @@ class Window extends PureComponent {
  * @prop {shape} rowData
  * @prop {bool} newRow
  * @prop {shape} tabsInfo
- * @prop {func} sort
+ * @prop {func} onSortTable
  * @prop {bool} allowShortcut
  * @prop {shape|array} data
  * @prop {string} dataId
@@ -489,7 +489,7 @@ Window.propTypes = {
   rowData: PropTypes.shape(),
   newRow: PropTypes.bool,
   tabsInfo: PropTypes.shape(),
-  sort: PropTypes.func,
+  onSortTable: PropTypes.func,
   allowShortcut: PropTypes.bool,
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   dataId: PropTypes.string,
