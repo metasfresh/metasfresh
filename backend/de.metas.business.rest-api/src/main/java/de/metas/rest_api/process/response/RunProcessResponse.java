@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business.rest-api
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,34 +20,23 @@
  * #L%
  */
 
-package de.metas.process;
+package de.metas.rest_api.process.response;
 
-import de.metas.i18n.ITranslatableString;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ProcessParamBasicInfo
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = RunProcessResponse.RunProcessResponseBuilder.class)
+public class RunProcessResponse
 {
-	@NonNull
-	ITranslatableString name;
+	@JsonProperty(value = "pinstanceID")
+	String pInstanceID;
 
-	@NonNull
-	String columnName;
-
-	@NonNull
-	String type;
-
-	@Nullable
-	ITranslatableString description;
-
-	@Nullable
-	public String getTranslatedDescriptionOrNull(@NonNull final String language)
-	{
-		return description != null ? description.translate(language) : null;
-	}
+	@JsonProperty(value = "summary")
+	String summary;
 }

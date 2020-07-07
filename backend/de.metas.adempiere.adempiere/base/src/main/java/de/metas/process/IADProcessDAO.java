@@ -148,5 +148,7 @@ public interface IADProcessDAO extends ISingletonService
 
 	ITranslatableString getProcessNameById(final AdProcessId id);
 
-	ImmutableList<ProcessBasicInfo> getProcessesByType(Set<ProcessType> processTypeSet);
+	ImmutableList<I_AD_Process> getProcessesByType(Set<ProcessType> processTypeSet);
+
+	ImmutableList<I_AD_Process_Para> getProcessParamsByProcessIds(Set<Integer> processIDs);
 }

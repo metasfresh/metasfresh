@@ -1,6 +1,5 @@
 package de.metas.report.jasper.client.interceptor;
 
-import de.metas.postgrest.process.PostgRESTProcessExecutor;
 import de.metas.process.ProcessType;
 import de.metas.report.jasper.client.process.JasperReportStarter;
 import de.metas.util.Check;
@@ -53,19 +52,14 @@ public class AD_Process
 	public void setClassnameIfTypeJasperReportsSQL(final I_AD_Process process)
 	{
 		final ProcessType type = ProcessType.ofCode(process.getType());
-		final boolean isPostgrestType = ProcessType.POSTGREST.equals(type);
 
 		if (type.isJasper())
 		{
 			process.setClassname(JasperReportStarter.class.getName());
 		}
-		else if (isPostgrestType)
-		{
-			process.setClassname(PostgRESTProcessExecutor.class.getName());
-		}
-
 		final String JSONPath = process.getJSONPath();
-		final boolean requiresJSONPath = type.isJasperJson() || isPostgrestType;
+
+		final boolean requiresJSONPath = type.isJasperJson();
 
 		if ( requiresJSONPath && Check.isEmpty(JSONPath, true))
 		{

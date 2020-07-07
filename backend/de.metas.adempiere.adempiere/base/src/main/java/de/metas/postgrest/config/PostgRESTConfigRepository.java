@@ -75,8 +75,9 @@ public class PostgRESTConfigRepository
 		return queryBL
 				.createQueryBuilder(I_S_PostgREST_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_PostgREST_Config.COLUMNNAME_AD_Org_ID, orgId)
+				.addInArrayFilter(I_S_PostgREST_Config.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.orderBy(I_S_PostgREST_Config.COLUMNNAME_AD_Org_ID)
 				.create()
-				.firstOnlyOptional(I_S_PostgREST_Config.class);
+				.firstOptional(I_S_PostgREST_Config.class);
 	}
 }

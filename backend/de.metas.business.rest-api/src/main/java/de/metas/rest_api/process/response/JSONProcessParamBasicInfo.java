@@ -37,6 +37,12 @@ public class JSONProcessParamBasicInfo
 	@JsonProperty("name")
 	String name;
 
+	@JsonProperty("columnName")
+	String columnName;
+
+	@JsonProperty("type")
+	String type;
+
 	@JsonProperty("description")
 	String description;
 }

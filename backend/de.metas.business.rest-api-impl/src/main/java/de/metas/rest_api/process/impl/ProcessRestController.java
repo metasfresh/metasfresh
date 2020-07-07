@@ -36,6 +36,7 @@ import de.metas.rest_api.process.response.GetAvailableProcessesResponse;
 import de.metas.rest_api.process.response.JSONProcessBasicInfo;
 import de.metas.rest_api.process.response.JSONProcessParamBasicInfo;
 import de.metas.rest_api.process.response.Message;
+import de.metas.rest_api.process.response.RunProcessResponse;
 import de.metas.security.PermissionServiceFactories;
 import de.metas.security.PermissionServiceFactory;
 import de.metas.util.Check;
@@ -145,7 +146,7 @@ public class ProcessRestController
 	{
 		if (processExecutionResult.isError())
 		{
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Message.of("Ups! Looks like something went wrong on our end..."));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(processExecutionResult.getThrowable());
 		}
 		else if (Check.isNotBlank(processExecutionResult.getJsonResult()))
 		{
@@ -167,8 +168,15 @@ public class ProcessRestController
 		}
 		else
 		{
-			//this should never happen
-			return ResponseEntity.noContent().build();
+			final RunProcessResponse runProcessResponse = RunProcessResponse.builder()
+					.pInstanceID(String.valueOf(processExecutionResult.getPinstanceId().getRepoId()))
+					.summary(processExecutionResult.getSummary())
+					.build();
+
+			return ResponseEntity
+					.ok()
+					.contentType(MediaType.APPLICATION_JSON_UTF8)
+					.body(runProcessResponse);
 		}
 	}
 
@@ -219,6 +227,8 @@ public class ProcessRestController
 					.stream()
 					.map(paramInfo -> JSONProcessParamBasicInfo
 							.builder()
+							.columnName(paramInfo.getColumnName())
+							.type(paramInfo.getType())
 							.name(paramInfo.getName().translate(language))
 							.description(paramInfo.getTranslatedDescriptionOrNull(language))
 							.build())

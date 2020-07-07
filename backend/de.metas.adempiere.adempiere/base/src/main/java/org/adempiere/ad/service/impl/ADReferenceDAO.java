@@ -16,6 +16,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.util.Env;
 
 import java.util.Collection;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -107,6 +109,11 @@ public class ADReferenceDAO implements IADReferenceDAO
 		record.setValue(refListItemCreateRequest.getValue());
 
 		saveRecord(record);
+	}
+
+	public I_AD_Reference getReferenceByID(@NonNull final ReferenceId referenceId)
+	{
+		return load(referenceId, I_AD_Reference.class);
 	}
 
 	private ImmutableMap<String, ADRefListItem> retrieveListValuesMap(@NonNull final ReferenceId referenceId)
