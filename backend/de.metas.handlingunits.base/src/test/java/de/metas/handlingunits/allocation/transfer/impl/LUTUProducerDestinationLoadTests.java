@@ -277,24 +277,24 @@ public class LUTUProducerDestinationLoadTests
 			husExpectation.newHUExpectation()
 				.huPI(data.piLU)
 
-				.newHUItemExpectation() // start of the "remaining" part
+				.item() // start of the "remaining" part
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 					.huPIItem(data.piLU_Item_IFCO) // the HU PI item that belongs to the palet-PI and does the linking to the IFCOs (sub-)PI
 					
-					.newIncludedHUExpectation() // the not-aggregated IFCO with 39kg
+					.includedHU() // the not-aggregated IFCO with 39kg
 						.huPI(data.piTU_IFCO)
-						.newHUItemExpectation() //
+						.item() //
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
 							.huPIItem(data.piTU_Item_IFCO) 
-							.newIncludedVirtualHU()
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+							.includedVirtualHU()
+								.virtualPIItem()
+									.storage()
 										.qty("39").uom(data.helper.uomKg).product(data.helper.pTomato)
 									.endExpectation()
 								.endExpectation()
 							.endExpectation()
 						.endExpectation() // end of the VHU that actually contains the 39kg of tomato
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 							.packingMaterial(data.helper.pmIFCO)
 							// .qty("") we don't care; "qty" doesn't play a role with PM-items
@@ -302,20 +302,20 @@ public class LUTUProducerDestinationLoadTests
 					.endExpectation() // end of IFCO-HU
 				.endExpectation() // end of the "remaining" part
 				
-				.newHUItemExpectation() // start of the "aggregate" part
+				.item() // start of the "aggregate" part
 					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.huPIItem(data.piLU_Item_IFCO)
 					.qty("4") // 4 IFCOs each one full (40 kg tomatos)
-					.newIncludedHUExpectation()
-						.newHUItemExpectation()
+					.includedHU()
+						.item()
 							.noIncludedHUs()
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
-							.newItemStorageExpectation()
+							.storage()
 								// the 160 kg tomatoes that completely fill their respective IFCOS
 								.qty("160").uom(data.helper.uomKg).product(data.helper.pTomato)
 							.endExpectation() // itemStorageExcpectation
 						.endExpectation() // newHUItemExpectation;
-						.newHUItemExpectation()
+						.item()
 							.noIncludedHUs()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 							// .qty("") we don't care; "qty" doesn't play a role with PM-items
@@ -324,7 +324,7 @@ public class LUTUProducerDestinationLoadTests
 					.endExpectation() // includedHUExpectation
 				.endExpectation() // end of the "aggregate" part
 				
-				.newHUItemExpectation()
+				.item()
 					.noIncludedHUs()
 					.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 					// .qty("") we don't care; "qty" doesn't play a role with PM-items
@@ -366,24 +366,24 @@ public class LUTUProducerDestinationLoadTests
 						.newHUExpectation()
 						.huPI(data.piLU)
 
-						.newHUItemExpectation() // start of the "remaining" part that was created for the partially filled IFCOs
+						.item() // start of the "remaining" part that was created for the partially filled IFCOs
 							.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 							.huPIItem(data.piLU_Item_IFCO) // the HU PI item that belongs to the palet-PI and does the linking to the IFCOs (sub-)PI
 							
-							.newIncludedHUExpectation() // the not-aggregated IFCO with 10kg
+							.includedHU() // the not-aggregated IFCO with 10kg
 								.huPI(data.piTU_IFCO)
-								.newHUItemExpectation() //
+								.item() //
 									.itemType(X_M_HU_Item.ITEMTYPE_Material)
 									.huPIItem(data.piTU_Item_IFCO) 
-									.newIncludedVirtualHU()
-										.newVirtualHUItemExpectation()
-											.newItemStorageExpectation()
+									.includedVirtualHU()
+										.virtualPIItem()
+											.storage()
 												.qty("10").uom(data.helper.uomKg).product(data.helper.pTomato)
 											.endExpectation()
 										.endExpectation()
 									.endExpectation()
 								.endExpectation() // end of the VHU that actually contains the 39kg of tomato
-								.newHUItemExpectation()
+								.item()
 									.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 									.packingMaterial(data.helper.pmIFCO)
 									// .qty("") we don't care; "qty" doesn't play a role with PM-items
@@ -391,21 +391,21 @@ public class LUTUProducerDestinationLoadTests
 							.endExpectation() // end of IFCO-HU
 						.endExpectation() // end of the "remaining" part
 						
-						.newHUItemExpectation() // start of the "aggregate" part
+						.item() // start of the "aggregate" part
 							.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 							.huPIItem(data.piLU_Item_IFCO)
 							.qty("1") // 1 more full (40 kg tomatos) IFCO
-							.newIncludedHUExpectation()
-								.newHUItemExpectation()
+							.includedHU()
+								.item()
 									.noIncludedHUs()
 									.itemType(X_M_HU_Item.ITEMTYPE_Material)
-									.newItemStorageExpectation()
+									.storage()
 										.product(data.helper.pTomato)
 										.qty("40") // the 40 kg tomatos that went into a full aggregated IFCO-VHU
 										.uom(data.helper.uomKg)
 									.endExpectation() // itemStorageExcpectation
 								.endExpectation() // newHUItemExpectation;
-								.newHUItemExpectation()
+								.item()
 									.noIncludedHUs()
 									.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 									// .qty("") we don't care; "qty" doesn't play a role with PM-items
@@ -414,7 +414,7 @@ public class LUTUProducerDestinationLoadTests
 							.endExpectation() // includedHUExpectation
 						.endExpectation() // end of the "aggregate" part
 						
-						.newHUItemExpectation()
+						.item()
 							.noIncludedHUs()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 							// .qty("") we don't care; "qty" doesn't play a role with PM-items
@@ -470,21 +470,21 @@ public class LUTUProducerDestinationLoadTests
 			husExpectation
 				.newHUExpectation()
 					.huPI(data.piLU)
-					.newHUItemExpectation()
+					.item()
 						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 						.huPIItem(data.piLU_Item_IFCO) // this aggregate represents IFCOs
 						.qty("5") // 5 IFCOs per palet
-						.newIncludedHUExpectation()
-							.newHUItemExpectation()
+						.includedHU()
+							.item()
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_Material)
-								.newItemStorageExpectation()
+								.storage()
 									.product(data.helper.pTomato)
 									.qty("200")
 									.uom(data.helper.uomKg)
 								.endExpectation() // itemStorageExcpectation
 							.endExpectation() // newHUItemExpectation;
-							.newHUItemExpectation()
+							.item()
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 								.packingMaterial(data.helper.pmIFCO)
@@ -492,7 +492,7 @@ public class LUTUProducerDestinationLoadTests
 							.endExpectation()
 						.endExpectation() // includedHUExpectation
 					.endExpectation() // huItemExpectation - HUAggregate
-					.newHUItemExpectation()
+					.item()
 						.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						// .qty("") we don't care; "qty" doesn'T play a role with PM-items 

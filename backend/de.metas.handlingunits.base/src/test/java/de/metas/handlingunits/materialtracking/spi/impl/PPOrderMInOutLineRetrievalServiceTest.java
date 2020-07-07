@@ -19,10 +19,9 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
@@ -61,15 +60,12 @@ import de.metas.util.collections.CollectionUtils;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class PPOrderMInOutLineRetrievalServiceTest
 {
 	private HUDocumentSelectTestHelper helper;
 
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

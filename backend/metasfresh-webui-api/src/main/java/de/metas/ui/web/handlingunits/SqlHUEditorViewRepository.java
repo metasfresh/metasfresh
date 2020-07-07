@@ -71,6 +71,7 @@ import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -682,7 +683,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public String buildSqlWhereClause(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
+	public SqlViewRowsWhereClause buildSqlWhereClause(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		return SqlViewSelectionQueryBuilder.prepareSqlWhereClause()
 				.sqlTableAlias(I_M_HU.Table_Name)

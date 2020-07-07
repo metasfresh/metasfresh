@@ -27,6 +27,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -272,8 +273,7 @@ public class SyncInventoryQtyToHUsCommand
 		}
 		else
 		{
-			final I_M_HU hu = handlingUnitsRepo.getById(inventoryLineHU.getHuId());
-			huDestination = HUListAllocationSourceDestination.of(hu);
+			huDestination = createHUListAllocationSourceDestination(inventoryLineHU.getHuId());
 		}
 
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
@@ -306,8 +306,7 @@ public class SyncInventoryQtyToHUsCommand
 
 			final Quantity qtyDiff = inventoryLine.getMovementQty().negate();
 
-			final I_M_HU singleHU = handlingUnitsRepo.getById(singleHuId);
-			final IAllocationSource source = HUListAllocationSourceDestination.of(singleHU);
+			final IAllocationSource source = createHUListAllocationSourceDestination(singleHuId);
 			final IAllocationDestination destination = createInventoryLineAllocationSourceOrDestination(inventoryLineRecord);
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
@@ -344,8 +343,7 @@ public class SyncInventoryQtyToHUsCommand
 		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
 		if (huId != null)
 		{
-			final I_M_HU hu = handlingUnitsRepo.getById(huId);
-			return HUListAllocationSourceDestination.of(hu);
+			return createHUListAllocationSourceDestination(huId);
 		}
 		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
 		else
@@ -356,6 +354,12 @@ public class SyncInventoryQtyToHUsCommand
 					.setHUStatus(X_M_HU.HUSTATUS_Active)
 					.setLocatorId(locatorId);
 		}
+	}
+
+	private HUListAllocationSourceDestination createHUListAllocationSourceDestination(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		return HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM);
 	}
 
 	private static HuId extractSingleCreatedHUId(@NonNull final IAllocationDestination huDestination)

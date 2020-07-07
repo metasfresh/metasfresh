@@ -22,7 +22,18 @@
 
 package de.metas.ui.web.payment_allocation;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentId;
@@ -52,14 +63,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 @ViewFactory(windowId = PaymentsViewFactory.WINDOW_ID_String)
 public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
@@ -69,7 +72,7 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final PaymentAndInvoiceRowsRepo rowsRepo;
-	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
+	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(Duration.ofHours(1));
 
 	public static final String PARAMETER_TYPE_SET_OF_PAYMENT_IDS = "SET_OF_PAYMENT_IDS";
 	public static final String PARAMETER_TYPE_BPARTNER_ID = "BPARTNER_ID";

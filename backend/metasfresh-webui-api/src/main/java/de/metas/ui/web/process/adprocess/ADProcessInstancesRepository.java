@@ -45,6 +45,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -256,7 +257,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			}
 			else
 			{
-				sqlWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName(tableName));
+				final SqlViewRowsWhereClause viewRowsWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName(tableName));
+				sqlWhereClause = viewRowsWhereClause != null ? viewRowsWhereClause.toSqlString() : null;
 			}
 		}
 		//

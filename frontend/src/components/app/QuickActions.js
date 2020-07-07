@@ -6,6 +6,7 @@ import Queue from 'simple-promise-queue';
 import cx from 'classnames';
 import _ from 'lodash';
 import { quickActionsRequest } from '../../api';
+import { getQuickactions } from '../../reducers/windowHandler';
 import {
   openModal,
   fetchedQuickActions,
@@ -113,16 +114,12 @@ export class QuickActions extends Component {
 
     if (inModal === false && prevProps.inModal === true) {
       // gained focus after sub-modal closed
-      this.setState({
-        loading: false,
-      });
+      this.setState({ loading: false });
     }
 
     if (inBackground === true && prevProps.inBackground === false) {
       // gained focus after modal closed
-      this.setState({
-        loading: false,
-      });
+      this.setState({ loading: false });
     }
   };
 
@@ -166,6 +163,19 @@ export class QuickActions extends Component {
   };
 
   /**
+   * @method onClick
+   * @summary Wrapper around the local `handleClick` to be in sync with how it's
+   * called via `QuickActionsDropdown`.
+   */
+  onClick = (e) => {
+    e.preventDefault;
+
+    const { actions } = this.props;
+
+    this.handleClick(actions[0]);
+  };
+
+  /**
    * @method handleClick
    * @summary ToDo: Describe the method
    * @param {*} action
@@ -178,9 +188,7 @@ export class QuickActions extends Component {
       return;
     }
 
-    this.setState({
-      loading: true,
-    });
+    this.setState({ loading: true });
 
     openModal(
       action.caption,
@@ -199,7 +207,7 @@ export class QuickActions extends Component {
       childView.viewSelectedIds
     );
 
-    this.toggleDropdown();
+    this.toggleDropdown(action);
   };
 
   /**
@@ -269,7 +277,7 @@ export class QuickActions extends Component {
               {
                 loading: false,
               },
-              () => resolve()
+              resolve
             );
           }
         })
@@ -282,7 +290,7 @@ export class QuickActions extends Component {
               {
                 loading: false,
               },
-              () => reject()
+              reject
             );
           }
         });
@@ -292,7 +300,7 @@ export class QuickActions extends Component {
           {
             loading: false,
           },
-          () => resolve()
+          resolve
         );
       }
     }
@@ -300,28 +308,46 @@ export class QuickActions extends Component {
 
   /**
    * @method toggleDropdown
-   * @summary ToDo: Describe the method
-   * @param {*} option
-   * @todo Write the documentation
+   * @summary Toggles the dropdown element
    */
-  toggleDropdown = (option) => {
-    this.setState({
-      isDropdownOpen: option,
-    });
+  toggleDropdown = (action = null) => {
+    const { actions } = this.props;
+    if (action && actions && actions[0].processId === action.processId) {
+      this.setState({ isDropdownOpen: false }); // hide the dropdown when first action is clicked
+      return;
+    }
+    this.setState({ isDropdownOpen: !this.state.isDropdownOpen });
   };
 
   /**
-   * @method toggleTooltip
-   * @summary ToDo: Describe the method
-   * @param {*} type
-   * @param {*} visible
-   * @todo Write the documentation
+   * @method showListTooltip
+   * @summary Forces hide of the dropdown element
    */
-  toggleTooltip = (type, visible) => {
-    this.setState({
-      [type]: visible,
-    });
-  };
+  hideDropdown = () => this.setState({ isDropdownOpen: false });
+
+  /**
+   * @method showListTooltip
+   * @summary Shows list tooltip
+   */
+  showListTooltip = () => this.setState({ listTooltip: true });
+
+  /**
+   * @method hideListTooltip
+   * @summary hides list tooltip
+   */
+  hideListTooltip = () => this.setState({ listTooltip: false });
+
+  /**
+   * @method showBtnTooltip
+   * @summary Shows button tooltip
+   */
+  showBtnTooltip = () => this.setState({ btnTooltip: true });
+
+  /**
+   * @method hideBtnTooltip
+   * @summary Hides button tooltip
+   */
+  hideBtnTooltip = () => this.setState({ btnTooltip: false });
 
   /**
    * @method render
@@ -358,13 +384,9 @@ export class QuickActions extends Component {
                   ? 'tag-default '
                   : 'pointer ')
               }
-              onMouseEnter={() => this.toggleTooltip('listTooltip', true)}
-              onMouseLeave={() => this.toggleTooltip('listTooltip', false)}
-              onClick={(e) => {
-                e.preventDefault();
-
-                this.handleClick(actions[0]);
-              }}
+              onMouseEnter={this.showListTooltip}
+              onMouseLeave={this.hideListTooltip}
+              onClick={this.onClick}
             >
               {listTooltip && (
                 <Tooltips
@@ -376,18 +398,16 @@ export class QuickActions extends Component {
               {actions[0].caption}
             </div>
             <div
-              className={
-                'btn-meta-outline-secondary btn-icon-sm ' +
-                'btn-inline btn-icon pointer tooltip-parent ' +
-                (isDropdownOpen || disabledDuringProcessing
-                  ? 'btn-disabled '
-                  : '')
-              }
-              onMouseEnter={() => this.toggleTooltip('btnTooltip', true)}
-              onMouseLeave={() => this.toggleTooltip('btnTooltip', false)}
-              onClick={() => {
-                this.toggleDropdown(!isDropdownOpen);
-              }}
+              className={cx(
+                'btn-meta-outline-secondary btn-icon-sm',
+                'btn-inline btn-icon pointer tooltip-parent',
+                {
+                  'btn-disabled': isDropdownOpen || disabledDuringProcessing,
+                }
+              )}
+              onMouseEnter={this.showBtnTooltip}
+              onMouseLeave={this.hideBtnTooltip}
+              onClick={this.toggleDropdown}
             >
               <i className="meta-icon-down-1" />
               {btnTooltip && (
@@ -402,17 +422,15 @@ export class QuickActions extends Component {
               <QuickActionsDropdown
                 actions={actions}
                 handleClick={this.handleClick}
-                handleClickOutside={() => this.toggleDropdown(false)}
+                handleClickOutside={this.hideDropdown}
                 disableOnClickOutside={!isDropdownOpen}
               />
             )}
           </div>
           <QuickActionsContextShortcuts
-            handleClick={() =>
-              shouldNotUpdate ? null : this.handleClick(actions[0])
-            }
+            onAction={shouldNotUpdate ? null : this.onClick}
             stopPropagation={this.props.stopShortcutPropagation}
-            onClick={() => this.toggleDropdown(!isDropdownOpen)}
+            onClick={this.toggleDropdown}
           />
         </div>
       );
@@ -464,14 +482,9 @@ QuickActions.propTypes = {
   onInvalidViewId: PropTypes.func,
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const { viewId, windowType } = ownProps;
-  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
-
-  return {
-    actions: state.windowHandler.quickActions[key] || [],
-  };
-};
+const mapStateToProps = (state, { viewId, windowType }) => ({
+  actions: getQuickactions(state, { viewId, windowType }),
+});
 
 export default connect(
   mapStateToProps,

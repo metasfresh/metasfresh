@@ -22,9 +22,11 @@
 
 package de.metas.ui.web.bankstatement_reconciliation;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -51,8 +53,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 @ViewFactory(windowId = BankStatementReconciliationViewFactory.WINDOW_ID_String)
 public class BankStatementReconciliationViewFactory implements IViewFactory, IViewsIndexStorage
 {
@@ -62,7 +62,7 @@ public class BankStatementReconciliationViewFactory implements IViewFactory, IVi
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final BankStatementLineAndPaymentsToReconcileRepository rowsRepo;
-	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
+	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(Duration.ofHours(1));
 
 	public BankStatementReconciliationViewFactory(
 			@NonNull final BankStatementLineAndPaymentsToReconcileRepository rowsRepo)

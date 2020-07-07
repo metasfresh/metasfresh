@@ -74,7 +74,7 @@ public class JSONUserSession
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
-	
+
 	@JsonProperty("websocketEndpoint")
 	private final String websocketEndpoint;
 
@@ -99,8 +99,8 @@ public class JSONUserSession
 
 			userProfileWindowId = WindowConstants.WINDOWID_UserProfile;
 			userProfileId = userSession.getLoggedUserId().getRepoId();
-			
-			websocketEndpoint = userSession.getWebsocketEndpoint();
+
+			websocketEndpoint = userSession.getWebsocketEndpoint().getAsString();
 		}
 		else
 		{
