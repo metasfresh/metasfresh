@@ -90,7 +90,7 @@ public class PackingMaterialKeyBuilder
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
 		queryVO.setC_BPartner_ID(BPartnerId.toRepoIdOr(bpartnerId, -1));
 		queryVO.setM_Product_ID(ProductId.toRepoId(productId));
-		queryVO.setDate(date);
+		queryVO.setValidAtDate(date);
 		queryVO.setAllowAnyProduct(true);
 
 		// Flag used to check if we added at least one PackingMaterialKey

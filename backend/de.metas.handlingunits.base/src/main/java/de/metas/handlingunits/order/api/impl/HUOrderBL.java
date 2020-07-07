@@ -462,7 +462,7 @@ public class HUOrderBL implements IHUOrderBL
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
 		queryVO.setC_BPartner_ID(bpartnerId);
 		queryVO.setM_Product_ID(productId);
-		queryVO.setDate(TimeUtil.asZonedDateTime(date));
+		queryVO.setValidAtDate(TimeUtil.asZonedDateTime(date));
 		queryVO.setAllowAnyProduct(false);
 		queryVO.setHU_UnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 

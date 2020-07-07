@@ -46,7 +46,7 @@ import java.time.ZonedDateTime;
 	@Nullable
 	private PriceListVersionId priceListVersionId = null;
 	private int bpartnerId = -1;
-	private ZonedDateTime date = null;
+	private ZonedDateTime validAtDate = null;
 	private boolean allowAnyProduct = true;
 	private boolean allowInfiniteCapacity = true;
 	private String huUnitType = null;
@@ -114,15 +114,15 @@ import java.time.ZonedDateTime;
 	}
 
 	@Override
-	public void setDate(final ZonedDateTime date)
+	public void setValidAtDate(final ZonedDateTime validAtDate)
 	{
-		this.date = date;
+		this.validAtDate = validAtDate;
 	}
 
 	@Override
-	public ZonedDateTime getDate()
+	public ZonedDateTime getValidAtDate()
 	{
-		return date;
+		return validAtDate;
 	}
 
 	@Override

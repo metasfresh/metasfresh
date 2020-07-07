@@ -37,6 +37,7 @@ import lombok.NonNull;
  * #L%
  */
 
+/** Short-lived instance; Use {@link PermissionServiceFactory} to get an instance. */
 public class PermissionService
 {
 	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);

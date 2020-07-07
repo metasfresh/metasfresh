@@ -72,9 +72,9 @@ public interface IHUPIItemProductQuery
 	@Nullable
 	PriceListVersionId getPriceListVersionId();
 
-	void setDate(@Nullable ZonedDateTime date);
+	void setValidAtDate(@Nullable ZonedDateTime date);
 
-	ZonedDateTime getDate();
+	ZonedDateTime getValidAtDate();
 
 	boolean isAllowAnyProduct();
 

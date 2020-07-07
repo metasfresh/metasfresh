@@ -94,7 +94,7 @@ public class PackingItemProductFieldHelper
 		queryVO.setM_Product_ID(defaultPackingItemCriteria.getProductId().getRepoId());
 		queryVO.setBPartnerId(defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId());
 		queryVO.setAllowVirtualPI(false);
-		queryVO.setDate(defaultPackingItemCriteria.getDate());
+		queryVO.setValidAtDate(defaultPackingItemCriteria.getDate());
 		queryVO.setAllowAnyProduct(false);
 		queryVO.setAllowAnyPartner(false);
 		queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));

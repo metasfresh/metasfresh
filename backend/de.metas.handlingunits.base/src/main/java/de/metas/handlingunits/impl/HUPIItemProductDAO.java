@@ -135,7 +135,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		queryVO.setM_Product_ID(productId.getRepoId());
 		queryVO.setAllowAnyProduct(true);
 		queryVO.setM_HU_PI_Item_ID(itemDef.getM_HU_PI_Item_ID());
-		queryVO.setDate(date);
+		queryVO.setValidAtDate(date);
 
 		//
 		// Retrieve first item
@@ -154,7 +154,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		queryVO.setM_Product_ID(productId.getRepoId());
 		queryVO.setAllowAnyProduct(true);
 		queryVO.setM_HU_PI_Item_ID(huItem.getM_HU_PI_Item_ID());
-		queryVO.setDate(date);
+		queryVO.setValidAtDate(date);
 
 		//
 		// Filter by BPartner (if any)
@@ -194,7 +194,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		queryVO.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		queryVO.setM_Product_ID(productId == null ? 0 : productId.getRepoId());
 		queryVO.setAllowAnyProduct(false); // 06566
-		queryVO.setDate(date);
+		queryVO.setValidAtDate(date);
 		queryVO.setHU_UnitType(huUnitType);
 
 		// 07395 also set the isInfiniteCapacity
@@ -330,7 +330,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Valid From/To Filtering (only if Date is specified in query)
-		final ZonedDateTime date = queryVO.getDate();
+		final ZonedDateTime date = queryVO.getValidAtDate();
 		if (date != null)
 		{
 			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
@@ -605,7 +605,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		//
 		// Filter by current date (ValidFrom >= today, ValidTo <= today)
 		final ZonedDateTime currentDate = SystemTime.asZonedDateTime();
-		queryVO.setDate(currentDate);
+		queryVO.setValidAtDate(currentDate);
 
 		//
 		// Do not filter out same-type PIs with different capacities
@@ -687,7 +687,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final IHUPIItemProductQuery query = createHUPIItemProductQuery();
 		query.setBPartnerId(bpartnerId);
 		query.setProductId(productId);
-		query.setDate(date);
+		query.setValidAtDate(date);
 		query.setDefaultForProduct(true);
 
 		final I_M_HU_PI_Item_Product huPIItemProduct = retrieveFirst(Env.getCtx(), query, ITrx.TRXNAME_None);
