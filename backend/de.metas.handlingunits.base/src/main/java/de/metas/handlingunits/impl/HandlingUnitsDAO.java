@@ -473,6 +473,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	@Nullable
+	public I_M_HU_PI retrievePIDefaultForPicking()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_IsDefaultForPicking, true)
+				.create()
+				.first();
+	}
+
+	@Override
 	public List<I_M_HU_PI_Version> retrieveAllPIVersions(final I_M_HU_PI pi)
 	{
 		final int piId = pi.getM_HU_PI_ID();
@@ -758,6 +769,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.first(); // get the first one (favoring the one with C_BPartner_ID = parentHU.getC_BPartner_ID() if it exists)
 
 		return piItemForChild;
+	}
+
+	@Override
+	public void save(@NonNull final I_M_HU_PI huPi)
+	{
+		InterfaceWrapperHelper.save(huPi);
 	}
 
 	@Override

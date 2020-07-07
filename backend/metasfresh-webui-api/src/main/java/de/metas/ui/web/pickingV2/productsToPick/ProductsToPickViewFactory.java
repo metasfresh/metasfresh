@@ -31,6 +31,7 @@ import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ProcessAll;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillNotPickSelected;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickAndPackSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
@@ -204,6 +205,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_MarkWillNotPickSelected.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_SetPackingInstructions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickAndPackSelected.class))
 				//
 				// Reviewer processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ProcessAll.class))
