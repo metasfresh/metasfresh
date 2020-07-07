@@ -33,6 +33,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 {
@@ -42,11 +43,10 @@ public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 	@Override
 	protected String doIt() throws Exception
 	{
-		// To be replaced with table id of the selected row's table and row id
-		// Also, if we are gonna support multiple rows cloning we could put the following 2 lines in a foreach (rowId : rowIds) statement
-		final TableRecordReference tableRecordReference = TableRecordReference.of(getTable_ID(), getRecord_ID());
-		documentCollectionService.duplicateDocumentInTrxGeneric(tableRecordReference, getProcessInfo().getAdWindowId());
-		return null;
+		final TableRecordReference tableRecordReference = new ArrayList<TableRecordReference>(TableRecordReference.ofSet(getProcessInfo().getSelectedIncludedRecords())).get(0);
+		final TableRecordReference parentRef = TableRecordReference.of(getTable_ID(), getRecord_ID());
+		documentCollectionService.duplicateTabRowInTrx(parentRef, tableRecordReference, getProcessInfo().getAdWindowId());
+		return MSG_OK;
 	}
 
 	@Override
@@ -66,11 +66,20 @@ public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 	{
 		if (context.getAdTabId() == null)
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No row(s) from a tab selected.");
 		}
-		if (!CopyRecordFactory.isEnabledForTableName(getTableName())) // To be replaced with the table name of the sub tab selected row's table
+
+		//making sure only one row is selected at a time
+		if (context.getSelectedIncludedRecords().size() != 1)
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("More than one row selected.");
+		}
+
+		TableRecordReference ref = new ArrayList<TableRecordReference>(TableRecordReference.ofSet(context.getSelectedIncludedRecords())).get(0);
+
+		if (!CopyRecordFactory.isEnabledForTableName(ref.getTableName())) // To be replaced with the table name of the sub tab selected row's table
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("CopyRecordFactory not enabled for the table the row belongs to.");
 		}
 		return ProcessPreconditionsResolution.accept();
 	}

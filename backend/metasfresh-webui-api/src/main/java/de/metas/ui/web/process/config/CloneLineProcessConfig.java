@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-public class StandardProcessConfig
+public class CloneLineProcessConfig
 {
 	private final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
 
@@ -42,7 +42,7 @@ public class StandardProcessConfig
 				.processId(adProcessesRepo.retrieveProcessIdByClass(WEBUI_CloneLine.class))
 				.anyTable()
 				.anyWindow()
-				.displayPlace(RelatedProcessDescriptor.DisplayPlace.IncludedTabTopActionsMenu)
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.SingleDocumentActionsMenu)
 				.build());
 	}
 }

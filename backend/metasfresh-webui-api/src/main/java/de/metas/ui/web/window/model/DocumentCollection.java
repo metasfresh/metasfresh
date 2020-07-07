@@ -789,17 +789,10 @@ public class DocumentCollection
 
 		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
 
-		return duplicateDocumentInTrxGeneric(fromRecordRef, fromDocumentPath.getAdWindowIdOrNull());
-
-	}
-
-	public DocumentPath duplicateDocumentInTrxGeneric(final TableRecordReference fromRecordRef, final AdWindowId windowId)
-	{
-		// final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
-
 		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
 		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
 		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+
 		if (!CopyRecordFactory.isEnabledForTableName(tableName))
 		{
 			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
@@ -811,12 +804,34 @@ public class DocumentCollection
 		InterfaceWrapperHelper.save(toPO);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
-		childCRS.setAdWindowId(windowId);
+		childCRS.setAdWindowId(fromDocumentPath.getAdWindowIdOrNull());
 		childCRS.setParentPO(toPO);
 		childCRS.setBase(true);
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 
-		return DocumentPath.rootDocumentPath(WindowId.of(windowId), DocumentId.of(toPO.get_ID()));
+		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+	}
+
+	public void duplicateTabRowInTrx(@NonNull final TableRecordReference parentRef, @NonNull final TableRecordReference fromRecordRef, @NonNull final AdWindowId windowId)
+	{
+		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+
+		final Object parentModel = parentRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final PO parentPO = InterfaceWrapperHelper.getPO(parentModel);
+
+		if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
+		childCRS.setAdWindowId(windowId);
+		childCRS.setParentPO(parentPO);
+		childCRS.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
+		childCRS.setBase(true);
+		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
