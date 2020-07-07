@@ -25,22 +25,30 @@ package de.metas.handlingunits.model.validator;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.util.List;
 
 @Validator(I_M_HU_PI.class)
 public class M_HU_PI
 {
+	private transient static final Logger logger = LogManager.getLogger(M_HU_PI.class);
+
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDeleteMHUPI(final I_M_HU_PI pi)
 	{
-		final List<I_M_HU_PI_Version> piVersions = Services.get(IHandlingUnitsDAO.class).retrieveAllPIVersions(pi);
+		final List<I_M_HU_PI_Version> piVersions = handlingUnitsDAO.retrieveAllPIVersions(pi);
 		for (final I_M_HU_PI_Version version : piVersions)
 		{
 			InterfaceWrapperHelper.delete(version);
@@ -52,16 +60,21 @@ public class M_HU_PI
 	)
 	public void ensureOnlyOneDefaultForPicking(@NonNull final I_M_HU_PI newDefault)
 	{
-		if (!newDefault.isDefaultForPicking())
+		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(newDefault))
 		{
-			return;
-		}
+			if (!newDefault.isDefaultForPicking())
+			{
+				return;
+			}
 
-		final I_M_HU_PI previousDefault = Services.get(IHandlingUnitsDAO.class).retrievePIDefaultForPicking();
-		if (previousDefault != null)
-		{
-			previousDefault.setIsDefaultForPicking(false);
-			InterfaceWrapperHelper.save(previousDefault);
+			final I_M_HU_PI previousDefault = handlingUnitsDAO.retrievePIDefaultForPicking();
+			if (previousDefault != null)
+			{
+				logger.debug("M_HU_PI={} is now IsDefaultForPicking; -> Change previousDefault M_HU_PI={} to IsDefaultForPicking='N'",
+						newDefault.getM_HU_PI_ID(), previousDefault.getM_HU_PI_ID());
+				previousDefault.setIsDefaultForPicking(false);
+				handlingUnitsDAO.save(previousDefault);
+			}
 		}
 	}
 }
