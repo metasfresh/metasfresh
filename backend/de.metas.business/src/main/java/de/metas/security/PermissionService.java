@@ -1,19 +1,20 @@
 package de.metas.security;
 
+import de.metas.organization.OrgId;
+import de.metas.process.AdProcessId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
 import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -85,6 +86,30 @@ public class PermissionService
 				.build());
 	}
 
+	public boolean canRunProcess(@NonNull final AdProcessId processId)
+	{
+		final PermissionRequest permissionRequest = PermissionRequest.builder()
+				.orgId(OrgId.ANY)
+				.processId(processId.getRepoId())
+				.build();
+
+		if (permissionsGranted.contains(permissionRequest))
+		{
+			return true;
+		}
+
+		final IUserRolePermissions userPermissions = userRolePermissionsRepo.getUserRolePermissions(userRolePermissionsKey);
+
+		final boolean canAccessProcess = userPermissions.checkProcessAccessRW(processId.getRepoId());
+
+		if (canAccessProcess)
+		{
+			permissionsGranted.add(permissionRequest);
+		}
+
+		return canAccessProcess;
+	}
+
 	private void assertPermission(@NonNull final PermissionRequest request)
 	{
 		if (permissionsGranted.contains(request))
@@ -124,9 +149,12 @@ public class PermissionService
 	{
 		@lombok.NonNull
 		OrgId orgId;
-		int adTableId;
+		@lombok.Builder.Default
+		int adTableId = -1;
 		@lombok.Builder.Default
 		int recordId = -1;
+		@lombok.Builder.Default
+		int processId = -1;
 	}
 
 }
