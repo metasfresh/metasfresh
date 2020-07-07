@@ -11,7 +11,8 @@ SELECT COALESCE(s.AD_Client_ID, hu_agg.AD_Client_ID) AS AD_Client_ID,
        COALESCE(hu_agg.QtyOnHand, 0) AS QtyOnHand,
 
        -- QtyOnHandChange is the quantity - in stocking-UOM - to add to the *current* MD_Stock.QtyOnHand to get the *correct* qtyOnHand
-       COALESCE(hu_agg.QtyOnHand, 0) - COALESCE(s.QtyOnHand, 0) AS QtyOnHandChange
+       COALESCE(hu_agg.QtyOnHand, 0) - COALESCE(s.QtyOnHand, 0) AS QtyOnHandChange,
+       s.MD_Stock_ID /*..for troubleshooting*/
 FROM MD_Stock s
          LEFT JOIN M_Product p ON p.M_Product_ID = s.M_Product_ID /*needed for its C_UOM_ID in case there are no M_HU_Storages */
          FULL OUTER JOIN -- the full outer join and the COALESCEs in the SELECT part are needed for the case that there is no MD_Stock yet

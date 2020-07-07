@@ -88,7 +88,7 @@ public class TransactionEventHandlerForStockRecords
 
 		final StockDataUpdateRequest request = StockDataUpdateRequest.builder()
 				.identifier(identifier)
-				.onHandQtyChange(event.getQuantityDelta())
+				.onHandQtyToAdd(event.getQuantityDelta())
 				.sourceInfo(stockChangeSourceInfo)
 				.build();
 		return request;

@@ -64,7 +64,7 @@ public class StockDataUpdateRequestHandler
 
 		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();
 
-		final BigDecimal qtyOnHandToAdd = dataUpdateRequest.getOnHandQtyChange();
+		final BigDecimal qtyOnHandToAdd = dataUpdateRequest.getOnHandQtyToAdd();
 		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(dataRecord.getQtyOnHand().add(qtyOnHandToAdd));
 		dataRecord.setQtyOnHand(qtyOnHandNew);
 		save(dataRecord);

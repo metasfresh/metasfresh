@@ -36,8 +36,9 @@ public class StockDataUpdateRequest
 	@NonNull
 	StockDataRecordIdentifier identifier;
 
+	/** might also be negative */
 	@Default
-	BigDecimal onHandQtyChange = BigDecimal.ZERO;
+	BigDecimal onHandQtyToAdd = BigDecimal.ZERO;
 
 	@NonNull
 	StockChangeSourceInfo sourceInfo;

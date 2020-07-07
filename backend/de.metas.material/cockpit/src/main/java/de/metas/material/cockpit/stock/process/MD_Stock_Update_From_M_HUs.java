@@ -113,7 +113,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 
 		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
-				.onHandQtyChange(qtyInProductUOM.toBigDecimal())
+				.onHandQtyToAdd(qtyInProductUOM.toBigDecimal())
 				.sourceInfo(stockDataUpdateRequestSourceInfo)
 				.build();
 		return dataUpdateRequest;
