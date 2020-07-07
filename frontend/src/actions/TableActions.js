@@ -285,15 +285,20 @@ export function updateGridTable(tableId, tableResponse) {
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
-        const { collapsible, expandedDepth, keyProperty } = tableData;
+        const {
+          collapsible,
+          expandedDepth,
+          keyProperty,
+          indentSupported,
+        } = tableData;
 
-        if (tableData.rows && tableData.rows.length && collapsible) {
+        if (tableData.rows && tableData.rows.length && indentSupported) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
         dispatch(createTable(tableId, tableData));
 
-        if (collapsible) {
+        if (indentSupported) {
           dispatch(
             createCollapsedRows({
               tableId,
