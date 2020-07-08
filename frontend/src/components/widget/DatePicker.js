@@ -4,8 +4,6 @@ import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
 import onClickOutside from 'react-onclickoutside';
 
-import { getCurrentActiveLocale } from '../../utils/locale';
-import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 import { addNotification } from '../../actions/AppActions';
 import {
   allowOutsideClick,
