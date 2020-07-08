@@ -306,7 +306,7 @@ class TableWrapper extends PureComponent {
         })}
       >
         <div
-          className={classnames({
+          className={classnames('table-padding-top', {
             'table-flex-wrapper-row': mainTable,
           })}
         >
