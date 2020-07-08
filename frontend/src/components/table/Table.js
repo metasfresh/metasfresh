@@ -441,7 +441,7 @@ export default class Table extends PureComponent {
       viewId,
       readonly,
       page,
-      sort,
+      onSortTable,
       orderBy,
       indentSupported,
       hasIncluded,
@@ -481,7 +481,7 @@ export default class Table extends PureComponent {
           <thead>
             <TableHeader
               {...{
-                sort,
+                onSortTable,
                 orderBy,
                 page,
                 indentSupported,

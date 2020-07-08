@@ -32,6 +32,7 @@ export const containerPropTypes = {
   defaultSelected: PropTypes.array,
   limitOnClickOutside: PropTypes.bool,
   supportOpenRecord: PropTypes.bool,
+  onSortTable: PropTypes.func,
 
   // from redux
   rows: PropTypes.array.isRequired,
@@ -53,6 +54,7 @@ export const containerPropTypes = {
   updateTableSelection: PropTypes.func.isRequired,
 };
 
+// TableWrapper props
 export const componentPropTypes = {
   ...containerPropTypes,
   onSelect: PropTypes.func.isRequired,

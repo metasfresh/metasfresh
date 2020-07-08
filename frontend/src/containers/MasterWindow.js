@@ -219,9 +219,43 @@ class MasterWindowContainer extends PureComponent {
     }
   };
 
+  /**
+   * @method sort
+   * @summary Sort table data
+   */
+  sort = (asc, field, startPage, page, tabId) => {
+    const {
+      updateTabTableData,
+      sortTab,
+      master,
+      params: { windowType, docId },
+    } = this.props;
+    const orderBy = (asc ? '+' : '-') + field;
+    const dataId = master.docId;
+
+    const activeTabId = master.layout.activeTab;
+    if (!activeTabId) {
+      return;
+    }
+    const tableId = getTableId({
+      windowId: windowType,
+      docId,
+      tabId: activeTabId,
+    });
+
+    sortTab('master', tabId, field, asc);
+    getTabRequest(tabId, windowType, dataId, orderBy).then((rows) => {
+      updateTabTableData(tableId, rows);
+    });
+  };
+
   render() {
     return (
-      <MasterWindow onRefreshTab={this.refreshActiveTab} {...this.props} />
+      <MasterWindow
+        {...this.props}
+        onRefreshTab={this.refreshActiveTab}
+        onSortTable={this.sort}
+      />
     );
   }
 }

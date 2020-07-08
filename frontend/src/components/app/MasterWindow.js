@@ -2,7 +2,7 @@ import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 
-import { discardNewRequest, getTabRequest } from '../../api';
+import { discardNewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
 
 import BlankPage from '../BlankPage';
@@ -264,27 +264,6 @@ export default class MasterWindow extends PureComponent {
   };
 
   /**
-   * TODO: Move this to the container
-   * @method sort
-   * @summary ToDo: Describe the method.
-   */
-  sort = (asc, field, startPage, page, tabId) => {
-    const {
-      addRowData,
-      sortTab,
-      master,
-      params: { windowType },
-    } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
-    const dataId = master.docId;
-
-    sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowType, dataId, orderBy).then((res) => {
-      addRowData({ [tabId]: res }, 'master');
-    });
-  };
-
-  /**
    * @method handleIntroExit
    * @summary ToDo: Describe the method.
    */
@@ -306,6 +285,7 @@ export default class MasterWindow extends PureComponent {
       processStatus,
       enableTutorial,
       onRefreshTab,
+      onSortTable,
     } = this.props;
     const {
       dropzoneFocused,
@@ -385,7 +365,7 @@ export default class MasterWindow extends PureComponent {
             data={master.data}
             layout={master.layout}
             tabsInfo={master.includedTabsInfo}
-            sort={this.sort}
+            onSortTable={onSortTable}
             dataId={dataId}
             isModal={false}
             newRow={newRow}
@@ -437,6 +417,7 @@ MasterWindow.propTypes = {
   addRowData: PropTypes.func,
   attachFileAction: PropTypes.func,
   sortTab: PropTypes.func,
+  onSortTable: PropTypes.func,
   push: PropTypes.func,
   updateTabRowsData: PropTypes.func.isRequired,
 };
