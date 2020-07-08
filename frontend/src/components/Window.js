@@ -206,7 +206,7 @@ class Window extends PureComponent {
             queryOnActivate={queryOnActivate}
             singleRowView={true}
             tabIndex={this.tabIndex.tabs}
-            sort={onSortTable}
+            onSortTable={onSortTable}
             {...{
               caption,
               description,

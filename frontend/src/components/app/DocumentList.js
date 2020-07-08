@@ -335,7 +335,7 @@ export default class DocumentList extends Component {
                 mainTable={true}
                 updateDocList={onFetchLayoutAndData}
                 onSelectionChanged={updateParentSelectedIds}
-                sort={onSortData}
+                onSortTable={onSortData}
                 tabIndex={0}
                 disableOnClickOutside={clickOutsideLock}
                 limitOnClickOutside={isModal}
