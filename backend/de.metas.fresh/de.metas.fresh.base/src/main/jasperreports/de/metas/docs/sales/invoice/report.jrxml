@@ -294,7 +294,7 @@ JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1;]]>
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="842">
+		<band height="154">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 			<subreport isUsingCache="true">
@@ -313,8 +313,10 @@ JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1;]]>
 				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_qr.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" mode="Transparent" x="1" y="545" width="595" height="297" uuid="a94eb539-f031-4a02-863d-065b2f4347b6">
-					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))  && ("N").equals($F{showqrbill}) ]]></printWhenExpression>
+				<reportElement key="subreport-3" mode="Transparent" x="1" y="0" width="595" height="130" uuid="a94eb539-f031-4a02-863d-065b2f4347b6">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))  && ("N").equals($F{showqrbill})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
