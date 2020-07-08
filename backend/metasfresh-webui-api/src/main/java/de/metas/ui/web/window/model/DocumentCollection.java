@@ -826,12 +826,12 @@ public class DocumentCollection
 			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
 		}
 
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
-		childCRS.setAdWindowId(windowId);
-		childCRS.setParentPO(parentPO);
-		childCRS.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
-		childCRS.setBase(true);
-		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
+		final CopyRecordSupport copyRecordSupport = CopyRecordFactory.getCopyRecordSupport(tableName);
+		copyRecordSupport.setAdWindowId(windowId);
+		copyRecordSupport.setParentPO(parentPO);
+		copyRecordSupport.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
+		copyRecordSupport.setBase(true);
+		copyRecordSupport.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)

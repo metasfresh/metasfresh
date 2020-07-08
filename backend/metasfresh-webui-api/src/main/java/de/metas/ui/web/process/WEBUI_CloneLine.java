@@ -27,13 +27,13 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 
 public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 {
@@ -43,22 +43,15 @@ public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 	@Override
 	protected String doIt() throws Exception
 	{
-		final TableRecordReference tableRecordReference = new ArrayList<TableRecordReference>(TableRecordReference.ofSet(getProcessInfo().getSelectedIncludedRecords())).get(0);
+		final TableRecordReference tableRecordReference = CollectionUtils.singleElementOrNull(getProcessInfo().getSelectedIncludedRecords());
+		if (tableRecordReference == null)
+		{
+			addLog("The precondition of one selected included record does not hold anymore; -> doing nothing");
+			return MSG_OK;
+		}
 		final TableRecordReference parentRef = TableRecordReference.of(getTable_ID(), getRecord_ID());
 		documentCollectionService.duplicateTabRowInTrx(parentRef, tableRecordReference, getProcessInfo().getAdWindowId());
 		return MSG_OK;
-	}
-
-	@Override
-	public void flush()
-	{
-
-	}
-
-	@Override
-	public boolean isAllowThreadInherited()
-	{
-		return false;
 	}
 
 	@Override
@@ -72,11 +65,10 @@ public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 		//making sure only one row is selected at a time
 		if (context.getSelectedIncludedRecords().size() != 1)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("More than one row selected.");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("More or less than one row selected.");
 		}
 
-		TableRecordReference ref = new ArrayList<TableRecordReference>(TableRecordReference.ofSet(context.getSelectedIncludedRecords())).get(0);
-
+		final TableRecordReference ref = CollectionUtils.singleElement(context.getSelectedIncludedRecords());
 		if (!CopyRecordFactory.isEnabledForTableName(ref.getTableName())) // To be replaced with the table name of the sub tab selected row's table
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("CopyRecordFactory not enabled for the table the row belongs to.");
