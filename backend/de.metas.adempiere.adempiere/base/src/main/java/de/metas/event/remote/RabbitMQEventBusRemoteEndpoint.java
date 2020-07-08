@@ -1,10 +1,9 @@
 package de.metas.event.remote;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 
-import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -12,21 +11,19 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 
 import de.metas.event.Event;
+import de.metas.event.Event.Builder;
 import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.event.Event.Builder;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata.TransactionMetadataBuilder;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
@@ -55,6 +52,8 @@ import lombok.NonNull;
 public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 {
 	private static final Logger logger = LogManager.getLogger(RabbitMQEventBusRemoteEndpoint.class);
+	private final PerformanceMonitoringService perfMonService;
+	private IEventBusFactory eventBusFactory;
 
 	private static final String PROP_TRACE_INFO_PREFIX = "traceInfo.";
 
@@ -66,20 +65,33 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 
 	private final IEventListener eventBus2amqpListener = EventBus2RemoteEndpointHandler.newInstance(this);
 
-	public RabbitMQEventBusRemoteEndpoint(@NonNull final AmqpTemplate amqpTemplate)
+	public RabbitMQEventBusRemoteEndpoint(
+			@NonNull final AmqpTemplate amqpTemplate,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
-		this.senderId = EventBusConfig.getSenderId();
+		senderId = EventBusConfig.getSenderId();
 		this.amqpTemplate = amqpTemplate;
+		this.perfMonService = perfMonService;
 	}
 
-	@RabbitListener(queues = RabbitMQEventBusConfiguration.EVENTS_QUEUE_NAME_SPEL)
+	@Override
+	public void setEventBusFactory(@NonNull final IEventBusFactory eventBusFactory)
+	{
+		this.eventBusFactory = eventBusFactory;
+	}
+
+	@RabbitListener(queues = {
+			RabbitMQEventBusConfiguration.DefaultQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.AccountingQueueConfiguration.QUEUE_NAME_SPEL,
+	})
 	public void onRemoteEvent(
 			@Payload final Event event,
 			@Header(HEADER_SenderId) final String senderId,
 			@Header(HEADER_TopicName) final String topicName)
 	{
 		final Topic topic = Topic.of(topicName, Type.REMOTE);
-		final IEventBus localEventBus = Services.get(IEventBusFactory.class).getEventBusIfExists(topic);
+		final IEventBus localEventBus = eventBusFactory.getEventBusIfExists(topic);
 		if (localEventBus == null)
 		{
 			logger.debug("onRemoteEvent - localEventBus for topicName={} is null; -> ignoring event", topicName);
@@ -119,7 +131,6 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			@NonNull final String topicName)
 	{
 		// extract remote tracing infos from the event (if there are any) and create a (distributed) monitoring transaction.
-		final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
 		final TransactionMetadataBuilder transactionMetadata = TransactionMetadata.builder();
 		for (final Entry<String, Object> entry : event.getProperties().entrySet())
@@ -188,8 +199,6 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 
 	private void addInfosAndMonitorSpan(@NonNull final String topicName, @NonNull final Event event)
 	{
-		final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-
 		final Builder eventToSendBuilder = event.toBuilder();
 		final SpanMetadata request = SpanMetadata.builder()
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT.getCode())
@@ -214,12 +223,18 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			return;
 		}
 
-		amqpTemplate.convertAndSend(RabbitMQEventBusConfiguration.EVENTS_EXCHANGE_NAME, "", event, message -> {
-			final Map<String, Object> headers = message.getMessageProperties().getHeaders();
-			headers.put(HEADER_SenderId, getSenderId());
-			headers.put(HEADER_TopicName, topicName);
-			return message;
-		});
+		final String amqpExchangeName = RabbitMQEventBusConfiguration.getAMQPExchangeNameByTopicName(topicName);
+		final String routingKey = ""; // ignored for fan-out exchanges
+		amqpTemplate.convertAndSend(
+				amqpExchangeName,
+				routingKey,
+				event,
+				message -> {
+					final Map<String, Object> headers = message.getMessageProperties().getHeaders();
+					headers.put(HEADER_SenderId, getSenderId());
+					headers.put(HEADER_TopicName, topicName);
+					return message;
+				});
 
 		logger.debug("Send event; topicName={}; event={}", topicName, event);
 	}
