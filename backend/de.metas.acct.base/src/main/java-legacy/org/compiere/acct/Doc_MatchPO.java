@@ -97,6 +97,14 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
+		// Skip posting if MatchPO does not have the receipt line set.
+		// It's enough to create no facts at all.
+		// Usually, system creates separate M_MatchPO records for each receipt.
+		if (docLine.getReceipt_InOutLine_ID() <= 0)
+		{
+			return ImmutableList.of();
+		}
+
 		//
 		// Mark sure inbound costs are created
 		docLine.createCostDetails(as);
@@ -123,14 +131,6 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 	private List<Fact> createFactsForStandardCosting(final AcctSchema as)
 	{
-		//
-		if (docLine.getReceipt_InOutLine_ID() <= 0)
-		{
-			throw newPostingException()
-					// .setPreserveDocumentPostedStatus() // no need to repost. It will be re-enqueued when the receipt line is set
-					.setDetailMessage("Shall be posted again when receipt line is set");
-		}
-
 		if (docLine.getQty().signum() == 0)
 		{
 			return ImmutableList.of();
