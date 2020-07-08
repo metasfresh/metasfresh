@@ -131,7 +131,8 @@ class MasterWindowContainer extends PureComponent {
       missingIds.forEach((rowId) => {
         removedRows[rowId] = true;
       });
-    } else {
+    }
+    if (result && result.length) {
       rowsById = rowsById || {};
       result.forEach((row) => {
         rowsById[row.rowId] = { ...row };
