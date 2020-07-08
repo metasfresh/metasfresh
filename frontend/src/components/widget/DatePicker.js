@@ -173,11 +173,6 @@ class DatePicker extends Component {
 
   renderInput = ({ className, ...props }) => {
     let { value } = props;
-    // patch pre-formatated date that comes like this from BE
-    if (value && value.includes('-')) {
-      MomentTZ.locale(getCurrentActiveLocale());
-      value = MomentTZ(value).format(DATE_FIELD_FORMATS.Date);
-    }
     return (
       <div className={className}>
         <input

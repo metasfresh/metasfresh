@@ -579,7 +579,7 @@ export class RawWidget extends Component {
                 disabled: readonly,
                 tabIndex: tabIndex,
               }}
-              value={widgetValue}
+              value={this.generateMomentObj(widgetValue, TIME_FORMAT)}
               onChange={(date) => handleChange(widgetField, date)}
               patch={(date) =>
                 this.handlePatch(
