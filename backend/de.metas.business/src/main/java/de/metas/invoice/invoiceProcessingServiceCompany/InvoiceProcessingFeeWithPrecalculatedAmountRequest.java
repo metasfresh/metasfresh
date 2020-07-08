@@ -24,10 +24,8 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
-import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,14 +33,14 @@ import lombok.Value;
 import java.time.ZonedDateTime;
 
 @Value
-@Builder(toBuilder = true)
-public class InvoiceProcessingFeeCalculation
+@Builder
+public class InvoiceProcessingFeeWithPrecalculatedAmountRequest
 {
 	@NonNull
 	OrgId orgId;
 
 	@NonNull
-	ZonedDateTime evaluationDate;
+	ZonedDateTime paymentDate;
 
 	@NonNull
 	BPartnerId customerId;
@@ -51,14 +49,8 @@ public class InvoiceProcessingFeeCalculation
 	InvoiceId invoiceId;
 
 	@NonNull
-	BPartnerId serviceCompanyBPartnerId;
-
-	@NonNull
-	DocTypeId serviceInvoiceDocTypeId;
-
-	@NonNull
-	ProductId serviceFeeProductId;
-
-	@NonNull
 	Amount feeAmountIncludingTax;
+
+	@NonNull
+	BPartnerId serviceCompanyBPartnerId;
 }

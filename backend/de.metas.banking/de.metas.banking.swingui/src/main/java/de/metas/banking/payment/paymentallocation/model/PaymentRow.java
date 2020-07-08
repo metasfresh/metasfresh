@@ -39,6 +39,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
+import org.compiere.util.TimeUtil;
 
 public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
 {
@@ -248,6 +249,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 				.documentNo(paymentRow.getDocumentNo())
 				.openAmt(Money.of(paymentRow.getOpenAmtConv_APAdjusted(), currencyId))
 				.amountToAllocate(Money.of(paymentRow.getAppliedAmt_APAdjusted(), currencyId))
+				.dateTrx(TimeUtil.asLocalDate(paymentRow.getDocumentDate()))
 				.build();
 
 	}
