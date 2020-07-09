@@ -1,37 +1,6 @@
 package de.metas.handlingunits.inventory.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_InOut;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUTestHelper;
@@ -56,6 +25,7 @@ import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impl.InventoryBL;
@@ -66,6 +36,35 @@ import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_InOut;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -122,7 +121,7 @@ public class HUInternalUseInventoryProducerTests
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
 		// inventoryDAO = Services.get(IInventoryDAO.class);
-		inventoryService = new InventoryService(new InventoryRepository());
+		inventoryService = new InventoryService(new InventoryRepository(), SourceHUsService.get());
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
