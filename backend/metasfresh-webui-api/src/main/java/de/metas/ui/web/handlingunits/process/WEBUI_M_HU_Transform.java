@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -75,6 +76,8 @@ public class WEBUI_M_HU_Transform
 	// Services
 	@Autowired
 	private DocumentCollection documentsCollection;
+
+	private HUTransformService huTransformService = HUTransformService.newInstance();
 
 	//
 	// Parameters
@@ -332,7 +335,6 @@ public class WEBUI_M_HU_Transform
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-
 		final String actionName = p_Action;
 
 		if (ActionType.TU_To_NewLUs.toString().equals(actionName))
@@ -348,6 +350,9 @@ public class WEBUI_M_HU_Transform
 
 	private void onParameterChanged_ActionTUToNewLUs(final String parameterName)
 	{
+		@SuppressWarnings("ConstantConditions") // at this point i don't think the HU can be null.
+		final BigDecimal realTUQty = huTransformService.getMaximumQtyTU(getSingleSelectedRow().getM_HU());
+
 		if (PARAM_Action.equals(parameterName))
 		{
 			final I_M_HU_PI_Item defaultHUPIItem = newParametersFiller().getDefaultM_LU_PI_ItemOrNull();
@@ -355,13 +360,12 @@ public class WEBUI_M_HU_Transform
 
 			if (defaultHUPIItem != null)
 			{
-				p_QtyTU = defaultHUPIItem.getQty();
+				p_QtyTU = realTUQty.min(defaultHUPIItem.getQty());
 			}
 		}
-
 		else if (PARAM_M_HU_PI_Item_ID.equals(parameterName) && p_M_HU_PI_Item != null)
 		{
-			p_QtyTU = p_M_HU_PI_Item.getQty();
+			p_QtyTU = realTUQty.min(p_M_HU_PI_Item.getQty());
 		}
 	}
 
@@ -371,8 +375,10 @@ public class WEBUI_M_HU_Transform
 
 		if (packingItemOptional.isPresent())
 		{
+			final BigDecimal realCUQty = getSingleSelectedRow().getQtyCU();
+
 			p_M_HU_PI_Item_Product = packingItemOptional.get();
-			p_QtyCU = packingItemOptional.get().getQty();
+			p_QtyCU = realCUQty.min(packingItemOptional.get().getQty());
 		}
 	}
 }
