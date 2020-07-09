@@ -214,7 +214,15 @@ public class SourceHUsService
 		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
 	}
 
-	public void addSourceHUMarkerIfRequired(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
+	/**
+	 *  Creates a M_Source_HU record for the given HU, if it caries component products and the target warehouse has
+	 *  the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
+	 *
+	 * @param huId			target HU id
+	 * @param productId		target product Id
+	 * @param warehouseId   target warehouse ID
+	 */
+	public void addSourceHUMarkerIfCaringComponents(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
 	{
 		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
 
@@ -225,7 +233,9 @@ public class SourceHUsService
 
 		final I_M_Product product = productDAO.getById(productId);
 
-		if (product.isBOM())
+		final boolean notAComponentProduct = product.isBOM();
+
+		if (notAComponentProduct)
 		{
 			return;
 		}

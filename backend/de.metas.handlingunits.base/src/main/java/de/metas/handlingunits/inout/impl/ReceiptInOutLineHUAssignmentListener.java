@@ -41,7 +41,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
@@ -58,7 +57,7 @@ import java.util.Properties;
 public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentListenerAdapter
 {
 	public static final transient ReceiptInOutLineHUAssignmentListener instance = new ReceiptInOutLineHUAssignmentListener();
-	private static final SourceHUsService sourceHuService = SpringContextHolder.instance.getBean(SourceHUsService.class);
+	private final SourceHUsService sourceHuService = SourceHUsService.get();
 
 	private ReceiptInOutLineHUAssignmentListener()
 	{
@@ -91,7 +90,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		sourceHuService.addSourceHUMarkerIfRequired(huId, productId, warehouseId);
+		sourceHuService.addSourceHUMarkerIfCaringComponents(huId, productId, warehouseId);
 	}
 
 	private void activateHU(final I_M_HU hu, final I_M_InOutLine inoutLine, final String trxName)

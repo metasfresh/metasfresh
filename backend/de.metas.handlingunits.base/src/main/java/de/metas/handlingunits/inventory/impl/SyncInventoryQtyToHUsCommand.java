@@ -221,7 +221,7 @@ public class SyncInventoryQtyToHUsCommand
 				result.inventoryLineHU(resultInventoryLineHU);
 				needToSaveInventoryLine = true;
 
-				sourceHUsService.addSourceHUMarkerIfRequired(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
+				sourceHUsService.addSourceHUMarkerIfCaringComponents(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
 			}
 			else
 			{
@@ -245,7 +245,7 @@ public class SyncInventoryQtyToHUsCommand
 							.build();
 					result.inventoryLineHU(resultInventoryLineHU);
 
-					sourceHUsService.addSourceHUMarkerIfRequired(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
+					sourceHUsService.addSourceHUMarkerIfCaringComponents(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
 
 					needToSaveInventoryLine = true;
 				}
