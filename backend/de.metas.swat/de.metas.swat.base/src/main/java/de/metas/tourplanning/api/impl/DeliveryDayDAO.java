@@ -69,7 +69,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 	private final IQueryFilter<I_M_DeliveryDay> createDeliveryDayMatcher(@NonNull final IDeliveryDayQueryParams params)
 	{
 		Check.assumeNotNull(params, "params not null");
-		
+
 		final BPartnerLocationId partnerLocationId = params.getBPartnerLocationId() == null ? null : params.getBPartnerLocationId();
 		final BPartnerId partnerId = partnerLocationId == null ? null : partnerLocationId.getBpartnerId();
 
@@ -117,26 +117,20 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		final ZonedDateTime calculationTime = params.getCalculationTime();
 		if (calculationTime != null)
 		{
-			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, calculationTime);
+			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Operator.GREATER_OR_EQUAL, calculationTime);
 		}
 
 		// the delivery days that are in the same day as the datePromised have priority over the earlier ones.
 		final LocalDate preparationDay = params.getPreparationDay();
 		if (preparationDay != null)
 		{
-			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);
+			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);
+		}
 
-			queryBuilder.orderBy()
-					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Ascending, Nulls.Last);
-		}
-		else
-		{
-			// fallback to what it used to be: In case there is no calculation time set, simply fetch the
-			// delivery date that is closest to the promiseDate
-			queryBuilder.orderBy()
-					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Descending, Nulls.Last)
-					.addColumn(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
-		}
+		queryBuilder.orderBy()
+				.addColumn(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Direction.Ascending, Nulls.Last)
+				.addColumn(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_DeliveryDay.COLUMNNAME_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
 
 		final I_M_DeliveryDay deliveryDay = queryBuilder
 				.create()
