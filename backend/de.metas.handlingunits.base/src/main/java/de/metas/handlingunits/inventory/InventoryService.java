@@ -1,17 +1,5 @@
 package de.metas.handlingunits.inventory;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.X_C_DocType;
-import org.springframework.stereotype.Service;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -23,6 +11,7 @@ import de.metas.handlingunits.inventory.impl.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
@@ -33,6 +22,17 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -63,10 +63,12 @@ public class InventoryService
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@Getter
 	private final InventoryRepository inventoryRepository;
+	private final SourceHUsService sourceHUsService;
 
-	public InventoryService(@NonNull final InventoryRepository inventoryRepository)
+	public InventoryService(@NonNull final InventoryRepository inventoryRepository,@NonNull final SourceHUsService sourceHUsService)
 	{
 		this.inventoryRepository = inventoryRepository;
+		this.sourceHUsService = sourceHUsService;
 	}
 
 	public Inventory getById(@NonNull final InventoryId inventoryId)
@@ -151,6 +153,7 @@ public class InventoryService
 
 		SyncInventoryQtyToHUsCommand.builder()
 				.inventoryRepository(inventoryRepository)
+				.sourceHUsService(sourceHUsService)
 				.inventory(inventory)
 				.build()
 				//

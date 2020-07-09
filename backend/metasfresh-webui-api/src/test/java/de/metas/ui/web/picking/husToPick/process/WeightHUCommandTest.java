@@ -1,30 +1,5 @@
 package de.metas.ui.web.picking.husToPick.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.LocatorId;
-import org.assertj.core.api.ObjectAssert;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -55,6 +30,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.product.ProductId;
@@ -64,6 +40,29 @@ import de.metas.uom.UOMPrecision;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.LocatorId;
+import org.assertj.core.api.ObjectAssert;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -100,7 +99,7 @@ public class WeightHUCommandTest
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
 		final InventoryRepository inventoryRepo = new InventoryRepository();
-		this.inventoryService = new InventoryService(inventoryRepo);
+		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
 		this.inventoryLineAggregatorFactory = new InventoryLineAggregatorFactory();
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));

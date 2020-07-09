@@ -140,7 +140,7 @@ public class XLS_OLCand_Row_Expectation
 		}
 		if (qtyUOM != null)
 		{
-			Assert.assertThat("QtyUOM" + messageSuffix, row.getQtyUOM(), Matchers.comparesEqualTo(qtyUOM));
+			Assert.assertThat("QtyUOM" + messageSuffix, row.getQtyInUOM(), Matchers.comparesEqualTo(qtyUOM));
 		}
 
 		if (datePromised != null)

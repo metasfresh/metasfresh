@@ -134,7 +134,7 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 							final Excel_OLCand_Row xlsRow = Excel_OLCand_Row.ofMap(row);
 
 							// Discard rows on which user has ordered nothing.
-							if (xlsRow.getQtyUOM() == null || xlsRow.getQtyUOM().signum() <= 0)
+							if (xlsRow.getQtyInUOM() == null || xlsRow.getQtyInUOM().signum() <= 0)
 							{
 								logger.debug("Excel: Skip row because has no Qty to order: {}", xlsRow);
 								continue;
