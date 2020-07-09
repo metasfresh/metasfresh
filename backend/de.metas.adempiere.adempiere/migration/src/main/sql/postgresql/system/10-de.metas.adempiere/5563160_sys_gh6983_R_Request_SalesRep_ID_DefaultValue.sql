@@ -8,7 +8,3 @@ UPDATE AD_Column SET DefaultValue='@#AD_User_ID/-1@',Updated=TO_TIMESTAMP('2020-
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('r_request','SalesRep_ID','NUMERIC(10)',null,null)
 ;
-
--- migration
-
-update R_Request set salesRep_ID = createdBy where salesRep_ID is null;
