@@ -125,10 +125,20 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		if (preparationDay != null)
 		{
 			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);
+
+			queryBuilder.orderBy()
+					.addColumn(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Direction.Ascending, Nulls.Last);
+
+		}
+		else
+		{
+			// fallback to what it used to be: In case there is no calculation time set, simply fetch the
+			// delivery date that is closest to the promiseDate
+			queryBuilder.orderBy()
+					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Descending, Nulls.Last);
 		}
 
 		queryBuilder.orderBy()
-				.addColumn(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_M_DeliveryDay.COLUMNNAME_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
 
