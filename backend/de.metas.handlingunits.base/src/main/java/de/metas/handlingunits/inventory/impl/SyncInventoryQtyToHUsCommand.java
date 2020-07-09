@@ -1,17 +1,5 @@
 package de.metas.handlingunits.inventory.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.Env;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -43,6 +31,7 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
@@ -58,6 +47,16 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -91,15 +90,18 @@ public class SyncInventoryQtyToHUsCommand
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final InventoryRepository inventoryRepository;
+	private final SourceHUsService sourceHUsService;
 
 	private final Inventory inventory;
 
 	@Builder
 	private SyncInventoryQtyToHUsCommand(
 			@NonNull final InventoryRepository inventoryRepository,
+			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final Inventory inventory)
 	{
 		this.inventoryRepository = inventoryRepository;
+		this.sourceHUsService = sourceHUsService;
 		this.inventory = inventory;
 	}
 
@@ -209,13 +211,17 @@ public class SyncInventoryQtyToHUsCommand
 
 			if (inventoryLine.getSingleLineHU().getHuId() == null)
 			{
+				final HuId createdHUId = extractSingleCreatedHUId(huDestination);
+
 				final InventoryLineHU resultInventoryLineHU = inventoryLine
 						.getSingleLineHU()
 						.toBuilder()
-						.huId(extractSingleCreatedHUId(huDestination))
+						.huId(createdHUId)
 						.build();
 				result.inventoryLineHU(resultInventoryLineHU);
 				needToSaveInventoryLine = true;
+
+				sourceHUsService.addSourceHUMarkerIfRequired(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
 			}
 			else
 			{
@@ -230,12 +236,17 @@ public class SyncInventoryQtyToHUsCommand
 
 				if (inventoryLineHU.getHuId() == null)
 				{
+					final HuId createdHUId = extractSingleCreatedHUId(huDestination);
+
 					final InventoryLineHU resultInventoryLineHU = inventoryLine
 							.getSingleLineHU()
 							.toBuilder()
-							.huId(extractSingleCreatedHUId(huDestination))
+							.huId(createdHUId)
 							.build();
 					result.inventoryLineHU(resultInventoryLineHU);
+
+					sourceHUsService.addSourceHUMarkerIfRequired(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
+
 					needToSaveInventoryLine = true;
 				}
 				else
