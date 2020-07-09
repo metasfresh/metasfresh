@@ -552,6 +552,7 @@ public class ProcessExecutionResult
 		return reportData;
 	}
 
+	@Nullable
 	public String getReportFilename()
 	{
 		return reportFilename;
