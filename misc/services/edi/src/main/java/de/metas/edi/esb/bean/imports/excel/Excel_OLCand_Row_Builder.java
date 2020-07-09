@@ -70,6 +70,9 @@ public class Excel_OLCand_Row_Builder
 	//
 	private static final String MAPKEY_Price = "Preis";
 	BigDecimal price;
+	private static final String MAPKEY_PriceUOM_x12de355 = "price_uom_x12de355";
+	String priceUOM_x12de355;
+
 	//
 	private static final String MAPKEY_POReference = "Bestellung Nr";
 	String POReference;
@@ -111,37 +114,38 @@ public class Excel_OLCand_Row_Builder
 	public Excel_OLCand_Row_Builder setFromMap(@NonNull final Map<String, Object> map)
 	{
 		// NOTE: we need to create a new map, because we want to use case insensitive keys.
-		final TreeMap<String, Object> map2 = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-		map2.putAll(map);
+		final TreeMap<String, Object> caseInsensitiveKeysMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		caseInsensitiveKeysMap.putAll(map);
 
 		try
 		{
-			this.lineNo = extractInteger(map2, MAPKEY_LineNo);
+			this.lineNo = extractInteger(caseInsensitiveKeysMap, MAPKEY_LineNo);
 
-			this.M_Product_ID = coalesce(extractInteger(map2, MAPKEY_M_Product_ID), -1);
-			this.productDescription = extractString(map2, MAPKEY_ProductDescription);
-			this.productAttributes = extractString(map2, MAPKEY_ProductAttributes);
+			this.M_Product_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_Product_ID), -1);
+			this.productDescription = extractString(caseInsensitiveKeysMap, MAPKEY_ProductDescription);
+			this.productAttributes = extractString(caseInsensitiveKeysMap, MAPKEY_ProductAttributes);
 			//
-			this.UOM_x12de355 = extractString(map2, MAPKEY_UOM_x12de355);
-			this.qtyUOM = coalesce(extractInteger(map2, MAPKEY_QtyUOM), 0);
-			this.qtyCUsPerTU = extractBigDecimal(map2, MAPKEY_QtyCUsPerTU);
-			this.M_HU_PI_Item_Product_ID = coalesce(extractInteger(map2, MAPKEY_M_HU_PI_Item_Product_ID), -1);
+			this.UOM_x12de355 = extractString(caseInsensitiveKeysMap, MAPKEY_UOM_x12de355);
+			this.qtyUOM = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_QtyUOM), 0);
+			this.qtyCUsPerTU = extractBigDecimal(caseInsensitiveKeysMap, MAPKEY_QtyCUsPerTU);
+			this.M_HU_PI_Item_Product_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_HU_PI_Item_Product_ID), -1);
 			//
-			this.price = extractBigDecimal(map2, MAPKEY_Price);
+			this.priceUOM_x12de355 = extractString(caseInsensitiveKeysMap, MAPKEY_PriceUOM_x12de355);
+			this.price = extractBigDecimal(caseInsensitiveKeysMap, MAPKEY_Price);
 			//
-			this.POReference = extractString(map2, MAPKEY_POReference);
+			this.POReference = extractString(caseInsensitiveKeysMap, MAPKEY_POReference);
 			//
-			this.datePromised = extractDate(map2, MAPKEY_DatePromised);
+			this.datePromised = extractDate(caseInsensitiveKeysMap, MAPKEY_DatePromised);
 			//
-			this.M_ProductPrice_ID = coalesce(extractInteger(map2, MAPKEY_M_ProductPrice_ID), -1);
-			this.M_ProductPrice_Attribute_ID = coalesce(extractInteger(map2, MAPKEY_M_ProductPrice_Attribute_ID), -1);
-			this.C_BPartner_ID = coalesce(extractInteger(map2, MAPKEY_C_BPartner_ID), -1);
-			this.C_BPartner_Location_ID = coalesce(extractInteger(map2, MAPKEY_C_BPartner_Location_ID), -1);
+			this.M_ProductPrice_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_ProductPrice_ID), -1);
+			this.M_ProductPrice_Attribute_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_ProductPrice_Attribute_ID), -1);
+			this.C_BPartner_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_C_BPartner_ID), -1);
+			this.C_BPartner_Location_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_C_BPartner_Location_ID), -1);
 			return this;
 		}
 		catch (final Exception e)
 		{
-			throw new RuntimeException("Failed building " + Excel_OLCand_Row.class + " from " + map2, e);
+			throw new RuntimeException("Failed building " + Excel_OLCand_Row.class + " from " + caseInsensitiveKeysMap, e);
 		}
 	}
 
