@@ -151,11 +151,11 @@ public class ExcelImpCOLCandTypeBuilder
 				{
 					throw new RuntimeException("LineNo=" + row.getLineNo() + ": if M_HU_PI_Item_Product_ID>0, then QtyCUsPerTU=" + qtyCUsPerTU + " has to be >0: ");
 				}
-				olcand.setQty(qtyCUsPerTU.multiply(row.getQtyUOM()));
+				olcand.setQty(qtyCUsPerTU.multiply(row.getQtyInUOM()));
 			}
 			else
 			{
-				olcand.setQty(row.getQtyUOM());
+				olcand.setQty(row.getQtyInUOM());
 			}
 		}
 
