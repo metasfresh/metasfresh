@@ -135,7 +135,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 			// fallback to what it used to be: In case there is no calculation time set, simply fetch the
 			// delivery date that is closest to the promiseDate
 			queryBuilder.orderBy()
-					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Descending, Nulls.Last);
+					.addColumn(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Direction.Descending, Nulls.Last);
 		}
 
 		queryBuilder.orderBy()
