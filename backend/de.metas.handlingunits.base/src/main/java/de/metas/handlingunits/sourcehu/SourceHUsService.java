@@ -215,14 +215,14 @@ public class SourceHUsService
 	}
 
 	/**
-	 *  Creates a M_Source_HU record for the given HU, if it caries component products and the target warehouse has
+	 *  Creates a M_Source_HU record for the given HU, if it carries component products and the target warehouse has
 	 *  the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
 	 *
 	 * @param huId			target HU id
 	 * @param productId		target product Id
 	 * @param warehouseId   target warehouse ID
 	 */
-	public void addSourceHUMarkerIfCaringComponents(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
+	public void addSourceHUMarkerIfCarringComponents(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
 	{
 		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
 
