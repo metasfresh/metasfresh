@@ -73,6 +73,11 @@ public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("CopyRecordFactory not enabled for the table the row belongs to.");
 		}
+
+		if (ref.getTableName().equals(context.getTableName()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Same Table as in document in sub-tab, can only have one line.");
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 }
