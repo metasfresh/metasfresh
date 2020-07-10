@@ -11,8 +11,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -23,6 +21,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 	private I_M_HU_PI_Item_Product piTU_Item_Product;
 	private I_M_HU_PI_Item_Product huDefItemProductVirtual;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -79,7 +79,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 	@Test
 	public void createNewLUTUConfiguration_with_TU_and_LU()
 	{
-		final I_PP_Order ppOrder = createPPOrder(piTU_Item_Product);
+		final I_PP_Order ppOrder = createPPOrder(piTU_Item_Product, TEN);
 
 		// invoke the method under test
 		final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandler.instance
@@ -87,9 +87,39 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 
 		assertThat(lutuConfiguration.getQtyCU()).isEqualByComparingTo(TEN);
 		assertThat(lutuConfiguration.getQtyTU()).as("our CUs fit into one TU").isEqualByComparingTo(ONE);
+		assertThat(lutuConfiguration.getQtyLU()).isEqualByComparingTo("1");
 	}
 
-	private I_PP_Order createPPOrder(final I_M_HU_PI_Item_Product piTU_Item_Product)
+	@Test
+	public void createNewLUTUConfiguration_with_MultipleTUandLU()
+	{
+		final I_PP_Order ppOrder = createPPOrder(piTU_Item_Product, BigDecimal.valueOf(101));
+
+		assertThat(ppOrder.getQtyOrdered()).isEqualByComparingTo("101");
+
+		// invoke the method under test
+		final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandler.instance
+				.createNewLUTUConfiguration(ppOrder);
+
+		assertThat(lutuConfiguration.getQtyCU()).isEqualByComparingTo("10");
+		assertThat(lutuConfiguration.getQtyTU()).isEqualByComparingTo("3");
+		assertThat(lutuConfiguration.getQtyLU()).isEqualByComparingTo("4");
+	}
+
+	@Test
+	public void createNewLUTUConfiguration_with_virtual_CU()
+	{
+		final I_PP_Order ppOrder = createPPOrder(huDefItemProductVirtual, TEN);
+
+		// invoke the method under test
+		final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandler.instance
+				.createNewLUTUConfiguration(ppOrder);
+
+		assertThat(lutuConfiguration.isInfiniteQtyCU()).isTrue();
+		assertThat(lutuConfiguration.getQtyCU()).isEqualByComparingTo(ZERO);
+	}
+
+	private I_PP_Order createPPOrder(final I_M_HU_PI_Item_Product piTU_Item_Product, final BigDecimal qtyOrdered)
 	{
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setM_HU_PI_Item_Product(piTU_Item_Product);
@@ -100,21 +130,8 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 		ppOrder.setM_Product_ID(productId.getRepoId());
 		ppOrder.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		ppOrder.setC_UOM_ID(productUOM.getC_UOM_ID());
-		ppOrder.setQtyOrdered(TEN);
+		ppOrder.setQtyOrdered(qtyOrdered);
 		save(ppOrder);
 		return ppOrder;
-	}
-
-	@Test
-	public void createNewLUTUConfiguration_with_virtual_CU()
-	{
-		final I_PP_Order ppOrder = createPPOrder(huDefItemProductVirtual);
-
-		// invoke the method under test
-		final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandler.instance
-				.createNewLUTUConfiguration(ppOrder);
-
-		assertThat(lutuConfiguration.isInfiniteQtyCU()).isTrue();
-		assertThat(lutuConfiguration.getQtyCU()).isEqualByComparingTo(ZERO);
 	}
 }

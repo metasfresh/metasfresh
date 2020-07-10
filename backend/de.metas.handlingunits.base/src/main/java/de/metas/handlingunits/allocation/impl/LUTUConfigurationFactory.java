@@ -580,7 +580,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 				lutuConfiguration.setQtyLU(BigDecimal.ONE);
 			}
 
-			// NOTE: we are returning here, because this is a corner case which we handled separatelly from other cases
+			// NOTE: we are returning here, because this is a corner case which we handled separately from other cases
 			return;
 		}
 
