@@ -73,6 +73,13 @@ public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("CopyRecordFactory not enabled for the table the row belongs to.");
 		}
+
+		if (ref.getTableName().equals(context.getTableName()))
+		{
+			// we have e.g. in the C_BPartner-window two subtabs ("Customer" and "Vendor") that show a different view on the same C_BPartner record. 
+			// There, cloning the subtab-line makes no sense
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The main-window has the same Record as the sub-tab, there can only be one line.");
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 }
