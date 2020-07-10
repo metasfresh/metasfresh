@@ -1,0 +1,10 @@
+-- 2020-05-07T11:53:25.996Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-05-07 13:53:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=3321
+;
+
+-- 2020-05-07T11:54:21.399Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2020-05-07 13:54:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570681
+;
+

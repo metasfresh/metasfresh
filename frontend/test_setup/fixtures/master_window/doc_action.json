@@ -1,0 +1,26 @@
+{
+  "data1": {
+    "values": [
+      {
+        "key": "CL",
+        "caption": "Close",
+        "description": "Finally close this transaction. It cannot be re-activated."
+      },
+      {
+        "key": "CO",
+        "caption": "Complete",
+        "description": "Generate documents and complete transaction"
+      },
+      {
+        "key": "PR",
+        "caption": "Prepare",
+        "description": "Check Document conistency and check Inventory"
+      },
+      {
+        "key": "VO",
+        "caption": "Void",
+        "description": "Set all quantities to zero and complete transaction"
+      }
+    ]
+  }
+}

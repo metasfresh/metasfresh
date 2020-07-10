@@ -1,0 +1,578 @@
+{
+  "data1": {
+    "windowId": "143",
+    "viewId": "143-F",
+    "headerProperties": {
+      "entries": []
+    },
+    "size": 1,
+    "orderBy": [
+      {
+        "fieldName": "DateOrdered",
+        "ascending": false
+      },
+      {
+        "fieldName": "C_Order_ID",
+        "ascending": false
+      }
+    ],
+    "result": [
+      {
+        "id": "1000000",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000000",
+            "widgetType": "Integer"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "<540008>",
+              "active": false
+            }
+          },
+          "InvoiceStatus": {
+            "field": "InvoiceStatus",
+            "value": {
+              "key": "O",
+              "caption": "<O>",
+              "active": false
+            }
+          },
+          "DeliveryStatus": {
+            "field": "DeliveryStatus",
+            "value": {
+              "key": "O",
+              "caption": "<O>",
+              "active": false
+            }
+          },
+          "C_DocTypeTarget_ID": {
+            "field": "C_DocTypeTarget_ID",
+            "value": {
+              "key": "1000030",
+              "caption": "Sales Order"
+            }
+          },
+          "DocStatus": {
+            "field": "DocStatus",
+            "value": {
+              "key": "DR",
+              "caption": "Drafted"
+            }
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            }
+          },
+          "DocumentNo": {
+            "field": "DocumentNo",
+            "value": "0001"
+          },
+          "DateOrdered": {
+            "field": "DateOrdered",
+            "value": "2020-05-14"
+          },
+          "OfferValidDays": {
+            "field": "OfferValidDays",
+            "value": 0
+          },
+          "C_BPartner_ID": {
+            "field": "C_BPartner_ID",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            }
+          },
+          "Bill_BPartner_ID": {
+            "field": "Bill_BPartner_ID",
+            "value": {
+              "key": "2156425",
+              "caption": "<2156425>",
+              "active": false
+            }
+          },
+          "C_BPartner_Location_ID": {
+            "field": "C_BPartner_Location_ID",
+            "value": {
+              "key": "2205175",
+              "caption": "Testadresse 3"
+            }
+          },
+          "Bill_Location_ID": {
+            "field": "Bill_Location_ID",
+            "value": {
+              "key": "2205175",
+              "caption": "<2205175>",
+              "active": false
+            }
+          },
+          "BPartnerAddress": {
+            "field": "BPartnerAddress",
+            "value": "Test Kunde 1\nteststraße 996\n45678 teststadt 3"
+          },
+          "BillToAddress": {
+            "field": "BillToAddress",
+            "value": "Test Kunde 1\nteststraße 996\n45678 teststadt 3"
+          },
+          "IsEdiEnabled": {
+            "field": "IsEdiEnabled",
+            "value": false
+          },
+          "InvoiceRule": {
+            "field": "InvoiceRule",
+            "value": {
+              "key": "D",
+              "caption": "<D>",
+              "active": false
+            }
+          },
+          "SalesRep_ID": {
+            "field": "SalesRep_ID",
+            "value": {
+              "key": "100",
+              "caption": "<100>",
+              "active": false
+            }
+          },
+          "DeliveryViaRule": {
+            "field": "DeliveryViaRule",
+            "value": {
+              "key": "S",
+              "caption": "<S>",
+              "active": false
+            }
+          },
+          "DeliveryRule": {
+            "field": "DeliveryRule",
+            "value": {
+              "key": "F",
+              "caption": "<F>",
+              "active": false
+            }
+          },
+          "IsDropShip": {
+            "field": "IsDropShip",
+            "value": false
+          },
+          "DeliveryToAddress": {
+            "field": "DeliveryToAddress",
+            "value": "metasfresh AG\nAm Nossbacher Weg 2\n53179 Bonn"
+          },
+          "DatePromised": {
+            "field": "DatePromised",
+            "value": "2020-05-14T23:59:59.000+02:00"
+          },
+          "PreparationDate": {
+            "field": "PreparationDate",
+            "value": "2020-05-14T23:59:59.000+02:00"
+          },
+          "M_PricingSystem_ID": {
+            "field": "M_PricingSystem_ID",
+            "value": {
+              "key": "2000837",
+              "caption": "Testpreisliste Kunden"
+            }
+          },
+          "PaymentRule": {
+            "field": "PaymentRule",
+            "value": {
+              "key": "P",
+              "caption": "<P>",
+              "active": false
+            }
+          },
+          "CreditpassStatus": {
+            "field": "CreditpassStatus",
+            "value": "Request not needed"
+          },
+          "CreditpassFlag": {
+            "field": "CreditpassFlag",
+            "value": false
+          },
+          "DocAction": {
+            "field": "DocAction",
+            "value": {
+              "key": "CO",
+              "caption": "<CO>",
+              "active": false
+            }
+          },
+          "IsUseHandOver_Location": {
+            "field": "IsUseHandOver_Location",
+            "value": false
+          },
+          "C_Currency_ID": {
+            "field": "C_Currency_ID",
+            "value": {
+              "key": "102",
+              "caption": "EUR",
+              "description": "Euro (100 Cent)"
+            }
+          },
+          "C_ConversionType_ID": {
+            "field": "C_ConversionType_ID",
+            "value": {
+              "key": "114",
+              "caption": "<114>",
+              "active": false
+            }
+          },
+          "ChargeAmt": {
+            "field": "ChargeAmt",
+            "value": "0.00"
+          },
+          "PriorityRule": {
+            "field": "PriorityRule",
+            "value": {
+              "key": "5",
+              "caption": "<5>",
+              "active": false
+            }
+          },
+          "UpdatedBy": {
+            "field": "UpdatedBy",
+            "value": {
+              "key": "2188223",
+              "caption": "<2188223>",
+              "active": false
+            }
+          },
+          "Updated": {
+            "field": "Updated",
+            "value": "2020-05-14T16:35:19.000+02:00"
+          },
+          "CreatedBy": {
+            "field": "CreatedBy",
+            "value": {
+              "key": "2188223",
+              "caption": "<2188223>",
+              "active": false
+            }
+          },
+          "Created": {
+            "field": "Created",
+            "value": "2020-05-14T16:35:19.000+02:00"
+          },
+          "IsDiscountPrinted": {
+            "field": "IsDiscountPrinted",
+            "value": false
+          },
+          "Description": {
+            "field": "Description",
+            "value": ""
+          },
+          "IsSalesPartnerRequired": {
+            "field": "IsSalesPartnerRequired",
+            "value": false
+          },
+          "M_PriceList_ID": {
+            "field": "M_PriceList_ID",
+            "value": {
+              "key": "2008396",
+              "caption": "<2008396>",
+              "active": false
+            }
+          },
+          "C_Order_ID": {
+            "field": "C_Order_ID",
+            "value": 1000000
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "<1000000>",
+              "active": false
+            }
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true
+          },
+          "C_DocType_ID": {
+            "field": "C_DocType_ID",
+            "value": {
+              "key": "0",
+              "caption": "<0>",
+              "active": false
+            }
+          },
+          "IsApproved": {
+            "field": "IsApproved",
+            "value": false
+          },
+          "IsCreditApproved": {
+            "field": "IsCreditApproved",
+            "value": false
+          },
+          "IsDelivered": {
+            "field": "IsDelivered",
+            "value": false
+          },
+          "IsInvoiced": {
+            "field": "IsInvoiced",
+            "value": false
+          },
+          "IsPrinted": {
+            "field": "IsPrinted",
+            "value": false
+          },
+          "IsTransferred": {
+            "field": "IsTransferred",
+            "value": false
+          },
+          "DateAcct": {
+            "field": "DateAcct",
+            "value": "2020-05-14"
+          },
+          "C_PaymentTerm_ID": {
+            "field": "C_PaymentTerm_ID",
+            "value": {
+              "key": "1000009",
+              "caption": "<1000009>",
+              "active": false
+            }
+          },
+          "TotalLines": {
+            "field": "TotalLines",
+            "value": "20.00"
+          },
+          "GrandTotal": {
+            "field": "GrandTotal",
+            "value": "21.40"
+          },
+          "Processing": {
+            "field": "Processing",
+            "value": "N"
+          },
+          "Processed": {
+            "field": "Processed",
+            "value": false
+          },
+          "IsSOTrx": {
+            "field": "IsSOTrx",
+            "value": true
+          },
+          "Posted": {
+            "field": "Posted",
+            "value": {
+              "key": "N",
+              "caption": "Not Posted"
+            }
+          },
+          "IsTaxIncluded": {
+            "field": "IsTaxIncluded",
+            "value": false
+          },
+          "IsSelected": {
+            "field": "IsSelected",
+            "value": false
+          },
+          "SendEMail": {
+            "field": "SendEMail",
+            "value": false
+          },
+          "IsSelfService": {
+            "field": "IsSelfService",
+            "value": false
+          },
+          "OrderType": {
+            "field": "OrderType",
+            "value": "SO"
+          },
+          "IncotermLocation": {
+            "field": "IncotermLocation",
+            "value": ""
+          },
+          "CompleteOrderDiscount": {
+            "field": "CompleteOrderDiscount",
+            "value": "0"
+          },
+          "IsUseBPartnerAddress": {
+            "field": "IsUseBPartnerAddress",
+            "value": false
+          },
+          "IsUseBillToAddress": {
+            "field": "IsUseBillToAddress",
+            "value": false
+          },
+          "Lines": {
+            "field": "Lines",
+            "value": 1
+          },
+          "CurSymbol": {
+            "field": "CurSymbol",
+            "value": "€"
+          },
+          "Sum_Tax": {
+            "field": "Sum_Tax",
+            "value": "1.40"
+          },
+          "net_in_base_currency": {
+            "field": "net_in_base_currency",
+            "value": "22.60"
+          },
+          "BaseCurSymbol": {
+            "field": "BaseCurSymbol",
+            "value": "CHF"
+          },
+          "netsum": {
+            "field": "netsum",
+            "value": "20.00"
+          },
+          "IsUseDeliveryToAddress": {
+            "field": "IsUseDeliveryToAddress",
+            "value": false
+          },
+          "FreightCostRule": {
+            "field": "FreightCostRule",
+            "value": {
+              "key": "I",
+              "caption": "<I>",
+              "active": false
+            }
+          },
+          "FreightAmt": {
+            "field": "FreightAmt",
+            "value": "0.00"
+          },
+          "DescriptionBottom": {
+            "field": "DescriptionBottom",
+            "value": ""
+          },
+          "IsCommissionLock": {
+            "field": "IsCommissionLock",
+            "value": false
+          },
+          "AD_Language": {
+            "field": "AD_Language",
+            "value": "de_DE"
+          },
+          "IsEdiInvoicRecipient": {
+            "field": "IsEdiInvoicRecipient",
+            "value": false
+          },
+          "QtyInvoiced": {
+            "field": "QtyInvoiced",
+            "value": "0"
+          },
+          "QtyMoved": {
+            "field": "QtyMoved",
+            "value": "0"
+          },
+          "QtyOrdered": {
+            "field": "QtyOrdered",
+            "value": "0"
+          },
+          "ContractStatus": {
+            "field": "ContractStatus",
+            "value": {
+              "key": "A",
+              "caption": "<A>",
+              "active": false
+            }
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false
+      }
+    ],
+    "columnsByFieldName": {
+      "Qty_FastInput_TU": {
+        "fieldName": "Qty_FastInput_TU",
+        "widgetType": "Quantity",
+        "maxPrecision": 0
+      },
+      "Qty_FastInput": {
+        "fieldName": "Qty_FastInput",
+        "widgetType": "Quantity",
+        "maxPrecision": 0
+      },
+      "ChargeAmt": {
+        "fieldName": "ChargeAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "TotalLines": {
+        "fieldName": "TotalLines",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "GrandTotal": {
+        "fieldName": "GrandTotal",
+        "widgetType": "Amount",
+        "maxPrecision": 1
+      },
+      "CompleteOrderDiscount": {
+        "fieldName": "CompleteOrderDiscount",
+        "widgetType": "Number",
+        "maxPrecision": 0
+      },
+      "Volume": {
+        "fieldName": "Volume",
+        "widgetType": "Number",
+        "maxPrecision": 0
+      },
+      "Weight": {
+        "fieldName": "Weight",
+        "widgetType": "Number",
+        "maxPrecision": 0
+      },
+      "Sum_Tax": {
+        "fieldName": "Sum_Tax",
+        "widgetType": "Amount",
+        "maxPrecision": 1
+      },
+      "net_in_base_currency": {
+        "fieldName": "net_in_base_currency",
+        "widgetType": "Amount",
+        "maxPrecision": 1
+      },
+      "netsum": {
+        "fieldName": "netsum",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "FreightAmt": {
+        "fieldName": "FreightAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "AmountRefunded": {
+        "fieldName": "AmountRefunded",
+        "widgetType": "Number",
+        "maxPrecision": 0
+      },
+      "AmountTendered": {
+        "fieldName": "AmountTendered",
+        "widgetType": "Number",
+        "maxPrecision": 0
+      },
+      "QtyInvoiced": {
+        "fieldName": "QtyInvoiced",
+        "widgetType": "Quantity",
+        "maxPrecision": 0
+      },
+      "QtyMoved": {
+        "fieldName": "QtyMoved",
+        "widgetType": "Quantity",
+        "maxPrecision": 0
+      },
+      "QtyOrdered": {
+        "fieldName": "QtyOrdered",
+        "widgetType": "Quantity",
+        "maxPrecision": 0
+      }
+    },
+    "firstRow": 0,
+    "pageLength": 20,
+    "queryLimit": 5000,
+    "type": "143"
+  }
+}

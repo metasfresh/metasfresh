@@ -1,0 +1,13 @@
+{
+  "productForPackingMaterial": "ProductPackingMaterial",
+  "packingInstructionsName": "ProductPackingInstructions",
+  "productName1": "Product1",
+  "productName2": "Product2",
+  "productCategoryName": "ProductCategoryName",
+  "discountSchemaName": "DiscountSchema",
+  "priceSystemName": "PriceSystem",
+  "priceListName": "PriceList",
+  "priceListVersionName": "PriceListVersion",
+  "vendorName": "Vendor",
+  "generateInvoicesNotificationModalText": "Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden."
+}

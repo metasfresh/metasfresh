@@ -1,0 +1,18 @@
+{
+    "comment_1": "The fixture is more of a dictionary with contract related terms",
+
+    "extensionType_for_first_priod" : "Extend contract for first period",
+    "de_DE__extensionType_for_first_priod": "Erste Vertragsperiode verlängern",
+
+    "extensionType_for_all_periods" : "Extend contract for all periods",
+    "de_DE__extensionType_for_all_periods" :"Sofort alle Vertragsperioden verlängern",
+
+    "conditionsType_procuremnt": "Procurement contract",
+    "de_DE__conditionsType_procuremnt": "Liefervereinbarung",
+
+    "conditionsType_subscription": "Subscription",
+    "de_DE__conditionsType_subscription": "Abonnement",
+
+    "conditionsType_quality_based": "Quality-based",
+    "de_DE__conditionsType_quality_based": "Gemäß Lagerkonferenz"
+}

@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "metasfresh-webui-mf15-dev"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # not sure if we need this..to dig into it, this issue can be a starting point: 
+    #  https://github.com/nginxinc/kubernetes-ingress/pull/62
+    # nginx.org/ssl-services: "hello-world-svc"
+    ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+      - "demouser-demo.metasfresh.com"
+      secretName: tls-certificate
+  rules:
+  - host: "demouser-demo.metasfresh.com"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: "metasfresh-webui-mf15-dev"
+          servicePort: 80

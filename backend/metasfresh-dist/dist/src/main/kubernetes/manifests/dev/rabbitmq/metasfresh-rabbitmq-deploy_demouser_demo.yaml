@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "metasfresh-rabbitmq-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-rabbitmq
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-rabbitmq-mf15-dev"
+  namespace: "default"
+spec:
+  selector:
+    matchLabels:
+      de.metas.deployment.type: metasfresh-rabbitmq
+      de.metas.deployment.user: "mf15"
+      de.metas.deployment.stage: "dev"
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-rabbitmq
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+    spec:
+      containers:
+      - env:
+        - name: RABBITMQ_VM_MEMORY_HIGH_WATERMARK
+          value: "0.90"
+        name: rabbitmq
+        image: dockerhub.metasfresh.com/rabbitmq:3.7.4-management
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 5672
+          - containerPort: 15672
+        resources:
+          limits:
+            memory: 128Mi
+        volumeMounts:
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
+      volumes:
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone

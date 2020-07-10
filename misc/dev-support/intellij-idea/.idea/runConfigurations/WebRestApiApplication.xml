@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="WebRestApiApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="all local">
+    <module name="metasfresh-webui-api" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.ui.web.WebRestApiApplication" />
+    <option name="VM_PARAMETERS" value="-Xmx736M -DPropertyFile=$ProjectFileDir$\metasfresh.properties" />
+    <option name="PROGRAM_PARAMETERS" value="--debug" />
+    <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,131 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.dist</groupId>
+		<artifactId>metasfresh-dist</artifactId>
+		<version>10.0.0</version>
+	</parent>
+
+	<artifactId>metasfresh-dist-serverRoot</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+			and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent -->
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+
+		<start-class>de.metas.ServerBoot</start-class>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<!--
+		de.metas.fresh.base already comes in as transitive dependency of metasfresh-dist-base, 
+		but we have it here explicitly because otherwise: 
+			if e.g. version 2.262 is building de.metas.adempiere.adempiere.serverRoot.base-2.262 was already deployed, 
+			but de.metas.fresh.base 2.262 was not jet deployed, then this pom's	metasfresh.version might be resolved to 2.262
+			while the metasfresh.version of the metasfresh-dist-base's pom might be resolved to 2.261
+		-->
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.report</groupId>
+			<artifactId>metasfresh-report-service</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch.server</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business.rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business.rest-api-impl</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.rest-api-impl</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.inbound</groupId>
+			<artifactId>de.metas.inbound.mail</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<id>spring-boot-serverRoot-create-executable-jar</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>true</executable>
+							<mainClass>${start-class}</mainClass>
+							
+							<!-- this also provides the super-jar to the successive docker build 
+								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
+								that is activated by the presence of the scr/main/docker folder -->
+							<outputDirectory>${docker.build.directory}</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>spring-boot-serverRoot-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

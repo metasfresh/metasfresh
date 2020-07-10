@@ -1,0 +1,9 @@
+/target/
+/.classpath
+/.project
+/.settings/
+*.cache
+*.diff
+
+/bin/
+/application.properties

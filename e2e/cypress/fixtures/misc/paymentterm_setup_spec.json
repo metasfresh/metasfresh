@@ -1,0 +1,5 @@
+{
+  "name": "PaymentTerm",
+  "netDays": 5,
+  "graceDays": 3
+}
