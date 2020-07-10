@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
@@ -73,6 +74,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
@@ -105,6 +107,7 @@ public class ESRImportBL implements IESRImportBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
@@ -636,7 +639,7 @@ public class ESRImportBL implements IESRImportBL
 			// guard; there was some crappy beforeSave() code in MPayment, there might be more
 			Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
-			line.setC_Payment(payment);
+			line.setC_Payment_ID(payment.getC_Payment_ID());
 
 			// despite the amounts are fitting, we can't set this status, because there was a problem with the invoice that we found (e.g. wrong org),
 			// and the user might for example want to transfer the money back to the customer
@@ -683,7 +686,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			if (line.getC_Payment_ID() > 0)
 			{
-				final I_C_Payment payment = line.getC_Payment();
+				final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(line.getC_Payment_ID()));
 				if (payment.getC_Invoice_ID() == invoice.getC_Invoice_ID())
 				{
 					return true;
@@ -733,7 +736,8 @@ public class ESRImportBL implements IESRImportBL
 			}
 			else
 			{
-				if (importLine.getC_Payment().getC_Invoice_ID() <= 0)
+				final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(importLine.getC_Payment_ID()));
+				if (payment.getC_Invoice_ID() <= 0)
 				{
 					importLinesWithPaymentNoInvoice.add(importLine);
 				}
@@ -759,16 +763,21 @@ public class ESRImportBL implements IESRImportBL
 			final BigDecimal sum = importLine.getAmount();
 
 			refresh(importLine);
-			I_C_Payment payment = importLine.getC_Payment();
+
+			int importLinePaymentRecordId = importLine.getC_Payment_ID();
+
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(importLinePaymentRecordId);
+			I_C_Payment payment = paymentId == null ? null
+					: paymentDAO.getById(paymentId);
 
 			if (withPayment)
 			{
-
 				Check.assumeNotNull(payment, "{} has a payment", importLine);
 			}
 			else
 			{
-				if (importLine.getC_Payment_ID() <= 0)
+
+				if (importLinePaymentRecordId <= 0)
 				{
 					payment = createUnlinkedPaymentForLine(importLine, sum);
 
@@ -816,7 +825,7 @@ public class ESRImportBL implements IESRImportBL
 			invoiceBL.testAllocation(invoice, ignoreProcessed);
 			invoiceDAO.save(invoice);
 
-			importLine.setC_Payment(payment);
+			importLine.setC_Payment_ID(payment.getC_Payment_ID());
 			esrImportDAO.save(importLine);
 
 			updateLinesOpenAmt(importLine, invoice); // note that there might be further lines for this invoice
@@ -828,7 +837,7 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public void linkInvoiceToPayment(final I_ESR_ImportLine importLine)
 	{
-		final I_C_Payment payment = importLine.getC_Payment();
+		final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(importLine.getC_Payment_ID()));
 
 		Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
@@ -921,8 +930,16 @@ public class ESRImportBL implements IESRImportBL
 					? bpartnerDAO.getById(line.getC_Invoice().getC_BPartner_ID())
 					: null;
 
+			final PaymentId importLinePaymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			final I_C_Payment importLinePayment = importLinePaymentId == null ? null
+					: paymentDAO.getById(importLinePaymentId);
 
-			final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? InterfaceWrapperHelper.load(line.getC_Payment().getC_BPartner_ID(), I_C_BPartner.class) : null;
+			final int paymentPartnerRecordId = importLinePayment == null ? -1
+					: importLinePayment.getC_BPartner_ID();
+
+			final I_C_BPartner paymentPartner = paymentPartnerRecordId <= 0 ? null
+					: bpartnerDAO.getById(paymentPartnerRecordId);
+
 			if (esrPartnerId != null)
 			{
 				if (invPartner != null)
@@ -1030,7 +1047,9 @@ public class ESRImportBL implements IESRImportBL
 				importLine.setESR_Payment_Action(null);
 			}
 
-			if (invoice.isPaid() && !paymentBL.isMatchInvoice(importLine.getC_Payment(), invoice))
+			final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(importLine.getC_Payment_ID()));
+
+			if (invoice.isPaid() && !paymentBL.isMatchInvoice(payment, invoice))
 			{
 				ESRDataLoaderUtil.addMatchErrorMsg(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
 				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
@@ -1113,8 +1132,12 @@ public class ESRImportBL implements IESRImportBL
 		final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 		for (final I_ESR_ImportLine importLine : linesWithSameInvoice)
 		{
+			final PaymentId importLinePaymentId = PaymentId.ofRepoIdOrNull(importLine.getC_Payment_ID());
+			final I_C_Payment importLinePayment = importLinePaymentId == null ? null
+					: paymentDAO.getById(importLinePaymentId);
+
 			// if the invoice is paid with the current line, exclude it from computing
-			if (importLine.getC_Payment_ID() > 0 && paymentBL.isMatchInvoice(importLine.getC_Payment(), invoice))
+			if (importLinePayment != null && paymentBL.isMatchInvoice(importLinePayment, invoice))
 			{
 				linesOwnPaymentIDs.add(importLine.getC_Payment_ID());
 			}
@@ -1160,7 +1183,8 @@ public class ESRImportBL implements IESRImportBL
 				final I_ESR_ImportLine fullyMatchedImportLine = linesWithSameInvoice.get(j);
 				if (fullyMatchedImportLine.getC_Payment_ID() > 0)
 				{
-					final I_C_Payment payment = fullyMatchedImportLine.getC_Payment();
+					final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(fullyMatchedImportLine.getC_Payment_ID()));
+
 					final I_C_Invoice invoiceESR = fullyMatchedImportLine.getC_Invoice();
 					if (paymentBL.isMatchInvoice(payment, invoiceESR))
 					{
@@ -1245,10 +1269,20 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public void unlinkESRImportLinesFromBankStatement(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
 	{
-		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesByBankStatementLineIds(bankStatementLineIds))
+		final List<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveAllLinesByBankStatementLineIds(bankStatementLineIds);
+
+		if (esrImportLines.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_ESR_ImportLine esrImportLine : esrImportLines)
 		{
 			unlinkESRImportLineFromBankStatement(esrImportLine);
 		}
+
+		final ImmutableSet<ESRImportId> esrImportIds = extractESRImportIds(esrImportLines);
+		updateESRImportReconciledStatus(esrImportIds);
 	}
 
 	@Override
@@ -1282,8 +1316,10 @@ public class ESRImportBL implements IESRImportBL
 
 		final Set<PaymentId> paymentIds = bankStatementLineRefIdIndexByPaymentId.keySet();
 
+		final List<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveLines(paymentIds);
+
 		final ImmutableMap<PaymentId, I_ESR_ImportLine> paySelectionLinesByPaymentId = Maps.uniqueIndex(
-				esrImportDAO.retrieveLines(paymentIds),
+				esrImportLines,
 				esrImportLine -> PaymentId.ofRepoId(esrImportLine.getC_Payment_ID()));
 
 		for (final Map.Entry<PaymentId, I_ESR_ImportLine> e : paySelectionLinesByPaymentId.entrySet())
@@ -1293,6 +1329,46 @@ public class ESRImportBL implements IESRImportBL
 			final BankStatementAndLineAndRefId bankStatementLineRefId = bankStatementLineRefIdIndexByPaymentId.get(paymentId);
 
 			linkESRImportLineToBankStatement(esrImportLine, bankStatementLineRefId);
+		}
+
+		final ImmutableSet<ESRImportId> esrImportIds = extractESRImportIds(esrImportLines);
+		updateESRImportReconciledStatus(esrImportIds);
+	}
+
+	private static ImmutableSet<ESRImportId> extractESRImportIds(@NonNull final List<I_ESR_ImportLine> esrImportLines)
+	{
+		return esrImportLines.stream()
+				.map(esrImportLine -> ESRImportId.ofRepoId(esrImportLine.getESR_Import_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@VisibleForTesting
+	void updateESRImportReconciledStatus(@NonNull final Set<ESRImportId> esrImportIds)
+	{
+		if (esrImportIds.isEmpty())
+		{
+			// shall NOT happen
+			return;
+		}
+
+		final ImmutableSet<ESRImportId> notReconciledESRImportIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, esrImportIds)
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatement_ID, null) // not reconciled
+				.create()
+				.listDistinct(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, Integer.class)
+				.stream()
+				.map(ESRImportId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		for (final I_ESR_Import esrImport : esrImportDAO.getByIds(esrImportIds))
+		{
+			final ESRImportId esrImportnId = ESRImportId.ofRepoId(esrImport.getESR_Import_ID());
+			final boolean isReconciled = !notReconciledESRImportIds.contains(esrImportnId);
+
+			esrImport.setIsReconciled(isReconciled);
+			esrImportDAO.save(esrImport);
 		}
 	}
 
