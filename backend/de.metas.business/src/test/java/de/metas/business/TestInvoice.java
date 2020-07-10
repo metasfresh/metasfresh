@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.organization.OrgId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 
@@ -50,6 +51,8 @@ import lombok.Singular;
 @Data
 public class TestInvoice
 {
+	private final OrgId orgId;
+
 	private final BPartnerId customerId;
 
 	private final LocalDate dateInvoiced;
@@ -71,6 +74,7 @@ public class TestInvoice
 	@Builder
 	private TestInvoice(
 			@NonNull final SOTrx soTrx,
+			@Nullable final OrgId orgId,
 			@NonNull final BPartnerId customerId,
 			@Nullable final DocTypeId docTypeId,
 			@Nullable final BPartnerId salesRepPartnerId,
@@ -79,6 +83,7 @@ public class TestInvoice
 			@Singular final ImmutableList<TestInvoiceLine> testInvoiceLines)
 	{
 		this.soTrx = soTrx;
+		this.orgId = orgId;
 		this.docTypeId = docTypeId;
 		this.customerId = customerId;
 		this.salesRepPartnerId = salesRepPartnerId;
@@ -91,6 +96,10 @@ public class TestInvoice
 	{
 		invoiceRecord = newInstance(I_C_Invoice.class);
 		invoiceRecord.setIsSOTrx(soTrx.toBoolean());
+		if (orgId != null)
+		{
+			invoiceRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		invoiceRecord.setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
 		invoiceRecord.setC_BPartner_ID(BPartnerId.toRepoId(customerId));
 		invoiceRecord.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesRepPartnerId));

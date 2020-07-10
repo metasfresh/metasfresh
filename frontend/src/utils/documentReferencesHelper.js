@@ -6,10 +6,12 @@ export function buildRelatedDocumentsViewUrl({
   documentId,
   tabId,
   rowIds,
+  referenceId,
 }) {
   const urlParams = getQueryString({
+    referenceId: referenceId,
     refType: windowId,
-    refId: documentId,
+    refDocumentId: documentId,
     refTabId: tabId,
     refRowIds: tabId && rowIds ? JSON.stringify(rowIds) : null,
   });
@@ -73,16 +75,20 @@ export function mergeReferencesToReferences(
     return existingReferences;
   }
 
-  const referencesToAddById = referencesToAdd.reduce(
-    (accum, reference) => ({ ...accum, [reference.id]: reference }),
+  const referencesToAddByKey = referencesToAdd.reduce(
+    (accum, reference) => ({
+      ...accum,
+      [extractUniqueKey(reference)]: reference,
+    }),
     {}
   );
 
   // Merge referencesToAdd to existing references
   const existingReferencesMerged = existingReferences.map(
     (existingReference) => {
-      const referenceToAdd = referencesToAddById[existingReference.id];
-      delete referencesToAddById[existingReference.id];
+      const key = extractUniqueKey(existingReference);
+      const referenceToAdd = referencesToAddByKey[key];
+      delete referencesToAddByKey[key];
 
       return combineReferences(existingReference, referenceToAdd);
     }
@@ -90,7 +96,7 @@ export function mergeReferencesToReferences(
 
   return [
     ...existingReferencesMerged,
-    ...Object.values(referencesToAddById), // remaining refences to add
+    ...Object.values(referencesToAddByKey), // remaining refences to add
   ].sort(compareReferencesByCaption);
 }
 
@@ -104,4 +110,11 @@ function combineReferences(existingReference, referenceToAdd) {
 
 function compareReferencesByCaption(reference1, reference2) {
   return reference1.caption.localeCompare(reference2.caption);
+}
+
+// visible for testing
+export function extractUniqueKey(reference) {
+  return reference.targetCategory
+    ? `${reference.targetWindowId}_${reference.targetCategory}`
+    : `${reference.targetWindowId}`;
 }

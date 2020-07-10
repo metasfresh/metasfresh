@@ -22,8 +22,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
@@ -211,6 +212,11 @@ public class ViewChangesCollector implements IAutoCloseable
 
 	public void collectRowsChanged(@NonNull final IView view, final Collection<DocumentId> rowIds)
 	{
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
 		viewChanges(view).addChangedRowIds(rowIds);
 
 		autoflushIfEnabled();
@@ -293,7 +299,7 @@ public class ViewChangesCollector implements IAutoCloseable
 
 	private void sendToWebsocket(final JSONViewChanges jsonChangeEvent)
 	{
-		final String endpoint = WebSocketConfig.buildViewNotificationsTopicName(jsonChangeEvent.getViewId());
+		final WebsocketTopicName endpoint = WebsocketTopicNames.buildViewNotificationsTopicName(jsonChangeEvent.getViewId());
 		try
 		{
 			websocketSender.convertAndSend(endpoint, jsonChangeEvent);

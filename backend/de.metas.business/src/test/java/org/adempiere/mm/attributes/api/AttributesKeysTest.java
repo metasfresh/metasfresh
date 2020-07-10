@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Optional;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -134,10 +135,10 @@ public class AttributesKeysTest
 
 		assertThat(result.getAttributeIds()).hasSize(2);
 
-		assertThat(result.getAttributeValueIdOrNull("attr1")).isEqualTo(attributeValue1.getId());
+		assertThat(result.getAttributeValueIdOrNull(AttributeCode.ofString("attr1"))).isEqualTo(attributeValue1.getId());
 		assertThat(result.getValue("attr1")).isEqualTo("value1");
 
-		assertThat(result.getAttributeValueIdOrNull("attr2")).isEqualTo(attributeValue2.getId());
+		assertThat(result.getAttributeValueIdOrNull(AttributeCode.ofString("attr2"))).isEqualTo(attributeValue2.getId());
 		assertThat(result.getValue("attr2")).isEqualTo("value2");
 	}
 

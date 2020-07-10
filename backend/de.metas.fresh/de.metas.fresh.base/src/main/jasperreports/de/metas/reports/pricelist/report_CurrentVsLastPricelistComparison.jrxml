@@ -96,8 +96,14 @@
 	<field name="pricestd" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="pricestd"/>
 	</field>
+	<field name="PricePattern1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="PricePattern1"/>
+	</field>
 	<field name="altpricestd" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="altpricestd"/>
+	</field>
+	<field name="PricePattern2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="PricePattern2"/>
 	</field>
 	<field name="hasaltprice" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="hasaltprice"/>
@@ -424,7 +430,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0.00" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-20" style="StyleBOLD" x="480" y="0" width="47" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -436,6 +442,7 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pricestd}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{PricePattern1}]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="34" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
@@ -450,7 +457,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0.00" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-20" x="527" y="0" width="40" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<printWhenExpression><![CDATA[new Boolean( $F{hasaltprice} != null
     && $F{altpricestd}.floatValue() != 0)]]></printWhenExpression>
@@ -465,6 +472,7 @@
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{altpricestd}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{PricePattern2}]]></patternExpression>
 			</textField>
 		</band>
 	</detail>

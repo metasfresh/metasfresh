@@ -1,6 +1,26 @@
-package de.metas.ui.web.pickingV2.productsToPick;
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import org.springframework.beans.factory.annotation.Autowired;
+package de.metas.ui.web.pickingV2.productsToPick;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
@@ -11,6 +31,7 @@ import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ProcessAll;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillNotPickSelected;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickAndPackSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
@@ -30,29 +51,14 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColu
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @ViewFactory(windowId = PickingConstantsV2.WINDOWID_ProductsToPickView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class ProductsToPickViewFactory implements IViewFactory
@@ -60,9 +66,13 @@ public class ProductsToPickViewFactory implements IViewFactory
 	private static final String MSG_PickCaption = "de.metas.ui.web.pickingV2.productsToPick.Pick.caption";
 	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
 
-	@Autowired
-	private ProductsToPickRowsService rowsService;
+	private final ProductsToPickRowsService rowsService;
 	private IViewsRepository viewsRepository;
+
+	public ProductsToPickViewFactory(final ProductsToPickRowsService rowsService)
+	{
+		this.rowsService = rowsService;
+	}
 
 	@Override
 	public void setViewsRepository(final IViewsRepository viewsRepository)
@@ -85,16 +95,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 					.addElementsFromViewRowClassAndFieldNames(
 							ProductsToPickRow.class,
 							viewDataType,
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyReview),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus))
+							createColumnListForReviewerLayout())
 					.build();
 		}
 		//
@@ -107,19 +108,73 @@ public class ProductsToPickViewFactory implements IViewFactory
 					.addElementsFromViewRowClassAndFieldNames(
 							ProductsToPickRow.class,
 							viewDataType,
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyOverride),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
-							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_PickStatus))
+							createColumnListForPickerLayout())
 					.build();
+		}
+	}
 
+	@SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
+	@NonNull
+	private ClassViewColumnOverrides[] createColumnListForReviewerLayout()
+	{
+		final List<ClassViewColumnOverrides> columns = new ArrayList<>();
+		columns.addAll(Arrays.asList(
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate)
+		));
+
+		addRepackNumberIfEnabled(columns);
+
+		columns.addAll(Arrays.asList(
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyReview),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus)
+		));
+
+		return columns.toArray(new ClassViewColumnOverrides[0]);
+	}
+
+	@SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
+	@NonNull
+	private ClassViewColumnOverrides[] createColumnListForPickerLayout()
+	{
+		final List<ClassViewColumnOverrides> columns = new ArrayList<>();
+		columns.addAll(Arrays.asList(
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductStockUOM),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyOverride),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate)
+		));
+
+		addRepackNumberIfEnabled(columns);
+
+		columns.addAll(Arrays.asList(
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
+				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_PickStatus)
+		));
+
+		return columns.toArray(new ClassViewColumnOverrides[0]);
+	}
+
+	private void addRepackNumberIfEnabled(final List<ClassViewColumnOverrides> columns)
+	{
+		final String sysConfigKey = StringUtils.appendIfNotEndingWith(ProductsToPickRow.SYSCONFIG_PREFIX, ".") + ProductsToPickRow.FIELD_RepackNumber + ".IsDisplayed";
+
+		final boolean defaultValue = false;
+		final boolean isRepackNumberDisplayed = Services.get(ISysConfigBL.class).getBooleanValue(sysConfigKey, defaultValue, Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
+
+		if (isRepackNumberDisplayed)
+		{
+			columns.add(ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber));
 		}
 	}
 
@@ -133,7 +188,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 	}
 
 	@Override
-	public ProductsToPickView createView(final CreateViewRequest request)
+	public ProductsToPickView createView(final @NonNull CreateViewRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -154,6 +209,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_MarkWillNotPickSelected.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_SetPackingInstructions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickAndPackSelected.class))
 				//
 				// Reviewer processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ProcessAll.class))
@@ -185,7 +241,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.build();
 	}
 
-	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);

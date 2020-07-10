@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for AD_Issue
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_AD_Issue 
@@ -14,13 +14,6 @@ public interface I_AD_Issue
     /** AD_Table_ID=828 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Asset.
@@ -52,7 +45,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
@@ -94,7 +87,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
 
 	/**
-	 * Set System-Problem.
+	 * Set System Issue.
 	 * Automatically created or manually entered System Issue
 	 *
 	 * <br>Type: ID
@@ -104,7 +97,7 @@ public interface I_AD_Issue
 	public void setAD_Issue_ID (int AD_Issue_ID);
 
 	/**
-	 * Get System-Problem.
+	 * Get System Issue.
 	 * Automatically created or manually entered System Issue
 	 *
 	 * <br>Type: ID
@@ -120,7 +113,7 @@ public interface I_AD_Issue
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -130,7 +123,7 @@ public interface I_AD_Issue
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -142,8 +135,8 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Prozess-Instanz.
-	 * Instanz eines Prozesses
+	 * Set Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -152,8 +145,8 @@ public interface I_AD_Issue
 	public void setAD_PInstance_ID (int AD_PInstance_ID);
 
 	/**
-	 * Get Prozess-Instanz.
-	 * Instanz eines Prozesses
+	 * Get Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -200,7 +193,30 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Fenster.
+	 * Set Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Table_ID();
+
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
+	 * Set Window.
 	 * Data entry or display window
 	 *
 	 * <br>Type: Search
@@ -210,7 +226,7 @@ public interface I_AD_Issue
 	public void setAD_Window_ID (int AD_Window_ID);
 
 	/**
-	 * Get Fenster.
+	 * Get Window.
 	 * Data entry or display window
 	 *
 	 * <br>Type: Search
@@ -229,7 +245,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
-	 * Set Bemerkungen.
+	 * Set Comments.
 	 * Comments or additional information
 	 *
 	 * <br>Type: Text
@@ -239,7 +255,7 @@ public interface I_AD_Issue
 	public void setComments (java.lang.String Comments);
 
 	/**
-	 * Get Bemerkungen.
+	 * Get Comments.
 	 * Comments or additional information
 	 *
 	 * <br>Type: Text
@@ -254,7 +270,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_Comments = "Comments";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
@@ -269,7 +285,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
@@ -357,7 +373,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_ErrorTrace = "ErrorTrace";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -367,7 +383,7 @@ public interface I_AD_Issue
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -405,6 +421,29 @@ public interface I_AD_Issue
     public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_IsReproducible = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "IsReproducible", null);
     /** Column name IsReproducible */
     public static final String COLUMNNAME_IsReproducible = "IsReproducible";
+
+	/**
+	 * Set Category.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIssueCategory (java.lang.String IssueCategory);
+
+	/**
+	 * Get Category.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIssueCategory();
+
+    /** Column definition for IssueCategory */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_IssueCategory = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "IssueCategory", null);
+    /** Column name IssueCategory */
+    public static final String COLUMNNAME_IssueCategory = "IssueCategory";
 
 	/**
 	 * Set Source.
@@ -507,7 +546,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_JavaInfo = "JavaInfo";
 
 	/**
-	 * Set Position.
+	 * Set Line.
 	 * Line No
 	 *
 	 * <br>Type: Integer
@@ -517,7 +556,7 @@ public interface I_AD_Issue
 	public void setLineNo (int LineNo);
 
 	/**
-	 * Get Position.
+	 * Get Line.
 	 * Line No
 	 *
 	 * <br>Type: Integer
@@ -630,8 +669,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_OperatingSystemInfo = "OperatingSystemInfo";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -640,8 +678,7 @@ public interface I_AD_Issue
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -655,7 +692,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Verarbeiten.
+	 * Set Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -664,7 +701,7 @@ public interface I_AD_Issue
 	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Verarbeiten.
+	 * Get Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -819,7 +856,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_R_IssueUser_ID = "R_IssueUser_ID";
 
 	/**
-	 * Set Tätigkeit.
+	 * Set Anfrage.
 	 * Request from a Business Partner or Prospect
 	 *
 	 * <br>Type: Search
@@ -829,7 +866,7 @@ public interface I_AD_Issue
 	public void setR_Request_ID (int R_Request_ID);
 
 	/**
-	 * Get Tätigkeit.
+	 * Get Anfrage.
 	 * Request from a Business Partner or Prospect
 	 *
 	 * <br>Type: Search
@@ -848,7 +885,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_R_Request_ID = "R_Request_ID";
 
 	/**
-	 * Set Datensatz-ID.
+	 * Set Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Integer
@@ -858,7 +895,7 @@ public interface I_AD_Issue
 	public void setRecord_ID (int Record_ID);
 
 	/**
-	 * Get Datensatz-ID.
+	 * Get Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Integer
@@ -998,7 +1035,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_RequestDocumentNo = "RequestDocumentNo";
 
 	/**
-	 * Set Antwort-Text.
+	 * Set Response Text.
 	 * Request Response Text
 	 *
 	 * <br>Type: Text
@@ -1008,7 +1045,7 @@ public interface I_AD_Issue
 	public void setResponseText (java.lang.String ResponseText);
 
 	/**
-	 * Get Antwort-Text.
+	 * Get Response Text.
 	 * Request Response Text
 	 *
 	 * <br>Type: Text
@@ -1173,7 +1210,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_SystemStatus = "SystemStatus";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -1188,7 +1225,7 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
@@ -1201,7 +1238,8 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Nutzer-ID/Login.
+	 * Set UserName.
+	 * UserName / Login to use for login
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -1210,7 +1248,8 @@ public interface I_AD_Issue
 	public void setUserName (java.lang.String UserName);
 
 	/**
-	 * Get Nutzer-ID/Login.
+	 * Get UserName.
+	 * UserName / Login to use for login
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

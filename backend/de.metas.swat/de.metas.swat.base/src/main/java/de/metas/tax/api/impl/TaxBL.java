@@ -32,6 +32,7 @@ import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.logging.TableRecordMDC;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -73,6 +74,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.slf4j.MDC;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
@@ -82,7 +84,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * Do not attempt to retrieve the C_Tax for an order (i.e invoicing is done at a different time - 1 year - from the order)<br>
 	 * Also note that packaging material receipts don't have an order line and if this one had, no IC would be created for it by this handler.<br>
 	 * Instead, always rely on taxing BL to bind the tax to the invoice candidate
-	 *
+	 * <p>
 	 * Try to rely on the tax category from the pricing result<br>
 	 * 07739: If that's not available, then throw an exception; don't attempt to retrieve the German tax because that method proved to return a wrong result
 	 */
@@ -498,7 +500,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			Check.assume(taxIncluded, "TaxIncluded shall be set when IsWholeTax is set");
 			taxAmt = amount;
 		}
-		else if (!taxIncluded)	// $100 * 6 / 100 == $6 == $100 * 0.06
+		else if (!taxIncluded)    // $100 * 6 / 100 == $6 == $100 * 0.06
 		{
 			taxAmt = amount.multiply(multiplier);
 		}
@@ -515,7 +517,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}]", amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt);
 
 		return taxAmtFinal;
-	}	// calculateTax
+	}    // calculateTax
 
 	@Override
 	public BigDecimal calculateBaseAmt(
@@ -524,19 +526,23 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final boolean taxIncluded,
 			final int scale)
 	{
-		if (tax.isWholeTax())
+		try(final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tax))
 		{
-			Check.assume(taxIncluded, "TaxIncluded shall be set when IsWholeTax is set");
-			return BigDecimal.ZERO;
+			if (tax.isWholeTax())
+			{
+				log.debug("C_Tax has isWholeTax=true; -> return ZERO");
+				return BigDecimal.ZERO;
+			}
+			if (!taxIncluded)
+			{
+				// the given amount is without tax => don't subtract the tax that is no included
+				log.debug("Parameter taxIncluded=false; -> return given param amount={}", amount);
+				return amount;
+			}
+			final BigDecimal taxAmt = calculateTax(tax, amount, taxIncluded, scale);
+			final BigDecimal baseAmt = amount.subtract(taxAmt);
+			return baseAmt;
 		}
-		if (!taxIncluded)
-		{
-			// the given amount is without tax => don't subtract the tax that is no included
-			return amount;
-		}
-		final BigDecimal taxAmt = calculateTax(tax, amount, taxIncluded, scale);
-		final BigDecimal baseAmt = amount.subtract(taxAmt);
-		return baseAmt;
 	}
 
 	@Override

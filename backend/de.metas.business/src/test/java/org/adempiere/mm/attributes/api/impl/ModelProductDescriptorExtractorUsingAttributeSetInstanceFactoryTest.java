@@ -10,7 +10,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -18,17 +17,9 @@ import org.compiere.model.X_M_Attribute;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
@@ -56,11 +47,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		ShutdownListener.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 {
 	private static final int PRODUCT_ID = 20;
@@ -70,18 +56,11 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 	private AttributeListValue attributeValue2;
 	private AttributeListValue attributeValue3;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		factory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
-	}
-
-	@Test
-	public void productDescriptorFactory_bean_is_a_ProductDescriptorFromAttributeSetInstanceFactory()
-	{
-		final ModelProductDescriptorExtractor productDescriptor = SpringContextHolder.instance.getBean(ModelProductDescriptorExtractor.class);
-		assertThat(productDescriptor).isInstanceOf(ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class);
 	}
 
 	@Test

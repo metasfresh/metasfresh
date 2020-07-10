@@ -16,8 +16,6 @@ public interface IDocOutboundProducerService extends ISingletonService
 	 * Registers the given document outbound producer.
 	 * 
 	 * NOTE: if a different {@link IDocOutboundProducer} is already registered for {@link IDocOutboundProducer#getC_Doc_Outbound_Config()} then the old one will be unregistered first
-	 * 
-	 * @param producer
 	 */
 	void registerProducer(IDocOutboundProducer producer);
 
@@ -25,15 +23,11 @@ public interface IDocOutboundProducerService extends ISingletonService
 	 * Unregisters the {@link IDocOutboundProducer} which was previously registered for given <code>config</code>.
 	 * 
 	 * If no producer was registered, this method does nothing.
-	 * 
-	 * @param config
 	 */
 	void unregisterProducerByConfig(I_C_Doc_Outbound_Config config);
 
 	/**
 	 * Creates the document outbound for given <code>model</code> by picking the right {@link IDocOutboundProducer} and delegating the work to it.
-	 * 
-	 * @param model
 	 */
 	void createDocOutbound(Object model);
 }

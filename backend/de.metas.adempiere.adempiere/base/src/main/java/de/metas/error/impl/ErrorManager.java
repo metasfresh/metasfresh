@@ -3,17 +3,34 @@ package de.metas.error.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.function.IntFunction;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.IssueReportableExceptions;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
+import org.compiere.util.DB;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.error.IssueCategory;
+import de.metas.error.IssueCountersByCategory;
 import de.metas.error.IssueCreateRequest;
+import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessMDC;
@@ -25,6 +42,13 @@ import lombok.NonNull;
 
 public class ErrorManager implements IErrorManager
 {
+	private static final Logger logger = LogManager.getLogger(ErrorManager.class);
+	static
+	{
+		LogManager.skipIssueReportingForLoggerName(logger);
+	}
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
@@ -56,6 +80,9 @@ public class ErrorManager implements IErrorManager
 		final AdIssueId adIssueId;
 		{
 			final I_AD_Issue issue = newInstance(I_AD_Issue.class);
+
+			final IssueCategory issueCategory = extractIssueCategory(throwable);
+			issue.setIssueCategory(issueCategory.getCode());
 
 			issue.setIssueSummary(buildIssueSummary(request));
 			issue.setLoggerName(request.getLoggerName());
@@ -103,10 +130,15 @@ public class ErrorManager implements IErrorManager
 
 			//
 			// Table/Record
-			issue.setRecord_ID(1); // just to have something there because it's mandatory
+			final TableRecordReference recordRef = extractRecordRef(throwable);
+			if (recordRef != null)
+			{
+				issue.setAD_Table_ID(recordRef.getAD_Table_ID());
+				issue.setRecord_ID(recordRef.getRecord_ID());
+			}
 
 			//
-			// References
+			// Process/Instance
 			if (throwable != null)
 			{
 				final AdProcessId adProcessId = extractAdProcessIdOrNull(throwable);
@@ -152,12 +184,26 @@ public class ErrorManager implements IErrorManager
 		return summary;
 	}
 
-	private static AdProcessId extractAdProcessIdOrNull(final Throwable t)
+	private IssueCategory extractIssueCategory(@Nullable final Throwable t)
+	{
+		return t instanceof AdempiereException
+				? ((AdempiereException)t).getIssueCategory()
+				: IssueCategory.OTHER;
+	}
+
+	private static TableRecordReference extractRecordRef(@Nullable final Throwable t)
+	{
+		return t instanceof AdempiereException
+				? ((AdempiereException)t).getRecord()
+				: null;
+	}
+
+	private static AdProcessId extractAdProcessIdOrNull(@NonNull final Throwable t)
 	{
 		return extractIdOrNull(t, ProcessMDC.NAME_AD_Process_ID, AdProcessId::ofRepoIdOrNull);
 	}
 
-	private static PInstanceId extractPInstanceIdOrNull(final Throwable t)
+	private static PInstanceId extractPInstanceIdOrNull(@NonNull final Throwable t)
 	{
 		return extractIdOrNull(t, ProcessMDC.NAME_AD_PInstance_ID, PInstanceId::ofRepoIdOrNull);
 	}
@@ -192,5 +238,93 @@ public class ErrorManager implements IErrorManager
 
 		// Fallback
 		return null;
+	}
+
+	@Override
+	public void markIssueAcknowledged(@NonNull AdIssueId adIssueId)
+	{
+		try
+		{
+			final I_AD_Issue adIssueRecord = getById(adIssueId).orElse(null);
+			if (adIssueRecord == null)
+			{
+				return;
+			}
+
+			adIssueRecord.setProcessed(true);
+			saveRecord(adIssueRecord);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed marking {} as deprecated. Ignored.", adIssueId, ex);
+		}
+	}
+
+	private Optional<I_AD_Issue> getById(@NonNull final AdIssueId adIssueId)
+	{
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, adIssueId)
+				.create()
+				.firstOnlyOptional(I_AD_Issue.class);
+	}
+
+	@Override
+	public IssueCountersByCategory getIssueCountersByCategory(
+			@NonNull final TableRecordReference recordRef,
+			final boolean onlyNotAcknowledged)
+	{
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final StringBuilder sql = new StringBuilder("SELECT "
+				+ " " + I_AD_Issue.COLUMNNAME_IssueCategory
+				+ ", count(1) as count"
+				+ "\n FROM " + I_AD_Issue.Table_Name
+				+ "\n WHERE "
+				+ " " + I_AD_Issue.COLUMNNAME_IsActive + "=?"
+				+ " AND " + I_AD_Issue.COLUMNNAME_AD_Table_ID + "=?"
+				+ " AND " + I_AD_Issue.COLUMNNAME_Record_ID + "=?");
+		sqlParams.add(true); // IsActive
+		sqlParams.add(recordRef.getAD_Table_ID());
+		sqlParams.add(recordRef.getRecord_ID());
+
+		if (onlyNotAcknowledged)
+		{
+			sql.append(" AND ").append(I_AD_Issue.COLUMNNAME_Processed).append("=?");
+			sqlParams.add(false);
+		}
+
+		sql.append("\n GROUP BY ").append(I_AD_Issue.COLUMNNAME_IssueCategory);
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final HashMap<IssueCategory, Integer> counters = new HashMap<>();
+			while (rs.next())
+			{
+				final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(rs.getString(I_AD_Issue.COLUMNNAME_IssueCategory));
+				final int count = rs.getInt("count");
+
+				counters.compute(issueCategory, (k, previousCounter) -> {
+					return previousCounter != null
+							? previousCounter + count
+							: count;
+				});
+			}
+
+			return IssueCountersByCategory.of(counters);
+		}
+		catch (SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 }

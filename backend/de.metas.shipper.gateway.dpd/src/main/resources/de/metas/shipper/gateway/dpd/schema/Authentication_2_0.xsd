@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?><xsd:schema jaxb:version="2.0" targetNamespace="http://dpd.com/common/service/types/Authentication/2.0" version="1.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://dpd.com/common/service/types/Authentication/2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+
+   <xsd:annotation>
+      <xsd:appinfo>
+         <jaxb:schemaBindings>
+            <jaxb:package name="com.dpd.common.ws.authentication.v2_0.types"/>
+         </jaxb:schemaBindings>
+      </xsd:appinfo>
+   </xsd:annotation>
+
+   <xsd:element name="authentication">
+      <xsd:annotation>
+         <xsd:documentation>The data structure for authentication data.</xsd:documentation>
+      </xsd:annotation>
+      <xsd:complexType>
+            <xsd:annotation>
+               <xsd:documentation>The data structure for authentication data.</xsd:documentation></xsd:annotation>
+            <xsd:sequence>
+            <xsd:element minOccurs="1" name="delisId">
+               <xsd:annotation>
+                  <xsd:documentation>The delis user id for authentication.</xsd:documentation>
+               </xsd:annotation>
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string">
+                     <xsd:maxLength value="10"/>
+                     <xsd:minLength value="8"/>
+                  </xsd:restriction>
+               </xsd:simpleType>
+            </xsd:element>
+            <xsd:element minOccurs="1" name="authToken">
+               <xsd:annotation>
+                  <xsd:documentation>The token for authentication. Field authToken of Login, as a result of
+Method "getAuth" of LoginService.
+
+                  </xsd:documentation>
+               </xsd:annotation>
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string">
+                     <xsd:minLength value="0"/>
+                     <xsd:maxLength value="64"/>
+                  </xsd:restriction>
+               </xsd:simpleType>
+            </xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="1" name="messageLanguage">
+               <xsd:annotation>
+                  <xsd:documentation>The language (Java format) for messages.
+"de_DE" for german messages.
+"en_US" for english messages.
+                  </xsd:documentation>
+               </xsd:annotation>
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string">
+                     <xsd:minLength value="5"/>
+                     <xsd:maxLength value="5"/>
+                  </xsd:restriction>
+               </xsd:simpleType>
+            </xsd:element>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:element name="authenticationFault">
+      <xsd:annotation>
+         <xsd:documentation>The data structure for authentication errors.
+         </xsd:documentation>
+      </xsd:annotation>
+      <xsd:complexType>
+            <xsd:annotation>
+               <xsd:documentation>The data structure for authentication errors.</xsd:documentation>
+            </xsd:annotation>
+            <xsd:sequence>
+            <xsd:element minOccurs="1" name="errorCode">
+               <xsd:annotation>
+                  <xsd:documentation>The error code. Valid codes:
+    NoAccessAuthenticationFault=-1
+    NoRightsAuthenticationFault=-2
+                  </xsd:documentation>
+               </xsd:annotation>
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string"/>
+               </xsd:simpleType>
+            </xsd:element>
+            <xsd:element minOccurs="1" name="errorMessage">
+               <xsd:annotation>
+                  <xsd:documentation>The error message text.
+                  </xsd:documentation>
+               </xsd:annotation>
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string">
+                     <xsd:minLength value="1"/>
+                     <xsd:maxLength value="255"/>
+                  </xsd:restriction>
+               </xsd:simpleType>
+            </xsd:element>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+</xsd:schema>

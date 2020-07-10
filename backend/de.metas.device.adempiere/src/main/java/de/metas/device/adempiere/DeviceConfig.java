@@ -3,6 +3,9 @@ package de.metas.device.adempiere;
 import java.util.Collection;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.warehouse.WarehouseId;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -10,6 +13,7 @@ import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceParameterValueSuppl
 import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceRequestClassnamesSupplier;
 import de.metas.device.api.IDevice;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,17 +45,17 @@ import de.metas.util.Check;
  */
 public final class DeviceConfig
 {
-	public static DeviceConfig.Builder builder(final String deviceName)
+	public static DeviceConfig.Builder builder(@NonNull final String deviceName)
 	{
 		return new Builder(deviceName);
 	}
 
 	private final String deviceName;
-	private final Set<String> assignedAttributeCodes;
+	private final Set<AttributeCode> assignedAttributeCodes;
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
-	private final Set<Integer> assignedWarehouseIds;
+	private final ImmutableSet<WarehouseId> assignedWarehouseIds;
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
 	{
@@ -79,12 +83,12 @@ public final class DeviceConfig
 		return deviceName;
 	}
 
-	public Set<String> getAssignedAttributeCodes()
+	public Set<AttributeCode> getAssignedAttributeCodes()
 	{
 		return assignedAttributeCodes;
 	}
 
-	public boolean isAvailableForAttributeCode(final String attributeCode)
+	public boolean isAvailableForAttributeCode(final AttributeCode attributeCode)
 	{
 		return assignedAttributeCodes.contains(attributeCode);
 	}
@@ -99,13 +103,13 @@ public final class DeviceConfig
 		return parameterValueSupplier.getDeviceParamValue(deviceName, parameterName, defaultValue);
 	}
 
-	public Set<String> getRequestClassnames(final String attributeCode)
+	public Set<String> getRequestClassnames(final AttributeCode attributeCode)
 	{
 		return requestClassnamesSupplier.getDeviceRequestClassnames(deviceName, attributeCode);
 	}
 
 	/** @return warehouse IDs where this device is available; empty means that it's available to any warehouse */
-	public Set<Integer> getAssignedWarehouseIds()
+	public ImmutableSet<WarehouseId> getAssignedWarehouseIds()
 	{
 		return assignedWarehouseIds;
 	}
@@ -113,15 +117,14 @@ public final class DeviceConfig
 	public static final class Builder
 	{
 		private final String deviceName;
-		private Collection<String> assignedAttributeCodes;
+		private Collection<AttributeCode> assignedAttributeCodes;
 		private String deviceClassname;
 		private IDeviceParameterValueSupplier parameterValueSupplier;
 		private IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
-		private Set<Integer> assignedWareouseIds = null;
+		private Set<WarehouseId> assignedWareouseIds = null;
 
-		private Builder(final String deviceName)
+		private Builder(@NonNull final String deviceName)
 		{
-			super();
 			Check.assumeNotEmpty(deviceName, "deviceName is not empty");
 			this.deviceName = deviceName;
 		}
@@ -136,13 +139,13 @@ public final class DeviceConfig
 			return deviceName;
 		}
 
-		public DeviceConfig.Builder setAssignedAttributeCodes(final Collection<String> assignedAttributeCodes)
+		public DeviceConfig.Builder setAssignedAttributeCodes(final Collection<AttributeCode> assignedAttributeCodes)
 		{
 			this.assignedAttributeCodes = assignedAttributeCodes;
 			return this;
 		}
 
-		private Set<String> getAssignedAttributeCodes()
+		private Set<AttributeCode> getAssignedAttributeCodes()
 		{
 			Check.assumeNotEmpty(assignedAttributeCodes, "assignedAttributeCodes is not empty");
 			return ImmutableSet.copyOf(assignedAttributeCodes);
@@ -181,7 +184,7 @@ public final class DeviceConfig
 		@FunctionalInterface
 		public interface IDeviceRequestClassnamesSupplier
 		{
-			Set<String> getDeviceRequestClassnames(final String deviceName, final String attributeCode);
+			Set<String> getDeviceRequestClassnames(final String deviceName, final AttributeCode attributeCode);
 		}
 
 		public DeviceConfig.Builder setRequestClassnamesSupplier(final IDeviceRequestClassnamesSupplier requestClassnamesSupplier)
@@ -196,13 +199,13 @@ public final class DeviceConfig
 			return requestClassnamesSupplier;
 		}
 
-		public DeviceConfig.Builder setAssignedWarehouseIds(final Set<Integer> assignedWareouseIds)
+		public DeviceConfig.Builder setAssignedWarehouseIds(final Set<WarehouseId> assignedWareouseIds)
 		{
 			this.assignedWareouseIds = assignedWareouseIds;
 			return this;
 		}
 
-		private Set<Integer> getAssignedWareouseIds()
+		private ImmutableSet<WarehouseId> getAssignedWareouseIds()
 		{
 			return assignedWareouseIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedWareouseIds);
 		}

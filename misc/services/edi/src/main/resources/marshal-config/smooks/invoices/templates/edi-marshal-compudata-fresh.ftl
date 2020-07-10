@@ -43,7 +43,7 @@ ${cctopInvoice.currentDate?string("mmHH")?right_pad(4)?substring(0, 4)}<#lt><#t>
 <#else><#-- Error, this will throw exception -->
 	${Err.EAN.COM.DocType?right_pad(14)?substring(0, 14)}<#lt><#t>
 </#if>
-${"EANCOM76170270000007640134460009901"?right_pad(35)?substring(0, 35)}<#lt><#t>
+${"EANCOM76170270000007640134460009903"?right_pad(35)?substring(0, 35)}<#lt><#t>
 ${cctopInvoice.cctop000V.isTest?right_pad(1)?substring(0, 1)}<#lt><#t>
 
 <#-- H100 -->
@@ -343,7 +343,7 @@ ${cctopInvoice.cctop000V.isTest?right_pad(1)?substring(0, 1)}<#lt><#t>
 	${TaxAmount3?number?string("0.00")?left_pad(15)?substring(0, 15)}<#lt><#t>
 	${TaxableAmount3?number?string("0.00")?left_pad(15)?substring(0, 15)}<#lt><#t>
 	${""?left_pad(15)?substring(0, 15)}<#lt><#t><#-- {0?number?string("0.00") -->
-	${""?left_pad(15)?substring(0, 15)}<#lt><#t><#-- {0?number?string("0.00") -->
+	${""?left_pad(15)?substring(0, 15)}<#lt><#t><#-- {0?number?string("0.00") -->I
 	${(cctop901991V.ESRNumber!"")?right_pad(70)?substring(0, 70)}<#lt><#t>
 
 </#list>

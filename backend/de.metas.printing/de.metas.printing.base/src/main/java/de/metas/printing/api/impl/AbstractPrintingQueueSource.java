@@ -23,6 +23,7 @@ package de.metas.printing.api.impl;
  */
 
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.printing.api.IPrintingQueueSource;
@@ -32,7 +33,6 @@ import de.metas.printing.model.I_C_Printing_Queue;
  * Abstract {@link IPrintingQueueSource} which implements some common methods
  * 
  * @author tsa
- * 
  */
 public abstract class AbstractPrintingQueueSource implements IPrintingQueueSource
 {
@@ -51,14 +51,14 @@ public abstract class AbstractPrintingQueueSource implements IPrintingQueueSourc
 	}
 
 	@Override
-	public boolean isPrinted(I_C_Printing_Queue item)
+	public boolean isPrinted(@NonNull final I_C_Printing_Queue item)
 	{
 		final boolean printed = item.isProcessed();
 		return printed;
 	}
 
 	@Override
-	public void markPrinted(I_C_Printing_Queue item)
+	public void markPrinted(@NonNull final I_C_Printing_Queue item)
 	{
 		item.setProcessed(true);
 		InterfaceWrapperHelper.save(item);

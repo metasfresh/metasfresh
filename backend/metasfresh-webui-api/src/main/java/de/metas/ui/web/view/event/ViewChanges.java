@@ -128,6 +128,11 @@ public class ViewChanges
 	
 	public void addChangedRowIds(final Collection<DocumentId> rowIds)
 	{
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
 		if (changedRowIds == null)
 		{
 			changedRowIds = new HashSet<>();

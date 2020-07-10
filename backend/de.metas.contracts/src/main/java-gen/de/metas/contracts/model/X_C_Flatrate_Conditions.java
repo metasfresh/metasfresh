@@ -15,7 +15,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2025576594L;
+	private static final long serialVersionUID = -1484724506L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -910,6 +910,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_Procurement = "Procuremnt";
 	/** Refund = Refund */
 	public static final String TYPE_CONDITIONS_Refund = "Refund";
+
+	public static final String TYPE_CONDITIONS_Commission = "Commission";
 	/** Set Vertragsart.
 		@param Type_Conditions Vertragsart	  */
 	@Override

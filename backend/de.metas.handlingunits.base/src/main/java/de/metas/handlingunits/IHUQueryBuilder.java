@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -335,11 +336,9 @@ public interface IHUQueryBuilder
 	/**
 	 * Filter only those HUs which have attribute with given <code>value</code>.
 	 *
-	 * @param attributeName (i.e. M_Attribute.Value)
-	 * @param value
 	 * @see #addOnlyWithAttribute(I_M_Attribute, Object)
 	 */
-	IHUQueryBuilder addOnlyWithAttribute(String attributeName, Object value);
+	IHUQueryBuilder addOnlyWithAttribute(AttributeCode attributeCode, Object value);
 
 	IHUQueryBuilder addOnlyWithAttribute(AttributeId attributeId, Object value);
 
@@ -358,31 +357,27 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<? extends Object> values);
 
 	/**
-	 * Filter only those HUs which have <code>attributeName</code> with any of the given <code>values</code>.
+	 * Filter only those HUs which have <code>attributeCode</code> with any of the given <code>values</code>.
 	 *
 	 * <p>
 	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouses(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
 	 * opposed to any) of the specified attributes and values will match the query.
 	 *
-	 * @param attributeName
+	 * @param attributeCode
 	 * @param values list of accepted values
 	 * @return this
 	 */
-	IHUQueryBuilder addOnlyWithAttributeInList(String attributeName, Object... values);
+	IHUQueryBuilder addOnlyWithAttributeInList(AttributeCode attributeCode, Object... values);
 
 	/**
-	 * Filter only those HUs which have <code>attributeName</code> and it's value is not null.
-	 *
-	 * @param attributeName
+	 * Filter only those HUs which have <code>attributeCode</code> and it's value is not null.
 	 */
-	IHUQueryBuilder addOnlyWithAttributeNotNull(String attributeName);
+	IHUQueryBuilder addOnlyWithAttributeNotNull(AttributeCode attributeCode);
 
 	/**
-	 * Filter only those HUs which does not have <code>attributeName</code> or it's value is null.
-	 *
-	 * @param attributeName
+	 * Filter only those HUs which does not have <code>attributeCode</code> or it's value is null.
 	 */
-	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
+	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(AttributeCode attributeCode);
 
 	IHUQueryBuilder allowSqlWhenFilteringAttributes(boolean allow);
 

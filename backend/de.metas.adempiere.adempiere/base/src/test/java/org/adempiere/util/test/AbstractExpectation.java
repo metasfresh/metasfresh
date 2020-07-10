@@ -101,9 +101,11 @@ public class AbstractExpectation<ParentExpectationType>
 		{
 			return ((AbstractExpectation<?>)parent).getContext();
 		}
-
-		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
-		// throw new IllegalStateException("Cannot find context");
+		else
+		{
+			return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+			// throw new IllegalStateException("Cannot find context");
+		}
 	}
 
 	/**
@@ -131,7 +133,7 @@ public class AbstractExpectation<ParentExpectationType>
 		return getParentExpectation();
 	}
 
-	public final ParentExpectationType getParentExpectation()
+	private final ParentExpectationType getParentExpectation()
 	{
 		return this._parentExpectation;
 	}

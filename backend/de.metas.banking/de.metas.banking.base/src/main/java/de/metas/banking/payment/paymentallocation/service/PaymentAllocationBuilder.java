@@ -13,6 +13,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -843,12 +844,14 @@ public class PaymentAllocationBuilder
 		return paymentDocuments(ImmutableList.of(paymentDocument));
 	}
 
-	private final List<PayableDocument> getPayableDocuments()
+	@VisibleForTesting
+	final ImmutableList<PayableDocument> getPayableDocuments()
 	{
 		return _payableDocuments;
 	}
 
-	private final List<PaymentDocument> getPaymentDocuments()
+	@VisibleForTesting
+	final ImmutableList<PaymentDocument> getPaymentDocuments()
 	{
 		return _paymentDocuments;
 	}

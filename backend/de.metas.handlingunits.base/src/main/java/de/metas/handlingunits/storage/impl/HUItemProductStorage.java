@@ -31,7 +31,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.ProductId;
-import de.metas.quantity.CapacityInterface;
+import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -76,7 +76,7 @@ import lombok.NonNull;
 
 	}
 
-	public CapacityInterface getTotalCapacity()
+	public Capacity getTotalCapacity()
 	{
 		return itemStorage.getCapacity(productId, uom, date);
 	}
@@ -96,7 +96,7 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final CapacityInterface capacityAvailable = itemStorage.getAvailableCapacity(getProductId(), getC_UOM(), date);
+		final Capacity capacityAvailable = itemStorage.getAvailableCapacity(getProductId(), getC_UOM(), date);
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
@@ -124,7 +124,7 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQtyCapacity()
 	{
-		final CapacityInterface capacityTotal = getTotalCapacity();
+		final Capacity capacityTotal = getTotalCapacity();
 		return capacityTotal.toBigDecimal();
 	}
 

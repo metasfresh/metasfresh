@@ -51,7 +51,7 @@ import org.compiere.model.X_AD_User;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
@@ -64,7 +64,6 @@ import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
@@ -170,10 +169,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		}
 		huStorageFactory = huContext.getHUStorageFactory();
 		attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-
-		//
-		// TODO HU Join does not work for some reason if it's true; see why...
-		CachedHUAndItemsDAO.DEBUG = false;
 
 		//
 		// Product/UOM

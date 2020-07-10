@@ -251,15 +251,15 @@ public class UOMConversionBL implements IUOMConversionBL
 	{
 		BigDecimal priceConv = convertQty(
 				ProductId.ofRepoIdOrNull(productId),
-				null /* rounding */,
+				Rounding.PRESERVE_SCALE, // *we* want to do the rounding if something has to be rounded
 				price,
 				uomFrom,
 				uomTo);
 		if (priceConv.scale() > pricePrecision)
 		{
+			// for prices, round half-up; when converting quantities, the rounding mode could be different
 			priceConv = priceConv.setScale(pricePrecision, RoundingMode.HALF_UP);
 		}
-
 		return priceConv;
 	}
 
@@ -507,7 +507,6 @@ public class UOMConversionBL implements IUOMConversionBL
 				.fromUomId(fromTimeUomId)
 				.toUomId(toTimeUomId)
 				.fromToMultiplier(fromToMultiplier)
-				.toFromMultiplier(BigDecimal.ONE.divide(fromToMultiplier, 12, RoundingMode.HALF_UP))
 				.build());
 
 	}
@@ -802,7 +801,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 
 		final UOMConversionRate rate = getRate(price.getProductId(), toUomId, price.getUomId());
-		final BigDecimal priceConv = pricePrecision.round(rate.convert(price.toBigDecimal()));
+		final BigDecimal priceConv = pricePrecision.round(rate.convert(price.toBigDecimal(), UOMPrecision.TWELVE));
 
 		return price.withValueAndUomId(priceConv, toUomId);
 	}

@@ -1,7 +1,5 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -15,15 +13,14 @@ package de.metas.handlingunits.receiptschedule.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -39,6 +36,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -53,10 +52,9 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableBL;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
@@ -67,6 +65,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -89,8 +89,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
-	private final transient IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
-	private final transient IWeightableBL weightableBL = Services.get(IWeightableBL.class);
+	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IHUContext _huContextInitial;
@@ -98,17 +97,12 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 	public HUReceiptScheduleWeightNetAdjuster(final Properties ctx, final String trxName)
 	{
-		super();
-
 		_huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, trxName);
 	}
 
-	// package level only for testing
-	/* package */HUReceiptScheduleWeightNetAdjuster(final IHUContext huContext)
+	@VisibleForTesting
+	/* package */ HUReceiptScheduleWeightNetAdjuster(@NonNull final IHUContext huContext)
 	{
-		super();
-
-		Check.assumeNotNull(huContext, "huContext not null");
 		_huContextInitial = huContext.copyAsMutable();
 	}
 
@@ -141,7 +135,8 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 		// Skip receipt schedules which are not in a Weight UOM
 		final UomId uomId = UomId.ofRepoIdOrNull(receiptSchedule.getC_UOM_ID());
-		if (!weightableBL.isWeightable(uomId))
+		final UOMType uomType = uomId != null ? uomDAO.getUOMTypeById(uomId) : UOMType.Other;
+		if (!uomType.isWeight())
 		{
 			logger.debug("Skip receiptSchedule because its UOM is not weightable; receiptSchedule={}", receiptSchedule);
 			return;
@@ -186,7 +181,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 			}
 
 			final I_M_HU vhu = rsa.getVHU();
-			Check.assumeNotNull(vhu, "vhu not null"); // shall not be null at this point
+			Check.assumeNotNull(vhu, "vhu may not be not null for rsa={}",rsa); // shall not be null at this point
 
 			final int vhuId = vhu.getM_HU_ID();
 			final BigDecimal rsaQtyAllocated = rsa.getHU_QtyAllocated();
@@ -238,7 +233,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 		final IAttributeStorage vhuAttributeStorage = huContext.getHUAttributeStorageFactory()
 				.getAttributeStorage(vhu);
-		final IWeightable weightable = weightableFactory.createWeightableOrNull(vhuAttributeStorage);
+		final IWeightable weightable = Weightables.wrap(vhuAttributeStorage);
 		if (!weightable.hasWeightNet())
 		{
 			logger.debug("Skip weight adjusting because attribute storage has no WeightNet: {}", vhuAttributeStorage);
@@ -311,7 +306,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 				SystemTime.asZonedDateTime(),
 				receiptSchedule, // referenceModel
 				true // forceAllocation => we want to transfer that quantity, no matter what
-				);
+		);
 		allocationRequest = huReceiptScheduleBL.setInitialAttributeValueDefaults(allocationRequest, receiptSchedule);
 		logger.debug("Allocation request: {}", allocationRequest);
 

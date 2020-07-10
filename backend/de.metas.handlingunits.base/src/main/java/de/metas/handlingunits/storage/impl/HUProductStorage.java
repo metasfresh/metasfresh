@@ -34,7 +34,6 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -52,7 +51,7 @@ import lombok.NonNull;
 	private final IHUStorage huStorage;
 	private final ProductId productId;
 	private final I_C_UOM uom;
-	private final CapacityInterface capacityTotal;
+	private final Capacity capacityTotal;
 
 	public HUProductStorage(
 			@NonNull final IHUStorage huStorage,
@@ -95,7 +94,8 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final CapacityInterface capacityAvailable = capacityTotal.subtractQuantity(getQty());
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Capacity capacityAvailable = capacityTotal.subtractQuantity(getQty(), uomConversionBL);
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;

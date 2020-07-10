@@ -103,10 +103,13 @@
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[new String("io")]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[new String("do")]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="bp_loc_id">
+					<subreportParameterExpression><![CDATA[$F{c_bpartner_location_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>

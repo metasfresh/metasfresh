@@ -1,31 +1,29 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.allocation.transfer;
-
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -41,11 +39,12 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -78,36 +77,34 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static java.math.BigDecimal.ZERO;
 
 /**
  * This class contains business logic run by clients when they transform HUs.
- * Use {@link #newInstance(Properties)} or {@link #newInstance(IHUContext)} to obtain an instance.
+ * Use {@link #newInstance(IHUContext)} to obtain an instance.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh-webui/issues/181
- *
+ * task https://github.com/metasfresh/metasfresh-webui/issues/181
  */
 public class HUTransformService
 {
@@ -125,7 +122,6 @@ public class HUTransformService
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
 
 	//
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -136,12 +132,11 @@ public class HUTransformService
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
 	 *
-	 * @param ctx optional
-	 * @param trxName optional
-	 * @param emptyHUListener
+	 * @param ctx               optional
+	 * @param trxName           optional
 	 * @param referencedObjects Optional; the given list contains references that can be turned into {@link IHUDocument}s using the {@link IHUDocumentFactoryService}.
-	 *            They may be assigned to HUs that are given as parameters to this service's methods.
-	 *            It's required to use this method if the service works on HUs that are assigned to other records such as {@link I_M_ReceiptSchedule}s, because otherwise. those assignments are not updated correctly.
+	 *                          They may be assigned to HUs that are given as parameters to this service's methods.
+	 *                          It's required to use this method if the service works on HUs that are assigned to other records such as {@link I_M_ReceiptSchedule}s, because otherwise. those assignments are not updated correctly.
 	 */
 	@Builder
 	private HUTransformService(
@@ -165,8 +160,6 @@ public class HUTransformService
 	/**
 	 * When running unit tests, then use this builder to get your instance. Pass the HUTestHelper's getHUContext() result to it, to avoid transactional trouble.
 	 *
-	 * @param huContext
-	 * @param referencedObjects
 	 */
 	@Builder(builderClassName = "BuilderForHUcontext", builderMethodName = "builderForHUcontext")
 	private HUTransformService(@NonNull final IHUContext huContext,
@@ -214,7 +207,7 @@ public class HUTransformService
 		return BigDecimal.ONE;
 	}
 
-	public Quantity getMaximumQtyCU(@NonNull final I_M_HU cu, @NonNull I_C_UOM uom)
+	public Quantity getMaximumQtyCU(@NonNull final I_M_HU cu, @NonNull final I_C_UOM uom)
 	{
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
@@ -226,7 +219,7 @@ public class HUTransformService
 	/**
 	 * Takes a quantity out of a TU <b>or</b> splits one CU into two.
 	 *
-	 * @param cuHU the currently selected source CU line
+	 * @param cuHU  the currently selected source CU line
 	 * @param qtyCU the CU-quantity to take out or split
 	 * @return the newly created CU.
 	 */
@@ -322,16 +315,15 @@ public class HUTransformService
 	}
 
 	/**
-	 * Similar to {@link #cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)} , but the destination TU already exists
+	 * Similar to {@link #cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)} , but the destination TU already exists
 	 * <p>
 	 * <b>Important:</b> the user is allowed to exceed the TU capacity which was configured in metasfresh! No new TUs will be created.<br>
 	 * That's because if a user manages to squeeze something into a box in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 	 * <p>
 	 *
 	 * @param sourceCuHU the source CU to be split or joined
-	 * @param qtyCU the CU-quantity to join or split
+	 * @param qtyCU      the CU-quantity to join or split
 	 * @param targetTuHU the target TU
-	 *
 	 * @return the CUs that were created
 	 */
 	public List<I_M_HU> cuToExistingTU(
@@ -413,12 +405,12 @@ public class HUTransformService
 	/**
 	 * Update {@link IHUAllocations}. Currently know examples are receipt schedule allocations and shipment schedule allocations.
 	 *
-	 * @param cuHU if {@code null}, then all cuHus of the given tuHU are iterated.
+	 * @param cuHU  if {@code null}, then all cuHus of the given tuHU are iterated.
 	 * @param qtyCU ignored if cuHU is {@code null} may be null, then it's also ignored. If ignored, then this method uses the respective CU's storage's Qty instead.
 	 */
 	private void updateAllocation(
-			final I_M_HU luHU,
-			final I_M_HU tuHU,
+			@Nullable final I_M_HU luHU,
+			@Nullable final I_M_HU tuHU,
 			@Nullable final I_M_HU cuHU,
 			@Nullable final Quantity qtyCU,
 			final boolean negateQtyCU,
@@ -427,6 +419,7 @@ public class HUTransformService
 		final List<I_M_HU> cuHUsToUse;
 		if (cuHU == null)
 		{
+			Check.assumeNotNull(tuHU, "tuHU shall not be null");
 			cuHUsToUse = handlingUnitsDAO.retrieveIncludedHUs(tuHU);
 		}
 		else
@@ -451,7 +444,7 @@ public class HUTransformService
 
 			final Quantity catchWeightOrNull;
 			final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(currentCuHU);
-			final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+			final IWeightable weightable = Weightables.wrap(attributeStorage);
 			if (weightable != null)
 			{
 				catchWeightOrNull = Quantity.of(weightable.getWeightNet().multiply(factor), weightable.getWeightNetUOM());
@@ -486,16 +479,15 @@ public class HUTransformService
 	}
 
 	/**
-	 * Similar to {@link #TU_To_NewLUs}, but the destination LU already exists (selectable as process parameter).<br>
+	 * Similar to {@link #tuToNewLUs}, but the destination LU already exists (selectable as process parameter).<br>
 	 * <b>Important:</b> the user is allowed to exceed the LU TU-capacity which was configured in metasfresh! No new LUs will be created.<br>
 	 * That's because if a user manages to jenga another box onto a loaded pallet in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 	 * <p>
 	 * <b>Also, please note that an aggregate TU is "de-aggregated" before it is added to the LU.</b>
 	 *
 	 * @param sourceTuHU the source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
-	 * @param qtyTU the number of TUs to join or split one the target LU
-	 * @param luHU the target LU
-	 *
+	 * @param qtyTU      the number of TUs to join or split one the target LU
+	 * @param luHU       the target LU
 	 * @return the TUs that were added to {@code luHU}
 	 */
 	public List<I_M_HU> tuToExistingLU(
@@ -558,9 +550,9 @@ public class HUTransformService
 	 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
 	 *
-	 * @param cuHU the currently selected source CU line
-	 * @param qtyCU the CU-quantity to join or split
-	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
+	 * @param cuHU                  the currently selected source CU line
+	 * @param qtyCU                 the CU-quantity to join or split
+	 * @param tuPIItemProduct       the PI item product to specify both the PI and capacity of the target TU
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> cuToNewTUs(
@@ -607,7 +599,7 @@ public class HUTransformService
 	 * The resulting TUs will always have the same PI as the source TU.
 	 *
 	 * @param sourceTuHU he source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
-	 * @param qtyTU the number of TUs to take off or split
+	 * @param qtyTU      the number of TUs to take off or split
 	 */
 	public List<I_M_HU> tuToNewTUs(
 			@NonNull final I_M_HU sourceTuHU,
@@ -709,11 +701,10 @@ public class HUTransformService
 	/**
 	 * Extract a given number of TUs from an LU.
 	 *
-	 * @param sourceLU LU from where the TUs shall be extracted
-	 * @param qtyTU how many TUs to extract
-	 * @param keepSourceLuAsParent if true, the TUs will be created as necessary, but they will remain children of the given {@code sourceLU}.
+	 * @param sourceLU              LU from where the TUs shall be extracted
+	 * @param qtyTU                 how many TUs to extract
+	 * @param keepSourceLuAsParent  if true, the TUs will be created as necessary, but they will remain children of the given {@code sourceLU}.
 	 * @param alreadyExtractedTUIds needed if {@code keepSourceLuAsParent == true}
-	 *
 	 * @return extracted TUs
 	 */
 	private List<I_M_HU> luExtractTUs(
@@ -801,15 +792,14 @@ public class HUTransformService
 	}
 
 	/**
-	 *
 	 * @param childHU
-	 * @param parentItem may be {@code null} if the childHU in question is removed from it's parent HU.
+	 * @param parentItem         may be {@code null} if the childHU in question is removed from it's parent HU.
 	 * @param beforeParentChange
 	 * @param afterParentChange
 	 */
 	private void setParent(
 			@NonNull final I_M_HU childHU,
-			final I_M_HU_Item parentItem,
+			@Nullable final I_M_HU_Item parentItem,
 			@NonNull final Consumer<IHUContext> beforeParentChange,
 			@NonNull final Consumer<IHUContext> afterParentChange)
 	{
@@ -848,9 +838,9 @@ public class HUTransformService
 	 * Creates a new LU and joins or splits a source TU to it. If the user goes with the full quantity of the (aggregate) source TU(s), and if if all fits on one LU, then the source remains unchanged and is only joined.<br>
 	 * Otherwise, the source is split and distributed over many LUs.
 	 *
-	 * @param sourceTuHU the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
-	 * @param qtyTU the number of TUs to join or split onto the destination LU(s).
-	 * @param luPIItem the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
+	 * @param sourceTuHU            the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
+	 * @param qtyTU                 the number of TUs to join or split onto the destination LU(s).
+	 * @param luPIItem              the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> tuToNewLUs(
@@ -928,10 +918,9 @@ public class HUTransformService
 	/**
 	 * Split TU to top-level (either LU or new TU)
 	 *
-	 * @param sourceTuHU the source TU from which we split
-	 * @param qtyTU the TU qty which we split. This is one factor to the actual cuQty
-	 * @param tuPI the packing instruction for the TU level of the new hierarchy which we create.
-	 * @param luPIItem may be {@code null}. If null, then the resulting top level HU will be a TU
+	 * @param sourceTuHU                   the source TU from which we split
+	 * @param qtyTU                        the TU qty which we split. This is one factor to the actual cuQty
+	 * @param luPIItem                     the packing instruction for the TU level of the new hierarchy which we create. may be {@code null}. If null, then the resulting top level HU will be a TU
 	 * @param newPackingMaterialsAreOurOwn if we create a new LU to put the given {@code sourceTuHU} onto, then this flag decides whether that LU's packaging material is owned by us or not.
 	 */
 	private List<I_M_HU> tuToTopLevelHUs(
@@ -958,7 +947,11 @@ public class HUTransformService
 				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, sourceTuHU, tuHUsParentItem);
 
 				final int uomPrecision = firstProductStorage.getC_UOM().getStdPrecision();
-				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.HALF_UP);
+				// always round floor for a more stable split calculation
+				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.FLOOR);
+				// since we do full TU split: store how many TUs we split off, so that we update the storage qty by subtracting this number.
+				final I_M_HU_Item item = sourceTuHU.getM_HU_Item_Parent();
+				huContext.setProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item), qtyTU);
 			}
 			else
 			{
@@ -1061,10 +1054,14 @@ public class HUTransformService
 		 */
 		boolean keepNewCUsUnderSameParent;
 
-		/** if true, then only unreserved VHUs are split on order to get our new CUs */
+		/**
+		 * if true, then only unreserved VHUs are split on order to get our new CUs
+		 */
 		boolean onlyFromUnreservedHUs;
 
-		/** Mandatory, to cover the case of HUs with multiple products */
+		/**
+		 * Mandatory, to cover the case of HUs with multiple products
+		 */
 		ProductId productId;
 
 		@lombok.Builder(toBuilder = true)

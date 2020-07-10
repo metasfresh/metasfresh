@@ -1,18 +1,19 @@
 package de.metas.ordercandidate.modelvalidator;
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /*
  * #%L
@@ -39,6 +40,13 @@ import de.metas.util.Services;
 @Component
 public class C_OrderLine
 {
+
+	@Init
+	public void init()
+	{
+		CopyRecordFactory.enableForTableName(I_C_OrderLine.Table_Name);
+	}
+
 	/**
 	 * Method is fired before an order line is deleted. It deletes all {@link I_C_Order_Line_Alloc} records referencing the order line and sets <code>Processed='N'</code> for all {@link I_C_OLCand}s
 	 * that were originally aggregated into the order line.

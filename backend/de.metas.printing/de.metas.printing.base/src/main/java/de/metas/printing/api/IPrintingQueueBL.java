@@ -22,23 +22,24 @@ package de.metas.printing.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Archive;
-
+import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintingQueueHandler;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Archive;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IPrintingQueueBL extends ISingletonService
 {
 	/**
 	 * Adds the given print-out to the queue
 	 *
-	 * @param printOut
 	 * @return the generated record or <code>null</code> if no printing queue item was generated (i.e. was not needed or an {@link IPrintingQueueHandler} prevented that)
 	 */
 	I_C_Printing_Queue enqueue(I_AD_Archive printOut);
@@ -49,8 +50,6 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * Cancel given printing queue if is not already printed.
 	 *
 	 * If the item is already printed, this method does nothing
-	 *
-	 * @param item
 	 */
 	void cancel(I_C_Printing_Queue item);
 
@@ -59,7 +58,6 @@ public interface IPrintingQueueBL extends ISingletonService
 	 *
 	 * This method is expected to run asynchronously so it's possible to not have the result immediate.
 	 *
-	 * @param item
 	 * @param recreateArchive
 	 *            <ul>
 	 *            <li>if true then the printout archive of underlying model will be generated (asynchronously) and then enqueued again;</li>
@@ -73,26 +71,20 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * Create a printing queue processing info by loading the first item what matches the given <code>printingQueueQuery</code> and using its data.
 	 * <p>
 	 * <b>Important:</b> assume that the given query has {@link IPrintingQueueQuery#getAggregationKey()} set.
-	 *
-	 * @param ctx
-	 * @param printingQueueQuery
-	 * @return
 	 */
 	PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(Properties ctx, IPrintingQueueQuery printingQueueQuery);
+
+	PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(@NonNull I_C_Printing_Queue printingQueueRecord);
 
 	/**
 	 * Compute and set the aggregation key for the given item. Items with different aggregation keys can't be aggregated into the same print job.
 	 * <p>
 	 * <b>Important:</b> don't save the given item, because the method might be called from a model validator.
-	 *
-	 * @param item
 	 */
 	void setItemAggregationKey(I_C_Printing_Queue item);
 
 	/**
 	 * Creates an initial (not configured) {@link IPrintingQueueQuery}.
-	 *
-	 * @return
 	 */
 	IPrintingQueueQuery createPrintingQueueQuery();
 
@@ -100,8 +92,6 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * Retrieve the distinct aggregation keys of the items matched by the given <code>printingQueueQuery</code>. Then create one source per aggregation key. Each source has a copy of the given query,
 	 * with the query-copy's {@link IPrintingQueueQuery#getAggregationKey()} being set to the source's respective aggregation key.
 	 *
-	 * @param ctx
-	 * @param printingQueueQuery
 	 * @return a list of queue sources; note that the size of this list is expected to be moderate, while the number of items in each source instance might be very large.
 	 */
 	List<IPrintingQueueSource> createPrintingQueueSources(Properties ctx, IPrintingQueueQuery printingQueueQuery);
@@ -111,12 +101,11 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * another user, and that's a big difference to creating one for ourselves, as we do not know the other user's <code>HostKey</code>.
 	 * <p>
 	 * Also see
-	 * {@link IPrintJobBL#createPrintJobInstructions(de.metas.printing.model.I_C_Print_Job, int, boolean, de.metas.printing.model.I_C_Print_Job_Line, de.metas.printing.model.I_C_Print_Job_Line, int)}.
+	 * {@link IPrintJobBL#createPrintJobInstructions(de.metas.user.UserId, boolean, I_C_Print_Job_Line, I_C_Print_Job_Line, int)}
 	 * <p>
 	 * Note 2: this method does <b>not</b> save the given {@code item}.
-	 *
-	 * @param item
-	 * @param userToPrintIds
 	 */
-	void setPrintoutForOtherUsers(final I_C_Printing_Queue item, final Set<Integer> userToPrintIds);
+	void setPrintoutForOtherUsers(I_C_Printing_Queue item, Set<Integer> userToPrintIds);
+
+	PrinterRoutingsQuery createPrinterRoutingsQueryForItem(I_C_Printing_Queue item);
 }

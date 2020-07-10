@@ -66,7 +66,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		{
 			this.costPrice = inventoryLine.getCostPrice().multiply(qty);
 		}
-
+		
 		setQty(getQuantityInStockingUOM(qty, inventoryLine.getC_UOM_ID()), false);
 
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());

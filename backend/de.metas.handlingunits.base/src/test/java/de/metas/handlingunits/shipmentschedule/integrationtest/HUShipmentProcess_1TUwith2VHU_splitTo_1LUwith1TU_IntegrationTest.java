@@ -30,13 +30,16 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
+import org.compiere.util.Env;
 import org.junit.Assert;
 import org.w3c.dom.Node;
 
@@ -100,27 +103,27 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
 				//.locator(locator)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// VHU 1
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu1)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(product).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
 					//
 					// VHU 2
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu2)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(product).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
@@ -193,7 +196,8 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		final IMutable<I_M_HU> splitHU_vhu1 = new Mutable<>();
 		final IMutable<I_M_HU> splitHU_vhu2 = new Mutable<>();
 
-		final List<I_M_HU> splitHUs = new HUSplitBuilder(helper.ctx)
+		final Properties ctx = Env.getCtx();
+		final List<I_M_HU> splitHUs = new HUSplitBuilder(helper.ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)))
 				.setHUToSplit(tu)
 				.setCUQty(new BigDecimal("15"))
 				// LU
@@ -222,28 +226,28 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
 
-				.newHUItemExpectation() // the real IFCO which contains the 15kg
+				.item() // the real IFCO which contains the 15kg
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
-					.newIncludedHUExpectation() // the "real" IFCO inside the LU
+					.includedHU() // the "real" IFCO inside the LU
 						.capture(splitHU_tu)
 						.huPI(piTU)
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
-							.newItemStorageExpectation()
+							.storage()
 								.product(product).qty("15").uom(productUOM)
 							.endExpectation()
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.capture(splitHU_vhu1)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(product).qty("10").uom(productUOM)
 									.endExpectation()
 								.endExpectation()
 							.endExpectation() // end of first VHU
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.capture(splitHU_vhu2)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(product).qty("5").uom(productUOM)
 									.endExpectation()
 								.endExpectation()
@@ -252,7 +256,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 					.endExpectation() // end of the "real" IFCO inside the LU
 				.endExpectation() // end of the real IFCO which contains the 15kg
 
-				.newHUItemExpectation() // the empty stub aggregate VHU
+				.item() // the empty stub aggregate VHU
 					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.noItemStorages()
 				.endExpectation()

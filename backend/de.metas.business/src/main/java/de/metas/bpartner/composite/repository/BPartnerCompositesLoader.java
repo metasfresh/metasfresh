@@ -3,7 +3,6 @@ package de.metas.bpartner.composite.repository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.LogEntriesRepository;
@@ -113,7 +112,7 @@ final class BPartnerCompositesLoader
 
 		final CompositeRelatedRecords relatedRecords = retrieveRelatedRecords(bPartnerIds);
 
-		final ImmutableMap.Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.<BPartnerId, BPartnerComposite> builder();
+		final ImmutableMap.Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.<BPartnerId, BPartnerComposite>builder();
 
 		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
 		{
@@ -191,14 +190,14 @@ final class BPartnerCompositesLoader
 		final ImmutableMap<Integer, I_C_Country> countryId2Country = Maps.uniqueIndex(countryRecords, I_C_Country::getC_Country_ID);
 		countryRecords.forEach(countryRecord -> allTableRecordRefs.add(TableRecordReference.of(countryRecord)));
 
-		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = Services.get(IBPBankAccountDAO.class).getByBPartnerIds(bPartnerIds);
+		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = Services.get(IBPBankAccountDAO.class).getAllByBPartnerIds(bPartnerIds);
 
 		final LogEntriesQuery logEntriesQuery = LogEntriesQuery.builder()
 				.tableRecordReferences(allTableRecordRefs)
 				.followLocationIdChanges(true)
 				.build();
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
-		recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
+				recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
 
 		return new CompositeRelatedRecords(
 				bpartnerId2Users,
@@ -359,23 +358,32 @@ final class BPartnerCompositesLoader
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
-		return relatedRecords
+		final ImmutableList<I_C_BP_BankAccount> bpBankAccountrecords = relatedRecords
 				.getBpartnerId2BankAccounts()
-				.get(bpartnerId)
-				.stream()
-				.map(record -> ofBankAccountRecordOrNull(record, relatedRecords))
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
+				.get(bpartnerId);
+		final ImmutableList.Builder<BPartnerBankAccount> result = ImmutableList.builder();
+		for (final I_C_BP_BankAccount bpBankAccountRecord : bpBankAccountrecords)
+		{ // this used to be a stream..more compact, but much harder to debug
+			final BPartnerBankAccount bPartnerBankAccount = ofBankAccountRecordOrNull(bpBankAccountRecord, relatedRecords);
+			if (bPartnerBankAccount != null)
+			{
+				result.add(bPartnerBankAccount);
+			}
+		}
+		return result.build();
 	}
 
+	/**
+	 * IMPORTANT: please keep in sync with {@link de.metas.banking.api.IBPBankAccountDAO#deactivateIBANAccountsByBPartnerExcept(BPartnerId, Collection)}
+	 */
 	private static BPartnerBankAccount ofBankAccountRecordOrNull(
 			@NonNull final I_C_BP_BankAccount bankAccountRecord,
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
 		final String iban = bankAccountRecord.getIBAN();
-		if (Check.isBlank(iban))
+		if (iban == null)
 		{
-			logger.warn("ofBankAccountRecordOrNull: Return null for {} because IBAN is not set", bankAccountRecord);
+			logger.debug("ofBankAccountRecordOrNull: Return null for {} because IBAN is not set", bankAccountRecord);
 			return null;
 		}
 

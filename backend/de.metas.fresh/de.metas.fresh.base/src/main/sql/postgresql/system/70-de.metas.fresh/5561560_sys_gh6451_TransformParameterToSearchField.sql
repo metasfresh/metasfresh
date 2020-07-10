@@ -1,0 +1,15 @@
+-- 2020-06-16T13:00:55.375Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2020-06-16 15:00:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541809
+;
+
+-- 2020-06-16T13:09:14.822Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=53268,Updated=TO_TIMESTAMP('2020-06-16 15:09:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541809
+;
+
+-- 2020-06-16T13:09:18.421Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2020-06-16 15:09:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541809
+;
+

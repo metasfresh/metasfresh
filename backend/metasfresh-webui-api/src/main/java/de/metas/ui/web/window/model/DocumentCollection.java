@@ -28,7 +28,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
@@ -686,6 +685,20 @@ public class DocumentCollection
 		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
+	public void invalidateDocumentsByWindowId(@NonNull final WindowId windowId)
+
+	{
+		final ImmutableList<DocumentKey> documentKeys = rootDocuments.asMap().keySet()
+				.stream()
+				.filter(documentKey -> windowId.equals(documentKey.getWindowId()))
+				.collect(ImmutableList.toImmutableList());
+		if (documentKeys.isEmpty())
+		{
+			return;
+		}
+		rootDocuments.invalidateAll(documentKeys);
+	}
+
 	public void invalidate(final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
@@ -797,6 +810,28 @@ public class DocumentCollection
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 
 		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+	}
+
+	public void duplicateTabRowInTrx(@NonNull final TableRecordReference parentRef, @NonNull final TableRecordReference fromRecordRef, @NonNull final AdWindowId windowId)
+	{
+		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+
+		final Object parentModel = parentRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final PO parentPO = InterfaceWrapperHelper.getPO(parentModel);
+
+		if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		final CopyRecordSupport copyRecordSupport = CopyRecordFactory.getCopyRecordSupport(tableName);
+		copyRecordSupport.setAdWindowId(windowId);
+		copyRecordSupport.setParentPO(parentPO);
+		copyRecordSupport.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
+		copyRecordSupport.setBase(true);
+		copyRecordSupport.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)

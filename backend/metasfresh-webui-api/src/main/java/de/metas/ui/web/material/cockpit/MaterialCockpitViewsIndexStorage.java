@@ -1,27 +1,8 @@
-package de.metas.ui.web.material.cockpit;
-
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import org.compiere.model.I_M_Product;
-import org.springframework.stereotype.Service;
-
-import de.metas.cache.CacheMgt;
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewsIndexStorage;
-import de.metas.ui.web.view.ViewCloseAction;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.WindowId;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,6 +20,27 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.material.cockpit;
+
+import java.time.Duration;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_M_Product;
+import org.springframework.stereotype.Service;
+
+import de.metas.cache.CacheMgt;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.ViewCloseAction;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+
 /**
  * This {@link IViewsIndexStorage} implementation is dedicated to storing {@link MaterialCockpitView}.
  * The actual work is done by an internal instance of {@link DefaultViewsRepositoryStorage}.
@@ -49,7 +51,7 @@ import lombok.NonNull;
 @Service
 public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 {
-	private final DefaultViewsRepositoryStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
+	private final DefaultViewsRepositoryStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage(Duration.ofHours(1));
 
 	public MaterialCockpitViewsIndexStorage()
 	{
@@ -83,6 +85,7 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 
 	}
 
+	@Nullable
 	@Override
 	public IView getByIdOrNull(final ViewId viewId)
 	{

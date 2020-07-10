@@ -1,18 +1,7 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util.ArrayKey;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.printing.esb.base.util.Check;
@@ -24,6 +13,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToNewHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
@@ -44,6 +34,14 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util.ArrayKey;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -202,6 +200,7 @@ public class PickingSlotViewFactory implements IViewFactory
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToNewHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToExistingHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ReturnQtyToSourceHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToNewHU.class),
 
 				// note that WEBUI_Picking_M_Source_HU_Create is called from the HU-editor
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Source_HU_Delete.class),

@@ -63,16 +63,18 @@ import lombok.NonNull;
 @Repository
 public class BankStatementLineAndPaymentsToReconcileRepository
 {
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IBankStatementBL bankStatementBL;
 	private final CurrencyRepository currencyRepository;
 	private LookupDataSource bpartnerLookup;
 
 	public BankStatementLineAndPaymentsToReconcileRepository(
+			@NonNull final IBankStatementBL bankStatementBL,
 			@NonNull final CurrencyRepository currencyRepository)
 	{
+		this.bankStatementBL = bankStatementBL;
 		this.currencyRepository = currencyRepository;
 
 		if (!Adempiere.isUnitTestMode()) // FIXME: workaround to be able to test it

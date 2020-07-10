@@ -1,29 +1,12 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
-import static java.math.BigDecimal.ONE;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-
-import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
-import de.metas.util.NumberUtils;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.collections4.CollectionUtils;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -34,6 +17,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
@@ -51,11 +35,26 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.collections4.CollectionUtils;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

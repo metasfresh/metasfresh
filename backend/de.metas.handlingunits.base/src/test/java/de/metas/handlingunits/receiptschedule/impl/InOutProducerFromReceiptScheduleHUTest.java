@@ -1,13 +1,8 @@
-package de.metas.handlingunits.receiptschedule.impl;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,34 +20,12 @@ import static org.junit.Assert.assertThat;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+package de.metas.handlingunits.receiptschedule.impl;
 
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.email.MailService;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -62,6 +35,7 @@ import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
+import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.product.IProductActivityProvider;
@@ -72,21 +46,31 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
  *
  * @author al
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class, ShutdownListener.class,
-		//
-		DistributeAndMoveReceiptCreator.class,
-		LotNumberQuarantineRepository.class,
-		//
-		MailService.class, MailboxRepository.class, MailTemplateRepository.class
-})
 public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocationWithWeightAttributeTest
 {
 	@Override
@@ -100,6 +84,11 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
 		InterfaceWrapperHelper.save(docType);
+
+		SpringContextHolder.registerJUnitBeans(IHUToReceiveValidator.class, ImmutableList.of());
+
+		final LotNumberQuarantineRepository lotNumberQuarantineRepository = new LotNumberQuarantineRepository();
+		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository));
 	}
 
 	/**

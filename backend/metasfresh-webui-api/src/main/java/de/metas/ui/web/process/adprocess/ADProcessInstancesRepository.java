@@ -45,6 +45,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -183,7 +184,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			// Set parameters's default values
 			ProcessDefaultParametersUpdater.newInstance()
 					.addDefaultParametersProvider(processClassInstance instanceof IProcessDefaultParametersProvider ? (IProcessDefaultParametersProvider)processClassInstance : null)
-					.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(parameter.getColumnName(), value, () -> "default parameter value"))
+					.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(
+							parameter.getColumnName(),
+							value,
+							() -> "default parameter value",
+							true // ignoreReadonlyFlag
+					))
 					.updateDefaultValue(parametersDoc.getFieldViews(), field -> DocumentFieldAsProcessDefaultParameter.of(windowNo, field));
 
 			//
@@ -251,7 +257,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			}
 			else
 			{
-				sqlWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName(tableName));
+				final SqlViewRowsWhereClause viewRowsWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName(tableName));
+				sqlWhereClause = viewRowsWhereClause != null ? viewRowsWhereClause.toSqlString() : null;
 			}
 		}
 		//
@@ -314,7 +321,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		//
 		// View related internal parameters
 		addViewInternalParameters(request, processInfoBuilder);
-		
+
 		return processInfoBuilder.build();
 	}
 
@@ -348,7 +355,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds, childViewRowIdsSelection.getRowIds().toCommaSeparatedString());
 		}
 	}
-	
+
 	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceDocumentId)
 	{
 		Check.assumeNotNull(adPInstanceDocumentId, "Parameter adPInstanceDocumentId is not null");

@@ -175,7 +175,7 @@ import lombok.NonNull;
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DateOrdered"
+						.setAD_Val_Rule_ID(540365) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)

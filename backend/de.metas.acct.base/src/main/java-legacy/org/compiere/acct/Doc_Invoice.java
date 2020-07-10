@@ -351,7 +351,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
 					.setCurrencyId(getCurrencyId())
 					.setAmtSource(null, chargeAmt)
 					.buildAndAdd();
@@ -407,8 +407,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		});
 
 		// Receivables DR
-		final AccountId receivablesId = getValidCombinationId(Doc.ACCTTYPE_C_Receivable, as);
-		final AccountId receivablesServicesId = getValidCombinationId(Doc.ACCTTYPE_C_Receivable_Services, as);
+		final AccountId receivablesId = getValidCombinationId(AccountType.C_Receivable, as);
+		final AccountId receivablesServicesId = getValidCombinationId(AccountType.C_Receivable_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
 				|| AccountId.equals(receivablesId, receivablesServicesId))
@@ -464,7 +464,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
 					.setCurrencyId(getCurrencyId())
 					.setAmtSource(chargeAmt, null)
 					.buildAndAdd();
@@ -518,8 +518,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		});
 
 		// Receivables CR
-		final AccountId receivablesId = getValidCombinationId(Doc.ACCTTYPE_C_Receivable, as);
-		final AccountId receivablesServicesId = getValidCombinationId(Doc.ACCTTYPE_C_Receivable_Services, as);
+		final AccountId receivablesId = getValidCombinationId(AccountType.C_Receivable, as);
+		final AccountId receivablesServicesId = getValidCombinationId(AccountType.C_Receivable_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
 				|| AccountId.equals(receivablesId, receivablesServicesId))
@@ -575,7 +575,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
 					.setCurrencyId(getCurrencyId())
 					.setAmtSource(chargeAmt, null)
 					.buildAndAdd();
@@ -646,8 +646,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		});
 
 		// Liability CR
-		final AccountId payablesId = getValidCombinationId(Doc.ACCTTYPE_V_Liability, as);
-		final AccountId payablesServicesId = getValidCombinationId(Doc.ACCTTYPE_V_Liability_Services, as);
+		final AccountId payablesId = getValidCombinationId(AccountType.V_Liability, as);
+		final AccountId payablesServicesId = getValidCombinationId(AccountType.V_Liability_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
 				|| AccountId.equals(payablesId, payablesServicesId))
@@ -703,7 +703,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
 					.setCurrencyId(getCurrencyId())
 					.setAmtSource(null, chargeAmt)
 					.buildAndAdd();
@@ -771,8 +771,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		});
 
 		// Liability DR
-		final AccountId payablesId = getValidCombinationId(Doc.ACCTTYPE_V_Liability, as);
-		final AccountId payablesServicesId = getValidCombinationId(Doc.ACCTTYPE_V_Liability_Services, as);
+		final AccountId payablesId = getValidCombinationId(AccountType.V_Liability, as);
+		final AccountId payablesServicesId = getValidCombinationId(AccountType.V_Liability_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
 				|| AccountId.equals(payablesId, payablesServicesId))

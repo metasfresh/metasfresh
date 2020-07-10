@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -156,7 +157,7 @@ public class ReceiptScheduleCUKey extends CUKey
 
 		final ITerminalContext terminalContext = getTerminalContext();
 		final Properties ctx = terminalContext.getCtx();
-		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(ctx);
+		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(ctx, ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
 		final IAllocationRequest allocationRequest = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContextInitial)
 				.setDateAsToday()

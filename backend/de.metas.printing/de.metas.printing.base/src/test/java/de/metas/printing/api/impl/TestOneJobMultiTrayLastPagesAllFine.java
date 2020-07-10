@@ -22,18 +22,6 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
@@ -41,6 +29,15 @@ import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * Tests around {@link I_AD_PrinterRouting#ROUTINGTYPE_LastPages} functionality
@@ -67,8 +64,8 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 	protected void afterSetup()
 	{
 		// Create HW printer trays
-		this.tray1HW = helper.getCreatePrinterTrayHW(printerHWName, tray1HWName);
-		this.tray2HW = helper.getCreatePrinterTrayHW(printerHWName, tray2HWName);
+		this.tray1HW = helper.getCreatePrinterTrayHW(printerHWName, tray1HWName,10);
+		this.tray2HW = helper.getCreatePrinterTrayHW(printerHWName, tray2HWName,20);
 		this.printerHW = tray1HW.getAD_PrinterHW();
 		assertThat(printerHW, is(tray2HW.getAD_PrinterHW())); // guard
 	}
@@ -78,8 +75,8 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 	{
 		// create the routings, which also will create the logical printer and trays
 		// setting pageFrom=1, pageTo=3 to support documents with e.g. 3, 4, 5 pages. In all those cases, the last page shall be printed on tray02
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, -1, 1, 3); // routing shall match pages from 1 to 3
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, -1, 2); // routing shall match last 2 pages
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name,10, -1, 1, 3); // routing shall match pages from 1 to 3
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name,20, -1, 2); // routing shall match last 2 pages
 
 		// PDF to print
 		final byte[] binaryPdfData = new PdfCollator()
@@ -126,8 +123,8 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 	{
 		// create the routings, which also will create the logical printer and trays
 		// setting pageFrom=1, pageTo=3 to support documents with e.g. 3, 4, 5 pages. In all those cases, the last page shall be printed on tray02
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, -1, 1, 3); // routing shall match pages from 1 to 3
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, -1, 2); // routing shall match last 2 pages
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name,10, -1, 1, 3); // routing shall match pages from 1 to 3
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name,20, -1, 2); // routing shall match last 2 pages
 
 		// PDF to print
 		final byte[] binaryPdfData = new PdfCollator()
@@ -174,8 +171,8 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 	{
 		// create the routings, which also will create the logical printer and trays
 		// setting pageFrom=1, pageTo=3 to support documents with e.g. 3, 4, 5 pages. In all those cases, the last page shall be printed on tray02
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, -1, 1, 3); // routing shall match pages from 1 to 3
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, -1, 2); // routing shall match last 2 pages
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name,10, -1, 1, 3); // routing shall match pages from 1 to 3
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name,20, -1, 2); // routing shall match last 2 pages
 
 		// PDF to print
 		final byte[] binaryPdfData = new PdfCollator()
@@ -222,8 +219,8 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 	{
 		// create the routings, which also will create the logical printer and trays
 		// setting pageFrom=1, pageTo=3 to support documents with e.g. 3, 4, 5 pages. In all those cases, the last page shall be printed on tray02
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, -1, 1, 3); // routing shall match pages from 1 to 3
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, -1, 2); // routing shall match last 2 pages
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name,10, -1, 1, 3); // routing shall match pages from 1 to 3
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name,20, -1, 2); // routing shall match last 2 pages
 
 		// PDF to print
 		final byte[] binaryPdfData = new PdfCollator()
@@ -264,8 +261,8 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 	{
 		// create the routings, which also will create the logical printer and trays
 		// setting pageFrom=1, pageTo=3 to support documents with e.g. 3, 4, 5 pages. In all those cases, the last page shall be printed on tray02
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, -1, 1, 3); // routing shall match pages from 1 to 3
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, -1, 2); // routing shall match last 2 pages
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name,10, -1, 1, 3); // routing shall match pages from 1 to 3
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name,20, -1, 2); // routing shall match last 2 pages
 
 		// PDF to print
 		final byte[] binaryPdfData = new PdfCollator()
@@ -276,7 +273,6 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				// .addPages(helper.getPdf("01"), 1, 1) // First 3 pages => i.e nothing because we print last 2 pages and those get priority
 				.addPages(helper.getPdf("01"), 1, 1) // Last 2 pages => we got only one
 				.toByteArray();
-
 		//
 		// Create print job
 		final I_C_Print_Job printJob = createPrintJob(
@@ -306,8 +302,8 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 	{
 		// create the routings, which also will create the logical printer and trays
 		final int docTypeId = -1; // N/A
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, docTypeId, 1, 100); // routing shall match pages from 1 to 100
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, docTypeId, 1); // routing shall match last 1 page
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name,10, docTypeId, 1, 100); // routing shall match pages from 1 to 100
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name,20, docTypeId, 1); // routing shall match last 1 page
 
 		// PDF to print (2 pages)
 		final byte[] binaryPdfData = new PdfCollator()
@@ -349,42 +345,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 		assertThat(printPackageInfo2.getAD_PrinterHW_MediaTray(), is(tray2HW));
 	}
 
-	/**
-	 * Test when {@link I_AD_PrinterRouting#COLUMNNAME_LastPages} is not set.
-	 * 
-	 * @task http://dewiki908/mediawiki/index.php/08503_Printing_is_silently_ignoring_the_routing_for_LastPages_if_LastPages_is_not_set_%28109477534973%29
-	 */
-	@Test
-	public void test_LastPages_NotSet()
-	{
-		// create a routing but don't set the LastPages
-		final int docTypeId = -1; // N/A
-		final int lastPages = 0;
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, docTypeId, 1, 100); // routing shall match pages from 1 to 100
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, docTypeId, lastPages);
-
-		// PDF to print (2 pages)
-		final byte[] binaryPdfData = new PdfCollator()
-				.addPages(helper.getPdf("01"), 1, 2)
-				.toByteArray();
-		//
-		// Create print job
-		createPrintJob(
-				binaryPdfData,
-				Arrays.asList(routing1, routing2), 3);
-
-		//
-		// Creating the Print Package template (request):
-		final I_C_Print_Package printPackageRequest = helper.createPrintPackageRequest();
-
-		// Trigger print package response producer
-		final I_C_Print_Package printPackageResponse = helper.createPrintPackageResponse(printPackageRequest);
-
-		// NOTE: atm in case of an error, the error is logged in console but no nice error message is sent back, but NULL
-		Assert.assertNull("No print package shall be created and an error shall be logged in console", printPackageResponse);
-	}
-
-	protected I_C_Print_Job createPrintJob(final byte[] binaryPdfData, final List<I_AD_PrinterRouting> routings, 
+	protected I_C_Print_Job createPrintJob(final byte[] binaryPdfData, final List<I_AD_PrinterRouting> routings,
 			final int copies)
 	{
 		final I_C_Print_Job printJob = helper.createPrintJob();

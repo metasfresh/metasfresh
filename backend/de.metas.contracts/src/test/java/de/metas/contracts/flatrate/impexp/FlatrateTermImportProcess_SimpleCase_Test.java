@@ -83,6 +83,9 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
+
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 	}
 
 	@Test
