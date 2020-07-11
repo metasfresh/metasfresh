@@ -15,22 +15,33 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 	currentBuild.description= """${currentBuild.description}<p/>
 			<h2>misc services</h2>
 		"""
+		withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+				{
+					dir('edi') // todo: modernize and move to camel
+							{
+								def ediBuildFile = load('buildfile.groovy')
+								ediBuildFile.build(mvnConf, scmVars, forceBuild)
+							}
 
-		dir('edi')
-		{
-			def ediBuildFile = load('buildfile.groovy')
-			ediBuildFile.build(mvnConf, scmVars, forceBuild)
-		}
-		dir('procurement-webui')
-		{
-			def procurementWebuiBuildFile = load('buildfile.groovy')
-			procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
-		}
-		dir('admin')
-		{
-			def procurementWebuiBuildFile = load('buildfile.groovy')
-			procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
-		}
+					dir('procurement-webui')
+							{
+								def procurementWebuiBuildFile = load('buildfile.groovy')
+								procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
+							}
+					dir('admin')
+							{
+								def procurementWebuiBuildFile = load('buildfile.groovy')
+								procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
+							}
+				}
+		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+				{
+					dir('camel')
+							{
+								def camelBuildFile = load('buildfile.groovy')
+								camelBuildFile.build(mvnConf, scmVars, forceBuild)
+							}
+				}
     } // stage
 } 
 
