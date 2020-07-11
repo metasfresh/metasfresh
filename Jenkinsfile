@@ -66,12 +66,12 @@ try {
 			</ul>
 			</b>
 			"""
-
                                         sh 'git clean -d --force -x' // clean the workspace
 
                                         // we need to provide MF_VERSION because otherwise the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
                                         // and therefore, the jenkins information would not be added to the build.properties info file.
                                         buildAll(MF_VERSION, mvnConf, scmVars) // withEnv
+
                                     } // configFileProvider
 
                             cleanWs cleanWhenAborted: false, cleanWhenFailure: false // clean up the workspace after (successfull) builds

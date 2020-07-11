@@ -4,9 +4,7 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.DockerConf
 import de.metas.jenkins.MvnConf
-import de.metas.jenkins.Misc
 
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
@@ -55,12 +53,8 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		// maven.test.failure.ignore=true: see metasfresh stage
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
 
-		final DockerConf dockerConf = new DockerConf(
-				'de-metas-esb-shipmentschedule-camel', // artifactName
-				env.BRANCH_NAME, // branchName
-				env.MF_VERSION, // versionSuffix
-				'./') // workDir
-		final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
+		final def camelShipmentScheduleDockerInfo = readJSON file: 'de-metas-camel-shipmentschedule/target/jib-image.json'
+		final String publishedDockerImageName = "{camelShipmentScheduleDockerInfo.image}"
 
         currentBuild.description="""${currentBuild.description}<p/>
 		This build's main artifact (if not yet cleaned up) is
@@ -74,10 +68,6 @@ docker run --rm\\<br/>
  -e "DEBUG_SUSPEND=n"\\<br/>
  -e "DEBUG_PRINT_BASH_CMDS=n"\\<br/>
  -e "SERVER_PORT=8184"\\<br/>
- -e "RABBITMQ_HOST=your.rabbitmq.host"\\<br/>
- -e "RABBITMQ_PORT=your.rabbitmq.port"\\<br/>
- -e "RABBITMQ_USER=your.rabbitmq.user"\\<br/>
- -e "RABBITMQ_PASSWORD=your.rabbitmq.password"\\<br/>
  ${publishedDockerImageName}
 </code>
 <p/>
