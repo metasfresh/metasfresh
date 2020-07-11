@@ -98,15 +98,18 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                 withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
                         {
                             nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
-                            dir('misc/parent-pom')
+                            stage('parent-pom & commons') // for display purposes
                                     {
-                                        def parentPom = load('buildfile.groovy')
-                                        parentPom.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
-                                    }
-                            dir('misc/commons')
-                                    {
-                                        def parentPom = load('buildfile.groovy')
-                                        parentPom.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
+                                        dir('misc/parent-pom')
+                                                {
+                                                    def parentPom = load('buildfile.groovy')
+                                                    parentPom.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
+                                                }
+                                        dir('misc/commons')
+                                                {
+                                                    def parentPom = load('buildfile.groovy')
+                                                    parentPom.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
+                                                }
                                     }
                             // note: to do some of this in parallel, we first need to make sure that the different parts don't concurrently write to the build description
                             dir('frontend')
