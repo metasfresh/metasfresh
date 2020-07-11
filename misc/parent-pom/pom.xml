@@ -33,6 +33,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<!-- this is our default; individual projects might need to specify their own settings -->
 		<metasfresh.java.version>1.8</metasfresh.java.version>
 
+		<!-- please keep in sync with spring-boot's jackson-version-->
+		<jackson.version>2.9.9</jackson.version>
+
 		<jasperreports.version>6.7.0</jasperreports.version>
 
 		<itext.version>2.1.7.js6</itext.version>
@@ -288,7 +291,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.7.0</version>
+					<version>3.8.1</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
 						<source>${metasfresh.java.version}</source>

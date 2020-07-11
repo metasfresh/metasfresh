@@ -52,24 +52,6 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 		// maven.test.failure.ignore=true: see metasfresh stage
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
-
-		final def camelShipmentScheduleDockerInfo = readJSON file: 'de-metas-camel-shipmentschedule/target/jib-image.json'
-		final String publishedDockerImageName = "{camelShipmentScheduleDockerInfo.image}"
-
-        currentBuild.description="""${currentBuild.description}<p/>
-		This build's main artifact (if not yet cleaned up) is
-<ul>
-<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${env.BRANCH_NAME}_LATEST</code></li>
-</ul>
-E.g. to connect a debugger on port 8793, you can run the docker image like this:<br>
-<code>
-docker run --rm\\<br/>
- -p 8793:8793 \\<br/>
- -e "JAVA_TOOL_OPTIONS='agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8793'"\\<br/>
- ${publishedDockerImageName}
-</code>
-<p/>
-"""
     //} // stage
 }
 
