@@ -10,11 +10,20 @@ import de.metas.jenkins.MvnConf
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
 {
-    stage('Build misc services')
+	stage('Build misc services')
     {
-	currentBuild.description= """${currentBuild.description}<p/>
+		currentBuild.description= """${currentBuild.description}<p/>
 			<h2>misc services</h2>
 		"""
+
+		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+				{
+					dir('camel')
+							{
+								def camelBuildFile = load('buildfile.groovy')
+								camelBuildFile.build(mvnConf, scmVars, forceBuild)
+							}
+				}
 		withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
 					dir('edi') // todo: modernize and move to camel
@@ -32,14 +41,6 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 							{
 								def procurementWebuiBuildFile = load('buildfile.groovy')
 								procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
-							}
-				}
-		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
-				{
-					dir('camel')
-							{
-								def camelBuildFile = load('buildfile.groovy')
-								camelBuildFile.build(mvnConf, scmVars, forceBuild)
 							}
 				}
     } // stage
