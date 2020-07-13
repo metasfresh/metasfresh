@@ -1526,7 +1526,7 @@ public final class Document
 		return getField(fieldName).getLookupValuesForQuery(query);
 	}
 
-	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
+	public Optional<Document> getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);

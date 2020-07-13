@@ -170,7 +170,7 @@ export class SalesOrder {
         warehouseResponse,
       ] = vals;
 
-      const bPartner = findByName(bPartnerResponse, salesOrder.bPartner);
+      const bPartner = findByName(bPartnerResponse.result, salesOrder.bPartner);
       if (salesOrder.bPartner && bPartner) {
         dataObject.push({
           op: 'replace',
@@ -182,7 +182,7 @@ export class SalesOrder {
         });
       }
 
-      const location = findByName(bPartnerLocationResponse, salesOrder.bPartnerLocation);
+      const location = findByName(bPartnerLocationResponse.result, salesOrder.bPartnerLocation);
       if (salesOrder.bPartnerLocation && location) {
         dataObject.push({
           op: 'replace',
@@ -194,7 +194,7 @@ export class SalesOrder {
         });
       }
 
-      const invoicePartner = findByName(invoicePartnerResponse, salesOrder.invoicePartner);
+      const invoicePartner = findByName(invoicePartnerResponse.result, salesOrder.invoicePartner);
       if (salesOrder.invoicePartner && invoicePartner) {
         dataObject.push({
           op: 'replace',
@@ -206,7 +206,7 @@ export class SalesOrder {
         });
       }
 
-      const invoicePartnerLocation = findByName(invoicePartnerLocationResponse, salesOrder.invoicePartnerLocation);
+      const invoicePartnerLocation = findByName(invoicePartnerLocationResponse.result, salesOrder.invoicePartnerLocation);
       if (salesOrder.invoicePartnerLocation && invoicePartnerLocation) {
         dataObject.push({
           op: 'replace',
@@ -218,7 +218,7 @@ export class SalesOrder {
         });
       }
 
-      const warehouse = findByName(warehouseResponse, salesOrder.warehouse);
+      const warehouse = findByName(warehouseResponse.result, salesOrder.warehouse);
       if (salesOrder.warehouse && warehouse) {
         dataObject.push({
           op: 'replace',

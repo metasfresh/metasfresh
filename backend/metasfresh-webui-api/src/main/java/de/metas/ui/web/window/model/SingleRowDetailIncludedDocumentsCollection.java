@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Optional;
+
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.slf4j.Logger;
 
@@ -106,35 +108,46 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	}
 
 	@Override
-	public OrderedDocumentsList getDocumentsByIds(DocumentIdsSelection documentIds)
+	public OrderedDocumentsList getDocumentsByIds(@NonNull final DocumentIdsSelection documentIds)
 	{
-		final ImmutableMap<DocumentId, Document> loadedDocuments = getDocuments(DocumentQueryOrderByList.EMPTY).toImmutableMap();
-
-		final OrderedDocumentsList result = OrderedDocumentsList.newEmpty();
-		for (final DocumentId documentId : documentIds.toSet())
+		if (documentIds.isAll())
 		{
-			final Document loadedDocument = loadedDocuments.get(documentId);
-			if (loadedDocument != null)
-			{
-				result.addDocument(loadedDocument);
-			}
-			else
-			{
-				// No document found for documentId. Ignore it.
-			}
+			return getDocuments(DocumentQueryOrderByList.EMPTY);
 		}
+		else if (documentIds.isEmpty())
+		{
+			return OrderedDocumentsList.newEmpty();
+		}
+		else
+		{
+			final ImmutableMap<DocumentId, Document> loadedDocuments = getDocuments(DocumentQueryOrderByList.EMPTY).toImmutableMap();
 
-		return result;
+			final OrderedDocumentsList result = OrderedDocumentsList.newEmpty();
+			for (final DocumentId documentId : documentIds.toSet())
+			{
+				final Document loadedDocument = loadedDocuments.get(documentId);
+				if (loadedDocument != null)
+				{
+					result.addDocument(loadedDocument);
+				}
+				else
+				{
+					// No document found for documentId. Ignore it.
+				}
+			}
+
+			return result;
+		}
 	}
 
 	@Override
-	public Document getDocumentById(@NonNull final DocumentId documentId)
+	public Optional<Document> getDocumentById(@NonNull final DocumentId documentId_NOTUSED)
 	{
 		// Try documents which are new and/or have changes in progress, but are not yet saved
 		final Document singleDocument = getSingleDocumentOrNull();
 		if (singleDocument != null)
 		{
-			return singleDocument;
+			return Optional.of(singleDocument);
 		}
 
 		final Document document = DocumentQuery
@@ -143,7 +156,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 				.retriveDocumentOrNull();
 		setSingleDocument(document);
 
-		return document;
+		return Optional.of(document);
 	}
 
 	private final Document getSingleDocumentOrNull()
