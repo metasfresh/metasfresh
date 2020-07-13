@@ -412,7 +412,6 @@ class DocumentListContainer extends Component {
     const {
       windowId,
       isIncluded,
-      page,
       sort,
       viewId,
       setListIncludedView,
@@ -421,6 +420,10 @@ class DocumentListContainer extends Component {
       isModal,
     } = this.props;
     const { filtersActive } = this.state;
+    // if we're applying filter, we should reset the page to the first one.
+    // Otherwise we might get no results as there are not enough to fill more
+    // than a single page.
+    const page = 1;
 
     filterView(
       windowId,
