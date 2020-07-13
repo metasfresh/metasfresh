@@ -14,7 +14,7 @@ def build(final MvnConf mvnConf, final Map scmVars) {
     dir('pojos')
             {
                 def buildFile = load('buildfile.groovy')
-                buildFile.build(mvnConf, scmVars, forceBuild)
+                buildFile.build(mvnConf, scmVars)
             }
 }
 
