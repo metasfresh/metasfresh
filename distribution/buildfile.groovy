@@ -59,7 +59,7 @@ Map build(final MvnConf mvnConf)
 			//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 			//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
 			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>";
-			if(MF_UPSTREAM_BRANCH == 'release')
+			if(env.BRANCH_NAME == 'release')
 			{
 				releaseLinkWithText = """	${releaseLinkWithText}
 <li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>"""
