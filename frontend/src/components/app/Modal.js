@@ -154,6 +154,7 @@ class Modal extends Component {
       activeTabId,
       childViewId,
       childViewSelectedIds,
+      parentViewSelectedIds,
       parentViewId,
       viewDocumentIds,
     } = this.props;
@@ -234,9 +235,9 @@ class Modal extends Component {
             options.childViewSelectedIds = childViewSelectedIds;
           }
 
-          if (parentViewId && parentSelection.length) {
+          if (parentViewId && parentViewSelectedIds.length) {
             options.parentViewId = parentViewId;
-            options.parentViewSelectedIds = parentSelection;
+            options.parentViewSelectedIds = parentViewSelectedIds;
           }
 
           await dispatch(createProcess(options));
@@ -739,6 +740,7 @@ Modal.propTypes = {
   parentSelection: PropTypes.any,
   parentWindowId: PropTypes.any,
   parentViewId: PropTypes.any,
+  parentViewSelectedIds: PropTypes.array,
   rawModalVisible: PropTypes.any,
   rowId: PropTypes.string,
   triggerField: PropTypes.any,
@@ -748,7 +750,11 @@ Modal.propTypes = {
 };
 
 const mapStateToProps = (state, props) => {
-  const { tabId, dataId, parentWindowId, parentViewId } = props;
+  const { tabId, dataId, parentWindowId } = props;
+  const parentViewId = state.windowHandler.modal.parentViewId
+    ? state.windowHandler.modal.parentViewId
+    : props.parentViewId;
+
   const parentViewTableId = getTableId({
     windowId: parentWindowId,
     viewId: parentViewId,
@@ -762,6 +768,7 @@ const mapStateToProps = (state, props) => {
     parentSelection: parentSelector(state, parentViewTableId),
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator: state.windowHandler.indicator,
+    parentViewId,
   };
 };
 

@@ -163,6 +163,7 @@ export default function windowHandler(state = initialState, action) {
           viewDocumentIds: action.viewDocumentIds,
           triggerField: action.triggerField,
           parentViewId: action.parentViewId,
+          parentViewSelectedIds: action.parentViewSelectedIds,
           childViewId: action.childViewId,
           childViewSelectedIds: action.childViewSelectedIds,
         },
