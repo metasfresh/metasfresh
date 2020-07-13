@@ -150,8 +150,8 @@
                     <to>
                         <image>nexus.metasfresh.com:6001/metasfresh/de-metas-esb-shipmentschedule-camel</image>
                         <tags>
-                            <tag>${env.BRANCH_NAME}_LATEST</tag>
-                            <tag>${env.MF_VERSION}</tag>
+                            <tag>${env.BRANCH_NAME_DOCKERIZED}_LATEST</tag>
+                            <tag>${env.MF_VERSION_DOCKERIZED}</tag>
                         </tags>
                         <!-- we expect the credentials to be in the settings.xml file or elsewhere-->
                     </to>

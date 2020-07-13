@@ -6,7 +6,6 @@
 @Library('misc')
 import de.metas.jenkins.DockerConf
 import de.metas.jenkins.MvnConf
-import de.metas.jenkins.Misc
 
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
