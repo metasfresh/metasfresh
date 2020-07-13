@@ -42,33 +42,51 @@ public class JsonRequestLocation
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
+
+	@ApiModelProperty(hidden = true)
 	private boolean externalIdSet;
 
 	@ApiModelProperty("If not specified but required (e.g. because a new location is created), then `true` is assumed")
 	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
 	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
 	private String name;
+
+	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
 	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
 	private String bpartnerName;
+
+	@ApiModelProperty(hidden = true)
 	private boolean bpartnerNameSet;
 
 	private String address1;
+
+	@ApiModelProperty(hidden = true)
 	private boolean address1Set;
 
 	private String address2;
+
+	@ApiModelProperty(hidden = true)
 	private boolean address2Set;
 
 	private String address3;
+
+	@ApiModelProperty(hidden = true)
 	private boolean address3Set;
 
 	private String address4;
+
+	@ApiModelProperty(hidden = true)
 	private boolean address4Set;
 
 	private String poBox;
+
+	@ApiModelProperty(hidden = true)
 	private boolean poBoxSet;
 
 	@ApiModelProperty("If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
@@ -77,28 +95,42 @@ public class JsonRequestLocation
 			+ "* city\n"
 			+ "* region\n")
 	private String postal;
+
+	@ApiModelProperty(hidden = true)
 	private boolean postalSet;
 
 	private String city;
+
+	@ApiModelProperty(hidden = true)
 	private boolean citySet;
 
 	@ApiModelProperty("If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
 			+ "The property may be empty so a caller can explicitly tell metasfresh *not* to filter by district")
 	private String district;
+
+	@ApiModelProperty(hidden = true)
 	private boolean districtSet;
 
 	private String region;
+
+	@ApiModelProperty(hidden = true)
 	private boolean regionSet;
 
 	private String countryCode;
+
+	@ApiModelProperty(hidden = true)
 	private boolean countryCodeSet;
 
 	@ApiModelProperty("This translates to `C_BPartner_Location.GLN`")
 	private String gln;
+
+	@ApiModelProperty(hidden = true)
 	private boolean glnSet;
 
 	@ApiModelProperty(required = false)
 	private Boolean shipTo;
+
+	@ApiModelProperty(hidden = true)
 	private boolean shipToSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `shipToDefault == true`.\n"
@@ -106,10 +138,14 @@ public class JsonRequestLocation
 			+ "* `shipTo` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh location might be set to `shipToDefault = false`, even if it is not specified in this request.")
 	private Boolean shipToDefault;
+
+	@ApiModelProperty(hidden = true)
 	private boolean shipToDefaultSet;
 
 	@ApiModelProperty(required = false)
 	private Boolean billTo;
+
+	@ApiModelProperty(hidden = true)
 	private boolean billToSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `billToDefault == true`.\n"
@@ -117,11 +153,15 @@ public class JsonRequestLocation
 			+ "* `billTo` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh location might be set to `billToDefault = false`, even if it is not specified in this request.")
 	private Boolean billToDefault;
+
+	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
 	@ApiModelProperty(position = 20, // shall be last
 			value = "Sync advise about this location's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
+
+	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
 	public void setExternalId(JsonExternalId externalId)

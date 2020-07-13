@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import springfox.documentation.annotations.ApiIgnore;
 
 /*
  * #%L
@@ -43,88 +44,126 @@ public class JsonRequestBPartner
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner.ExternalId`.")
 	private JsonExternalId externalId;
+
+	@ApiModelProperty(hidden = true)
 	private boolean externalIdSet;
 
 	@ApiModelProperty(position = 20, required = false, //
 			value = "This translates to `C_BPartner.Value`.")
 	private String code;
+
+	@ApiModelProperty(hidden = true)
 	private boolean codeSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new partner is created), then `true` is assumed.")
 	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
 	@ApiModelProperty(position = 30, required = false, //
 			value = "This translates to `C_BPartner.Name`.\n"
 					+ "If this is empty, and a BPartner with the given `name` does not yet exist, then the request will fail.")
 	private String name;
+
+	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
 	@ApiModelProperty(position = 40, required = false, //
 			value = "This translates to `C_BPartner.Name2`.")
 	private String name2;
+
+	@ApiModelProperty(hidden = true)
 	private boolean name2Set;
 
 	@ApiModelProperty(position = 50, required = false, //
 			value = "This translates to `C_BPartner.Name3`.")
 	private String name3;
+
+	@ApiModelProperty(hidden = true)
 	private boolean name3Set;
 
 	@ApiModelProperty(position = 60, required = false, //
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	private String companyName;
+
+	@ApiModelProperty(hidden = true)
 	private boolean companyNameSet;
 
 	private Boolean vendor;
+
+	@ApiModelProperty(hidden = true)
 	private boolean vendorSet;
 
 	private Boolean customer;
+
+	@ApiModelProperty(hidden = true)
 	private boolean customerSet;
 
 	@ApiModelProperty(position = 70, required = false, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
 	private MetasfreshId parentId;
+
+	@ApiModelProperty(hidden = true)
 	private boolean parentIdSet;
 
 	@ApiModelProperty(position = 80, required = false, //
 			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	private String phone;
+
+	@ApiModelProperty(hidden = true)
 	private boolean phoneSet;
 
 	@ApiModelProperty(position = 90, required = false)
 	private String language;
+
+	@ApiModelProperty(hidden = true)
 	private boolean languageSet;
 
 	@ApiModelProperty(position = 100, required = false, //
 			value = "Optional; if specified, it will be used, e.g. when an order is created for this business partner.")
 	private JsonInvoiceRule invoiceRule;
+
+	@ApiModelProperty(hidden = true)
 	private boolean invoiceRuleSet;
 
 	@ApiModelProperty(position = 110, required = false)
 	private String url;
+
+	@ApiModelProperty(hidden = true)
 	private boolean urlSet;
 
 	@ApiModelProperty(position = 120, required = false)
 	private String url2;
+
+	@ApiModelProperty(hidden = true)
 	private boolean url2Set;
 
 	@ApiModelProperty(position = 130, required = false)
 	private String url3;
+
+	@ApiModelProperty(hidden = true)
 	private boolean url3Set;
 
 	@ApiModelProperty(position = 140, required = false, //
 			value = "Name of the business partner's group")
 	private String group;
+
+	@ApiModelProperty(hidden = true)
 	private boolean groupSet;
 
 	@ApiModelProperty(position = 150, required = false, //
 			value = "Translates to `C_BPartner.GlobalId`")
 	private String globalId;
+
+	@ApiModelProperty(hidden = true)
 	private boolean globalIdset;
 
 	private SyncAdvise syncAdvise;
+
+	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
 	public void setExternalId(JsonExternalId externalId)

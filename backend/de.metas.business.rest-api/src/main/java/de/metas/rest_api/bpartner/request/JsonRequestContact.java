@@ -39,43 +39,67 @@ public class JsonRequestContact
 {
 	@ApiModelProperty(dataType = "java.lang.String")
 	private JsonExternalId externalId;
+
+	@ApiModelProperty(hidden = true)
 	private boolean externalIdSet;
 
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	private MetasfreshId metasfreshBPartnerId;
+
+	@ApiModelProperty(hidden = true)
 	private boolean metasfreshBPartnerIdSet;
 
 	@ApiModelProperty("Translated to `AD_User.Value`")
 	private String code;
+
+	@ApiModelProperty(hidden = true)
 	private boolean codeSet;
 
 	@ApiModelProperty("If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
 	private String name;
+
+	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
 	private String firstName;
+
+	@ApiModelProperty(hidden = true)
 	private boolean firstNameSet;
 
 	private String lastName;
+
+	@ApiModelProperty(hidden = true)
 	private boolean lastNameSet;
 
 	private String email;
+
+	@ApiModelProperty(hidden = true)
 	private boolean emailSet;
 
 	private String phone;
+
+	@ApiModelProperty(hidden = true)
 	private boolean phoneSet;
 
 	private String fax;
+
+	@ApiModelProperty(hidden = true)
 	private boolean faxSet;
 
 	private String mobilePhone;
+
+	@ApiModelProperty(hidden = true)
 	private boolean mobilePhoneSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean defaultContact;
+
+	@ApiModelProperty(hidden = true)
 	private boolean defaultContactSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `shipToDefault == true`.\n"
@@ -90,17 +114,25 @@ public class JsonRequestContact
 			+ "If `true`, then " //
 			+ "* another possibly exiting metasfresh contact might be set to `billToDefault = false`, even if it is not specified in this request.")
 	private Boolean billToDefault;
+
+	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean newsletter;
+
+	@ApiModelProperty(hidden = true)
 	private boolean newsletterSet;
 
 	private String description;
+
+	@ApiModelProperty(hidden = true)
 	private boolean descriptionSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean sales;
+
+	@ApiModelProperty(hidden = true)
 	private boolean salesSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `salesDefault == true`.\n"
@@ -109,10 +141,14 @@ public class JsonRequestContact
 			+ "* `sales` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh contact might be set to `salesDefault = false`, even if it is not specified in this request.")
 	private Boolean salesDefault;
+
+	@ApiModelProperty(hidden = true)
 	private boolean salesDefaultSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean purchase;
+
+	@ApiModelProperty(hidden = true)
 	private boolean purchaseSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `purchaseDefault == true`.\n"
@@ -121,15 +157,21 @@ public class JsonRequestContact
 			+ "* `purchase` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh contact might be set to `purchaseDefault = false`, even if it is not specified in this request.")
 	private Boolean purchaseDefault;
+
+	@ApiModelProperty(hidden = true)
 	private boolean purchaseDefaultSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean subjectMatter;
+
+	@ApiModelProperty(hidden = true)
 	private boolean subjectMatterSet;
 
 	@ApiModelProperty(position = 20, // shall be last
 			required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
+
+	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
 	public void setExternalId(JsonExternalId externalId)
