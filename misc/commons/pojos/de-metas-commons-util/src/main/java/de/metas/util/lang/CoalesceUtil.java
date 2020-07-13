@@ -1,21 +1,8 @@
-package de.metas.util.lang;
-
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import java.util.Objects;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.util
+ * de-metas-commons-util
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +19,18 @@ import javax.annotation.Nullable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.util.lang;
+
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import java.util.Objects;
+
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 
 @UtilityClass
 public class CoalesceUtil
@@ -155,7 +154,7 @@ public class CoalesceUtil
 	{
 		for (int i = 0; i < values.length; i++)
 		{
-			if (!Check.isEmpty(values[i], true))
+			if (EmptyUtil.isNotBlank(values[i]))
 			{
 				return values[i].trim();
 			}
