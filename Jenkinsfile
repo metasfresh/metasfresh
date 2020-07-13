@@ -98,7 +98,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                 withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
                         {
                             nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
-                            stage('parent-pom & commons') // for display purposes
+                            stage('Build parent-pom & commons') // for display purposes
                                     {
                                         dir('misc/parent-pom')
                                                 {
@@ -108,7 +108,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                                         dir('misc/commons')
                                                 {
                                                     def parentPom = load('buildfile.groovy')
-                                                    parentPom.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
+                                                    parentPom.build(mvnConf, scmVars) // this one we also always build&deploy; it's tiny
                                                 }
                                     }
                             // note: to do some of this in parallel, we first need to make sure that the different parts don't concurrently write to the build description
