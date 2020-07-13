@@ -24,19 +24,30 @@ package de.metas.esb.inout.shipment;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
+import org.apache.camel.component.properties.PropertiesComponent;
 
-public class Json2XmlRouteBuilder extends EndpointRouteBuilder
+public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	@Override
 	public void configure() throws Exception
 	{
 		from(timer("test").period(5 * 1000))
-				.setHeader("Authorization", simple("has-to-be-injected"))
+				.routeId("MF-ShipmentSchedule-JSON-To-Filemaker-XML")
+				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-				.to(http("localhost:8181/api/bpartner?since=0"))
+				.to(http("{{metasfresh.api.baseurl}}/bpartner?since=0"))
+
 				.log(LoggingLevel.INFO,"tick")
-				.to(file("output_path"));
+				.process(new JsonToXmlProcessor())
+
+				.multicast()
+				.stopOnException()
+				.to(file("{local.file.output_path}")/*, sftp("{{remote.sftp.output_path}}")*/)
+				.end();
+
+		// TODO: invoke "feedback"-REST-Endpoint
 	}
 }
