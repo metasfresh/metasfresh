@@ -10,6 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.145
+## Features
+* [#6983](https://github.com/metasfresh/metasfresh/issues/6983) R_Request.SalesRep_ID repair default value
+* [#6987](https://github.com/metasfresh/metasfresh/issues/6987) Automatically mark all received HUs carrying BOM components as 'Source HUs'
+* [#6985](https://github.com/metasfresh/metasfresh/issues/6985) Excel-Sales-Order Qty in Stock-UOM instead of Price-UOM
+
+to be continued
+
+
+## Fixes
+* [#6979](https://github.com/metasfresh/metasfresh/issues/6979) Error in workpackage when trying to create invoices
+
+to be continued
+
+
 # metasfresh 5.144
 ## Features
 * metasfresh
