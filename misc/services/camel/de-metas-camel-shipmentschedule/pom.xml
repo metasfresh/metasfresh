@@ -60,6 +60,13 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-http</artifactId>
+            <exclusions>
+                <!-- camel-core also has jakarta-activation in its dependency path-->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
