@@ -22,6 +22,42 @@
 
 package de.metas.commons.shipmentschedule;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sun.istack.internal.Nullable;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.time.LocalDateTime;
+
+@Value
 public class JsonResponseShipmentSchedule
 {
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String orderDocumentNo;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String poReference;
+
+	LocalDateTime dateOrdered;
+
+	@NonNull
+	String productNo; // we also call it "productNo" in the product-rest-api
+
+	@JsonCreator
+	@Builder
+	private JsonResponseShipmentSchedule(
+			@JsonProperty("orderDocumentNo") @Nullable final String orderDocumentNo,
+			@JsonProperty("poReference") @Nullable final String poReference,
+			@JsonProperty("dateOrdered") @NonNull final LocalDateTime dateOrdered,
+			@JsonProperty("productNo") @NonNull final String productNo)
+	{
+		this.orderDocumentNo = orderDocumentNo;
+		this.poReference = poReference;
+		this.dateOrdered = dateOrdered;
+		this.productNo = productNo;
+	}
 }
+

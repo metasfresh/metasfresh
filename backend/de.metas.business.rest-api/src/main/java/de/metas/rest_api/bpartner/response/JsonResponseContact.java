@@ -199,9 +199,4 @@ public class JsonResponseContact
 
 		this.changeInfo = changeInfo;
 	}
-
-	public JsonResponseContact withExternalId(@NonNull final JsonExternalId externalId)
-	{
-		return toBuilder().externalId(externalId).build();
-	}
 }

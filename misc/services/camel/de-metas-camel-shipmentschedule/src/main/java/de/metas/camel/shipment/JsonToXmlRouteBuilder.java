@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-esb-shipmentschedule-camel
+ * de-metas-camel-shipmentschedule
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,14 +20,12 @@
  * #L%
  */
 
-package de.metas.esb.inout.shipment;
+package de.metas.camel.shipment;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
-import org.apache.camel.component.properties.PropertiesComponent;
 
 public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
@@ -36,18 +34,23 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 	{
 		from(timer("test").period(5 * 1000))
 				.routeId("MF-ShipmentSchedule-JSON-To-Filemaker-XML")
+
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-				.to(http("{{metasfresh.api.baseurl}}/bpartner?since=0"))
+				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentSchedules"))
 
-				.log(LoggingLevel.INFO,"tick")
+				.log(LoggingLevel.INFO, "tick")
 				.process(new JsonToXmlProcessor())
 
+				// store the file both locally and send it to the remote folder
 				.multicast()
 				.stopOnException()
 				.to(file("{local.file.output_path}")/*, sftp("{{remote.sftp.output_path}}")*/)
-				.end();
+				.end()
 
-		// TODO: invoke "feedback"-REST-Endpoint
+				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
+				.process(new FeedBackJsonCreator())
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentSchedules"));
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shipmentschedule
+ * de-metas-commons-shipmentschedule
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,20 +20,26 @@
  * #L%
  */
 
-package de.metas.esb.inout.shipment;
+package de.metas.commons.shipmentschedule;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
-public class JsonToXmlProcessor implements Processor
+import java.util.List;
+
+@Value
+public class JsonResponseShipmentScheduleList
 {
-	Log log = LogFactory.getLog(JsonToXmlProcessor.class);
+	List<JsonResponseShipmentSchedule> responseItems;
 
-	@Override
-	public void process(final Exchange exchange) throws Exception
+	@Builder
+	@JsonCreator
+	private JsonResponseShipmentScheduleList(@JsonProperty("responseItems") @Singular @NonNull final List<JsonResponseShipmentSchedule> responseItems)
 	{
-		log.info("process method called; exchange=" + exchange);
+		this.responseItems = responseItems;
 	}
 }
