@@ -149,6 +149,7 @@
                     </from>
                     <to>
                         <image>nexus.metasfresh.com:6001/metasfresh/de-metas-esb-shipmentschedule-camel</image>
+                        <!-- we expect those environment variables to be set from the outside world -->
                         <tags>
                             <tag>${env.BRANCH_NAME_DOCKERIZED}_LATEST</tag>
                             <tag>${env.MF_VERSION_DOCKERIZED}</tag>

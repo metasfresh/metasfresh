@@ -76,31 +76,6 @@
                     <target>14</target>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-
-                <configuration>
-                    <rules>
-                        <banDuplicateClasses>
-                            <dependencies>
-                                <!--
-                                    do not check this dependency, because the endcustomer allInOne-jar contains
-                                    all the classes that are also its dependencies
-                                -->
-                                <dependency>
-                                    <groupId></groupId>
-                                    <artifactId></artifactId>
-                                    <ignoreClasses>
-                                        <ignoreClass>*</ignoreClass>
-                                    </ignoreClasses>
-                                </dependency>
-                            </dependencies>
-                        </banDuplicateClasses>
-                    </rules>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 </project>

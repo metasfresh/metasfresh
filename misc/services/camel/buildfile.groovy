@@ -56,7 +56,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     }
 
     final def camelShipmentScheduleDockerInfo = readJSON file: 'de-metas-camel-shipmentschedule/target/jib-image.json'
-    final String publishedDockerImageName = "{camelShipmentScheduleDockerInfo.image}"
+    final String publishedDockerImageName = camelShipmentScheduleDockerInfo.image
 
     currentBuild.description = """${currentBuild.description}<p/>
 		This build's main artifact (if not yet cleaned up) is
