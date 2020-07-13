@@ -748,9 +748,14 @@ Modal.propTypes = {
 };
 
 const mapStateToProps = (state, props) => {
-  const { tabId, dataId, parentWindowId, parentViewId } = props;
+  const { tabId, dataId } = props;
+
+  const parentViewId = state.windowHandler.modal.parentViewId
+    ? state.windowHandler.modal.parentViewId
+    : props.parentViewId;
+  const viewName = parentViewId ? parentViewId.split('-') : '';
   const parentViewTableId = getTableId({
-    windowId: parentWindowId,
+    windowId: viewName ? viewName[0] : '',
     viewId: parentViewId,
     tabId,
     docId: dataId,
@@ -762,6 +767,7 @@ const mapStateToProps = (state, props) => {
     parentSelection: parentSelector(state, parentViewTableId),
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator: state.windowHandler.indicator,
+    parentViewId,
   };
 };
 
