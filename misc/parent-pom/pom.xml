@@ -582,7 +582,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 										<ignoreClass>org.bouncycastle.*</ignoreClass>
 
 										<!-- org.jboss.client:jbossall-client and partially geronimo specs -->
-
 										<ignoreClass>javax.annotation.*</ignoreClass>
 										<ignoreClass>javax.ejb.*</ignoreClass>
 										<ignoreClass>javax.jms.*</ignoreClass>
