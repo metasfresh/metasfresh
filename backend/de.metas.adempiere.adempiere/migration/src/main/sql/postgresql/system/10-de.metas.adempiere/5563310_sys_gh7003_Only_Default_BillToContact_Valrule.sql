@@ -39,9 +39,6 @@ AND AD_User.C_BPartner_ID >0',Updated=TO_TIMESTAMP('2020-07-09 21:05:32','YYYY-M
 
 -- 2020-07-09T18:19:00.185Z
 -- URL zum Konzept
--- fail, until the AD_Val_Rule exists (created by backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/system/10-de.metas.adempiere/5563310_sys_gh7003_Only_Default_BillToContact_Valrule.sql)
-select db_fail_unless_row_count_greater_zero('select 1 from AD_Val_Rule WHERE AD_Val_Rule_ID=540511');
-
 UPDATE AD_Val_Rule SET Code='AD_User.C_Bpartner_ID = @C_BPartner_ID/-1@
 AND AD_User.IsBillToContact_Default = ''Y''
 ',Updated=TO_TIMESTAMP('2020-07-09 21:19:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540511
@@ -62,6 +59,7 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 -- URL zum Konzept
 UPDATE AD_Val_Rule SET Description='If the sys config C_Invoice.SOTrx_OnlyAllowBillToDefault_Contact is on true and this validation rule is set on C_Invoice_AD_User ( column or field) then only the BillToDefault_Contact will be eligible as user in a sales invoice.',Updated=TO_TIMESTAMP('2020-07-13 14:46:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540511
 ;
+
 
 
 
