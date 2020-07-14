@@ -19,6 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <log4j2-version>2.13.3</log4j2-version>
+        <slf4j-api.version>1.7.30</slf4j-api.version>
         <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 
@@ -83,6 +84,12 @@
             <groupId>de.metas.commons.shipmentschedule</groupId>
             <artifactId>de-metas-commons-shipmentschedule</artifactId>
             <version>${metasfresh.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- logging -->

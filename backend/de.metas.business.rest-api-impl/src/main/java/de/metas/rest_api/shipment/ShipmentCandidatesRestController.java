@@ -33,6 +33,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+
 @RequestMapping(ShipmentCandidatesRestController.ENDPOINT)
 @RestController
 @Profile(Profiles.PROFILE_App)
@@ -44,7 +47,12 @@ public class ShipmentCandidatesRestController
 	public ResponseEntity<JsonResponseShipmentScheduleList> getShipmentSchedules()
 	{
 		final JsonResponseShipmentScheduleList result = JsonResponseShipmentScheduleList.builder()
-				.responseItem(JsonResponseShipmentSchedule.builder().orderDocumentNo("123").build())
+				.responseItem(JsonResponseShipmentSchedule.builder()
+						.orderDocumentNo("orderDocumentNo")
+						.poReference("poReference")
+						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 48))
+						.productNo("productNo")
+						.build())
 				.build();
 		return ResponseEntity.ok(result);
 	}
