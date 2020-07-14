@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.shipmentschedule.shipmentschedule;
+package de.metas.common.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;

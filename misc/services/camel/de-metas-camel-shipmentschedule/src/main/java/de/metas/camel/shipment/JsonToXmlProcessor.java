@@ -22,7 +22,7 @@
 
 package de.metas.camel.shipment;
 
-import de.metas.commons.shipmentschedule.JsonResponseShipmentScheduleList;
+import de.metas.common .shipmentschedule.JsonResponseShipmentScheduleList;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;

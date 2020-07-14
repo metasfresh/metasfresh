@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.shipmentschedule.shipmentschedule;
+package de.metas.common.shipmentschedule;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static de.metas.common.shipmentschedule.shipmentschedule.JsonRequestShipmentScheduleResult.*;
+import static de.metas.common.shipmentschedule.JsonRequestShipmentScheduleResult.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests

@@ -23,9 +23,9 @@
 package de.metas.rest_api.shipment;
 
 import de.metas.Profiles;
-import de.metas.commons.shipmentschedule.JsonRequestShipmentScheduleResult;
-import de.metas.commons.shipmentschedule.JsonResponseShipmentSchedule;
-import de.metas.commons.shipmentschedule.JsonResponseShipmentScheduleList;
+import de.metas.common.shipmentschedule.JsonRequestShipmentScheduleResult;
+import de.metas.common.shipmentschedule.JsonResponseShipmentSchedule;
+import de.metas.common.shipmentschedule.JsonResponseShipmentScheduleList;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
@@ -50,7 +50,7 @@ public class ShipmentCandidatesRestController
 	public ResponseEntity<JsonResponseShipmentScheduleList> getShipmentSchedules()
 	{
 		final JsonResponseShipmentScheduleList result = JsonResponseShipmentScheduleList.builder()
-				.responseItem(JsonResponseShipmentSchedule.builder()
+				.item(JsonResponseShipmentSchedule.builder()
 						.orderDocumentNo("orderDocumentNo")
 						.poReference("poReference")
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 48))

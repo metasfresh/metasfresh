@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.shipmentschedule.shipmentschedule;
+package de.metas.common.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,14 +32,13 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-public class JsonRequestShipmentScheduleResultList
+public class JsonResponseShipmentScheduleList
 {
-	List<JsonRequestShipmentScheduleResult> items;
+	List<JsonResponseShipmentSchedule> items;
 
-	@JsonCreator
 	@Builder
-	private JsonRequestShipmentScheduleResultList(
-			@JsonProperty("items") @NonNull @Singular final List<JsonRequestShipmentScheduleResult> items)
+	@JsonCreator
+	private JsonResponseShipmentScheduleList(@JsonProperty("items") @Singular @NonNull final List<JsonResponseShipmentSchedule> items)
 	{
 		this.items = items;
 	}
