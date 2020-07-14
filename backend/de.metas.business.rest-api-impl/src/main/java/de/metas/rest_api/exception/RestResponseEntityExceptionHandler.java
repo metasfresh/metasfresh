@@ -16,7 +16,7 @@ import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.dao.selection.pagination.PageNotFoundException;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.rest_api.common.JsonError;
+import de.metas.commons.rest_api.JsonError;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.security.PermissionNotGrantedException;
 import lombok.NonNull;

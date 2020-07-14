@@ -22,6 +22,7 @@
 
 package de.metas.commons.shipmentschedule;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Month;
 
+import static de.metas.commons.shipmentschedule.JsonRequestProcessingStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests
@@ -104,5 +106,20 @@ class JsonSerializeDeserializeTests
 
 		// then
 		assertThat(scheduleList).isEqualTo(scheduleListOrig);
+	}
+
+	@Test
+	void processingStatus() throws IOException
+	{
+		final JsonRequestProcessingStatus statusOrig = builder().outcome(Outcome.OK).build();
+
+		final String jsonString = objectMapper.writeValueAsString(statusOrig);
+		assertThat(jsonString).isNotEmpty();
+
+		// when
+		final JsonRequestProcessingStatus status = objectMapper.readValue(jsonString, JsonRequestProcessingStatus.class);
+
+		// then
+		assertThat(status).isEqualTo(statusOrig);
 	}
 }

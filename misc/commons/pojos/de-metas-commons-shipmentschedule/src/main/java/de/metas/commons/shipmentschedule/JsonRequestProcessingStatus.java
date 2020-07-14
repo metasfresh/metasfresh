@@ -22,10 +22,37 @@
 
 package de.metas.commons.shipmentschedule;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.commons.rest_api.JsonError;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
+@Builder
 public class JsonRequestProcessingStatus
 {
+	public enum Outcome
+	{
+		OK,
+		ERROR;
+	}
 
+	Outcome outcome;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonError error;
+
+	@JsonCreator
+	private JsonRequestProcessingStatus(
+			@JsonProperty("outcome") @NonNull final Outcome outcome,
+			@JsonProperty("error") @Nullable final JsonError error)
+	{
+		this.outcome = outcome;
+		this.error = error;
+	}
 }

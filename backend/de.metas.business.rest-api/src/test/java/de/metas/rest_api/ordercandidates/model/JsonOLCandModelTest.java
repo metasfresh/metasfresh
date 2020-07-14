@@ -13,7 +13,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.commons.rest_api.JsonErrorItem;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;

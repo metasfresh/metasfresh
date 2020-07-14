@@ -38,7 +38,11 @@
             <artifactId>de-metas-commons-util</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>de.metas.commons.rest_api</groupId>
+            <artifactId>de-metas-commons-rest_api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>

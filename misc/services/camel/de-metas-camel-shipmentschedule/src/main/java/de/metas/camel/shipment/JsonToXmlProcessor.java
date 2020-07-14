@@ -22,6 +22,8 @@
 
 package de.metas.camel.shipment;
 
+import de.metas.commons.shipmentschedule.JsonResponseShipmentScheduleList;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
@@ -32,8 +34,9 @@ public class JsonToXmlProcessor implements Processor
 	private final Log log = LogFactory.getLog(JsonToXmlProcessor.class);
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(@NonNull final Exchange exchange) throws Exception
 	{
-		log.info("process method called; exchange=" + exchange);
+		final JsonResponseShipmentScheduleList scheduleList = exchange.getIn().getBody(JsonResponseShipmentScheduleList.class);
+		log.info("process method called; scheduleList=" + scheduleList);
 	}
 }

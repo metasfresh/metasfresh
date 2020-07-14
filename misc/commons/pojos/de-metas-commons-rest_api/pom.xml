@@ -32,8 +32,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>de.metas.commons.shipmentschedule</groupId>
-    <artifactId>de-metas-commons-shipmentschedule</artifactId>
+    <groupId>de.metas.commons.rest_api</groupId>
+    <artifactId>de-metas-commons-rest_api</artifactId>
     <version>10.0.0</version>
 
     <properties>
@@ -41,11 +41,13 @@
     </properties>
 
     <dependencies>
+
         <dependency>
-            <groupId>de.metas.commons.rest_api</groupId>
-            <artifactId>de-metas-commons-rest_api</artifactId>
+            <groupId>de.metas.commons.util</groupId>
+            <artifactId>de-metas-commons-util</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

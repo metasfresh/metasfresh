@@ -22,30 +22,48 @@
 
 package de.metas.camel.shipment;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import de.metas.commons.shipmentschedule.JsonResponseShipmentScheduleList;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
+import org.apache.camel.component.jackson.JacksonDataFormat;
 
 public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	@Override
 	public void configure() throws Exception
 	{
+		final ObjectMapper objectMapper = new ObjectMapper()
+				.findAndRegisterModules()
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+				.enable(MapperFeature.USE_ANNOTATIONS);
+		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat(JsonResponseShipmentScheduleList.class);
+		jacksonDataFormat.setCamelContext(getContext());
+		jacksonDataFormat.setObjectMapper(objectMapper);
+		jacksonDataFormat.setUnmarshalType(JsonResponseShipmentScheduleList.class);
+
 		from(timer("test").period(5 * 1000))
+				.streamCaching()
 				.routeId("MF-ShipmentSchedule-JSON-To-Filemaker-XML")
 
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentSchedules"))
 
-				.log(LoggingLevel.INFO, "tick")
+				.unmarshal(jacksonDataFormat)
 				.process(new JsonToXmlProcessor())
+				.marshal(jacksonDataFormat) // here we will marshal to the xml-format
 
 				// store the file both locally and send it to the remote folder
 				.multicast()
 				.stopOnException()
-				.to(file("{local.file.output_path}")/*, sftp("{{remote.sftp.output_path}}")*/)
+				.to(file("{{local.file.output_path}}")/*, sftp("{{remote.sftp.output_path}}")*/)
 				.end()
 
 				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")

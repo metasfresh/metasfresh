@@ -96,7 +96,7 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.commons.rest_api.JsonErrorItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;

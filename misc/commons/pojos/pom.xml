@@ -43,6 +43,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>de-metas-commons-rest_api</module>
         <module>de-metas-commons-shipmentschedule</module>
         <module>de-metas-commons-util</module>
     </modules>
