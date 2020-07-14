@@ -129,6 +129,7 @@ class Container extends PureComponent {
               modalTitle={modal.title}
               viewId={modal.viewId}
               parentWindowId={windowId}
+              rawModalWindowId={rawModal.windowId}
               parentDataId={dataId}
               parentViewId={viewId}
               rawModalVisible={rawModal.visible}
