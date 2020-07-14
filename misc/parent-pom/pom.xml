@@ -569,12 +569,13 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                     We can't allow them to be build on jenkins, because then they would be deployed to the maven repos and shadow the "actual" builds with correct build numbers.
                                     Also see http://maven.apache.org/enforcer/enforcer-rules/bannedDependencies.html
                                 -->
+<!--
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>de.metas*:*:[10,)</exclude>
                                     </excludes>
                                 </bannedDependencies>
-
+-->
                                 <banDuplicateClasses>
                                     <ignoreClasses>
 

@@ -66,7 +66,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
+                    <artifactId>jackson-annotations</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -81,6 +81,10 @@
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
