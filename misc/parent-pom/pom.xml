@@ -47,6 +47,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
 
+		<!-- pls keep in sync with spring-boot's version -->
+		<slf4j-api.version>1.7.25</slf4j-api.version>
+
 		<!-- test related versions -->
 		<!--
 			3.15.0 is currently the latest and greatest. Spring boot declares some 2.x version that
