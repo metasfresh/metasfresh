@@ -53,6 +53,12 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- we use this for its "capability of serializing java.time objects with the Jackson core".  -->
         <!-- jackson itself is pulled in via spring-boot -->
@@ -61,8 +67,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -95,7 +106,6 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j-api.version}</version>
         </dependency>
-
     </dependencies>
 
 </project>

@@ -20,6 +20,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <log4j2-version>2.13.3</log4j2-version>
         <slf4j-api.version>1.7.30</slf4j-api.version>
+        <jackson.version>2.10.4</jackson.version>
         <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 
@@ -78,6 +79,17 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-ftp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jackson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
