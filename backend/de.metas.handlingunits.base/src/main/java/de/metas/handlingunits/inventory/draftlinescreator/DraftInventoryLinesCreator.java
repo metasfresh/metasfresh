@@ -16,7 +16,7 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.quantity.Quantity;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.NonFinal;

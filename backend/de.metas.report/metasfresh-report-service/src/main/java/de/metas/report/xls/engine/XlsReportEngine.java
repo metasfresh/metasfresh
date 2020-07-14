@@ -10,7 +10,7 @@ import de.metas.report.server.ReportContext;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;

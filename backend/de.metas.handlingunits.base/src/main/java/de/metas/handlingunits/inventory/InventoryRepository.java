@@ -1,7 +1,7 @@
 
 package de.metas.handlingunits.inventory;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;

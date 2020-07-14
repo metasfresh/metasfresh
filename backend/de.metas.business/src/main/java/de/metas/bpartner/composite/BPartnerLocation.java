@@ -1,7 +1,7 @@
 package de.metas.bpartner.composite;
 
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.HashSet;
 import java.util.Objects;

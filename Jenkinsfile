@@ -102,13 +102,13 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                                     {
                                         dir('misc/parent-pom')
                                                 {
-                                                    def parentPom = load('buildfile.groovy')
-                                                    parentPom.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
+                                                    def buildFile = load('buildfile.groovy')
+                                                    buildFile.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
                                                 }
-                                        dir('misc/commons')
+                                        dir('misc/de-metas-common')
                                                 {
-                                                    def parentPom = load('buildfile.groovy')
-                                                    parentPom.build(mvnConf, scmVars) // this one we also always build&deploy; it's tiny
+                                                    def buildFile = load('buildfile.groovy')
+                                                    buildFile.build(mvnConf, scmVars) // this one we also always build&deploy; it's tiny
                                                 }
                                     }
                             // note: to do some of this in parallel, we first need to make sure that the different parts don't concurrently write to the build description

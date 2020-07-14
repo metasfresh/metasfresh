@@ -74,7 +74,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 public class ADPInstanceDAO implements IADPInstanceDAO

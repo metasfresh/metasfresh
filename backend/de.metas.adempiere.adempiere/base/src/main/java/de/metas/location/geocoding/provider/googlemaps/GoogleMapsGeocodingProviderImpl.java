@@ -33,7 +33,7 @@ import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
 

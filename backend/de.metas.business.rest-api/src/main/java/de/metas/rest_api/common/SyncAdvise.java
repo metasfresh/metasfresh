@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.pentabyte.springfox.ApiEnum;
 import lombok.Builder;
 import lombok.Getter;

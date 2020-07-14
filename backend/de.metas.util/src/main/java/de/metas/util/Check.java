@@ -22,7 +22,7 @@
 
 package de.metas.util;
 
-import de.metas.util.lang.EmptyUtil;
+import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
 

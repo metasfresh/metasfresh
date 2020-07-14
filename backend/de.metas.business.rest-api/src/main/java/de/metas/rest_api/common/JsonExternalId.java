@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
-import de.metas.util.lang.EmptyUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.Value;

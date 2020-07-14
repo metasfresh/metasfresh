@@ -23,8 +23,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.metas.commons.util</groupId>
-            <artifactId>de-metas-commons-util</artifactId>
+            <groupId>de.metas.common.util</groupId>
+            <artifactId>de-metas-common-util</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 

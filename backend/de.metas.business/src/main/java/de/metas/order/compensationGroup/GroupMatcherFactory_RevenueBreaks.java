@@ -10,7 +10,7 @@ import com.google.common.collect.Range;
 
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.order.model.X_C_CompensationGroup_SchemaLine;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import lombok.ToString;
 

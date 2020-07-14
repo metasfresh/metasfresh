@@ -43,7 +43,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;

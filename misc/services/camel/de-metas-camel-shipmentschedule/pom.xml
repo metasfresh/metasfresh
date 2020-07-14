@@ -93,8 +93,8 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.commons.shipmentschedule</groupId>
-            <artifactId>de-metas-commons-shipmentschedule</artifactId>
+            <groupId>de.metas.common.shipmentschedule</groupId>
+            <artifactId>de-metas-common-shipmentschedule</artifactId>
             <version>${metasfresh.version}</version>
             <exclusions>
                 <exclusion>
