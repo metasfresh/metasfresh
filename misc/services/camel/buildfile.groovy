@@ -69,8 +69,10 @@ Example: to connect a debugger on port 8793, you can run the docker image like t
 docker run --rm\\<br/>
  -p 8793:8793 \\<br/>
  -e "JAVA_TOOL_OPTIONS='agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8793'"\\<br/>
- ${dockerInfo.image}
+ ${dockerInfo.image}:${dockerInfo.tags.first()}
 </code>
+If will run with it's local <code>application.properties</code> and <code>log4j2.properties</code> that probably make no sense for you.
+To run with your own instead, include something as <code>-v /tmp/my-own-resources:/app/resources</code> in the <code>docker run</code>.
 <p/>
 """
     //} // stage
