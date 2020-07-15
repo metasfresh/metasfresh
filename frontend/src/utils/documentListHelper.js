@@ -74,9 +74,9 @@ const DLmapStateToProps = (state, props) => {
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
   } = props;
-  const identifier = isModal ? defaultViewId : windowId;
-  let master = getView(state, identifier);
+  let master = getView(state, windowId, isModal);
 
+  // use empty view's data. This is used in tests
   if (!master) {
     master = viewState;
   }
@@ -86,8 +86,8 @@ const DLmapStateToProps = (state, props) => {
   let viewId = master.viewId ? master.viewId : queryViewId;
 
   // used for modals
-  if (props.defaultViewId) {
-    viewId = props.defaultViewId;
+  if (defaultViewId) {
+    viewId = defaultViewId;
   }
 
   const tableId = getTableId({ windowId, viewId });
