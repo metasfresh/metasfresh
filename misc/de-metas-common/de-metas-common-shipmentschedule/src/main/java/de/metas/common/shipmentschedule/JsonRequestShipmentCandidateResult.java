@@ -25,40 +25,39 @@ package de.metas.common.shipmentschedule;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.LocalDateTime;
 
 @Value
-public class JsonResponseShipmentSchedule
+@Builder
+public class JsonRequestShipmentCandidateResult
 {
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String orderDocumentNo;
+	public enum Outcome
+	{
+		OK,
+		ERROR;
+	}
+
+	JsonMetasfreshId shipmentScheduleId;
+
+	Outcome outcome;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String poReference;
-
-	LocalDateTime dateOrdered;
-
-	@NonNull
-	String productNo; // we also call it "productNo" in the product-rest-api
+	JsonError error;
 
 	@JsonCreator
-	@Builder
-	private JsonResponseShipmentSchedule(
-			@JsonProperty("orderDocumentNo") @Nullable final String orderDocumentNo,
-			@JsonProperty("poReference") @Nullable final String poReference,
-			@JsonProperty("dateOrdered") @NonNull final LocalDateTime dateOrdered,
-			@JsonProperty("productNo") @NonNull final String productNo)
+	private JsonRequestShipmentCandidateResult(
+			@JsonProperty("shipmentScheduleId") @NonNull final JsonMetasfreshId shipmentScheduleId,
+			@JsonProperty("outcome") @NonNull final Outcome outcome,
+			@JsonProperty("error") @Nullable final JsonError error)
 	{
-		this.orderDocumentNo = orderDocumentNo;
-		this.poReference = poReference;
-		this.dateOrdered = dateOrdered;
-		this.productNo = productNo;
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.outcome = outcome;
+		this.error = error;
 	}
 }
-

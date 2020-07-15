@@ -26,16 +26,21 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.JsonAttributeSetInstance;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonQuantity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static de.metas.common.shipmentschedule.JsonRequestShipmentScheduleResult.*;
+import static de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResult.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests
@@ -57,93 +62,107 @@ class JsonSerializeDeserializeTests
 	}
 
 	@Test
-	void shipmentSchedule() throws IOException
+	void product() throws IOException
 	{
-		// given
-		final JsonResponseShipmentSchedule scheduleOrig = JsonResponseShipmentSchedule
-				.builder()
-				.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 48))
-				.poReference("poReference")
-				.orderDocumentNo("orderDocumentNo")
-				.productNo("productNo")
-				.build();
+		final JsonProduct productOrig = JsonProduct.builder().productNo("productNo").name("name").build();
 
-		final String jsonString = objectMapper.writeValueAsString(scheduleOrig);
+		assertOK(productOrig, JsonProduct.class);
+	}
+
+	private <T> void assertOK(T objectOrig, Class<T> valueType) throws IOException
+	{
+		final String jsonString = objectMapper.writeValueAsString(objectOrig);
 		assertThat(jsonString).isNotEmpty();
 
 		// when
-		final JsonResponseShipmentSchedule schedule = objectMapper.readValue(jsonString, JsonResponseShipmentSchedule.class);
+		final T object = objectMapper.readValue(jsonString, valueType);
 
 		// then
-		assertThat(schedule).isEqualTo(scheduleOrig);
+		assertThat(object).isEqualTo(objectOrig);
+	}
+
+	@Test
+	void shipmentSchedule() throws IOException
+	{
+		// given
+		final JsonResponseShipmentCandidate scheduleOrig = JsonResponseShipmentCandidate
+				.builder()
+				.id(JsonMetasfreshId.of(10))
+				.orgCode("orgCode")
+				.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 48))
+				.poReference("poReference")
+				.orderDocumentNo("orderDocumentNo")
+				.product(createJsonProduct())
+				.customer(JsonCustomer.builder().street("street").streetNo("streetNo").postal("postal").city("city").build())
+				.quantity(JsonQuantity.builder().qty(BigDecimal.ONE).uomCode("PCE").build())
+				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
+				.attributeSetInstance(JsonAttributeSetInstance.builder().id(JsonMetasfreshId.of(20))
+						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_1").attributeCode("attributeCode_1").valueInt(10).build())
+						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_2").attributeCode("attributeCode_2").valueStr("valueStr").build())
+						.build())
+				.build();
+
+		assertOK(scheduleOrig, JsonResponseShipmentCandidate.class);
+	}
+
+	private JsonProduct createJsonProduct()
+	{
+		return JsonProduct.builder().productNo("productNo").name("name").build();
 	}
 
 	@Test
 	void shipmentScheduleList() throws IOException
 	{
 		// given
-		final JsonResponseShipmentScheduleList scheduleListOrig = JsonResponseShipmentScheduleList.builder()
-				.item(JsonResponseShipmentSchedule
-						.builder()
+		final JsonResponseShipmentCandidates scheduleListOrig = JsonResponseShipmentCandidates.builder()
+				.transactionKey("transactionKey")
+				.item(JsonResponseShipmentCandidate.builder()
+						.id(JsonMetasfreshId.of(10))
+						.orgCode("orgCode")
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 01))
 						.poReference("poReference_1")
 						.orderDocumentNo("orderDocumentNo_1")
-						.productNo("productNo_1")
+						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").build())
+						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").build())
 						.build())
-				.item(JsonResponseShipmentSchedule
-						.builder()
+				.item(JsonResponseShipmentCandidate.builder()
+						.id(JsonMetasfreshId.of(20))
+						.orgCode("orgCode")
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 02))
 						.poReference("poReference_2")
 						.orderDocumentNo("orderDocumentNo_2")
-						.productNo("productNo_2")
+						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").build())
+						.customer(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").build())
 						.build())
 				.build();
 
-		final String jsonString = objectMapper.writeValueAsString(scheduleListOrig);
-		assertThat(jsonString).isNotEmpty();
-
-		// when
-		final JsonResponseShipmentScheduleList scheduleList = objectMapper.readValue(jsonString, JsonResponseShipmentScheduleList.class);
-
-		// then
-		assertThat(scheduleList).isEqualTo(scheduleListOrig);
+		assertOK(scheduleListOrig, JsonResponseShipmentCandidates.class);
 	}
 
 	@Test
 	void jsonRequestShipmentScheduleResult() throws IOException
 	{
-		final JsonRequestShipmentScheduleResult statusOrig = builder().outcome(Outcome.OK).build();
+		final JsonRequestShipmentCandidateResult statusOrig = JsonRequestShipmentCandidateResult.builder()
+				.shipmentScheduleId(JsonMetasfreshId.of(10))
+				.outcome(Outcome.OK)
+				.build();
 
-		final String jsonString = objectMapper.writeValueAsString(statusOrig);
-		assertThat(jsonString).isNotEmpty();
-
-		// when
-		final JsonRequestShipmentScheduleResult status = objectMapper.readValue(jsonString, JsonRequestShipmentScheduleResult.class);
-
-		// thenCopyRecordSupport
-		assertThat(status).isEqualTo(statusOrig);
+		assertOK(statusOrig, JsonRequestShipmentCandidateResult.class);
 	}
 
 	@Test
 	void jsonRequestShipmentScheduleResultList() throws IOException
 	{
-
-	final	JsonRequestShipmentScheduleResultList resultListOrig = JsonRequestShipmentScheduleResultList.builder()
-				.item(builder().outcome(Outcome.OK).build())
-				.item(builder().outcome(Outcome.ERROR)
+		final JsonRequestShipmentCandidateResults resultListOrig = JsonRequestShipmentCandidateResults.builder()
+				.transactionKey("transactionKey")
+				.item(builder().shipmentScheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
+				.item(builder().shipmentScheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
 						.error(JsonError.builder()
 								.error(JsonErrorItem.builder().message("errorMessage").build())
 								.build())
 						.build())
 				.build();
 
-		final String jsonString = objectMapper.writeValueAsString(resultListOrig);
-		assertThat(jsonString).isNotEmpty();
-
-		// when
-		final JsonRequestShipmentScheduleResultList status = objectMapper.readValue(jsonString, JsonRequestShipmentScheduleResultList.class);
-
-		// then
-		assertThat(status).isEqualTo(resultListOrig);
+		assertOK(resultListOrig, JsonRequestShipmentCandidateResults.class);
 	}
 }

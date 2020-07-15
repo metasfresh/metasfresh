@@ -32,14 +32,19 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-public class JsonResponseShipmentScheduleList
+public class JsonRequestShipmentCandidateResults
 {
-	List<JsonResponseShipmentSchedule> items;
+	String transactionKey;
 
-	@Builder
+	List<JsonRequestShipmentCandidateResult> items;
+
 	@JsonCreator
-	private JsonResponseShipmentScheduleList(@JsonProperty("items") @Singular @NonNull final List<JsonResponseShipmentSchedule> items)
+	@Builder
+	private JsonRequestShipmentCandidateResults(
+			@JsonProperty("transactionKey") @NonNull final String transactionKey,
+			@JsonProperty("items") @NonNull @Singular final List<JsonRequestShipmentCandidateResult> items)
 	{
+		this.transactionKey = transactionKey;
 		this.items = items;
 	}
 }

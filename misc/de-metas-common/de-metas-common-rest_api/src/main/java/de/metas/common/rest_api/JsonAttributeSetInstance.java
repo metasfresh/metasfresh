@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-shipmentschedule
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.shipmentschedule;
+package de.metas.common.rest_api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,15 +32,19 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-public class JsonRequestShipmentScheduleResultList
+public class JsonAttributeSetInstance
 {
-	List<JsonRequestShipmentScheduleResult> items;
+	JsonMetasfreshId id;
 
-	@JsonCreator
+	List<JsonAttributeInstance> attributeInstances;
+
 	@Builder
-	private JsonRequestShipmentScheduleResultList(
-			@JsonProperty("items") @NonNull @Singular final List<JsonRequestShipmentScheduleResult> items)
+	@JsonCreator
+	private JsonAttributeSetInstance(
+			@JsonProperty("id") @NonNull final JsonMetasfreshId id,
+			@JsonProperty("attributeInstances") @Singular @NonNull final List<JsonAttributeInstance> attributeInstances)
 	{
-		this.items = items;
+		this.id = id;
+		this.attributeInstances = attributeInstances;
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shipmentschedule
+ * de-metas-common-shipmentschedule
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,23 +20,31 @@
  * #L%
  */
 
-package de.metas.camel.shipment;
+package de.metas.common.shipmentschedule;
 
-import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.NonNull;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import lombok.Singular;
+import lombok.Value;
 
-public class JsonToXmlProcessor implements Processor
+import java.util.List;
+
+@Value
+public class JsonResponseShipmentCandidates
 {
-	private final Log log = LogFactory.getLog(JsonToXmlProcessor.class);
+	String transactionKey;
 
-	@Override
-	public void process(@NonNull final Exchange exchange) throws Exception
+	List<JsonResponseShipmentCandidate> items;
+
+	@Builder
+	@JsonCreator
+	private JsonResponseShipmentCandidates(
+			@JsonProperty("transactionKey") @NonNull final String transactionKey,
+			@JsonProperty("items") @Singular @NonNull final List<JsonResponseShipmentCandidate> items)
 	{
-		final JsonResponseShipmentCandidates scheduleList = exchange.getIn().getBody(JsonResponseShipmentCandidates.class);
-		log.info("process method called; scheduleList=" + scheduleList);
+		this.transactionKey = transactionKey;
+		this.items = items;
 	}
 }

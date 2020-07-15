@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.metas.common.shipmentschedule.JsonResponseShipmentScheduleList;
+import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
@@ -43,10 +43,10 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 				.enable(MapperFeature.USE_ANNOTATIONS);
-		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat(JsonResponseShipmentScheduleList.class);
+		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat(JsonResponseShipmentCandidates.class);
 		jacksonDataFormat.setCamelContext(getContext());
 		jacksonDataFormat.setObjectMapper(objectMapper);
-		jacksonDataFormat.setUnmarshalType(JsonResponseShipmentScheduleList.class);
+		jacksonDataFormat.setUnmarshalType(JsonResponseShipmentCandidates.class);
 
 		from(timer("test").period(5 * 1000))
 				.streamCaching()

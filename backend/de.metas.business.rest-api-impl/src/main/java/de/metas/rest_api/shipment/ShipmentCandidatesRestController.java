@@ -23,9 +23,15 @@
 package de.metas.rest_api.shipment;
 
 import de.metas.Profiles;
-import de.metas.common.shipmentschedule.JsonRequestShipmentScheduleResult;
-import de.metas.common.shipmentschedule.JsonResponseShipmentSchedule;
-import de.metas.common.shipmentschedule.JsonResponseShipmentScheduleList;
+import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.JsonAttributeSetInstance;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.shipmentschedule.JsonCustomer;
+import de.metas.common.shipmentschedule.JsonProduct;
+import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
+import de.metas.common.shipmentschedule.JsonResponseShipmentCandidate;
+import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
@@ -36,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Month;
 
@@ -46,23 +53,24 @@ public class ShipmentCandidatesRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipments";
 
-	@GetMapping("shipmentSchedules")
-	public ResponseEntity<JsonResponseShipmentScheduleList> getShipmentSchedules()
+	private final ShipmentCandidateExporter shipmentCandidateExporter;
+
+	public ShipmentCandidatesRestController(@NonNull final ShipmentCandidateExporter shipmentCandidateExporter)
 	{
-		final JsonResponseShipmentScheduleList result = JsonResponseShipmentScheduleList.builder()
-				.item(JsonResponseShipmentSchedule.builder()
-						.orderDocumentNo("orderDocumentNo")
-						.poReference("poReference")
-						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 48))
-						.productNo("productNo")
-						.build())
-				.build();
+		this.shipmentCandidateExporter=shipmentCandidateExporter;
+	}
+
+	@GetMapping("shipmentCandidates")
+	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates()
+	{
+		final JsonResponseShipmentCandidates result = shipmentCandidateExporter.exportShipmentCandidates();
 		return ResponseEntity.ok(result);
 	}
 
-	@PostMapping("shipmentSchedules")
-	public ResponseEntity<String> postShipmentScheduleStatus(@RequestBody @NonNull final JsonRequestShipmentScheduleResult status)
+	@PostMapping("shipmentCandidates")
+	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestShipmentCandidateResults status)
 	{
+		shipmentCandidateExporter.updateStatus(status);
 		return ResponseEntity.accepted().body("Shipment candidates updated");
 	}
 }

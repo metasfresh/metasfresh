@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-shipmentschedule
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,12 +20,10 @@
  * #L%
  */
 
-package de.metas.common.shipmentschedule;
+package de.metas.common.rest_api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.JsonError;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,26 +31,27 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Builder
-public class JsonRequestShipmentScheduleResult
+public class JsonAttributeInstance
 {
-	public enum Outcome
-	{
-		OK,
-		ERROR;
-	}
+	String attributeName;
 
-	Outcome outcome;
+	String attributeCode;
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonError error;
+	String valueStr;
+
+	Integer valueInt;
 
 	@JsonCreator
-	private JsonRequestShipmentScheduleResult(
-			@JsonProperty("outcome") @NonNull final Outcome outcome,
-			@JsonProperty("error") @Nullable final JsonError error)
+	@Builder
+	private JsonAttributeInstance(
+			@JsonProperty("attributeName") @NonNull final String attributeName,
+			@JsonProperty("attributeCode") @NonNull final String attributeCode,
+			@JsonProperty("valueStr") @Nullable final String valueStr,
+			@JsonProperty("valueInt") @Nullable final Integer valueInt)
 	{
-		this.outcome = outcome;
-		this.error = error;
+		this.attributeName = attributeName;
+		this.attributeCode = attributeCode;
+		this.valueStr = valueStr;
+		this.valueInt = valueInt;
 	}
 }
