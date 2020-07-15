@@ -1,17 +1,8 @@
-package de.metas.rest_api.common;
-
-import java.util.List;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,8 +20,18 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.common.rest_api;
+
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
 @Value
-@Builder
 public class JsonError
 {
 	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
@@ -38,6 +39,12 @@ public class JsonError
 		return JsonError.builder().error(item).build();
 	}
 
-	@Singular
 	List<JsonErrorItem> errors;
+
+	@Builder
+	@JsonCreator
+	private JsonError(@JsonProperty("errors") @Singular @NonNull final List<JsonErrorItem> errors)
+	{
+		this.errors = errors;
+	}
 }

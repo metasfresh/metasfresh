@@ -10,7 +10,7 @@ import com.google.common.base.Optional;
 
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L

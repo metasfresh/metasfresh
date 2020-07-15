@@ -1,6 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L

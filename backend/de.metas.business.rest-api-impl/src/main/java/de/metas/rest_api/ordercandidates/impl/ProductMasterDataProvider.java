@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.SyncAdvise;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 
@@ -18,8 +19,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.security.PermissionService;
 import de.metas.uom.IUOMDAO;
@@ -120,7 +119,7 @@ final class ProductMasterDataProvider
 
 		final ProductId existingProductId = lookupProductIdOrNull(jsonProductInfo, orgId);
 
-		final IfExists ifExists = jsonProductInfo.getSyncAdvise().getIfExists();
+		final SyncAdvise.IfExists ifExists = jsonProductInfo.getSyncAdvise().getIfExists();
 		if (existingProductId != null && !ifExists.isUpdate())
 		{
 			final UomId uomId = getProductUOMId(existingProductId, jsonProductInfo.getUomCode());

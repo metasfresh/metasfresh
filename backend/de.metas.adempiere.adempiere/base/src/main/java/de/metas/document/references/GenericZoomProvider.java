@@ -49,7 +49,7 @@ import de.metas.i18n.ImmutableTranslatableString.ImmutableTranslatableStringBuil
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
 
