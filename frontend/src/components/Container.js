@@ -117,7 +117,7 @@ class Container extends PureComponent {
 
         <div
           className={
-            'header-sticky-distance js-unselect ' +
+            'header-sticky-distance js-unselect panel-vertical-scroll ' +
             (noMargin ? 'dashboard' : 'container-fluid')
           }
         >
