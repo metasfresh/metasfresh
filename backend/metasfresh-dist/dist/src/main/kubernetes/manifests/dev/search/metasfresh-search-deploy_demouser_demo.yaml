@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "metasfresh-search-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-search
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-search-mf15-dev"
+  namespace: "default"
+# can be created with kubectl create namespace demo"
+#  namespace: "demo"
+spec:
+  selector:
+    matchLabels:
+      de.metas.deployment.type: metasfresh-search
+      de.metas.deployment.user: "mf15"
+      de.metas.deployment.stage: "dev"
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-search
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+    spec:
+      containers:
+#
+# Elastic search
+      - env:
+        - name: ES_JAVA_OPTS
+          value: -Xms128M -Xmx256m
+# i just buid&pushed this in a very Q&D fashion..          
+        name: search
+        image: docker.metasfresh.com/metasfresh/search:latest
+        imagePullPolicy: Always
+        resources: {}
+        ports:
+          - containerPort: 9200
+          - containerPort: 9300
+        securityContext:
+          capabilities:
+            add:
+            - IPC_LOCK
+        volumeMounts:
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
+      volumes:
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone

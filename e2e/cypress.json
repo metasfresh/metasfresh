@@ -1,0 +1,67 @@
+{
+  "docs_comment1": "Explanations for all options can be found at https://docs.cypress.io/guides/references/configuration.html",
+
+  "baseUrl_comment1":  "baseUrl can be overridden by setting the CYPRESS_baseUrl environment variable",
+  "baseUrl_comment2":  "Example: CYPRESS_baseUrl=http://192.168.99.100:30080 npm run cypress:open",
+  "baseUrl_comment3":  "See https://docs.cypress.io/guides/guides/environment-variables.html#We-can-move-this-into-an-environment-variable",
+  "baseUrl": "http://localhost:3000",
+
+  "projectId_comment": "Our recorded test runs can be found here: https://dashboard.cypress.io/#/projects/5yp4q1/runs",
+  "projectId": "5yp4q1",
+
+  "requestTimeout_comment1": "Set to same value as response time out.",
+  "requestTimeout_comment2": "Example: when adding a new sales order line, the actual 'request' does not happen directly,",
+  "requestTimeout_comment3": "but only after some time, when the line was already added by the API",
+  "requestTimeout" : 30000,
+
+  "videoCompression": false,
+
+  "viewport_comment1": "the default is 1000px by 660px",
+  "viewportWidth": 1500,
+  "viewportHeight": 1000,
+
+  "watchForFileChanges": false,
+
+  "defaultCommandTimeout": 6000,
+
+  "chromeWebSecurity": false,
+
+  "userAgent": "Cypress",
+
+  "ignoreTestFiles": [
+    "**/__snapshots__/*",
+    "**/__image_snapshots__/*"
+  ],
+
+  "env": {
+    "cypress-plugin-snapshots": {
+      "autoCleanUp": false,
+      "autopassNewSnapshots": true,
+      "diffLines": 3,
+      "excludeFields": [],
+      "ignoreExtraArrayItems": false,
+      "ignoreExtraFields": false,
+      "normalizeJson": true,
+      "prettier": true,
+      "imageConfig": {
+        "createDiffImage": true,
+        "resizeDevicePixelRatio": true,
+        "threshold": 0.01,
+        "thresholdType": "percent"
+      },
+      "screenshotConfig": {
+        "blackout": [],
+        "capture": "fullPage",
+        "clip": null,
+        "disableTimersAndAnimations": true,
+        "log": false,
+        "scale": false,
+        "timeout": 30000
+      },
+      "serverEnabled": true,
+      "serverHost": "localhost",
+      "serverPort": 2121,
+      "updateSnapshots": false
+    }
+  }
+}

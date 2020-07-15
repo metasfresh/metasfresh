@@ -1,0 +1,8 @@
+module.exports = {
+  FRONTEND_URL: 'https://dev333.metasfresh.com',
+  API_URL: 'https://dev333.metasfresh.com/rest/api',
+  WS_URL: 'https://dev333.metasfresh.com/stomp',
+  PLUGIN_API_URL: 'http://dev333.metasfresh.com:9192/',
+  username: 'dev',
+  password: '<your-pw>',
+};

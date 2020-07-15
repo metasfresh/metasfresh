@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "metasfresh-report-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-report
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.user: "mf15"
+spec:
+  ports:
+  - name: http
+    # if the metasfresh running locally on your dev-machine shall connect to this service, and this service runs in minikube,
+    # then the following AD_SysConfig update should do the trick
+    # UPDATE AD_SysConfig SET Value='http://192.168.99.100:30090/adempiereJasper/ReportServlet' WHERE Name='de.metas.adempiere.report.jasper.JRServerServlet';
+    # Note that you can verify the '192.168.99.100' IP using minikube status
+    port: 8183
+    protocol: TCP
+    targetPort: 8183
+    nodePort: 30090
+  - name: remote-debug
+    port: 8791
+    protocol: TCP
+    targetPort: 8791
+    nodePort: 30091
+  selector:
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.type: metasfresh-report
+    de.metas.deployment.user: "mf15"
+  sessionAffinity: None
+# use nodeport such that we can also use metasfresh-report as part of the developement environment
+# see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: NodePort

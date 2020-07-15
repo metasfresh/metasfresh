@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport_bpartner_week/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.9487171000000079"/>
+	<property name="ireport.x" value="46"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="IsSOTrx" class="java.lang.String"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_AttributeSetInstance_ID" class="java.math.BigDecimal"/>
+	<parameter name="Base_Year_Start" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Base_Year_End" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Base_Week_Start" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Base_Week_End" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Year_Start" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Year_End" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Week_Start" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Week_End" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_Currency_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.umsatzliste_bpartner_week_report(
+	$P{Base_Year_Start},
+	$P{Base_Year_End},
+	$P{Base_Week_Start},
+	$P{Base_Week_End},
+	$P{Comp_Year_Start},
+	$P{Comp_Year_End},
+	$P{Comp_Week_Start},
+	$P{Comp_Week_End},
+	$P{IsSOTrx},
+	$P{C_BPartner_ID},
+	$P{M_Product_ID},
+	$P{M_Product_Category_ID},
+	$P{M_AttributeSetInstance_ID},
+	$P{C_Currency_ID},
+	$P{AD_Org_ID},
+	$P{ad_language}
+);]]>
+	</queryString>
+	<field name="bp_name" class="java.lang.String"/>
+	<field name="pc_name" class="java.lang.String"/>
+	<field name="p_name" class="java.lang.String"/>
+	<field name="sameperiodsum" class="java.math.BigDecimal"/>
+	<field name="compperiodsum" class="java.math.BigDecimal"/>
+	<field name="sameperiodqtysum" class="java.math.BigDecimal"/>
+	<field name="compperiodqtysum" class="java.math.BigDecimal"/>
+	<field name="perioddifference" class="java.math.BigDecimal"/>
+	<field name="periodqtydifference" class="java.math.BigDecimal"/>
+	<field name="perioddiffpercentage" class="java.math.BigDecimal"/>
+	<field name="periodqtydiffpercentage" class="java.math.BigDecimal"/>
+	<field name="base_week_start" class="java.lang.String"/>
+	<field name="base_week_end" class="java.lang.String"/>
+	<field name="comp_week_start" class="java.lang.String"/>
+	<field name="comp_week_end" class="java.lang.String"/>
+	<field name="param_issotrx" class="java.lang.String"/>
+	<field name="param_bp" class="java.lang.String"/>
+	<field name="param_product" class="java.lang.String"/>
+	<field name="param_product_category" class="java.lang.String"/>
+	<field name="param_attributes" class="java.lang.String"/>
+	<field name="param_currency" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<variable name="sameperiodtotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="compperiodtotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{compperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="sameperiodtotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="compperiodtotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{compperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="perioddifferencetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
+		<variableExpression><![CDATA[$V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})]]></variableExpression>
+	</variable>
+	<variable name="perioddifferencetotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner">
+		<variableExpression><![CDATA[$V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})]]></variableExpression>
+	</variable>
+	<variable name="perioddiffpercentagetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
+		<variableExpression><![CDATA[(($V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})).signum() != 0 && $V{compperiodtotal_pc}.signum() != 0) ?
+($V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})).divide($V{compperiodtotal_pc}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
+	</variable>
+	<variable name="perioddiffpercentagetotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner">
+		<variableExpression><![CDATA[(($V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).signum() != 0 && $V{compperiodtotal_bp}.signum() != 0) ?
+($V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).divide($V{compperiodtotal_bp}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
+	</variable>
+	<group name="BPartner" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{bp_name}]]></groupExpression>
+		<groupHeader>
+			<band height="141">
+				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
+				<textField>
+					<reportElement x="37" y="20" width="289" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{type}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{base_week_start} + " - " + $F{base_week_end}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{comp_week_start} + " - " + $F{comp_week_end}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_issotrx}.equals("Y") ? $R{sales} : $R{purchase}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bp_name}!=null ? $F{bp_name} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_product_category}!=null ? $F{param_product_category} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="59" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{articlecategory}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_product} !=null ? $F{param_product} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="70" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_attributes} !=null ? $F{param_attributes} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="81" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{attribute}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="105" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="228" y="105" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="317" y="105" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="406" y="105" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="495" y="105" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="48" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="48" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency} !=null ? $F{param_currency} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="228" y="117" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="317" y="117" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="406" y="117" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="44">
+				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
+				<textField isBlankWhenNull="false">
+					<reportElement x="495" y="20" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="406" y="20" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="228" y="20" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="20" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="317" y="20" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="406" y="32" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="317" y="32" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="228" y="32" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="12">
+				<textField>
+					<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="406" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddifferencetotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="495" y="0" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddiffpercentagetotal_bp}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="228" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sameperiodtotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="317" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{compperiodtotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Category" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{pc_name}]]></groupExpression>
+		<groupHeader>
+			<band height="24">
+				<printWhenExpression><![CDATA[new Boolean ( $F{pc_name} != null)]]></printWhenExpression>
+				<textField>
+					<reportElement x="37" y="12" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{pc_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="12">
+				<printWhenExpression><![CDATA[new Boolean ( $F{pc_name} != null)]]></printWhenExpression>
+				<textField pattern="#,##0">
+					<reportElement x="406" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddifferencetotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="317" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{compperiodtotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{total} +" "+  $F{pc_name}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="495" y="0" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddiffpercentagetotal_pc}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="228" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sameperiodtotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<printWhenExpression><![CDATA[ ($F{sameperiodsum}.signum() !=0
+|| $F{compperiodsum}.signum() !=0)]]></printWhenExpression>
+			<textField>
+				<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="228" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="406" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="495" y="0" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddiffpercentage}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="317" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{compperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="34" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="1"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
