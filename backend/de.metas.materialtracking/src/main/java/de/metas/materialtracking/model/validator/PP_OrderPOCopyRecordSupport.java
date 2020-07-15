@@ -34,15 +34,6 @@ public class PP_OrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 	@Override
 	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
-		 // TODO tbp: i believe all tabs should be ignored, as all their content is created at order creation.
-		//				if we clone the tabs as well, we shall have duplicates, some of which link to the previous order (clone source), not the cloned one
 		return ImmutableList.of();
-		// return super.getSuggestedChildren(po, suggestedChildren)
-		// 		.stream()
-		// 		.filter(childTableInfo -> I_PP_Order_BOM.Table_Name.equals(childTableInfo.getTableName())
-		//
-		// 				)
-		//
-		// 		.collect(ImmutableList.toImmutableList());
 	}
 }
