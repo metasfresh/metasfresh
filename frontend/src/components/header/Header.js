@@ -8,6 +8,7 @@ import classnames from 'classnames';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
+import { setBreadcrumb } from '../../actions/MenuActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import keymap from '../../shortcuts/keymap';
 import Indicator from '../app/Indicator';
@@ -213,6 +214,7 @@ class Header extends PureComponent {
    */
   handleDashboardLink = () => {
     const { dispatch } = this.props;
+    dispatch(setBreadcrumb([]));
     dispatch(push('/'));
   };
 
