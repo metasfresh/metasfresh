@@ -23,10 +23,12 @@
 package de.metas.materialtracking.model.validator;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.materialtracking.model.I_PP_Order;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class PP_OrderPOCopyRecordSupport extends GeneralCopyRecordSupport
@@ -35,5 +37,24 @@ public class PP_OrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
 		return ImmutableList.of();
+	}
+
+	/**
+	 * QtyOrdered: This is needed because
+	 * 1. QtyOrdered is updated initially in a callout to value of QtyEntered, so at clone nothing happens if we don't copy it
+	 * 2. QtyOrdered is updated when Closing the Order to QtyDelivered, see {@link org.eevolution.api.impl.PPOrderBL#closeQtyOrdered(org.eevolution.model.I_PP_Order)}
+	 */
+	@Override
+	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	{
+		if (I_PP_Order.COLUMNNAME_QtyOrdered.equals(columnName))
+		{
+			final BigDecimal qtyOrderedBeforeOrderClose = from.get_ValueAsBigDecimal(I_PP_Order.COLUMNNAME_QtyBeforeClose);
+			final BigDecimal qtyEntered = from.get_ValueAsBigDecimal(I_PP_Order.COLUMNNAME_QtyEntered);
+
+			return qtyOrderedBeforeOrderClose.signum() == 0 ? qtyEntered : qtyOrderedBeforeOrderClose;
+		}
+
+		return super.getValueToCopy(to, from, columnName);
 	}
 }
