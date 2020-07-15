@@ -256,7 +256,7 @@ export function fetchDocument({
   page,
   pageLength,
   orderBy,
-  isModal = false
+  isModal = false,
 }) {
   return (dispatch, getState) => {
     dispatch(fetchDocumentPending(windowId, isModal));
@@ -274,7 +274,7 @@ export function fetchDocument({
         const tableId = getTableId({ windowId, viewId });
         const tableData = { windowId, viewId, ...response.data };
 
-        // we use this in table ACs to differentiate between a table in modal and 
+        // we use this in table ACs to differentiate between a table in modal and
         // regular grid
         if (isModal) {
           tableData.modalId = windowId;
