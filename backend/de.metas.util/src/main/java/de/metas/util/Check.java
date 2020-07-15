@@ -621,7 +621,7 @@ public final class Check
 
 	public static boolean isEmpty(@Nullable final String str)
 	{
-		return EmptyUtil.isEmpty(str, false);
+		return EmptyUtil.isEmpty(str);
 	}
 
 	/**
