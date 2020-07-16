@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Value
 public class JsonAttributeInstance
@@ -39,7 +41,9 @@ public class JsonAttributeInstance
 
 	String valueStr;
 
-	Integer valueInt;
+	BigDecimal valueNumber;
+
+	LocalDate valueDate;
 
 	@JsonCreator
 	@Builder
@@ -47,11 +51,13 @@ public class JsonAttributeInstance
 			@JsonProperty("attributeName") @NonNull final String attributeName,
 			@JsonProperty("attributeCode") @NonNull final String attributeCode,
 			@JsonProperty("valueStr") @Nullable final String valueStr,
-			@JsonProperty("valueInt") @Nullable final Integer valueInt)
+			@JsonProperty("valueNumber") @Nullable final BigDecimal valueNumber,
+			@JsonProperty("valueDate") @Nullable final LocalDate valueDate)
 	{
 		this.attributeName = attributeName;
 		this.attributeCode = attributeCode;
 		this.valueStr = valueStr;
-		this.valueInt = valueInt;
+		this.valueNumber = valueNumber;
+		this.valueDate = valueDate;
 	}
 }

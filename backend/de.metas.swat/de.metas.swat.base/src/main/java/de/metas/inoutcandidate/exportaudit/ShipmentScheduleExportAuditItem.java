@@ -1,20 +1,8 @@
-package de.metas.product;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.ITranslatableString;
-import de.metas.uom.UomId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,31 +20,29 @@ import java.math.BigDecimal;
  * #L%
  */
 
+package de.metas.inoutcandidate.exportaudit;
+
+import de.metas.error.AdIssueId;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class Product
+public class ShipmentScheduleExportAuditItem
 {
 	@NonNull
-	ProductId id;
+	ShipmentScheduleId shipmentScheduleId;
+
+	@NonNull OrgId orgId;
 
 	@NonNull
-	UomId uomId;
-
-	@NonNull
-	String productNo;
-
-	@NonNull
-	ITranslatableString name;
+	ShipmentScheduleExportStatus exportStatus;
 
 	@Nullable
-	ITranslatableString description;
-
-	@Nullable
-	BPartnerId manufacturerId;
-
-	@Nullable
-	String packageSize;
-
-	@Nullable
-	BigDecimal weight;
+	AdIssueId issueId;
 }

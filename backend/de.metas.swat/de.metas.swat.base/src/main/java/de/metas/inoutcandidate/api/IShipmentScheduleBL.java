@@ -78,7 +78,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 *
 	 * @param sched
 	 */
-	void updateBPArtnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
+	void updateBPartnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc (i.e. the stock UOM)

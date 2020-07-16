@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 /*
@@ -44,6 +45,7 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.LocatorId;
@@ -111,6 +113,9 @@ import lombok.NonNull;
 @Service
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
+
+	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
+
 	@VisibleForTesting
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
 	{
@@ -128,6 +133,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleUpdater.class.getName() + "#ProcessedByBackgroundProcess";
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
+
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -140,7 +146,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 	private final PickingBOMService pickingBOMService;
-
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -250,13 +256,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status}
 	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt}
-	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
 	 * <p>
 	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
-	 *
-	 * @param olsAndScheds
 	 */
 	@VisibleForTesting
 	void updateSchedules(final Properties ctx, final List<OlAndSched> olsAndScheds)
@@ -280,7 +282,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				updateWarehouseId(sched);
 
-				shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(sched);
+				shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(sched);
 
 				shipmentScheduleBL.updateHeaderAggregationKey(sched);
 
@@ -379,9 +381,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 			else
 			{
-
 				final boolean isDropShip = bpp.isDropShip();
-
 				if (isDropShip)
 				{
 					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID,
@@ -415,10 +415,25 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final ZonedDateTime preparationDate = tourAndDate.getRight();
 				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
 				sched.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
-
 			}
 
+			updateCanBeExportedAfter(sched);
+
 			shipmentSchedulePA.save(sched);
+		}
+	}
+
+	private void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
+				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
+				sched.getAD_Client_ID(),
+				sched.getAD_Org_ID());
+		if (canBeExportedAfterSeconds >= 0)
+		{
+			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
+			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
+			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
 		}
 	}
 

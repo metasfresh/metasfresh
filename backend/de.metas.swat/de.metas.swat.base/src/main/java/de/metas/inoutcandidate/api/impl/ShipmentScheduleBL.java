@@ -170,7 +170,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 * Note: we assume that *if* the value is set, it is as intended by the user
 	 */
 	@Override
-	public void updateBPArtnerAddressOverrideIfNotYetSet(final I_M_ShipmentSchedule sched)
+	public void updateBPartnerAddressOverrideIfNotYetSet(final I_M_ShipmentSchedule sched)
 	{
 		if (!Check.isEmpty(sched.getBPartnerAddress_Override(), true))
 		{

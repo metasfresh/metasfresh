@@ -30,6 +30,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -75,7 +76,6 @@ public interface IAttributeSet
 	/**
 	 * Gets {@link I_M_Attribute} by ID if exists in this attributes set.
 	 *
-	 * @param attributeId
 	 * @return {@link I_M_Attribute} or <code>null</code>
 	 */
 	I_M_Attribute getAttributeByIdIfExists(int attributeId);
@@ -91,6 +91,39 @@ public interface IAttributeSet
 	 * @return attribute's value type; never null
 	 */
 	String getAttributeValueType(I_M_Attribute attribute);
+
+	default String getAttributeValueType(@NonNull final AttributeId attributeId)
+	{
+		final I_M_Attribute attributeRecord = getAttributeByIdIfExists(attributeId);
+		if (attributeRecord == null)
+		{
+			throw new AdempiereException("Attribute with M_Attribute_ID=" + attributeId.getRepoId() + " does not exist in this instance");
+		}
+		return getAttributeValueType(attributeRecord);
+	}
+
+	default String getAttributeName(AttributeId attributeId)
+	{
+		final I_M_Attribute attributeRecord = getAttributeByIdIfExists(attributeId);
+		if (attributeRecord == null)
+		{
+			throw new AdempiereException("Attribute with M_Attribute_ID=" + attributeId.getRepoId() + " does not exist in this instance");
+		}
+		return attributeRecord.getName();
+	}
+
+	/**
+	 * @return {@code M_Attribute.Value}.
+	 */
+	default AttributeCode getAttributeCode(AttributeId attributeId)
+	{
+		final I_M_Attribute attributeRecord = getAttributeByIdIfExists(attributeId);
+		if (attributeRecord == null)
+		{
+			throw new AdempiereException("Attribute with M_Attribute_ID=" + attributeId.getRepoId() + " does not exist in this instance");
+		}
+		return AttributeCode.ofString(attributeRecord.getValue());
+	}
 
 	/**
 	 * @return value of given attribute
@@ -215,7 +248,6 @@ public interface IAttributeSet
 	IAttributeValueCallout getAttributeValueCallout(final I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return true if the given <code>attribute</code>'s value was newly generated
 	 */
 	boolean isNew(final I_M_Attribute attribute);

@@ -55,10 +55,13 @@ public class JsonCustomer
 	String city;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String country;
+	String countryCode;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String deliveryInfo;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String language;
 
 	@JsonCreator
 	@Builder
@@ -71,8 +74,10 @@ public class JsonCustomer
 			@JsonProperty("streetNo") @NonNull final String streetNo,
 			@JsonProperty("postal") @NonNull final String postal,
 			@JsonProperty("city") @NonNull final String city,
-			@JsonProperty("country") @Nullable final String country,
-			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo)
+			@JsonProperty("countryCode") @Nullable final String countryCode,
+			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo,
+			@JsonProperty("language") @Nullable final String language
+	)
 	{
 		this.companyName = companyName;
 		this.contactName = contactName;
@@ -82,7 +87,8 @@ public class JsonCustomer
 		this.streetNo = streetNo;
 		this.postal = postal;
 		this.city = city;
-		this.country = country;
+		this.countryCode = countryCode;
 		this.deliveryInfo = deliveryInfo;
+		this.language = language;
 	}
 }

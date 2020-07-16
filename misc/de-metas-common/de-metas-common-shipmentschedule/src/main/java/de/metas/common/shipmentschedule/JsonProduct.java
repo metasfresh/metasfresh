@@ -43,7 +43,7 @@ public class JsonProduct
 	String description;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	BigDecimal packageSize;
+	String packageSize;
 
 	BigDecimal weight;
 
@@ -53,7 +53,7 @@ public class JsonProduct
 			@JsonProperty("productNo") @NonNull final String productNo,
 			@JsonProperty("name") @NonNull final String name,
 			@JsonProperty("description") @Nullable final String description,
-			@JsonProperty("packageSize") @Nullable final BigDecimal packageSize,
+			@JsonProperty("packageSize") @Nullable final String packageSize,
 			@JsonProperty("weight") @Nullable final BigDecimal weight)
 	{
 		this.productNo = productNo;

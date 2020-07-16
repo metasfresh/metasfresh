@@ -36,6 +36,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
@@ -76,11 +77,10 @@ public class M_ShipmentSchedule
 {
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
-	 *
-	 * @param schedule
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_M_ShipmentSchedule schedule)
@@ -112,7 +112,7 @@ public class M_ShipmentSchedule
 		{
 			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 			schedule.setBPartnerAddress_Override(null);
-			shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(schedule);
+			shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(schedule);
 		}
 	}
 
@@ -208,8 +208,6 @@ public class M_ShipmentSchedule
 	/**
 	 * Note: it's important the the schedule is only invalidated on certain value changes.
 	 * For example, a change of lock status or valid status may not cause an invalidation
-	 *
-	 * @param schedule
 	 */
 	@ModelChange( //
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
@@ -263,8 +261,6 @@ public class M_ShipmentSchedule
 	 * Updates the given candidate's QtyOrdered.
 	 * <p>
 	 * IMPORTANT: we do not want to prohibit over-deliveries. That's why this method shall not be fired if e.g. QtyDelivered changed.
-	 *
-	 * @param shipmentSchedule
 	 */
 	@ModelChange( //
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //

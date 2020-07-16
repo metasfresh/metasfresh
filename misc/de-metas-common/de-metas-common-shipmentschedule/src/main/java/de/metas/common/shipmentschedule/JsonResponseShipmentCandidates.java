@@ -38,13 +38,17 @@ public class JsonResponseShipmentCandidates
 
 	List<JsonResponseShipmentCandidate> items;
 
+	boolean hasMoreItems;
+
 	@Builder
 	@JsonCreator
 	private JsonResponseShipmentCandidates(
 			@JsonProperty("transactionKey") @NonNull final String transactionKey,
-			@JsonProperty("items") @Singular @NonNull final List<JsonResponseShipmentCandidate> items)
+			@JsonProperty("items") @Singular @NonNull final List<JsonResponseShipmentCandidate> items,
+			@JsonProperty("hasMoreItems") @NonNull final Boolean hasMoreItems)
 	{
 		this.transactionKey = transactionKey;
 		this.items = items;
+		this.hasMoreItems = hasMoreItems;
 	}
 }

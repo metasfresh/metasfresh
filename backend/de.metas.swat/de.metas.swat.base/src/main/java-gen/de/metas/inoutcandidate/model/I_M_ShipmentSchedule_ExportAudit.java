@@ -1,17 +1,17 @@
 package de.metas.inoutcandidate.model;
 
 
-/** Generated Interface for M_IolCandHandler
+/** Generated Interface for M_ShipmentSchedule_ExportAudit
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_M_IolCandHandler 
+public interface I_M_ShipmentSchedule_ExportAudit 
 {
 
-    /** TableName=M_IolCandHandler */
-    public static final String Table_Name = "M_IolCandHandler";
+    /** TableName=M_ShipmentSchedule_ExportAudit */
+    public static final String Table_Name = "M_ShipmentSchedule_ExportAudit";
 
-    /** AD_Table_ID=540385 */
+    /** AD_Table_ID=541504 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -52,29 +52,6 @@ public interface I_M_IolCandHandler
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Java-Klasse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setClassname (java.lang.String Classname);
-
-	/**
-	 * Get Java-Klasse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getClassname();
-
-    /** Column definition for Classname */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_Classname = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "Classname", null);
-    /** Column name Classname */
-    public static final String COLUMNNAME_Classname = "Classname";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -85,7 +62,7 @@ public interface I_M_IolCandHandler
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -123,55 +100,55 @@ public interface I_M_IolCandHandler
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set M_IolCandHandler.
+	 * Set Shipment disposition export revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_IolCandHandler_ID (int M_IolCandHandler_ID);
+	public void setM_ShipmentSchedule_ExportAudit_ID (int M_ShipmentSchedule_ExportAudit_ID);
 
 	/**
-	 * Get M_IolCandHandler.
+	 * Get Shipment disposition export revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_IolCandHandler_ID();
+	public int getM_ShipmentSchedule_ExportAudit_ID();
 
-    /** Column definition for M_IolCandHandler_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_M_IolCandHandler_ID = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "M_IolCandHandler_ID", null);
-    /** Column name M_IolCandHandler_ID */
-    public static final String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
-
-	/**
-	 * Set Name der DB-Tabelle.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setTableName (java.lang.String TableName);
+    /** Column definition for M_ShipmentSchedule_ExportAudit_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_M_ShipmentSchedule_ExportAudit_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "M_ShipmentSchedule_ExportAudit_ID", null);
+    /** Column name M_ShipmentSchedule_ExportAudit_ID */
+    public static final String COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID = "M_ShipmentSchedule_ExportAudit_ID";
 
 	/**
-	 * Get Name der DB-Tabelle.
+	 * Set Transaction ID API.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getTableName();
+	public void setTransactionIdAPI (java.lang.String TransactionIdAPI);
 
-    /** Column definition for TableName */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_TableName = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "TableName", null);
-    /** Column name TableName */
-    public static final String COLUMNNAME_TableName = "TableName";
+	/**
+	 * Get Transaction ID API.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTransactionIdAPI();
+
+    /** Column definition for TransactionIdAPI */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_TransactionIdAPI = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "TransactionIdAPI", null);
+    /** Column name TransactionIdAPI */
+    public static final String COLUMNNAME_TransactionIdAPI = "TransactionIdAPI";
 
 	/**
 	 * Get Updated.
@@ -184,7 +161,7 @@ public interface I_M_IolCandHandler
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
