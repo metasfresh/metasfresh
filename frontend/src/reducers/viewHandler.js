@@ -79,7 +79,7 @@ const getLocalView = createSelector(
   (view) => view
 );
 
-const getViewType = (isModal) => isModal ? 'modals': 'views';
+const getViewType = (isModal) => (isModal ? 'modals' : 'views');
 
 export default function viewHandler(state = initialState, action) {
   if ((!action.payload || !action.payload.id) && action.type !== DELETE_VIEW) {
