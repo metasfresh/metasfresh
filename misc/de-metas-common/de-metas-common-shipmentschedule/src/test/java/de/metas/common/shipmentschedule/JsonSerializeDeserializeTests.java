@@ -116,6 +116,7 @@ class JsonSerializeDeserializeTests
 		// given
 		final JsonResponseShipmentCandidates scheduleListOrig = JsonResponseShipmentCandidates.builder()
 				.transactionKey("transactionKey")
+				.hasMoreItems(false)
 				.item(JsonResponseShipmentCandidate.builder()
 						.id(JsonMetasfreshId.of(10))
 						.orgCode("orgCode")
