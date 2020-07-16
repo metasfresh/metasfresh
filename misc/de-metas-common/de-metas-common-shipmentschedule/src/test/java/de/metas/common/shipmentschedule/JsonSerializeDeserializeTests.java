@@ -97,7 +97,7 @@ class JsonSerializeDeserializeTests
 				.quantity(JsonQuantity.builder().qty(BigDecimal.ONE).uomCode("PCE").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
 				.attributeSetInstance(JsonAttributeSetInstance.builder().id(JsonMetasfreshId.of(20))
-						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_1").attributeCode("attributeCode_1").valueInt(10).build())
+						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_1").attributeCode("attributeCode_1").valueNumber(BigDecimal.TEN).build())
 						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_2").attributeCode("attributeCode_2").valueStr("valueStr").build())
 						.build())
 				.build();
