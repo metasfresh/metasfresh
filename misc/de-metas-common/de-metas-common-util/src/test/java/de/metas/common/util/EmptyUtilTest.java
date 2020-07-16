@@ -1,27 +1,26 @@
-package de.metas.util;
-
 /*
  * #%L
- * de.metas.util
+ * de-metas-common-util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.common.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,9 +32,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.util.Check;
-
-public class CheckTest
+public class EmptyUtilTest
 {
 	@Test
 	public void test_isEmpty_collection()
@@ -55,7 +52,7 @@ public class CheckTest
 
 	public void test_isEmpty_collection(final boolean emptyExpected, final Collection<?> collection)
 	{
-		final boolean emptyActual = Check.isEmpty(collection);
+		final boolean emptyActual = EmptyUtil.isEmpty(collection);
 		Assert.assertEquals("Invalid isEmpty result for collection: " + collection, emptyExpected, emptyActual);
 	}
 }

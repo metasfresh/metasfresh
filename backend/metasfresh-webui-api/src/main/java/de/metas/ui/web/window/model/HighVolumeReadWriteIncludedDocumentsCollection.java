@@ -6,9 +6,11 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -24,7 +26,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 import lombok.AllArgsConstructor;
@@ -244,13 +245,13 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	}
 
 	@Override
-	public Document getDocumentById(@NonNull final DocumentId documentId)
+	public Optional<Document> getDocumentById(@NonNull final DocumentId documentId)
 	{
 		// Try documents which are new and/or have changes in progress, but are not yet saved
 		final Document documentWithChanges = getChangedDocumentOrNull(documentId);
 		if (documentWithChanges != null)
 		{
-			return documentWithChanges;
+			return Optional.of(documentWithChanges);
 		}
 
 		// Retrieve from repository
@@ -261,11 +262,10 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				.retriveDocumentOrNull();
 		if (documentRetrieved == null)
 		{
-			final DocumentPath documentPath = parentDocumentPath.createChildPath(detailId, documentId);
-			throw new DocumentNotFoundException(documentPath);
+			return Optional.empty();
 		}
 
-		return documentRetrieved.copy(parentDocument, parentDocument.isWritable() ? CopyMode.CheckOutWritable : CopyMode.CheckInReadonly);
+		return Optional.of(documentRetrieved.copy(parentDocument, parentDocument.isWritable() ? CopyMode.CheckOutWritable : CopyMode.CheckInReadonly));
 	}
 
 	@Override
@@ -334,11 +334,11 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	}
 
 	@Override
-	public void deleteDocuments(final DocumentIdsSelection documentIds)
+	public void deleteDocuments(@NonNull final DocumentIdsSelection documentIds)
 	{
 		if (documentIds.isEmpty())
 		{
-			throw new IllegalArgumentException("At least one rowId shall be specified when deleting included documents");
+			throw new AdempiereException("At least one rowId shall be specified when deleting included documents");
 		}
 
 		assertWritable();
@@ -346,7 +346,14 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 		final List<Document> deletedDocuments = new ArrayList<>();
 		for (final DocumentId documentId : documentIds.toSet())
 		{
-			final Document document = getDocumentById(documentId);
+			final Document document = getDocumentById(documentId).orElse(null);
+			if (document == null)
+			{
+				// SKIP if document was not found. It's pointless to fail here
+				logger.warn("Skip deleting {} because document was not found", documentId);
+				continue;
+			}
+
 			// assertDeleteDocumentAllowed(document);
 
 			// Delete it from underlying repository (if it's present there)

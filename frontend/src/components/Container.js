@@ -117,7 +117,7 @@ class Container extends PureComponent {
 
         <div
           className={
-            'header-sticky-distance js-unselect ' +
+            'header-sticky-distance js-unselect panel-vertical-scroll ' +
             (noMargin ? 'dashboard' : 'container-fluid')
           }
         >
@@ -129,6 +129,7 @@ class Container extends PureComponent {
               modalTitle={modal.title}
               viewId={modal.viewId}
               parentWindowId={windowId}
+              rawModalWindowId={rawModal.windowId}
               parentDataId={dataId}
               parentViewId={viewId}
               rawModalVisible={rawModal.visible}

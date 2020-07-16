@@ -1,28 +1,8 @@
-package de.metas.rest_api.common;
-
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.collect.ImmutableMap;
-
-import io.swagger.annotations.ApiModel;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,6 +19,27 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.common.rest_api;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.common.util.CoalesceUtil;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 @ApiModel(description = "Error informations")
 @Value
@@ -72,7 +73,7 @@ public class JsonErrorItem
 		this.message = message;
 		this.detail = detail;
 		this.stackTrace = stackTrace;
-		this.parameters = coalesce(parameters, ImmutableMap.of());
+		this.parameters = CoalesceUtil.coalesce(parameters, ImmutableMap.of());
 		this.throwable = throwable;
 	}
 }

@@ -1,7 +1,7 @@
 package de.metas.invoice.service.impl;
 
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -131,7 +131,7 @@ import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 

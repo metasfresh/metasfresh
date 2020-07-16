@@ -53,7 +53,7 @@ import de.metas.report.server.IReportServer;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import net.sf.jasperreports.engine.JasperPrint;
 

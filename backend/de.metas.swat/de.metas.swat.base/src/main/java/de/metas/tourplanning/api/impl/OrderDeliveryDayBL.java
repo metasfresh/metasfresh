@@ -21,7 +21,7 @@ import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 

@@ -3,7 +3,7 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.HashMap;
 import java.util.List;
