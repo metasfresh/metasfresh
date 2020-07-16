@@ -112,6 +112,12 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.common.filemaker</groupId>
+            <artifactId>de-metas-common-filemaker</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
         <!-- logging -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
