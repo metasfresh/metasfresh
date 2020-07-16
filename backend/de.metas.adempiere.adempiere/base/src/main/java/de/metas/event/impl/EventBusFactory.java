@@ -1,5 +1,6 @@
 package de.metas.event.impl;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -20,6 +21,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 
@@ -37,7 +39,6 @@ import lombok.NonNull;
 @Service
 public class EventBusFactory implements IEventBusFactory
 {
-
 	private static final Logger logger = LogManager.getLogger(EventBusFactory.class);
 
 	/**
@@ -103,6 +104,12 @@ public class EventBusFactory implements IEventBusFactory
 	public IEventBus getEventBusIfExists(@NonNull final Topic topic)
 	{
 		return topic2eventBus.getIfPresent(topic);
+	}
+
+	@Override
+	public List<IEventBus> getAllEventBusInstances()
+	{
+		return ImmutableList.copyOf(topic2eventBus.asMap().values());
 	}
 
 	@Override

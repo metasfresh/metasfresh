@@ -91,5 +91,14 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public boolean isAsync() { return delegate.isAsync(); }
+	public boolean isAsync()
+	{
+		return delegate().isAsync();
+	}
+
+	@Override
+	public EventBusStats getStats()
+	{
+		return delegate().getStats();
+	}
 }
