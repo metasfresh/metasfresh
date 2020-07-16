@@ -29,13 +29,15 @@ import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit_Line;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
 import de.metas.util.time.SystemTime;
 import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -47,10 +49,11 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ShipmentCandidateExporterTest
 {
@@ -62,6 +65,7 @@ class ShipmentCandidateExporterTest
 	private I_C_BPartner_Location bPartnerLocationOverride;
 	private I_C_UOM uom;
 	private I_M_Product product;
+	private I_C_Location location;
 
 	@BeforeEach
 	void beforeEach()
@@ -77,7 +81,7 @@ class ShipmentCandidateExporterTest
 
 		final CountryId countryId = BusinessTestHelper.createCountry("DE");
 
-		final I_C_Location location = newInstance(I_C_Location.class);
+		location = newInstance(I_C_Location.class);
 		location.setC_Country_ID(countryId.getRepoId());
 		saveRecord(location);
 		bPartnerLocationOverride.setC_Location_ID(location.getC_Location_ID());
@@ -100,10 +104,38 @@ class ShipmentCandidateExporterTest
 	}
 
 	@Test
+	void exportShipmentCandidates_ExportError()
+	{
+		// given
+		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
+
+		// when
+		final JsonResponseShipmentCandidates result = shipmentCandidateExporter.exportShipmentCandidates();
+
+		// then
+		assertThat(result.isHasMoreItems()).isFalse();
+		assertThat(result.getItems()).isEmpty();
+
+		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
+		assertThat(exportAudits).hasSize(1);
+		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+
+		final List<I_M_ShipmentSchedule_ExportAudit_Line> exportAuditsLines = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Line.class);
+		assertThat(exportAuditsLines).hasSize(1);
+		assertThat(exportAuditsLines.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditsLines.get(0).getExportStatus()).isEqualTo(ShipmentScheduleExportStatus.ExportError.getCode());
+	}
+
+	@Test
 	void exportShipmentCandidates()
 	{
 		// given
 		createShipmentScheduleRecord();
+
+		location.setAddress1("Teststrasse 2a");
+		location.setPostal("postal");
+		location.setCity("city");
+		saveRecord(location);
 
 		// when
 		final JsonResponseShipmentCandidates result = shipmentCandidateExporter.exportShipmentCandidates();

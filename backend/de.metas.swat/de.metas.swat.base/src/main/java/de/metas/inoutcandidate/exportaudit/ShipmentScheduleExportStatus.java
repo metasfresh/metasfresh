@@ -31,12 +31,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 {
 	Pending(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_PENDING),
 	Exported(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORTED),
+	ExportError(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORT_ERROR),
 	ExportedAndForwarded(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORTED_AND_FORWARDED),
 	ExportedAndError(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORTED_FORWARD_ERROR);
 
@@ -48,6 +50,7 @@ public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
+	@Nullable
 	public static ShipmentScheduleExportStatus ofNullableCode(final String code)
 	{
 		return code != null ? ofCode(code) : null;
@@ -55,7 +58,7 @@ public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 
 	public static ShipmentScheduleExportStatus ofCode(@NonNull final String code)
 	{
-		ShipmentScheduleExportStatus type = typesByCode.get(code);
+		final ShipmentScheduleExportStatus type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + InvoiceRule.class + " found for code: " + code);
@@ -63,6 +66,7 @@ public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 		return type;
 	}
 
+	@Nullable
 	public static String toCodeOrNull(final ShipmentScheduleExportStatus type)
 	{
 		return type != null ? type.getCode() : null;

@@ -36,6 +36,7 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
+import java.time.LocalDateTime;
 
 @Value
 @Builder
@@ -58,6 +59,9 @@ public class ShipmentSchedule
 
 	@Nullable
 	OrderId orderId;
+
+	@Nullable
+	LocalDateTime dateOrdered;
 
 	@NonNull
 	ProductId productId;

@@ -110,7 +110,7 @@ public interface I_M_ShipmentSchedule_ExportAudit_Line
 	 * Set Export Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setExportStatus (java.lang.String ExportStatus);
@@ -119,7 +119,7 @@ public interface I_M_ShipmentSchedule_ExportAudit_Line
 	 * Get Export Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getExportStatus();

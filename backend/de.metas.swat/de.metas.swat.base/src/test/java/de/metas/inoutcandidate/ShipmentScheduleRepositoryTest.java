@@ -159,7 +159,9 @@ class ShipmentScheduleRepositoryTest
 		assertThat(result.get(0).getBPartnerId().getRepoId()).isEqualTo(bpartnerOverride.getC_BPartner_ID());
 		assertThat(result.get(0).getLocationId().getBpartnerId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_ID());
 		assertThat(result.get(0).getLocationId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_Location_ID());
+		assertThat(result.get(0).getProductId().getRepoId()).isEqualTo(product.getM_Product_ID());
 		assertThat(result.get(0).getContactId()).isNull();
+
 		assertThat(result.get(0).getId().getRepoId()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
 
 	}

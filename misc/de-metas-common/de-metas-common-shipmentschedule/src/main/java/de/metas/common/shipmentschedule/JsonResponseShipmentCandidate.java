@@ -59,7 +59,8 @@ public class JsonResponseShipmentCandidate
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
 
-	@ApiModelProperty(position = 40, required = true)
+	@ApiModelProperty(position = 40)
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
 
 	@ApiModelProperty(position = 50, required = true)
@@ -83,7 +84,7 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("orgCode") @NonNull final String orgCode,
 			@JsonProperty("orderDocumentNo") @Nullable final String orderDocumentNo,
 			@JsonProperty("poReference") @Nullable final String poReference,
-			@JsonProperty("dateOrdered") @NonNull final LocalDateTime dateOrdered,
+			@JsonProperty("dateOrdered") @Nullable final LocalDateTime dateOrdered,
 			@JsonProperty("product") @NonNull final JsonProduct product,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
 			@JsonProperty("customer") @NonNull final JsonCustomer customer,

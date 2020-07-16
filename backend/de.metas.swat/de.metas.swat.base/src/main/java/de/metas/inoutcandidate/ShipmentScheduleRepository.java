@@ -103,17 +103,21 @@ public class ShipmentScheduleRepository
 			final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 
-			result.add(ShipmentSchedule.builder()
+			final ShipmentSchedule.ShipmentScheduleBuilder shipmentScheduleBuilder = ShipmentSchedule.builder()
 					.id(shipmentScheduleId)
 					.orgId(orgId)
 					.bPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
 					.locationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
 					.contactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
 					.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
-					.productId(ProductId.ofRepoId(shipmentScheduleId.getRepoId()))
+					.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
-					.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record))
-					.build());
+					.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record));
+			if (record.getDateOrdered() != null)
+			{
+				shipmentScheduleBuilder.dateOrdered(record.getDateOrdered().toLocalDateTime());
+			}
+			result.add(shipmentScheduleBuilder.build());
 		}
 		return result.build();
 	}

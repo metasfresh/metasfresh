@@ -11,6 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -50,13 +51,18 @@ public class ProductRepository
 
 	public ImmutableList<Product> getByIds(@NonNull final Set<ProductId> ids)
 	{
-		return queryBL
+		final List<I_M_Product> productRecords = queryBL
 				.createQueryBuilder(I_M_Product.class)
 				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, ids)
 				.create()
-				.stream()
-				.map(this::ofRecord)
-				.collect(ImmutableList.toImmutableList());
+				.list();
+
+		final ImmutableList.Builder<Product> products = ImmutableList.builder();
+		for (final I_M_Product productRecord : productRecords)
+		{
+			products.add(ofRecord(productRecord));
+		}
+		return products.build();
 	}
 
 	public Product ofRecord(@NonNull final I_M_Product productRecord)

@@ -41,9 +41,14 @@ import de.metas.common.shipmentschedule.JsonProduct;
 import de.metas.common.shipmentschedule.JsonProduct.JsonProductBuilder;
 import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidate;
+import de.metas.common.shipmentschedule.JsonResponseShipmentCandidate.JsonResponseShipmentCandidateBuilder;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates.JsonResponseShipmentCandidatesBuilder;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.error.IssueCreateRequest;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
@@ -52,6 +57,9 @@ import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAudit;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAudit.ShipmentScheduleExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -66,6 +74,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -75,6 +84,8 @@ import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -95,6 +106,8 @@ import java.util.function.Function;
 @Service
 public class ShipmentCandidateExporter
 {
+	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateExporter.class);
+
 	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
 	private final BPartnerCompositeRepository bPartnerCompositeRepository;
@@ -125,7 +138,7 @@ public class ShipmentCandidateExporter
 
 		final String transactionId = UUID.randomUUID().toString();
 
-		Map<OrgId, ShipmentScheduleExportAuditBuilder> auditBuilders = new HashMap<>();
+		final Map<OrgId, ShipmentScheduleExportAuditBuilder> auditBuilders = new HashMap<>();
 
 		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
 				.limit(500)
@@ -173,31 +186,41 @@ public class ShipmentCandidateExporter
 				bPartnerCompositeRepository.getByIds(idsToLoad.getBPartnerIds()),
 				bp -> bp.getBpartner().getId());
 
-		final ImmutableMap<ProductId, Product> productId2Product = Maps.uniqueIndex(productRepository.getByIds(idsToLoad.getProductIds()), p -> p.getId());
+		final ImmutableMap<ProductId, Product> productId2Product = Maps.uniqueIndex(productRepository.getByIds(idsToLoad.getProductIds()), Product::getId);
 
 		for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(shipmentSchedule, attributesForASIs);
-			final JsonCustomer customer = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner);
-			final JsonProductBuilder productBuilder = createJsonProduct(shipmentSchedule, customer.getLanguage(), productId2Product);
-			final I_C_Order orderRecord = orderIdToOrderRecord.get(shipmentSchedule.getOrderId());
-			final Quantity quantity = shipmentSchedule.getQuantityToDeliver();
-			final List<JsonQuantity> quantities = createJsonQuantities(quantity);
+			try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentSchedule.getId()))
+			{
+				final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(shipmentSchedule, attributesForASIs);
+				final JsonCustomer customer = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner);
+				final JsonProduct product = createJsonProduct(shipmentSchedule, customer.getLanguage(), productId2Product);
+				final I_C_Order orderRecord = orderIdToOrderRecord.get(shipmentSchedule.getOrderId());
+				final Quantity quantity = shipmentSchedule.getQuantityToDeliver();
+				final List<JsonQuantity> quantities = createJsonQuantities(quantity);
 
-			final JsonResponseShipmentCandidate jsonItem = JsonResponseShipmentCandidate.builder()
-					.id(JsonMetasfreshId.of(shipmentSchedule.getId().getRepoId()))
-					.orgCode(orgDAO.retrieveOrgValue(shipmentSchedule.getOrgId()))
-					.orderDocumentNo(orderRecord.getDocumentNo())
-					.dateOrdered(orderRecord.getDateOrdered().toLocalDateTime())
-					.poReference(orderRecord.getPOReference())
-					.customer(customer)
-					.product(productBuilder.build())
-					.attributeSetInstance(jsonAttributeSetInstance)
-					.quantities(quantities)
-					.build();
-			result.item(jsonItem);
+				final JsonResponseShipmentCandidateBuilder itemBuilder = JsonResponseShipmentCandidate.builder()
+						.id(JsonMetasfreshId.of(shipmentSchedule.getId().getRepoId()))
+						.orgCode(orgDAO.retrieveOrgValue(shipmentSchedule.getOrgId()))
+						.customer(customer)
+						.product(product)
+						.attributeSetInstance(jsonAttributeSetInstance)
+						.quantities(quantities)
+						.dateOrdered(shipmentSchedule.getDateOrdered());
+				if (orderRecord != null)
+				{
+					itemBuilder
+							.orderDocumentNo(orderRecord.getDocumentNo())
+							.poReference(orderRecord.getPOReference());
+				}
 
-			createAuditItem(shipmentSchedule, transactionId, auditBuilders);
+				result.item(itemBuilder.build());
+				createExportedAuditItem(shipmentSchedule, transactionId, auditBuilders);
+			}
+			catch (final ShipmentCandidateExportException e) // don't catch just any exception; just the "functional" ones
+			{
+				createExportErrorAuditItem(shipmentSchedule, transactionId, e, auditBuilders);
+			}
 		}
 
 		for (final ShipmentScheduleExportAuditBuilder value : auditBuilders.values())
@@ -218,25 +241,58 @@ public class ShipmentCandidateExporter
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
 		final BPartnerComposite composite = bpartnerIdToBPartner.get(shipmentSchedule.getBPartnerId());
-		final BPartnerLocation location = composite.extractLocation(shipmentSchedule.getLocationId()).get(); // TODO handle not present
+		final BPartnerLocation location = composite
+				.extractLocation(shipmentSchedule.getLocationId())
+				.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's location from the shipment schedule's bPartner")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", shipmentSchedule.getBPartnerId().getRepoId())
+						.setParameter("C_BPartner_Location_ID", shipmentSchedule.getLocationId().getRepoId()));
 
-		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(location.getAddress1()); // TODO handle null
-
+		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(location.getAddress1());
+		if (splitStreetAndHouseNumber == null)
+		{
+			throw new ShipmentCandidateExportException("BPartner's location needs to have an Address1 with a discernible street and street number")
+					.appendParametersToMessage()
+					.setParameter("Address1", location.getAddress1())
+					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
+					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+		}
 		final BPartner bpartner = composite.getBpartner();
 
 		final String adLanguage = bpartner.getLanguage() != null ? bpartner.getLanguage().getAD_Language() : Env.getAD_Language();
 
+		final String postal = location.getPostal();
+		if (EmptyUtil.isBlank(postal))
+		{
+			throw new ShipmentCandidateExportException("BPartner's location needs to have a postal set")
+					.appendParametersToMessage()
+					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
+					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+		}
+		final String city = location.getCity();
+		if (EmptyUtil.isBlank(city))
+		{
+			throw new ShipmentCandidateExportException("BPartner's location needs to have a city set")
+					.appendParametersToMessage()
+					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
+					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
-				.companyName(bpartner.getCompanyName())
+				.companyName(CoalesceUtil.coalesce(bpartner.getCompanyName(), bpartner.getName()))
 				.street(splitStreetAndHouseNumber.getLeft())
 				.streetNo(splitStreetAndHouseNumber.getRight())
-				.postal(location.getPostal())
-				.city(location.getCity())
+				.postal(postal)
+				.city(city)
 				.countryCode(location.getCountryCode())
 				.language(adLanguage);
-		if (shipmentSchedule.getContactId() == null)
+		if (shipmentSchedule.getContactId() != null)
 		{
-			final BPartnerContact contact = composite.extractContact(shipmentSchedule.getContactId()).get(); // TODO handle not present
+			final BPartnerContact contact = composite.extractContact(shipmentSchedule.getContactId())
+					.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
+							.appendParametersToMessage()
+							.setParameter("C_BPartner_ID", shipmentSchedule.getBPartnerId().getRepoId())
+							.setParameter("AD_User_ID", shipmentSchedule.getContactId().getRepoId()));
+
 			customerBuilder
 					.contactEmail(contact.getEmail())
 					.contactName(contact.getName())
@@ -245,19 +301,23 @@ public class ShipmentCandidateExporter
 		return customerBuilder.build();
 	}
 
-	private JsonProductBuilder createJsonProduct(
+	private JsonProduct createJsonProduct(
 			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final String adLanguage,
 			@NonNull final ImmutableMap<ProductId, Product> productId2Product)
 	{
 		final Product product = productId2Product.get(shipmentSchedule.getProductId());
 
-		return JsonProduct.builder()
+		final JsonProductBuilder productBuilder = JsonProduct.builder()
 				.productNo(product.getProductNo())
 				.name(product.getName().translate(adLanguage))
-				.description(product.getDescription().translate(adLanguage))
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight());
+		if (product.getDescription() != null)
+		{
+			productBuilder.description(product.getDescription().translate(adLanguage));
+		}
+		return productBuilder.build();
 	}
 
 	@Nullable
@@ -266,7 +326,7 @@ public class ShipmentCandidateExporter
 			@NonNull final Map<AttributeSetInstanceId, ImmutableAttributeSet> attributesForASIs)
 	{
 		final AttributeSetInstanceId scheduleASIId = shipmentSchedule.getAttributeSetInstanceId();
-		if(scheduleASIId.isNone())
+		if (!AttributeSetInstanceId.isRegular(scheduleASIId))
 		{
 			return null;
 		}
@@ -274,7 +334,7 @@ public class ShipmentCandidateExporter
 		return extractJsonAttributeSetInstance(attributeSet, shipmentSchedule.getOrgId());
 	}
 
-	private void createAuditItem(
+	private void createExportedAuditItem(
 			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final String transactionId,
 			@NonNull final Map<OrgId, ShipmentScheduleExportAuditBuilder> auditBuilders)
@@ -289,6 +349,34 @@ public class ShipmentCandidateExporter
 				ShipmentScheduleExportAuditItem.builder()
 						.exportStatus(ShipmentScheduleExportStatus.Exported)
 						.shipmentScheduleId(shipmentSchedule.getId())
+						.orgId(orgId)
+						.build());
+	}
+
+	private void createExportErrorAuditItem(
+			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final String transactionId,
+			@NonNull final ShipmentCandidateExportException e,
+			@NonNull final Map<OrgId, ShipmentScheduleExportAuditBuilder> auditBuilders)
+	{
+		final OrgId orgId = shipmentSchedule.getOrgId();
+
+		final AdIssueId adIssueId = Services.get(IErrorManager.class).createIssue(IssueCreateRequest.builder()
+				.throwable(e)
+				.loggerName(logger.getName())
+				.sourceClassname(ShipmentCandidateExporter.class.getName())
+				.summary(e.getMessage())
+				.build());
+
+		final ShipmentScheduleExportAuditBuilder auditBuilder = auditBuilders.computeIfAbsent(
+				orgId,
+				k -> ShipmentScheduleExportAudit.builder().orgId(k).transactionId(transactionId));
+		auditBuilder.item(
+				shipmentSchedule.getId(),
+				ShipmentScheduleExportAuditItem.builder()
+						.exportStatus(ShipmentScheduleExportStatus.ExportError)
+						.shipmentScheduleId(shipmentSchedule.getId())
+						.issueId(adIssueId)
 						.orgId(orgId)
 						.build());
 	}
@@ -309,9 +397,12 @@ public class ShipmentCandidateExporter
 			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 			{
 				final Date valueAsDate = attributeSet.getValueAsDate(attributeCode);
-				final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-				final LocalDate localDate = valueAsDate.toInstant().atZone(timeZone).toLocalDate();
-				instanceBuilder.valueDate(localDate);
+				if (valueAsDate != null)
+				{
+					final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+					final LocalDate localDate = valueAsDate.toInstant().atZone(timeZone).toLocalDate();
+					instanceBuilder.valueDate(localDate);
+				}
 			}
 			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 			{
@@ -355,7 +446,7 @@ public class ShipmentCandidateExporter
 				.item(JsonResponseShipmentCandidate.builder()
 						.id(JsonMetasfreshId.of(10))
 						.orgCode("orgCode")
-						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 48))
+						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 48))
 						.poReference("poReference")
 						.orderDocumentNo("orderDocumentNo")
 						.product(JsonProduct.builder().name("name").productNo("productNo").description("description").weight(BigDecimal.TEN).packageSize("100pce").build())
@@ -376,5 +467,13 @@ public class ShipmentCandidateExporter
 	public void updateStatus(final JsonRequestShipmentCandidateResults status)
 	{
 
+	}
+
+	private static class ShipmentCandidateExportException extends AdempiereException
+	{
+		public ShipmentCandidateExportException(final String message)
+		{
+			super(message);
+		}
 	}
 }
