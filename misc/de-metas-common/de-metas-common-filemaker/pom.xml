@@ -36,10 +36,6 @@
     <artifactId>de-metas-common-filemaker</artifactId>
     <version>10.0.0</version>
 
-    <properties>
-<!--        <jackson.version>2.11.1</jackson.version>-->
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
