@@ -1,10 +1,8 @@
-package de.metas.materialtracking.model.validator;
-
 /*
  * #%L
  * de.metas.materialtracking
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +20,7 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
+package de.metas.materialtracking.model.validator;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -56,6 +45,17 @@ import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderReportWriter;
 import de.metas.materialtracking.spi.impl.listeners.PPOrderMaterialTrackingListener;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+
+import java.util.List;
 
 @Interceptor(I_PP_Order.class)
 public class PP_Order
@@ -71,6 +71,9 @@ public class PP_Order
 	{
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		materialTrackingBL.addModelTrackingListener(I_PP_Order.Table_Name, PPOrderMaterialTrackingListener.instance);
+
+		CopyRecordFactory.enableForTableName(I_PP_Order.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_PP_Order.Table_Name, PP_OrderPOCopyRecordSupport.class);
 	}
 
 	@DocValidate(timings = {
@@ -116,8 +119,6 @@ public class PP_Order
 
 	/**
 	 * Before a PP_Order is unclosed, this interceptor makes sure that the PP_Order is not associated with completed or closed invoices.
-	 *
-	 * @param ppOrder
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_UNCLOSE })
 	public void verifyInvoiceDetailsBeforeUnclose(final I_PP_Order ppOrder)
@@ -164,8 +165,6 @@ public class PP_Order
 	 * <li>deletes all <code>C_Invoice_Details</code> which reference it (somewhat redundant as the ICs will be recreated)
 	 * </ul>
 	 * All of this so that if the ppOrder is closed again, further invoice candidates can be created for it and also that while it is unclosed, no incorrect ICs will be created.
-	 *
-	 * @param ppOrder
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_UNCLOSE })
 	public void afterUnclose(final I_PP_Order ppOrder)
