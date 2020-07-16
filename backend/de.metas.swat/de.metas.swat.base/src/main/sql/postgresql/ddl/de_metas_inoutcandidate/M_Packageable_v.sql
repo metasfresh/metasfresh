@@ -24,6 +24,7 @@ FROM (
 		-- Order Info
 		s.C_Order_ID AS C_OrderSO_ID,
 		o.DocumentNo as OrderDocumentNo,
+        o.poreference,
 		o.FreightCostRule,
 		dt.DocSubType,
 		s.DateOrdered,
