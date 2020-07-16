@@ -1,42 +1,8 @@
-package de.metas.ui.web.pickingV2.packageable;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-
-import org.adempiere.warehouse.WarehouseTypeId;
-import org.compiere.util.TimeUtil;
-
-import java.util.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
-import de.metas.order.OrderId;
-import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
-import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -54,9 +20,46 @@ import lombok.ToString;
  * #L%
  */
 
+package de.metas.ui.web.pickingV2.packageable;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.Packageable;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.order.OrderId;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Objects;
+
 @ToString(exclude = "values")
 public final class PackageableRow implements IViewRow
 {
+	private static final String SYSCFG_PREFIX = "de.metas.ui.web.pickingV2.packageable.PackageableRow.field";
+
 	public static PackageableRow cast(final IViewRow row)
 	{
 		return (PackageableRow)row;
@@ -70,7 +73,11 @@ public final class PackageableRow implements IViewRow
 	@Getter
 	private final LookupValue customer;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID, seqNo = 30)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = true),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = true),
+			})
 	private final ITranslatableString warehouseTypeName;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Integer, captionKey = "Lines", seqNo = 40)
