@@ -64,6 +64,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
@@ -741,7 +742,6 @@ public class DocumentCollection
 							final DetailId detailId = includedEntityDescriptor.getDetailId();
 
 							rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
-							websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
 						}
 					}
 				}
@@ -756,7 +756,32 @@ public class DocumentCollection
 
 			//
 			// Notify frontend, even if the root document does not exist (or it was not cached).
-			websocketPublisher.staleRootDocument(windowId, rootDocumentId);
+			sendWebsocketChangeEvents(documentToInvalidate, entityDescriptor);
+		}
+	}
+
+	private void sendWebsocketChangeEvents(
+			final DocumentToInvalidate documentToInvalidate,
+			final DocumentEntityDescriptor entityDescriptor)
+	{
+		final WindowId windowId = entityDescriptor.getWindowId();
+		final DocumentId rootDocumentId = documentToInvalidate.getDocumentId();
+
+		websocketPublisher.staleRootDocument(windowId, rootDocumentId);
+
+		for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
+		{
+			final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
+			if (includedRowIds.isEmpty())
+			{
+				continue;
+			}
+
+			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
+			{
+				final DetailId detailId = includedEntityDescriptor.getDetailId();
+				websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
+			}
 		}
 	}
 
