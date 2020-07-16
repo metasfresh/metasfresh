@@ -77,6 +77,7 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -106,7 +107,8 @@ public class ShipmentCandidateExporter
 	public ShipmentCandidateExporter(
 			@NonNull final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
-			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository, final ProductRepository productRepository)
+			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository,
+			@NonNull final ProductRepository productRepository)
 	{
 		this.shipmentScheduleAuditRepository = shipmentScheduleAuditRepository;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
@@ -128,7 +130,7 @@ public class ShipmentCandidateExporter
 		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
 				.limit(500)
 				.canBeExportedFrom(Instant.now())
-				.exportStatus(ShipmentScheduleExportStatus.Exported)
+				.exportStatus(ShipmentScheduleExportStatus.Pending)
 				.build();
 		final List<ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
 
@@ -144,8 +146,15 @@ public class ShipmentCandidateExporter
 
 		final IdsToLoad idsToLoad = idsToLoadBuilder.build();
 
-		final Map<AttributeSetInstanceId, ImmutableAttributeSet> attributesForASIs = attributeDAO.getAttributesForASIs(idsToLoad.getAsiIds());
-
+		final Map<AttributeSetInstanceId, ImmutableAttributeSet> attributesForASIs;
+		if (idsToLoad.getAsiIds().isEmpty())
+		{
+			attributesForASIs = ImmutableMap.of();
+		}
+		else
+		{
+			attributesForASIs = attributeDAO.getAttributesForASIs(idsToLoad.getAsiIds());
+		}
 		final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
 				.hasMoreItems(shipmentSchedules.size() == 500)
 				.transactionKey(transactionId);
@@ -251,11 +260,17 @@ public class ShipmentCandidateExporter
 				.weight(product.getWeight());
 	}
 
+	@Nullable
 	private JsonAttributeSetInstance createJsonASI(
 			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final Map<AttributeSetInstanceId, ImmutableAttributeSet> attributesForASIs)
 	{
-		final ImmutableAttributeSet attributeSet = attributesForASIs.get(shipmentSchedule.getAttributeSetInstanceId());
+		final AttributeSetInstanceId scheduleASIId = shipmentSchedule.getAttributeSetInstanceId();
+		if(scheduleASIId.isNone())
+		{
+			return null;
+		}
+		final ImmutableAttributeSet attributeSet = attributesForASIs.get(scheduleASIId);
 		return extractJsonAttributeSetInstance(attributeSet, shipmentSchedule.getOrgId());
 	}
 
