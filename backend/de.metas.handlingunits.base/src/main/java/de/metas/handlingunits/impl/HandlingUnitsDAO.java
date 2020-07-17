@@ -200,6 +200,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public I_M_HU_PI_Item getPackingInstructionItemById(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		return loadOutOfTrx(piItemId, I_M_HU_PI_Item.class);
+	}
+
+	@Override
 	public IHUBuilder createHUBuilder(final IHUContext huContext)
 	{
 		final IHUBuilder huBuilder = new HUBuilder(huContext);
@@ -211,6 +217,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public void saveHU(final I_M_HU hu)
 	{
 		getHUAndItemsDAO().saveHU(hu);
+	}
+
+	@Override
+	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
+	{
+		InterfaceWrapperHelper.save(huItem);
 	}
 
 	@Override
@@ -769,6 +781,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.first(); // get the first one (favoring the one with C_BPartner_ID = parentHU.getC_BPartner_ID() if it exists)
 
 		return piItemForChild;
+	}
+
+	@NonNull
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		final HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoId(piItem.getIncluded_HU_PI_ID());
+		return getPackingInstructionById(includedPIId);
 	}
 
 	@Override
