@@ -36,6 +36,7 @@ import java.util.Arrays;
 
 public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 {
+	DontExport(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_DONT_EXPORT),
 	Pending(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_PENDING),
 	Exported(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORTED),
 	ExportError(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORT_ERROR),
