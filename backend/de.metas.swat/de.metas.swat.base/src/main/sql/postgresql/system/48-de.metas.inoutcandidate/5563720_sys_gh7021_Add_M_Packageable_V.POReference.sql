@@ -1,4 +1,7 @@
-DROP VIEW IF EXISTS M_Packageable_V
+
+SELECT public.db_alter_table('M_Packageable_V',
+                             '
+ DROP VIEW IF EXISTS M_Packageable_V
 ;
 
 CREATE OR REPLACE VIEW M_Packageable_V AS
@@ -12,7 +15,7 @@ FROM (
              -- BPartner
              p.C_BPartner_ID                                           AS C_BPartner_Customer_ID,
              p.Value                                                   AS BPartnerValue,
-             (coalesce(p.Name, '') || coalesce(p.Name2, ''))           AS BPartnerName,
+             (coalesce(p.Name, '''') || coalesce(p.Name2, ''''))           AS BPartnerName,
 
              --
              -- BPartner location
@@ -49,11 +52,11 @@ FROM (
              -- Product & ASI
              s.M_Product_ID,
              prod.Name                                                 AS ProductName,
-             prod.C_UOM_ID                                             AS C_UOM_ID, -- shipment schedule's UOM (see de.metas.inoutcandidate.api.impl.ShipmentScheduleBL.getC_UOM); IMPORTANT: before changing it, check bellow, we might use this logic to convert some Qtys to shipment schedule's UOM
+             prod.C_UOM_ID                                             AS C_UOM_ID, -- shipment schedule''s UOM (see de.metas.inoutcandidate.api.impl.ShipmentScheduleBL.getC_UOM); IMPORTANT: before changing it, check bellow, we might use this logic to convert some Qtys to shipment schedule''s UOM
              s.M_AttributeSetInstance_ID,
 
              --
-             -- Quantities (in shipment schedule's UOM, i.e. Product's UOM)
+             -- Quantities (in shipment schedule''s UOM, i.e. Product''s UOM)
              s.QtyOrdered                                              AS QtyOrdered,
              COALESCE(s.QtyToDeliver_Override, s.QtyToDeliver)         AS QtyToDeliver,
              COALESCE(s.QtyDelivered, 0)                               AS QtyDelivered,
@@ -62,31 +65,31 @@ FROM (
                  SELECT COALESCE(SUM(sqp.QtyPicked), 0)
                  FROM M_ShipmentSchedule_QtyPicked sqp
                  WHERE sqp.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
-                   AND sqp.IsActive = 'Y'
-                   AND sqp.Processed = 'Y'
+                   AND sqp.IsActive = ''Y''
+                   AND sqp.Processed = ''Y''
              )                                                         AS QtyPickedAndDelivered,
              -- QtyPicked but not yet delivered:
              (
                  SELECT COALESCE(SUM(sqp.QtyPicked), 0)
                  FROM M_ShipmentSchedule_QtyPicked sqp
                  WHERE sqp.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
-                   AND sqp.IsActive = 'Y'
-                   AND sqp.Processed = 'N'
+                   AND sqp.IsActive = ''Y''
+                   AND sqp.Processed = ''N''
              )                                                         AS QtyPickedNotDelivered,
              -- QtyPickedPlanned:
              (
                  SELECT COALESCE(SUM(uomConvert(
                          prod.M_Product_ID, -- product
                          pc.C_UOM_ID, -- from UOM
-                         prod.C_UOM_ID, -- to UOM: shipment schedule's UOM (see above)
+                         prod.C_UOM_ID, -- to UOM: shipment schedule''s UOM (see above)
                          pc.QtyPicked
                      )), 0)
                  FROM M_Picking_Candidate pc
                  WHERE pc.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
                    -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
                    -- note that when the pc is processed (->status PR or CL), then the QtyToDeliver is decreased accordingly
-                   AND pc.Status = 'IP'
-                   AND pc.IsActive = 'Y'
+                   AND pc.Status = ''IP''
+                   AND pc.IsActive = ''Y''
              )                                                         AS QtyPickedPlanned,
 
              --
@@ -131,11 +134,14 @@ FROM (
                   LEFT JOIN C_Order o ON (o.C_Order_ID = s.C_Order_ID)
                   LEFT JOIN C_DocType dt ON (dt.C_DocType_ID = o.C_DocType_ID)
          WHERE TRUE
-           AND s.Processed = 'N'
-           AND s.IsActive = 'Y'
+           AND s.Processed = ''N''
+           AND s.IsActive = ''Y''
            AND s.QtyToDeliver > 0
-           AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
+           AND (stats.SOCreditStatus NOT IN (''S'', ''H'') OR stats.SOCreditStatus IS NULL)
      ) p
 ;
 
 
+'
+           )
+;
