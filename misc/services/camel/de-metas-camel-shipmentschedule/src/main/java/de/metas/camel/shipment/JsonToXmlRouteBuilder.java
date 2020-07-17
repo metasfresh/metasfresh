@@ -36,7 +36,7 @@ import org.apache.camel.component.jackson.JacksonDataFormat;
 public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		final ObjectMapper objectMapper = new ObjectMapper()
 				.findAndRegisterModules()
@@ -48,9 +48,10 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 		jacksonDataFormat.setObjectMapper(objectMapper);
 		jacksonDataFormat.setUnmarshalType(JsonResponseShipmentCandidates.class);
 
-		from(timer("test").period(5 * 1000))
-				.streamCaching()
+		from(timer("pollShipmentCandidateAPI")
+				.period(5 * 1000))
 				.routeId("MF-ShipmentSchedule-JSON-To-Filemaker-XML")
+				.streamCaching()
 
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
