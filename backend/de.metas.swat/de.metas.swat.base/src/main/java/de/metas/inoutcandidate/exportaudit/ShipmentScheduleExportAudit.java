@@ -25,28 +25,37 @@ package de.metas.inoutcandidate.exportaudit;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import java.util.HashMap;
 import java.util.Map;
 
-@Value
-@Builder
+@Data
 public class ShipmentScheduleExportAudit
 {
-	@NonNull
-	String transactionId;
+	private final String transactionId;
 
-	@NonNull
-	OrgId orgId;
+	private final Map<ShipmentScheduleId, ShipmentScheduleExportAuditItem> items;
 
-	@NonNull
-	@Singular
-	Map<ShipmentScheduleId, ShipmentScheduleExportAuditItem> items;
+	@Builder
+	private ShipmentScheduleExportAudit(
+			@NonNull final String transactionId,
+			@NonNull @Singular final Map<ShipmentScheduleId, ShipmentScheduleExportAuditItem> items)
+	{
+		this.transactionId = transactionId;
+		this.items = new HashMap<>(items);
+	}
 
 	public ShipmentScheduleExportAuditItem getItemById(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return items.get(shipmentScheduleId);
+	}
+
+	public void addItem(@NonNull final ShipmentScheduleExportAuditItem auditRecord)
+	{
+		items.put(auditRecord.getShipmentScheduleId(), auditRecord);
 	}
 }

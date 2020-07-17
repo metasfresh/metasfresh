@@ -20,27 +20,30 @@
  * #L%
  */
 
-package de.metas.common.filemaker;
+package de.metas.common.shipmentschedule;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.internal.Nullable;
-import lombok.Value;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
-@Value
-public class COL
+public class ConfiguredJsonMapper
 {
-	public static COL of(@Nullable final String data)
+	private final static ConfiguredJsonMapper INSTANCE = new ConfiguredJsonMapper();
+
+	private final ObjectMapper objectMapper;
+
+	private ConfiguredJsonMapper()
 	{
-		return new COL(new DATA(data));
+		objectMapper = new ObjectMapper()
+				.findAndRegisterModules()
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+				.enable(MapperFeature.USE_ANNOTATIONS);
 	}
 
-	@JsonProperty("DATA")
-	DATA data;
-
-	@JsonCreator
-	public COL(@JsonProperty("DATA") final DATA data)
+	public static ObjectMapper get()
 	{
-		this.data = data;
+		return INSTANCE.objectMapper;
 	}
 }

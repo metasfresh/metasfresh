@@ -22,7 +22,13 @@
 
 package de.metas.inoutcandidate;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -36,6 +42,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -46,6 +53,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_ExportStatus;
@@ -55,6 +63,9 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_CanBeExp
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_QtyToDeliver;
 import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER;
 import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
 @Repository
@@ -62,6 +73,7 @@ public class ShipmentScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 	private IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
@@ -109,24 +121,78 @@ public class ShipmentScheduleRepository
 		final ImmutableList.Builder<ShipmentSchedule> result = ImmutableList.builder();
 		for (final I_M_ShipmentSchedule record : records)
 		{
-			final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
+			final ShipmentSchedule shipmentSchedule = ofRecord(record);
+			result.add(shipmentSchedule);
+		}
+		return result.build();
+	}
 
-			final ShipmentSchedule.ShipmentScheduleBuilder shipmentScheduleBuilder = ShipmentSchedule.builder()
-					.id(shipmentScheduleId)
-					.orgId(orgId)
-					.bPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
-					.locationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
-					.contactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
-					.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
-					.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
-					.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record));
-			if (record.getDateOrdered() != null)
-			{
-				shipmentScheduleBuilder.dateOrdered(record.getDateOrdered().toLocalDateTime());
-			}
-			result.add(shipmentScheduleBuilder.build());
+	private ShipmentSchedule ofRecord(final I_M_ShipmentSchedule record)
+	{
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
+
+		final ShipmentSchedule.ShipmentScheduleBuilder shipmentScheduleBuilder = ShipmentSchedule.builder()
+				.id(shipmentScheduleId)
+				.orgId(orgId)
+				.bPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
+				.locationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
+				.contactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
+				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record))
+				.exportStatus(ShipmentScheduleExportStatus.ofCode(record.getExportStatus()));
+		if (record.getDateOrdered() != null)
+		{
+			shipmentScheduleBuilder.dateOrdered(record.getDateOrdered().toLocalDateTime());
+		}
+		return shipmentScheduleBuilder.build();
+	}
+
+	public void exportStatusMassUpdate(
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
+			@NonNull final ShipmentScheduleExportStatus exportStatus)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
+		final ICompositeQueryUpdater<I_M_ShipmentSchedule> updater = queryBL.createCompositeQueryUpdater(I_M_ShipmentSchedule.class)
+				.addSetColumnValue(COLUMNNAME_ExportStatus, exportStatus.getCode());
+
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.updateDirectly(updater);
+
+		cacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds),
+				ModelCacheInvalidationTiming.CHANGE);
+	}
+
+	public void saveAll(@NonNull final ImmutableCollection<ShipmentSchedule> shipmentSchedules)
+	{
+		for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
+		{
+			save(shipmentSchedule);
+		}
+	}
+
+	private void save(@NonNull final ShipmentSchedule shipmentSchedule)
+	{
+		final I_M_ShipmentSchedule record = load(shipmentSchedule.getId(), I_M_ShipmentSchedule.class);
+		record.setExportStatus(shipmentSchedule.getExportStatus().getCode());
+		saveRecord(record);
+	}
+
+	public ImmutableMap<ShipmentScheduleId, ShipmentSchedule> getByIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final List<I_M_ShipmentSchedule> records = loadByRepoIdAwares(shipmentScheduleIds, I_M_ShipmentSchedule.class);
+		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentSchedule> result = ImmutableMap.builder();
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			result.put(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()), ofRecord(record));
 		}
 		return result.build();
 	}

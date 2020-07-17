@@ -25,7 +25,6 @@ package de.metas.inoutcandidate.exportaudit;
 import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit_Line;
 import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -72,7 +71,6 @@ class ShipmentScheduleAuditRepositoryTest
 		final ShipmentScheduleId shipmentScheduleId2 = ShipmentScheduleId.ofRepoId(21);
 		final ShipmentScheduleExportAudit audit = ShipmentScheduleExportAudit.builder()
 				.transactionId("transactionId")
-				.orgId(OrgId.ofRepoId(5))
 				.item(
 						shipmentScheduleId1,
 						ShipmentScheduleExportAuditItem.builder()
@@ -95,14 +93,15 @@ class ShipmentScheduleAuditRepositoryTest
 
 		// then
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
-		assertThat(exportAudits).hasSize(1);
+		assertThat(exportAudits).hasSize(2);
 		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo("transactionId");
 
-		final List<I_M_ShipmentSchedule_ExportAudit_Line> exportAuditLines = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Line.class);
-		assertThat(exportAuditLines).extracting("AD_Org_ID", "AD_Issue_ID", "ExportStatus", "M_ShipmentSchedule_ID")
-				.containsExactly(
-						tuple(10, 20, Exported.getCode(), 11),
-						tuple(10, -1, ExportedAndError.getCode(), 21));
+		final List<I_M_ShipmentSchedule_ExportAudit> exportAuditLines = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
+		assertThat(exportAuditLines).extracting("TransactionIdAPI", "AD_Org_ID", "AD_Issue_ID", "ExportStatus", "M_ShipmentSchedule_ID")
+				.containsExactlyInAnyOrder(
+						tuple("transactionId", 10, 20, Exported.getCode(), 11),
+						tuple("transactionId", 10, -1, ExportedAndError.getCode(), 21)
+				);
 
 		return audit;
 	}

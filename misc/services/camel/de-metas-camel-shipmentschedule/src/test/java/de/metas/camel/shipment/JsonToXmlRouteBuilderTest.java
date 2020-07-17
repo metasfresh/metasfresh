@@ -55,11 +55,13 @@ class JsonToXmlRouteBuilderTest extends CamelTestSupport
 
 		mockEndpoint = getMockEndpoint("mock:$shipmentScheduleAPI");
 
-		AdviceWithRouteBuilder.adviceWith(context, "MF-ShipmentSchedule-JSON-To-Filemaker-XML",
-				a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentSchedules")
-						.skipSendToOriginalEndpoint()
-						.to(mockEndpoint)
-		);
+		AdviceWithRouteBuilder
+				.adviceWith(context, "MF-ShipmentSchedule-JSON-To-Filemaker-XML",
+						a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentSchedules")
+								.skipSendToOriginalEndpoint()
+								.to(mockEndpoint)
+				);
+
 	}
 
 	@Override
@@ -84,7 +86,6 @@ class JsonToXmlRouteBuilderTest extends CamelTestSupport
 		context.start();
 
 		mockEndpoint.whenAnyExchangeReceived(new EmptyResult());
-
 		final NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create(); // instead of waiting, go on whenever component one is ready
 
 		//template.sendBody("timer://pollShipmentCandidateAPI", "tick"); // this doesn't work, but the timer starts ticking all by itself
@@ -115,7 +116,8 @@ class JsonToXmlRouteBuilderTest extends CamelTestSupport
 	{
 		context.start();
 
-		mockEndpoint.whenAnyExchangeReceived(new NormalResult());
+		mockEndpoint.whenExchangeReceived(0, new NormalResult());
+		mockEndpoint.whenExchangeReceived(1, new EmptyResult());
 
 		final NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create(); // instead of waiting, go on whenever component one is ready
 		assertThat(notify.matchesWaitTime()).isTrue();
@@ -124,7 +126,6 @@ class JsonToXmlRouteBuilderTest extends CamelTestSupport
 
 		context.stop();
 	}
-
 
 	private static class NormalResult implements Processor
 	{

@@ -22,12 +22,17 @@
 
 package de.metas.camel.shipment;
 
+import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FIELD;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
 import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.PRODUCT;
+import de.metas.common.filemaker.RESULTSET;
+import de.metas.common.filemaker.ROW;
+import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResult;
+import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidate;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
 import lombok.NonNull;
@@ -35,6 +40,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.time.format.DateTimeFormatter;
 
 public class JsonToXmlProcessor implements Processor
 {
@@ -66,22 +73,75 @@ public class JsonToXmlProcessor implements Processor
 	public void process(@NonNull final Exchange exchange)
 	{
 		final JsonResponseShipmentCandidates scheduleList = exchange.getIn().getBody(JsonResponseShipmentCandidates.class);
-		log.info("process method called; scheduleList=" + scheduleList);
+
+		final var items = scheduleList.getItems();
+		log.info("process method called; scheduleList with " + items.size() + " items");
+
+		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{FMPXMLRESULT.DATABASE.NAME}}");
 
 		final FMPXMLRESULTBuilder builder = FMPXMLRESULT.builder()
 				.errorCode("0")
 				.product(new PRODUCT())
 				.database(DATABASE.builder()
-						.name("databaseName")// TODO set from application.properties
-						.records(Integer.toString(scheduleList.getItems().size()))
+						.name(databaseName)
+						.records(Integer.toString(items.size()))
 						.build())
 				.metadata(METADATA);
 
-		for (final JsonResponseShipmentCandidate item : scheduleList.getItems())
+		final var resultsBuilder = JsonRequestShipmentCandidateResults.builder()
+				.transactionKey(scheduleList.getTransactionKey());
+
+		final var resultSet = RESULTSET.builder().found(items.size());
+		for (final JsonResponseShipmentCandidate item : items)
 		{
-			// TODO
+			final var row = createROW(item);
+			resultSet.row(row);
+
+			resultsBuilder.item(JsonRequestShipmentCandidateResult.builder()
+					.outcome(JsonRequestShipmentCandidateResult.Outcome.OK) // might be un-OKed later, if e.g. uploading the XML fails
+					.shipmentScheduleId(item.getId())
+					.build());
 		}
-		exchange.getIn().setBody(builder.build());
-		//	exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
+		exchange.getIn().setBody(builder
+				.resultset(resultSet.build())
+				.build());
+		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
+		exchange.getIn().setHeader("JsonRequestShipmentCandidateResults", resultsBuilder.build());
+		exchange.getIn().setHeader("NumberOfItems", items.size());
+	}
+
+	private ROW createROW(@NonNull final JsonResponseShipmentCandidate item)
+	{
+		final var row = ROW.builder();
+		row.col(COL.of(item.getOrderDocumentNo())); // _bestellung_nummer
+
+		final var dateOrdered = item.getDateOrdered();
+		row.col(COL.of(dateOrdered.toLocalDate().format(DateTimeFormatter.ofPattern("d.M.yyyy")))); // _bestellung_datum
+		row.col(COL.of(dateOrdered.format(DateTimeFormatter.ofPattern("d.M.yyyy k:mm:ss")))); // _bestellung_zeitstempel
+
+		final var product = item.getProduct();
+		row.col(COL.of(product.getProductNo())); // _artikel_nummer
+		row.col(COL.of(product.getName())); // _artikel_bezeichnung
+		row.col(COL.of(item.getQuantities().get(0).getQty().toString())); // _artikel_menge
+		row.col(COL.of(product.getWeight().toString())); // _artikel_gewicht_1_stueck
+		if (item.getAttributeSetInstance() != null)
+		{
+			row.col(COL.of(item.getAttributeSetInstance().getValueStr("FLAVOR"))); // _artikel_geschmacksrichtung
+		}
+		row.col(COL.of(product.getPackageSize())); // _artikel_verpackungsgroesse
+
+		final var customer = item.getCustomer();
+		row.col(COL.of(customer.getCompanyName())); // _empfaenger_firma
+		row.col(COL.of(customer.getContactName())); // _empfaenger_ansprechpartner
+		row.col(COL.of(customer.getStreet())); // _empfaenger_strasse
+		row.col(COL.of(customer.getStreetNo())); // _empfaenger_hausnummer
+		row.col(COL.of(null)); // _empfaenger_zustellinfo
+		row.col(COL.of(customer.getPostal())); // _empfaenger_plz
+		row.col(COL.of(customer.getCity())); // _empfaenger_ort
+		row.col(COL.of(customer.getCountryCode())); // _empfaenger_land
+		row.col(COL.of(customer.getContactEmail())); // _empfaenger_email
+		row.col(COL.of(customer.getContactPhone())); // _empfaenger_telefon_muss_bei_express
+
+		return row.build();
 	}
 }

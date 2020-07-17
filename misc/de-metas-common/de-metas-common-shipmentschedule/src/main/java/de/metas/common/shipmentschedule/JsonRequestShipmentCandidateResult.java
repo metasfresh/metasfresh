@@ -24,6 +24,7 @@ package de.metas.common.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -47,7 +48,7 @@ public class JsonRequestShipmentCandidateResult
 
 	Outcome outcome;
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	JsonError error;
 
 	@JsonCreator
@@ -59,5 +60,14 @@ public class JsonRequestShipmentCandidateResult
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.outcome = outcome;
 		this.error = error;
+	}
+
+	public JsonRequestShipmentCandidateResult withError(@NonNull final JsonError error)
+	{
+		return JsonRequestShipmentCandidateResult.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.outcome(JsonRequestShipmentCandidateResult.Outcome.ERROR)
+				.error(JsonError.union(this.error, error))
+				.build();
 	}
 }

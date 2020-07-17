@@ -22,6 +22,10 @@
 
 package de.metas.camel.shipment;
 
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
@@ -29,11 +33,24 @@ import org.apache.commons.logging.LogFactory;
 
 public class FeedBackJsonCreator implements Processor
 {
-	private final Log log = LogFactory.getLog(JsonToXmlProcessor.class);
+	private final Log log = LogFactory.getLog(FeedBackJsonCreator.class);
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(@NonNull final Exchange exchange) throws Exception
 	{
-		log.info("process method called; exchange=" + exchange);
+		final var results = exchange.getIn().getHeader("JsonRequestShipmentCandidateResults", JsonRequestShipmentCandidateResults.class);
+
+		final var throwable = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+		if (throwable != null)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrorItem.builder()
+					.message(throwable.getMessage())
+					.throwable(throwable).build());
+			exchange.getIn().setBody(results.allWithError(error));
+		}
+		else
+		{
+			exchange.getIn().setBody(results);
+		}
 	}
 }

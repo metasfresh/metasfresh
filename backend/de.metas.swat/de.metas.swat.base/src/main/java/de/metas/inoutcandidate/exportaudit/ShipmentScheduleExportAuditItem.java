@@ -26,23 +26,25 @@ import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Value
+@Data
 @Builder
 public class ShipmentScheduleExportAuditItem
 {
 	@NonNull
-	ShipmentScheduleId shipmentScheduleId;
-
-	@NonNull OrgId orgId;
+	private final ShipmentScheduleId shipmentScheduleId;
 
 	@NonNull
-	ShipmentScheduleExportStatus exportStatus;
+	private final OrgId orgId;
+
+	@NonNull
+	private ShipmentScheduleExportStatus exportStatus;
 
 	@Nullable
-	AdIssueId issueId;
+	private AdIssueId issueId;
 }

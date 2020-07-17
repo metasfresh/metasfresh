@@ -24,6 +24,7 @@ package de.metas.common.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.JsonError;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -46,5 +47,17 @@ public class JsonRequestShipmentCandidateResults
 	{
 		this.transactionKey = transactionKey;
 		this.items = items;
+	}
+
+	public JsonRequestShipmentCandidateResults allWithError(@NonNull final JsonError error)
+	{
+		final JsonRequestShipmentCandidateResultsBuilder result = JsonRequestShipmentCandidateResults
+				.builder()
+				.transactionKey(transactionKey);
+		for (JsonRequestShipmentCandidateResult item : items)
+		{
+			result.item(item.withError(error));
+		}
+		return result.build();
 	}
 }

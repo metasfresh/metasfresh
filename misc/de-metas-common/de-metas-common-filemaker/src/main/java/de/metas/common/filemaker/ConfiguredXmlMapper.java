@@ -22,25 +22,26 @@
 
 package de.metas.common.filemaker;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.internal.Nullable;
-import lombok.Value;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
-@Value
-public class COL
+public class ConfiguredXmlMapper
 {
-	public static COL of(@Nullable final String data)
+	private final static ConfiguredXmlMapper INSTANCE = new ConfiguredXmlMapper();
+
+	private final XmlMapper xmlMapper;
+
+	private ConfiguredXmlMapper()
 	{
-		return new COL(new DATA(data));
+		xmlMapper = new XmlMapper();
+		xmlMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
+		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		xmlMapper.getFactory().getXMLOutputFactory().setProperty(com.ctc.wstx.api.WstxOutputProperties.P_USE_DOUBLE_QUOTES_IN_XML_DECL, true);
 	}
 
-	@JsonProperty("DATA")
-	DATA data;
-
-	@JsonCreator
-	public COL(@JsonProperty("DATA") final DATA data)
+	public static XmlMapper get()
 	{
-		this.data = data;
+		return INSTANCE.xmlMapper;
 	}
 }

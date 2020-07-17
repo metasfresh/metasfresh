@@ -23,12 +23,16 @@
 package de.metas.common.rest_api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -38,6 +42,9 @@ public class JsonAttributeSetInstance
 
 	List<JsonAttributeInstance> attributeInstances;
 
+	@JsonIgnore
+	ImmutableMap<String, JsonAttributeInstance> code2Instance;
+
 	@Builder
 	@JsonCreator
 	private JsonAttributeSetInstance(
@@ -46,5 +53,18 @@ public class JsonAttributeSetInstance
 	{
 		this.id = id;
 		this.attributeInstances = attributeInstances;
+		this.code2Instance = Maps.uniqueIndex(attributeInstances, JsonAttributeInstance::getAttributeCode);
+	}
+
+	@Nullable
+	@JsonIgnore
+	public String getValueStr(@NonNull final String attributeCode)
+	{
+		final JsonAttributeInstance instance = code2Instance.get(attributeCode);
+		if (instance == null)
+		{
+			return null;
+		}
+		return instance.getValueStr();
 	}
 }

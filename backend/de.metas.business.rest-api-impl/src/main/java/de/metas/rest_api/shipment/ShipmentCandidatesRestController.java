@@ -32,8 +32,10 @@ import de.metas.common.shipmentschedule.JsonProduct;
 import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidate;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,7 +72,10 @@ public class ShipmentCandidatesRestController
 	@PostMapping("shipmentCandidates")
 	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestShipmentCandidateResults status)
 	{
-		shipmentCandidateExporter.updateStatus(status);
-		return ResponseEntity.accepted().body("Shipment candidates updated");
+		try(final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
+		{
+			shipmentCandidateExporter.updateStatus(status);
+			return ResponseEntity.accepted().body("Shipment candidates updated");
+		}
 	}
 }

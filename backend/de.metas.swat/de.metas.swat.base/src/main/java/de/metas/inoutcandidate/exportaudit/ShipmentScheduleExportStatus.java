@@ -24,7 +24,7 @@ package de.metas.inoutcandidate.exportaudit;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule_ExportAudit_Line;
+import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.order.InvoiceRule;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
@@ -36,12 +36,12 @@ import java.util.Arrays;
 
 public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 {
-	DontExport(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_DONT_EXPORT),
-	Pending(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_PENDING),
-	Exported(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORTED),
-	ExportError(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORT_ERROR),
-	ExportedAndForwarded(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORTED_AND_FORWARDED),
-	ExportedAndError(X_M_ShipmentSchedule_ExportAudit_Line.EXPORTSTATUS_EXPORTED_FORWARD_ERROR);
+	DontExport(X_M_ShipmentSchedule.EXPORTSTATUS_DONT_EXPORT),
+	Pending(X_M_ShipmentSchedule.EXPORTSTATUS_PENDING),
+	Exported(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED),
+	ExportError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORT_ERROR),
+	ExportedAndForwarded(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_AND_FORWARDED),
+	ExportedAndError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_FORWARD_ERROR);
 
 	@Getter
 	private final String code;

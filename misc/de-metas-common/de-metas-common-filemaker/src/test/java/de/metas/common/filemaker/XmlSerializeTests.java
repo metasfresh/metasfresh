@@ -42,18 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class XmlSerializeTests
 {
-
-	private XmlMapper xmlMapper;
-
-	@BeforeEach
-	public void beforeEach()
-	{
-		xmlMapper = new XmlMapper();
-		xmlMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
-		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
-		xmlMapper.getFactory().getXMLOutputFactory().setProperty(com.ctc.wstx.api.WstxOutputProperties.P_USE_DOUBLE_QUOTES_IN_XML_DECL, true);
-	}
-
 	@Test
 	void fmpxmlresult_checkFormat() throws IOException
 	{
@@ -86,8 +74,10 @@ class XmlSerializeTests
 				.resultset(resultset)
 				.build();
 
-		final String xmlString = xmlMapper.writeValueAsString(fmpxmlresult);
+		// when
+		final String xmlString = ConfiguredXmlMapper.get().writeValueAsString(fmpxmlresult);
 
+		// then
 		assertThat(xmlString).isEqualToIgnoringNewLines("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 				+ "<FMPXMLRESULT>\n"
 				+ "  <ERRORCODE>0</ERRORCODE>\n"
@@ -144,7 +134,7 @@ class XmlSerializeTests
 				.errorCode("0")
 				.product(new PRODUCT())
 				.database(DATABASE.builder()
-						.name("databaseName")// TODO set from application.properties
+						.name("databaseName")
 						.records("0")
 						.build())
 				.metadata(metadata)
@@ -156,6 +146,8 @@ class XmlSerializeTests
 
 	private <T> void assertOK(final T objectOrig, final Class<T> valueType) throws IOException
 	{
+		final XmlMapper xmlMapper = ConfiguredXmlMapper.get();
+
 		final String xmlString = xmlMapper.writeValueAsString(objectOrig);
 		assertThat(xmlString).isNotEmpty();
 

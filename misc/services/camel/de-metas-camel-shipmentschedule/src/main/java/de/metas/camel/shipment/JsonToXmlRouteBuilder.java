@@ -22,31 +22,40 @@
 
 package de.metas.camel.shipment;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import de.metas.common.filemaker.ConfiguredXmlMapper;
+import de.metas.common.filemaker.FMPXMLRESULT;
+import de.metas.common.shipmentschedule.ConfiguredJsonMapper;
 import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
+import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
+import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	@Override
 	public void configure()
 	{
-		final ObjectMapper objectMapper = new ObjectMapper()
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
-		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat(JsonResponseShipmentCandidates.class);
+		errorHandler(defaultErrorHandler()
+				.maximumRedeliveries(5)
+				.redeliveryDelay(10000));
+
+		onException(Exception.class)
+				.handled(true)
+				.to(direct("feedback"));
+
+		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
 		jacksonDataFormat.setCamelContext(getContext());
-		jacksonDataFormat.setObjectMapper(objectMapper);
+		jacksonDataFormat.setObjectMapper(ConfiguredJsonMapper.get());
 		jacksonDataFormat.setUnmarshalType(JsonResponseShipmentCandidates.class);
+
+		getContext().getRegistry().bind("FMPXMLRESULT-XmlMapper", ConfiguredXmlMapper.get());
+		final var jacksonXMLDataFormat = new JacksonXMLDataFormat();
+		jacksonXMLDataFormat.setUnmarshalType(FMPXMLRESULT.class);
+		jacksonXMLDataFormat.setXmlMapper("FMPXMLRESULT-XmlMapper");
 
 		from(timer("pollShipmentCandidateAPI")
 				.period(5 * 1000))
@@ -55,21 +64,30 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentSchedules"))
-
+				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"))
 				.unmarshal(jacksonDataFormat)
+
 				.process(new JsonToXmlProcessor())
-				.marshal(jacksonDataFormat) // here we will marshal to the xml-format
 
-				// store the file both locally and send it to the remote folder
-				.multicast()
-				.stopOnException()
-				.to(file("{{local.file.output_path}}")/*, sftp("{{remote.sftp.output_path}}")*/)
-				.end()
+				.choice()
+				.when(header("NumberOfItems").isGreaterThan(0))
+					.marshal(jacksonXMLDataFormat)
+					.multicast() // store the file both locally and send it to the remote folder
+						.stopOnException()
+						.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
+					.end()
+					.to(direct("feedback"))
+				.end() // "NumberOfItems" - choice
+		;
 
+		from(direct("feedback"))
+				.id("FEEDBACK-TO-MF")
 				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
 				.process(new FeedBackJsonCreator())
+				.marshal(jacksonDataFormat)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
-				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentSchedules"));
+				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"))
+		;
+
 	}
 }
