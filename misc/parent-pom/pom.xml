@@ -61,7 +61,7 @@
         <mockito.version>2.7.22</mockito.version>
 
         <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.4.1</junit-jupiter.version>
+        <junit-jupiter.version>5.6.2</junit-jupiter.version>
     </properties>
 
     <modules>
@@ -165,7 +165,7 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.4.1</version>
+            <version>1.6.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -30,22 +30,23 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
-import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
+	public static final String NUMBER_OF_ITEMS = "NumberOfItems";
+	public static final String FEEDBACK_POJO = "JsonRequestShipmentCandidateResults";
+
 	@Override
 	public void configure()
 	{
 		errorHandler(defaultErrorHandler()
 				.maximumRedeliveries(5)
 				.redeliveryDelay(10000));
-
 		onException(Exception.class)
-				.handled(true)
-				.to(direct("feedback"));
+		 	.handled(true)
+		 	.to(direct("feedback"));
 
 		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
 		jacksonDataFormat.setCamelContext(getContext());
@@ -57,9 +58,10 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 		jacksonXMLDataFormat.setUnmarshalType(FMPXMLRESULT.class);
 		jacksonXMLDataFormat.setXmlMapper("FMPXMLRESULT-XmlMapper");
 
+
 		from(timer("pollShipmentCandidateAPI")
 				.period(5 * 1000))
-				.routeId("MF-ShipmentSchedule-JSON-To-Filemaker-XML")
+				.routeId("MF-ShipmentCandidate-JSON-To-Filemaker-XML")
 				.streamCaching()
 
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
@@ -70,7 +72,7 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.process(new JsonToXmlProcessor())
 
 				.choice()
-				.when(header("NumberOfItems").isGreaterThan(0))
+				.when(header(NUMBER_OF_ITEMS).isGreaterThan(0))
 					.marshal(jacksonXMLDataFormat)
 					.multicast() // store the file both locally and send it to the remote folder
 						.stopOnException()
@@ -81,7 +83,7 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 		;
 
 		from(direct("feedback"))
-				.routeId("Feedback-TO-MF")
+				.routeId("Candidate-Feedback-TO-MF")
 				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
 				.process(new FeedBackJsonCreator())
 				.marshal(jacksonDataFormat)

@@ -24,13 +24,12 @@ package de.metas.common.filemaker;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.internal.Nullable;
 import lombok.Value;
 
 @Value
 public class COL
 {
-	public static COL of(@Nullable final String data)
+	public static COL of(final String data)
 	{
 		return new COL(new DATA(data));
 	}

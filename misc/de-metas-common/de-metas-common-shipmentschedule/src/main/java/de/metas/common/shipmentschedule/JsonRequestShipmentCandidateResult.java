@@ -52,13 +52,13 @@ public class JsonRequestShipmentCandidateResult
 	Outcome outcome;
 
 	@JsonInclude(Include.NON_NULL)
-	JsonErrorItem error;
+	JsonError error;
 
 	@JsonCreator
 	private JsonRequestShipmentCandidateResult(
 			@JsonProperty("shipmentScheduleId") @NonNull final JsonMetasfreshId shipmentScheduleId,
 			@JsonProperty("outcome") @NonNull final Outcome outcome,
-			@JsonProperty("error") @Nullable final JsonErrorItem error)
+			@JsonProperty("error") @Nullable final JsonError error)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.outcome = outcome;

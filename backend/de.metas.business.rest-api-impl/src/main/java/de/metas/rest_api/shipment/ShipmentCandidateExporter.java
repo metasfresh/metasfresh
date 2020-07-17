@@ -34,6 +34,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonAttributeSetInstance;
+import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
@@ -523,12 +524,14 @@ class ShipmentCandidateExporter
 	}
 
 	@Nullable
-	private AdIssueId createADIssue(@Nullable final JsonErrorItem errorItem)
+	private AdIssueId createADIssue(@Nullable final JsonError error)
 	{
-		if (errorItem == null)
+		if (error == null || error.getErrors().isEmpty())
 		{
 			return null;
 		}
+
+		final JsonErrorItem errorItem = error.getErrors().get(0);
 		return errorManager.createIssue(IssueCreateRequest.builder()
 				.summary(errorItem.getMessage() + "; " + errorItem.getDetail())
 				.stackTrace(errorItem.getStackTrace())

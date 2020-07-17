@@ -50,6 +50,7 @@ public class JsonErrorItem
 	@JsonInclude(Include.NON_EMPTY)
 	String detail;
 
+	@JsonInclude(Include.NON_EMPTY)
 	String stackTrace;
 
 	Map<String, String> parameters;

@@ -106,8 +106,8 @@ public class JsonToXmlProcessor implements Processor
 				.resultset(resultSet.build())
 				.build());
 		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
-		exchange.getIn().setHeader("JsonRequestShipmentCandidateResults", resultsBuilder.build());
-		exchange.getIn().setHeader("NumberOfItems", items.size());
+		exchange.getIn().setHeader(JsonToXmlRouteBuilder.FEEDBACK_POJO, resultsBuilder.build());
+		exchange.getIn().setHeader(JsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
 	}
 
 	private ROW createROW(@NonNull final JsonResponseShipmentCandidate item)

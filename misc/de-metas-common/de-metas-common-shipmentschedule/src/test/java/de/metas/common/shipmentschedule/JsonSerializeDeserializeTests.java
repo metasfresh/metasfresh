@@ -152,7 +152,7 @@ class JsonSerializeDeserializeTests
 				.transactionKey("transactionKey")
 				.item(builder().shipmentScheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
 				.item(builder().shipmentScheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
-						.error(JsonErrorItem.builder().message("errorMessage").stackTrace("stackTrace").build())
+						.error(JsonError.ofSingleItem(JsonErrorItem.builder().message("errorMessage").stackTrace("stackTrace").build()))
 						.build())
 				.build();
 

@@ -45,23 +45,8 @@ public class JsonError
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular @NonNull final List<JsonErrorItem> errors)
+	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
 	{
 		this.errors = errors;
-	}
-
-	public static JsonError union(
-			@Nullable final JsonError error,
-			@NonNull final JsonError anotherError)
-	{
-		if (error == null)
-		{
-			return anotherError;
-		}
-
-		return JsonError.builder()
-				.errors(error.getErrors())
-				.errors(anotherError.getErrors())
-				.build();
 	}
 }

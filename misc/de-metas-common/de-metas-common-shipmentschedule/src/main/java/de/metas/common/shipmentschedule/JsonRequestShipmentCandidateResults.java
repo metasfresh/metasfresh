@@ -24,6 +24,7 @@ package de.metas.common.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,13 +44,13 @@ public class JsonRequestShipmentCandidateResults
 	/**
 	 * If not null, then this error applies to all included items
 	 */
-	JsonErrorItem error;
+	JsonError error;
 
 	@JsonCreator
 	@Builder
 	private JsonRequestShipmentCandidateResults(
 			@JsonProperty("transactionKey") @NonNull final String transactionKey,
-			@JsonProperty("error") @Nullable final JsonErrorItem error,
+			@JsonProperty("error") @Nullable final JsonError error,
 			@JsonProperty("items") @NonNull @Singular final List<JsonRequestShipmentCandidateResult> items)
 	{
 		this.transactionKey = transactionKey;
@@ -57,7 +58,7 @@ public class JsonRequestShipmentCandidateResults
 		this.items = items;
 	}
 
-	public JsonRequestShipmentCandidateResults withError(@NonNull final JsonErrorItem error)
+	public JsonRequestShipmentCandidateResults withError(@NonNull final JsonError error)
 	{
 		final JsonRequestShipmentCandidateResultsBuilder result = JsonRequestShipmentCandidateResults
 				.builder()

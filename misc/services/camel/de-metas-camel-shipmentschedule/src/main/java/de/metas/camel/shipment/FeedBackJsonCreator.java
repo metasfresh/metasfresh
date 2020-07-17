@@ -22,6 +22,7 @@
 
 package de.metas.camel.shipment;
 
+import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
 import lombok.NonNull;
@@ -40,7 +41,7 @@ public class FeedBackJsonCreator implements Processor
 	@Override
 	public void process(@NonNull final Exchange exchange) throws Exception
 	{
-		final var results = exchange.getIn().getHeader("JsonRequestShipmentCandidateResults", JsonRequestShipmentCandidateResults.class);
+		final var results = exchange.getIn().getHeader(JsonToXmlRouteBuilder.FEEDBACK_POJO, JsonRequestShipmentCandidateResults.class);
 		if (results == null)
 		{
 			return; // nothing we can do
@@ -53,11 +54,12 @@ public class FeedBackJsonCreator implements Processor
 			throwable.printStackTrace(new PrintWriter(sw));
 			final String stackTrace = sw.toString();
 
-			final JsonErrorItem error = JsonErrorItem.builder()
+			final JsonError error =JsonError.ofSingleItem(
+			 JsonErrorItem.builder()
 					.message(throwable.getMessage())
 					.detail("Exception-Class=" + throwable.getClass().getName())
 					.stackTrace(stackTrace)
-					.build();
+					.build());
 			exchange.getIn().setBody(results.withError(error));
 		}
 		else
