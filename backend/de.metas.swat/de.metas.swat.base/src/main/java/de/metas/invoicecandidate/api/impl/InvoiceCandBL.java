@@ -5,7 +5,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;

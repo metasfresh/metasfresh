@@ -68,7 +68,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -101,7 +101,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 public class OrderBL implements IOrderBL
 {

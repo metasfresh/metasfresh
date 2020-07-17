@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.model.I_C_UOM;
 
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

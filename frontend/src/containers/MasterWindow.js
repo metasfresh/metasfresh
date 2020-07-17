@@ -103,14 +103,9 @@ class MasterWindowContainer extends PureComponent {
       entity: 'window',
       docType: windowType,
       docId,
-      tabId: tabId,
+      tabId,
       rows,
-    }).catch(() => {
-      // since we're querying multiple rows, but can only catch one
-      // error, we'll focus on the case when row was deleted and the
-      // endpoint returns 404
-      return { rowId: rows[0], tabId };
-    });
+    }).then((response) => Promise.resolve({ response, tabId }));
   }
 
   isActiveTab(tabId) {
@@ -119,28 +114,27 @@ class MasterWindowContainer extends PureComponent {
     return tabId === master.layout.activeTab;
   }
 
-  mergeDataIntoIncludedTab(response) {
+  mergeDataIntoIncludedTab({ response, tabId }) {
     const {
       updateTabRowsData,
       params: { windowType, docId },
     } = this.props;
-    const { data } = response;
+    const {
+      data: { result, missingIds },
+    } = response;
     const changedTabs = {};
     let rowsById = null;
     let removedRows = null;
-    let tabId;
 
-    // removed row
-    if (!data) {
+    if (missingIds && missingIds.length) {
       removedRows = removedRows || {};
-      removedRows[response.rowId] = true;
-      tabId = response.tabId;
-    } else {
+      missingIds.forEach((rowId) => {
+        removedRows[rowId] = true;
+      });
+    }
+    if (result && result.length) {
       rowsById = rowsById || {};
-      const rowZero = data[0];
-      tabId = rowZero.tabId;
-
-      data.forEach((row) => {
+      result.forEach((row) => {
         rowsById[row.rowId] = { ...row };
       });
     }

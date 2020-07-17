@@ -10,7 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

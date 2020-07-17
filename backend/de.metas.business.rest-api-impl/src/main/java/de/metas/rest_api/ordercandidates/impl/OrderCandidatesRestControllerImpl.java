@@ -1,6 +1,6 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -68,7 +68,7 @@ import de.metas.security.PermissionServiceFactories;
 import de.metas.security.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;

@@ -12,7 +12,6 @@ import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -198,10 +197,5 @@ public class JsonResponseContact
 		this.phone = phone;
 
 		this.changeInfo = changeInfo;
-	}
-
-	public JsonResponseContact withExternalId(@NonNull final JsonExternalId externalId)
-	{
-		return toBuilder().externalId(externalId).build();
 	}
 }

@@ -213,15 +213,11 @@ export function createTableData(rawData) {
  */
 export function createGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
-    let tableLayout = null;
-
-    // modals are created when fetching layout
-    if (tableResponse.layout) {
-      tableLayout = tableResponse.layout;
-    } else {
-      const windowId = tableResponse.windowType || tableResponse.windowId;
-      tableLayout = getView(getState(), windowId).layout;
-    }
+    const isModal = !!tableResponse.modalId;
+    const windowId = isModal
+      ? tableResponse.modalId
+      : tableResponse.windowType || tableResponse.windowId;
+    const tableLayout = getView(getState(), windowId, isModal).layout;
 
     const tableData = createTableData({
       ...tableResponse,
@@ -277,8 +273,12 @@ export function updateGridTable(tableId, tableResponse) {
 
         return Promise.resolve(true);
       } else {
-        const windowType = tableResponse.windowType || tableResponse.windowId;
-        const tableLayout = getView(getState(), windowType).layout;
+        const isModal = !!tableResponse.modalId;
+        const windowId = isModal
+          ? tableResponse.modalId
+          : tableResponse.windowType || tableResponse.windowId;
+
+        const tableLayout = getView(getState(), windowId, isModal).layout;
         const tableData = createTableData({
           ...tableResponse,
           ...tableLayout,
