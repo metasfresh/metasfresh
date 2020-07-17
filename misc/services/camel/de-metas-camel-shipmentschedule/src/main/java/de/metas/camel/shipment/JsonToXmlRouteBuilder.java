@@ -30,6 +30,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
+import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
@@ -44,7 +45,7 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 		errorHandler(defaultErrorHandler()
 				.maximumRedeliveries(5)
 				.redeliveryDelay(10000));
-		onException(Exception.class)
+		onException(GenericFileOperationFailedException.class)
 		 	.handled(true)
 		 	.to(direct("feedback"));
 
@@ -63,10 +64,10 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.period(5 * 1000))
 				.routeId("MF-ShipmentCandidate-JSON-To-Filemaker-XML")
 				.streamCaching()
-
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"))
+
 				.unmarshal(jacksonDataFormat)
 
 				.process(new JsonToXmlProcessor())
@@ -78,8 +79,9 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 						.stopOnException()
 						.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
 					.end()
-					.to(direct("feedback"))
+				.to(direct("feedback"))
 				.end() // "NumberOfItems" - choice
+
 		;
 
 		from(direct("feedback"))
