@@ -50,6 +50,7 @@ import lombok.ToString;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -68,6 +69,13 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, seqNo = 10)
 	@Getter
 	private final String orderDocumentNo;
+
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_POReference,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 15, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false),
+			})
+	private final String poReference;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, seqNo = 20)
 	@Getter
@@ -118,12 +126,14 @@ public final class PackageableRow implements IViewRow
 			final LookupValue lockedByUser,
 			final LookupValue shipper,
 			final ITranslatableString lineNetAmt,
-			@NonNull @Singular final Collection<Packageable> packageables)
+			@NonNull @Singular final Collection<Packageable> packageables,
+			final @Nullable String poReference)
 	{
 		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
 		this.rowId = PackageableRowId.of(orderId, warehouseTypeId);
 		this.orderDocumentNo = orderDocumentNo;
+		this.poReference = poReference;
 		this.customer = customer;
 		this.warehouseTypeName = warehouseTypeName;
 		this.lines = lines;

@@ -196,6 +196,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()));
 		packageable.salesOrderDocumentNo(record.getOrderDocumentNo());
 		packageable.salesOrderDocSubType(record.getDocSubType());
+		packageable.poReference(record.getPOReference());
 
 		packageable.salesOrderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
 

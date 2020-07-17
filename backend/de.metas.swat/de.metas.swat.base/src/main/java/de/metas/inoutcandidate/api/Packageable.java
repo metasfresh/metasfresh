@@ -121,6 +121,8 @@ public class Packageable
 	String salesOrderDocumentNo;
 	@Nullable
 	String salesOrderDocSubType;
+	@Nullable
+	String poReference;
 
 	@Nullable
 	OrderLineId salesOrderLineIdOrNull;
