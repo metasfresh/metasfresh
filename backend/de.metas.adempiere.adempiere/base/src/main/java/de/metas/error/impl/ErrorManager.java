@@ -13,6 +13,7 @@ import java.util.function.IntFunction;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.EmptyUtil;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -43,6 +44,7 @@ import lombok.NonNull;
 public class ErrorManager implements IErrorManager
 {
 	private static final Logger logger = LogManager.getLogger(ErrorManager.class);
+
 	static
 	{
 		LogManager.skipIssueReportingForLoggerName(logger);
@@ -126,6 +128,10 @@ public class ErrorManager implements IErrorManager
 			{
 				final String stackTrace = Util.dumpStackTraceToString(throwable);
 				issue.setStackTrace(stackTrace);
+			}
+			else if (EmptyUtil.isNotBlank(request.getStackTrace()))
+			{
+				issue.setStackTrace(request.getStackTrace());
 			}
 
 			//

@@ -81,7 +81,7 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 		;
 
 		from(direct("feedback"))
-				.id("FEEDBACK-TO-MF")
+				.routeId("Feedback-TO-MF")
 				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
 				.process(new FeedBackJsonCreator())
 				.marshal(jacksonDataFormat)

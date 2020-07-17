@@ -24,12 +24,13 @@ package de.metas.common.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -39,25 +40,34 @@ public class JsonRequestShipmentCandidateResults
 
 	List<JsonRequestShipmentCandidateResult> items;
 
+	/**
+	 * If not null, then this error applies to all included items
+	 */
+	JsonErrorItem error;
+
 	@JsonCreator
 	@Builder
 	private JsonRequestShipmentCandidateResults(
 			@JsonProperty("transactionKey") @NonNull final String transactionKey,
+			@JsonProperty("error") @Nullable final JsonErrorItem error,
 			@JsonProperty("items") @NonNull @Singular final List<JsonRequestShipmentCandidateResult> items)
 	{
 		this.transactionKey = transactionKey;
+		this.error = error;
 		this.items = items;
 	}
 
-	public JsonRequestShipmentCandidateResults allWithError(@NonNull final JsonError error)
+	public JsonRequestShipmentCandidateResults withError(@NonNull final JsonErrorItem error)
 	{
 		final JsonRequestShipmentCandidateResultsBuilder result = JsonRequestShipmentCandidateResults
 				.builder()
-				.transactionKey(transactionKey);
-		for (JsonRequestShipmentCandidateResult item : items)
+				.transactionKey(transactionKey)
+				.error(error);
+		for (final JsonRequestShipmentCandidateResult item : items)
 		{
-			result.item(item.withError(error));
+			result.item(item.withError());
 		}
 		return result.build();
+
 	}
 }

@@ -69,11 +69,11 @@ public class ShipmentScheduleAuditRepository
 		return result.build();
 	}
 
-	public void save(@NonNull final ShipmentScheduleExportAudit shipmentScheduleExportAudit)
+	public void save(@NonNull final ShipmentScheduleExportAudit audit)
 	{
-		final StagingData stagingData = retrieveStagingData(shipmentScheduleExportAudit.getTransactionId());
+		final StagingData stagingData = retrieveStagingData(audit.getTransactionId());
 
-		for (final ShipmentScheduleExportAuditItem item : shipmentScheduleExportAudit.getItems().values())
+		for (final ShipmentScheduleExportAuditItem item : audit.getItems().values())
 		{
 			I_M_ShipmentSchedule_ExportAudit record = stagingData.schedIdToRecords.get(item.getShipmentScheduleId().getRepoId());
 			if (record == null)
@@ -82,11 +82,10 @@ public class ShipmentScheduleAuditRepository
 				record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(item.getShipmentScheduleId()));
 			}
 			record.setAD_Org_ID(OrgId.toRepoId(item.getOrgId()));
-			record.setTransactionIdAPI(shipmentScheduleExportAudit.getTransactionId());
+			record.setTransactionIdAPI(audit.getTransactionId());
 			record.setAD_Issue_ID(AdIssueId.toRepoId(item.getIssueId()));
 			record.setExportStatus(item.getExportStatus().getCode());
 			saveRecord(record);
-
 		}
 	}
 

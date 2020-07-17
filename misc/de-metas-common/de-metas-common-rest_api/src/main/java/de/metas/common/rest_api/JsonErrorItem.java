@@ -64,7 +64,7 @@ public class JsonErrorItem
 	@JsonCreator
 	@Builder
 	private JsonErrorItem(
-			@JsonProperty("message") @NonNull final String message,
+			@JsonProperty("message") @Nullable final String message,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable final Map<String, String> parameters,

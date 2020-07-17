@@ -22,7 +22,6 @@
 
 package de.metas.camel.shipment;
 
-import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
 import lombok.NonNull;
@@ -30,6 +29,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class FeedBackJsonCreator implements Processor
 {
@@ -39,14 +41,24 @@ public class FeedBackJsonCreator implements Processor
 	public void process(@NonNull final Exchange exchange) throws Exception
 	{
 		final var results = exchange.getIn().getHeader("JsonRequestShipmentCandidateResults", JsonRequestShipmentCandidateResults.class);
+		if (results == null)
+		{
+			return; // nothing we can do
+		}
 
 		final var throwable = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
 		if (throwable != null)
 		{
-			final JsonError error = JsonError.ofSingleItem(JsonErrorItem.builder()
+			final StringWriter sw = new StringWriter();
+			throwable.printStackTrace(new PrintWriter(sw));
+			final String stackTrace = sw.toString();
+
+			final JsonErrorItem error = JsonErrorItem.builder()
 					.message(throwable.getMessage())
-					.throwable(throwable).build());
-			exchange.getIn().setBody(results.allWithError(error));
+					.detail("Exception-Class=" + throwable.getClass().getName())
+					.stackTrace(stackTrace)
+					.build();
+			exchange.getIn().setBody(results.withError(error));
 		}
 		else
 		{

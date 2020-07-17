@@ -27,12 +27,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+
+import static de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResult.Outcome.*;
 
 @Value
 @Builder
@@ -49,25 +52,24 @@ public class JsonRequestShipmentCandidateResult
 	Outcome outcome;
 
 	@JsonInclude(Include.NON_NULL)
-	JsonError error;
+	JsonErrorItem error;
 
 	@JsonCreator
 	private JsonRequestShipmentCandidateResult(
 			@JsonProperty("shipmentScheduleId") @NonNull final JsonMetasfreshId shipmentScheduleId,
 			@JsonProperty("outcome") @NonNull final Outcome outcome,
-			@JsonProperty("error") @Nullable final JsonError error)
+			@JsonProperty("error") @Nullable final JsonErrorItem error)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.outcome = outcome;
 		this.error = error;
 	}
 
-	public JsonRequestShipmentCandidateResult withError(@NonNull final JsonError error)
+	public JsonRequestShipmentCandidateResult withError()
 	{
 		return JsonRequestShipmentCandidateResult.builder()
 				.shipmentScheduleId(shipmentScheduleId)
-				.outcome(JsonRequestShipmentCandidateResult.Outcome.ERROR)
-				.error(JsonError.union(this.error, error))
+				.outcome(ERROR)
 				.build();
 	}
 }

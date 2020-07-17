@@ -34,6 +34,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonAttributeSetInstance;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipmentschedule.JsonCustomer;
@@ -109,7 +110,7 @@ import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.E
 import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.Pending;
 
 @Service
-public class ShipmentCandidateExporter
+class ShipmentCandidateExporter
 {
 	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateExporter.class);
 
@@ -143,7 +144,9 @@ public class ShipmentCandidateExporter
 		final String transactionId = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
 		{
-			final ShipmentScheduleExportAuditBuilder auditBuilder = ShipmentScheduleExportAudit.builder();
+			final ShipmentScheduleExportAuditBuilder auditBuilder = ShipmentScheduleExportAudit
+					.builder()
+					.transactionId(transactionId);
 
 			final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
 					.limit(500)
@@ -151,6 +154,10 @@ public class ShipmentCandidateExporter
 					.exportStatus(ShipmentScheduleExportStatus.Pending)
 					.build();
 			final List<ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+			if (shipmentSchedules.isEmpty())
+			{ // return empty result and call it a day
+				return JsonResponseShipmentCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
+			}
 
 			final IdsRegistry.IdsRegistryBuilder idsRegistryBuilder = IdsRegistry.builder();
 			for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
@@ -221,7 +228,7 @@ public class ShipmentCandidateExporter
 					}
 
 					result.item(itemBuilder.build());
-					createExportedAuditItem(shipmentSchedule, transactionId, auditBuilder);
+					createExportedAuditItem(shipmentSchedule, auditBuilder);
 				}
 				catch (final ShipmentCandidateExportException e) // don't catch just any exception; just the "functional" ones
 				{
@@ -342,7 +349,6 @@ public class ShipmentCandidateExporter
 
 	private void createExportedAuditItem(
 			@NonNull final ShipmentSchedule shipmentSchedule,
-			@NonNull final String transactionId,
 			@NonNull final ShipmentScheduleExportAuditBuilder auditBuilder)
 	{
 		final OrgId orgId = shipmentSchedule.getOrgId();
@@ -447,6 +453,12 @@ public class ShipmentCandidateExporter
 	 */
 	public void updateStatus(@NonNull final JsonRequestShipmentCandidateResults results)
 	{
+		final AdIssueId generalAdIssueId = createADIssue(results.getError());
+		if (generalAdIssueId != null)
+		{
+			logger.debug("Created AD_Issue_ID={} that applies to all exported shipment schedules", generalAdIssueId.getRepoId());
+		}
+
 		if (results.getItems().isEmpty())
 		{
 			logger.debug("given results is empty; -> return");
@@ -487,16 +499,12 @@ public class ShipmentCandidateExporter
 			{
 				case OK:
 					status = ExportedAndForwarded;
-					auditRecord.setExportStatus(status);
 					break;
 				case ERROR:
 					status = ExportedAndError;
-					final AdIssueId adIssueId = errorManager.createIssue(IssueCreateRequest.builder()
-							.summary(resultItem.getError().toString())
-							.loggerName(logger.getName())
-							.sourceMethodName("updateStatus")
-							.build());
-					auditRecord.setIssueId(adIssueId);
+
+					final AdIssueId specificAdIssueId = createADIssue(resultItem.getError());
+					auditRecord.setIssueId(CoalesceUtil.coalesce(specificAdIssueId, generalAdIssueId));
 					break;
 				default:
 					throw new AdempiereException("resultItem has unexpected outcome=" + resultItem.getOutcome())
@@ -512,6 +520,20 @@ public class ShipmentCandidateExporter
 		}
 		shipmentScheduleRepository.saveAll(shipmentSchedules.values());
 		shipmentScheduleAuditRepository.save(auditRecords);
+	}
+
+	@Nullable
+	private AdIssueId createADIssue(@Nullable final JsonErrorItem errorItem)
+	{
+		if (errorItem == null)
+		{
+			return null;
+		}
+		return errorManager.createIssue(IssueCreateRequest.builder()
+				.summary(errorItem.getMessage() + "; " + errorItem.getDetail())
+				.stackTrace(errorItem.getStackTrace())
+				.loggerName(logger.getName())
+				.build());
 	}
 
 	private static class ShipmentCandidateExportException extends AdempiereException
