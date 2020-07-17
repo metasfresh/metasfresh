@@ -32,28 +32,34 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_ExportStatus;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_CanBeExportedFrom;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_QtyToDeliver;
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER;
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 @Repository
 public class ShipmentScheduleRepository
 {
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -62,38 +68,41 @@ public class ShipmentScheduleRepository
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
+				.addEqualsFilter(COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
 
 		if (query.getExportStatus() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_ExportStatus,
-					query.getExportStatus().getCode());
+			queryBuilder.addEqualsFilter(COLUMNNAME_ExportStatus, query.getExportStatus().getCode());
 		}
 		if (query.getCanBeExportedFrom() != null)
 		{
-			queryBuilder.addCompareFilter(I_M_ShipmentSchedule.COLUMN_CanBeExportedFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL,
-					TimeUtil.asTimestamp(query.getCanBeExportedFrom()));
+			queryBuilder.addCompareFilter(COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
 		}
 		if (!query.isIncludeInvalid())
 		{
-			final IQuery<I_M_ShipmentSchedule_Recompute> recomputeQuery = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class).create();
+			final IQuery<I_M_ShipmentSchedule_Recompute> recomputeQuery = queryBL
+					.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+					.create();
 			queryBuilder.addNotInSubQueryFilter(
-					I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
+					COLUMNNAME_M_ShipmentSchedule_ID,
 					I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID,
 					recomputeQuery);
 		}
 		if (!query.isIncludeProcessed())
 		{
-			queryBuilder.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, true);
+			queryBuilder.addNotEqualsFilter(COLUMNNAME_Processed, true);
 		}
-
+		if (!query.includeWithQtyToDeliverZero)
+		{
+			queryBuilder.addCompareFilter(COLUMN_QtyToDeliver, GREATER, BigDecimal.ZERO);
+		}
 		if (query.getLimit() > 0)
 		{
 			queryBuilder.setLimit(query.getLimit());
 		}
 
 		final List<I_M_ShipmentSchedule> records = queryBuilder
-				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.orderBy(COLUMNNAME_M_ShipmentSchedule_ID)
 				.create()
 				.list();
 
@@ -131,6 +140,9 @@ public class ShipmentScheduleRepository
 		Instant canBeExportedFrom;
 
 		ShipmentScheduleExportStatus exportStatus;
+
+		@Builder.Default
+		boolean includeWithQtyToDeliverZero = false;
 
 		@Builder.Default
 		boolean includeInvalid = false;

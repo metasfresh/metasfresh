@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -174,6 +175,7 @@ class ShipmentScheduleRepositoryTest
 		record.setC_BPartner_Override_ID(bpartnerOverride.getC_BPartner_ID());
 		record.setC_BP_Location_Override_ID(bPartnerLocationOverride.getC_BPartner_Location_ID());
 		record.setM_Product_ID(product.getM_Product_ID());
+		record.setQtyToDeliver(BigDecimal.ONE);
 		saveRecord(record);
 
 		return record;
