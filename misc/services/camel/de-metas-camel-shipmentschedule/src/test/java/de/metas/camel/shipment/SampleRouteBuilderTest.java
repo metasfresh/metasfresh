@@ -60,7 +60,7 @@ class SampleRouteBuilderTest extends CamelTestSupport
 	void testMoveFile()
 	{
 		final NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create(); // instead of waiting, go on whenever component one is ready
-		template.sendBodyAndHeader("timer://poll-shipmentCandidate-API", "Hello World",
+		template.sendBodyAndHeader("file://target/inbox", "Hello World",
 				Exchange.FILE_NAME, "hello.txt");
 		//Thread.sleep(2000);
 		assertThat(notify.matchesWaitTime()).isTrue();

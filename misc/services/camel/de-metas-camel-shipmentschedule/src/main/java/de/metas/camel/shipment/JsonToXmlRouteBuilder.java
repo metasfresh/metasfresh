@@ -38,6 +38,7 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	public static final String NUMBER_OF_ITEMS = "NumberOfItems";
 	public static final String FEEDBACK_POJO = "JsonRequestShipmentCandidateResults";
+	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ShipmentCandidate-JSON-To-Filemaker-XML";
 
 	@Override
 	public void configure()
@@ -62,7 +63,7 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 		from(timer("pollShipmentCandidateAPI")
 				.period(5 * 1000))
-				.routeId("MF-ShipmentCandidate-JSON-To-Filemaker-XML")
+				.routeId(MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML)
 				.streamCaching()
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
