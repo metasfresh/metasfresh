@@ -23,16 +23,8 @@
 package de.metas.rest_api.shipment;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.JsonAttributeInstance;
-import de.metas.common.rest_api.JsonAttributeSetInstance;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
-import de.metas.common.shipmentschedule.JsonCustomer;
-import de.metas.common.shipmentschedule.JsonProduct;
-import de.metas.common.shipmentschedule.JsonRequestShipmentCandidateResults;
-import de.metas.common.shipmentschedule.JsonResponseShipmentCandidate;
-import de.metas.common.shipmentschedule.JsonResponseShipmentCandidates;
-import de.metas.logging.TableRecordMDC;
+import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResults;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.slf4j.MDC;
@@ -44,10 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.Month;
-
 @RequestMapping(ShipmentCandidatesRestController.ENDPOINT)
 @RestController
 @Profile(Profiles.PROFILE_App)
@@ -55,17 +43,17 @@ public class ShipmentCandidatesRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipments";
 
-	private final ShipmentCandidateExporter shipmentCandidateExporter;
+	private final ShipmentCandidateAPIService shipmentCandidateAPIService;
 
-	public ShipmentCandidatesRestController(@NonNull final ShipmentCandidateExporter shipmentCandidateExporter)
+	public ShipmentCandidatesRestController(@NonNull final ShipmentCandidateAPIService shipmentCandidateAPIService)
 	{
-		this.shipmentCandidateExporter=shipmentCandidateExporter;
+		this.shipmentCandidateAPIService = shipmentCandidateAPIService;
 	}
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates()
 	{
-		final JsonResponseShipmentCandidates result = shipmentCandidateExporter.exportShipmentCandidates();
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates();
 		return ResponseEntity.ok(result);
 	}
 
@@ -74,7 +62,7 @@ public class ShipmentCandidatesRestController
 	{
 		try(final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
 		{
-			shipmentCandidateExporter.updateStatus(status);
+			shipmentCandidateAPIService.updateStatus(status);
 			return ResponseEntity.accepted().body("Shipment candidates updated");
 		}
 	}
