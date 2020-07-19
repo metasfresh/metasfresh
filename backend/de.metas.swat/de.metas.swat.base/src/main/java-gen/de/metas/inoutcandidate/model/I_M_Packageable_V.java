@@ -745,31 +745,6 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_PickFrom_Order_ID = "PickFrom_Order_ID";
 
 	/**
-	 * Set Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPOReference (java.lang.String POReference);
-
-	/**
-	 * Get Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getPOReference();
-
-    /** Column definition for POReference */
-    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "POReference", null);
-    /** Column name POReference */
-    public static final String COLUMNNAME_POReference = "POReference";
-
-	/**
 	 * Set Bereitstellungsdatum.
 	 *
 	 * <br>Type: DateTime

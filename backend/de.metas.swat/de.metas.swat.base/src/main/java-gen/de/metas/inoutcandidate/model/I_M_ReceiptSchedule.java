@@ -165,6 +165,31 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom);
+
+	/**
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCanBeExportedFrom();
+
+    /** Column definition for CanBeExportedFrom */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_CanBeExportedFrom = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "CanBeExportedFrom", null);
+    /** Column name CanBeExportedFrom */
+    public static final String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
 	 * Set Catch UOM.
 	 * Catch weight UOM as taken from the product master data.
 	 *
@@ -525,6 +550,29 @@ public interface I_M_ReceiptSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_DeliveryViaRule_Override = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "DeliveryViaRule_Override", null);
     /** Column name DeliveryViaRule_Override */
     public static final String COLUMNNAME_DeliveryViaRule_Override = "DeliveryViaRule_Override";
+
+	/**
+	 * Set Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setExportStatus (java.lang.String ExportStatus);
+
+	/**
+	 * Get Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExportStatus();
+
+    /** Column definition for ExportStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExportStatus = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "ExportStatus", null);
+    /** Column name ExportStatus */
+    public static final String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
 	 * Set Kopf-Aggregationsmerkmal.

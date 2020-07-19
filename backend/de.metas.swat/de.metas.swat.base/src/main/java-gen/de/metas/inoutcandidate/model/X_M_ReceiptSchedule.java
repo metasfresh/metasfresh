@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_ReceiptSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1947555397L;
+	private static final long serialVersionUID = -982685673L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -101,6 +101,18 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.lang.String getBPartnerAddress_Override() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress_Override);
+	}
+
+	@Override
+	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom)
+	{
+		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getCanBeExportedFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
 	}
 
 	@Override
@@ -382,6 +394,36 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.lang.String getDeliveryViaRule_Override() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule_Override);
+	}
+
+	/** 
+	 * ExportStatus AD_Reference_ID=541161
+	 * Reference name: API_ExportStatus
+	 */
+	public static final int EXPORTSTATUS_AD_Reference_ID=541161;
+	/** PENDING = PENDING */
+	public static final String EXPORTSTATUS_PENDING = "PENDING";
+	/** EXPORTED = EXPORTED */
+	public static final String EXPORTSTATUS_EXPORTED = "EXPORTED";
+	/** EXPORTED_AND_FORWARDED = EXPORTED_FORWARDED */
+	public static final String EXPORTSTATUS_EXPORTED_AND_FORWARDED = "EXPORTED_FORWARDED";
+	/** EXPORTED_FORWARD_ERROR = EXPORTED_FORWARD_ERROR */
+	public static final String EXPORTSTATUS_EXPORTED_FORWARD_ERROR = "EXPORTED_FORWARD_ERROR";
+	/** EXPORT_ERROR = EXPORT_ERROR */
+	public static final String EXPORTSTATUS_EXPORT_ERROR = "EXPORT_ERROR";
+	/** DONT_EXPORT = DONT_EXPORT */
+	public static final String EXPORTSTATUS_DONT_EXPORT = "DONT_EXPORT";
+	@Override
+	public void setExportStatus (java.lang.String ExportStatus)
+	{
+
+		set_Value (COLUMNNAME_ExportStatus, ExportStatus);
+	}
+
+	@Override
+	public java.lang.String getExportStatus() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExportStatus);
 	}
 
 	@Override

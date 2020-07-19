@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1409529760L;
+	private static final long serialVersionUID = -49671525L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -578,7 +578,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 
 	/** 
 	 * ExportStatus AD_Reference_ID=541161
-	 * Reference name: M_ShipmentSchedule_ExportStatus
+	 * Reference name: API_ExportStatus
 	 */
 	public static final int EXPORTSTATUS_AD_Reference_ID=541161;
 	/** PENDING = PENDING */

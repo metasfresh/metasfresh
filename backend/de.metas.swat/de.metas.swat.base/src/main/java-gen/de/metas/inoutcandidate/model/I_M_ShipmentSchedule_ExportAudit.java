@@ -205,7 +205,7 @@ public interface I_M_ShipmentSchedule_ExportAudit
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Transaction ID API.
+	 * Set API Transaction key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -214,7 +214,7 @@ public interface I_M_ShipmentSchedule_ExportAudit
 	public void setTransactionIdAPI (java.lang.String TransactionIdAPI);
 
 	/**
-	 * Get Transaction ID API.
+	 * Get API Transaction key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
