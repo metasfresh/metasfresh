@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Timer;
@@ -720,7 +721,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		if (!APIExportStatus.ofCode(sched.getExportStatus()).equals(APIExportStatus.Pending))
+		if (!Objects.equals(APIExportStatus.ofNullableCode(sched.getExportStatus()), APIExportStatus.Pending))
 		{
 			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
 			sched.setCanBeExportedFrom(Env.MAX_DATE);

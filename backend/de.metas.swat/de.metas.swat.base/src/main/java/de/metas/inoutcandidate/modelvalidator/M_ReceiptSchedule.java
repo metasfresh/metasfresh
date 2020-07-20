@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule
@@ -186,7 +187,7 @@ public class M_ReceiptSchedule
 					I_M_ReceiptSchedule.COLUMNNAME_ExportStatus })
 	public void updateCanBeExportedAfter(@NonNull final I_M_ReceiptSchedule sched)
 	{
-		if (!APIExportStatus.ofCode(sched.getExportStatus()).equals(APIExportStatus.Pending))
+		if (!Objects.equals(APIExportStatus.ofNullableCode(sched.getExportStatus()), APIExportStatus.Pending))
 		{
 			sched.setCanBeExportedFrom(Env.MAX_DATE);
 			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
