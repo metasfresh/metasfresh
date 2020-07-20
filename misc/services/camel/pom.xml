@@ -42,7 +42,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>de-metas-camel-shipmentschedule</module>
+        <module>de-metas-camel-shipping</module>
     </modules>
 
     <dependencies>
