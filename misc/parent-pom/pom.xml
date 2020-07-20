@@ -143,13 +143,17 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.junit.jupiter</groupId>
                     <artifactId>junit-jupiter-params</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apiguardian</groupId>
+                    <artifactId>apiguardian-api</artifactId>
+                </exclusion>
             </exclusions>
-            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -157,6 +161,12 @@
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apiguardian</groupId>
+                    <artifactId>apiguardian-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -573,13 +583,13 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                     We can't allow them to be build on jenkins, because then they would be deployed to the maven repos and shadow the "actual" builds with correct build numbers.
                                     Also see http://maven.apache.org/enforcer/enforcer-rules/bannedDependencies.html
                                 -->
-<!--
-                                <bannedDependencies>
-                                    <excludes>
-                                        <exclude>de.metas*:*:[10,)</exclude>
-                                    </excludes>
-                                </bannedDependencies>
--->
+                                <!--
+                                                                <bannedDependencies>
+                                                                    <excludes>
+                                                                        <exclude>de.metas*:*:[10,)</exclude>
+                                                                    </excludes>
+                                                                </bannedDependencies>
+                                -->
                                 <banDuplicateClasses>
                                     <ignoreClasses>
 
