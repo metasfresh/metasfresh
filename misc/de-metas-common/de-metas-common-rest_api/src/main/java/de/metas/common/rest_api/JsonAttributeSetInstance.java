@@ -38,8 +38,6 @@ import java.util.List;
 @Value
 public class JsonAttributeSetInstance
 {
-	JsonMetasfreshId id;
-
 	List<JsonAttributeInstance> attributeInstances;
 
 	@JsonIgnore
@@ -48,10 +46,8 @@ public class JsonAttributeSetInstance
 	@Builder
 	@JsonCreator
 	private JsonAttributeSetInstance(
-			@JsonProperty("id") @NonNull final JsonMetasfreshId id,
 			@JsonProperty("attributeInstances") @Singular @NonNull final List<JsonAttributeInstance> attributeInstances)
 	{
-		this.id = id;
 		this.attributeInstances = attributeInstances;
 		this.code2Instance = Maps.uniqueIndex(attributeInstances, JsonAttributeInstance::getAttributeCode);
 	}
