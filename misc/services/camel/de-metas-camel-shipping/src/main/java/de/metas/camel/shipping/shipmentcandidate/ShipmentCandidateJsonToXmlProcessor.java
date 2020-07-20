@@ -80,7 +80,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 
 		final var items = scheduleList.getItems();
 		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, items.size());
-		if(items.isEmpty())
+		if (items.isEmpty())
 		{
 			log.debug("jsonResponseReceiptCandidates.items is empty; -> nothing to do");
 			return;
@@ -108,7 +108,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		exchange.getIn().setBody(builder
 				.resultset(resultSet.build())
 				.build());
-		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
+		exchange.getIn().setHeader(Exchange.FILE_NAME, "bestellung_" + scheduleList.getTransactionKey() + ".xml");
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
 	}
 

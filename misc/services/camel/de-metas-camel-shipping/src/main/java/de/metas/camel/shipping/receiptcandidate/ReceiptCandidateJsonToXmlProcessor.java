@@ -102,11 +102,9 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		exchange.getIn().setBody(builder
 				.resultset(resultSet.build())
 				.build());
-		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
+		exchange.getIn().setHeader(Exchange.FILE_NAME, "anlieferung_" + scheduleList.getTransactionKey() + ".xml");
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
 	}
-
-
 
 	private ROW createROW(@NonNull final JsonResponseReceiptCandidate item)
 	{
