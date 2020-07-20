@@ -24,7 +24,7 @@ package de.metas.inoutcandidate;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import org.adempiere.service.ClientId;
@@ -78,12 +78,12 @@ class ShipmentScheduleRepositoryTest
 	void getBy_status_not_matching()
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
-		shipmentScheduleRecord.setExportStatus(ShipmentScheduleExportStatus.Exported.getCode());
+		shipmentScheduleRecord.setExportStatus(APIExportStatus.Exported.getCode());
 		saveRecord(shipmentScheduleRecord);
 		// when
 
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
-				.exportStatus(ShipmentScheduleExportStatus.Pending).build();
+				.exportStatus(APIExportStatus.Pending).build();
 		final List<ShipmentSchedule> result = shipmentScheduleRepository.getBy(query);
 
 		// then
@@ -96,13 +96,13 @@ class ShipmentScheduleRepositoryTest
 		final Timestamp canBeExportedFrom = Timestamp.valueOf("2020-07-16 07:15:00");
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
-		shipmentScheduleRecord.setExportStatus(ShipmentScheduleExportStatus.Pending.getCode());
+		shipmentScheduleRecord.setExportStatus(APIExportStatus.Pending.getCode());
 		shipmentScheduleRecord.setCanBeExportedFrom(canBeExportedFrom);
 		saveRecord(shipmentScheduleRecord);
 
 		// when
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
-				.exportStatus(ShipmentScheduleExportStatus.Pending)
+				.exportStatus(APIExportStatus.Pending)
 				.canBeExportedFrom(canBeExportedFrom.toInstant().minusMillis(1000))
 				.build();
 		final List<ShipmentSchedule> result = shipmentScheduleRepository.getBy(query);
@@ -118,7 +118,7 @@ class ShipmentScheduleRepositoryTest
 		final Timestamp canBeExportedFrom = Timestamp.valueOf("2020-07-16 07:15:00");
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
-		shipmentScheduleRecord.setExportStatus(ShipmentScheduleExportStatus.Pending.getCode());
+		shipmentScheduleRecord.setExportStatus(APIExportStatus.Pending.getCode());
 		shipmentScheduleRecord.setCanBeExportedFrom(canBeExportedFrom);
 		saveRecord(shipmentScheduleRecord);
 
@@ -128,7 +128,7 @@ class ShipmentScheduleRepositoryTest
 
 		// when
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
-				.exportStatus(ShipmentScheduleExportStatus.Pending)
+				.exportStatus(APIExportStatus.Pending)
 				.canBeExportedFrom(canBeExportedFrom.toInstant())
 				.build();
 		assertThat(query.isIncludeInvalid()).isFalse(); // guard
@@ -144,20 +144,20 @@ class ShipmentScheduleRepositoryTest
 		final Timestamp canBeExportedFrom = Timestamp.valueOf("2020-07-16 07:15:00");
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
-		shipmentScheduleRecord.setExportStatus(ShipmentScheduleExportStatus.Pending.getCode());
+		shipmentScheduleRecord.setExportStatus(APIExportStatus.Pending.getCode());
 		shipmentScheduleRecord.setCanBeExportedFrom(canBeExportedFrom);
 		saveRecord(shipmentScheduleRecord);
 
 		// when
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
-				.exportStatus(ShipmentScheduleExportStatus.Pending)
+				.exportStatus(APIExportStatus.Pending)
 				.canBeExportedFrom(canBeExportedFrom.toInstant())
 				.build();
 		final List<ShipmentSchedule> result = shipmentScheduleRepository.getBy(query);
 
 		// then
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getBPartnerId().getRepoId()).isEqualTo(bpartnerOverride.getC_BPartner_ID());
+		assertThat(result.get(0).getCustomerId().getRepoId()).isEqualTo(bpartnerOverride.getC_BPartner_ID());
 		assertThat(result.get(0).getLocationId().getBpartnerId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_ID());
 		assertThat(result.get(0).getLocationId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_Location_ID());
 		assertThat(result.get(0).getProductId().getRepoId()).isEqualTo(product.getM_Product_ID());

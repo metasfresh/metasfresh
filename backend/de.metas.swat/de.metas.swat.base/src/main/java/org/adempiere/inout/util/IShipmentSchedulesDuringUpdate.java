@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.shipping.ShipperId;
 
 public interface IShipmentSchedulesDuringUpdate

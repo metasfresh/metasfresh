@@ -27,7 +27,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.location.CountryId;
@@ -50,8 +50,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.ExportError;
-import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.Exported;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -111,7 +111,7 @@ class ShipmentCandidateAPIServiceTest
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
 
 		// when
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates();
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(500);
 
 		// then
 		assertThat(result.isHasMoreItems()).isFalse();
@@ -136,7 +136,7 @@ class ShipmentCandidateAPIServiceTest
 		saveRecord(location);
 
 		// when
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates();
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(500);
 
 		// then
 		refresh(shipmentScheduleRecord);
@@ -163,7 +163,7 @@ class ShipmentCandidateAPIServiceTest
 		record.setC_BP_Location_Override_ID(bPartnerLocationOverride.getC_BPartner_Location_ID());
 		record.setM_Product_ID(product.getM_Product_ID());
 		record.setCanBeExportedFrom(TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
-		record.setExportStatus(ShipmentScheduleExportStatus.Pending.getCode());
+		record.setExportStatus(APIExportStatus.Pending.getCode());
 		saveRecord(record);
 
 		return record;

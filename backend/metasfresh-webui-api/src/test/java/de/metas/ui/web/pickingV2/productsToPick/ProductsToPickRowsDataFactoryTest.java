@@ -57,7 +57,7 @@ import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

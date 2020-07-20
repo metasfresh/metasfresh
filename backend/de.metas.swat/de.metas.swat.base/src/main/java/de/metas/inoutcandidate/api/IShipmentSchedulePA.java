@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;

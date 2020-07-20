@@ -23,14 +23,12 @@ package de.metas.inoutcandidate.api;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;

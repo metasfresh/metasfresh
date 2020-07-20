@@ -56,12 +56,12 @@ import de.metas.error.IssueCreateRequest;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.exportaudit.APIExportAudit;
+import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAudit;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAudit.ShipmentScheduleExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -105,9 +105,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.ExportedAndError;
-import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.ExportedAndForwarded;
-import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.Pending;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 
 @Service
 class ShipmentCandidateAPIService
@@ -139,19 +139,20 @@ class ShipmentCandidateAPIService
 	/**
 	 * Exports them; Flags them as "exported - don't touch"; creates an export audit table with one line per shipment schedule.
 	 */
-	public JsonResponseShipmentCandidates exportShipmentCandidates()
+	public JsonResponseShipmentCandidates exportShipmentCandidates(final int limit)
 	{
 		final String transactionId = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
 		{
-			final ShipmentScheduleExportAuditBuilder auditBuilder = ShipmentScheduleExportAudit
-					.builder()
-					.transactionId(transactionId);
+			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
+					APIExportAudit
+							.<ShipmentScheduleExportAuditItem>builder()
+							.transactionId(transactionId);
 
 			final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
-					.limit(500)
+					.limit(limit)
 					.canBeExportedFrom(Instant.now())
-					.exportStatus(ShipmentScheduleExportStatus.Pending)
+					.exportStatus(APIExportStatus.Pending)
 					.build();
 			final List<ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
 			if (shipmentSchedules.isEmpty())
@@ -166,7 +167,7 @@ class ShipmentCandidateAPIService
 						.shipmentScheduleId(shipmentSchedule.getId())
 						.asiId(shipmentSchedule.getAttributeSetInstanceId())
 						.orderId(shipmentSchedule.getOrderId())
-						.bPartnerId(shipmentSchedule.getBPartnerId())
+						.bPartnerId(shipmentSchedule.getCustomerId())
 						.productId(shipmentSchedule.getProductId());
 			}
 			final IdsRegistry idsRegistry = idsRegistryBuilder.build();
@@ -232,12 +233,12 @@ class ShipmentCandidateAPIService
 				}
 				catch (final ShipmentCandidateExportException e) // don't catch just any exception; just the "functional" ones
 				{
-					createExportErrorAuditItem(shipmentSchedule, transactionId, e, auditBuilder);
+					createExportErrorAuditItem(shipmentSchedule, e, auditBuilder);
 				}
 			}
 
 			shipmentScheduleAuditRepository.save(auditBuilder.build());
-			shipmentScheduleRepository.exportStatusMassUpdate(idsRegistry.getShipmentScheduleIds(), ShipmentScheduleExportStatus.Exported);
+			shipmentScheduleRepository.exportStatusMassUpdate(idsRegistry.getShipmentScheduleIds(), APIExportStatus.Exported);
 
 			return result.build();
 		}
@@ -253,12 +254,12 @@ class ShipmentCandidateAPIService
 			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
-		final BPartnerComposite composite = bpartnerIdToBPartner.get(shipmentSchedule.getBPartnerId());
+		final BPartnerComposite composite = bpartnerIdToBPartner.get(shipmentSchedule.getCustomerId());
 		final BPartnerLocation location = composite
 				.extractLocation(shipmentSchedule.getLocationId())
 				.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's location from the shipment schedule's bPartner")
 						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", shipmentSchedule.getBPartnerId().getRepoId())
+						.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
 						.setParameter("C_BPartner_Location_ID", shipmentSchedule.getLocationId().getRepoId()));
 
 		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(location.getAddress1());
@@ -303,7 +304,7 @@ class ShipmentCandidateAPIService
 			final BPartnerContact contact = composite.extractContact(shipmentSchedule.getContactId())
 					.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
 							.appendParametersToMessage()
-							.setParameter("C_BPartner_ID", shipmentSchedule.getBPartnerId().getRepoId())
+							.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
 							.setParameter("AD_User_ID", shipmentSchedule.getContactId().getRepoId()));
 
 			customerBuilder
@@ -349,24 +350,23 @@ class ShipmentCandidateAPIService
 
 	private void createExportedAuditItem(
 			@NonNull final ShipmentSchedule shipmentSchedule,
-			@NonNull final ShipmentScheduleExportAuditBuilder auditBuilder)
+			@NonNull final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder)
 	{
 		final OrgId orgId = shipmentSchedule.getOrgId();
 
 		auditBuilder.item(
 				shipmentSchedule.getId(),
 				ShipmentScheduleExportAuditItem.builder()
-						.exportStatus(ShipmentScheduleExportStatus.Exported)
-						.shipmentScheduleId(shipmentSchedule.getId())
+						.exportStatus(APIExportStatus.Exported)
+						.repoIdAware(shipmentSchedule.getId())
 						.orgId(orgId)
 						.build());
 	}
 
 	private void createExportErrorAuditItem(
 			@NonNull final ShipmentSchedule shipmentSchedule,
-			@NonNull final String transactionId,
 			@NonNull final ShipmentCandidateExportException e,
-			@NonNull final ShipmentScheduleExportAuditBuilder auditBuilder)
+			@NonNull final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder)
 	{
 		final OrgId orgId = shipmentSchedule.getOrgId();
 
@@ -380,8 +380,8 @@ class ShipmentCandidateAPIService
 		auditBuilder.item(
 				shipmentSchedule.getId(),
 				ShipmentScheduleExportAuditItem.builder()
-						.exportStatus(ShipmentScheduleExportStatus.ExportError)
-						.shipmentScheduleId(shipmentSchedule.getId())
+						.exportStatus(APIExportStatus.ExportError)
+						.repoIdAware(shipmentSchedule.getId())
 						.issueId(adIssueId)
 						.orgId(orgId)
 						.build());
@@ -464,10 +464,11 @@ class ShipmentCandidateAPIService
 			logger.debug("given results is empty; -> return");
 			return;
 		}
-		final ShipmentScheduleExportAudit auditRecords = shipmentScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
+		final APIExportAudit<ShipmentScheduleExportAuditItem> auditRecords = shipmentScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
 		if (auditRecords == null)
 		{
 			logger.debug("Given results.transactionKey={} does not match any audit records; -> return", results.getTransactionKey());
+			return;
 		}
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
 				results.getItems(),
@@ -488,13 +489,13 @@ class ShipmentCandidateAPIService
 			{
 				auditRecord = ShipmentScheduleExportAuditItem.builder()
 						.orgId(shipmentSchedule.getOrgId())
-						.shipmentScheduleId(shipmentScheduleId)
+						.repoIdAware(shipmentScheduleId)
 						.exportStatus(Pending)
 						.build();
 				auditRecords.addItem(auditRecord);
 			}
 
-			final ShipmentScheduleExportStatus status;
+			final APIExportStatus status;
 			switch (resultItem.getOutcome())
 			{
 				case OK:
@@ -513,10 +514,7 @@ class ShipmentCandidateAPIService
 			}
 
 			auditRecord.setExportStatus(status);
-			if (shipmentSchedule != null)
-			{
-				shipmentSchedule.setExportStatus(status);
-			}
+			shipmentSchedule.setExportStatus(status);
 		}
 		shipmentScheduleRepository.saveAll(shipmentSchedules.values());
 		shipmentScheduleAuditRepository.save(auditRecords);

@@ -25,7 +25,9 @@ package de.metas.rest_api.shipment;
 import de.metas.Profiles;
 import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResults;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
@@ -34,7 +36,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
 
 @RequestMapping(ShipmentCandidatesRestController.ENDPOINT)
 @RestController
@@ -51,16 +56,20 @@ public class ShipmentCandidatesRestController
 	}
 
 	@GetMapping("shipmentCandidates")
-	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates()
+	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
+			@ApiParam("Max number of items too be returned in one requst.") //
+			@RequestParam(name = "limit", required = false, defaultValue = "500") //
+			@Nullable final Integer limit)
 	{
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates();
+		final Integer limitEff = CoalesceUtil.coalesce(limit, 500);
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(limitEff);
 		return ResponseEntity.ok(result);
 	}
 
 	@PostMapping("shipmentCandidates")
 	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestShipmentCandidateResults status)
 	{
-		try(final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
 		{
 			shipmentCandidateAPIService.updateStatus(status);
 			return ResponseEntity.accepted().body("Shipment candidates updated");

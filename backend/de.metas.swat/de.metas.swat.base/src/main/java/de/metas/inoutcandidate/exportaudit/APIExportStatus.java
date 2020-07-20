@@ -34,7 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
-public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
+public enum APIExportStatus implements ReferenceListAwareEnum
 {
 	DontExport(X_M_ShipmentSchedule.EXPORTSTATUS_DONT_EXPORT),
 	Pending(X_M_ShipmentSchedule.EXPORTSTATUS_PENDING),
@@ -46,20 +46,20 @@ public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 	@Getter
 	private final String code;
 
-	ShipmentScheduleExportStatus(@NonNull final String code)
+	APIExportStatus(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
 	@Nullable
-	public static ShipmentScheduleExportStatus ofNullableCode(final String code)
+	public static APIExportStatus ofNullableCode(final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
-	public static ShipmentScheduleExportStatus ofCode(@NonNull final String code)
+	public static APIExportStatus ofCode(@NonNull final String code)
 	{
-		final ShipmentScheduleExportStatus type = typesByCode.get(code);
+		final APIExportStatus type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + InvoiceRule.class + " found for code: " + code);
@@ -68,10 +68,10 @@ public enum ShipmentScheduleExportStatus implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static String toCodeOrNull(final ShipmentScheduleExportStatus type)
+	public static String toCodeOrNull(final APIExportStatus type)
 	{
 		return type != null ? type.getCode() : null;
 	}
 
-	private static final ImmutableMap<String, ShipmentScheduleExportStatus> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ShipmentScheduleExportStatus::getCode);
+	private static final ImmutableMap<String, APIExportStatus> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), APIExportStatus::getCode);
 }

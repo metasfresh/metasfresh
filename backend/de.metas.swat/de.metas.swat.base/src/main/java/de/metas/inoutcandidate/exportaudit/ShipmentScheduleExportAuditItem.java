@@ -23,27 +23,26 @@
 package de.metas.inoutcandidate.exportaudit;
 
 import de.metas.error.AdIssueId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Data
 @Builder
-public class ShipmentScheduleExportAuditItem
+public class ShipmentScheduleExportAuditItem implements APIExportAuditItem<ShipmentScheduleId>
 {
 	@NonNull
-	private final ShipmentScheduleId shipmentScheduleId;
+	private final ShipmentScheduleId repoIdAware;
 
 	@NonNull
 	private final OrgId orgId;
 
 	@NonNull
-	private ShipmentScheduleExportStatus exportStatus;
+	private APIExportStatus exportStatus;
 
 	@Nullable
 	private AdIssueId issueId;

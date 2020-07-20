@@ -22,40 +22,42 @@
 
 package de.metas.inoutcandidate.exportaudit;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.organization.OrgId;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *
+ * @param <T> type of the audit items
+ */
 @Data
-public class ShipmentScheduleExportAudit
+public class APIExportAudit<T extends APIExportAuditItem>
 {
 	private final String transactionId;
 
-	private final Map<ShipmentScheduleId, ShipmentScheduleExportAuditItem> items;
+	private final Map<RepoIdAware, T> items;
 
 	@Builder
-	private ShipmentScheduleExportAudit(
+	private APIExportAudit(
 			@NonNull final String transactionId,
-			@NonNull @Singular final Map<ShipmentScheduleId, ShipmentScheduleExportAuditItem> items)
+			@NonNull @Singular final Map<RepoIdAware, T> items)
 	{
 		this.transactionId = transactionId;
 		this.items = new HashMap<>(items);
 	}
 
-	public ShipmentScheduleExportAuditItem getItemById(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public T getItemById(@NonNull final RepoIdAware id )
 	{
-		return items.get(shipmentScheduleId);
+		return items.get(id);
 	}
 
-	public void addItem(@NonNull final ShipmentScheduleExportAuditItem auditRecord)
+	public void addItem(@NonNull final T auditRecord)
 	{
-		items.put(auditRecord.getShipmentScheduleId(), auditRecord);
+		items.put(auditRecord.getRepoIdAware(), auditRecord);
 	}
 }

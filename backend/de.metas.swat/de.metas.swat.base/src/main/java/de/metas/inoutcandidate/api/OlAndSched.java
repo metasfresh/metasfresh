@@ -27,6 +27,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;

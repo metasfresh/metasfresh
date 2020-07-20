@@ -25,7 +25,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;

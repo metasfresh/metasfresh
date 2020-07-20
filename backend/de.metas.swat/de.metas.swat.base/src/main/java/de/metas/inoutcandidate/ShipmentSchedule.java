@@ -25,8 +25,7 @@ package de.metas.inoutcandidate;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -34,7 +33,6 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
@@ -51,7 +49,7 @@ public class ShipmentSchedule
 	private final OrgId orgId;
 
 	@NonNull
-	private final BPartnerId bPartnerId;
+	private final BPartnerId customerId;
 
 	@NonNull
 	private final BPartnerLocationId locationId;
@@ -75,5 +73,5 @@ public class ShipmentSchedule
 	private final AttributeSetInstanceId attributeSetInstanceId;
 
 	@NonNull
-	private ShipmentScheduleExportStatus exportStatus;
+	private APIExportStatus exportStatus;
 }

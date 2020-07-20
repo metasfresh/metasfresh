@@ -31,6 +31,7 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.ConfiguredJsonMapper;
 import de.metas.common.shipping.JsonProduct;
+import de.metas.common.shipping.Outcome;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

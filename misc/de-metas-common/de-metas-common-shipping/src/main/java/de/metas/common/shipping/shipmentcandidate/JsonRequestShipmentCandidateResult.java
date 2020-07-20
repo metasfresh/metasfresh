@@ -28,24 +28,19 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.shipping.Outcome;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResult.Outcome.*;
+import static de.metas.common.shipping.Outcome.ERROR;
 
 @Value
 @Builder
 public class JsonRequestShipmentCandidateResult
 {
-	public enum Outcome
-	{
-		OK,
-		ERROR;
-	}
-
 	JsonMetasfreshId shipmentScheduleId;
 
 	Outcome outcome;

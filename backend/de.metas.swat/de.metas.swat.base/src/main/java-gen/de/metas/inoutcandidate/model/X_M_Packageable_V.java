@@ -574,6 +574,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
+	public void setPOReference (java.lang.String POReference)
+	{
+		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+	}
+
+	@Override
 	public void setPreparationDate (java.sql.Timestamp PreparationDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_PreparationDate, PreparationDate);

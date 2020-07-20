@@ -23,7 +23,7 @@
 package de.metas.inoutcandidate.exportaudit;
 
 import de.metas.error.AdIssueId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -33,8 +33,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.Exported;
-import static de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus.ExportedAndError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
 import static org.assertj.core.api.Assertions.*;
 
 class ShipmentScheduleAuditRepositoryTest
@@ -51,9 +51,9 @@ class ShipmentScheduleAuditRepositoryTest
 	@Test
 	void getByTransactionId()
 	{
-		final ShipmentScheduleExportAudit auditOrig = performSaveTest();
+		final APIExportAudit auditOrig = performSaveTest();
 
-		final ShipmentScheduleExportAudit audit = shipmentScheduleAuditRepository.getByTransactionId(auditOrig.getTransactionId());
+		final APIExportAudit audit = shipmentScheduleAuditRepository.getByTransactionId(auditOrig.getTransactionId());
 
 		assertThat(audit).isEqualTo(auditOrig);
 	}
@@ -64,19 +64,19 @@ class ShipmentScheduleAuditRepositoryTest
 		performSaveTest();
 	}
 
-	private ShipmentScheduleExportAudit performSaveTest()
+	private APIExportAudit performSaveTest()
 	{
 		// given
 		final ShipmentScheduleId shipmentScheduleId1 = ShipmentScheduleId.ofRepoId(11);
 		final ShipmentScheduleId shipmentScheduleId2 = ShipmentScheduleId.ofRepoId(21);
-		final ShipmentScheduleExportAudit audit = ShipmentScheduleExportAudit.builder()
+		final APIExportAudit audit = APIExportAudit.builder()
 				.transactionId("transactionId")
 				.item(
 						shipmentScheduleId1,
 						ShipmentScheduleExportAuditItem.builder()
 								.orgId(OrgId.ofRepoId(10))
 								.exportStatus(Exported)
-								.shipmentScheduleId(shipmentScheduleId1)
+								.repoIdAware(shipmentScheduleId1)
 								.issueId(AdIssueId.ofRepoId(20))
 								.build())
 				.item(
@@ -84,7 +84,7 @@ class ShipmentScheduleAuditRepositoryTest
 						ShipmentScheduleExportAuditItem.builder()
 								.orgId(OrgId.ofRepoId(10))
 								.exportStatus(ExportedAndError)
-								.shipmentScheduleId(shipmentScheduleId2)
+								.repoIdAware(shipmentScheduleId2)
 								.build())
 				.build();
 

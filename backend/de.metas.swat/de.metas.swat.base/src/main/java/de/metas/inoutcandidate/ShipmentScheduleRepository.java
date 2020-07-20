@@ -31,8 +31,7 @@ import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportStatus;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.order.OrderId;
@@ -135,14 +134,14 @@ public class ShipmentScheduleRepository
 		final ShipmentSchedule.ShipmentScheduleBuilder shipmentScheduleBuilder = ShipmentSchedule.builder()
 				.id(shipmentScheduleId)
 				.orgId(orgId)
-				.bPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
+				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
 				.locationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
 				.contactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
 				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record))
-				.exportStatus(ShipmentScheduleExportStatus.ofCode(record.getExportStatus()));
+				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()));
 		if (record.getDateOrdered() != null)
 		{
 			shipmentScheduleBuilder.dateOrdered(record.getDateOrdered().toLocalDateTime());
@@ -152,7 +151,7 @@ public class ShipmentScheduleRepository
 
 	public void exportStatusMassUpdate(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
-			@NonNull final ShipmentScheduleExportStatus exportStatus)
+			@NonNull final APIExportStatus exportStatus)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
@@ -205,7 +204,7 @@ public class ShipmentScheduleRepository
 
 		Instant canBeExportedFrom;
 
-		ShipmentScheduleExportStatus exportStatus;
+		APIExportStatus exportStatus;
 
 		@Builder.Default
 		boolean includeWithQtyToDeliverZero = false;
