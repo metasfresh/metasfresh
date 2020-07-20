@@ -44,6 +44,7 @@ public class JSONEventBusStats
 
 	long eventsEnqueued;
 	long eventsDequeued;
+	long eventsToDequeue;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JSONEventBusStatsBuilder

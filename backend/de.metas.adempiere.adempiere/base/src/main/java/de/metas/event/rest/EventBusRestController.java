@@ -78,6 +78,7 @@ public class EventBusRestController
 				//
 				.eventsEnqueued(stats.getEventsEnqueued())
 				.eventsDequeued(stats.getEventsDequeued())
+				.eventsToDequeue(stats.getEventsToDequeue())
 				//
 				.build();
 	}

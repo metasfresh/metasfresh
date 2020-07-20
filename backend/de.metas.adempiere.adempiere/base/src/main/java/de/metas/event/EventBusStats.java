@@ -31,4 +31,9 @@ public class EventBusStats
 {
 	long eventsEnqueued;
 	long eventsDequeued;
+
+	public long getEventsToDequeue()
+	{
+		return getEventsEnqueued() - getEventsDequeued();
+	}
 }

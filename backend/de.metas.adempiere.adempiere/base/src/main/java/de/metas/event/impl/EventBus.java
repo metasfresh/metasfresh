@@ -99,8 +99,10 @@ final class EventBus implements IEventBus
 			@NonNull final String topicName,
 			@Nullable final ExecutorService executor)
 	{
+		Check.assumeNotEmpty(topicName, "name not empty");
+
 		this.executorOrNull = executor;
-		this.topicName = Check.assumeNotEmpty(topicName, "name not empty");
+		this.topicName = topicName;
 
 		if (executor == null)
 		{

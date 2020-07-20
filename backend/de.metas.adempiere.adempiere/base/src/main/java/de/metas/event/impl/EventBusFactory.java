@@ -176,7 +176,10 @@ public class EventBusFactory implements IEventBusFactory
 					.setDaemon(true)
 					.build());
 		}
-		return null;
+		else
+		{
+			return null;
+		}
 	}
 
 	private void destroyEventBus(@NonNull final EventBus eventBus)
