@@ -36,7 +36,7 @@ import java.util.Properties;
 import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JsonToXmlRouteBuilderTest extends CamelTestSupport
+class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 {
 
 	private MockEndpoint mockEndpoint;
@@ -44,7 +44,7 @@ class JsonToXmlRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new JsonToXmlRouteBuilder();
+		return new ShipmentCandidateJsonToXmlRouteBuilder();
 	}
 
 	@BeforeEach
@@ -55,7 +55,7 @@ class JsonToXmlRouteBuilderTest extends CamelTestSupport
 		mockEndpoint = getMockEndpoint("mock:$shipmentScheduleAPI");
 
 		AdviceWithRouteBuilder
-				.adviceWith(context, JsonToXmlRouteBuilder.MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML,
+				.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML,
 						a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentSchedules")
 								.skipSendToOriginalEndpoint()
 								.to(mockEndpoint)

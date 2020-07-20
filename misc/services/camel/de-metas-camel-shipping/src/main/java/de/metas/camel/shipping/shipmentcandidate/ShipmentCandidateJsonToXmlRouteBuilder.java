@@ -22,22 +22,19 @@
 
 package de.metas.camel.shipping.shipmentcandidate;
 
-import de.metas.common.filemaker.ConfiguredXmlMapper;
-import de.metas.common.filemaker.FMPXMLRESULT;
-import de.metas.common.shipping.ConfiguredJsonMapper;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
 import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
-public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
+public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	public static final String NUMBER_OF_ITEMS = "NumberOfItems";
-	public static final String FEEDBACK_POJO = "JsonRequestShipmentCandidateResults";
+
 	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ShipmentCandidate-JSON-To-Filemaker-XML";
 
 	@Override
@@ -47,19 +44,13 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.maximumRedeliveries(5)
 				.redeliveryDelay(10000));
 		onException(GenericFileOperationFailedException.class)
-		 	.handled(true)
-		 	.to(direct("feedback"));
+				.handled(true)
+				.to(direct("feedback"));
 
-		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
-		jacksonDataFormat.setCamelContext(getContext());
-		jacksonDataFormat.setObjectMapper(ConfiguredJsonMapper.get());
-		jacksonDataFormat.setUnmarshalType(JsonResponseShipmentCandidates.class);
+		final Class<JsonResponseShipmentCandidates> unmarshalType = JsonResponseShipmentCandidates.class;
+		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), unmarshalType);
 
-		getContext().getRegistry().bind("FMPXMLRESULT-XmlMapper", ConfiguredXmlMapper.get());
-		final var jacksonXMLDataFormat = new JacksonXMLDataFormat();
-		jacksonXMLDataFormat.setUnmarshalType(FMPXMLRESULT.class);
-		jacksonXMLDataFormat.setXmlMapper("FMPXMLRESULT-XmlMapper");
-
+		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
 		from(timer("pollShipmentCandidateAPI")
 				.period(5 * 1000))
@@ -68,31 +59,21 @@ public class JsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"))
-
 				.unmarshal(jacksonDataFormat)
 
-				.process(new JsonToXmlProcessor())
+				.process(new ShipmentCandidateJsonToXmlProcessor())
 
 				.choice()
-				.when(header(NUMBER_OF_ITEMS).isGreaterThan(0))
-					.marshal(jacksonXMLDataFormat)
-					.multicast() // store the file both locally and send it to the remote folder
-						.stopOnException()
-						.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
-					.end()
-				.to(direct("feedback"))
+				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
+				.marshal(jacksonXMLDataFormat)
+				.multicast() // store the file both locally and send it to the remote folder
+				.stopOnException()
+				.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
+				.end()
+				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE))
 				.end() // "NumberOfItems" - choice
-
 		;
 
-		from(direct("feedback"))
-				.routeId("Candidate-Feedback-TO-MF")
-				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
-				.process(new FeedBackJsonCreator())
-				.marshal(jacksonDataFormat)
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
-				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"))
-		;
-
+		RouteBuilderCommonUtil.setupFeedbackRoute(this, jacksonDataFormat,"/shipments/shipmentCandidates");
 	}
 }

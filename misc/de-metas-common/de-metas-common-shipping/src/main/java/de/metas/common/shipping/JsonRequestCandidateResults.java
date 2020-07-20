@@ -20,50 +20,54 @@
  * #L%
  */
 
-package de.metas.common.shipping.shipmentcandidate;
+package de.metas.common.shipping;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.shipping.Outcome;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-
-import static de.metas.common.shipping.Outcome.ERROR;
+import java.util.List;
 
 @Value
-@Builder
-public class JsonRequestShipmentCandidateResult
+public class JsonRequestCandidateResults
 {
-	JsonMetasfreshId shipmentScheduleId;
+	String transactionKey;
 
-	Outcome outcome;
+	List<JsonRequestCandidateResult> items;
 
-	@JsonInclude(Include.NON_NULL)
+	/**
+	 * If not null, then this error applies to all included items
+	 */
 	JsonError error;
 
 	@JsonCreator
-	private JsonRequestShipmentCandidateResult(
-			@JsonProperty("shipmentScheduleId") @NonNull final JsonMetasfreshId shipmentScheduleId,
-			@JsonProperty("outcome") @NonNull final Outcome outcome,
-			@JsonProperty("error") @Nullable final JsonError error)
+	@Builder
+	private JsonRequestCandidateResults(
+			@JsonProperty("transactionKey") @NonNull final String transactionKey,
+			@JsonProperty("error") @Nullable final JsonError error,
+			@JsonProperty("items") @NonNull @Singular final List<JsonRequestCandidateResult> items)
 	{
-		this.shipmentScheduleId = shipmentScheduleId;
-		this.outcome = outcome;
+		this.transactionKey = transactionKey;
 		this.error = error;
+		this.items = items;
 	}
 
-	public JsonRequestShipmentCandidateResult withError()
+	public JsonRequestCandidateResults withError(@NonNull final JsonError error)
 	{
-		return JsonRequestShipmentCandidateResult.builder()
-				.shipmentScheduleId(shipmentScheduleId)
-				.outcome(ERROR)
-				.build();
+		final JsonRequestCandidateResultsBuilder result = JsonRequestCandidateResults
+				.builder()
+				.transactionKey(transactionKey)
+				.error(error);
+		for (final JsonRequestCandidateResult item : items)
+		{
+			result.item(item.withError());
+		}
+		return result.build();
+
 	}
 }

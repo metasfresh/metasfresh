@@ -30,15 +30,20 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@ApiModel(description="Single receipt candidate; basically this tells the logistics provider to expect a particular delivery item from a vendor.\n"
+		+ "It translates to a particular `M_ReceiptSchedule` record in metasfresh.")
+@Value
 public class JsonResponseReceiptCandidate
 {
 	@ApiModelProperty(position = 10, required = true)

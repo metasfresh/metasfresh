@@ -20,54 +20,49 @@
  * #L%
  */
 
-package de.metas.common.shipping.receiptcandidate;
+package de.metas.common.shipping;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
+
+import static de.metas.common.shipping.Outcome.ERROR;
 
 @Value
-public class JsonRequestReceiptCandidateResults
+@Builder
+public class JsonRequestCandidateResult
 {
-	String transactionKey;
+	JsonMetasfreshId scheduleId;
 
-	List<JsonRequestReceiptCandidateResult> items;
+	Outcome outcome;
 
-	/**
-	 * If not null, then this error applies to all included items
-	 */
+	@JsonInclude(Include.NON_NULL)
 	JsonError error;
 
 	@JsonCreator
-	@Builder
-	private JsonRequestReceiptCandidateResults(
-			@JsonProperty("transactionKey") @NonNull final String transactionKey,
-			@JsonProperty("error") @Nullable final JsonError error,
-			@JsonProperty("items") @NonNull @Singular final List<JsonRequestReceiptCandidateResult> items)
+	private JsonRequestCandidateResult(
+			@JsonProperty("scheduleId") @NonNull final JsonMetasfreshId scheduleId,
+			@JsonProperty("outcome") @NonNull final Outcome outcome,
+			@JsonProperty("error") @Nullable final JsonError error)
 	{
-		this.transactionKey = transactionKey;
+		this.scheduleId = scheduleId;
+		this.outcome = outcome;
 		this.error = error;
-		this.items = items;
 	}
 
-	public JsonRequestReceiptCandidateResults withError(@NonNull final JsonError error)
+	public JsonRequestCandidateResult withError()
 	{
-		final JsonRequestReceiptCandidateResults.JsonRequestReceiptCandidateResultsBuilder result = JsonRequestReceiptCandidateResults
-				.builder()
-				.transactionKey(transactionKey)
-				.error(error);
-		for (final JsonRequestReceiptCandidateResult item : items)
-		{
-			result.item(item.withError());
-		}
-		return result.build();
-
+		return JsonRequestCandidateResult.builder()
+				.scheduleId(scheduleId)
+				.outcome(ERROR)
+				.build();
 	}
 }

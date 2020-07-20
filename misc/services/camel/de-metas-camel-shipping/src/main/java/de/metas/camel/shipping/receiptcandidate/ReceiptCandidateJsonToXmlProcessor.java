@@ -20,8 +20,10 @@
  * #L%
  */
 
-package de.metas.camel.shipping.shipmentcandidate;
+package de.metas.camel.shipping.receiptcandidate;
 
+import de.metas.camel.shipping.FeedbackProzessor;
+import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FIELD;
@@ -31,11 +33,11 @@ import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.PRODUCT;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
+import de.metas.common.shipping.JsonRequestCandidateResult;
+import de.metas.common.shipping.JsonRequestCandidateResults;
 import de.metas.common.shipping.Outcome;
-import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResult;
-import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResults;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate;
+import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -44,41 +46,33 @@ import org.apache.commons.logging.LogFactory;
 
 import java.time.format.DateTimeFormatter;
 
-public class JsonToXmlProcessor implements Processor
+public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {
 	public static final METADATA METADATA = de.metas.common.filemaker.METADATA.builder()
-			.field(FIELD.builder().name("_bestellung_nummer").build())
-			.field(FIELD.builder().name("_bestellung_datum").build())
-			.field(FIELD.builder().name("_bestellung_zeitstempel").build())
+			.field(FIELD.builder().name("_anlieferung_nummer").build())
+			.field(FIELD.builder().name("_anlieferung_datum").build())
+			.field(FIELD.builder().name("_anlieferung_zeitstempel").build())
+			.field(FIELD.builder().name("_anlieferung_mhd_charge").build())
+			.field(FIELD.builder().name("_anlieferung_mhd_ablauf_datum").build())
 			.field(FIELD.builder().name("_artikel_nummer").build())
 			.field(FIELD.builder().name("_artikel_bezeichnung").build())
 			.field(FIELD.builder().name("_artikel_menge").build())
 			.field(FIELD.builder().name("_artikel_gewicht_1_stueck").build())
 			.field(FIELD.builder().name("_artikel_geschmacksrichtung").build())
 			.field(FIELD.builder().name("_artikel_verpackungsgroesse").build())
-			.field(FIELD.builder().name("_empfaenger_firma").build())
-			.field(FIELD.builder().name("_empfaenger_ansprechpartner").build())
-			.field(FIELD.builder().name("_empfaenger_strasse").build())
-			.field(FIELD.builder().name("_empfaenger_hausnummer").build())
-			.field(FIELD.builder().name("_empfaenger_zustellinfo").build())
-			.field(FIELD.builder().name("_empfaenger_plz").build())
-			.field(FIELD.builder().name("_empfaenger_ort").build())
-			.field(FIELD.builder().name("_empfaenger_land").build())
-			.field(FIELD.builder().name("_empfaenger_email").build())
-			.field(FIELD.builder().name("_empfaenger_telefon_muss_bei_express").build())
 			.build();
 
-	private final Log log = LogFactory.getLog(JsonToXmlProcessor.class);
+	private final Log log = LogFactory.getLog(ReceiptCandidateJsonToXmlProcessor.class);
 
 	@Override
 	public void process(@NonNull final Exchange exchange)
 	{
-		final JsonResponseShipmentCandidates scheduleList = exchange.getIn().getBody(JsonResponseShipmentCandidates.class);
+		final JsonResponseReceiptCandidates scheduleList = exchange.getIn().getBody(JsonResponseReceiptCandidates.class);
 
 		final var items = scheduleList.getItems();
 		log.info("process method called; scheduleList with " + items.size() + " items");
 
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{FMPXMLRESULT.DATABASE.NAME}}");
+		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receiptCandidate.FMPXMLRESULT.DATABASE.NAME}}");
 
 		final FMPXMLRESULTBuilder builder = FMPXMLRESULT.builder()
 				.errorCode("0")
@@ -89,36 +83,39 @@ public class JsonToXmlProcessor implements Processor
 						.build())
 				.metadata(METADATA);
 
-		final var resultsBuilder = JsonRequestShipmentCandidateResults.builder()
+		final var resultsBuilder = JsonRequestCandidateResults.builder()
 				.transactionKey(scheduleList.getTransactionKey());
 
 		final var resultSet = RESULTSET.builder().found(items.size());
-		for (final JsonResponseShipmentCandidate item : items)
+		for (final JsonResponseReceiptCandidate item : items)
 		{
 			final var row = createROW(item);
 			resultSet.row(row);
 
-			resultsBuilder.item(JsonRequestShipmentCandidateResult.builder()
+			resultsBuilder.item(JsonRequestCandidateResult.builder()
 					.outcome(Outcome.OK) // might be un-OKed later, if e.g. uploading the XML fails
-					.shipmentScheduleId(item.getId())
+					.scheduleId(item.getId())
 					.build());
 		}
 		exchange.getIn().setBody(builder
 				.resultset(resultSet.build())
 				.build());
 		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
-		exchange.getIn().setHeader(JsonToXmlRouteBuilder.FEEDBACK_POJO, resultsBuilder.build());
-		exchange.getIn().setHeader(JsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
+		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
+		exchange.getIn().setHeader(ShipmentCandidateJsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
 	}
 
-	private ROW createROW(@NonNull final JsonResponseShipmentCandidate item)
+	private ROW createROW(@NonNull final JsonResponseReceiptCandidate item)
 	{
 		final var row = ROW.builder();
-		row.col(COL.of(item.getOrderDocumentNo())); // _bestellung_nummer
+		row.col(COL.of(item.getOrderDocumentNo())); // _anlieferung_nummer
 
 		final var dateOrdered = item.getDateOrdered();
-		row.col(COL.of(dateOrdered.toLocalDate().format(DateTimeFormatter.ofPattern("d.M.yyyy")))); // _bestellung_datum
-		row.col(COL.of(dateOrdered.format(DateTimeFormatter.ofPattern("d.M.yyyy k:mm:ss")))); // _bestellung_zeitstempel
+		row.col(COL.of(dateOrdered.toLocalDate().format(DateTimeFormatter.ofPattern("d.M.yyyy")))); // _anlieferung_datum
+		row.col(COL.of(dateOrdered.format(DateTimeFormatter.ofPattern("d.M.yyyy k:mm:ss")))); // _anlieferung_zeitstempel
+
+		row.col(COL.of(null)); // _anlieferung_mhd_charge
+		row.col(COL.of(null)); // _anlieferung_mhd_ablauf_datum
 
 		final var product = item.getProduct();
 		row.col(COL.of(product.getProductNo())); // _artikel_nummer
@@ -130,18 +127,6 @@ public class JsonToXmlProcessor implements Processor
 			row.col(COL.of(item.getAttributeSetInstance().getValueStr("FLAVOR"))); // _artikel_geschmacksrichtung
 		}
 		row.col(COL.of(product.getPackageSize())); // _artikel_verpackungsgroesse
-
-		final var customer = item.getCustomer();
-		row.col(COL.of(customer.getCompanyName())); // _empfaenger_firma
-		row.col(COL.of(customer.getContactName())); // _empfaenger_ansprechpartner
-		row.col(COL.of(customer.getStreet())); // _empfaenger_strasse
-		row.col(COL.of(customer.getStreetNo())); // _empfaenger_hausnummer
-		row.col(COL.of(null)); // _empfaenger_zustellinfo
-		row.col(COL.of(customer.getPostal())); // _empfaenger_plz
-		row.col(COL.of(customer.getCity())); // _empfaenger_ort
-		row.col(COL.of(customer.getCountryCode())); // _empfaenger_land
-		row.col(COL.of(customer.getContactEmail())); // _empfaenger_email
-		row.col(COL.of(customer.getContactPhone())); // _empfaenger_telefon_muss_bei_express
 
 		return row.build();
 	}

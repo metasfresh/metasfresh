@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.shipping.shipmentcandidate;
+package de.metas.camel.shipping.tutorial;
 
 import org.apache.camel.builder.RouteBuilder;
 

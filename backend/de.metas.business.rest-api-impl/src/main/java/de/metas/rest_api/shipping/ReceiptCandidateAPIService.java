@@ -38,8 +38,8 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.JsonProduct.JsonProductBuilder;
-import de.metas.common.shipping.receiptcandidate.JsonRequestReceiptCandidateResult;
-import de.metas.common.shipping.receiptcandidate.JsonRequestReceiptCandidateResults;
+import de.metas.common.shipping.JsonRequestCandidateResult;
+import de.metas.common.shipping.JsonRequestCandidateResults;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate.JsonResponseReceiptCandidateBuilder;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
@@ -396,7 +396,7 @@ class ReceiptCandidateAPIService
 	/**
 	 * Use the given pojo's transactionKey to load the respective export audit table and update its lines
 	 */
-	public void updateStatus(@NonNull final JsonRequestReceiptCandidateResults results)
+	public void updateStatus(@NonNull final JsonRequestCandidateResults results)
 	{
 		final AdIssueId generalAdIssueId = createADIssue(results.getError());
 		if (generalAdIssueId != null)
@@ -416,12 +416,12 @@ class ReceiptCandidateAPIService
 		}
 		final ImmutableSet<ReceiptScheduleId> receiptScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
 				results.getItems(),
-				item -> ReceiptScheduleId.ofRepoId(item.getReceiptScheduleId().getValue()));
+				item -> ReceiptScheduleId.ofRepoId(item.getScheduleId().getValue()));
 		final ImmutableMap<ReceiptScheduleId, ReceiptSchedule> receiptSchedules = receiptScheduleRepository.getByIds(receiptScheduleIds);
 
-		for (final JsonRequestReceiptCandidateResult resultItem : results.getItems())
+		for (final JsonRequestCandidateResult resultItem : results.getItems())
 		{
-			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(resultItem.getReceiptScheduleId().getValue());
+			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(resultItem.getScheduleId().getValue());
 			final ReceiptSchedule receiptSchedule = receiptSchedules.get(receiptScheduleId);
 			if (receiptSchedule == null)
 			{

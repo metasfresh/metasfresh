@@ -31,6 +31,8 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.ConfiguredJsonMapper;
 import de.metas.common.shipping.JsonProduct;
+import de.metas.common.shipping.JsonRequestCandidateResult;
+import de.metas.common.shipping.JsonRequestCandidateResults;
 import de.metas.common.shipping.Outcome;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +42,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResult.*;
+import static de.metas.common.shipping.JsonRequestCandidateResult.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests
@@ -137,26 +139,26 @@ class JsonSerializeDeserializeTests
 	@Test
 	void jsonRequestShipmentScheduleResult() throws IOException
 	{
-		final JsonRequestShipmentCandidateResult statusOrig = JsonRequestShipmentCandidateResult.builder()
-				.shipmentScheduleId(JsonMetasfreshId.of(10))
+		final JsonRequestCandidateResult statusOrig = JsonRequestCandidateResult.builder()
+				.scheduleId(JsonMetasfreshId.of(10))
 				.outcome(Outcome.OK)
 				.build();
 
-		assertOK(statusOrig, JsonRequestShipmentCandidateResult.class);
+		assertOK(statusOrig, JsonRequestCandidateResult.class);
 	}
 
 	@Test
 	void jsonRequestShipmentScheduleResultList() throws IOException
 	{
-		final JsonRequestShipmentCandidateResults resultListOrig = JsonRequestShipmentCandidateResults.builder()
+		final JsonRequestCandidateResults resultListOrig = JsonRequestCandidateResults.builder()
 				.transactionKey("transactionKey")
-				.item(builder().shipmentScheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
-				.item(builder().shipmentScheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
+				.item(builder().scheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
+				.item(builder().scheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
 						.error(JsonError.ofSingleItem(JsonErrorItem.builder().message("errorMessage").stackTrace("stackTrace").build()))
 						.build())
 				.build();
 
-		assertOK(resultListOrig, JsonRequestShipmentCandidateResults.class);
+		assertOK(resultListOrig, JsonRequestCandidateResults.class);
 	}
 
 	@Test

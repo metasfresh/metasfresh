@@ -42,8 +42,8 @@ import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.JsonProduct.JsonProductBuilder;
 import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
 import de.metas.common.shipping.shipmentcandidate.JsonCustomer.JsonCustomerBuilder;
-import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResult;
-import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResults;
+import de.metas.common.shipping.JsonRequestCandidateResult;
+import de.metas.common.shipping.JsonRequestCandidateResults;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate.JsonResponseShipmentCandidateBuilder;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
@@ -451,7 +451,7 @@ class ShipmentCandidateAPIService
 	/**
 	 * Use the given pojo's transactionKey to load the respective export audit table and update its lines
 	 */
-	public void updateStatus(@NonNull final JsonRequestShipmentCandidateResults results)
+	public void updateStatus(@NonNull final JsonRequestCandidateResults results)
 	{
 		final AdIssueId generalAdIssueId = createADIssue(results.getError());
 		if (generalAdIssueId != null)
@@ -472,12 +472,12 @@ class ShipmentCandidateAPIService
 		}
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
 				results.getItems(),
-				item -> ShipmentScheduleId.ofRepoId(item.getShipmentScheduleId().getValue()));
+				item -> ShipmentScheduleId.ofRepoId(item.getScheduleId().getValue()));
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getByIds(shipmentScheduleIds);
 
-		for (final JsonRequestShipmentCandidateResult resultItem : results.getItems())
+		for (final JsonRequestCandidateResult resultItem : results.getItems())
 		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(resultItem.getShipmentScheduleId().getValue());
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(resultItem.getScheduleId().getValue());
 			final ShipmentSchedule shipmentSchedule = shipmentSchedules.get(shipmentScheduleId);
 			if (shipmentSchedule == null)
 			{

@@ -23,7 +23,7 @@
 package de.metas.rest_api.shipping;
 
 import de.metas.Profiles;
-import de.metas.common.shipping.receiptcandidate.JsonRequestReceiptCandidateResults;
+import de.metas.common.shipping.JsonRequestCandidateResults;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -67,7 +67,7 @@ public class ReceiptCandidatesRestController
 	}
 
 	@PostMapping("receiptCandidates")
-	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestReceiptCandidateResults status)
+	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestCandidateResults status)
 	{
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
 		{
