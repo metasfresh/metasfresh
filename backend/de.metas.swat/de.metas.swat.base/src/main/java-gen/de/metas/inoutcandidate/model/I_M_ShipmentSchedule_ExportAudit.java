@@ -155,7 +155,7 @@ public interface I_M_ShipmentSchedule_ExportAudit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Shipment disposition export revision.
+	 * Set Shipment Disposition Export Revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -164,7 +164,7 @@ public interface I_M_ShipmentSchedule_ExportAudit
 	public void setM_ShipmentSchedule_ExportAudit_ID (int M_ShipmentSchedule_ExportAudit_ID);
 
 	/**
-	 * Get Shipment disposition export revision.
+	 * Get Shipment Disposition Export Revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

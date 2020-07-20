@@ -47,7 +47,7 @@ public class RouteBuilderCommonUtil
 	@NonNull
 	public JacksonDataFormat setupMetasfreshJSONFormat(
 			@NonNull final CamelContext context,
-			@NonNull final Class<JsonResponseShipmentCandidates> unmarshalType)
+			@NonNull final Class<?> unmarshalType)
 	{
 		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
 		jacksonDataFormat.setCamelContext(context);

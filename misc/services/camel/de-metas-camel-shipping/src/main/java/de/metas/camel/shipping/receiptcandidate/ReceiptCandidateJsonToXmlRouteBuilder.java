@@ -24,8 +24,10 @@ package de.metas.camel.shipping.receiptcandidate;
 
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlProcessor;
+import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
 import org.apache.camel.component.file.GenericFileOperationFailedException;
@@ -34,7 +36,7 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
-	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ShipmentCandidate-JSON-To-Filemaker-XML";
+	public static final String MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ReceiptCandidate-JSON-To-Filemaker-XML";
 
 	@Override
 	public void configure()
@@ -48,21 +50,22 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 		RouteBuilderCommonUtil.setupProperties(getContext());
 
-		final Class<JsonResponseShipmentCandidates> unmarshalType = JsonResponseShipmentCandidates.class;
-		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), unmarshalType);
-
+		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonResponseReceiptCandidates.class);
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
-		from(timer("pollShipmentCandidateAPI")
+		from(timer("pollReceiptCandidateAPI")
 				.period(5 * 1000))
-				.routeId(MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML)
+				.routeId(MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML)
 				.streamCaching()
+				.log(LoggingLevel.INFO, "Invoking REST-EP")
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.to(http("{{metasfresh.api.baseurl}}/receipts/receiptCandidates"))
+				.log(LoggingLevel.TRACE, "Unmarshalling JSON")
 				.unmarshal(jacksonDataFormat)
 
-				.process(new ShipmentCandidateJsonToXmlProcessor())
+				.log(LoggingLevel.TRACE, "Processing JSON")
+				.process(new ReceiptCandidateJsonToXmlProcessor())
 
 				.choice()
 				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))

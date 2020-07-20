@@ -49,9 +49,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 		RouteBuilderCommonUtil.setupProperties(getContext());
 
-		final Class<JsonResponseShipmentCandidates> unmarshalType = JsonResponseShipmentCandidates.class;
-		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), unmarshalType);
-
+		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonResponseShipmentCandidates.class);
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
 		from(timer("pollShipmentCandidateAPI")

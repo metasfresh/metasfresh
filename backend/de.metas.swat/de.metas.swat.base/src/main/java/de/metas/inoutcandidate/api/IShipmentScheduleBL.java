@@ -23,12 +23,15 @@ package de.metas.inoutcandidate.api;
  */
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -48,6 +51,8 @@ import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
@@ -106,7 +111,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
 	 *
-	 * @param shipmentSchedule
 	 * @return the previous <code>QtyOrdered</code> value of the schedule
 	 *         <li>NOTE: This returned value is never used. Maybe we shall change this method to return void.
 	 * @task 08255
@@ -173,4 +177,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * The scheds will be closed only if the sys config is set to 'Y'
 	 */
 	void closePartiallyShipped_ShipmentSchedules(I_M_InOut inoutRecord);
+
+	void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched);
 }

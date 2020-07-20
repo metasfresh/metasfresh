@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
@@ -53,6 +54,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -114,8 +116,6 @@ import lombok.NonNull;
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
 
-	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
-
 	@VisibleForTesting
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
 	{
@@ -146,7 +146,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 	private final PickingBOMService pickingBOMService;
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -417,23 +416,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				sched.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
 			}
 
-			updateCanBeExportedAfter(sched);
+			shipmentScheduleBL.updateCanBeExportedAfter(sched);
 
 			shipmentSchedulePA.save(sched);
-		}
-	}
-
-	private void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
-				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
-				sched.getAD_Client_ID(),
-				sched.getAD_Org_ID());
-		if (canBeExportedAfterSeconds >= 0)
-		{
-			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
-			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
-			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
 		}
 	}
 

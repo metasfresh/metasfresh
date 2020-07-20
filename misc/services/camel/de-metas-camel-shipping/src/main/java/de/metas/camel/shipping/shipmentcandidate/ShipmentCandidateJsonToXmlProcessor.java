@@ -77,6 +77,12 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		final JsonResponseShipmentCandidates scheduleList = exchange.getIn().getBody(JsonResponseShipmentCandidates.class);
 
 		final var items = scheduleList.getItems();
+		exchange.getIn().setHeader(ShipmentCandidateJsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
+		if(items.isEmpty())
+		{
+			log.debug("jsonResponseReceiptCandidates.items is empty; -> nothing to do");
+		}
+
 		log.debug("process method called; scheduleList with " + items.size() + " items");
 
 		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{shipmentCandidate.FMPXMLRESULT.DATABASE.NAME}}");
@@ -109,7 +115,6 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 				.build());
 		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
-		exchange.getIn().setHeader(ShipmentCandidateJsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
 	}
 
 	private ROW createROW(@NonNull final JsonResponseShipmentCandidate item)

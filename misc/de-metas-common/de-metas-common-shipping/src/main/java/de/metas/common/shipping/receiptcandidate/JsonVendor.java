@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,13 +20,34 @@
  * #L%
  */
 
-package de.metas.inoutcandidate.exportaudit;
+package de.metas.common.shipping.receiptcandidate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
-public interface APIExportAuditRepository<T extends APIExportAuditItem>
+import javax.annotation.Nullable;
+
+@Value
+public class JsonVendor
 {
-	APIExportAudit<T> getByTransactionId(@NonNull  String transactionId);
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String companyName;
 
-	void save(@NonNull APIExportAudit<T> audit);
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String language;
+
+	@JsonCreator
+	@Builder
+	public JsonVendor(
+			@JsonProperty("companyName") @Nullable final String companyName,
+			@JsonProperty("language") @Nullable final String language
+	)
+	{
+		this.companyName = companyName;
+		this.language = language;
+	}
 }

@@ -44,8 +44,8 @@ import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate.JsonResponseReceiptCandidateBuilder;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates.JsonResponseReceiptCandidatesBuilder;
-import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
-import de.metas.common.shipping.shipmentcandidate.JsonCustomer.JsonCustomerBuilder;
+import de.metas.common.shipping.receiptcandidate.JsonVendor;
+import de.metas.common.shipping.receiptcandidate.JsonVendor.JsonVendorBuilder;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -161,7 +161,8 @@ class ReceiptCandidateAPIService
 						.receiptScheduleId(receiptSchedule.getId())
 						.asiId(receiptSchedule.getAttributeSetInstanceId())
 						.orderId(receiptSchedule.getOrderId())
-						.productId(receiptSchedule.getProductId());
+						.productId(receiptSchedule.getProductId())
+						.bPartnerId(receiptSchedule.getVendorId());
 			}
 			final IdsRegistry idsRegistry = idsRegistryBuilder.build();
 
@@ -200,8 +201,8 @@ class ReceiptCandidateAPIService
 				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ReceiptSchedule.Table_Name, receiptSchedule.getId()))
 				{
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(receiptSchedule, attributesForASIs);
-					final JsonCustomer customer = createJsonCustomer(receiptSchedule, bpartnerIdToBPartner);
-					final JsonProduct product = createJsonProduct(receiptSchedule, customer.getLanguage(), productId2Product);
+					final JsonVendor vendor = createJsonVendor(receiptSchedule, bpartnerIdToBPartner);
+					final JsonProduct product = createJsonProduct(receiptSchedule, vendor.getLanguage(), productId2Product);
 					final I_C_Order orderRecord = orderIdToOrderRecord.get(receiptSchedule.getOrderId());
 					final Quantity quantity = receiptSchedule.getQuantityToDeliver();
 					final List<JsonQuantity> quantities = createJsonQuantities(quantity);
@@ -242,7 +243,7 @@ class ReceiptCandidateAPIService
 		return ImmutableList.of(JsonQuantity.builder().qty(quantity.toBigDecimal()).uomCode(quantity.getUOMSymbol()).build());
 	}
 
-	private JsonCustomer createJsonCustomer(
+	private JsonVendor createJsonVendor(
 			@NonNull final ReceiptSchedule receiptSchedule,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
@@ -252,11 +253,11 @@ class ReceiptCandidateAPIService
 
 		final String adLanguage = bpartner.getLanguage() != null ? bpartner.getLanguage().getAD_Language() : Env.getAD_Language();
 
-		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
+		final JsonVendorBuilder vendorBuilder = JsonVendor.builder()
 				.companyName(CoalesceUtil.coalesce(bpartner.getCompanyName(), bpartner.getName()))
 				.language(adLanguage);
 
-		return customerBuilder.build();
+		return vendorBuilder.build();
 	}
 
 	private JsonProduct createJsonProduct(
@@ -401,7 +402,7 @@ class ReceiptCandidateAPIService
 		final AdIssueId generalAdIssueId = createADIssue(results.getError());
 		if (generalAdIssueId != null)
 		{
-			logger.debug("Created AD_Issue_ID={} that applies to all exported shipment schedules", generalAdIssueId.getRepoId());
+			logger.debug("Created AD_Issue_ID={} that applies to all exported receipt schedules", generalAdIssueId.getRepoId());
 		}
 
 		if (results.getItems().isEmpty())

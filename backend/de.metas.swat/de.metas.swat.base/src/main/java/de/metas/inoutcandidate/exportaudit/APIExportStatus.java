@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.Arrays;
 
 public enum APIExportStatus implements ReferenceListAwareEnum
