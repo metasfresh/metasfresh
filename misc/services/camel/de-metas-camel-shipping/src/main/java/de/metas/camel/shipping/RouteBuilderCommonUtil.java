@@ -34,6 +34,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.component.jackson.JacksonDataFormat;
+import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 @UtilityClass
@@ -42,21 +43,6 @@ public class RouteBuilderCommonUtil
 	public static final String NUMBER_OF_ITEMS = "NumberOfItems";
 
 	public static final String FEEDBACK_ROUTE = "feedback";
-
-	public void setupFeedbackRoute(
-			@NonNull final EndpointRouteBuilder routeBuilder,
-			@NonNull final JacksonDataFormat jacksonDataFormat,
-			@NonNull final String apiPath)
-	{
-		routeBuilder
-				.from(routeBuilder.direct(FEEDBACK_ROUTE))
-				.routeId("Candidate-Feedback-TO-MF")
-				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
-				.process(new FeedbackProzessor())
-				.marshal(jacksonDataFormat)
-				.setHeader(Exchange.HTTP_METHOD, routeBuilder.constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.to(routeBuilder.http("{{metasfresh.api.baseurl}}" + apiPath));
-	}
 
 	@NonNull
 	public JacksonDataFormat setupMetasfreshJSONFormat(
@@ -78,5 +64,27 @@ public class RouteBuilderCommonUtil
 		jacksonXMLDataFormat.setUnmarshalType(FMPXMLRESULT.class);
 		jacksonXMLDataFormat.setXmlMapper("FMPXMLRESULT-XmlMapper");
 		return jacksonXMLDataFormat;
+	}
+
+	public void setupProperties(@NonNull final CamelContext context)
+	{
+		final PropertiesComponent pc = new PropertiesComponent();
+		pc.setLocation("classpath:shipping.properties");
+		context.setPropertiesComponent(pc);
+	}
+
+	public void setupFeedbackRoute(
+			@NonNull final EndpointRouteBuilder routeBuilder,
+			@NonNull final JacksonDataFormat jacksonDataFormat,
+			@NonNull final String apiPath)
+	{
+		routeBuilder
+				.from(routeBuilder.direct(FEEDBACK_ROUTE))
+				.routeId("Candidate-Feedback-TO-MF")
+				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
+				.process(new FeedbackProzessor())
+				.marshal(jacksonDataFormat)
+				.setHeader(Exchange.HTTP_METHOD, routeBuilder.constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.to(routeBuilder.http("{{metasfresh.api.baseurl}}" + apiPath));
 	}
 }

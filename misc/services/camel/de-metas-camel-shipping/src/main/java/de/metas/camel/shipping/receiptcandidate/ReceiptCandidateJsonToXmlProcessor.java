@@ -70,7 +70,7 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		final JsonResponseReceiptCandidates scheduleList = exchange.getIn().getBody(JsonResponseReceiptCandidates.class);
 
 		final var items = scheduleList.getItems();
-		log.info("process method called; scheduleList with " + items.size() + " items");
+		log.debug("process method called; scheduleList with " + items.size() + " items");
 
 		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receiptCandidate.FMPXMLRESULT.DATABASE.NAME}}");
 

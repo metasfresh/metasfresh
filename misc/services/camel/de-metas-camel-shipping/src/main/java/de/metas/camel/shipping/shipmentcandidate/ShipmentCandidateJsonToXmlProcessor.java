@@ -77,7 +77,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		final JsonResponseShipmentCandidates scheduleList = exchange.getIn().getBody(JsonResponseShipmentCandidates.class);
 
 		final var items = scheduleList.getItems();
-		log.info("process method called; scheduleList with " + items.size() + " items");
+		log.debug("process method called; scheduleList with " + items.size() + " items");
 
 		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{shipmentCandidate.FMPXMLRESULT.DATABASE.NAME}}");
 

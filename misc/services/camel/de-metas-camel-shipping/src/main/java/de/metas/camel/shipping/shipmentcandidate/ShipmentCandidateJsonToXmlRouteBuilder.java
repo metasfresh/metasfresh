@@ -45,7 +45,9 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.redeliveryDelay(10000));
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
-				.to(direct("feedback"));
+				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE));
+
+		RouteBuilderCommonUtil.setupProperties(getContext());
 
 		final Class<JsonResponseShipmentCandidates> unmarshalType = JsonResponseShipmentCandidates.class;
 		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), unmarshalType);
