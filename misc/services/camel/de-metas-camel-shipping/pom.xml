@@ -167,7 +167,7 @@
             <version>${metasfresh.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core:</groupId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-annotations</artifactId>
                 </exclusion>
             </exclusions>
@@ -223,7 +223,7 @@
                 <version>3.4.0</version>
                 <configuration>
                     <logClasspath>true</logClasspath>
-                    <mainClass>de.metas.esb.inout.shipment.MyApplication</mainClass>
+                    <mainClass>de.metas.camel.shipping.MainApp</mainClass>
                 </configuration>
             </plugin>
 

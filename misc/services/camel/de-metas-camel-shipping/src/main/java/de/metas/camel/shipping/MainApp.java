@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.camel.shipping.shipmentcandidate;
+package de.metas.camel.shipping;
 
+import de.metas.camel.shipping.shipmentcandidate.JsonToXmlRouteBuilder;
 import org.apache.camel.main.Main;
 
 /**

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.rest_api.shipment;
+package de.metas.rest_api.shipping;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -40,29 +40,29 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.JsonProduct.JsonProductBuilder;
-import de.metas.common.shipping.receiptcandidate.JsonRequestReceiptCandidateResult;
-import de.metas.common.shipping.receiptcandidate.JsonRequestReceiptCandidateResults;
-import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate;
-import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate.JsonResponseReceiptCandidateBuilder;
-import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
-import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates.JsonResponseReceiptCandidatesBuilder;
 import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
 import de.metas.common.shipping.shipmentcandidate.JsonCustomer.JsonCustomerBuilder;
+import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResult;
+import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResults;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate.JsonResponseShipmentCandidateBuilder;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates.JsonResponseShipmentCandidatesBuilder;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
-import de.metas.inoutcandidate.ReceiptSchedule;
-import de.metas.inoutcandidate.ReceiptScheduleId;
-import de.metas.inoutcandidate.ReceiptScheduleRepository;
-import de.metas.inoutcandidate.ReceiptScheduleRepository.ReceiptScheduleQuery;
+import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
+import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
+import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import de.metas.inoutcandidate.exportaudit.ReceiptScheduleAuditRepository;
-import de.metas.inoutcandidate.exportaudit.ReceiptScheduleExportAuditItem;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderId;
@@ -110,12 +110,12 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 
 @Service
-class ReceiptCandidateAPIService
+class ShipmentCandidateAPIService
 {
-	private final static transient Logger logger = LogManager.getLogger(ReceiptCandidateAPIService.class);
+	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
 
-	private final ReceiptScheduleAuditRepository receiptScheduleAuditRepository;
-	private final ReceiptScheduleRepository receiptScheduleRepository;
+	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
+	private final ShipmentScheduleRepository shipmentScheduleRepository;
 	private final BPartnerCompositeRepository bPartnerCompositeRepository;
 	private final ProductRepository productRepository;
 
@@ -124,14 +124,14 @@ class ReceiptCandidateAPIService
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
-	public ReceiptCandidateAPIService(
-			@NonNull final ReceiptScheduleAuditRepository receiptScheduleAuditRepository,
-			@NonNull final ReceiptScheduleRepository receiptScheduleRepository,
+	public ShipmentCandidateAPIService(
+			@NonNull final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository,
+			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
 			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository,
 			@NonNull final ProductRepository productRepository)
 	{
-		this.receiptScheduleAuditRepository = receiptScheduleAuditRepository;
-		this.receiptScheduleRepository = receiptScheduleRepository;
+		this.shipmentScheduleAuditRepository = shipmentScheduleAuditRepository;
+		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 		this.productRepository = productRepository;
 	}
@@ -139,34 +139,36 @@ class ReceiptCandidateAPIService
 	/**
 	 * Exports them; Flags them as "exported - don't touch"; creates an export audit table with one line per shipment schedule.
 	 */
-	public JsonResponseReceiptCandidates exportReceiptCandidates(final int limit)
+	public JsonResponseShipmentCandidates exportShipmentCandidates(final int limit)
 	{
 		final String transactionId = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
 		{
-			final APIExportAuditBuilder<ReceiptScheduleExportAuditItem> auditBuilder = APIExportAudit
-					.<ReceiptScheduleExportAuditItem>builder()
-					.transactionId(transactionId);
+			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
+					APIExportAudit
+							.<ShipmentScheduleExportAuditItem>builder()
+							.transactionId(transactionId);
 
-			final ReceiptScheduleQuery receiptScheduleQuery = ReceiptScheduleQuery.builder()
+			final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
 					.limit(limit)
 					.canBeExportedFrom(Instant.now())
 					.exportStatus(APIExportStatus.Pending)
 					.build();
-			final List<ReceiptSchedule> receiptSchedules = receiptScheduleRepository.getBy(receiptScheduleQuery);
-			if (receiptSchedules.isEmpty())
+			final List<ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+			if (shipmentSchedules.isEmpty())
 			{ // return empty result and call it a day
-				return JsonResponseReceiptCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
+				return JsonResponseShipmentCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
 			}
 
 			final IdsRegistry.IdsRegistryBuilder idsRegistryBuilder = IdsRegistry.builder();
-			for (final ReceiptSchedule receiptSchedule : receiptSchedules)
+			for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
 			{
 				idsRegistryBuilder
-						.receiptScheduleId(receiptSchedule.getId())
-						.asiId(receiptSchedule.getAttributeSetInstanceId())
-						.orderId(receiptSchedule.getOrderId())
-						.productId(receiptSchedule.getProductId());
+						.shipmentScheduleId(shipmentSchedule.getId())
+						.asiId(shipmentSchedule.getAttributeSetInstanceId())
+						.orderId(shipmentSchedule.getOrderId())
+						.bPartnerId(shipmentSchedule.getCustomerId())
+						.productId(shipmentSchedule.getProductId());
 			}
 			final IdsRegistry idsRegistry = idsRegistryBuilder.build();
 
@@ -180,8 +182,8 @@ class ReceiptCandidateAPIService
 				attributesForASIs = attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
 			}
 
-			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
-					.hasMoreItems(receiptSchedules.size() == 500)
+			final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
+					.hasMoreItems(shipmentSchedules.size() == 500)
 					.transactionKey(transactionId);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
@@ -200,24 +202,25 @@ class ReceiptCandidateAPIService
 
 			final ImmutableMap<ProductId, Product> productId2Product = Maps.uniqueIndex(productRepository.getByIds(idsRegistry.getProductIds()), Product::getId);
 
-			for (final ReceiptSchedule receiptSchedule : receiptSchedules)
+			for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
 			{
-				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ReceiptSchedule.Table_Name, receiptSchedule.getId()))
+				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentSchedule.getId()))
 				{
-					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(receiptSchedule, attributesForASIs);
-					final JsonCustomer customer = createJsonCustomer(receiptSchedule, bpartnerIdToBPartner);
-					final JsonProduct product = createJsonProduct(receiptSchedule, customer.getLanguage(), productId2Product);
-					final I_C_Order orderRecord = orderIdToOrderRecord.get(receiptSchedule.getOrderId());
-					final Quantity quantity = receiptSchedule.getQuantityToDeliver();
+					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(shipmentSchedule, attributesForASIs);
+					final JsonCustomer customer = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner);
+					final JsonProduct product = createJsonProduct(shipmentSchedule, customer.getLanguage(), productId2Product);
+					final I_C_Order orderRecord = orderIdToOrderRecord.get(shipmentSchedule.getOrderId());
+					final Quantity quantity = shipmentSchedule.getQuantityToDeliver();
 					final List<JsonQuantity> quantities = createJsonQuantities(quantity);
 
-					final JsonResponseReceiptCandidateBuilder itemBuilder = JsonResponseReceiptCandidate.builder()
-							.id(JsonMetasfreshId.of(receiptSchedule.getId().getRepoId()))
-							.orgCode(orgDAO.retrieveOrgValue(receiptSchedule.getOrgId()))
+					final JsonResponseShipmentCandidateBuilder itemBuilder = JsonResponseShipmentCandidate.builder()
+							.id(JsonMetasfreshId.of(shipmentSchedule.getId().getRepoId()))
+							.orgCode(orgDAO.retrieveOrgValue(shipmentSchedule.getOrgId()))
+							.customer(customer)
 							.product(product)
 							.attributeSetInstance(jsonAttributeSetInstance)
 							.quantities(quantities)
-							.dateOrdered(receiptSchedule.getDateOrdered());
+							.dateOrdered(shipmentSchedule.getDateOrdered());
 					if (orderRecord != null)
 					{
 						itemBuilder
@@ -226,16 +229,16 @@ class ReceiptCandidateAPIService
 					}
 
 					result.item(itemBuilder.build());
-					createExportedAuditItem(receiptSchedule, auditBuilder);
+					createExportedAuditItem(shipmentSchedule, auditBuilder);
 				}
-				catch (final ReceiptCandidateExportException e) // don't catch just any exception; just the "functional" ones
+				catch (final ShipmentCandidateExportException e) // don't catch just any exception; just the "functional" ones
 				{
-					createExportErrorAuditItem(receiptSchedule, transactionId, e, auditBuilder);
+					createExportErrorAuditItem(shipmentSchedule, e, auditBuilder);
 				}
 			}
 
-			receiptScheduleAuditRepository.save(auditBuilder.build());
-			receiptScheduleRepository.exportStatusMassUpdate(idsRegistry.getReceiptScheduleIds(), APIExportStatus.Exported);
+			shipmentScheduleAuditRepository.save(auditBuilder.build());
+			shipmentScheduleRepository.exportStatusMassUpdate(idsRegistry.getShipmentScheduleIds(), APIExportStatus.Exported);
 
 			return result.build();
 		}
@@ -248,28 +251,76 @@ class ReceiptCandidateAPIService
 	}
 
 	private JsonCustomer createJsonCustomer(
-			@NonNull final ReceiptSchedule receiptSchedule,
+			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
-		final BPartnerComposite composite = bpartnerIdToBPartner.get(receiptSchedule.getVendorId());
+		final BPartnerComposite composite = bpartnerIdToBPartner.get(shipmentSchedule.getCustomerId());
+		final BPartnerLocation location = composite
+				.extractLocation(shipmentSchedule.getLocationId())
+				.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's location from the shipment schedule's bPartner")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
+						.setParameter("C_BPartner_Location_ID", shipmentSchedule.getLocationId().getRepoId()));
 
+		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(location.getAddress1());
+		if (splitStreetAndHouseNumber == null)
+		{
+			throw new ShipmentCandidateExportException("BPartner's location needs to have an Address1 with a discernible street and street number")
+					.appendParametersToMessage()
+					.setParameter("Address1", location.getAddress1())
+					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
+					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+		}
 		final BPartner bpartner = composite.getBpartner();
 
 		final String adLanguage = bpartner.getLanguage() != null ? bpartner.getLanguage().getAD_Language() : Env.getAD_Language();
 
+		final String postal = location.getPostal();
+		if (EmptyUtil.isBlank(postal))
+		{
+			throw new ShipmentCandidateExportException("BPartner's location needs to have a postal set")
+					.appendParametersToMessage()
+					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
+					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+		}
+		final String city = location.getCity();
+		if (EmptyUtil.isBlank(city))
+		{
+			throw new ShipmentCandidateExportException("BPartner's location needs to have a city set")
+					.appendParametersToMessage()
+					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
+					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
 				.companyName(CoalesceUtil.coalesce(bpartner.getCompanyName(), bpartner.getName()))
+				.street(splitStreetAndHouseNumber.getLeft())
+				.streetNo(splitStreetAndHouseNumber.getRight())
+				.postal(postal)
+				.city(city)
+				.countryCode(location.getCountryCode())
 				.language(adLanguage);
+		if (shipmentSchedule.getContactId() != null)
+		{
+			final BPartnerContact contact = composite.extractContact(shipmentSchedule.getContactId())
+					.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
+							.appendParametersToMessage()
+							.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
+							.setParameter("AD_User_ID", shipmentSchedule.getContactId().getRepoId()));
 
+			customerBuilder
+					.contactEmail(contact.getEmail())
+					.contactName(contact.getName())
+					.contactPhone(CoalesceUtil.coalesce(contact.getMobilePhone(), contact.getPhone()));
+		}
 		return customerBuilder.build();
 	}
 
 	private JsonProduct createJsonProduct(
-			@NonNull final ReceiptSchedule receiptSchedule,
+			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final String adLanguage,
 			@NonNull final ImmutableMap<ProductId, Product> productId2Product)
 	{
-		final Product product = productId2Product.get(receiptSchedule.getProductId());
+		final Product product = productId2Product.get(shipmentSchedule.getProductId());
 
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
 				.productNo(product.getProductNo())
@@ -285,53 +336,52 @@ class ReceiptCandidateAPIService
 
 	@Nullable
 	private JsonAttributeSetInstance createJsonASI(
-			@NonNull final ReceiptSchedule receiptSchedule,
+			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final Map<AttributeSetInstanceId, ImmutableAttributeSet> attributesForASIs)
 	{
-		final AttributeSetInstanceId scheduleASIId = receiptSchedule.getAttributeSetInstanceId();
+		final AttributeSetInstanceId scheduleASIId = shipmentSchedule.getAttributeSetInstanceId();
 		if (!AttributeSetInstanceId.isRegular(scheduleASIId))
 		{
 			return null;
 		}
 		final ImmutableAttributeSet attributeSet = attributesForASIs.get(scheduleASIId);
-		return extractJsonAttributeSetInstance(attributeSet, receiptSchedule.getOrgId());
+		return extractJsonAttributeSetInstance(attributeSet, shipmentSchedule.getOrgId());
 	}
 
 	private void createExportedAuditItem(
-			@NonNull final ReceiptSchedule receiptSchedule,
-			@NonNull final APIExportAuditBuilder auditBuilder)
+			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder)
 	{
-		final OrgId orgId = receiptSchedule.getOrgId();
+		final OrgId orgId = shipmentSchedule.getOrgId();
 
 		auditBuilder.item(
-				receiptSchedule.getId(),
-				ReceiptScheduleExportAuditItem.builder()
+				shipmentSchedule.getId(),
+				ShipmentScheduleExportAuditItem.builder()
 						.exportStatus(APIExportStatus.Exported)
-						.repoIdAware(receiptSchedule.getId())
+						.repoIdAware(shipmentSchedule.getId())
 						.orgId(orgId)
 						.build());
 	}
 
 	private void createExportErrorAuditItem(
-			@NonNull final ReceiptSchedule receiptSchedule,
-			@NonNull final String transactionId,
-			@NonNull final ReceiptCandidateExportException e,
-			@NonNull final APIExportAuditBuilder auditBuilder)
+			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final ShipmentCandidateExportException e,
+			@NonNull final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder)
 	{
-		final OrgId orgId = receiptSchedule.getOrgId();
+		final OrgId orgId = shipmentSchedule.getOrgId();
 
 		final AdIssueId adIssueId = Services.get(IErrorManager.class).createIssue(IssueCreateRequest.builder()
 				.throwable(e)
 				.loggerName(logger.getName())
-				.sourceClassname(ReceiptCandidateAPIService.class.getName())
+				.sourceClassname(ShipmentCandidateAPIService.class.getName())
 				.summary(e.getMessage())
 				.build());
 
 		auditBuilder.item(
-				receiptSchedule.getId(),
-				ReceiptScheduleExportAuditItem.builder()
+				shipmentSchedule.getId(),
+				ShipmentScheduleExportAuditItem.builder()
 						.exportStatus(APIExportStatus.ExportError)
-						.repoIdAware(receiptSchedule.getId())
+						.repoIdAware(shipmentSchedule.getId())
 						.issueId(adIssueId)
 						.orgId(orgId)
 						.build());
@@ -383,7 +433,7 @@ class ReceiptCandidateAPIService
 	private static class IdsRegistry
 	{
 		@Singular
-		Set<ReceiptScheduleId> receiptScheduleIds;
+		Set<ShipmentScheduleId> shipmentScheduleIds;
 
 		@Singular
 		Set<AttributeSetInstanceId> asiIds;
@@ -401,7 +451,7 @@ class ReceiptCandidateAPIService
 	/**
 	 * Use the given pojo's transactionKey to load the respective export audit table and update its lines
 	 */
-	public void updateStatus(@NonNull final JsonRequestReceiptCandidateResults results)
+	public void updateStatus(@NonNull final JsonRequestShipmentCandidateResults results)
 	{
 		final AdIssueId generalAdIssueId = createADIssue(results.getError());
 		if (generalAdIssueId != null)
@@ -414,34 +464,35 @@ class ReceiptCandidateAPIService
 			logger.debug("given results is empty; -> return");
 			return;
 		}
-		final APIExportAudit<ReceiptScheduleExportAuditItem> audit = receiptScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
-		if (audit == null)
+		final APIExportAudit<ShipmentScheduleExportAuditItem> auditRecords = shipmentScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
+		if (auditRecords == null)
 		{
 			logger.debug("Given results.transactionKey={} does not match any audit records; -> return", results.getTransactionKey());
+			return;
 		}
-		final ImmutableSet<ReceiptScheduleId> receiptScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
 				results.getItems(),
-				item -> ReceiptScheduleId.ofRepoId(item.getReceiptScheduleId().getValue()));
-		final ImmutableMap<ReceiptScheduleId, ReceiptSchedule> receiptSchedules = receiptScheduleRepository.getByIds(receiptScheduleIds);
+				item -> ShipmentScheduleId.ofRepoId(item.getShipmentScheduleId().getValue()));
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getByIds(shipmentScheduleIds);
 
-		for (final JsonRequestReceiptCandidateResult resultItem : results.getItems())
+		for (final JsonRequestShipmentCandidateResult resultItem : results.getItems())
 		{
-			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(resultItem.getReceiptScheduleId().getValue());
-			final ReceiptSchedule receiptSchedule = receiptSchedules.get(receiptScheduleId);
-			if (receiptSchedule == null)
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(resultItem.getShipmentScheduleId().getValue());
+			final ShipmentSchedule shipmentSchedule = shipmentSchedules.get(shipmentScheduleId);
+			if (shipmentSchedule == null)
 			{
 				continue; // also shouldn't happen, unless we do some API-testing with static JSON stuff
 			}
 
-			ReceiptScheduleExportAuditItem auditItem = audit.getItemById(receiptScheduleId);
-			if (auditItem == null) // should not happen, but we don't want to make a fuzz in case it does
+			ShipmentScheduleExportAuditItem auditRecord = auditRecords.getItemById(shipmentScheduleId);
+			if (auditRecord == null) // should not happen, but we don't want to make a fuzz in case it does
 			{
-				auditItem = ReceiptScheduleExportAuditItem.builder()
-						.orgId(receiptSchedule.getOrgId())
-						.repoIdAware(receiptScheduleId)
+				auditRecord = ShipmentScheduleExportAuditItem.builder()
+						.orgId(shipmentSchedule.getOrgId())
+						.repoIdAware(shipmentScheduleId)
 						.exportStatus(Pending)
 						.build();
-				audit.addItem(auditItem);
+				auditRecords.addItem(auditRecord);
 			}
 
 			final APIExportStatus status;
@@ -454,7 +505,7 @@ class ReceiptCandidateAPIService
 					status = ExportedAndError;
 
 					final AdIssueId specificAdIssueId = createADIssue(resultItem.getError());
-					auditItem.setIssueId(CoalesceUtil.coalesce(specificAdIssueId, generalAdIssueId));
+					auditRecord.setIssueId(CoalesceUtil.coalesce(specificAdIssueId, generalAdIssueId));
 					break;
 				default:
 					throw new AdempiereException("resultItem has unexpected outcome=" + resultItem.getOutcome())
@@ -462,14 +513,11 @@ class ReceiptCandidateAPIService
 							.setParameter("resultItem", resultItem);
 			}
 
-			auditItem.setExportStatus(status);
-			if (receiptSchedule != null)
-			{
-				receiptSchedule.setExportStatus(status);
-			}
+			auditRecord.setExportStatus(status);
+			shipmentSchedule.setExportStatus(status);
 		}
-		receiptScheduleRepository.saveAll(receiptSchedules.values());
-		receiptScheduleAuditRepository.save(audit);
+		shipmentScheduleRepository.saveAll(shipmentSchedules.values());
+		shipmentScheduleAuditRepository.save(auditRecords);
 	}
 
 	@Nullable
@@ -488,9 +536,9 @@ class ReceiptCandidateAPIService
 				.build());
 	}
 
-	private static class ReceiptCandidateExportException extends AdempiereException
+	private static class ShipmentCandidateExportException extends AdempiereException
 	{
-		public ReceiptCandidateExportException(final String message)
+		public ShipmentCandidateExportException(final String message)
 		{
 			super(message);
 		}

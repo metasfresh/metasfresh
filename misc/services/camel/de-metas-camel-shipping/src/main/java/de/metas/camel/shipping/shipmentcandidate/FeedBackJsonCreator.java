@@ -54,12 +54,12 @@ public class FeedBackJsonCreator implements Processor
 			throwable.printStackTrace(new PrintWriter(sw));
 			final String stackTrace = sw.toString();
 
-			final JsonError error =JsonError.ofSingleItem(
-			 JsonErrorItem.builder()
-					.message(throwable.getMessage())
-					.detail("Exception-Class=" + throwable.getClass().getName())
-					.stackTrace(stackTrace)
-					.build());
+			final JsonError error = JsonError.ofSingleItem(
+					JsonErrorItem.builder()
+							.message(throwable.getMessage())
+							.detail("Exception-Class=" + throwable.getClass().getName())
+							.stackTrace(stackTrace)
+							.build());
 			exchange.getIn().setBody(results.withError(error));
 		}
 		else

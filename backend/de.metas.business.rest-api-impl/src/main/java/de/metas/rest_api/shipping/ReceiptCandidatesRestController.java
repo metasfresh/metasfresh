@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.rest_api.shipment;
+package de.metas.rest_api.shipping;
 
 import de.metas.Profiles;
-import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResults;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.common.shipping.receiptcandidate.JsonRequestReceiptCandidateResults;
+import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
@@ -41,38 +41,38 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
-@RequestMapping(ShipmentCandidatesRestController.ENDPOINT)
+@RequestMapping(ReceiptCandidatesRestController.ENDPOINT)
 @RestController
 @Profile(Profiles.PROFILE_App)
-public class ShipmentCandidatesRestController
+public class ReceiptCandidatesRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipments";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/receipts";
 
-	private final ShipmentCandidateAPIService shipmentCandidateAPIService;
+	private final ReceiptCandidateAPIService receiptCandidateAPIService;
 
-	public ShipmentCandidatesRestController(@NonNull final ShipmentCandidateAPIService shipmentCandidateAPIService)
+	public ReceiptCandidatesRestController(@NonNull final ReceiptCandidateAPIService receiptCandidateAPIService)
 	{
-		this.shipmentCandidateAPIService = shipmentCandidateAPIService;
+		this.receiptCandidateAPIService = receiptCandidateAPIService;
 	}
 
-	@GetMapping("shipmentCandidates")
-	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@ApiParam("Max number of items too be returned in one requst.") //
+	@GetMapping("receiptCandidates")
+	public ResponseEntity<JsonResponseReceiptCandidates> getShipmentCandidates(
+			@ApiParam("Max number of items to be returned in one request.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{
 		final Integer limitEff = CoalesceUtil.coalesce(limit, 500);
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(limitEff);
+		final JsonResponseReceiptCandidates result = receiptCandidateAPIService.exportReceiptCandidates(limitEff);
 		return ResponseEntity.ok(result);
 	}
 
-	@PostMapping("shipmentCandidates")
-	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestShipmentCandidateResults status)
+	@PostMapping("receiptCandidates")
+	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestReceiptCandidateResults status)
 	{
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
 		{
-			shipmentCandidateAPIService.updateStatus(status);
-			return ResponseEntity.accepted().body("Shipment candidates updated");
+			receiptCandidateAPIService.updateStatus(status);
+			return ResponseEntity.accepted().body("Receipt candidates updated");
 		}
 	}
 }

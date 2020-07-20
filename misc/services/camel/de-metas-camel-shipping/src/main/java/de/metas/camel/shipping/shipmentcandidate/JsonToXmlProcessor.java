@@ -31,6 +31,7 @@ import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.PRODUCT;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
+import de.metas.common.shipping.Outcome;
 import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResult;
 import de.metas.common.shipping.shipmentcandidate.JsonRequestShipmentCandidateResults;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
@@ -98,7 +99,7 @@ public class JsonToXmlProcessor implements Processor
 			resultSet.row(row);
 
 			resultsBuilder.item(JsonRequestShipmentCandidateResult.builder()
-					.outcome(JsonRequestShipmentCandidateResult.Outcome.OK) // might be un-OKed later, if e.g. uploading the XML fails
+					.outcome(Outcome.OK) // might be un-OKed later, if e.g. uploading the XML fails
 					.shipmentScheduleId(item.getId())
 					.build());
 		}

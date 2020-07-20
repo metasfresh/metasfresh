@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.rest_api.shipment;
+package de.metas.rest_api.shipping;
 
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.business.BusinessTestHelper;
