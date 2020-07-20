@@ -85,10 +85,6 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 		context.start();
 
 		mockEndpoint.whenAnyExchangeReceived(new EmptyResult());
-		//final NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create(); // instead of waiting, go on whenever component one is ready
-
-		//template.sendBody("timer://pollShipmentCandidateAPI", "tick"); // this doesn't work, but the timer starts ticking all by itself
-		//assertThat(notify.matchesWaitTime()).isTrue();
 
 		context.stop();
 	}
