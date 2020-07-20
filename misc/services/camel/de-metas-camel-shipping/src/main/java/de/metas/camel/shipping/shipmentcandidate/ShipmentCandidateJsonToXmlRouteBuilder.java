@@ -36,7 +36,7 @@ import java.util.logging.Level;
 
 public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
-	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ShipmentCandidate-JSON-To-Filemaker-XML";
+	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-JSON-To-FM-XML-ShipmentCandidate";
 
 	@Override
 	public void configure()

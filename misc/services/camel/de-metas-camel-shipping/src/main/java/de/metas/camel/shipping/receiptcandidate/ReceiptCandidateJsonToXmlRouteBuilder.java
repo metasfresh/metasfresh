@@ -36,7 +36,7 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
-	public static final String MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ReceiptCandidate-JSON-To-Filemaker-XML";
+	public static final String MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-JSON-To-FM-XML-ReceiptCandidate";
 
 	@Override
 	public void configure()
