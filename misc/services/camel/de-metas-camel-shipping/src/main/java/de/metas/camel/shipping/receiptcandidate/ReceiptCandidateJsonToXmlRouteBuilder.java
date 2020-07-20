@@ -57,7 +57,6 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.period(5 * 1000))
 				.routeId(MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML)
 				.streamCaching()
-				.log(LoggingLevel.INFO, "Invoking REST-EP")
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.to(http("{{metasfresh.api.baseurl}}/receipts/receiptCandidates"))
