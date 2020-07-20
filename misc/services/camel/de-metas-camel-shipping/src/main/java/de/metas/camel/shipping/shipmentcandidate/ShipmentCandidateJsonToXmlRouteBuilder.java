@@ -25,16 +25,17 @@ package de.metas.camel.shipping.shipmentcandidate;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
 import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
+import java.util.logging.Level;
+
 public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
-	public static final String NUMBER_OF_ITEMS = "NumberOfItems";
-
 	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ShipmentCandidate-JSON-To-Filemaker-XML";
 
 	@Override
@@ -65,6 +66,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 				.choice()
 				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
+				.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " + Exchange.FILE_NAME)
 				.marshal(jacksonXMLDataFormat)
 				.multicast() // store the file both locally and send it to the remote folder
 				.stopOnException()
@@ -74,6 +76,6 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.end() // "NumberOfItems" - choice
 		;
 
-		RouteBuilderCommonUtil.setupFeedbackRoute(this, jacksonDataFormat,"/shipments/shipmentCandidates");
+		RouteBuilderCommonUtil.setupFeedbackRoute(this, jacksonDataFormat, "/shipments/shipmentCandidates");
 	}
 }

@@ -23,6 +23,8 @@
 package de.metas.camel.shipping.receiptcandidate;
 
 import de.metas.camel.shipping.FeedbackProzessor;
+import de.metas.camel.shipping.JsonToXmlProcessorCommonUtil;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.DATABASE;
@@ -45,6 +47,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {
@@ -70,22 +73,16 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		final JsonResponseReceiptCandidates scheduleList = exchange.getIn().getBody(JsonResponseReceiptCandidates.class);
 
 		final var items = scheduleList.getItems();
-		exchange.getIn().setHeader(ShipmentCandidateJsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
-		if(items.isEmpty())
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, items.size());
+		if (items.isEmpty())
 		{
 			log.debug("jsonResponseReceiptCandidates.items is empty; -> nothing to do");
+			return;
 		}
 
 		log.debug("process method called; scheduleList with " + items.size() + " items");
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receiptCandidate.FMPXMLRESULT.DATABASE.NAME}}");
-
-		final FMPXMLRESULTBuilder builder = FMPXMLRESULT.builder()
-				.errorCode("0")
-				.product(new PRODUCT())
-				.database(DATABASE.builder()
-						.name(databaseName)
-						.records(Integer.toString(items.size()))
-						.build())
+		final FMPXMLRESULTBuilder builder = JsonToXmlProcessorCommonUtil
+				.createFmpxmlresultBuilder(exchange, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()
@@ -108,6 +105,8 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
 	}
+
+
 
 	private ROW createROW(@NonNull final JsonResponseReceiptCandidate item)
 	{

@@ -61,20 +61,19 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.to(http("{{metasfresh.api.baseurl}}/receipts/receiptCandidates"))
-				.log(LoggingLevel.TRACE, "Unmarshalling JSON")
 				.unmarshal(jacksonDataFormat)
 
-				.log(LoggingLevel.TRACE, "Processing JSON")
 				.process(new ReceiptCandidateJsonToXmlProcessor())
 
 				.choice()
 				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
-				.marshal(jacksonXMLDataFormat)
-				.multicast() // store the file both locally and send it to the remote folder
-				.stopOnException()
-				.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
-				.end()
-				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE))
+					.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " + Exchange.FILE_NAME)
+					.marshal(jacksonXMLDataFormat)
+					.multicast() // store the file both locally and send it to the remote folder
+					.stopOnException()
+					.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
+					.end()
+					.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE))
 				.end() // "NumberOfItems" - choice
 		;
 

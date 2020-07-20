@@ -23,6 +23,8 @@
 package de.metas.camel.shipping.shipmentcandidate;
 
 import de.metas.camel.shipping.FeedbackProzessor;
+import de.metas.camel.shipping.JsonToXmlProcessorCommonUtil;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FIELD;
@@ -77,23 +79,16 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		final JsonResponseShipmentCandidates scheduleList = exchange.getIn().getBody(JsonResponseShipmentCandidates.class);
 
 		final var items = scheduleList.getItems();
-		exchange.getIn().setHeader(ShipmentCandidateJsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, items.size());
 		if(items.isEmpty())
 		{
 			log.debug("jsonResponseReceiptCandidates.items is empty; -> nothing to do");
+			return;
 		}
 
 		log.debug("process method called; scheduleList with " + items.size() + " items");
-
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{shipmentCandidate.FMPXMLRESULT.DATABASE.NAME}}");
-
-		final FMPXMLRESULTBuilder builder = FMPXMLRESULT.builder()
-				.errorCode("0")
-				.product(new PRODUCT())
-				.database(DATABASE.builder()
-						.name(databaseName)
-						.records(Integer.toString(items.size()))
-						.build())
+		final FMPXMLRESULTBuilder builder = JsonToXmlProcessorCommonUtil
+				.createFmpxmlresultBuilder(exchange, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()
