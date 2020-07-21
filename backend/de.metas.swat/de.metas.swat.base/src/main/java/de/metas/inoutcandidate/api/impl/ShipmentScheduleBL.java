@@ -719,9 +719,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return isCloseIfPartiallyInvoiced;
 	}
 
+	@Override
 	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		if (!Objects.equals(APIExportStatus.ofNullableCode(sched.getExportStatus()), APIExportStatus.Pending))
+		// we see "not-yet-set" as equivalent to "pending"
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(sched.getExportStatus(), APIExportStatus.Pending);
+		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
 		{
 			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
 			sched.setCanBeExportedFrom(Env.MAX_DATE);

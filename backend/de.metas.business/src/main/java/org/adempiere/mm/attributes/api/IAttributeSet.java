@@ -58,7 +58,7 @@ public interface IAttributeSet
 	 */
 	boolean hasAttribute(AttributeCode attributeCode);
 
-	default boolean hasAttribute(String attributeKey)
+	default boolean hasAttribute(@NonNull String attributeKey)
 	{
 		return hasAttribute(AttributeCode.ofString(attributeKey));
 	}
@@ -78,8 +78,10 @@ public interface IAttributeSet
 	 *
 	 * @return {@link I_M_Attribute} or <code>null</code>
 	 */
+	@Nullable
 	I_M_Attribute getAttributeByIdIfExists(int attributeId);
 
+	@Nullable
 	default I_M_Attribute getAttributeByIdIfExists(@NonNull final AttributeId attributeId)
 	{
 		return getAttributeByIdIfExists(attributeId.getRepoId());
@@ -102,7 +104,7 @@ public interface IAttributeSet
 		return getAttributeValueType(attributeRecord);
 	}
 
-	default String getAttributeName(AttributeId attributeId)
+	default String getAttributeName(@NonNull final AttributeId attributeId)
 	{
 		final I_M_Attribute attributeRecord = getAttributeByIdIfExists(attributeId);
 		if (attributeRecord == null)
@@ -115,7 +117,7 @@ public interface IAttributeSet
 	/**
 	 * @return {@code M_Attribute.Value}.
 	 */
-	default AttributeCode getAttributeCode(AttributeId attributeId)
+	default @NonNull AttributeCode getAttributeCode(@NonNull final AttributeId attributeId)
 	{
 		final I_M_Attribute attributeRecord = getAttributeByIdIfExists(attributeId);
 		if (attributeRecord == null)
@@ -131,7 +133,7 @@ public interface IAttributeSet
 	 */
 	Object getValue(AttributeCode attributeCode);
 
-	default Object getValue(String attributeKey)
+	default Object getValue(@NonNull final String attributeKey)
 	{
 		return getValue(AttributeCode.ofString(attributeKey));
 	}
@@ -145,14 +147,14 @@ public interface IAttributeSet
 	 * @return BigDecimal value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	BigDecimal getValueAsBigDecimal(AttributeCode attributeCode);
+	BigDecimal getValueAsBigDecimal(@NonNull AttributeCode attributeCode);
 
-	default BigDecimal getValueAsBigDecimal(String attributeKey)
+	default BigDecimal getValueAsBigDecimal(@NonNull final String attributeKey)
 	{
 		return getValueAsBigDecimal(AttributeCode.ofString(attributeKey));
 	}
 
-	default BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
+	default BigDecimal getValueAsBigDecimal(@NonNull final I_M_Attribute attribute)
 	{
 		return getValueAsBigDecimal(attribute.getValue());
 	}
@@ -163,24 +165,27 @@ public interface IAttributeSet
 	 */
 	int getValueAsInt(AttributeCode attributeCode);
 
-	default int getValueAsInt(String attributeKey)
+	default int getValueAsInt(@NonNull String attributeKey)
 	{
 		return getValueAsInt(AttributeCode.ofString(attributeKey));
 	}
 
-	default int getValueAsInt(final I_M_Attribute attribute)
+	default int getValueAsInt(@NonNull final I_M_Attribute attribute)
 	{
 		return getValueAsInt(attribute.getValue());
 	}
 
+	@Nullable
 	Date getValueAsDate(AttributeCode attributeCode);
 
-	default Date getValueAsDate(String attributeKey)
+	@Nullable
+	default Date getValueAsDate(@NonNull String attributeKey)
 	{
 		return getValueAsDate(AttributeCode.ofString(attributeKey));
 	}
 
-	default Date getValueAsDate(final I_M_Attribute attribute)
+	@Nullable
+	default Date getValueAsDate(@NonNull final I_M_Attribute attribute)
 	{
 		return getValueAsDate(attribute.getValue());
 	}
@@ -190,7 +195,7 @@ public interface IAttributeSet
 		return TimeUtil.asLocalDateTime(getValueAsDate(attributeCode));
 	}
 
-	default LocalDateTime getValueAsLocalDateTime(final String attributeKey)
+	default LocalDateTime getValueAsLocalDateTime(final @NonNull String attributeKey)
 	{
 		return TimeUtil.asLocalDateTime(getValueAsDate(attributeKey));
 	}
@@ -200,18 +205,21 @@ public interface IAttributeSet
 		return TimeUtil.asLocalDate(getValueAsDate(attributeCode));
 	}
 
-	default LocalDate getValueAsLocalDate(final String attributeKey)
+	default LocalDate getValueAsLocalDate(final @NonNull String attributeKey)
 	{
 		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
 	}
 
+	@Nullable
 	String getValueAsString(AttributeCode attributeCode);
 
+	@Nullable
 	default String getValueAsString(@NonNull final String attributeKey)
 	{
 		return getValueAsString(AttributeCode.ofString(attributeKey));
 	}
 
+	@Nullable
 	default String getValueAsString(@NonNull final I_M_Attribute attribute)
 	{
 		return getValueAsString(AttributeCode.ofString(attribute.getValue()));
@@ -230,14 +238,14 @@ public interface IAttributeSet
 	 */
 	void setValue(AttributeCode attributeCode, Object value);
 
-	default void setValue(String attribute, Object value)
+	default void setValue(@NonNull String attribute, Object value)
 	{
 		setValue(AttributeCode.ofString(attribute), value);
 	}
 
 	void setValue(AttributeId attributeId, Object value);
 
-	default void setValue(final I_M_Attribute attribute, final Object value)
+	default void setValue(final @NonNull I_M_Attribute attribute, final Object value)
 	{
 		setValue(attribute.getValue(), value);
 	}

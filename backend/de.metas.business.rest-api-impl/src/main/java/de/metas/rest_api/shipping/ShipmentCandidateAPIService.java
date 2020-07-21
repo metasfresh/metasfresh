@@ -185,7 +185,7 @@ class ShipmentCandidateAPIService
 			}
 
 			final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
-					.hasMoreItems(shipmentSchedules.size() == 500)
+					.hasMoreItems(shipmentSchedules.size() == limit)
 					.transactionKey(transactionId);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)

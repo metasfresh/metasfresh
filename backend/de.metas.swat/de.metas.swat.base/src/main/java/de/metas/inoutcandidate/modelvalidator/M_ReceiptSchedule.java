@@ -187,7 +187,9 @@ public class M_ReceiptSchedule
 					I_M_ReceiptSchedule.COLUMNNAME_ExportStatus })
 	public void updateCanBeExportedAfter(@NonNull final I_M_ReceiptSchedule sched)
 	{
-		if (!Objects.equals(APIExportStatus.ofNullableCode(sched.getExportStatus()), APIExportStatus.Pending))
+		// we see "not-yet-set" as equivalent to "pending"
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(sched.getExportStatus(), APIExportStatus.Pending);
+		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
 		{
 			sched.setCanBeExportedFrom(Env.MAX_DATE);
 			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
