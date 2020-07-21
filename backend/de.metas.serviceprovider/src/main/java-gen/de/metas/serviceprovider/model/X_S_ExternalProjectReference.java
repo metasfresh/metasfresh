@@ -14,7 +14,7 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1251623490L;
+	private static final long serialVersionUID = -1446922636L;
 
     /** Standard Constructor */
     public X_S_ExternalProjectReference (Properties ctx, int S_ExternalProjectReference_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 			setExternalSystem (null);
 			setProjectType (null);
 			setS_ExternalProjectReference_ID (0);
+			setSeqNo (0); // 0
         } */
     }
 
@@ -70,32 +71,32 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
-	/** Set ExternalProjectOwner.
-		@param ExternalProjectOwner ExternalProjectOwner	  */
+	/** Set External project owner.
+		@param ExternalProjectOwner External project owner	  */
 	@Override
 	public void setExternalProjectOwner (java.lang.String ExternalProjectOwner)
 	{
 		set_Value (COLUMNNAME_ExternalProjectOwner, ExternalProjectOwner);
 	}
 
-	/** Get ExternalProjectOwner.
-		@return ExternalProjectOwner	  */
+	/** Get External project owner.
+		@return External project owner	  */
 	@Override
 	public java.lang.String getExternalProjectOwner () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalProjectOwner);
 	}
 
-	/** Set ExternalReference.
-		@param ExternalReference ExternalReference	  */
+	/** Set External reference.
+		@param ExternalReference External reference	  */
 	@Override
 	public void setExternalReference (java.lang.String ExternalReference)
 	{
 		set_Value (COLUMNNAME_ExternalReference, ExternalReference);
 	}
 
-	/** Get ExternalReference.
-		@return ExternalReference	  */
+	/** Get External reference.
+		@return External reference	  */
 	@Override
 	public java.lang.String getExternalReference () 
 	{
@@ -125,6 +126,8 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	public static final int EXTERNALSYSTEM_AD_Reference_ID=541117;
 	/** Github = Github */
 	public static final String EXTERNALSYSTEM_Github = "Github";
+	/** Everhour = Everhour */
+	public static final String EXTERNALSYSTEM_Everhour = "Everhour";
 	/** Set External system.
 		@param ExternalSystem 
 		Name of an external system (e.g. Github )
@@ -174,8 +177,8 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 		return (java.lang.String)get_Value(COLUMNNAME_ProjectType);
 	}
 
-	/** Set S_ExternalProjectReference_ID.
-		@param S_ExternalProjectReference_ID S_ExternalProjectReference_ID	  */
+	/** Set External project reference ID.
+		@param S_ExternalProjectReference_ID External project reference ID	  */
 	@Override
 	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID)
 	{
@@ -185,12 +188,34 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 			set_ValueNoCheck (COLUMNNAME_S_ExternalProjectReference_ID, Integer.valueOf(S_ExternalProjectReference_ID));
 	}
 
-	/** Get S_ExternalProjectReference_ID.
-		@return S_ExternalProjectReference_ID	  */
+	/** Get External project reference ID.
+		@return External project reference ID	  */
 	@Override
 	public int getS_ExternalProjectReference_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_S_ExternalProjectReference_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

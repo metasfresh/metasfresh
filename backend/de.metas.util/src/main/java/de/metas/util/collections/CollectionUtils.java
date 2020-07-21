@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -276,6 +277,17 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public static <R, T> ImmutableSet<R> extractDistinctElementsIntoSet(
+			@NonNull final Collection<T> collection,
+			@NonNull final Function<T, R> extractFuntion)
+	{
+		return collection
+				.stream()
+				.map(extractFuntion)
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	/**
 	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
 	 *
@@ -369,4 +381,23 @@ public final class CollectionUtils
 						LinkedHashMap::new));
 		return inventoryLineRecords;
 	}
+
+	public static <T> ImmutableList<T> ofCommaSeparatedList(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Function<String, T> mapper)
+	{
+		if (Check.isBlank(commaSeparatedStr))
+		{
+			return ImmutableList.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(commaSeparatedStr)
+				.stream()
+				.map(mapper)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 }

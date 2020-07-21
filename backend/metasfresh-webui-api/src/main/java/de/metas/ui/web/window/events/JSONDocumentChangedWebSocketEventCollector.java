@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -51,27 +53,49 @@ final class JSONDocumentChangedWebSocketEventCollector
 	private static final class EventKey { WindowId windowId; DocumentId documentId; }
 	//@formatter:on
 
-	private final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = new LinkedHashMap<>();
+	private LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> _events;
 
 	private JSONDocumentChangedWebSocketEventCollector()
 	{
+		_events = new LinkedHashMap<>();
 	}
 
 	public List<JSONDocumentChangedWebSocketEvent> getEventsAndClear()
 	{
-		final List<JSONDocumentChangedWebSocketEvent> eventsList = ImmutableList.copyOf(events.values());
-		events.clear();
-		return eventsList;
+		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
+		if (events == null || events.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		else
+		{
+			final List<JSONDocumentChangedWebSocketEvent> eventsList = ImmutableList.copyOf(events.values());
+			events.clear();
+			return eventsList;
+		}
+	}
+
+	public void markAsClosed()
+	{
+		_events = null;
 	}
 
 	public boolean isEmpty()
 	{
-		return events.isEmpty();
+		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
+		return events == null || events.isEmpty();
 	}
 
 	private JSONDocumentChangedWebSocketEvent getCreateEvent(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
 	{
 		final EventKey key = new EventKey(windowId, documentId);
+
+		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
+		if (events == null)
+		{
+			throw new AdempiereException("already closed: " + this);
+		}
+
 		return events.computeIfAbsent(key, this::createEvent);
 	}
 
@@ -111,11 +135,23 @@ final class JSONDocumentChangedWebSocketEventCollector
 
 	public void mergeFrom(final JSONDocumentChangedWebSocketEventCollector from)
 	{
-		from.events.forEach(this::mergeFrom);
+		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> fromEvents = from._events;
+		if (fromEvents == null || fromEvents.isEmpty())
+		{
+			return;
+		}
+
+		fromEvents.forEach(this::mergeFrom);
 	}
 
 	private void mergeFrom(final EventKey key, final JSONDocumentChangedWebSocketEvent from)
 	{
+		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
+		if (events == null)
+		{
+			throw new AdempiereException("already closed: " + this);
+		}
+
 		events.compute(key, (k, existingEvent) -> {
 			if (existingEvent == null)
 			{

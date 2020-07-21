@@ -22,20 +22,23 @@
 
 package de.metas.serviceprovider.issue;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
+import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.milestone.MilestoneId;
+import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Data
 @Builder(toBuilder = true)
@@ -43,6 +46,12 @@ public class IssueEntity
 {
 	@Nullable
 	private IssueId issueId;
+
+	@Nullable
+	private UserId assigneeId;
+
+	@Nullable
+	private ExternalProjectReferenceId externalProjectReferenceId;
 
 	@Nullable
 	private ProjectId projectId;
@@ -57,16 +66,31 @@ public class IssueEntity
 	private UomId effortUomId;
 
 	@Nullable
+	private IssueId parentIssueId;
+
+	@Nullable
 	private BigDecimal estimatedEffort;
 
 	@Nullable
 	private BigDecimal budgetedEffort;
 
 	@Nullable
-	private String description;
+	private BigDecimal roughEstimation;
+
+	@Nullable
+	private LocalDate plannedUATDate;
+
+	@NonNull
+	private Effort issueEffort;
+
+	@NonNull
+	private Effort aggregatedEffort;
 
 	@NonNull
 	private String name;
+
+	@Nullable
+	private String description;
 
 	@NonNull
 	private String searchKey;
@@ -74,44 +98,66 @@ public class IssueEntity
 	@NonNull
 	private IssueType type;
 
-	private boolean processed;
-
 	private boolean isEffortIssue;
 
 	@Nullable
-	private UserId assigneeId;
+	private BigDecimal externalIssueNo;
 
 	@Nullable
-	private String externalIssueId;
+	private Status status;
+
 	@Nullable
-	private String externalIssueNo;
+	private String deliveryPlatform;
+
 	@Nullable
 	private String externalIssueURL;
 
-	@NonNull
-	private ImmutableList<ExternalIssueDetail> externalIssueDetails;
+	@Nullable
+	private Instant latestActivityOnSubIssues;
 
-	public void setEstimatedEffortIfNull(@Nullable final BigDecimal estimatedEffort)
+	@Nullable
+	private Instant latestActivityOnIssue;
+
+	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
-		if ( NumberUtils.asBigDecimal(this.estimatedEffort,BigDecimal.ZERO).equals(BigDecimal.ZERO) )
+		if ( this.estimatedEffort == null || this.estimatedEffort.signum() == 0 )
 		{
 			this.estimatedEffort = estimatedEffort;
 		}
 	}
 
-	public void setBudgetedEffortIfNull(@Nullable final BigDecimal budgetedEffort)
+	public void setBudgetedEffortIfNotSet(@Nullable final BigDecimal budgetedEffort)
 	{
-		if ( NumberUtils.asBigDecimal(this.budgetedEffort,BigDecimal.ZERO).equals(BigDecimal.ZERO) )
+		if ( this.budgetedEffort == null || this.budgetedEffort.signum() == 0 )
 		{
 			this.budgetedEffort = budgetedEffort;
 		}
 	}
 
-	public void setAssigneeIdIfNull(@Nullable final UserId assigneeId)
+	public void setRoughEstimationIfNotSet(@Nullable final BigDecimal roughEstimation)
 	{
-		if (this.assigneeId == null)
+		if ( this.roughEstimation == null || this.roughEstimation.signum() == 0 )
 		{
-			this.assigneeId = assigneeId;
+			this.roughEstimation = roughEstimation;
 		}
+	}
+
+	public void addAggregatedEffort(@Nullable final Effort effort)
+	{
+		this.aggregatedEffort = aggregatedEffort.addNullSafe(effort);
+	}
+
+	public void addIssueEffort(@Nullable final Effort effort)
+	{
+		this.issueEffort = issueEffort.addNullSafe(effort);
+	}
+
+	@Nullable
+	public Instant getLatestActivity()
+	{
+		return Stream.of(latestActivityOnIssue, latestActivityOnSubIssues)
+				.filter(Objects::nonNull)
+				.max(Instant::compareTo)
+				.orElse(null);
 	}
 }

@@ -1,7 +1,7 @@
 package de.metas.rest_api.bpartner.response;
 
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.List;
 import java.util.Objects;

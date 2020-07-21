@@ -112,10 +112,8 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
-	public <T extends I_M_ReceiptSchedule_Alloc> IQueryBuilder<T> createRsaForRsQueryBuilder(final I_M_ReceiptSchedule rs, final Class<T> receiptScheduleAllocClass, final String trxName)
+	public <T extends I_M_ReceiptSchedule_Alloc> IQueryBuilder<T> createRsaForRsQueryBuilder(@NonNull final I_M_ReceiptSchedule rs, final Class<T> receiptScheduleAllocClass, final String trxName)
 	{
-		Check.assumeNotNull(rs, "rs not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(rs);
 
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(receiptScheduleAllocClass, ctx, trxName)

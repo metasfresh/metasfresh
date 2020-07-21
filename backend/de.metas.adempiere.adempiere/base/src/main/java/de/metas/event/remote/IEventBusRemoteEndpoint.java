@@ -2,13 +2,18 @@ package de.metas.event.remote;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
+import lombok.NonNull;
 
 /**
  * Defines an integration point between a remote endpoint and {@link IEventBus}. Binding the endpoint to the event bus is done by registering a forwarding {@link IEventListener}.
  */
 public interface IEventBusRemoteEndpoint
 {
+	/** Called by API when this endpoint is registered to event bus factory */
+	void setEventBusFactory(@NonNull IEventBusFactory eventBusFactory);
+
 	/**
 	 * Set the given <code>event</code> to the event bus identified by the given <code>topicName</code>.
 	 */
@@ -20,7 +25,6 @@ public interface IEventBusRemoteEndpoint
 	 * Do nothing if binding is disabled according to the current config. See <a href="http://dewiki908/mediawiki/index.php/de.metas.event-Overview">de.metas.event-Overview</a> and/or
 	 * {@link SysconfigBackedAllowRemoteBindingPredicate} for details.
 	 *
-	 * @param eventBus
 	 * @return <code>true</code> iff the event bus was actually bound to the endpoint.
 	 *
 	 */

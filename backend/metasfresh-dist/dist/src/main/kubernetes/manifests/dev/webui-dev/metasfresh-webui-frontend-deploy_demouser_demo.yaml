@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "metasfresh-webui-frontend-mf15-dev"
@@ -12,6 +12,11 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      de.metas.deployment.type: metasfresh-webui-frontend
+      de.metas.deployment.user: "mf15"
+      de.metas.deployment.stage: "dev"
   template:
     metadata:
       labels:

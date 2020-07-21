@@ -20,7 +20,9 @@ import org.adempiere.util.reflect.ClassReference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -58,11 +60,12 @@ import lombok.Value;
  * Contains information about process class fields which were marked as parameters (i.e. annotated with {@link Param}).
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 public final class ProcessClassParamInfo
 {
+	private static final Logger logger = LogManager.getLogger(ProcessClassParamInfo.class);
+
 	static ArrayKey createFieldUniqueKey(final Field field)
 	{
 		// NOTE: when building the make, make sure we don't have any references to Class, Field or other java reflection classes
@@ -183,6 +186,7 @@ public final class ProcessClassParamInfo
 	{
 		if (!source.hasParameter(parameterName))
 		{
+			logger.debug("Given source does not contain this instance's parameterName={}; -> return null", parameterName);
 			return null;
 		}
 

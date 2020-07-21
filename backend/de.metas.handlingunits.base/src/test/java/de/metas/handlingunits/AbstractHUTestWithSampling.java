@@ -195,7 +195,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		return pTomatoId;
 	}
 
-	protected final I_C_UOM getCUUOM()
+	protected I_C_UOM getCUUOM()
 	{
 		return uomEach;
 	}
@@ -204,7 +204,6 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	 * Note: Sets GROSS weight on the LoadingUnit to given <code>grossWeight</code>
 	 *
 	 * @param loadingUnitPIItem the PI item of the LU to allocate on
-	 * @param tuPIItemProduct
 	 * @param cuQty the full amount of customer units (i.e Tomatoes) which you'll have on your LU-TU structure
 	 * @param grossWeight weight which was supposedly input by the user
 	 *
@@ -238,15 +237,8 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		//
 		// Create and destroy instances only with an I_M_Transaction
 		final List<I_M_HU> loadingUnits = new ArrayList<>();
-		// Services.get(ITrxManager.class).run(new TrxRunnable()
-		// {
-		// @Override
-		// public void run(String localTrxName) throws Exception
-		// {
-		// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+
 		loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
-		// }
-		// });
 
 		Assert.assertEquals("Invalid amount of initial LoadingUnits", 1, loadingUnits.size());
 		final I_M_HU loadingUnit = loadingUnits.get(0);
@@ -335,8 +327,6 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	}
 
 	/**
-	 * @param loadingUnit
-	 * @param qty
 	 * @return first found tradingUnit inside the loadingUnit with given customerUnit qty
 	 */
 	protected final I_M_HU findTUInLUWithQty(final I_M_HU loadingUnit, final int customerUnitQty)

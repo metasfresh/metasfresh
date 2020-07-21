@@ -17,6 +17,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService;
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
+import de.metas.attachments.listener.TableAttachmentListenerRepository;
+import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.attachments.migration.AttachmentMigrationService;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -56,11 +58,13 @@ public class AttachmentEntryService
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
 
+
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
 	{
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final TableAttachmentListenerService tableAttachmentListenerService = new TableAttachmentListenerService(new TableAttachmentListenerRepository());
+		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory, tableAttachmentListenerService);
 		final AttachmentLogRepository attachmentLogRepository = new AttachmentLogRepository();
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
 		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
@@ -70,7 +74,8 @@ public class AttachmentEntryService
 				attachmentLogRepository,
 				attachmentEntryFactory,
 				attachmentMigrationService,
-				attachmentHandlerRegistry);
+				attachmentHandlerRegistry,
+				tableAttachmentListenerService);
 	}
 
 	/**
@@ -83,7 +88,8 @@ public class AttachmentEntryService
 			@NonNull final AttachmentLogRepository attachmentLogRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
-			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
+			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry,
+			@NonNull final TableAttachmentListenerService tableAttachmentListenerService)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentLogRepository = attachmentLogRepository;
@@ -193,7 +199,10 @@ public class AttachmentEntryService
 		return expandAndSave(referencedRecords, unsavedAttachmentsWithLinks);
 	}
 
-	/** Note: the given objects may be "record" models or {@link TableRecordReference}s. */
+	/**
+	 * Link all given {@code referencedRecordsDest} with the attachments currently linked to the given {@code referencedRecordsSource}
+	 * Note: the given objects may be "record" models {@code I_C_Order} or {@link TableRecordReference}s.
+	 */
 	public Collection<AttachmentEntry> shareAttachmentLinks(
 			@NonNull final Collection<? extends Object> referencedRecordsSource,
 			@NonNull final Collection<? extends Object> referencedRecordsDest)

@@ -71,7 +71,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 {
 	private static final transient Logger logger = LogManager.getLogger(QueueProcessorsExecutor.class);
 
-	private final String threadNamePrefix = "QueueProcessorsExecutor";
+	private final String threadNamePrefix = "async-Dispatcher";
 	private final ThreadPoolExecutor threadExecutor;
 	private final Map<Integer, QueueProcessorDescriptor> queueProcessorDescriptors = new ConcurrentHashMap<>();
 	private final ReentrantLock mainLock = new ReentrantLock();
@@ -114,7 +114,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			//
 			// Run the processor in one of this executors free slots
 			final Future<?> future = threadExecutor.submit(() -> {
-				// Set thread name to easly debug and check which processor (poller) in which thread.
+				// Set thread name to easily debug and check which processor (poller) in which thread.
 				final String threadNameOld = Threads.setThreadName(threadNamePrefix + "-" + processor.getName());
 
 				try

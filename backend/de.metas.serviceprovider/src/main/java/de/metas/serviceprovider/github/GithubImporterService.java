@@ -24,6 +24,7 @@ package de.metas.serviceprovider.github;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
@@ -35,58 +36,83 @@ import de.metas.issue.tracking.github.api.v3.model.RetrieveIssuesRequest;
 import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
-import de.metas.serviceprovider.importer.ImportIssuesQueue;
-import de.metas.serviceprovider.importer.ImportService;
-import de.metas.serviceprovider.importer.info.ImportIssueInfo;
-import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
-import de.metas.serviceprovider.milestone.Milestone;
+import de.metas.serviceprovider.ImportQueue;
+import de.metas.serviceprovider.external.ExternalId;
+import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.serviceprovider.external.label.IssueLabel;
+import de.metas.serviceprovider.external.project.ExternalProjectReference;
+import de.metas.serviceprovider.external.project.ExternalProjectRepository;
+import de.metas.serviceprovider.external.project.GetExternalProjectRequest;
+import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
+import de.metas.serviceprovider.github.link.GithubIssueLink;
+import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
+import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueRepository;
+import de.metas.serviceprovider.issue.Status;
+import de.metas.serviceprovider.issue.importer.IssueImporter;
+import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
+import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.LabelType.BUDGET;
-import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.LabelType.ESTIMATION;
-import static de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailType.LABEL;
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.HOUR_UOM_ID;
-import static de.metas.serviceprovider.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
+import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.BUDGET;
+import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.DELIVERY_PLATFORM;
+import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.ESTIMATION;
+import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.PLANNED_UAT;
+import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.ROUGH_EST;
+import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.STATUS;
+import static de.metas.serviceprovider.github.GithubImporterConstants.PLANNED_UAT_DATE_FORMAT;
+import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
 @Service
-public class GithubImporterService implements ImportService
+public class GithubImporterService implements IssueImporter
 {
 	private static final Logger log = LogManager.getLogger(GithubImporterService.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
 
-	private final ImportIssuesQueue importIssuesQueue;
+	private final ImportQueue<ImportIssueInfo> importIssuesQueue;
 	private final GithubClient githubClient;
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final ExternalReferenceRepository externalReferenceRepository;
+	private final IssueRepository issueRepository;
+	private final ExternalProjectRepository externalProjectRepository;
 
-	public GithubImporterService(final ImportIssuesQueue importIssuesQueue, final GithubClient githubClient)
+	public GithubImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final GithubClient githubClient, final ExternalReferenceRepository externalReferenceRepository, final IssueRepository issueRepository, final ExternalProjectRepository externalProjectRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.githubClient = githubClient;
+		this.externalReferenceRepository = externalReferenceRepository;
+		this.issueRepository = issueRepository;
+		this.externalProjectRepository = externalProjectRepository;
 	}
 
 	public void start(@NonNull final ImmutableList<ImportIssuesRequest> requestList)
 	{
 		acquireLock();
+		final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey = new HashMap<>();
+
 		try
 		{
 			final Stopwatch stopWatch = Stopwatch.createStarted();
@@ -94,19 +120,23 @@ public class GithubImporterService implements ImportService
 			requestList.forEach(request -> {
 				if (request.importByIds())
 				{
-					importIssuesById(request);
+					importIssuesById(request, seenExternalIdsByKey);
 				}
 				else
 				{
-					importIssues(request);
+					importIssues(request, seenExternalIdsByKey);
 				}
 			});
-			Loggables.withLogger(log, Level.INFO).addLog(" {} GithubImporterService#start() finished work in {} sec. ",
+			Loggables.withLogger(log, Level.INFO).addLog(" {} GithubImporterService#start() finished work in {}. ",
 					IMPORT_LOG_MESSAGE_PREFIX, stopWatch.stop());
 		}
 		catch (final Exception ex)
 		{
 			Loggables.withLogger(log, Level.ERROR).addLog(IMPORT_LOG_MESSAGE_PREFIX + ex.getMessage(), ex);
+
+			throw AdempiereException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
+					.setParameter("requestList", requestList);
 		}
 		finally
 		{
@@ -115,7 +145,7 @@ public class GithubImporterService implements ImportService
 	}
 
 	@VisibleForTesting
-	protected void importIssues(@NonNull final ImportIssuesRequest importIssuesRequest )
+	protected void importIssues(@NonNull final ImportIssuesRequest importIssuesRequest, @NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey )
 	{
 		int chunkIndex = 1;
 
@@ -132,6 +162,7 @@ public class GithubImporterService implements ImportService
 					.repositoryId(importIssuesRequest.getRepoId())
 					.pageSize(CHUNK_SIZE)
 					.pageIndex(chunkIndex)
+					.dateFrom(importIssuesRequest.getDateFrom())
 					.build();
 
 			final ImmutableList<Issue> issues = githubClient.fetchIssues(retrieveIssuesRequest);
@@ -141,13 +172,23 @@ public class GithubImporterService implements ImportService
 			areRemainingIssues = !issues.isEmpty();
 
 			issues.stream()
-					.map(issue -> buildImportIssueInfo(issue, importIssuesRequest))
+					.map(issue -> buildImportIssueInfo(issue, importIssuesRequest, seenExternalIdsByKey))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
 					.forEach(importIssuesQueue::add);
 		}
 	}
 
-	private void importIssuesById(@NonNull final ImportIssuesRequest importIssuesRequest)
+	private void importIssuesById(@NonNull final ImportIssuesRequest importIssuesRequest,
+			                      @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
 	{
+		if (!importIssuesRequest.importByIds())
+		{
+			throw new AdempiereException("GithubImporterService.importIssuesById() should be called only for importIssuesRequest.importByIds() requests!")
+					.appendParametersToMessage()
+					.setParameter("ImportIssuesRequest", importIssuesRequest);
+		}
+
 		importIssuesRequest.getIssueNoList()
 				.stream()
 				.map(issueNo -> FetchIssueByIdRequest.builder()
@@ -157,22 +198,39 @@ public class GithubImporterService implements ImportService
 						.issueNumber(issueNo)
 						.build())
 				.map(githubClient::fetchIssueById)
-				.map(issue -> buildImportIssueInfo(issue, importIssuesRequest))
+				.map(issue -> buildImportIssueInfo(issue, importIssuesRequest, seenExternalIdsByKey))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.forEach(importIssuesQueue::add);
 	}
 
 	@NonNull
-	private ImportIssueInfo buildImportIssueInfo(@NonNull final Issue issue,@NonNull final ImportIssuesRequest importIssuesRequest)
+	private Optional<ImportIssueInfo> buildImportIssueInfo(@NonNull final Issue issue,
+			                                     @NonNull final ImportIssuesRequest importIssuesRequest,
+			 									 @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
 	{
+		final GithubIdSearchKey githubIdSearchKey = GithubIdSearchKey
+				.builder()
+				.repository(importIssuesRequest.getRepoId())
+				.repositoryOwner(importIssuesRequest.getRepoOwner())
+				.issueNo(String.valueOf(issue.getNumber()))
+				.build();
+
+		if (seenExternalIdsByKey.put(githubIdSearchKey, issue.getId()) != null)
+		{
+			//means it was already imported once in this process run so it will be skipped
+			return Optional.empty();
+		}
+
 		final ImportIssueInfo.ImportIssueInfoBuilder importInfoBuilder = ImportIssueInfo
 				.builder()
+				.externalProjectReferenceId(importIssuesRequest.getExternalProjectReferenceId())
 				.externalProjectType(importIssuesRequest.getExternalProjectType())
-				.externalIssueId(issue.getId())
+				.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, issue.getId()))
 				.externalIssueURL(issue.getHtmlUrl())
 				.externalIssueNo(issue.getNumber())
 				.name(issue.getTitle())
 				.description(issue.getBody())
-				.processed(ResourceState.CLOSED.getValue().equals(issue.getState()))
 				.orgId(importIssuesRequest.getOrgId())
 				.projectId(importIssuesRequest.getProjectId())
 				.effortUomId(HOUR_UOM_ID);
@@ -184,27 +242,31 @@ public class GithubImporterService implements ImportService
 
 		if (issue.getAssignee() != null)
 		{
-			final UserId userId = userDAO.retrieveUserIdByLogin(issue.getAssignee().getLogin());
-
-			importInfoBuilder.assigneeId(userId);
+			importInfoBuilder.assigneeId(getUserIdByExternalId(issue.getAssignee().getId()));
 		}
 
 		processLabels(issue.getLabelList(), importInfoBuilder, importIssuesRequest.getOrgId());
 
-		return importInfoBuilder.build();
+		if (ResourceState.CLOSED.getValue().equals(issue.getState()))
+		{
+			importInfoBuilder.status(Status.CLOSED);
+		}
+
+		lookForParentIssue(importIssuesRequest, importInfoBuilder, seenExternalIdsByKey, issue.getBody());
+
+		return Optional.of(importInfoBuilder.build());
 	}
 
 	@NonNull
-	private Milestone buildMilestone(@NonNull final GithubMilestone githubMilestone, @NonNull final OrgId orgId)
+	private ImportMilestoneInfo buildMilestone(@NonNull final GithubMilestone githubMilestone, @NonNull final OrgId orgId)
 	{
-		return Milestone.builder()
+		return ImportMilestoneInfo.builder()
 				.name(githubMilestone.getTitle())
 				.description(githubMilestone.getDescription())
 				.externalURL(githubMilestone.getHtmlUrl())
-				.externalId(githubMilestone.getId())
+				.externalId(ExternalId.of(ExternalSystem.GITHUB, githubMilestone.getId()))
 				.processed(ResourceState.CLOSED.getValue().equals(githubMilestone.getState()))
 				.dueDate(githubMilestone.getDueDate() != null ? Instant.parse(githubMilestone.getDueDate()) : null)
-				.value(githubMilestone.getTitle())
 				.orgId(orgId)
 				.build();
 	}
@@ -214,39 +276,225 @@ public class GithubImporterService implements ImportService
 			@NonNull final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder,
 			@NonNull final OrgId orgId)
 	{
-		final List<ExternalIssueDetail> externalIssueDetailList = new ArrayList<>();
+		final List<IssueLabel> issueLabelList = new ArrayList<>();
+		final List<String> deliveryPlatformList = new ArrayList<>();
 		BigDecimal budget = BigDecimal.ZERO;
 		BigDecimal estimation = BigDecimal.ZERO;
+		BigDecimal roughEstimation = BigDecimal.ZERO;
+		Optional<Status> status = Optional.empty();
+		Optional<LocalDate> plannedUATDate = Optional.empty();
 
 		if (!Check.isEmpty(labelList))
 		{
 			for (final Label label : labelList)
 			{
-				budget = budget.add(getValueFromLabel(label, BUDGET.getPattern()));
-				estimation = estimation.add(getValueFromLabel(label, ESTIMATION.getPattern()));
+				budget = budget.add(getValueFromLabel(label, BUDGET));
 
-				final ExternalIssueDetail externalIssueDetail = ExternalIssueDetail.builder()
-						.type(LABEL)
-						.value(label.getName())
-						.orgId(orgId)
-						.build();
+				estimation = estimation.add(getValueFromLabel(label, ESTIMATION));
 
-				externalIssueDetailList.add(externalIssueDetail);
+				roughEstimation = roughEstimation.add(getValueFromLabel(label, ROUGH_EST));
+
+				status = status.isPresent() ? status : getStatusFromLabel(label);
+
+				plannedUATDate = plannedUATDate.isPresent() ? plannedUATDate : getPlannedUATDateFromLabel(label);
+
+				getDeliveryPlatformFromLabel(label).ifPresent(deliveryPlatformList::add);
+
+				final IssueLabel issueLabel =
+						IssueLabel.builder().value(label.getName()).orgId(orgId).build();
+
+				issueLabelList.add(issueLabel);
 			}
 		}
 
 		importIssueInfoBuilder.budget(budget);
 		importIssueInfoBuilder.estimation(estimation);
-		importIssueInfoBuilder.externalIssueDetails(ImmutableList.copyOf(externalIssueDetailList));
+		importIssueInfoBuilder.roughEstimation(roughEstimation);
+		importIssueInfoBuilder.issueLabels(ImmutableList.copyOf(issueLabelList));
+
+		status.ifPresent(importIssueInfoBuilder::status);
+		plannedUATDate.ifPresent(importIssueInfoBuilder::plannedUATDate);
+
+		if (!deliveryPlatformList.isEmpty())
+		{
+			importIssueInfoBuilder.deliveryPlatform(Joiner.on(",").join(deliveryPlatformList));
+		}
 	}
 
 	@NonNull
-	private BigDecimal getValueFromLabel(final Label label, final Pattern valuePattern)
+	private BigDecimal getValueFromLabel(final Label label, final GithubImporterConstants.LabelType labelType)
 	{
-		final Matcher matcher = valuePattern.matcher(label.getName());
+		final Matcher matcher = labelType.getPattern().matcher(label.getName());
 
-		return matcher.matches() ? NumberUtils.asBigDecimal(matcher.group(1)) : BigDecimal.ZERO;
+		return matcher.matches() ? NumberUtils.asBigDecimal(matcher.group(labelType.getGroupName())) : BigDecimal.ZERO;
+	}
 
+	@NonNull
+	private Optional<Status> getStatusFromLabel(final Label label)
+	{
+		final Matcher matcher = STATUS.getPattern().matcher(label.getName());
+
+		return matcher.matches() ? Status.ofCodeOptional(matcher.group(STATUS.getGroupName())) : Optional.empty();
+	}
+
+	@NonNull
+	private Optional<String> getDeliveryPlatformFromLabel(final Label label)
+	{
+		final Matcher matcher = DELIVERY_PLATFORM.getPattern().matcher(label.getName());
+
+		return matcher.matches() ? Optional.of(matcher.group(DELIVERY_PLATFORM.getGroupName())) : Optional.empty();
+	}
+
+	@NonNull
+	private Optional<LocalDate> getPlannedUATDateFromLabel(final Label label)
+	{
+		final Matcher matcher = PLANNED_UAT.getPattern().matcher(label.getName());
+
+		if (!matcher.matches())
+		{
+			return Optional.empty();
+		}
+
+		LocalDate plannedUATDate = null;
+		try
+		{
+			plannedUATDate = LocalDate.from(PLANNED_UAT_DATE_FORMAT.parse(matcher.group(PLANNED_UAT.getGroupName())));
+		}
+		catch (final Exception e)
+		{
+			log.error("{} : cannot extract planned UAT date from : {}",
+					IMPORT_LOG_MESSAGE_PREFIX, label.getName(), e);
+		}
+
+		return Optional.ofNullable(plannedUATDate);
+	}
+
+	@Nullable
+	private UserId getUserIdByExternalId(@NonNull final String externalUserId)
+	{
+		final Integer userId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
+				GetReferencedIdRequest.builder()
+						.externalSystem(ExternalSystem.GITHUB)
+						.externalReference(externalUserId)
+						.externalReferenceType(ExternalReferenceType.USER_ID)
+						.build());
+
+		return UserId.ofRepoIdOrNullIfSystem(userId);
+	}
+
+	private void lookForParentIssue(@NonNull final ImportIssuesRequest importIssuesRequest,
+			                        @NonNull final ImportIssueInfo.ImportIssueInfoBuilder issueInfoBuilder,
+			                        @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey,
+			                        @Nullable final String description)
+	{
+		final GithubIssueLinkMatcher linkMatcher = importIssuesRequest.getGithubIssueLinkMatcher();
+
+		if (linkMatcher == null || Check.isBlank(description))
+		{
+			Loggables.withLogger(log, Level.DEBUG)
+					.addLog(" {} Skipped searching for parent issue due to missing info! GithubIssueLinkMatcher:"
+							+ " {}, issue.description: {} ", IMPORT_LOG_MESSAGE_PREFIX, linkMatcher, description );
+			return;
+		}
+
+		final Optional<GithubIssueLink> parentIssueLink = linkMatcher.getFirstMatch(description);
+
+		if (!parentIssueLink.isPresent())
+		{
+			Loggables.withLogger(log, Level.DEBUG)
+					.addLog(" {} No match found for parent issue! GithubIssueLinkMatcher: "
+							+ "{}, issue.description: {} ", IMPORT_LOG_MESSAGE_PREFIX, linkMatcher, description );
+			return;
+		}
+
+		//first check if the parent exists in mf
+		final Optional<IssueEntity> issueEntity =
+				issueRepository.getByExternalURLOptional(parentIssueLink.get().getUrl());
+
+		if (issueEntity.isPresent())
+		{
+			Loggables.withLogger(log, Level.DEBUG)
+					.addLog(" {} Parent issue found in mf for URL: {}, parentIssueId: {}"
+							, IMPORT_LOG_MESSAGE_PREFIX, parentIssueLink.get().getUrl(), issueEntity.get().getIssueId() );
+
+			issueInfoBuilder.parentIssueId(issueEntity.get().getIssueId());
+		}
+		//if it doesn't try to get the externalId of the parent
+		else
+		{
+			getExternalParentId(importIssuesRequest, parentIssueLink.get().getGithubIdSearchKey(), seenExternalIdsByKey)
+					.ifPresent(issueInfoBuilder::externalParentIssueId);
+		}
+	}
+
+	private Optional<ExternalId> getExternalParentId(@NonNull final ImportIssuesRequest initialRequest,
+													 @NonNull final GithubIdSearchKey parentIdSearchKey,
+													 @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
+	{
+		//first check if it's in the current importing queue
+		final String parentExternalId = seenExternalIdsByKey.get(parentIdSearchKey);
+
+		if (!Check.isBlank(parentExternalId))
+		{
+			Loggables.withLogger(log, Level.DEBUG)
+					.addLog(" {} Parent issue found in the current importing queue for searchKey: {}, parentIssueExternalId: {}"
+							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
+
+			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
+		}
+		//if it isn't try to import the parent
+		else
+		{
+			return importParentIssue(initialRequest, parentIdSearchKey, seenExternalIdsByKey);
+		}
+	}
+
+	private Optional<ExternalId> importParentIssue(@NonNull final ImportIssuesRequest initialRequest,
+			                             @NonNull final GithubIdSearchKey parentIdSearchKey,
+			                             @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
+	{
+		final GetExternalProjectRequest getExternalProjectRequest = GetExternalProjectRequest
+				.builder()
+				.externalProjectOwner(parentIdSearchKey.getRepositoryOwner())
+				.externalReference(parentIdSearchKey.getRepository())
+				.externalSystem(ExternalSystem.GITHUB)
+				.build();
+
+		final Optional<ExternalProjectReference> externalProjectReference = externalProjectRepository.getByRequestOptional(getExternalProjectRequest);
+
+		if (!externalProjectReference.isPresent())
+		{
+			Loggables.withLogger(log, Level.WARN).addLog("No externalProjectReference found for getExternalProjectRequest: " + getExternalProjectRequest);
+			return Optional.empty();
+		}
+
+		final ImportIssuesRequest importIssuesRequest = ImportIssuesRequest
+				.builder()
+				.orgId(externalProjectReference.get().getOrgId())
+				.externalProjectReferenceId(externalProjectReference.get().getExternalProjectReferenceId())
+				.projectId(externalProjectReference.get().getProjectId())
+				.repoId(externalProjectReference.get().getExternalProjectReference())
+				.repoOwner(externalProjectReference.get().getProjectOwner())
+				.externalProjectType(externalProjectReference.get().getExternalProjectType())
+				.oAuthToken(initialRequest.getOAuthToken())
+				.githubIssueLinkMatcher(initialRequest.getGithubIssueLinkMatcher())
+				.issueNoList(ImmutableList.of(parentIdSearchKey.getIssueNo()))
+				.build();
+
+		importIssuesById(importIssuesRequest, seenExternalIdsByKey);
+
+		final String parentExternalId = seenExternalIdsByKey.get(parentIdSearchKey);
+
+		if (parentExternalId != null)
+		{
+			Loggables.withLogger(log, Level.DEBUG)
+					.addLog(" {} Parent issue retrieved and added in the importing queue for searchKey: {}, parentIssueExternalId: {}"
+							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
+
+			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
+		}
+
+		return Optional.empty();
 	}
 
 	private void acquireLock()

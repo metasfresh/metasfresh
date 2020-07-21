@@ -23,6 +23,7 @@ const keymaps = {
   DELETE_DOCUMENT: `${mod}+D`,
   NEW_DOCUMENT: `${mod}+N`,
   TOGGLE_EDIT_MODE: `${mod}+O`,
+  OPEN_COMMENTS: `${mod}+T`,
 
   /* Document list context */
   OPEN_SELECTED: `${mod}+B`, // Open document in new tab
@@ -30,7 +31,7 @@ const keymaps = {
   ADVANCED_EDIT: `${mod}+E`,
 
   /* POS context */
-  SELECT_ALL_LEAFS: `${mod}+S`,
+  SELECT_ALL_LEAVES: `${mod}+S`,
   EXPAND_INDENT: '+',
   COLLAPSE_INDENT: '-',
 

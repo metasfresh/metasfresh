@@ -41,8 +41,6 @@ public interface IPrintJobLinesAggregator
 	/**
 	 * Sets the print package into which the successive {@link #add(I_C_Print_Job_Line)} invocations will be aggregated. <br>
 	 * Note that it is not mandatory to call this method. If it is omitted, this aggregator shall create a <code>printPackage</code> on the fly.
-	 * 
-	 * @param printPackage
 	 */
 	void setPrintPackageToUse(I_C_Print_Package printPackage);
 
@@ -59,8 +57,6 @@ public interface IPrintJobLinesAggregator
 	/**
 	 * Return the print package which contains {@link de.metas.printing.model.I_C_Print_PackageInfo I_C_Print_PackageInfo} and {@link de.metas.printing.model.I_C_PrintPackageData I_C_PrintPackageData}
 	 * for all the {@link I_C_Print_Job_Line} that were previously added. Also flags those print job lines as <code>Processed</code>.
-	 * 
-	 * @return
 	 */
 	I_C_Print_Package createPrintPackage();
 

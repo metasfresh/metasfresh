@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -172,23 +173,31 @@ public interface IAttributeDAO extends ISingletonService
 
 	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
 
-	AttributeId retrieveAttributeIdByValue(String value);
+	AttributeId retrieveAttributeIdByValue(AttributeCode attributeCode);
 
-	AttributeId retrieveAttributeIdByValueOrNull(String value);
+	AttributeId retrieveAttributeIdByValueOrNull(AttributeCode attributeCode);
 
 	/**
 	 * Gets {@link I_M_Attribute} by it's Value (a.k.a. Internal Name)
 	 *
 	 * @return attribute; never return null
 	 */
-	<T extends I_M_Attribute> T retrieveAttributeByValue(String value, Class<T> clazz);
+	<T extends I_M_Attribute> T retrieveAttributeByValue(AttributeCode attributeCode, Class<T> clazz);
+
+	/**
+	 * @return attribute; never return null
+	 */
+	default I_M_Attribute retrieveAttributeByValue(final AttributeCode attributeCode)
+	{
+		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
+	}
 
 	/**
 	 * @return attribute; never return null
 	 */
 	default I_M_Attribute retrieveAttributeByValue(final String value)
 	{
-		return retrieveAttributeByValue(value, I_M_Attribute.class);
+		return retrieveAttributeByValue(AttributeCode.ofString(value), I_M_Attribute.class);
 	}
 
 	/**

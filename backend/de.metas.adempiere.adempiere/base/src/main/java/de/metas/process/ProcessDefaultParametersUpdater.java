@@ -12,7 +12,6 @@ import org.compiere.model.Null;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -45,7 +44,7 @@ import lombok.NonNull;
  */
 public final class ProcessDefaultParametersUpdater
 {
-	public static final ProcessDefaultParametersUpdater newInstance()
+	public static ProcessDefaultParametersUpdater newInstance()
 	{
 		return new ProcessDefaultParametersUpdater();
 	}
@@ -59,7 +58,6 @@ public final class ProcessDefaultParametersUpdater
 
 	private ProcessDefaultParametersUpdater()
 	{
-		super();
 	}
 
 	public ProcessDefaultParametersUpdater addDefaultParametersProvider(@Nullable final IProcessDefaultParametersProvider provider)
@@ -80,8 +78,6 @@ public final class ProcessDefaultParametersUpdater
 
 	/**
 	 * Extracts, if possible, the {@link IProcessDefaultParametersProvider} from given <code>processInfo</code> and registers it.
-	 *
-	 * @param processInfo
 	 */
 	public ProcessDefaultParametersUpdater addDefaultParametersProvider(final ProcessInfo processInfo)
 	{
@@ -90,10 +86,8 @@ public final class ProcessDefaultParametersUpdater
 		return this;
 	}
 
-	public static IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final ProcessInfo pi)
+	public static IProcessDefaultParametersProvider createProcessDefaultParametersProvider(@NonNull final ProcessInfo pi)
 	{
-		Check.assumeNotNull(pi, "Parameter pi is not null");
-
 		try
 		{
 			final Object processClassInstance = pi.newProcessClassInstanceOrNull();
@@ -119,12 +113,9 @@ public final class ProcessDefaultParametersUpdater
 
 	/**
 	 * Configures the default value consumer to be used by methods like {@link #updateDefaultValue(IProcessDefaultParameter)}.
-	 *
-	 * @param defaultValueConsumer
 	 */
-	public ProcessDefaultParametersUpdater onDefaultValue(final BiConsumer<IProcessDefaultParameter, Object> defaultValueConsumer)
+	public ProcessDefaultParametersUpdater onDefaultValue(@NonNull final BiConsumer<IProcessDefaultParameter, Object> defaultValueConsumer)
 	{
-		Check.assumeNotNull(defaultValueConsumer, "Parameter defaultValueConsumer is not null");
 		this.defaultValueConsumer = defaultValueConsumer;
 		return this;
 	}
@@ -184,12 +175,12 @@ public final class ProcessDefaultParametersUpdater
 		{
 			return;
 		}
-		
+
 		if (parameterObjs == null || parameterObjs.isEmpty())
 		{
 			return;
 		}
-		
+
 		parameterObjs.stream() // stream parameter objects
 				.map(processDefaultParameterConverter) // convert parameter object to IProcessDefaultParameter
 				.forEach(this::updateDefaultValue) // update the default value if available

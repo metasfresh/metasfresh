@@ -308,23 +308,11 @@ public class SysConfigBL implements ISysConfigBL
 	public boolean getBooleanValue(final String Name, final boolean defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		final String s = getValue(Name, AD_Client_ID, AD_Org_ID);
-		if (s == null || s.length() == 0)
+		if (Check.isBlank(s))
 		{
 			return defaultValue;
 		}
-
-		if ("Y".equalsIgnoreCase(s))
-		{
-			return true;
-		}
-		else if ("N".equalsIgnoreCase(s))
-		{
-			return false;
-		}
-		else
-		{
-			return Boolean.valueOf(s).booleanValue();
-		}
+		return StringUtils.toBooleanOrNull(s);
 	}
 
 	@Override

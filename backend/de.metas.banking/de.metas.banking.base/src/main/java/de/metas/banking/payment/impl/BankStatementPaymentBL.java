@@ -248,7 +248,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		bankStatementDAO.save(bankStatementLine);
 
 		//
-		// ReConcile payment if bank statement is processed
+		// Reconcile payment if bank statement is processed
 		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (bankStatementDocStatus.isCompleted())
 		{

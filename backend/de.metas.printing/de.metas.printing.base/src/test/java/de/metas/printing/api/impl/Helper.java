@@ -1,68 +1,7 @@
 package de.metas.printing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-/*
- * #%L
- * de.metas.printing.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.UUID;
-
-import javax.print.attribute.standard.MediaSize;
-
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.TestClientUI;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Session;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_Test;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
-import org.junit.rules.TestName;
-
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
+import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.i18n.Language;
@@ -70,6 +9,9 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.lock.spi.impl.PlainLockDatabase.LockKey;
+import de.metas.printing.HardwarePrinterRepository;
+import de.metas.printing.OutputType;
+import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -95,15 +37,81 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.model.validator.AD_Archive;
+import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.TestClientUI;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Session;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_Test;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.junit.Assert;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.rules.TestName;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.UUID;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.assertj.core.api.Assertions.assertThat;
+
+/*
+ * #%L
+ * de.metas.printing.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 // there is high amount of methods because it's a helper...
 public class Helper
 {
 	public static final POJOLookupMap db;
 	public static final PlainPrintingDAO printingDAO;
+
 	static
 	{
 		// NOTE: we need to enable UnitTestMode before getting the database, else we will get NULL
@@ -131,14 +139,19 @@ public class Helper
 
 	protected boolean autoCreateHWPrinters = true;
 
-	private final TestName testName;
+	private final String testDisplayName;
 
 	private TestClientUI clientUI = null;
+	private PrintOutputFacade printOutputFacade;
 
-	public Helper(final TestName testName)
+	public Helper(@NonNull final TestName testName)
 	{
-		super();
-		this.testName = testName;
+		this.testDisplayName = testName.getMethodName();
+	}
+
+	public Helper(@NonNull final TestInfo testInfo)
+	{
+		this.testDisplayName = testInfo.getDisplayName();
 	}
 
 	private static boolean staticInitialized = false;
@@ -154,7 +167,6 @@ public class Helper
 
 		// de.metas.printing (this module):
 		Services.registerService(IPrintingDAO.class, printingDAO);
-		Services.registerService(IPrinterRoutingDAO.class, new PlainPrinterRoutingDAO());
 		Services.registerService(IDocumentBL.class, new PlainDocumentBL());
 
 		staticInitialized = true;
@@ -198,6 +210,10 @@ public class Helper
 		//
 		// Base Language
 		Language.setBaseLanguage(() -> "de_DE");
+
+		printOutputFacade = new PrintOutputFacade(
+				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
+				new PrintingDataToPDFFileStorer());
 	}
 
 	public Properties getCtx()
@@ -252,6 +268,7 @@ public class Helper
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
 		final org.compiere.model.I_AD_Archive archive = storage.newArchive(ctx, trxName);
+		archive.setName(Long.toString(SystemTime.millis()));
 		storage.setBinaryData(archive, pdfBinaryData);
 		printingDAO.save(archive);
 
@@ -278,21 +295,16 @@ public class Helper
 
 	/**
 	 * Calls {@link #createPrintJobInstructions(I_C_Print_Job, int)} with copies == 1.
-	 *
-	 * @param printJob
-	 * @return
 	 */
 	public I_C_Print_Job_Instructions createPrintJobInstructions(final I_C_Print_Job printJob)
 	{
 		return createPrintJobInstructions(printJob, 1);
 	}
 
-	public I_C_Print_Job_Instructions createPrintJobInstructions(final I_C_Print_Job printJob, final int copies)
+	public I_C_Print_Job_Instructions createPrintJobInstructions(@NonNull final I_C_Print_Job printJob, final int copies)
 	{
-		Assert.assertNotNull("printJob shall not be null", printJob);
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printJob);
-		final int userToPrintId = Env.getAD_User_ID(ctx);
+		final UserId userToPrintId = Env.getLoggedUserId(ctx);
 		final I_C_Print_Job_Line firstLine = printingDAO.retrievePrintJobLine(printJob, IPrintingDAO.SEQNO_First);
 		final I_C_Print_Job_Line lastLine = printingDAO.retrievePrintJobLine(printJob, IPrintingDAO.SEQNO_Last);
 
@@ -318,20 +330,37 @@ public class Helper
 		return printer;
 	}
 
-	public I_AD_PrinterHW getCreatePrinterHW(final String printerName)
+	public I_AD_PrinterHW getCreatePrinterHW(@NonNull final String printerName)
+	{
+		return getCreatePrinterHW(printerName, OutputType.Queue);
+	}
+
+	public I_AD_PrinterHW getCreatePrinterHW(@NonNull final String printerName, @NonNull final OutputType outputType)
 	{
 		I_AD_PrinterHW printer = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW.class, pojo -> Objects.equals(pojo.getName(), printerName));
 		if (printer == null)
 		{
 			printer = printingDAO.newInstance(ctx, I_AD_PrinterHW.class, ITrx.TRXNAME_None);
 			printer.setName(printerName);
+			printer.setOutputType(outputType.getCode());
 			printingDAO.save(printer);
 		}
 		return printer;
 	}
 
-	public I_AD_Printer_Tray getCreatePrinterTray(final String printerName, final String trayName)
+	/**
+	 * @param trayName optional; if {@code null}, then {@code null} is returned.
+	 */
+	public I_AD_Printer_Tray getCreatePrinterTray(
+			@NonNull final String printerName,
+			@Nullable final String trayName,
+			@Nullable final Integer hwTrayNumber)
 	{
+		if (Check.isBlank(trayName))
+		{
+			return null;
+		}
+
 		final I_AD_Printer printer = getCreatePrinter(printerName);
 		I_AD_Printer_Tray tray = printingDAO
 				.getLookupMap()
@@ -351,7 +380,12 @@ public class Helper
 				try
 				{
 					autoCreateHWPrinters = false; // avoid recursive loops
-					createPrinterConfigAndMatching(HOSTKEY_Host01, createHWName(printerName), createHWName(trayName), printerName, trayName);
+					createPrinterConfigAndMatching(HOSTKEY_Host01,
+							createHWName(printerName),
+							createHWName(trayName),
+							hwTrayNumber,
+							printerName,
+							trayName							);
 				}
 				finally
 				{
@@ -366,17 +400,26 @@ public class Helper
 	/**
 	 * Creates default HW name for a given printer or tray name
 	 *
-	 * @param name
 	 * @return name + "-HW"
 	 */
-	public String createHWName(final String name)
+	public String createHWName(@NonNull final String name)
 	{
 		Check.assume(!Check.isEmpty(name, true), "Name not empty: {}", name);
 		return name + "-HW";
 	}
 
-	public I_AD_PrinterHW_MediaTray getCreatePrinterTrayHW(final String printerName, final String trayName)
+	/**
+	 * @param trayName optional; if {@code null}, then {@code null} is returned.
+	 */
+	public I_AD_PrinterHW_MediaTray getCreatePrinterTrayHW(
+			@NonNull final String printerName,
+			@Nullable final String trayName,
+			@Nullable final Integer hwTrayNumber)
 	{
+		if (Check.isBlank(trayName))
+		{
+			return null;
+		}
 		final I_AD_PrinterHW printer = getCreatePrinterHW(printerName);
 		I_AD_PrinterHW_MediaTray tray = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW_MediaTray.class, pojo -> Objects.equals(pojo.getAD_PrinterHW(), printer)
 				&& Objects.equals(pojo.getName(), trayName));
@@ -385,6 +428,7 @@ public class Helper
 			tray = printingDAO.newInstance(ctx, I_AD_PrinterHW_MediaTray.class, ITrx.TRXNAME_None);
 			tray.setAD_PrinterHW(printer);
 			tray.setName(trayName);
+			tray.setTrayNumber(hwTrayNumber);
 			printingDAO.save(tray);
 		}
 
@@ -394,16 +438,12 @@ public class Helper
 	/**
 	 * Create printer routing for {@link I_AD_PrinterRouting#ROUTINGTYPE_PageRange}.
 	 *
-	 * @param printerName
-	 * @param trayName
 	 * @param C_DocType_ID if > 0, then this is set to be the new routing's matching-doctype ID.
-	 * @param pageFrom
-	 * @param pageTo
-	 * @return
 	 */
 	public I_AD_PrinterRouting createPrinterRouting(
-			final String printerName,
-			final String trayName,
+			@NonNull final String printerName,
+			@Nullable final String trayName,
+			@Nullable final Integer hwTrayNumber,
 			final int C_DocType_ID,
 			final int pageFrom,
 			final int pageTo)
@@ -411,8 +451,10 @@ public class Helper
 		final I_AD_PrinterRouting routing = printingDAO.newInstance(ctx, I_AD_PrinterRouting.class, ITrx.TRXNAME_None);
 		routing.setAD_Org_ID(0); // All Orgs by default
 		routing.setAD_Printer_ID(getCreatePrinter(printerName).getAD_Printer_ID());
-		routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
-
+		if (Check.isNotBlank(trayName))
+		{
+			routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName, hwTrayNumber));
+		}
 		if (C_DocType_ID > 0)
 		{
 			routing.setC_DocType_ID(C_DocType_ID);
@@ -437,22 +479,19 @@ public class Helper
 	/**
 	 * Create printer routing for {@link I_AD_PrinterRouting#ROUTINGTYPE_LastPages}.
 	 *
-	 * @param printerName
-	 * @param trayName
-	 * @param C_DocType_ID
-	 * @param lastPages
 	 * @return printer routing
 	 */
 	public I_AD_PrinterRouting createPrinterRoutingForLastPages(
 			final String printerName,
 			final String trayName,
+			@Nullable final Integer hwTrayNumber,
 			final int C_DocType_ID,
 			final int lastPages)
 	{
 		final I_AD_PrinterRouting routing = printingDAO.newInstance(ctx, I_AD_PrinterRouting.class, ITrx.TRXNAME_None);
 		routing.setAD_Org_ID(0); // All Orgs by default
 		routing.setAD_Printer_ID(getCreatePrinter(printerName).getAD_Printer_ID());
-		routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
+		routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName, hwTrayNumber));
 
 		if (C_DocType_ID > 0)
 		{
@@ -472,11 +511,13 @@ public class Helper
 	}
 
 	public void createPrinterConfigAndMatching(
-			final String hostKey,
-			final String hwPrinterName,
-			final String hwTrayName,
-			final String printerName,
-			final String trayName)
+			@Nullable final String hostKey,
+			@NonNull final String hwPrinterName,
+			@Nullable final String hwTrayName,
+			@Nullable final Integer hwTrayNumber,
+			@NonNull final String printerName,
+			@Nullable final String trayName
+			)
 	{
 		final I_AD_Printer_Config printerConfig = printingDAO
 				.getLookupMap()
@@ -487,6 +528,7 @@ public class Helper
 		{
 			printerConfigToUse = printingDAO.newInstance(ctx, I_AD_Printer_Config.class, ITrx.TRXNAME_None);
 			printerConfigToUse.setConfigHostKey(hostKey);
+			printerConfigToUse.setAD_User_PrinterMatchingConfig_ID(Env.getAD_User_ID());
 			printingDAO.save(printerConfigToUse);
 		}
 		else
@@ -515,16 +557,21 @@ public class Helper
 				&& Objects.equals(pojo.getAD_Printer_Matching_ID(), printerMatchingID));
 		if (trayMatching == null)
 		{
-
 			trayMatching = printingDAO.newInstance(ctx, I_AD_PrinterTray_Matching.class, ITrx.TRXNAME_None);
 			trayMatching.setAD_Printer_Matching(printerMatching);
-			trayMatching.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
-			trayMatching.setAD_PrinterHW_MediaTray(getCreatePrinterTrayHW(hwPrinterName, hwTrayName));
+			trayMatching.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName, hwTrayNumber));
+			trayMatching.setAD_PrinterHW_MediaTray(getCreatePrinterTrayHW(hwPrinterName, hwTrayName, hwTrayNumber));
 			printingDAO.save(trayMatching);
 		}
 	}
 
-	public void createPrinterHWCalibration(final String printerName, final String mediaSizeName, final String trayName, final int calX, final int calY)
+	public void createPrinterHWCalibration(
+			final String printerName,
+			final String mediaSizeName,
+			final String trayName,
+			@Nullable final Integer hwTrayNumber,
+			final int calX,
+			final int calY)
 	{
 		final I_AD_PrinterHW printer = getCreatePrinterHW(printerName);
 
@@ -533,7 +580,7 @@ public class Helper
 		mediaSize.setAD_PrinterHW(printer);
 		printingDAO.save(mediaSize);
 
-		final I_AD_PrinterHW_MediaTray mediaTray = getCreatePrinterTrayHW(printerName, trayName);
+		final I_AD_PrinterHW_MediaTray mediaTray = getCreatePrinterTrayHW(printerName, trayName, hwTrayNumber);
 		// created by 'getCreatePrinterHW(printerName)'
 		final I_AD_PrinterHW_MediaSize hwMediaSize = printingDAO.retrieveMediaSize(printer, MediaSize.ISO.A4, true);
 
@@ -549,12 +596,11 @@ public class Helper
 	/**
 	 * Gets the PDF from src/test/resources (document[suffix].pdf)
 	 *
-	 * @param sufix
 	 * @return PDF as bytes array
 	 */
-	public byte[] getPdf(final String sufix)
+	public byte[] getPdf(final String suffix)
 	{
-		final String resourceName = "/document" + sufix + ".pdf";
+		final String resourceName = "/document" + suffix + ".pdf";
 		final InputStream in = getClass().getResourceAsStream(resourceName);
 		Assert.assertNotNull("Resource not found: " + resourceName, in);
 
@@ -581,7 +627,7 @@ public class Helper
 
 	public void assertEqualsPDF(final byte[] pdfExpected, final byte[] pdfActual)
 	{
-		assertEqualsPDF(testName.getMethodName(), pdfExpected, pdfActual);
+		assertEqualsPDF(testDisplayName, pdfExpected, pdfActual);
 	}
 
 	private void assertEqualsPDF(final String testName, final byte[] pdfExpected, final byte[] pdfActual)
@@ -603,9 +649,6 @@ public class Helper
 	/**
 	 * Compare if to PDFs are equal
 	 *
-	 * @param data1
-	 * @param data2
-	 * @param matchingPercent
 	 * @return true if equal
 	 */
 	public static boolean equalPDFs(final byte[] data1, final byte[] data2, final double matchingPercent)
@@ -659,7 +702,7 @@ public class Helper
 		final byte[] data = getPdf(pdfSuffix);
 
 		final POJOWrapper wrapper = POJOWrapper.getWrapper(record);
-		Assert.assertNotNull("POJOWrapper not found for record: " + record);
+		assertThat(wrapper).as("POJOWrapper not found for record: %s", record).isNotNull();
 
 		Integer AD_Org_ID = (Integer)wrapper.getValue("AD_Org_ID", Integer.class);
 		if (AD_Org_ID == null)
@@ -682,25 +725,26 @@ public class Helper
 
 		//
 		// Enqueue archive to printing queue
-		// Services.get(IPrintingQueueBL.class).enqueue(archive);
-		new AD_Archive().printArchive(archive);
+		new AD_Archive(printOutputFacade).printArchive(archive);
 
 		return archive;
 	}
 
-	public I_C_Print_Package createNextPrintPackageAndTest(final I_C_Print_Job printJobExpected, final byte[] dataExpected)
+	public I_C_Print_Package createNextPrintPackageAndTest(
+			@Nullable final I_C_Print_Job printJobExpected,
+			@Nullable final byte[] dataExpected)
 	{
 		//
 		// Validation: Print Job Instructions before processing (if available)
 		if (printJobExpected != null)
 		{
 			final I_C_Print_Job_Instructions printJobInstructions = printingDAO.retrievePrintJobInstructionsForPrintJob(printJobExpected);
-			Assert.assertNotNull("No print job instructions for " + printJobExpected, printJobInstructions);
+			assertThat(printJobInstructions).as("No print job instructions for %s", printJobExpected).isNotNull();
 
 			// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
 			// Assert.assertEquals("Invalid HostKey for print job instructions " + printJobInstructions, getSessionHostKey(), printJobInstructions.getHostKey());
-			Assert.assertEquals("After package created, " + printJobInstructions + " shall be marked as Pending",
-					X_C_Print_Job_Instructions.STATUS_Pending, printJobInstructions.getStatus());
+			assertThat(printJobInstructions.getStatus()).as("After package created, %s shall be marked as Send", printJobInstructions)
+					.isEqualTo(X_C_Print_Job_Instructions.STATUS_Pending);
 		}
 
 		//
@@ -709,42 +753,41 @@ public class Helper
 
 		// Trigger print package response producer
 		final I_C_Print_Package printPackageResponse = createPrintPackageResponse(printPackageRequest);
-		Assert.assertNotNull("A print package response shall be created for request: " + printPackageRequest, printPackageResponse);
-
+		assertThat(printPackageResponse).as("A print package response shall be created for request: %s", printPackageRequest)
+				.isNotNull();
 		//
 		// Validation: PrintPackage - PrintJob link
-		// 04072: C_Print_Job_ID is taken frlom C-Print_Job_Instructions of the C_Print_Package
+		// 04072: C_Print_Job_ID is taken from C-Print_Job_Instructions of the C_Print_Package
 		final I_C_Print_Job_Instructions printInstructions = printPackageResponse.getC_Print_Job_Instructions();
 		final I_C_Print_Job printJobActual = printInstructions.getC_Print_Job();
-		Assert.assertNotNull("No print job set for: " + printPackageResponse, printJobActual);
+		assertThat(printJobActual).as("No print job set for: %s", printPackageResponse).isNotNull();
 		if (printJobExpected != null)
 		{
-			InterfaceWrapperHelper.refresh(printJobExpected);
-			Assert.assertEquals("Invalid print job for: " + printPackageResponse, printJobExpected, printJobActual);
+			refresh(printJobExpected);
+			assertThat(printJobActual).as("Invalid print job for: %s", printPackageResponse).isEqualTo(printJobExpected);
 		}
-		Assert.assertTrue("Print job not marked as processed: " + printJobActual, printJobActual.isProcessed());
+		assertThat(printJobActual.isProcessed()).as("Print job not marked as processed: %s", printJobActual).isTrue();
 
 		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(printingDAO.retrievePrintJobLines(printJobActual)))
 		{
 			final I_C_Print_Package printPackageActual = jobLine.getC_Print_Package();
-			Assert.assertEquals("Invalid print package set for: " + jobLine, printPackageResponse, printPackageActual);
+			assertThat(printPackageActual).as("Invalid print package set for: %s", jobLine).isEqualTo(printPackageActual);
 		}
 
 		//
 		// Validate Print Job Instructions (after processing)
 		final I_C_Print_Job_Instructions printJobInstructions = printingDAO.retrievePrintJobInstructionsForPrintJob(printJobActual);
-		Assert.assertNotNull("No print job instructions for " + printJobActual, printJobInstructions);
-		Assert.assertEquals("After package created, " + printJobInstructions + " shall be marked as Send",
-				X_C_Print_Job_Instructions.STATUS_Send, printJobInstructions.getStatus());
-
+		assertThat(printJobInstructions).as("No print job instructions for %s", printJobActual).isNotNull();
+		assertThat(printJobInstructions.getStatus()).as("After package created, %s shall be marked as Send", printJobInstructions)
+				.isEqualTo(X_C_Print_Job_Instructions.STATUS_Send);
 		//
 		// Validation: Print Package Data
 		final I_C_PrintPackageData printData = printingDAO.getPrintPackageData(printPackageResponse);
-		Assert.assertNotNull("No print data created for: " + printPackageResponse, printData);
+		assertThat(printData).as("No print data created for: %s", printPackageResponse).isNotNull();
 
 		// Validation: Generated PDF (if available)
 		final byte[] dataActual = printData.getPrintData();
-		Assert.assertNotNull("No print package data for " + printPackageResponse, dataActual);
+		assertThat(dataActual).as("No print package data for %s", printPackageResponse).isNotNull();
 		if (dataExpected != null)
 		{
 			assertEqualsPDF(dataExpected, dataActual);
@@ -796,24 +839,20 @@ public class Helper
 		createArchiveAndEnqueue(record, pdfSuffix);
 	}
 
-	/**
-	 *
-	 * @return printJobs Count
-	 */
-	public int createAllPrintJobs()
+	public void createAllPrintJobs()
 	{
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
+		final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+
 		query.setFilterByProcessedQueueItems(false);
 
 		final List<IPrintingQueueSource> sources = printingQueueBL.createPrintingQueueSources(getCtx(), query);
 
-		int printJobsCount = 0;
 		for (final IPrintingQueueSource source : sources)
 		{
-			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source);
+			printJobBL.createPrintJobs(source);
 		}
-		return printJobsCount;
 	}
 
 	public void assumeNothingLocked()
@@ -821,6 +860,7 @@ public class Helper
 		final PlainLockManager lockManager = (PlainLockManager)Services.get(ILockManager.class);
 		final PlainLockDatabase lockDatabase = lockManager.getLockDatabase();
 		final List<LockKey> locks = lockDatabase.getLocks();
-		Assert.assertEquals("No locks expecteded", new ArrayList<ArrayKey>(), locks);
+
+		assertThat(locks).as("No locks expecteded").isEmpty();
 	}
 }

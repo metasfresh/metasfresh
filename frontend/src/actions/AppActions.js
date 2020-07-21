@@ -1,11 +1,10 @@
 import axios from 'axios';
-import Moment from 'moment';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
 import { replace } from 'react-router-redux';
 
 import * as types from '../constants/ActionTypes';
-import { LOCAL_LANG } from '../constants/Constants';
+import { setCurrentActiveLocale } from '../utils/locale';
 import { getUserSession } from '../api';
 
 // TODO: All requests should be moved to API
@@ -123,13 +122,6 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
-export function languageSuccess(lang) {
-  localStorage.setItem(LOCAL_LANG, lang);
-  Moment.locale(lang);
-
-  axios.defaults.headers.common['Accept-Language'] = lang;
-}
-
 export function logoutSuccess(auth) {
   auth.close();
   localStorage.removeItem('isLogged');
@@ -147,14 +139,14 @@ export function loginSuccess(auth) {
       getUserSession()
         .then(({ data }) => {
           dispatch(userSessionInit(data));
-          languageSuccess(data.language['key']);
+          setCurrentActiveLocale(data.language['key']);
           initNumeralLocales(data.language['key'], data.locale);
           MomentTZ.tz.setDefault(data.timeZone);
 
           auth.initSessionClient(data.websocketEndpoint, (msg) => {
             const me = JSON.parse(msg.body);
             dispatch(userSessionUpdate(me));
-            me.language && languageSuccess(me.language['key']);
+            me.language && setCurrentActiveLocale(me.language['key']);
             me.locale && initNumeralLocales(me.language['key'], me.locale);
 
             getNotifications().then((response) => {

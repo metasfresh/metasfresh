@@ -2,9 +2,9 @@ package de.metas.ui.web.websocket;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -12,8 +12,10 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
@@ -28,14 +30,8 @@ import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -67,40 +63,6 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
 
 	private static final String ENDPOINT = "/stomp";
-	private static final String TOPIC_UserSession = "/userSession";
-	private static final String TOPIC_Notifications = "/notifications";
-	private static final String TOPIC_View = "/view";
-	private static final String TOPIC_Document = "/document";
-	private static final String TOPIC_Board = "/board";
-	public static final String TOPIC_Dashboard = "/dashboard";
-	public static final String TOPIC_Devices = "/devices";
-
-	public static final String buildUserSessionTopicName(@NonNull final UserId adUserId)
-	{
-		return TOPIC_UserSession + "/" + adUserId.getRepoId();
-	}
-
-	public static final String buildNotificationsTopicName(@NonNull final UserId adUserId)
-	{
-		return TOPIC_Notifications + "/" + adUserId.getRepoId();
-	}
-
-	public static final String buildViewNotificationsTopicName(final String viewId)
-	{
-		Check.assumeNotEmpty(viewId, "viewId is not empty");
-		return TOPIC_View + "/" + viewId;
-	}
-
-	public static final String buildDocumentTopicName(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
-	{
-		return TOPIC_Document + "/" + windowId.toJson() + "/" + documentId.toJson();
-	}
-
-	public static final String buildBoardTopicName(final int boardId)
-	{
-		Preconditions.checkArgument(boardId > 0);
-		return TOPIC_Board + "/" + boardId;
-	}
 
 	@Override
 	public void registerStompEndpoints(final StompEndpointRegistry registry)
@@ -108,7 +70,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		// the endpoint for websocket connections
 		registry.addEndpoint(ENDPOINT)
 				.setAllowedOrigins("*") // FIXME: for now we allow any origin
-				.addInterceptors(new WebSocketHandshakeInterceptor())
+				.addInterceptors(new WebsocketHandshakeInterceptor())
 				.withSockJS()
 		//
 		;
@@ -117,15 +79,15 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	@Override
 	public void configureMessageBroker(final MessageBrokerRegistry config)
 	{
-		// use the /topic prefix for outgoing WebSocket communication
+		// use the /topic prefix for outgoing Websocket communication
 		config.enableSimpleBroker(
-				TOPIC_UserSession,
-				TOPIC_Notifications,
-				TOPIC_View,
-				TOPIC_Document,
-				TOPIC_Board,
-				TOPIC_Dashboard,
-				TOPIC_Devices);
+				WebsocketTopicNames.TOPIC_UserSession,
+				WebsocketTopicNames.TOPIC_Notifications,
+				WebsocketTopicNames.TOPIC_View,
+				WebsocketTopicNames.TOPIC_Document,
+				WebsocketTopicNames.TOPIC_Board,
+				WebsocketTopicNames.TOPIC_Dashboard,
+				WebsocketTopicNames.TOPIC_Devices);
 
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");
@@ -147,7 +109,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	@Override
 	public void configureClientInboundChannel(final ChannelRegistration registration)
 	{
-		registration.setInterceptors(new WebSocketChannelInterceptor());
+		registration.setInterceptors(new WebsocketChannelInterceptor());
 
 		// NOTE: atm we don't care if the inbound messages arrived in the right order
 		// When and If we would care we would restrict the taskExecutor()'s corePoolSize to ONE.
@@ -161,25 +123,9 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		return true;
 	}
 
-	private static final String extractSimpDestination(final AbstractSubProtocolEvent event)
+	private static class WebsocketChannelInterceptor extends ChannelInterceptorAdapter
 	{
-		return extractSimpHeaderAsString(event, "simpDestination");
-	}
-
-	private static final String extractSimpSessionId(final AbstractSubProtocolEvent event)
-	{
-		return extractSimpHeaderAsString(event, "simpSessionId");
-	}
-
-	private static final String extractSimpHeaderAsString(final AbstractSubProtocolEvent event, final String name)
-	{
-		final Object simpDestinationObj = event.getMessage().getHeaders().get(name);
-		return simpDestinationObj == null ? null : simpDestinationObj.toString();
-	}
-
-	private static class WebSocketChannelInterceptor extends ChannelInterceptorAdapter
-	{
-		private static final Logger logger = LogManager.getLogger(WebSocketConfig.WebSocketChannelInterceptor.class);
+		private static final Logger logger = LogManager.getLogger(WebsocketChannelInterceptor.class);
 
 		@Override
 		public void afterSendCompletion(final Message<?> message, final MessageChannel channel, final boolean sent, final Exception ex)
@@ -201,16 +147,13 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 
 	}
 
-	private static class WebSocketHandshakeInterceptor implements HandshakeInterceptor
+	private static class WebsocketHandshakeInterceptor implements HandshakeInterceptor
 	{
-		private static final Logger logger = LogManager.getLogger(WebSocketConfig.WebSocketHandshakeInterceptor.class);
+		private static final Logger logger = LogManager.getLogger(WebsocketHandshakeInterceptor.class);
 
 		@Override
 		public boolean beforeHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
 		{
-			// UserSession.getCurrent().assertLoggedIn();
-			// return true;
-
 			final UserSession userSession = UserSession.getCurrentOrNull();
 			if (userSession == null)
 			{
@@ -236,51 +179,101 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		}
 	}
 
-	@Component
-	public static class WebSocketSubscribeEventListener implements ApplicationListener<SessionSubscribeEvent>
+	//
+	//
+	// Event handlers
+	//
+	//
+
+	private static final WebsocketTopicName extractTopicName(final AbstractSubProtocolEvent event)
 	{
-		@Autowired
-		private WebSocketProducersRegistry websocketProducersRegistry;
+		return WebsocketTopicName.ofString(SimpMessageHeaderAccessor.getDestination(event.getMessage().getHeaders()));
+	}
+
+	private static final WebsocketSubscriptionId extractUniqueSubscriptionId(final AbstractSubProtocolEvent event)
+	{
+		final MessageHeaders headers = event.getMessage().getHeaders();
+		final WebsocketSessionId sessionId = WebsocketSessionId.ofString(SimpMessageHeaderAccessor.getSessionId(headers));
+		final String simpSubscriptionId = SimpMessageHeaderAccessor.getSubscriptionId(headers);
+		return WebsocketSubscriptionId.of(sessionId, simpSubscriptionId);
+	}
+
+	@Component
+	public static class WebsocketSubscribeEventListener implements ApplicationListener<SessionSubscribeEvent>
+	{
+		private final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex;
+		private final WebSocketProducersRegistry websocketProducersRegistry;
+
+		public WebsocketSubscribeEventListener(
+				@NonNull final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex,
+				@NonNull final WebSocketProducersRegistry websocketProducersRegistry)
+		{
+			this.activeSubscriptionsIndex = activeSubscriptionsIndex;
+			this.websocketProducersRegistry = websocketProducersRegistry;
+		}
 
 		@Override
 		public void onApplicationEvent(final SessionSubscribeEvent event)
 		{
-			final String simpSessionId = extractSimpSessionId(event);
-			final String simpDestination = extractSimpDestination(event);
-			websocketProducersRegistry.onTopicSubscribed(simpSessionId, simpDestination);
+			final WebsocketSubscriptionId subscriptionId = extractUniqueSubscriptionId(event);
+			final WebsocketTopicName topicName = extractTopicName(event);
 
-			logger.debug("Subscribed to simpDestination={} [ simpSessionId={} ]", simpDestination, simpSessionId);
+			activeSubscriptionsIndex.addSubscription(subscriptionId, topicName);
+			websocketProducersRegistry.onTopicSubscribed(subscriptionId, topicName);
+
+			logger.debug("Subscribed to topicName={} [ subscriptionId={} ]", topicName, subscriptionId);
 		}
 	}
 
 	@Component
-	public static class WebSocketUnsubscribeEventListener implements ApplicationListener<SessionUnsubscribeEvent>
+	public static class WebsocketUnsubscribeEventListener implements ApplicationListener<SessionUnsubscribeEvent>
 	{
-		@Autowired
-		private WebSocketProducersRegistry websocketProducersRegistry;
+		private final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex;
+		private final WebSocketProducersRegistry websocketProducersRegistry;
+
+		public WebsocketUnsubscribeEventListener(
+				@NonNull final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex,
+				@NonNull final WebSocketProducersRegistry websocketProducersRegistry)
+		{
+			this.activeSubscriptionsIndex = activeSubscriptionsIndex;
+			this.websocketProducersRegistry = websocketProducersRegistry;
+		}
 
 		@Override
 		public void onApplicationEvent(final SessionUnsubscribeEvent event)
 		{
-			final String simpSessionId = extractSimpSessionId(event);
-			final String simpDestination = extractSimpDestination(event);
-			websocketProducersRegistry.onTopicUnsubscribed(simpSessionId, simpDestination);
+			final WebsocketSubscriptionId subscriptionId = extractUniqueSubscriptionId(event);
 
-			logger.debug("Unsubscribed from simpDestination={} [ simpSessionId={} ]", simpDestination != null ? simpDestination : "<null>", simpSessionId);
+			final WebsocketTopicName topicName = activeSubscriptionsIndex.removeSubscriptionAndGetTopicName(subscriptionId);
+			websocketProducersRegistry.onTopicUnsubscribed(subscriptionId, topicName);
+
+			logger.debug("Unsubscribed from topicName={} [ subscriptionId={} ]", topicName, subscriptionId);
 		}
 	}
 
 	@Component
-	public static class WebSocketDisconnectEventListener implements ApplicationListener<SessionDisconnectEvent>
+	public static class WebsocketDisconnectEventListener implements ApplicationListener<SessionDisconnectEvent>
 	{
-		@Autowired
-		private WebSocketProducersRegistry websocketProducersRegistry;
+		private final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex;
+		private final WebSocketProducersRegistry websocketProducersRegistry;
+
+		public WebsocketDisconnectEventListener(
+				@NonNull final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex,
+				@NonNull final WebSocketProducersRegistry websocketProducersRegistry)
+		{
+			this.activeSubscriptionsIndex = activeSubscriptionsIndex;
+			this.websocketProducersRegistry = websocketProducersRegistry;
+		}
 
 		@Override
 		public void onApplicationEvent(final SessionDisconnectEvent event)
 		{
-			final String sessionId = event.getSessionId();
-			websocketProducersRegistry.onSessionDisconnect(sessionId);
+			final WebsocketSessionId sessionId = WebsocketSessionId.ofString(event.getSessionId());
+			final Set<WebsocketTopicName> topicNames = activeSubscriptionsIndex.removeSessionAndGetTopicNames(sessionId);
+
+			websocketProducersRegistry.onSessionDisconnect(sessionId, topicNames);
+
+			logger.debug("Disconnected from topicName={} [ sessionId={} ]", topicNames, sessionId);
 		}
 	}
 }

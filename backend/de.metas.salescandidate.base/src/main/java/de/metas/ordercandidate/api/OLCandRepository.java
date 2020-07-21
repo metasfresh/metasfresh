@@ -28,6 +28,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -209,6 +210,12 @@ public class OLCandRepository
 		if (paymentRule != null)
 		{
 			olCandPO.setPaymentRule(paymentRule.getCode());
+		}
+		
+		final PaymentTermId paymentTermId= request.getPaymentTermId();
+		if(paymentTermId != null)
+		{
+			olCandPO.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 		}
 
 		saveRecord(olCandPO);

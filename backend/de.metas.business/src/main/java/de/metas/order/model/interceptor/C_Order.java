@@ -1,42 +1,8 @@
-package de.metas.order.model.interceptor;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.ModelValidator;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.order.DeliveryViaRule;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.IOrderLinePricingConditions;
-import de.metas.organization.OrgId;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -54,6 +20,50 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.order.model.interceptor;
+
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.IOrderLinePricingConditions;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
 public class C_Order
@@ -62,6 +72,7 @@ public class C_Order
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
+	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 
 	private C_Order()
 	{
@@ -204,7 +215,72 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void checkPricingConditionsInOrderLines(final I_C_Order order)
 	{
+		checkPaymentRuleWithReservation(order);
 		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
+	public void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder, @NonNull final ICalloutField calloutField)
+	{
+		final AdMessageKey errorMessage = checkNeedsAndHasContactWithValidEmail(salesOrder);
+
+		if (errorMessage != null)
+		{
+			final ITranslatableString msgText = Services.get(IMsgBL.class).getTranslatableMsgText(errorMessage);
+			calloutField.fireDataStatusEEvent(
+					msgText.translate(Env.getAD_Language()),
+					msgText.translate(Env.getAD_Language()), // this appears onHover
+					true);
+		}
+		else
+		{
+			// TODO teo: there's no way to remove the callout error right now, unless the user reloads the page.
+			//  	It will always appear when changing the PaymentRule after it was set once.
+		}
+	}
+
+	private void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder)
+	{
+		final AdMessageKey errorMessage = checkNeedsAndHasContactWithValidEmail(salesOrder);
+
+		if (errorMessage != null)
+		{
+			throw new AdempiereException(errorMessage);
+		}
+	}
+
+	@Nullable
+	private AdMessageKey checkNeedsAndHasContactWithValidEmail(@NonNull final I_C_Order salesOrder)
+	{
+		if (!salesOrder.isSOTrx())
+		{
+			return null;
+		}
+
+		final PaymentRule paymentRule = PaymentRule.ofCode(salesOrder.getPaymentRule());
+
+		final PaymentReservationService paymentReservationService = SpringContextHolder.instance.getBean(PaymentReservationService.class);
+		if (!paymentReservationService.isPaymentReservationRequired(paymentRule))
+		{
+			return null;
+		}
+
+		final IOrderBL ordersService = Services.get(IOrderBL.class);
+		final boolean hasBillToContactId = ordersService.hasBillToContactId(salesOrder);
+		if (!hasBillToContactId)
+		{
+			return MSG_SELECT_CONTACT_WITH_VALID_EMAIL;
+		}
+
+		final BPartnerContactId billToContactId = ordersService.getBillToContactId(salesOrder);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		if (!bpartnerDAO.hasEmailAddress(billToContactId))
+		{
+			return MSG_SELECT_CONTACT_WITH_VALID_EMAIL;
+		}
+
+		return null;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)

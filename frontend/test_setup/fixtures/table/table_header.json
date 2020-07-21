@@ -1,0 +1,133 @@
+{
+  "cols": [
+    {
+      "caption": "Request",
+      "description": "Request from a Business Partner or Prospect",
+      "widgetType": "Integer",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "R_Request_ID",
+          "caption": "Request",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Request Type",
+      "description": "Type of request (e.g. Inquiry, Complaint, ..)",
+      "widgetType": "List",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "R_RequestType_ID",
+          "caption": "Request Type",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Created",
+      "description": "Date this record was created",
+      "widgetType": "Timestamp",
+      "size": "M",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "Created",
+          "caption": "Created",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Created By",
+      "description": "User who created this records",
+      "widgetType": "Lookup",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "CreatedBy",
+          "caption": "Created By",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "lookup",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Summary",
+      "description": "Textual summary of this request",
+      "widgetType": "LongText",
+      "maxLength": 2000,
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "Summary",
+          "caption": "Summary",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Organisation",
+      "description": "Organisational entity within client",
+      "widgetType": "Lookup",
+      "size": "M",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "AD_Org_ID",
+          "caption": "Organisation",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "lookup",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    }
+  ],
+  "orderBy": [
+    {
+      "fieldName": "Priority",
+      "ascending": true
+    },
+    {
+      "fieldName": "DocumentNo",
+      "ascending": true
+    },
+    {
+      "fieldName": "R_Request_ID",
+      "ascending": true
+    }
+  ],
+  "tabId": "AD_Tab-540829",
+  "docId": "2156453",
+  "windowType": "123"
+}

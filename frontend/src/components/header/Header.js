@@ -1,16 +1,14 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
 
-import {
-  deleteRequest,
-  duplicateRequest,
-  openFile,
-} from '../../actions/GenericActions';
+import { deleteRequest } from '../../api';
+import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
+import { setBreadcrumb } from '../../actions/MenuActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import keymap from '../../shortcuts/keymap';
 import Indicator from '../app/Indicator';
@@ -31,9 +29,9 @@ import UserDropdown from './UserDropdown';
  * the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu,
  * breadcrumb, logo, notification menu, avatar and sidelist menu.
  * @module Header
- * @extends Component
+ * @extends PureComponent
  */
-class Header extends Component {
+class Header extends PureComponent {
   state = {
     isSubheaderShow: false,
     isSideListShow: false,
@@ -216,6 +214,7 @@ class Header extends Component {
    */
   handleDashboardLink = () => {
     const { dispatch } = this.props;
+    dispatch(setBreadcrumb([]));
     dispatch(push('/'));
   };
 
@@ -242,6 +241,24 @@ class Header extends Component {
   };
 
   /**
+   * @method handleComments
+   * @summary opens the modal with the comments panel
+   */
+  handleComments = () => {
+    const { windowId } = this.props;
+    this.openModal(
+      windowId,
+      'static',
+      counterpart.translate('window.comments.caption'),
+      null,
+      null,
+      null,
+      null,
+      'comments'
+    );
+  };
+
+  /**
    * @method openModel
    * @summary ToDo: Describe the method
    * @param {string} windowId
@@ -263,7 +280,7 @@ class Header extends Component {
     childViewSelectedIds,
     staticModalType
   ) => {
-    const { dispatch, query } = this.props;
+    const { dispatch, viewId } = this.props;
 
     dispatch(
       openModal(
@@ -273,7 +290,7 @@ class Header extends Component {
         null,
         null,
         isAdvanced,
-        query && query.viewId,
+        viewId,
         selected,
         null,
         null,
@@ -531,18 +548,19 @@ class Header extends Component {
       showSidelist,
       inbox,
       entity,
-      query,
+      viewId,
       showIndicator,
       windowId,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
-      notfound,
+      notFound,
       docId,
       me,
       editmode,
       handleEditModeToggle,
       activeTab,
       plugins,
+      indicator,
     } = this.props;
 
     const {
@@ -753,7 +771,7 @@ class Header extends Component {
           </div>
 
           {showIndicator && (
-            <Indicator isDocumentNotSaved={isDocumentNotSaved} />
+            <Indicator {...{ isDocumentNotSaved, indicator }} />
           )}
         </nav>
 
@@ -768,15 +786,16 @@ class Header extends Component {
             handleDelete={this.handleDelete}
             handleEmail={this.handleEmail}
             handleLetter={this.handleLetter}
+            handleComments={this.handleComments}
             redirect={this.redirect}
             disableOnClickOutside={!isSubheaderShow}
             breadcrumb={breadcrumb}
-            notfound={notfound}
-            query={query}
+            notfound={notFound}
             entity={entity}
             dataId={dataId}
+            documentId={docId}
             windowId={windowId}
-            viewId={query && query.viewId}
+            viewId={viewId}
             siteName={siteName}
             editmode={editmode}
             handleEditModeToggle={handleEditModeToggle}
@@ -786,13 +805,14 @@ class Header extends Component {
 
         {showSidelist && isSideListShow && (
           <SideList
-            windowType={windowId ? windowId : ''}
+            windowId={windowId ? windowId : ''}
             closeOverlays={this.closeOverlays}
             closeSideList={this.handleSidelistToggle}
             isSideListShow={isSideListShow}
             disableOnClickOutside={!showSidelist}
             docId={dataId}
             defaultTab={sideListTab}
+            viewId={viewId}
             open
           />
         )}
@@ -832,6 +852,7 @@ class Header extends Component {
               : undefined
           }
           handleEmail={this.handleEmail}
+          handleComments={this.handleComments}
           handleLetter={this.handleLetter}
           handleDelete={dataId ? this.handleDelete : undefined}
           handleClone={
@@ -874,9 +895,9 @@ class Header extends Component {
  * @prop {object} inbox
  * @prop {bool} isDocumentNotSaved
  * @prop {object} me
- * @prop {*} notfound
+ * @prop {*} notFound
  * @prop {*} plugins
- * @prop {*} query
+ * @prop {*} viewId
  * @prop {*} showSidelist
  * @prop {*} showIndicator
  * @prop {*} siteName
@@ -885,9 +906,9 @@ class Header extends Component {
 Header.propTypes = {
   activeTab: PropTypes.any,
   breadcrumb: PropTypes.any,
-  dataId: PropTypes.string,
+  dataId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   dispatch: PropTypes.func.isRequired,
-  docId: PropTypes.string,
+  docId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   docSummaryData: PropTypes.any,
   docNoData: PropTypes.any,
   docStatus: PropTypes.any,
@@ -900,13 +921,14 @@ Header.propTypes = {
   inbox: PropTypes.object.isRequired,
   isDocumentNotSaved: PropTypes.bool,
   me: PropTypes.object.isRequired,
-  notfound: PropTypes.any,
+  notFound: PropTypes.any,
   plugins: PropTypes.any,
-  query: PropTypes.any,
+  viewId: PropTypes.string,
   showSidelist: PropTypes.any,
-  showIndicator: PropTypes.any,
+  showIndicator: PropTypes.bool,
   siteName: PropTypes.any,
-  windowId: PropTypes.string,
+  windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  indicator: PropTypes.string,
 };
 
 /**
@@ -919,6 +941,7 @@ const mapStateToProps = (state) => ({
   me: state.appHandler.me,
   pathname: state.routing.locationBeforeTransitions.pathname,
   plugins: state.pluginsHandler.files,
+  indicator: state.windowHandler.indicator,
 });
 
 export default connect(mapStateToProps)(Header);

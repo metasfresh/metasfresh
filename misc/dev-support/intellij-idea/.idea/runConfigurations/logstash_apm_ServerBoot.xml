@@ -1,0 +1,20 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="logstash_apm ServerBoot" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="elk">
+    <module name="metasfresh-dist-serverRoot" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="de.metas.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.ServerBoot" />
+    <option name="VM_PARAMETERS" value="-DPropertyFile=$ProjectFileDir$\metasfresh.properties -DTraceFile=true -Xms256M -Xmx736M -Drun-headless=false -DdevelopmentWorkspaceDir=$ProjectFileDir$/metasfresh/backend -Dspring.profiles.active=logstash -javaagent:$ProjectFileDir$/elastic-apm-agent.jar -Delastic.apm.service_name=app -Delastic.apm.server_url=http://localhost:8200 -Delastic.apm.application_packages=de.metas.*,org.adempiere.*,org.compiere.* -Delastic.apm.enable_log_correlation=true" />
+    <option name="PROGRAM_PARAMETERS" value="--debug" />
+    <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -68,7 +68,7 @@ import lombok.NonNull;
  * #L%
  */
 
-final class M_Transaction_HuDescriptor
+class M_Transaction_HuDescriptor
 {
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);

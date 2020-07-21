@@ -1,91 +1,71 @@
 package de.metas.invoice.service.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.junit.Assert.assertSame;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_InOutLine;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.service.impl.AbstractInvoiceBL;
-import de.metas.invoice.service.impl.InvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import mockit.Expectations;
-import mockit.Mocked;
+import lombok.Builder;
+import lombok.NonNull;
 
 public class InvoiceBLSortLinesTests
 {
-	@Mocked
-	I_C_InvoiceLine il1;
-
-	@Mocked
-	I_C_InvoiceLine il2;
-
-	@Mocked
-	I_C_InvoiceLine il3;
-
-	@Mocked
-	I_C_InvoiceLine il4;
-
-	@Mocked
-	I_C_InvoiceLine il5;
-
-	@Mocked
-	I_M_InOutLine iol1;
-
-	@Mocked
-	I_M_InOutLine iol2;
-
-	@Mocked
-	I_M_InOutLine iol3;
-
-	@Mocked
-	I_M_InOutLine iol4;
-
-	@Mocked
-	I_M_InOutLine iol5;
-
-	@BeforeClass
-	public static final void staticInit()
-	{
-		AdempiereTestHelper.get().staticInit();
-	}
-
-	@Before
-	public final void initStuff()
+	@BeforeEach
+	public final void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.SYSTEM, OrgId.ANY);
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		sysConfigBL.setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.SYSTEM, OrgId.ANY);
+	}
+
+	@Builder(builderMethodName = "invoiceLine", builderClassName = "$InvoiceLineBuilder")
+	private I_C_InvoiceLine createInvoiceLine(
+			@NonNull final String name,
+			final boolean freightCost,
+			final int lineNo,
+			final int inoutId)
+	{
+		final I_C_InvoiceLine invoiceLine = newInstance(I_C_InvoiceLine.class);
+		POJOWrapper.setInstanceName(invoiceLine, name);
+		invoiceLine.setIsFreightCostLine(freightCost);
+		invoiceLine.setLine(lineNo);
+
+		if (inoutId > 0)
+		{
+			final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
+			inoutLine.setM_InOut_ID(inoutId);
+			saveRecord(inoutLine);
+			invoiceLine.setM_InOutLine_ID(inoutLine.getM_InOutLine_ID());
+		}
+
+		saveRecord(invoiceLine);
+
+		return invoiceLine;
+	}
+
+	private void assertInOrder(final List<I_C_InvoiceLine> lines, String... expectedInstanceNamesInOrder)
+	{
+		final ImmutableList<String> actualInstanceNames = lines.stream()
+				.map(POJOWrapper::getInstanceName)
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actualInstanceNames).containsExactly(expectedInstanceNamesInOrder);
 	}
 
 	/**
@@ -94,18 +74,15 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortDontChange()
 	{
-		hasIDs(il1, iol1, 1, 0, false, 10);
-		hasIDs(il2, iol2, 2, 11, false, 20);
-		hasIDs(il3, iol3, 3, 11, true, 30);
-		hasIDs(il4, iol4, 4, 12, false, 40);
+		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(10).inoutId(-1).build();
+		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(20).inoutId(11).build();
+		final I_C_InvoiceLine il3 = invoiceLine().name("IL3").lineNo(30).inoutId(11).freightCost(true).build();
+		final I_C_InvoiceLine il4 = invoiceLine().name("IL4").lineNo(40).inoutId(12).build();
 
-		final List<I_C_InvoiceLine> sorted = Arrays.asList(new I_C_InvoiceLine[] { il1, il2, il3, il4 });
+		final List<I_C_InvoiceLine> sorted = Arrays.asList(il1, il2, il3, il4);
 		new InvoiceBL().sortLines(sorted);
 
-		assertSame(sorted.get(0), il1);
-		assertSame(sorted.get(1), il2);
-		assertSame(sorted.get(2), il3);
-		assertSame(sorted.get(3), il4);
+		assertInOrder(sorted, "IL1", "IL2", "IL3", "IL4");
 	}
 
 	/**
@@ -114,19 +91,16 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortInOuts()
 	{
-		hasIDs(il1, iol1, 1, 12, false, 10);
-		hasIDs(il2, iol2, 2, 11, false, 10);
-		hasIDs(il3, iol3, 3, 12, false, 10);
-		hasIDs(il4, iol4, 4, 10, false, 10);
+		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(10).inoutId(12).build();
+		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(10).inoutId(11).build();
+		final I_C_InvoiceLine il3 = invoiceLine().name("IL3").lineNo(10).inoutId(12).build();
+		final I_C_InvoiceLine il4 = invoiceLine().name("IL4").lineNo(10).inoutId(10).build();
 
-		final List<I_C_InvoiceLine> sorted = Arrays.asList(new I_C_InvoiceLine[] { il1, il2, il3, il4 });
+		final List<I_C_InvoiceLine> sorted = Arrays.asList(il1, il2, il3, il4);
 		new InvoiceBL().sortLines(sorted);
 
-		assertSame(sorted.get(0), il4); // inOut 10
-		assertSame(sorted.get(1), il2); // inOut 11
-		assertSame(sorted.get(2), il1); // inOut 12
-		assertSame(sorted.get(3), il3); // inOut 12
-		// the Last two rows are in the same order they were before
+		assertInOrder(sorted, "IL4", "IL2", "IL1", "IL3");
+		// the Last two lines are in the same order they were before
 	}
 
 	/**
@@ -135,19 +109,16 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortSeekInOut()
 	{
-		hasIDs(il1, iol1, 1, 0, false, 8);
-		hasIDs(il2, iol2, 2, 0, false, 9);
-		hasIDs(il3, iol3, 3, 12, false, 10);
-		hasIDs(il4, iol4, 4, 10, false, 10);
+		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(8).inoutId(0).build();
+		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(9).inoutId(0).build();
+		final I_C_InvoiceLine il3 = invoiceLine().name("IL3").lineNo(10).inoutId(12).build();
+		final I_C_InvoiceLine il4 = invoiceLine().name("IL4").lineNo(10).inoutId(10).build();
 
-		final List<I_C_InvoiceLine> sorted = Arrays.asList(new I_C_InvoiceLine[] { il1, il2, il3, il4 });
+		final List<I_C_InvoiceLine> sorted = Arrays.asList(il1, il2, il3, il4);
 		new InvoiceBL().sortLines(sorted);
 
-		assertSame(sorted.get(0), il4); // inOut 10
-		assertSame(sorted.get(1), il1); // inOut 12
-		assertSame(sorted.get(2), il2); // inOut 12
-		assertSame(sorted.get(3), il3); // inOut 12
-		// the Last three rows are also ordered by lineNo
+		assertInOrder(sorted, "IL4", "IL1", "IL2", "IL3");
+		// the Last three lines are also ordered by lineNo
 	}
 
 	/**
@@ -156,18 +127,15 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortFreightCost()
 	{
-		hasIDs(il1, iol1, 1, 11, true, 10);
-		hasIDs(il2, iol2, 2, 11, false, 10);
-		hasIDs(il3, iol3, 3, 11, true, 10);
-		hasIDs(il4, iol4, 4, 11, false, 10);
+		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(10).inoutId(11).freightCost(true).build();
+		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(10).inoutId(11).freightCost(false).build();
+		final I_C_InvoiceLine il3 = invoiceLine().name("IL3").lineNo(10).inoutId(11).freightCost(true).build();
+		final I_C_InvoiceLine il4 = invoiceLine().name("IL4").lineNo(10).inoutId(11).freightCost(false).build();
 
-		final List<I_C_InvoiceLine> sorted = Arrays.asList(new I_C_InvoiceLine[] { il1, il2, il3, il4 });
+		final List<I_C_InvoiceLine> sorted = Arrays.asList(il1, il2, il3, il4);
 		new InvoiceBL().sortLines(sorted);
 
-		assertSame(sorted.get(0), il2);
-		assertSame(sorted.get(1), il4);
-		assertSame(sorted.get(2), il1);
-		assertSame(sorted.get(3), il3);
+		assertInOrder(sorted, "IL2", "IL4", "IL1", "IL3");
 	}
 
 	/**
@@ -176,18 +144,15 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortLineNo()
 	{
-		hasIDs(il1, iol1, 1, 11, false, 20);
-		hasIDs(il2, iol2, 2, 11, false, 10);
-		hasIDs(il3, iol3, 3, 11, false, 20);
-		hasIDs(il4, iol4, 4, 11, false, 10);
+		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(20).inoutId(11).build();
+		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(10).inoutId(11).build();
+		final I_C_InvoiceLine il3 = invoiceLine().name("IL3").lineNo(20).inoutId(11).build();
+		final I_C_InvoiceLine il4 = invoiceLine().name("IL4").lineNo(10).inoutId(11).build();
 
-		final List<I_C_InvoiceLine> sorted = Arrays.asList(new I_C_InvoiceLine[] { il1, il2, il3, il4 });
+		final List<I_C_InvoiceLine> sorted = Arrays.asList(il1, il2, il3, il4);
 		new InvoiceBL().sortLines(sorted);
 
-		assertSame(sorted.get(0), il2);
-		assertSame(sorted.get(1), il4);
-		assertSame(sorted.get(2), il1);
-		assertSame(sorted.get(3), il3);
+		assertInOrder(sorted, "IL2", "IL4", "IL1", "IL3");
 	}
 
 	/**
@@ -196,20 +161,16 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortComplete()
 	{
-		hasIDs(il1, iol1, 1, 12, false, 10);
-		hasIDs(il2, iol2, 2, 0, false, 9);
-		hasIDs(il3, iol3, 3, 0, false, 8);
-		hasIDs(il4, iol4, 4, 11, true, 10);
-		hasIDs(il5, iol5, 5, 11, false, 10);
+		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(10).inoutId(12).build();
+		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(9).inoutId(0).build();
+		final I_C_InvoiceLine il3 = invoiceLine().name("IL3").lineNo(8).inoutId(0).build();
+		final I_C_InvoiceLine il4 = invoiceLine().name("IL4").lineNo(10).inoutId(11).freightCost(true).build();
+		final I_C_InvoiceLine il5 = invoiceLine().name("IL5").lineNo(10).inoutId(11).build();
 
-		final List<I_C_InvoiceLine> sorted = Arrays.asList(new I_C_InvoiceLine[] { il1, il2, il3, il4, il5 });
+		final List<I_C_InvoiceLine> sorted = Arrays.asList(il1, il2, il3, il4, il5);
 		new InvoiceBL().sortLines(sorted);
 
-		assertSame(sorted.get(0), il3);
-		assertSame(sorted.get(1), il2);
-		assertSame(sorted.get(2), il5);
-		assertSame(sorted.get(3), il4);
-		assertSame(sorted.get(4), il1);
+		assertInOrder(sorted, "IL3", "IL2", "IL5", "IL4", "IL1");
 	}
 
 	/**
@@ -218,67 +179,18 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortWith_SYSCONFIG_SortILsByShipmentLineOrders()
 	{
-		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, true, ClientId.METASFRESH, OrgId.ANY); // configure override
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		sysConfigBL.setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, true, ClientId.METASFRESH, OrgId.ANY); // configure override
 
-		hasIDs(il1, iol1, 1, 12, false, 10);
-		hasIDs(il2, iol2, 2, 0, false, 9);
-		hasIDs(il3, iol3, 3, 0, false, 8);
-		hasIDs(il4, iol4, 4, 11, true, 10);
-		hasIDs(il5, iol5, 5, 11, false, 10);
+		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(10).inoutId(12).build();
+		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(9).inoutId(0).build();
+		final I_C_InvoiceLine il3 = invoiceLine().name("IL3").lineNo(8).inoutId(0).build();
+		final I_C_InvoiceLine il4 = invoiceLine().name("IL4").lineNo(10).inoutId(11).freightCost(true).build();
+		final I_C_InvoiceLine il5 = invoiceLine().name("IL5").lineNo(10).inoutId(11).build();
 
-		final List<I_C_InvoiceLine> sorted = Arrays.asList(new I_C_InvoiceLine[] { il1, il2, il3, il4, il5 });
+		final List<I_C_InvoiceLine> sorted = Arrays.asList(il1, il2, il3, il4, il5);
 		new InvoiceBL().sortLines(sorted);
 
-		assertSame(sorted.get(0), il5);
-		assertSame(sorted.get(1), il4);
-		assertSame(sorted.get(2), il1);
-		assertSame(sorted.get(3), il3);
-		assertSame(sorted.get(4), il2);
-	}
-
-	public void hasIDs(
-			final I_C_InvoiceLine il,
-			final I_M_InOutLine iol,
-			final int invoiceLineId,
-			final int inoutId,
-			final boolean freightCost,
-			final int lineNo)
-	{
-		if (inoutId <= 0)
-		{
-			// @formatter:off
-			new Expectations()
-			{{
-				il.getC_InvoiceLine_ID(); minTimes = 0; result = invoiceLineId;
-
-				il.getM_InOutLine(); minTimes = 0; result  = null;
-				il.getM_InOutLine_ID(); minTimes = 0; result = 0;
-
-				il.isFreightCostLine(); minTimes = 0; result = freightCost;
-
-				il.getLine(); minTimes = 0; result = lineNo;
-			}};
-			// @formatter:on
-		}
-		else
-		{
-			// @formatter:off
-			new Expectations()
-			{{
-				il.getC_InvoiceLine_ID();
-				minTimes = 0;
-				result = invoiceLineId;
-
-				il.getM_InOutLine_ID(); minTimes = 0; result = 1;
-				il.getM_InOutLine(); minTimes = 0; result = iol;
-				iol.getM_InOut_ID(); minTimes = 0; result = inoutId;
-
-				il.isFreightCostLine();	minTimes = 0; result = freightCost;
-
-				il.getLine(); minTimes = 0; result = lineNo;
-			}};
-			// @formatter:on
-		}
-
+		assertInOrder(sorted, "IL5", "IL4", "IL1", "IL3", "IL2");
 	}
 }

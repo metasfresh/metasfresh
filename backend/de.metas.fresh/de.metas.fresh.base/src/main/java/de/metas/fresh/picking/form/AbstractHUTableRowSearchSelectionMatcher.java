@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -151,7 +152,7 @@ import lombok.NonNull;
 		// Fetch products from HU Storage
 		final TreeSet<ProductId> productIds = new TreeSet<>();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx);
+		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ClientAndOrgId.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID()));
 		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 		for (IHUProductStorage productStorage : productStorages)
 		{

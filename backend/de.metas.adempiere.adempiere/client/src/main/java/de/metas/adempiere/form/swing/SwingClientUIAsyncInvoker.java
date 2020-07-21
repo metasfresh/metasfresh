@@ -21,7 +21,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.adempiere.form.IClientUIAsyncInvoker;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L

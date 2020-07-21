@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -25,6 +26,7 @@ import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
@@ -75,15 +77,20 @@ public class InvoiceExportService
 
 	public void exportInvoices(@NonNull final ImmutableList<InvoiceId> invoiceIdsToExport)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		for (final InvoiceId invoiceIdToExport : invoiceIdsToExport)
 		{
-			final Optional<InvoiceToExport> invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
-			if (!invoiceToExport.isPresent())
+			try (final MDCCloseable invoiceMDC = TableRecordMDC.putTableRecordReference(I_C_Invoice.Table_Name, invoiceIdToExport))
 			{
-				Loggables.addLog("InvoiceExportService - invoiceToExportFactory was unable to create an exportable representation for the invoice with InvoiceId={}; skipping.", invoiceIdToExport);
-				continue;
+				final Optional<InvoiceToExport> invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
+				if (!invoiceToExport.isPresent())
+				{
+					loggable.addLog("InvoiceExportService - invoiceToExportFactory did not create an exportable representation for the invoice with InvoiceId={}; skipping.", invoiceIdToExport);
+					continue;
+				}
+				exportInvoice(invoiceToExport.get());
 			}
-			exportInvoice(invoiceToExport.get());
 		}
 	}
 
@@ -131,7 +138,7 @@ public class InvoiceExportService
 		final AttachmentTags attachmentTag = AttachmentTags.builder()
 				.tag(AttachmentTags.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
 				.tag(AttachmentTags.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
-				.tag(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getInvoiceExportProviderId())
+				.tag(InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getInvoiceExportProviderId())
 				.build();
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
 				.builderFromByteArray(

@@ -1,12 +1,12 @@
 package org.adempiere.ad.trx.api.impl;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
-import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.exceptions.AdempiereException;
 
 /*
@@ -33,8 +33,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import org.slf4j.Logger;
 
-import java.util.Objects;
-
 import de.metas.logging.LogManager;
 import de.metas.util.StringUtils;
 import de.metas.util.WeakList;
@@ -53,7 +51,7 @@ public class TrxListenerManager implements ITrxListenerManager
 	private final String trxName;
 
 	/**
-	 * Never contains {@code null} or {@link TrxEventTiming#UNSPECIFIED}.
+	 * Never contains {@code null}.
 	 */
 	private final AtomicReference<TrxEventTiming> runningWithinTrxEventTiming = new AtomicReference<>(TrxEventTiming.NONE);
 
@@ -97,14 +95,14 @@ public class TrxListenerManager implements ITrxListenerManager
 	{
 		final TrxEventTiming eventTimingOfListener = listener.getTiming();
 
-		final TrxEventTiming currentTiming = runningWithinTrxEventTiming.get();
+		final TrxEventTiming currentTiming = getCurrentTiming();
 		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(currentTiming);
 		if (listenerHasProblematicTiming)
 		{
 			final String message = StringUtils.formatMessage("Registering another listener within a listener's event handling code might be a development error and that other listener might not be fired."
 					+ "\n trxName={}"
 					+ "\n current trx event timing={}"
-					+ "\n listener that is registerd={}",
+					+ "\n listener that is registered={}",
 					this.trxName,
 					currentTiming,
 					listener);
@@ -115,7 +113,7 @@ public class TrxListenerManager implements ITrxListenerManager
 	@Override
 	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
 	{
-		return timing.canBeRegisteredWithinOtherTiming(runningWithinTrxEventTiming.get());
+		return timing.canBeRegisteredWithinOtherTiming(getCurrentTiming());
 	}
 
 	@Override
@@ -123,6 +121,11 @@ public class TrxListenerManager implements ITrxListenerManager
 	{
 		// Execute the "beforeCommit". On error, propagate the exception.
 		fireListeners(OnError.ThrowException, TrxEventTiming.BEFORE_COMMIT, trx);
+	}
+
+	private TrxEventTiming getCurrentTiming()
+	{
+		return runningWithinTrxEventTiming.get();
 	}
 
 	@Override
@@ -212,8 +215,9 @@ public class TrxListenerManager implements ITrxListenerManager
 		}
 		else // if (onError == OnError.ThrowException)
 		{
-			throw new TrxException("Error on " + timingInfo, ex)
+			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("listener", listener)
+					.setParameter(timingInfo)
 					.appendParametersToMessage();
 		}
 	}

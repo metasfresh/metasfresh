@@ -1,6 +1,6 @@
 package de.metas.ordercandidate.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -81,7 +81,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -238,17 +238,22 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
+	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable I_C_OLCand orderCandidateRecord)
 	{
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getPaymentTermId().isPresent())
-		{
-			return bPartnerOrderParams.getPaymentTermId().get();
-		}
-		if (orderDefaults != null)
-		{
-			return orderDefaults.getPaymentTermId();
-		}
-		return null;
+		final PaymentTermId orderCandidatePaymenTermId = orderCandidateRecord == null ? null
+				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
+
+		final PaymentTermId bpartnerOrderParamsPaymentTermId = bPartnerOrderParams == null ? null
+				: bPartnerOrderParams.getPaymentTermId().orElse(null);
+
+		final PaymentTermId orderDefaultsPaymentTermId = orderDefaults == null ? null
+				: orderDefaults.getPaymentTermId();
+
+		return coalesce(orderCandidatePaymenTermId,
+				bpartnerOrderParamsPaymentTermId,
+				orderDefaultsPaymentTermId);
 	}
 
 	@Override

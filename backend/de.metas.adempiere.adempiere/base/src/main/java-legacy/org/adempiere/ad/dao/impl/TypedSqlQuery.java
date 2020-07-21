@@ -73,7 +73,7 @@ import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -515,12 +515,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return model;
 	}
 
-	/**
-	 * Return first ID
-	 *
-	 * @return first ID or -1 if not found
-	 * @throws DBException
-	 */
 	@Override
 	public int firstId() throws DBException
 	{

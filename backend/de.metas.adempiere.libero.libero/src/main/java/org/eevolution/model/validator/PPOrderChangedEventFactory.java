@@ -2,11 +2,14 @@ package org.eevolution.model.validator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Services;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.commons.EventDescriptor;
@@ -57,6 +60,8 @@ public class PPOrderChangedEventFactory
 	private final PPOrderChangedEventBuilder eventBuilder;
 	private final Map<Integer, ChangedPPOrderLineDescriptorBuilder> productBomLineId2ChangeBuilder = new HashMap<>();
 
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 	private PPOrderChangedEventFactory(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
 			@NonNull final I_PP_Order ppOrderRecord)
@@ -96,8 +101,6 @@ public class PPOrderChangedEventFactory
 
 		return PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
-				// .productDescriptor(oldPPOrder.getProductDescriptor())
-				// .ppOrderId(oldPPOrder.getPpOrderId())
 				.oldDatePromised(oldPPOrder.getDatePromised())
 				.oldDocStatus(oldPPOrder.getDocStatus())
 				.oldQtyRequired(oldPPOrder.getQtyRequired())

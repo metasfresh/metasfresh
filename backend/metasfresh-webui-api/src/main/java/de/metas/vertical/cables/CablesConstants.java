@@ -1,5 +1,7 @@
 package de.metas.vertical.cables;
 
+import org.adempiere.mm.attributes.AttributeCode;
+
 import lombok.experimental.UtilityClass;
 
 /*
@@ -35,5 +37,5 @@ public final class CablesConstants
 	 */
 	public static final String PROFILE = "de.metas.vertical.cables";
 
-	public static final String ATTRIBUTE_CableLength = "CableLength";
+	public static final AttributeCode ATTRIBUTE_CableLength = AttributeCode.ofString("CableLength");
 }

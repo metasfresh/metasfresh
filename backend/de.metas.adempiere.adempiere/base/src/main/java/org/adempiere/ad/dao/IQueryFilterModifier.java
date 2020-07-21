@@ -1,10 +1,8 @@
-package org.adempiere.ad.dao;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,23 +11,26 @@ package org.adempiere.ad.dao;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package org.adempiere.ad.dao;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * Used in some {@link IQueryFilter}s as modifiers for column names and values.
- *
+ * <p>
  * Use this interface if you want to implement modifiers like UPPER, TRUNC etc.
- *
  */
 public interface IQueryFilterModifier
 {
@@ -39,12 +40,11 @@ public interface IQueryFilterModifier
 	String COLUMNNAME_Constant = null;
 
 	/**
-	 * Decorates given <code>columnSql</code>
+	 * Decorates given <code>columnName</code>
 	 *
-	 * @param columnSql
 	 * @return decorated (modified) column SQL
 	 */
-	String getColumnSql(String columnSql);
+	@NonNull String getColumnSql(@NonNull String columnName);
 
 	/**
 	 * Converts given <code>value</code> to SQL code and optionally adds the parameters to given <code>param</code>.
@@ -53,14 +53,15 @@ public interface IQueryFilterModifier
 
 	/**
 	 * Converts given <code>value</code> to normalized form (ready for comparation).
-	 *
+	 * <p>
 	 * Mainly this method is called in non-SQL mode, by {@link IQueryFilter#accept(Object)}.
 	 *
 	 * @param columnName column name or {@link #COLUMNNAME_Constant} (if it's a constant)
-	 * @param value
-	 * @model model model which is evaluated
+	 * @param value      value to be converted
+	 * @param model      model which is evaluated
 	 * @return converted value
 	 */
-	Object convertValue(String columnName, Object value, Object model);
+	@Nullable
+	Object convertValue(@Nullable String columnName, @Nullable Object value, @Nullable Object model);
 
 }

@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS report.tax_accounting_report( IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying(6) );
-CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric,
+DROP FUNCTION IF EXISTS report.tax_accounting_report( IN dateFrom date, IN dateTo date, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying(6) );
+CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN dateFrom date, IN dateTo date, IN vatcode numeric,
                                                         IN account_id  numeric, IN org_id numeric,
                                                         IN showdetails character varying,
                                                         IN ad_language character varying(6))
@@ -41,8 +41,8 @@ SELECT
   COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt, 0 :: numeric))    as taxamt,
   taxamtperaccount,
   IsTaxLine,
-  x.startdate :: date                                                                    as param_startdate,
-  x.enddate :: date                                                                      as param_endtdate,
+  x.dateFrom                                                                    as param_startdate,
+  x.dateTo                                                                      as param_endtdate,
   x.param_konto,
   x.param_vatcode,
   x.param_org,
@@ -82,23 +82,23 @@ FROM
        end)                                                        AS IsTaxLine,
 
       fa.vatcode                                                   AS vatcode,
-      p.startdate :: date,
-      p.enddate :: date,
-      (CASE WHEN $3 IS NULL
+      dateFrom,
+      dateTo,
+      (CASE WHEN $4 IS NULL
         THEN NULL
        ELSE (SELECT value || ' - ' || name
              from C_ElementValue
-             WHERE C_ElementValue_ID = $3 and isActive = 'Y') END) AS param_konto,
-      (CASE WHEN $2 IS NULL
+             WHERE C_ElementValue_ID = $4 and isActive = 'Y') END) AS param_konto,
+      (CASE WHEN $3 IS NULL
         THEN NULL
        ELSE (SELECT vatcode
              FROM C_Vat_Code
-             WHERE C_Vat_Code_ID = $2 and isActive = 'Y') END)     AS param_vatcode,
-      (CASE WHEN $4 IS NULL
+             WHERE C_Vat_Code_ID = $3 and isActive = 'Y') END)     AS param_vatcode,
+      (CASE WHEN $5 IS NULL
         THEN NULL
        ELSE (SELECT name
              from ad_org
-             where ad_org_id = $4 and isActive = 'Y') END)         AS param_org,
+             where ad_org_id = $5 and isActive = 'Y') END)         AS param_org,
 
       fa.ad_org_id
 
@@ -107,7 +107,6 @@ FROM
 
       JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id and ev.isActive = 'Y'
       JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id and tax.isActive = 'Y'
-      JOIN c_period p ON p.c_period_id = $1 and p.isActive = 'Y'
 
       LEFT OUTER JOIN c_bpartner bp on fa.c_bpartner_id = bp.c_bpartner_id
 
@@ -174,17 +173,17 @@ FROM
         ON hdr.C_AllocationHdr_ID = fa.record_id AND fa.ad_table_id = get_Table_Id('C_AllocationHdr') AND
            fa.line_id = hdr.C_AllocationLine_ID
 
-      LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = $2 and vat.isActive = 'Y'
+      LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = $3 and vat.isActive = 'Y'
 
-    WHERE fa.c_period_id = $1
+    WHERE fa.DateAcct >= dateFrom AND fa.DateAcct <= dateTo
           AND fa.postingtype IN ('A', 'Y')
-          AND fa.ad_org_id = $4
+          AND fa.ad_org_id = $5
           AND (CASE WHEN vat.vatcode IS NULL
       THEN TRUE
                ELSE vat.vatcode = fa.VatCode END)
-          AND (CASE WHEN $3 IS NULL
+          AND (CASE WHEN $4 IS NULL
       THEN TRUE
-               ELSE $3 = fa.account_id END)
+               ELSE $4 = fa.account_id END)
           AND fa.isActive = 'Y'
 
 

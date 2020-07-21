@@ -21,6 +21,16 @@ import PaypalReservationConfirm from './containers/PaypalReservationConfirm.js';
 
 let hasTutorial = false;
 
+const DocListRoute = (nextState) => (
+  <DocList
+    query={nextState.location.query}
+    windowId={nextState.params.windowId}
+  />
+);
+const BoardRoute = (nextState) => (
+  <Board query={nextState.location.query} boardId={nextState.params.boardId} />
+);
+
 export const getRoutes = (store, auth, plugins) => {
   const authRequired = (nextState, replace, callback) => {
     hasTutorial =
@@ -122,22 +132,10 @@ export const getRoutes = (store, auth, plugins) => {
   };
 
   const pluginRoutes = getPluginsRoutes(plugins);
-  const DocListRoute = (nextState) => (
-    <DocList
-      query={nextState.location.query}
-      windowType={nextState.params.windowType}
-    />
-  );
-  const BoardRoute = (nextState) => (
-    <Board
-      query={nextState.location.query}
-      boardId={nextState.params.boardId}
-    />
-  );
 
   const childRoutes = [
     {
-      path: '/window/:windowType',
+      path: '/window/:windowId',
       // eslint-disable-next-line react/display-name
       component: DocListRoute,
     },

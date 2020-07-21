@@ -6,6 +6,8 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
@@ -69,7 +71,7 @@ public class ProcurementFlatrateHandler extends FallbackFlatrateTermEventListene
 
 		final List<I_C_Flatrate_DataEntry> oldDataEntries = flatrateDAO.retrieveDataEntries(predecessor, null, null);
 
-		final PMMContractBuilder builder = PMMContractBuilder.newBuilder(newTermtoUse)
+		final PMMContractBuilder builder = newPMMContractBuilder(newTermtoUse)
 				.setComplete(false);
 
 		oldDataEntries
@@ -100,5 +102,11 @@ public class ProcurementFlatrateHandler extends FallbackFlatrateTermEventListene
 				});
 
 		builder.build();
+	}
+
+	@VisibleForTesting
+	PMMContractBuilder newPMMContractBuilder(final I_C_Flatrate_Term term)
+	{
+		return PMMContractBuilder.newBuilder(term);
 	}
 }

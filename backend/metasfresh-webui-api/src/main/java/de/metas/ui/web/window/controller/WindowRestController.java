@@ -27,14 +27,12 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.menu.MenuTree;
-import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -51,12 +49,10 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions.JSONDocumentLayoutOptionsBuilder;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions.JSONDocumentOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
@@ -74,8 +70,6 @@ import de.metas.ui.web.window.model.DocumentChangeLogService;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -133,12 +127,6 @@ public class WindowRestController
 
 	@Autowired
 	private ProcessRestController processRestController;
-
-	@Autowired
-	private DocumentReferencesService documentReferencesService;
-
-	@Autowired
-	private MenuTreeRepository menuTreeRepository;
 
 	@Autowired
 	private DocumentWebsocketPublisher websocketPublisher;
@@ -224,7 +212,7 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
-	public List<JSONDocument> getIncludedTabRows(
+	public JSONDocumentList getIncludedTabRows(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
@@ -255,7 +243,27 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
-		return getData(documentPath, orderBys, jsonOpts);
+		final List<JSONDocument> rows = getData(documentPath, orderBys, jsonOpts);
+
+		final Set<DocumentId> missingRowIds;
+		if (!onlyRowIds.isEmpty() && !onlyRowIds.isAll())
+		{
+			final ImmutableSet<DocumentId> foundRowIds = rows.stream()
+					.map(JSONDocument::getRowId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			missingRowIds = Sets.difference(onlyRowIds.toSet(), foundRowIds);
+		}
+		else
+		{
+			missingRowIds = null;
+		}
+
+		return JSONDocumentList.builder()
+				.result(rows)
+				.missingIds(missingRowIds)
+				.build();
+
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
@@ -286,7 +294,7 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
-			List<Document> documents;
+			final List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
 				documents = ImmutableList.of(rootDocument);
@@ -297,7 +305,11 @@ public class WindowRestController
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
-				documents = ImmutableList.of(rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()));
+				// IMPORTANT: in case the document was not found, don't fail but return empty.
+				final Document document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()).orElse(null);
+				documents = document != null
+						? ImmutableList.of(document)
+						: ImmutableList.of();
 			}
 			else
 			{
@@ -764,51 +776,6 @@ public class WindowRestController
 					.filter(isEnabled)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
-	}
-
-	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/references")
-	public JSONDocumentReferencesGroup getDocumentReferences(
-			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("documentId") final String documentIdStr,
-			@PathVariable("tabId") final String tabIdStr,
-			@PathVariable("rowId") final String rowIdStr)
-	{
-		userSession.assertLoggedIn();
-
-		// Get document references
-		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath);
-
-		final JSONOptions jsonOpts = newJSONOptions().build();
-		return JSONDocumentReferencesGroup.builder()
-				.caption("References")
-				.references(JSONDocumentReference.ofList(documentReferences, jsonOpts))
-				.build();
-	}
-
-	@GetMapping(value = "/{windowId}/{documentId}/references")
-	public JSONDocumentReferencesGroupList getDocumentReferences(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentId //
-	)
-	{
-		userSession.assertLoggedIn();
-
-		// Get document references
-		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
-		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath);
-		if (documentReferences.isEmpty())
-		{
-			return JSONDocumentReferencesGroupList.EMPTY;
-		}
-
-		// Organize document references in groups (by top level menu) and return them as JSON
-		final JSONOptions jsonOpts = newJSONOptions().build();
-		final MenuTree menuTree = menuTreeRepository.getMenuTree(userSession.getUserRolePermissionsKey(), jsonOpts.getAdLanguage());
-		final String othersMenuCaption = Services.get(IMsgBL.class).translatable("DocumentReferences.group.Others").translate(jsonOpts.getAdLanguage());
-		return JSONDocumentReferencesGroupList.of(documentReferences, menuTree, othersMenuCaption, jsonOpts);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")

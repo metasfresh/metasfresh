@@ -237,7 +237,7 @@ public class ESRImportEnqueuer
 					if (!getDuplicateFilePolicy().isImportDuplicateFile())
 					{
 						getDuplicateFilePolicy().onNotImportingDuplicateFile();
-						throw new AdempiereException("File not imported");
+						throw new AdempiereException("File not imported - identical with previous file");
 					}
 
 				}
@@ -245,7 +245,7 @@ public class ESRImportEnqueuer
 				else if ("E".equalsIgnoreCase(preventDuplicates))
 				{
 					getDuplicateFilePolicy().onNotImportingDuplicateFile();
-					throw new AdempiereException("File not imported");
+					throw new AdempiereException("File not imported - identical with previous file");
 				}
 				else
 				{

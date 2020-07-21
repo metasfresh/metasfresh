@@ -56,7 +56,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
 	/**
-	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
+	 * Please use this method to avoid unneeded work packages.
 	 *
 	 * @return {@code true} if the caller can (and should) skip scheduling a workpackage processor.
 	 */
@@ -79,14 +79,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param sched
 	 */
 	void updateBPArtnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
-
-	/**
-	 * Currently this method returns true iff the given {@code sched} has just been changes by {@link #updateSchedules(Properties, List, boolean, Timestamp, CachedObjects, String)}.
-	 *
-	 * @param sched
-	 * @return
-	 */
-	boolean isChangedByUpdateProcess(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc (i.e. the stock UOM)
@@ -145,9 +137,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * Creates a storage query for the given {@code shipmentSchedule}.
 	 *
-	 * @param sched
 	 * @param considerAttributes {@code true} if the query shall be strict with respect to the given {@code shipmentSchedule}'s ASI.
-	 * @return query
 	 */
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
 

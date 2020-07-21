@@ -52,8 +52,6 @@ public interface IBPBankAccountDAO extends ISingletonService
 	 */
 	List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, int partnerID, int currencyID);
 
-	Optional<BankAccountId> retrieveFirstIdByBPartnerAndCurrency(@NonNull BPartnerId bPartnerId, @NonNull CurrencyId currencyId);
-
 	Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(
 			@NonNull BPartnerId bpartnerId,
 			@NonNull CurrencyId currencyId,
@@ -64,13 +62,13 @@ public interface IBPBankAccountDAO extends ISingletonService
 	/**
 	 * Deactivate all {@link I_C_BP_BankAccount} records for the given bPartnerId, besides
 	 * <ul>
-	 *     <li>the ones whose id is in the given {@code exceptIds}</li>
-	 *     <li>the ones that have no IBAN; why: this is used for persisting {@code BPartnerComposite}s which never have no-iban-backaccounts; so we need to prevent them from being deactivated.</li>
+	 * <li>the ones whose id is in the given {@code exceptIds}</li>
+	 * <li>the ones that have no IBAN; why: this is used for persisting {@code BPartnerComposite}s which never have no-iban-backaccounts; so we need to prevent them from being deactivated.</li>
 	 * </ul>
 	 */
 	void deactivateIBANAccountsByBPartnerExcept(BPartnerId bpartnerId, Collection<BPartnerBankAccountId> exceptIds);
 
-	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getByBPartnerIds(Collection<BPartnerId> bpartnerIds);
+	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getAllByBPartnerIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	BankId getBankId(@NonNull BankAccountId bankAccountId);
 }

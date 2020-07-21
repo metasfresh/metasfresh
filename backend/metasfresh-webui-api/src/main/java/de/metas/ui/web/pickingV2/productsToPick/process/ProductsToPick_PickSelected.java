@@ -1,23 +1,8 @@
-package de.metas.ui.web.pickingV2.productsToPick.process;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
-import de.metas.handlingunits.picking.requests.PickRequest;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.pickingV2.config.PickingConfigV2;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,13 +20,18 @@ import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
  * #L%
  */
 
+package de.metas.ui.web.pickingV2.productsToPick.process;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
+import de.metas.ui.web.pickingV2.productsToPick.rows.WebuiPickHUResult;
+import org.compiere.SpringContextHolder;
+
 public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 {
-	@Autowired
-	private PickingCandidateService pickingCandidatesService;
-
-	@Autowired
-	private ProductsToPickRowsService productsToPickRowsService;
+	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -51,13 +41,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
 
-		final List<ProductsToPickRow> selectedRows = getSelectedRows();
-		if (selectedRows.isEmpty())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		if (!selectedRows.stream().allMatch(ProductsToPickRow::isEligibleForPicking))
+		if (!rowsService.anyRowsEligibleForPicking(getSelectedRows()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -69,27 +53,12 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		getSelectedRows()
-				.stream()
-				.filter(ProductsToPickRow::isEligibleForPicking)
-				.forEach(this::pickRow);
+		final ImmutableList<WebuiPickHUResult> result = rowsService.pick(getSelectedRows());
+
+		updateViewRowFromPickingCandidate(result);
 
 		invalidateView();
 
 		return MSG_OK;
 	}
-
-	private void pickRow(final ProductsToPickRow row)
-	{
-		final PickHUResult result = pickingCandidatesService.pickHU(createPickRequest(row));
-
-		updateViewRowFromPickingCandidate(row.getId(), result.getPickingCandidate());
-	}
-
-	private PickRequest createPickRequest(final ProductsToPickRow row)
-	{
-		final PickingConfigV2 pickingConfig = getPickingConfig();
-		return productsToPickRowsService.createPickRequest(row, pickingConfig.isPickingReviewRequired());
-	}
-
 }

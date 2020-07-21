@@ -55,7 +55,8 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 	private static final Logger logger = LogManager.getLogger(MockedWorkpackageProcessor.class);
 
 	private final Map<Integer, Result> results = new HashMap<>();
-	private final Map<Integer, String> exceptions = new HashMap<>();
+	private final Map<Integer, RuntimeException> runtimeExceptionMap = new HashMap<>();
+	private final Map<Integer, OutOfMemoryError> outOfMemoryErrorMap = new HashMap<>();
 	private final Map<Integer, Integer> skipRequests = new HashMap<>();
 	private Result defaultResult = Result.SUCCESS;
 
@@ -104,10 +105,13 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 
 		//
 		// Produce Result
-		if (exceptions.containsKey(workpackageId))
+		if (runtimeExceptionMap.containsKey(workpackageId))
 		{
-			final String exceptionMsg = exceptions.get(workpackageId);
-			throw new AdempiereException(exceptionMsg);
+			throw runtimeExceptionMap.get(workpackageId);
+		}
+		else if(outOfMemoryErrorMap.containsKey(workpackageId))
+		{
+			throw outOfMemoryErrorMap.get(workpackageId);
 		}
 		else if (skipRequests.get(workpackageId) != null)
 		{
@@ -127,9 +131,6 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 
 	/**
 	 * Sets which result shall be returned by this processor in case no specific package results was set
-	 *
-	 * @param defaultResult
-	 * @return this
 	 */
 	public MockedWorkpackageProcessor setDefaultResult(Result defaultResult)
 	{
@@ -140,7 +141,6 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 	/**
 	 * Configure processor to return given result when workpackage will be processed
 	 *
-	 * @param workpackage
 	 * @param result
 	 * @return this
 	 */
@@ -154,21 +154,33 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 	/**
 	 * Configure processor to throw an exception when given workpackage will be processed
 	 *
-	 * @param workpackage
 	 * @param messageStartingWith exception message
-	 * @return
 	 */
-	public MockedWorkpackageProcessor setException(I_C_Queue_WorkPackage workpackage, String messageStartingWith)
+	public MockedWorkpackageProcessor setRuntimeException(I_C_Queue_WorkPackage workpackage, String messageStartingWith)
 	{
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
-		exceptions.put(workpackageId, messageStartingWith);
+		runtimeExceptionMap.put(workpackageId, new AdempiereException(messageStartingWith));
 		return this;
 	}
 
-	public String getException(final I_C_Queue_WorkPackage workpackage)
+	public MockedWorkpackageProcessor setOutOfMemoryError(I_C_Queue_WorkPackage workpackage, String messageStartingWith)
 	{
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
-		return exceptions.get(workpackageId);
+		outOfMemoryErrorMap.put(workpackageId, new OutOfMemoryError(messageStartingWith));
+		return this;
+	}
+
+	public RuntimeException getRuntimeExceptionFor(final I_C_Queue_WorkPackage workpackage)
+	{
+		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
+		return runtimeExceptionMap.get(workpackageId);
+	}
+
+
+	public OutOfMemoryError getOutOfMemoryErrorFor(final I_C_Queue_WorkPackage workpackage)
+	{
+		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
+		return outOfMemoryErrorMap.get(workpackageId);
 	}
 
 	public MockedWorkpackageProcessor setSkip(I_C_Queue_WorkPackage workpackage, int timeoutMillis)

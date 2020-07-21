@@ -53,7 +53,7 @@ import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -183,7 +183,7 @@ public final class Event
 
 	public boolean isLocalEvent()
 	{
-		return Objects.equals(EventBusConstants.getSenderId(), senderId);
+		return Objects.equals(EventBusConfig.getSenderId(), senderId);
 	}
 
 	public boolean hasRecipient(final int userId)
@@ -347,7 +347,7 @@ public final class Event
 		private String summary;
 		private String detailPlain;
 		private String detailADMessage;
-		private String senderId = EventBusConstants.getSenderId();
+		private String senderId = EventBusConfig.getSenderId();
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;

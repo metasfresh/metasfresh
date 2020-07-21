@@ -27,12 +27,15 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.NamePair;
 
@@ -52,6 +55,7 @@ import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.UOMType;
 import lombok.NonNull;
 
 /**
@@ -99,17 +103,15 @@ public interface IAttributeStorage extends IAttributeSet
 	 */
 	List<IAttributeValue> getAttributeValues();
 
-
-
 	/**
 	 * @return {@link IAttributeValue} for the current attribute set
 	 * @throws AttributeNotFoundException if attribute was not found
 	 */
-	IAttributeValue getAttributeValue(String attributeKey);
+	IAttributeValue getAttributeValue(AttributeCode attributeCode);
 
 	default IAttributeValue getAttributeValue(@NonNull final I_M_Attribute attribute)
 	{
-		return getAttributeValue(attribute.getValue());
+		return getAttributeValue(AttributeCode.ofString(attribute.getValue()));
 	}
 
 	/**
@@ -117,7 +119,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @return true if the given attribute is available for getting/setting
 	 */
 	@Override
-	boolean hasAttribute(String attributeKey);
+	boolean hasAttribute(AttributeCode attributeCode);
 
 	/**
 	 *
@@ -131,7 +133,12 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @param attributeValueKey
 	 * @return attribute for given M_Attribute.Value or <code>null</code>
 	 */
-	I_M_Attribute getAttributeByValueKeyOrNull(String attributeValueKey);
+	I_M_Attribute getAttributeByValueKeyOrNull(AttributeCode attributeCode);
+
+	default I_M_Attribute getAttributeByValueKeyOrNull(String attributeValueKey)
+	{
+		return getAttributeByValueKeyOrNull(AttributeCode.ofString(attributeValueKey));
+	}
 
 	/**
 	 * @return {@link IAttributeStorage} parent attribute storage; never return null
@@ -207,7 +214,7 @@ public interface IAttributeStorage extends IAttributeSet
 
 	default boolean isMandatory(@NonNull final I_M_Attribute attribute)
 	{
-		return getAttributeValue(attribute.getValue()).isMandatory();
+		return getAttributeValue(AttributeCode.ofString(attribute.getValue())).isMandatory();
 	}
 
 	/**
@@ -217,7 +224,12 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @param value
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	void setValueNoPropagate(I_M_Attribute attribute, Object value);
+	void setValueNoPropagate(AttributeCode attributeCode, Object value);
+
+	default void setValueNoPropagate(I_M_Attribute attribute, Object value)
+	{
+		setValueNoPropagate(AttributeCode.ofString(attribute.getValue()), value);
+	}
 
 	/**
 	 * Set attribute's value and propagate to its parent/child attribute storages using it's <b>default attribute propagator</b>. When the value is propagated and <code>this</code> instance already
@@ -230,7 +242,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 */
 	@Override
-	void setValue(String attributeKey, Object value);
+	void setValue(AttributeCode attributeCode, Object value);
 
 	/**
 	 * Sets attribute's value to "null".
@@ -247,16 +259,16 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	@Override
-	Object getValue(String attributeKey);
+	Object getValue(AttributeCode attributeCode);
 
 	@Override
-	BigDecimal getValueAsBigDecimal(String attributeKey);
+	BigDecimal getValueAsBigDecimal(AttributeCode attributeCode);
 
 	@Override
-	Date getValueAsDate(String attributeKey);
+	Date getValueAsDate(AttributeCode attributeCode);
 
 	@Override
-	String getValueAsString(String attributeKey);
+	String getValueAsString(AttributeCode attributeCode);
 
 	/**
 	 * @param attribute
@@ -279,7 +291,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 * @see #getValueInitial(I_M_Attribute)
 	 */
-	BigDecimal getValueInitialAsBigDecimal(I_M_Attribute attribute);
+	BigDecimal getValueInitialAsBigDecimal(AttributeCode attributeCode);
 
 	@Override
 	IAttributeValueCallout getAttributeValueCallout(I_M_Attribute attribute);
@@ -348,7 +360,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 * @return Qty Storage's UOM Type or null
 	 */
-	String getQtyUOMTypeOrNull();
+	UOMType getQtyUOMTypeOrNull();
 
 	/**
 	 * @return storage quantity that this attribute storage is bound to
@@ -388,8 +400,8 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * @return warehouse on which this attribute storage sits (e.g. in case of a HU, it's the HU's warehouse).
 	 */
-	default int getM_Warehouse_ID()
+	default Optional<WarehouseId> getWarehouseId()
 	{
-		return -1;
+		return Optional.empty();
 	}
 }

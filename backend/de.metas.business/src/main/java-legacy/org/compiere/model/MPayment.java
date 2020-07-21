@@ -21,7 +21,7 @@
  */
 package org.compiere.model;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -182,7 +182,7 @@ public final class MPayment extends X_C_Payment
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(getDateTrx());
 			setTenderType(TenderType.Check.getCode());
-			
+
 			PaymentBL.markNotReconciledNoSave(this);
 		}
 	}   // MPayment

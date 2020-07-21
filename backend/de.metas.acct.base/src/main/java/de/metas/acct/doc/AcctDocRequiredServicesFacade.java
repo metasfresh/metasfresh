@@ -49,6 +49,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -91,6 +93,7 @@ public class AcctDocRequiredServicesFacade
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
@@ -282,4 +285,15 @@ public class AcctDocRequiredServicesFacade
 	{
 		return costingService.getCurrentCostPrice(costSegment, costingMethod);
 	}
+
+	public AdIssueId createIssue(@NonNull final PostingException exception)
+	{
+		return errorManager.createIssue(exception);
+	}
+
+	public void markIssueDeprecated(@NonNull final AdIssueId adIssueId)
+	{
+		errorManager.markIssueAcknowledged(adIssueId);
+	}
+
 }

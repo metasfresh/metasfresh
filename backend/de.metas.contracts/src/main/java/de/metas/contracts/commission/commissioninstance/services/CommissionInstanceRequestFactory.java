@@ -44,16 +44,16 @@ public class CommissionInstanceRequestFactory
 {
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRequestFactory.class);
 
-	private final CommissionConfigFactory commissionContractFactory;
+	private final CommissionConfigFactory commissionConfigFactory;
 	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private final CommissionTriggerFactory commissionTriggerFactory;
 
 	public CommissionInstanceRequestFactory(
-			@NonNull final CommissionConfigFactory commissionContractFactory,
+			@NonNull final CommissionConfigFactory commissionConfigFactory,
 			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
 			@NonNull final CommissionTriggerFactory commissionTriggerFactory)
 	{
-		this.commissionContractFactory = commissionContractFactory;
+		this.commissionConfigFactory = commissionConfigFactory;
 		this.commissionHierarchyFactory = commissionHierarchyFactory;
 		this.commissionTriggerFactory = commissionTriggerFactory;
 	}
@@ -74,7 +74,7 @@ public class CommissionInstanceRequestFactory
 				.commissionDate(commissionTriggerDocument.getCommissionDate())
 				.salesProductId(commissionTriggerDocument.getProductId())
 				.build();
-		final ImmutableList<CommissionConfig> configs = commissionContractFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
 		if (configs.isEmpty())
 		{
 			logger.debug("Found no CommissionConfigs for contractRequest; -> return empty; contractRequest={}", contractRequest);

@@ -128,7 +128,6 @@ public interface ITrxManager extends ISingletonService
 	 * Get/Create actual transaction.
 	 *
 	 * @param trxName transaction name; it is assumed that trxName is not null
-	 * @param createNew if false, null is returned if not found
 	 * @param onTrxMissingPolicy what to do if transaction was not found
 	 * @return Transaction or null
 	 */
@@ -192,16 +191,16 @@ public interface ITrxManager extends ISingletonService
 	void runInNewTrx(TrxRunnable runnable);
 
 	/**
-	 * Same as calling {@link #call(String, TrxRunnable)} with trxName=null
+	 * Same as calling {@link #call(String, TrxCallable)} with trxName=null
 	 *
 	 * @return callable's return value
-	 * @see #call(String, TrxRunnable)
+	 * @see #call(String, TrxCallable)
 	 */
 	<T> T callInNewTrx(TrxCallable<T> callable);
 
 	/**
 	 * Executes the runnable object. Same as calling {@link #run(String, boolean, TrxRunnable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint
-	 * and to roll back to in case of problems and doesn't commit in case of success.
+	 * to roll back to in case of problems and doesn't commit in case of success.
 	 *
 	 * @param trxName transaction name
 	 *
@@ -223,14 +222,13 @@ public interface ITrxManager extends ISingletonService
 	}
 
 	/**
-	 * Executes the callable object. Same as calling {@link #call(String, boolean, TrxRunnable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint
+	 * Executes the callable object. Same as calling {@link #call(String, boolean, TrxCallable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint
 	 * and to roll back to in case of problems and doesn't commit in case of success.
 	 *
 	 * @param trxName transaction name
 	 *
-	 * @param r runnable object
 	 * @return callable's return value
-	 * @see #call(String, boolean, TrxRunnable)
+	 * @see #call(String, TrxCallable)
 	 */
 	<T> T call(String trxName, TrxCallable<T> callable);
 
@@ -281,11 +279,6 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Execute the given <code>runnable</code> config.
-	 *
-	 * @param trxName
-	 * @param cfg
-	 * @param runnable
-	 *
 	 */
 	@Deprecated
 	void run(String trxName, ITrxRunConfig cfg, TrxRunnable runnable);
@@ -293,9 +286,6 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Execute the given <code>callable</code> in given transation using given transaction options.
 	 *
-	 * @param trxName
-	 * @param cfg
-	 * @param runnable
 	 * @return callable's return value
 	 */
 	@Deprecated
@@ -314,7 +304,6 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Commit transaction for given <code>trxName</code>.
 	 *
-	 * @param trxName
 	 * @throws TrxException if transaction was not found or is null
 	 */
 	void commit(String trxName);
@@ -322,7 +311,6 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Gets {@link ITrxListenerManager} associated with given transaction, identified by <code>trxName</code>.
 	 *
-	 * @param trxName
 	 * @return {@link ITrxListenerManager}; never returns null
 	 * @throws TrxNotFoundException if transaction was not found
 	 */
@@ -349,8 +337,6 @@ public interface ITrxManager extends ISingletonService
 	ITrxListenerManager getCurrentTrxListenerManagerOrAutoCommit();
 
 	/**
-	 *
-	 * @param trx
 	 * @return true if given transaction is "null" (i.e. no transaction)
 	 */
 	boolean isNull(ITrx trx);
@@ -360,7 +346,6 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * Mainly, null/no transaction names are <code>null</code>, empty string, {@link ITrx#TRXNAME_None}, {@link ITrx#TRXNAME_NoneNotNull}.
 	 *
-	 * @param trxName
 	 * @return true if given transaction is "null" (i.e. no transaction)
 	 */
 	boolean isNull(String trxName);
@@ -385,8 +370,6 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Sets TrxName generator to be used for generating new transaction names.
-	 *
-	 * @param trxNameGenerator
 	 */
 	void setTrxNameGenerator(ITrxNameGenerator trxNameGenerator);
 
@@ -395,33 +378,24 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * If there is a transaction placeholder like {@link ITrx#TRXNAME_None}, {@link ITrx#TRXNAME_ThreadInherited} etc, then it will return <code>false</code>.
 	 *
-	 * @param trxName
 	 * @return <code>true</code> if it's a valid transaction name
 	 */
 	boolean isValidTrxName(String trxName);
 
 	/**
-	 *
-	 * @param trxName1
-	 * @param trxName2
 	 * @return <code>true</code> if given transactions are the same
 	 */
 	boolean isSameTrxName(String trxName1, String trxName2);
 
 	/**
-	 *
-	 * @param trx1
-	 * @param trxName2
 	 * @return <code>true</code> if given transactions are the same
 	 */
-	boolean isSameTrxName(ITrx trx1, String trxName2);
+	boolean isSameTrxName(ITrx trx, String trxName);
 
 	/**
 	 * Assumes that given transaction name is not null.
 	 *
 	 * If it's null an exception will be thrown
-	 *
-	 * @param trxName
 	 */
 	void assertTrxNameNotNull(String trxName);
 
@@ -429,8 +403,6 @@ public interface ITrxManager extends ISingletonService
 	 * Assumes that given transaction name is null.
 	 *
 	 * If it's NOT null an exception will be thrown
-	 *
-	 * @param trxName
 	 */
 	void assertTrxNameNull(String trxName);
 
@@ -438,8 +410,6 @@ public interface ITrxManager extends ISingletonService
 	 * Assumes that transaction <b>is not</b> null for given <code>contextProvider</code>
 	 *
 	 * If it's null a {@link TrxException} will be thrown.
-	 *
-	 * @param contextProvider
 	 */
 	void assertTrxNotNull(IContextAware contextProvider);
 
@@ -447,31 +417,22 @@ public interface ITrxManager extends ISingletonService
 	 * Assumes that transaction <b>is</b> null for given <code>contextProvider</code>
 	 *
 	 * If <code>contextProvider</code> is NULL or it's transaction is NOT null an exception will be thrown.
-	 *
-	 * @param contextProvider
 	 */
 	void assertTrxNull(IContextAware contextProvider);
 
 	/**
 	 * Assumes that all models have <code>trxNameExpected</code>
-	 *
-	 * @param trxNameExpected
-	 * @param models
 	 */
 	<T> void assertModelsTrxName(String trxNameExpected, Collection<T> models);
 
 	/**
 	 * Assumes that given <code>model</code> have <code>trxNameExpected</code>
-	 *
-	 * @param trxNameExpected
-	 * @param model
 	 */
 	<T> void assertModelTrxName(String trxNameExpected, T model);
 
 	/**
 	 * Assumes that the transaction name of given <code>model</code> is not null.
 	 *
-	 * @param model
 	 * @see #isNull(String)
 	 */
 	<T> void assertModelTrxNameNotNull(T model);
@@ -497,7 +458,6 @@ public interface ITrxManager extends ISingletonService
 	 * NOTE: please don't use this method directly. It is exposed in interface only for those who are implementing low level transaction management functionalities (e.g.
 	 * {@link ITrxItemProcessorExecutor}).
 	 *
-	 * @param trxName
 	 * @return previous trxName (before setting this one)
 	 */
 	String setThreadInheritedTrxName(String trxName);
@@ -512,25 +472,22 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Gets current Thread's transaction name.
 	 *
-	 * @param onTrxMissingPolicy
 	 * @return current thread's trx
 	 */
-	String getThreadInheritedTrxName(final OnTrxMissingPolicy onTrxMissingPolicy);
+	String getThreadInheritedTrxName(OnTrxMissingPolicy onTrxMissingPolicy);
 
 	/**
 	 * Gets current Thread's transaction.
 	 *
-	 * @param onTrxMissingPolicy
 	 * @return current thread's trx
 	 */
-	ITrx getThreadInheritedTrx(final OnTrxMissingPolicy onTrxMissingPolicy);
+	ITrx getThreadInheritedTrx(OnTrxMissingPolicy onTrxMissingPolicy);
 
 	/**
 	 * Creates a context aware object which will use given context and for transaction will return current thread transaction (see {@link #getThreadInheritedTrxName()}).
 	 *
 	 * If thread transaction {@link #isNull(String)} or was not set then {@link IContextAware#getTrxName()} will throw an exception.
 	 *
-	 * @param ctx
 	 * @return context aware (i.e. context provider)
 	 */
 	IContextAware createThreadContextAware(Properties ctx);
@@ -544,9 +501,7 @@ public interface ITrxManager extends ISingletonService
 	IContextAware createThreadContextAware(Object contextProvider);
 
 	/**
-	 * Sets the default {@link OnRunnableFail} to be used when a new {@link #run(TrxRunnable)} is executed.
-	 *
-	 * @param onRunnableFail
+	 * Sets the default {@link OnRunnableFail} to be used when a new {@link #run(String, TrxRunnable)} is executed.
 	 */
 	void setThreadInheritedOnRunnableFail(OnRunnableFail onRunnableFail);
 

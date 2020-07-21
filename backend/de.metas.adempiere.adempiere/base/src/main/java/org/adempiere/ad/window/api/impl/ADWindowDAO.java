@@ -76,7 +76,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -882,7 +882,7 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_Tab existingTargetTab = null;
 		final I_AD_Tab targetTab = copyTab_SkipUISections(copyCtx, targetWindow, existingTargetTab, sourceTab);
 		copyUISections(copyCtx, targetTab, sourceTab);
-		
+
 		return AdTabId.ofRepoId(targetTab.getAD_Tab_ID());
 	}
 

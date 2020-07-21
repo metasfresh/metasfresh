@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.product.ProductId;
+import de.metas.uom.UOMType;
 
 public interface IHUStorageDAO
 {
@@ -91,6 +92,6 @@ public interface IHUStorageDAO
 	 * @param hu
 	 * @return <code>C_UOM.UOMType</code> or null
 	 */
-	String getC_UOMTypeOrNull(I_M_HU hu);
+	UOMType getC_UOMTypeOrNull(I_M_HU hu);
 
 }

@@ -2,10 +2,11 @@ package de.metas.handlingunits.inventory.draftlinescreator.process;
 
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_Inventory;
+import org.compiere.SpringContextHolder;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
 import de.metas.handlingunits.model.I_M_Locator;
@@ -37,26 +38,24 @@ import lombok.NonNull;
 
 public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventoryBase
 {
+	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
+
 	@Param(parameterName = I_M_Locator.COLUMNNAME_M_Locator_ID)
 	private int locatorId;
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID)
 	private int productId;
 
-	private final HuForInventoryLineFactory huForInventoryLineFactory = Adempiere.getBean(HuForInventoryLineFactory.class);
-
 	@Override
-	protected LocatorAndProductStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
+	protected LocatorAndProductStrategy createStrategy(@NonNull final Inventory inventory)
 	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inventoryRecord.getM_Warehouse_ID());
+		final WarehouseId warehouseId = inventory.getWarehouseId();
 
-		final LocatorAndProductStrategy strategy = LocatorAndProductStrategy
-				.builder()
+		return HUsForInventoryStrategies.locatorAndProduct()
 				.warehouseId(warehouseId)
 				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, locatorId))
 				.productId(ProductId.ofRepoIdOrNull(productId))
 				.huForInventoryLineFactory(huForInventoryLineFactory)
 				.build();
-		return strategy;
 	}
 }

@@ -40,7 +40,7 @@ export class SalesInvoice {
     }
 
     cy.getStringFieldValue('DocumentNo').should('be.empty');
-    cy.selectInListFieldNonEditable('C_DocTypeTarget_ID', salesInvoice.targetDocumentType);
+    cy.writeIntoLookupListField('C_DocTypeTarget_ID', salesInvoice.targetDocumentType, salesInvoice.targetDocumentType);
     cy.getStringFieldValue('DocumentNo').should('not.be.empty');
 
     salesInvoice.lines.forEach(line => {

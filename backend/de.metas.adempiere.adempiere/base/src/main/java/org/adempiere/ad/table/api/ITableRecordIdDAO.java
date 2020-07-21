@@ -30,21 +30,11 @@ import de.metas.util.ISingletonService;
 
 public interface ITableRecordIdDAO extends ISingletonService
 {
-
 	/**
-	 * @param zoomSource
-	 * @return All the TableRecordId references that can be reached form the table given as tablename
+	 * @return All the TableRecordId references that can be reached form the table given as tableName
 	 */
-	List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final String tableName);
+	List<TableRecordIdDescriptor> getTableRecordIdReferences(final String tableName);
 
-	/**
-	 *
-	 * @return a map of AD_Table_ID => List-of-AD_Table_ID where the
-	 *         key-<code>AD_Table_ID</code>'s DB-records are referenced by
-	 *         records from the <code>*Table_ID</code> and
-	 *         <code>*Record_ID</code> columns of the tables from
-	 *         value-<code>List<AD_Table_ID></code>.
-	 */
 	List<TableRecordIdDescriptor> retrieveAllTableRecordIdReferences();
 
 }

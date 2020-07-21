@@ -3,7 +3,6 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9b3e33a215a14a51a0d134fdf93993fb)](https://www.codacy.com/gh/metasfresh/metasfresh-webui-frontend?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh-webui-frontend&amp;utm_campaign=Badge_Grade)
 [![Join the chat at https://gitter.im/metasfresh/metasfresh-webui-frontend](https://badges.gitter.im/metasfresh/metasfresh-webui-frontend.svg)](https://gitter.im/metasfresh/metasfresh-webui-frontend?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh-webui-frontend)](http://krihelinator.xyz)
 
 
 ## For webui-frontend developers
@@ -14,7 +13,7 @@
 
 
 - Create config. In that case run:
-> cp src/config.js.dist src/config.js
+> cp config.js.dist config.js
 
 ### Dev environment
 
@@ -53,7 +52,7 @@ Application comes with a set of tests, both unit as well as functional.
 
 #### Cypress e2e tests
 
-Actual cypress tests reside in the [metasfresh-webui-frontend](https://github.com/metasfresh/metasfresh-webui-frontend) repo.<br>
+Actual cypress tests reside in the [metasfresh](https://github.com/metasfresh/metasfresh) repo. (`e2e`-folder)<br>
 
 ### Contribution
 

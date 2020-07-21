@@ -35,6 +35,15 @@ export function getData({
   );
 }
 
+export function getRowsData({ entity, docType, docId, tabId, rows }) {
+  rows = rows || [];
+  const ids = rows.join(',');
+
+  return get(
+    `${config.API_URL}/${entity}/${docType}/${docId}/${tabId}?ids=${ids}`
+  );
+}
+
 export function getLayout(
   entity,
   docType,
@@ -124,17 +133,19 @@ export function createViewRequest({
   windowId,
   viewType,
   filters,
+  referenceId = null,
   refDocType = null,
-  refDocId = null,
+  refDocumentId = null,
   refTabId = null,
   refRowIds = null,
 }) {
   let referencing = null;
 
-  if (refDocType && refDocId) {
+  if (refDocType && refDocumentId) {
     referencing = {
       documentType: refDocType,
-      documentId: refDocId,
+      documentId: refDocumentId,
+      referenceId: referenceId,
     };
 
     if (refTabId && refRowIds) {
@@ -172,7 +183,7 @@ export function locationConfigRequest() {
   return get(`${config.API_URL}/geolocation/config`);
 }
 
-export function deleteView(windowId, viewId, action) {
+export function deleteViewRequest(windowId, viewId, action) {
   return del(
     `${config.API_URL}/documentView/${windowId}/${viewId}${
       action ? `?action=${action}` : ''

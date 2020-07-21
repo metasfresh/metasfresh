@@ -21,11 +21,11 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.generichumodel.HU.HUBuilder;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
@@ -83,15 +83,13 @@ public class HURepository
 				.setListener(listener)
 				.iterate(huRecord);
 
-		final HU result = listener.getResult();
-		return result;
+		return listener.getResult();
 	}
 
 	private static class HUIteratorListener extends HUIteratorListenerAdapter
 	{
 		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
-		private final transient IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
 
 		private final transient HUStack huStack = new HUStack();
 
@@ -109,8 +107,7 @@ public class HURepository
 		{
 			final HuId huId = extractHuId(rootHuRecord);
 			final HUBuilder rootHu = createHUBuilder(rootHuRecord);
-			final ImmutablePair<HuId, HUBuilder> pair = ImmutablePair.of(huId, rootHu);
-			return pair;
+			return ImmutablePair.of(huId, rootHu);
 		}
 
 		private HuId extractHuId(@NonNull final I_M_HU rootHuRecord)
@@ -122,7 +119,7 @@ public class HURepository
 		{
 			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 
-			final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+			final IWeightable weightable = Weightables.wrap(attributeStorage);
 			final BigDecimal weightNetOrNull = weightable.getWeightNetOrNull();
 			final Quantity weightNet;
 
@@ -264,8 +261,8 @@ public class HURepository
 	@ToString
 	private static class HUStack
 	{
-		private final ArrayList<HuId> huIds = new ArrayList<HuId>();
-		private final HashMap<HuId, HUBuilder> hus = new HashMap<HuId, HU.HUBuilder>();
+		private final ArrayList<HuId> huIds = new ArrayList<>();
+		private final HashMap<HuId, HUBuilder> hus = new HashMap<>();
 
 		void push(@NonNull final IPair<HuId, HUBuilder> idWithHuBuilder)
 		{

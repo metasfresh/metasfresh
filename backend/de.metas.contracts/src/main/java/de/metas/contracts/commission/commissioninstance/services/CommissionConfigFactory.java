@@ -1,25 +1,9 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -52,6 +36,19 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.StreamSupport;
 
 /*
  * #%L
@@ -194,6 +191,7 @@ public class CommissionConfigFactory
 							}
 							final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
 									.id(termId)
+									.isSimulation(termRecord.isSimulation())
 									.pointsPrecision(settingsRecord.getPointsPrecision());
 
 							boolean foundMatchingSettingsLine = false;
@@ -256,25 +254,25 @@ public class CommissionConfigFactory
 	{
 
 		final ProductCategoryId settingsProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
-
+		StringBuilder logMessage = new StringBuilder("SeqNo ").append(settingsLineRecord.getSeqNo()).append(": ");
 		final boolean productMatches;
 		if (settingsProductCategoryId == null)
 		{
-			logger.debug("settingsProductCategoryId is null; => product matches");
+			logMessage.append("settingsProductCategoryId is null; ->productMatches=true;");
 			productMatches = true;
 		}
 		else
 		{
 			final boolean productCategoryIdEquals = settingsProductCategoryId.equals(salesProductCategoryId);
 			productMatches = settingsLineRecord.isExcludeProductCategory() ? !productCategoryIdEquals : productCategoryIdEquals;
+			logger.debug("productCategoryIds match and excludeProductCategory={}; -> productMatches={}",settingsLineRecord.isExcludeProductCategory(),productMatches);
 		}
-
 		final boolean customerMatches;
 		final BPGroupId settingsCustomerGroupId = BPGroupId.ofRepoIdOrNull(settingsLineRecord.getCustomer_Group_ID());
 		final BPartnerId settingsCustomerId = BPartnerId.ofRepoIdOrNull(settingsLineRecord.getC_BPartner_Customer_ID());
 		if (settingsCustomerGroupId == null && settingsCustomerId == null)
 		{
-			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customerMatches matches");
+			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customerMatches=true");
 			customerMatches = true;
 		}
 		else
@@ -283,9 +281,10 @@ public class CommissionConfigFactory
 			final boolean partnerIdEquals = Objects.equals(settingsCustomerId, customerPartnerId);
 			final boolean groupOrPartnerEquals = groupIdEquals || partnerIdEquals;
 			customerMatches = settingsLineRecord.isExcludeBPGroup() ? !groupOrPartnerEquals : groupOrPartnerEquals;
-		}
+			logger.debug("bpartnerGroupIds match={}; partnerIds match={}; excludeBPGroup={}; -> customerMatches={}",groupIdEquals,partnerIdEquals,settingsLineRecord.isExcludeBPGroup(), customerMatches);}
 
 		final boolean settingsLineMatches = customerMatches && productMatches;
+		logger.debug("customerMatches={}; productMatches={}; -> settingsLineMatches={}", customerMatches, productMatches, settingsLineMatches);
 		return settingsLineMatches;
 	}
 

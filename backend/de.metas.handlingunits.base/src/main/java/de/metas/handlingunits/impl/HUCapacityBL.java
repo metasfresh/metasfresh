@@ -37,7 +37,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -116,7 +115,7 @@ public class HUCapacityBL implements IHUCapacityBL
 	}
 
 	@Override
-	public CapacityInterface getCapacity(
+	public Capacity getCapacity(
 			@NonNull final I_M_HU_Item huItem,
 			final ProductId productId,
 			final I_C_UOM uom,
@@ -133,7 +132,7 @@ public class HUCapacityBL implements IHUCapacityBL
 	}
 
 	@Override
-	public CapacityInterface getCapacity(
+	public Capacity getCapacity(
 			@NonNull final I_M_HU_Item huItem,
 			final I_M_Product product,
 			final I_C_UOM uom,

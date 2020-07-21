@@ -1,9 +1,8 @@
-# <img src='/images/metasfresh_logo_green.jpg' height='60' alt='metasfresh Logo' aria-label='metasfresh.com' /></a>
+# <img src='/images/metasfresh-logo-slogan-969x248.png' height='60' alt='metasfresh Logo - We do Open Source ERP' aria-label='metasfresh.com' /></a>
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/30ecd0d9ba8a4561a60335644b592418)](https://www.codacy.com/gh/metasfresh/metasfresh?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh&amp;utm_campaign=Badge_Grade)
 [![release](https://img.shields.io/badge/release-5.144-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.144)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
-[![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 
 ![Twitter Follow](https://img.shields.io/twitter/follow/metasfresh?style=social)
@@ -11,12 +10,11 @@
 
 metasfresh is a responsive, Free and Open Source ERP System. Our aim is to create fast and easy-to-use enterprise software with an outstanding user experience.
 
-> **__Competitive ERP is Free__**
+> **__We do Open Source ERP__**
 
 Equipped with wide and detailed functionality, metasfresh fits for companies from industry and trade that are searching business software that provides high scalability and flexibility.
 
 It has a 3-tier architecture with Rest-API and a Web User Frontend developed in HTML5/ ReactJS/ Redux.
-
 
 ![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36896187-f5ed2e48-1e11-11e8-9c41-a7878c148f81.gif)
 
@@ -53,13 +51,13 @@ Join one of the gitter rooms [metasfresh](https://gitter.im/metasfresh/metasfres
 ## Contributing
 Do you want to help improving documentation, contribute some code or participate in functional requirements. That's great, you're welcome! Please read our [Code of Coduct](https://github.com/metasfresh/metasfresh/blob/master/CODE_OF_CONDUCT.md) and [Contibutor Guidelines](https://github.com/metasfresh/metasfresh/blob/master/CONTRIBUTING.md) first.
 
-### Frequently used github URLs
+### "Monorepo"
+To check out only certain parts of this repository, we recomment to get git version 2.25.0 or later and use the [git-sparse-checkout](https://www.git-scm.com/docs/git-sparse-checkout) feature.
+Examples:
+* to get started, do `git sparse-checkout init --cone`
+  * this will leave you with just the files in the repo's root folder, such as the file you are reading
+* to get the frontend code, do `git sparse-checkout set frontend`
+* to go back to having everything checked out, do `git sparse-checkout disable`
 
-* [open pull requests](https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+user%3Ametasfresh)
-* Issues/PRs
-  * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc+)
-  * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc+)
-  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc)
-  
 ## What's new in metasfresh ERP?
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).

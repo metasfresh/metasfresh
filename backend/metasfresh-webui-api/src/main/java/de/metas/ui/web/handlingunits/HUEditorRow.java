@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -81,7 +82,6 @@ import lombok.NonNull;
  * HU Editor's row
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @EqualsAndHashCode
 public final class HUEditorRow implements IViewRow
@@ -103,7 +103,10 @@ public final class HUEditorRow implements IViewRow
 	private final HUEditorRowType type;
 	private final boolean topLevel;
 	private final boolean processed;
+	@Getter
 	private final BPartnerId bpartnerId;
+	@Getter
+	private final LocatorId locatorId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
@@ -116,7 +119,7 @@ public final class HUEditorRow implements IViewRow
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
-	})
+			})
 	private final String code;
 
 	public static final String FIELDNAME_Locator = I_M_HU.COLUMNNAME_M_Locator_ID;
@@ -124,8 +127,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_Locator, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
-	})
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
+			})
 	private final JSONLookupValue locator;
 
 	public static final String FIELDNAME_Product = I_M_HU.COLUMNNAME_M_Product_ID;
@@ -135,6 +138,12 @@ public final class HUEditorRow implements IViewRow
 	})
 	private final JSONLookupValue product;
 
+	public static final String FIELDNAME_IsOwnPalette = I_M_HU.COLUMNNAME_HUPlanningReceiptOwnerPM;
+	@ViewColumn(fieldName = FIELDNAME_IsOwnPalette, widgetType = DocumentFieldWidgetType.YesNo, sorting = false, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25)
+	})
+	private final Boolean isOwnPalette;
+
 	public static final String FIELDNAME_HU_UnitType = "HU_UnitType";
 	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, //
 			widgetType = DocumentFieldWidgetType.Text, //
@@ -143,7 +152,7 @@ public final class HUEditorRow implements IViewRow
 			restrictToMediaTypes = { MediaType.SCREEN }, //
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-	})
+			})
 	private final JSONLookupValue huUnitType;
 
 	public static final String FIELDNAME_PackingInfo = I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
@@ -151,8 +160,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_PackingInfo, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
-	})
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
 	private final String packingInfo;
 
 	public static final String FIELDNAME_QtyCU = "QtyCU";
@@ -161,7 +170,7 @@ public final class HUEditorRow implements IViewRow
 			widgetSize = WidgetSize.Small, sorting = false, layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-	})
+			})
 	private final BigDecimal qtyCU;
 
 	public static final String FIELDNAME_UOM = I_M_Product.COLUMNNAME_C_UOM_ID;
@@ -169,8 +178,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_UOM, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
-	})
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
 	private final JSONLookupValue uom;
 
 	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
@@ -179,7 +188,7 @@ public final class HUEditorRow implements IViewRow
 			widgetSize = WidgetSize.Small,//
 			sorting = false, layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-	})
+			})
 	private final JSONLookupValue huStatusDisplay;
 
 	public static final String FIELDNAME_IsReserved = I_M_HU.COLUMNNAME_IsReserved;
@@ -193,6 +202,10 @@ public final class HUEditorRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 80, displayed = Displayed.FALSE)
 	})
 	private final LocalDate bestBeforeDate;
+
+	public static final String FIELDNAME_WeightGross = "WeightGross";
+	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = false)
+	private final BigDecimal weightGross;
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
@@ -224,10 +237,16 @@ public final class HUEditorRow implements IViewRow
 
 		packingInfo = builder.packingInfo;
 		product = builder.product;
+		isOwnPalette = builder.isOwnPalette;
 		uom = builder.uom;
 		qtyCU = builder.qtyCU;
+		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
-		locator = builder.getLocator();
+
+		this.locatorId = builder.locatorId;
+		this.locator = locatorId != null
+				? JSONLookupValue.of(locatorId, builder.locatorCaption)
+				: null;
 
 		includedRows = builder.buildIncludedRows();
 		includedOrderLineReservations = builder.prepareIncludedOrderLineReservations(this);
@@ -286,11 +305,6 @@ public final class HUEditorRow implements IViewRow
 	public boolean isProcessed()
 	{
 		return processed;
-	}
-
-	public BPartnerId getBPartnerId()
-	{
-		return bpartnerId;
 	}
 
 	@Override
@@ -362,7 +376,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 *
 	 * @return the wrapped HU or {@code null} if there is none.
 	 */
 	public I_M_HU getM_HU()
@@ -522,7 +535,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 *
 	 * @return the ID of the wrapped UOM or {@code -1} if there is none.
 	 */
 	public int getC_UOM_ID()
@@ -532,7 +544,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 *
 	 * @return the wrapped UOM or {@code null} if there is none.
 	 */
 	public I_C_UOM getC_UOM()
@@ -601,10 +612,13 @@ public final class HUEditorRow implements IViewRow
 
 		private String packingInfo;
 		private JSONLookupValue product;
+		private Boolean isOwnPalette;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
+		private BigDecimal weightGross;
 		private LocalDate bestBeforeDate;
-		private JSONLookupValue locator;
+		private LocatorId locatorId;
+		private String locatorCaption;
 		private BPartnerId bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
@@ -634,7 +648,9 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
-		/** @return row ID */
+		/**
+		 * @return row ID
+		 */
 		private HUEditorRowId getRowId()
 		{
 			return Check.assumeNotNull(_rowId, "Parameter rowId is not null");
@@ -718,6 +734,12 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
+		public Builder setIsOwnPalette(final Boolean isOwnPalette)
+		{
+			this.isOwnPalette = isOwnPalette;
+			return this;
+		}
+
 		public Builder setUOM(final JSONLookupValue uom)
 		{
 			this.uom = uom;
@@ -728,6 +750,17 @@ public final class HUEditorRow implements IViewRow
 		{
 			this.qtyCU = qtyCU;
 			return this;
+		}
+
+		public Builder setWeightGross(final BigDecimal weightGross)
+		{
+			this.weightGross = weightGross;
+			return this;
+		}
+
+		private BigDecimal getWeightGross()
+		{
+			return weightGross;
 		}
 
 		public Builder setBestBeforeDate(final LocalDate bestBeforeDate)
@@ -741,15 +774,11 @@ public final class HUEditorRow implements IViewRow
 			return bestBeforeDate;
 		}
 
-		public Builder setLocator(final JSONLookupValue locator)
+		public Builder setLocator(final LocatorId locatorId, final String locatorCaption)
 		{
-			this.locator = locator;
+			this.locatorId = locatorId;
+			this.locatorCaption = locatorCaption;
 			return this;
-		}
-
-		private JSONLookupValue getLocator()
-		{
-			return locator;
 		}
 
 		public Builder setBPartnerId(final BPartnerId bpartnerId)

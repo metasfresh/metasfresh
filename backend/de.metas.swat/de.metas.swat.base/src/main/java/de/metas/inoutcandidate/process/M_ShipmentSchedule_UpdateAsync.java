@@ -24,7 +24,10 @@ import de.metas.process.JavaProcess;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+/**
+ * Enqueue any M_ShipmentSchedules which are flagged for recomputation to {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor}.
+ * This is usually done automatically, but in some debug situations, you might have inserted {@code M_ShipmentSchedule_Recompute} records manually.
+ */
 public class M_ShipmentSchedule_UpdateAsync extends JavaProcess
 {
 	@Override

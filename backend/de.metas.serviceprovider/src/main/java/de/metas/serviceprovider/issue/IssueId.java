@@ -41,6 +41,7 @@ public class IssueId implements RepoIdAware
 		return new IssueId(repoId);
 	}
 
+	@Nullable
 	public static IssueId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new IssueId(repoId) : null;
@@ -55,5 +56,10 @@ public class IssueId implements RepoIdAware
 	public int toJson()
 	{
 		return getRepoId();
+	}
+
+	public boolean equalsNullSafe(@Nullable final IssueId issueId)
+	{
+		return issueId != null && issueId.getRepoId() == this.repoId;
 	}
 }

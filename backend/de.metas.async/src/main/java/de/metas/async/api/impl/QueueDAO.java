@@ -1,10 +1,8 @@
-package de.metas.async.api.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,23 +11,27 @@ package de.metas.async.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.async.api.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.async.api.IWorkPackageQuery;
+import de.metas.async.exceptions.PackageItemNotAvailableException;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_Processor_Assign;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,16 +46,12 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.async.api.IWorkPackageQuery;
-import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_Processor_Assign;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class QueueDAO extends AbstractQueueDAO
 {
@@ -118,11 +116,11 @@ public class QueueDAO extends AbstractQueueDAO
 	}
 
 	@Cached(cacheName = I_C_Queue_Processor_Assign.Table_Name + "#By#" + I_C_Queue_Processor_Assign.COLUMNNAME_C_Queue_Processor_ID)
-	/* package */List<I_C_Queue_Processor_Assign> retrieveQueueProcessorAssignments(
+		/* package */List<I_C_Queue_Processor_Assign> retrieveQueueProcessorAssignments(
 			@CacheCtx final Properties ctx,
 			final int queueProcessorId,
 			@CacheTrx final String trxName
-			)
+	)
 	{
 		final String whereClause = I_C_Queue_Processor_Assign.COLUMNNAME_C_Queue_Processor_ID + "=?";
 		final List<I_C_Queue_Processor_Assign> assignments = new Query(ctx, I_C_Queue_Processor_Assign.Table_Name, whereClause, trxName)
@@ -144,7 +142,7 @@ public class QueueDAO extends AbstractQueueDAO
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(element);
 		final IContextAware context = new PlainContextAware(ctx, trxName);
-		final TableRecordReference itemRef = new TableRecordReference(adTableId, recordId);
+		final TableRecordReference itemRef = TableRecordReference.of(adTableId, recordId);
 		final T item = itemRef.getModel(context, clazz);
 		if (item == null)
 		{

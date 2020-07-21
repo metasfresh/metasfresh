@@ -24,6 +24,7 @@ import Image from './Image';
 import Tooltips from '../tooltips/Tooltips';
 import Labels from './Labels';
 import Link from './Link';
+import CharacterLimitInfo from './CharacterLimitInfo';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
@@ -37,6 +38,7 @@ export class RawWidget extends Component {
     super(props);
 
     const { widgetData } = props;
+    // TODO: We should use `null` instead
     let cachedValue = undefined;
 
     if (widgetData && widgetData[0]) {
@@ -75,6 +77,33 @@ export class RawWidget extends Component {
     }
   }
 
+  // in some cases we initially have no widgetData when RawWidgets are created
+  // (Selection attributes) so we have to update the `cachedValue` to the
+  // value from widgetData, once it's available
+  static getDerivedStateFromProps(props, state) {
+    if (
+      typeof state.cachedValue === 'undefined' &&
+      props.widgetData &&
+      props.widgetData[0]
+    ) {
+      let cachedValue = undefined;
+      if (props.widgetData[0].value !== undefined) {
+        cachedValue = props.widgetData[0].value;
+      } else if (
+        props.widgetData[0].status &&
+        props.widgetData[0].status.value !== undefined
+      ) {
+        cachedValue = props.widgetData[0].status.value;
+      }
+
+      return {
+        cachedValue,
+      };
+    }
+
+    return null;
+  }
+
   /**
    *  Re-rendering conditions by widgetType this to prevent unnecessary re-renders
    *  Performance boost
@@ -88,6 +117,10 @@ export class RawWidget extends Component {
         return true;
     }
   }
+
+  setRef = (ref) => {
+    this.rawWidget = ref;
+  };
 
   /**
    * @method focus
@@ -164,6 +197,19 @@ export class RawWidget extends Component {
   };
 
   /**
+   * @method updateTypedCharacters
+   * @summary updates in the state the number of charactes typed
+   * @param {typedText} string
+   */
+  updateTypedCharacters = (typedText) => {
+    const { fieldName } = this.props;
+    let existingCharsTyped = { ...this.state.charsTyped };
+    existingCharsTyped[fieldName] = typedText.length;
+    this.setState({ charsTyped: existingCharsTyped });
+    return true;
+  };
+
+  /**
    * @method handleKeyDown
    * @summary key handler for the widgets. For number fields we're suppressing up/down
    *          arrows to enable table row navigation
@@ -174,6 +220,7 @@ export class RawWidget extends Component {
   handleKeyDown = (e, property, value) => {
     const { lastFormField, widgetType, closeTableField } = this.props;
     const { key } = e;
+    this.updateTypedCharacters(e.target.value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
     const NumberWidgets = ImmutableList([
@@ -253,8 +300,13 @@ export class RawWidget extends Component {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress, widgetType } = this.props;
+    const { handlePatch, inProgress, widgetType, maxLength } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
+
+    if (widgetType === 'LongText' || widgetType === 'Text') {
+      value = value.substring(0, maxLength);
+      this.updateTypedCharacters(value);
+    }
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -341,7 +393,7 @@ export class RawWidget extends Component {
 
   /**
    * @method renderWidget
-   * @summary ToDo: Describe the method.
+   * @summary Renders a single widget
    */
   renderWidget = () => {
     const {
@@ -390,10 +442,11 @@ export class RawWidget extends Component {
       dateFormat,
       initialFocus,
       timeZone,
+      fieldName,
+      maxLength,
     } = this.props;
-
     let widgetValue = data != null ? data : widgetData[0].value;
-    const { isEdited } = this.state;
+    const { isEdited, charsTyped } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
@@ -418,7 +471,7 @@ export class RawWidget extends Component {
     // TODO:  ^^^^^^^^^^^^^
 
     const widgetProperties = {
-      ref: (c) => (this.rawWidget = c),
+      ref: this.setRef,
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
@@ -430,14 +483,16 @@ export class RawWidget extends Component {
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
       onChange: (e) =>
-        handleChange && handleChange(widgetField, e.target.value),
+        handleChange &&
+        this.updateTypedCharacters(e.target.value) &&
+        handleChange(widgetField, e.target.value),
       onBlur: (e) => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: (e) =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
       title: widgetValue,
       id,
     };
-
+    const showErrorBorder = charsTyped && charsTyped[fieldName] > maxLength;
     let selectedValue = widgetData[0].value
       ? widgetData[0].value
       : widgetData[0].defaultValue;
@@ -551,7 +606,7 @@ export class RawWidget extends Component {
                 disabled: readonly,
                 tabIndex: tabIndex,
               }}
-              value={widgetValue}
+              value={this.generateMomentObj(widgetValue, TIME_FORMAT)}
               onChange={(date) => handleChange(widgetField, date)}
               patch={(date) =>
                 this.handlePatch(
@@ -756,34 +811,56 @@ export class RawWidget extends Component {
         );
       case 'Text':
         return (
-          <div
-            className={classnames(
-              this.getClassNames({
-                icon: true,
-              }),
-              {
-                'input-focused': isEdited,
-              }
+          <div>
+            <div
+              className={classnames(
+                this.getClassNames({
+                  icon: true,
+                }),
+                {
+                  'input-focused': isEdited,
+                },
+                {
+                  'border-danger': showErrorBorder,
+                }
+              )}
+            >
+              <input {...widgetProperties} type="text" />
+              {icon && <i className="meta-icon-edit input-icon-right" />}
+            </div>
+            {charsTyped && charsTyped[fieldName] >= 0 && (
+              <CharacterLimitInfo
+                charsTyped={charsTyped[fieldName]}
+                maxLength={maxLength}
+              />
             )}
-          >
-            <input {...widgetProperties} type="text" />
-            {icon && <i className="meta-icon-edit input-icon-right" />}
           </div>
         );
       case 'LongText':
         return (
-          <div
-            className={classnames(
-              this.getClassNames({
-                icon: false,
-                forcedPrimary: true,
-              }),
-              {
-                'input-focused': isEdited,
-              }
+          <div>
+            <div
+              className={classnames(
+                this.getClassNames({
+                  icon: false,
+                  forcedPrimary: true,
+                }),
+                {
+                  'input-focused': isEdited,
+                },
+                {
+                  'border-danger': showErrorBorder,
+                }
+              )}
+            >
+              <textarea {...widgetProperties} />
+            </div>
+            {charsTyped && charsTyped[fieldName] >= 0 && (
+              <CharacterLimitInfo
+                charsTyped={charsTyped[fieldName]}
+                maxLength={maxLength}
+              />
             )}
-          >
-            <textarea {...widgetProperties} />
           </div>
         );
       case 'Password':
@@ -799,11 +876,7 @@ export class RawWidget extends Component {
                 }
               )}
             >
-              <input
-                {...widgetProperties}
-                type="password"
-                ref={(c) => (this.rawWidget = c)}
-              />
+              <input {...widgetProperties} type="password" ref={this.setRef} />
               {icon && <i className="meta-icon-edit input-icon-right" />}
             </div>
             {allowShowPassword && (
@@ -837,6 +910,17 @@ export class RawWidget extends Component {
               precision={widgetField === 'CableLength' ? 2 : 1}
               step={subentity === 'quickInput' ? 0.1 : 1}
             />
+            {widgetData[0].devices && (
+              <div className="device-widget-wrapper">
+                <DevicesWidget
+                  devices={widgetData[0].devices}
+                  tabIndex={1}
+                  handleChange={(value) =>
+                    this.handlePatch && this.handlePatch(fields[0].field, value)
+                  }
+                />
+              </div>
+            )}
           </div>
         );
       case 'Number':
@@ -877,7 +961,7 @@ export class RawWidget extends Component {
               'input-table': rowId && !isModal,
             })}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
             onKeyDown={(e) => {
               e.key === ' ' &&
                 this.handlePatch(widgetField, !widgetData[0].value, id);
@@ -902,7 +986,7 @@ export class RawWidget extends Component {
               [`text-${gridAlign}`]: gridAlign,
             })}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {widgetData[0].value}
           </div>
@@ -917,7 +1001,7 @@ export class RawWidget extends Component {
             }
             onClick={() => this.handlePatch(widgetField)}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {widgetData[0].value &&
               widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
@@ -933,7 +1017,7 @@ export class RawWidget extends Component {
             }
             onClick={this.handleProcess}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {caption}
           </button>
@@ -950,7 +1034,7 @@ export class RawWidget extends Component {
             onChange={(option) => this.handlePatch(fields[1].field, option)}
             tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           />
         );
       case 'ProductAttributes':
@@ -1014,7 +1098,7 @@ export class RawWidget extends Component {
             }
             onClick={() => handleZoomInto(fields[0].field)}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {caption}
           </button>
@@ -1034,6 +1118,8 @@ export class RawWidget extends Component {
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
+            tabId={tabId}
+            rowId={rowId}
             windowType={windowType}
             viewId={viewId}
             selected={values}
@@ -1060,6 +1146,10 @@ export class RawWidget extends Component {
       fields,
       type,
       noLabel,
+      // TODO: We should not be using an empty object when widgetData is not defined.
+      // It's really a bad practice. No value = null ! Right now sometimes it's an
+      // array with a single empty object, sometimes [-1], other times [undefined].
+      // That's a big NO NO
       widgetData,
       rowId,
       isModal,
@@ -1072,6 +1162,7 @@ export class RawWidget extends Component {
       fieldLabelClass,
       fieldInputClass,
     } = this.props;
+
     const {
       errorPopup,
       clearedFieldWarning,

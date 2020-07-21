@@ -24,6 +24,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeListValueTrxRestriction;
@@ -53,16 +54,24 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 
 public class AttributeDAO implements IAttributeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private CCache<Integer, AttributesMap> attributesMapCache = CCache.<Integer, AttributesMap> builder()
+			.tableName(I_M_Attribute.Table_Name)
+			.build();
 
 	@Override
 	public void save(@NonNull final I_M_AttributeSetInstance asi)
@@ -186,9 +195,9 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public <T extends I_M_Attribute> T retrieveAttributeByValue(final String value, final Class<T> clazz)
+	public <T extends I_M_Attribute> T retrieveAttributeByValue(@NonNull final AttributeCode attributeCode, @NonNull final Class<T> clazz)
 	{
-		final AttributeId attributeId = retrieveAttributeIdByValue(value);
+		final AttributeId attributeId = getAttributesMap().getAttributeIdByCode(attributeCode);
 		final I_M_Attribute attribute = getAttributeById(attributeId);
 		return InterfaceWrapperHelper.create(attribute, clazz);
 	}
@@ -196,39 +205,52 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
 	{
-		final AttributeId attributeId = retrieveAttributeIdByValueOrNull(value);
-		if (attributeId == null)
-		{
-			return Optional.empty();
-		}
-
-		final I_M_Attribute attribute = getAttributeById(attributeId);
-
-		final ITranslatableString displayName = InterfaceWrapperHelper.getModelTranslationMap(attribute)
-				.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
-		return Optional.of(displayName);
+		final AttributeCode attributeCode = AttributeCode.ofString(value);
+		final Attribute attribute = getAttributesMap().getAttributeByCodeOrNull(attributeCode);
+		return attribute != null
+				? Optional.of(attribute.getDisplayName())
+				: Optional.empty();
 	}
 
 	@Override
-	public AttributeId retrieveAttributeIdByValue(final String value)
+	public AttributeId retrieveAttributeIdByValue(final AttributeCode attributeCode)
 	{
-		final AttributeId attributeId = retrieveAttributeIdByValueOrNull(value);
-		Check.assumeNotNull(attributeId, "There is no active M_Attribute record with M_Attribute.Value={}", value);
-		return attributeId;
+		return getAttributesMap().getAttributeIdByCode(attributeCode);
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_Value)
-	public AttributeId retrieveAttributeIdByValueOrNull(final String value)
+	public AttributeId retrieveAttributeIdByValueOrNull(final AttributeCode attributeCode)
 	{
-		final int attributeId = queryBL
-				.createQueryBuilderOutOfTrx(I_M_Attribute.class)
+		return getAttributesMap().getAttributeIdByCodeOrNull(attributeCode);
+	}
+
+	private AttributesMap getAttributesMap()
+	{
+		return attributesMapCache.getOrLoad(0, this::retrieveAttributesMap);
+	}
+
+	private AttributesMap retrieveAttributesMap()
+	{
+		final ImmutableList<Attribute> attributes = queryBL.createQueryBuilderOutOfTrx(I_M_Attribute.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
 				.create()
-				.firstIdOnly();
+				.stream()
+				.map(attributeRecord -> toAttribute(attributeRecord))
+				.collect(ImmutableList.toImmutableList());
 
-		return AttributeId.ofRepoIdOrNull(attributeId);
+		return new AttributesMap(attributes);
+	}
+
+	private static Attribute toAttribute(final I_M_Attribute record)
+	{
+		final ITranslatableString displayName = InterfaceWrapperHelper.getModelTranslationMap(record)
+				.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, record.getName());
+
+		return Attribute.builder()
+				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
+				.attributeCode(AttributeCode.ofString(record.getValue()))
+				.displayName(displayName)
+				.build();
 	}
 
 	@Override
@@ -857,6 +879,64 @@ public class AttributeDAO implements IAttributeDAO
 		public AttributeListValue getByValueOrNull(final String value)
 		{
 			return map.get(value);
+		}
+	}
+
+	@Value
+	@Builder
+	private static class Attribute
+	{
+		@NonNull
+		AttributeId attributeId;
+
+		@NonNull
+		AttributeCode attributeCode;
+
+		@NonNull
+		ITranslatableString displayName;
+	}
+
+	@ToString
+	private static class AttributesMap
+	{
+		private final ImmutableMap<AttributeId, Attribute> attributesById;
+		private final ImmutableMap<AttributeCode, Attribute> attributesByCode;
+
+		AttributesMap(@NonNull final List<Attribute> attributes)
+		{
+			this.attributesById = Maps.uniqueIndex(attributes, Attribute::getAttributeId);
+			this.attributesByCode = Maps.uniqueIndex(attributes, Attribute::getAttributeCode);
+		}
+
+		public Attribute getAttributeByCodeOrNull(final AttributeCode attributeCode)
+		{
+			return attributesByCode.get(attributeCode);
+		}
+
+		public AttributeId getAttributeIdByCodeOrNull(@NonNull final AttributeCode attributeCode)
+		{
+			final Attribute attribute = getAttributeByCodeOrNull(attributeCode);
+			return attribute != null ? attribute.getAttributeId() : null;
+		}
+
+		public AttributeId getAttributeIdByCodeOrNull(@NonNull final String attributeCode)
+		{
+			return getAttributeIdByCodeOrNull(AttributeCode.ofString(attributeCode));
+		}
+
+		public AttributeId getAttributeIdByCode(@NonNull final AttributeCode attributeCode)
+		{
+			final AttributeId attributeId = getAttributeIdByCodeOrNull(attributeCode);
+			if (attributeId == null)
+			{
+				throw new AdempiereException("No active attribute found for `" + attributeCode + "`");
+			}
+			return attributeId;
+		}
+
+		public AttributeId getAttributeIdByCode(@NonNull final String attributeCode)
+		{
+			return getAttributeIdByCode(AttributeCode.ofString(attributeCode));
 		}
 	}
 }

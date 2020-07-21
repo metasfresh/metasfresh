@@ -58,6 +58,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
       }
     },
     "externalId": "externalId-1",
+    "handles": [ ],
     "id": {
       "bpartnerId": 20,
       "userId": 100010
@@ -130,6 +131,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
     "email": "contactRecord.email",
     "externalId": "contactRecord.externalId",
     "firstName": "contactRecord.firstName",
+    "handles": [ ],
     "id": {
       "bpartnerId": 20,
       "userId": 30
@@ -205,6 +207,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
     "email": "contactRecord.email",
     "externalId": "contactRecord.externalId",
     "firstName": "contactRecord.firstName",
+    "handles": [ ],
     "id": {
       "bpartnerId": 20,
       "userId": 30
@@ -280,6 +283,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
     "email": "contactRecord.email",
     "externalId": "contactRecord.externalId",
     "firstName": "contactRecord.firstName",
+    "handles": [ ],
     "id": {
       "bpartnerId": 20,
       "userId": 30

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
@@ -56,20 +57,15 @@ public class ArchiveStorageFactory implements IArchiveStorageFactory
 		registerArchiveStorage(STORAGETYPE_Filesystem, AccessMode.SERVER, FilesystemArchiveStorage.class);
 	}
 
-	private static final ArrayKey createStorageClassesKey(final String storageType, final AccessMode accessMode)
+	private static final ArrayKey createStorageClassesKey(@NonNull final String storageType, @NonNull final AccessMode accessMode)
 	{
-		Check.assumeNotNull(storageType, "storageType not null");
-		Check.assumeNotNull(accessMode, "accessMode not null");
-
 		final ArrayKey key = new ArrayKey(storageType, accessMode);
 		return key;
 	}
 
 	@Override
-	public void registerArchiveStorage(final String storageType, final AccessMode accessMode, Class<? extends IArchiveStorage> storageClass)
+	public void registerArchiveStorage(final String storageType, final AccessMode accessMode, @NonNull final Class<? extends IArchiveStorage> storageClass)
 	{
-		Check.assumeNotNull(storageClass, "storageClass not null");
-
 		final ArrayKey key = createStorageClassesKey(storageType, accessMode);
 		storageClasses.put(key, storageClass);
 	}
@@ -170,7 +166,9 @@ public class ArchiveStorageFactory implements IArchiveStorageFactory
 		}
 		catch (Exception e)
 		{
-			throw new AdempiereException("Cannot load " + storageClass, e);
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("storageClass",storageClass);
 		}
 	}
 

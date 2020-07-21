@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
@@ -99,7 +99,7 @@ public final class JsonOLCandCreateBulkResponse
 	{
 		if (!errors.isEmpty())
 		{
-			throw new IllegalStateException("Not an successful result: " + this, getError().getThrowable());
+			throw new IllegalStateException("Not a successful result: " + this, getError().getThrowable());
 		}
 		return result;
 	}

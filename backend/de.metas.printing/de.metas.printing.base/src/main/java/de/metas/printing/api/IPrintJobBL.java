@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.printing.api;
 
 /*
@@ -35,6 +32,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -52,22 +50,18 @@ public interface IPrintJobBL extends ISingletonService
 	 * Note that this method can deal with large numbers of unprocessed printing queue records.
 	 * <p>
 	 * This method is skipping items which were already printed (see {@link I_C_Printing_Queue#isProcessed()})
-	 *
-	 * @param source
-	 * @param printJobContext
-	 * @return number of created print jobs
 	 */
-	int createPrintJobs(IPrintingQueueSource source, ContextForAsyncProcessing printJobContext);
+	void createPrintJobs(IPrintingQueueSource source, ContextForAsyncProcessing printJobContext);
 
-	default int createPrintJobs(@NonNull final IPrintingQueueSource source)
+	default void createPrintJobs(@NonNull final IPrintingQueueSource source)
 	{
-		return createPrintJobs(source, ContextForAsyncProcessing.builder().build());
+		createPrintJobs(source, ContextForAsyncProcessing.builder().build());
 	}
 
 	@Builder
 	@FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE)
 	@Getter
-	public class ContextForAsyncProcessing
+	class ContextForAsyncProcessing
 	{
 		PInstanceId adPInstanceId;
 
@@ -78,17 +72,18 @@ public interface IPrintJobBL extends ISingletonService
 	/**
 	 * Creates an instructions record for the given print job.
 	 *
-	 * @param userToPrintId the user that shall actually do the printing. Note that if this user's printing config forwards to a shared config, then the instructions instance is created for the shared
+	 * @param userToPrintId the user for whom we shall actually do the printing. Note that if this user's printing config forwards to a shared config, then the instructions instance is created for the shared
 	 *            config's user
 	 * @param createWithSpecificHostKey if <code>false</code>, then
 	 *            <ul>
 	 *            <li>the given <code>userToPrintId</code> is set to be the user, without considering any forwarding
 	 *            <li>no hostkey is set to the instructions, meaning that any printing client which has a session with the given <code>userToPrintId</code> can do the printing.
 	 *            </ul>
-	 *            Note that even if this is <code>true</code>, it will be ignored if there is no hostkey to be obtained, see {@link IPrintPackageBL#getHostKeyOrNull(java.util.Properties)}.
+	 *            Note that even if this is <code>true</code>, it will be ignored if there is no hostkey to be obtained, see {@link IPrintClientsBL#getHostKeyOrNull(java.util.Properties)}.
 	 * @param copies number of copies to print (1 means one printout).
 	 */
-	I_C_Print_Job_Instructions createPrintJobInstructions(int userToPrintId,
+	I_C_Print_Job_Instructions createPrintJobInstructions(
+			UserId userToPrintId,
 			boolean createWithSpecificHostKey,
 			I_C_Print_Job_Line firstLine,
 			I_C_Print_Job_Line lastLine,
@@ -99,10 +94,7 @@ public interface IPrintJobBL extends ISingletonService
 	List<I_C_Print_Job_Detail> getCreatePrintJobDetails(I_C_Print_Job_Line printJobLine);
 
 	/**
-	 * enqueue print job instructions for async pdf printing
-	 *
-	 * @param jobInstructions
-	 * @param asyncBatch
+	 * Enqueue print job instructions for async pdf printing
 	 */
 	void enqueuePrintJobInstructions(I_C_Print_Job_Instructions jobInstructions, I_C_Async_Batch asyncBatch);
 }

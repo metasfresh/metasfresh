@@ -1,13 +1,28 @@
 package de.metas.ui.web.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -23,17 +38,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /*
  * #%L
@@ -97,6 +101,7 @@ public final class CreateViewRequest
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
+				.setDocumentReferenceId(view.getDocumentReferenceId())
 				.setStickyFilters(view.getStickyFilters())
 				// .setFiltersFromJSON(jsonFilters)
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
@@ -123,6 +128,7 @@ public final class CreateViewRequest
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(referencingDocumentPaths)
+				.setDocumentReferenceId(view.getDocumentReferenceId())
 				.setStickyFilters(stickyFilters)
 				.setFilters(view.getFilters())
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
@@ -139,6 +145,7 @@ public final class CreateViewRequest
 	DocumentId parentRowId;
 
 	ImmutableSet<DocumentPath> referencingDocumentPaths;
+	DocumentReferenceId documentReferenceId;
 
 	/**
 	 * Sticky filters can't be changed by the user.<br>
@@ -184,6 +191,7 @@ public final class CreateViewRequest
 		parentRowId = builder.getParentRowId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+		documentReferenceId = builder.getDocumentReferenceId();
 		filterOnlyIds = builder.getFilterOnlyIds();
 		filters = builder.getFilters();
 		stickyFilters = builder.getStickyFilters();
@@ -207,6 +215,7 @@ public final class CreateViewRequest
 		parentRowId = from.parentRowId;
 
 		referencingDocumentPaths = from.referencingDocumentPaths;
+		documentReferenceId = from.documentReferenceId;
 		filterOnlyIds = from.filterOnlyIds;
 		this.filters = filters;
 		stickyFilters = from.stickyFilters;
@@ -293,6 +302,7 @@ public final class CreateViewRequest
 		private DocumentId parentRowId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
+		private DocumentReferenceId documentReferenceId;
 
 		/**
 		 * @deprecated see {@link CreateViewRequest#filterOnlyIds}
@@ -382,6 +392,17 @@ public final class CreateViewRequest
 		private ImmutableSet<DocumentPath> getReferencingDocumentPaths()
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
+		}
+
+		public Builder setDocumentReferenceId(DocumentReferenceId documentReferenceId)
+		{
+			this.documentReferenceId = documentReferenceId;
+			return this;
+		}
+
+		private DocumentReferenceId getDocumentReferenceId()
+		{
+			return documentReferenceId;
 		}
 
 		public Builder setStickyFilters(final DocumentFilterList stickyFilters)

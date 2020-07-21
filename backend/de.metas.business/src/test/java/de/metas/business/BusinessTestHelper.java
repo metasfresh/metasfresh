@@ -11,6 +11,8 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -31,6 +33,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxDAO;
@@ -73,7 +77,7 @@ public final class BusinessTestHelper
 	private static final int UOM_Precision_0 = 0;
 
 	/**
-	 * Standard in ADempiere
+	 * Standard in metasfresh
 	 */
 	private static final int UOM_Precision_3 = 3;
 
@@ -317,5 +321,19 @@ public final class BusinessTestHelper
 
 		saveRecord(currencyRecord);
 		return currencyRecord;
+	}
+
+	public static OrgId createOrgWithTimeZone()
+	{
+		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
+		saveRecord(orgRecord);
+
+		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
+		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		orgInfoRecord.setTimeZone("Europe/Berlin");
+		saveRecord(orgInfoRecord);
+
+		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 }

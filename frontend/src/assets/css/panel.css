@@ -23,6 +23,10 @@
     }
 }
 
+.panel-vertical-scroll {
+    overflow-y: auto;
+}
+
 /*@media only screen and (min-width: $breakpoint-md){*/
 .desktop {
     .modal-content-wrapper {
@@ -251,6 +255,10 @@
 
 .panel-prompt-footer .btn-sm {
     min-width: 74px;
+}
+
+.panel-full-width {
+    width: 100%;
 }
 
 .prompt-button-wrapper {

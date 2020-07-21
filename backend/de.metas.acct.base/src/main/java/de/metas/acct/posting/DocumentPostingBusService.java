@@ -22,6 +22,7 @@ import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
+import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
@@ -52,7 +53,7 @@ import lombok.NonNull;
 @DependsOn(Adempiere.BEAN_NAME) // needs database
 public class DocumentPostingBusService
 {
-	private static final Topic TOPIC = Topic.remote("de.metas.acct.handler.DocumentPostRequest");
+	private static final Topic TOPIC = RabbitMQEventBusConfiguration.AccountingQueueConfiguration.EVENTBUS_TOPIC;
 	private static final String PROPERTY_DocumentPostRequest = "DocumentPostRequest";
 
 	// services
@@ -99,7 +100,7 @@ public class DocumentPostingBusService
 	}
 
 	@Autowired
-	public void registerHandlers(final Optional<List<DocumentPostRequestHandler>> handlers)
+	public void registerHandlers(@NonNull final Optional<List<DocumentPostRequestHandler>> handlers)
 	{
 		if (handlers.isPresent())
 		{
@@ -133,7 +134,7 @@ public class DocumentPostingBusService
 		}
 
 		@Override
-		public void onEvent(final IEventBus eventBus, final Event event)
+		public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 		{
 			final DocumentPostRequest request = extractDocumentPostRequest(event);
 
@@ -148,18 +149,18 @@ public class DocumentPostingBusService
 			}
 		}
 
-		private void handleRequest(final DocumentPostRequest request)
+		private void handleRequest(@NonNull final DocumentPostRequest request)
 		{
 			handler.handleRequest(request);
 		}
 
-		private IAutoCloseable switchCtx(final DocumentPostRequest request)
+		private IAutoCloseable switchCtx(@NonNull final DocumentPostRequest request)
 		{
 			final Properties ctx = createCtx(request);
 			return Env.switchContext(ctx);
 		}
 
-		private Properties createCtx(final DocumentPostRequest request)
+		private Properties createCtx(@NonNull final DocumentPostRequest request)
 		{
 			final Properties ctx = Env.newTemporaryCtx();
 			Env.setClientId(ctx, request.getClientId());

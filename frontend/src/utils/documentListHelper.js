@@ -2,11 +2,14 @@ import PropTypes from 'prop-types';
 import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
-import { LOCAL_LANG } from '../constants/Constants';
+import deepUnfreeze from 'deep-unfreeze';
+import { toInteger } from 'lodash';
+
 import { getItemsByProperty, nullToEmptyStrings } from './index';
-import { getSelectionInstant } from '../reducers/windowHandler';
-import { viewState } from '../reducers/viewHandler';
+import { viewState, getView } from '../reducers/viewHandler';
+import { getTable, getTableId, getSelection } from '../reducers/tables';
 import { TIME_REGEX_TEST } from '../constants/Constants';
+import { getCurrentActiveLocale } from './locale';
 
 /**
  * @typedef {object} Props Component props
@@ -14,86 +17,125 @@ import { TIME_REGEX_TEST } from '../constants/Constants';
  */
 const DLpropTypes = {
   // from parent
-  windowType: PropTypes.string.isRequired,
+  windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
-
-  // from <DocList>
   updateParentSelectedIds: PropTypes.func,
+  page: PropTypes.number,
+  sort: PropTypes.string,
+  defaultViewId: PropTypes.string,
+
+  referenceId: PropTypes.string,
+  // TODO: Eventually this should be renamed to `refWindowId`
+  refType: PropTypes.string,
+  refDocumentId: PropTypes.string,
+  refTabId: PropTypes.string,
 
   // from @connect
-  selections: PropTypes.object.isRequired,
   childSelected: PropTypes.array.isRequired,
   parentSelected: PropTypes.array.isRequired,
-  selected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
+  inModal: PropTypes.bool,
+  modal: PropTypes.object,
+  rawModalVisible: PropTypes.bool,
 
-  // from @react-router
-  location: PropTypes.object.isRequired,
+  resetView: PropTypes.func.isRequired,
+  deleteView: PropTypes.func.isRequired,
+  fetchDocument: PropTypes.func.isRequired,
+  fetchLayout: PropTypes.func.isRequired,
+  createView: PropTypes.func.isRequired,
+  filterView: PropTypes.func.isRequired,
+  deleteTable: PropTypes.func.isRequired,
+  indicatorState: PropTypes.func.isRequired,
+  closeListIncludedView: PropTypes.func.isRequired,
+  setListPagination: PropTypes.func.isRequired,
+  setListSorting: PropTypes.func.isRequired,
+  setListId: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  updateRawModal: PropTypes.func.isRequired,
+  updateTableSelection: PropTypes.func.isRequired,
+  deselectTableItems: PropTypes.func.isRequired,
+  fetchLocationConfig: PropTypes.func.isRequired,
+  clearAllFilters: PropTypes.func.isRequired,
 };
 
 /**
  * @typedef {object} Props Component context
  * @prop {object} DLcontextTypes
  */
-const DLmapStateToProps = (state, { location, ...props }) => {
-  const { query } = location;
-  let master = state.viewHandler.views[props.windowType];
+const DLmapStateToProps = (state, props) => {
+  const {
+    page: queryPage,
+    sort: querySort,
+    viewId: queryViewId,
+    isModal,
+    defaultViewId,
+    windowId,
+    referenceId: queryReferenceId,
+    refType: queryRefType,
+    refDocumentId: queryRefDocumentId,
+    refTabId: queryRefTabId,
+  } = props;
+  const identifier = isModal ? defaultViewId : windowId;
+  let master = getView(state, identifier);
 
   if (!master) {
     master = viewState;
   }
 
-  const sort = master.sort ? master.sort : query.sort;
-  const page = master.page ? master.page : parseInt(query.page);
-  let viewId = master.viewId ? master.viewId : query.viewId;
+  const sort = master.sort ? master.sort : querySort;
+  const page = toInteger(queryPage) || master.page;
+  let viewId = master.viewId ? master.viewId : queryViewId;
 
+  // used for modals
   if (props.defaultViewId) {
     viewId = props.defaultViewId;
   }
 
+  const tableId = getTableId({ windowId, viewId });
+  const table = getTable(state, tableId);
+
+  // TODO: Check if this is still a valid solution
   if (location.hash === '#notification') {
     viewId = null;
+  }
+
+  let childTableId = null;
+  const childSelector = getSelection();
+  const { includedView } = props;
+  if (includedView && includedView.windowType) {
+    childTableId = getTableId({
+      windowId: includedView.windowType,
+      viewId: includedView.viewId,
+    });
+  }
+
+  let parentTableId = null;
+  const parentSelector = getSelection();
+  const { parentWindowType, parentDefaultViewId } = props;
+  if (parentWindowType) {
+    parentTableId = getTableId({
+      windowId: parentWindowType,
+      viewId: parentDefaultViewId,
+    });
   }
 
   return {
     page,
     sort,
     viewId,
+    table,
     reduxData: master,
     layout: master.layout,
-    refType: query.refType,
-    refId: query.refId,
-    refTabId: query.refTabId,
-    selections: state.windowHandler.selections,
-    selected: getSelectionInstant(
-      state,
-      { ...props, windowId: props.windowType, viewId },
-      state.windowHandler.selectionsHash
-    ),
-    childSelected:
-      props.includedView && props.includedView.windowType
-        ? getSelectionInstant(
-            state,
-            {
-              ...props,
-              windowId: props.includedView.windowType,
-              viewId: props.includedView.viewId,
-            },
-            state.windowHandler.selectionsHash
-          )
-        : NO_SELECTION,
-    parentSelected: props.parentWindowType
-      ? getSelectionInstant(
-          state,
-          {
-            ...props,
-            windowId: props.parentWindowType,
-            viewId: props.parentDefaultViewId,
-          },
-          state.windowHandler.selectionsHash
-        )
-      : NO_SELECTION,
+    layoutPending: master.layoutPending,
+    referenceId: queryReferenceId,
+    refType: queryRefType,
+    refDocumentId: queryRefDocumentId,
+    refTabId: queryRefTabId,
+    childSelected: childSelector(state, childTableId),
+    parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
+    rawModalVisible: state.windowHandler.rawModal.visible,
+    filters: state.filters,
   };
 };
 
@@ -118,17 +160,17 @@ const filtersToMap = function(filtersArray) {
   return filtersMap;
 };
 
+/**
+ * Check if current selection still exists in the provided data (used when
+ * updates happen)
+ * @todo TODO: rewrite this to not modify `initialMap`. This will also require
+ * changes in TableActions
+ */
 const doesSelectionExist = function({
   data,
   selected,
-  hasIncluded = false,
+  keyProperty = 'id',
 } = {}) {
-  // When the rows are changing we should ensure
-  // that selection still exist
-  if (hasIncluded) {
-    return true;
-  }
-
   if (selected && selected[0] === 'all') {
     return true;
   }
@@ -146,7 +188,7 @@ const doesSelectionExist = function({
     data.length &&
     selected &&
     selected[0] &&
-    getItemsByProperty(rows, 'id', selected[0]).length
+    getItemsByProperty(rows, keyProperty, selected[0]).length
   );
 };
 
@@ -248,14 +290,18 @@ function mapRows(rows, map, columnInfosByFieldName) {
 
 export function removeRows(rowsList, changedRows) {
   const removedRows = [];
+  const changedRowsById = changedRows.reduce((acc, id) => {
+    acc[id] = true;
+    return acc;
+  }, {});
 
-  changedRows.forEach((id) => {
-    const idx = rowsList.findIndex((row) => row.id === id);
-
-    if (idx !== -1) {
-      rowsList = rowsList.delete(idx);
-      removedRows.push(id);
+  rowsList = rowsList.filter((row) => {
+    if (!changedRowsById[row.id]) {
+      removedRows.push(row.id);
+      return false;
     }
+
+    return true;
   });
 
   return {
@@ -270,6 +316,8 @@ export function mergeRows({
   columnInfosByFieldName = {},
   changedIds,
 }) {
+  // unfreeze rows from the store
+  toRows = deepUnfreeze(toRows);
   if (!fromRows && !changedIds) {
     return {
       rows: toRows,
@@ -293,14 +341,6 @@ export function getScope(isModal) {
 
 export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
-}
-
-/**
- * @method getCurrentActiveLocale
- * @summary Retrieves the active locale from the local store
- */
-export function getCurrentActiveLocale() {
-  return localStorage.getItem(LOCAL_LANG);
 }
 
 export function convertTimeStringToMoment(value) {
@@ -346,7 +386,7 @@ function parseDateToReadable(fieldsByName) {
  * flatten array with 1 level deep max(with fieldByName)
  * from includedDocuments data
  */
-export function getRowsData(rowData) {
+export function flattenRows(rowData) {
   let data = [];
   rowData &&
     rowData.map((item) => {
@@ -398,6 +438,13 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   let ind = indent ? indent : [];
   let result = [];
 
+  // because immer freezes objects
+  try {
+    node = deepUnfreeze(node);
+  } catch (e) {
+    // deepUnfreze can't cope with Moment in some cases;
+  }
+
   const nodeCopy = {
     ...node,
     indent: ind,
@@ -428,7 +475,12 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   return result;
 }
 
-export function collapsedMap(node, isCollapsed, initialMap) {
+/**
+ * Create a flat array of collapsed rows ids including parents and children
+ * @todo TODO: rewrite this to not modify `initialMap`. This will also require
+ * changes in TableActions
+ */
+export function createCollapsedMap(node, isCollapsed, initialMap) {
   let collapsedMap = [];
   if (initialMap) {
     if (!isCollapsed) {

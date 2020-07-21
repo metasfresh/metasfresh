@@ -856,7 +856,18 @@ public final class Document
 
 	public Properties getCtx()
 	{
-		return Env.getCtx(); // FIXME use document level context
+		// make sure that InterfaceWrapperHelper.newInstance(Class<T>, Object, boolean useClientOrgFromProvider) works
+		// (still, not sure if this is sufficient for *all* cases)
+		final Properties result = Env.copyCtx(Env.getCtx());
+		if (getClientId() != null)
+		{
+			Env.setClientId(result, getClientId());
+		}
+		if (getOrgId() != null)
+		{
+			Env.setOrgId(result, getOrgId());
+		}
+		return result;
 	}
 
 	public int getWindowNo()
@@ -904,7 +915,7 @@ public final class Document
 	/**
 	 * Sets a {@link DocumentEvaluatee} which will be used as a parent evaluatee for {@link #asEvaluatee()}.
 	 *
-	 * NOTE: this shadow evaluatee is not persisted and is discarded on {@link #copy(CopyMode)}.
+	 * NOTE: this shadow evaluatee is not persisted and is discarded on {@link #copy(Document, CopyMode)}.
 	 *
 	 * @param shadowParentDocumentEvaluatee
 	 */
@@ -1135,17 +1146,21 @@ public final class Document
 	}
 
 	/**
-	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
-	 *
-	 * @param fieldName
-	 * @param value
-	 * @param reason
+	 * Similar with {@link #setValue(String, Object, ReasonSupplier)}
+	 * but this method is also
+	 * <li>checking if we are allowed to change that field (if <code>ignoreReadonlyFlag</code> is false)
+	 * <li>trigger document processing if <code>fieldName</code> is {@link WindowConstants#FIELDNAME_DocAction}.
 	 */
-	public void processValueChange(final String fieldName, final Object value, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	public void processValueChange(
+			@NonNull final String fieldName,
+			@Nullable final Object value,
+			@Nullable final ReasonSupplier reason,
+			final boolean ignoreReadonlyFlag)
+			throws DocumentFieldReadonlyException
 	{
 		final IDocumentField documentField = getField(fieldName);
 
-		if (documentField.isReadonly())
+		if (!ignoreReadonlyFlag && documentField.isReadonly())
 		{
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
@@ -1166,7 +1181,8 @@ public final class Document
 		{
 			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 			{
-				processValueChange(event.getPath(), event.getValue(), reason);
+				final boolean ignoreReadonlyFlag = false;
+				processValueChange(event.getPath(), event.getValue(), reason, ignoreReadonlyFlag);
 			}
 			else
 			{
@@ -1404,12 +1420,7 @@ public final class Document
 	/**
 	 * Updates document or fields characteristics (e.g. readonly, mandatory, displayed, lookupValuesStaled etc).
 	 *
-	 * @param propertyName
-	 * @param documentField
 	 * @param triggeringFieldName optional field name which triggered this update
-	 * @param triggeringDependencyType
-	 * @param documentChangesCollector events collector (where to collect the change events)
-	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
 	 */
 	private void updateOnDependencyChanged(
 			final String propertyName,
@@ -1515,7 +1526,7 @@ public final class Document
 		return getField(fieldName).getLookupValuesForQuery(query);
 	}
 
-	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
+	public Optional<Document> getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);

@@ -54,5 +54,8 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(Set<InvoiceId> invoiceIds);
 
+	/**
+	 * Make a direct SQL-update to the given {@code C_PaySelection.TotalAmount} and send a cache invalidation event.
+	 */
 	void updatePaySelectionTotalAmt(@NonNull PaySelectionId paySelectionId);
 }

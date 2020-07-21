@@ -1,6 +1,6 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -15,6 +15,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,12 +62,13 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.utils.ApiAPMHelper;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.security.PermissionServiceFactories;
 import de.metas.security.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
@@ -94,7 +97,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
+public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
@@ -122,7 +125,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	}
 
 	@VisibleForTesting
-	void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
+	public void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
 	{
 		this.permissionServiceFactory = permissionServiceFactory;
 	}
@@ -152,7 +155,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
 			// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
 			trxManager.runInNewTrx(() -> createOrUpdateMasterdataBulk(bulkRequest, masterdataProvider));
-			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
+			// the required masterdata should be there now
 
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
@@ -176,7 +179,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(request.getOrg());
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
 	}
 
@@ -184,39 +187,38 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
-				.name("CreateOrUpdateMasterDataBulk")
-				.type(Type.REST_API_PROCESSING.getCode())
-				.build();
-
 		perfMonService.monitorSpan(
 				() -> bulkRequest.getRequests()
 						.stream()
 						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
-				spanMetadata);
+						ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
 	}
 
 	private void createOrUpdateMasterdata(
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
-				.name("CreateOrUpdateMasterDataSingle")
-				.type(Type.REST_API_PROCESSING.getCode())
-				.label("externalHeaderId", json.getExternalHeaderId())
-				.label("externalLineId", json.getExternalLineId())
-				.build();
+		try (final MDCCloseable extHeaderMDC = MDC.putCloseable("externalHeaderId", json.getExternalHeaderId());
+				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalLineId()))
+		{
+			final SpanMetadata spanMetadata = SpanMetadata.builder()
+					.name("CreateOrUpdateMasterDataSingle")
+					.type(Type.REST_API_PROCESSING.getCode())
+					.label("externalHeaderId", json.getExternalHeaderId())
+					.label("externalLineId", json.getExternalLineId())
+					.build();
 
-		perfMonService.monitorSpan(
-				() -> createOrUpdateMasterdata0(json, masterdataProvider),
-				spanMetadata);
+			perfMonService.monitorSpan(
+					() -> createOrUpdateMasterdata0(json, masterdataProvider),
+					spanMetadata);
+		}
 	}
 
 	private void createOrUpdateMasterdata0(
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(json.getOrg());
 
 		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfoInTrx(json.getBpartner(), true/* billTo */, orgId);
 		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfoInTrx(json.getBillBPartner(), true/* billTo */, orgId);
@@ -225,7 +227,6 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
 
-		//
 		// Create product prices if needed
 		{
 			final BPartnerInfo billBPartnerInfoEffective = CoalesceUtil.coalesce(billBPartnerInfo, bpartnerInfo);
@@ -244,7 +245,6 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				logger.debug("Skip creating product price for {} because {}", productInfo, optionalRequest.getExplanation());
 			}
 		}
-
 	}
 
 	private ExplainedOptional<ProductPriceCreateRequest> createProductPriceCreateRequest(
@@ -269,7 +269,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		{
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
 		}
-		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(json.getOrg());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliers(
@@ -328,7 +328,9 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				request.getDataSource(),
 				"int-" + DATA_SOURCE_INTERNAL_NAME);
 
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceInternalNameToUse, masterdataProvider.getCreateOrgId(request.getOrg()));
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(
+				dataSourceInternalNameToUse,
+				masterdataProvider.getCreateOrgIdInTrx(request.getOrg()));
 		if (dataSourceId == null)
 		{
 			throw MissingResourceException.builder()

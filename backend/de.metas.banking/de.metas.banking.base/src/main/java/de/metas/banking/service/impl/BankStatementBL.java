@@ -47,6 +47,7 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
@@ -231,11 +232,13 @@ public class BankStatementBL implements IBankStatementBL
 	public void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final InvoiceId invoiceId)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoiceId);
+
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
-		bankStatementLine.setStmtAmt(invoice.getGrandTotal());
-		bankStatementLine.setTrxAmt(invoice.getGrandTotal());
+		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
+		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
 		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
 	}
 

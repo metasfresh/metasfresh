@@ -792,12 +792,15 @@ public class StepComXMLInvoicBean
 			sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
 			headerXrech.getHREFE1().add(sellerOrderRef);
 		}
-		final HREFE1 despatchAdvRef = INVOIC_objectFactory.createHREFE1();
-		despatchAdvRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
-		despatchAdvRef.setREFERENCEQUAL(ReferenceQual.DADV.name());
-		despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
-		despatchAdvRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getMovementDate()), dateFormat));
-		headerXrech.getHREFE1().add(despatchAdvRef);
+		if (!isEmpty(invoice.getShipmentDocumentno()))
+		{
+			final HREFE1 despatchAdvRef = INVOIC_objectFactory.createHREFE1();
+			despatchAdvRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
+			despatchAdvRef.setREFERENCEQUAL(ReferenceQual.DADV.name());
+			despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
+			despatchAdvRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getMovementDate()), dateFormat));
+			headerXrech.getHREFE1().add(despatchAdvRef);
+		}
 	}
 
 	private void mapDates(

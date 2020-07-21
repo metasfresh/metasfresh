@@ -58,7 +58,6 @@ import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -92,6 +91,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import org.junit.jupiter.api.Test;
 
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {

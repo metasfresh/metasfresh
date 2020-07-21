@@ -22,6 +22,11 @@
 
 package de.metas.util;
 
+import de.metas.common.util.EmptyUtil;
+import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -30,12 +35,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-
-import lombok.NonNull;
 
 /**
  *
@@ -147,7 +146,7 @@ public final class Check
 	}
 
 	/**
-	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because
+	 * Little method that throws an {@link Exception} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because
 	 * <li>assert is
 	 * globally switched on and off and you never know what else libs are using assert</li>
 	 * <li>there are critical assumptions that should always be validated. Not only during development time or when
@@ -317,7 +316,7 @@ public final class Check
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
-	public static String assumeNotEmpty(final String str, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(@Nullable final String str, final String assumptionMessage, final Object... params)
 	{
 		return assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
 	}
@@ -329,7 +328,7 @@ public final class Check
 	 * <p>
 	 * Also see {@link ExceptionWithOwnHeaderMessage}
 	 */
-	public static String assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(@Nullable final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean trimWhitespaces = true;
 		final boolean cond = !isEmpty(str, trimWhitespaces);
@@ -617,42 +616,20 @@ public final class Check
 
 	public static boolean isEmpty(@Nullable final Object value)
 	{
-		if (value == null)
-		{
-			return true;
-		}
-
-		if (value instanceof String)
-		{
-			return isEmpty((String)value, true);
-		}
-		if (value instanceof Object[])
-		{
-			return isEmpty((Object[])value);
-		}
-		if (value instanceof BigDecimal)
-		{
-			return isEmpty((BigDecimal)value);
-		}
-		if (value instanceof Collection<?>)
-		{
-			return isEmpty((Collection<?>)value);
-		}
-
-		return false;
+		return EmptyUtil.isEmpty(value);
 	}
 
 	public static boolean isEmpty(@Nullable final String str)
 	{
-		return isEmpty(str, false);
+		return EmptyUtil.isEmpty(str);
 	}
 
 	/**
-	 * @return return true if the string is null, las length 0, or contains only whitespace.
+	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
 	public static boolean isBlank(@Nullable final String str)
 	{
-		return isEmpty(str, true);
+		return EmptyUtil.isBlank(str);
 	}
 
 	/**
@@ -660,7 +637,7 @@ public final class Check
 	 */
 	public static boolean isNotBlank(@Nullable final String str)
 	{
-		return !isEmpty(str, true);
+		return EmptyUtil.isNotBlank(str);
 	}
 
 	/**
@@ -672,26 +649,15 @@ public final class Check
 	 */
 	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
-		if (str == null)
-		{
-			return true;
-		}
-		if (trimWhitespaces)
-		{
-			return str.trim().length() == 0;
-		}
-		else
-		{
-			return str.length() == 0;
-		}
-	}    // isEmpty
+		return EmptyUtil.isEmpty(str, trimWhitespaces);
+	}
 
 	/**
 	 * @return true if bd is null or bd.signum() is zero
 	 */
 	public static boolean isEmpty(final BigDecimal bd)
 	{
-		return bd == null || bd.signum() == 0;
+		return EmptyUtil.isEmpty(bd);
 	}
 
 	/**
@@ -699,7 +665,7 @@ public final class Check
 	 */
 	public static <T> boolean isEmpty(final T[] arr)
 	{
-		return arr == null || arr.length == 0;
+		return EmptyUtil.isEmpty(arr);
 	}
 
 	/**
@@ -707,7 +673,7 @@ public final class Check
 	 */
 	public static boolean isEmpty(final Collection<?> collection)
 	{
-		return collection == null || collection.isEmpty();
+		return EmptyUtil.isEmpty(collection);
 	}
 
 	/**

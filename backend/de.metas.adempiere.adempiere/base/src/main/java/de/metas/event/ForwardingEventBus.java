@@ -89,4 +89,7 @@ abstract class ForwardingEventBus implements IEventBus
 	{
 		return delegate().isDestroyed();
 	}
+
+	@Override
+	public boolean isAsync() { return delegate.isAsync(); }
 }

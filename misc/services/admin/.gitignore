@@ -6,3 +6,4 @@
 *.diff
 
 /bin/
+/application.properties

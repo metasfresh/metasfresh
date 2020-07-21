@@ -71,33 +71,33 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 
 		// further down we use informations from the PO referenced by the archive, *if* the archive references any
-		final Object archiveRerencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
-		if (archiveRerencedModel == null)
+		final Object archiveRefencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
+		if (archiveRefencedModel == null)
 		{
 			logger.debug("AD_Archive {} does not reference a PO; returning", archive);
 			return;
 		}
 
-		if (archive.getC_BPartner_ID() < 0 && InterfaceWrapperHelper.hasModelColumnName(archiveRerencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID))
+		if (archive.getC_BPartner_ID() < 0 && InterfaceWrapperHelper.hasModelColumnName(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID))
 		{
 			// the archive itself did not reference a C_BPartner_ID, so we try the object that is referenced by the archive
-			final Optional<Integer> bpartnerID = InterfaceWrapperHelper.getValue(archiveRerencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+			final Optional<Integer> bpartnerID = InterfaceWrapperHelper.getValue(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 			if (bpartnerID.isPresent())
 			{
 				logger.debug("Setting column of C_Printing_Queue {} from PO {} that is referenced by AD_Archive {}: [C_BPartner_ID={}]",
-						new Object[] { queueItem, archiveRerencedModel, archive, bpartnerID });
+						new Object[] { queueItem, archiveRefencedModel, archive, bpartnerID });
 				queueItem.setC_BPartner_ID(bpartnerID.get()); // may be overridden further down.
 			}
 		}
 
 		// special stuff wrt special document type
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		final IDocument document = docActionBL.getDocumentOrNull(archiveRerencedModel);
+		final IDocument document = docActionBL.getDocumentOrNull(archiveRefencedModel);
 		if (document != null)
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",
-					new Object[] { queueItem, archiveRerencedModel, archive, document.getDoc_User_ID() });
-			queueItem.setAD_User_ID(document.getDoc_User_ID());  // TODO tbp: not sure if here i should use BPartnerContactId
+					new Object[] { queueItem, archiveRefencedModel, archive, document.getDoc_User_ID() });
+			queueItem.setAD_User_ID(document.getDoc_User_ID()); // in the docs i saw (C_Order, C_Invoice) this is the ID of our sales rep, which is fine AFAIS
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);
@@ -106,25 +106,23 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		queueItem.setAD_Table_ID(archive.getAD_Table_ID());
 
 		// Handles operations specific for invoices.
-		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class))
+		if (InterfaceWrapperHelper.isInstanceOf(archiveRefencedModel, I_C_Invoice.class))
 		{
-			final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveRerencedModel, I_C_Invoice.class);
+			final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveRefencedModel, I_C_Invoice.class);
 			handleInvoices(queueItem, invoice);
 		}
 
-		else if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_M_InOut.class))
+		else if (InterfaceWrapperHelper.isInstanceOf(archiveRefencedModel, I_M_InOut.class))
 		{
-			final I_M_InOut inout = InterfaceWrapperHelper.create(archiveRerencedModel, I_M_InOut.class);
+			final I_M_InOut inout = InterfaceWrapperHelper.create(archiveRefencedModel, I_M_InOut.class);
 			handleInOuts(queueItem, inout);
 		}
 
-		handleItemName(queueItem, archiveRerencedModel);
+		handleItemName(queueItem, archiveRefencedModel);
 	}
 
 	/**
 	 * Sets the ItemName for each document that we process
-	 * @param queueItem
-	 * @param archiveRerencedModel
 	 */
 	private void handleItemName(final I_C_Printing_Queue queueItem, Object archiveRerencedModel)
 	{

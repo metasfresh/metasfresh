@@ -22,6 +22,14 @@ package de.metas.util;
  * #L%
  */
 
+import lombok.NonNull;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -31,16 +39,6 @@ import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MessageFormatter;
-
-import lombok.NonNull;
 
 public final class StringUtils
 {
@@ -196,7 +194,8 @@ public final class StringUtils
 	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
 	 * @return
 	 */
-	public static Boolean toBooleanOrNull(final String strBoolean)
+	@Nullable
+	public static Boolean toBooleanOrNull(@Nullable final String strBoolean)
 	{
 		if (Check.isEmpty(strBoolean, true))
 		{
@@ -419,7 +418,8 @@ public final class StringUtils
 	 * @param s original string
 	 * @return string without diacritics
 	 */
-	// note: we just moved the method here, and left it unchanges. as of now idk why all this code is commented out
+	@Deprecated
+	// note: we just moved the method here, and left it unchanged. as of now idk why all this code is commented out
 	public static String stripDiacritics(String s)
 	{
 		/* JAVA5 behaviour */
@@ -440,10 +440,6 @@ public final class StringUtils
 	 * </pre>
 	 * <p>
 	 * Note: if any parameter is <code>null</code>, then <code>""</code> is assumed isntead.
-	 *
-	 * @param string
-	 * @param overlay
-	 * @return
 	 */
 	public static String overlayAtEnd(final String string, final String overlay)
 	{
@@ -461,7 +457,7 @@ public final class StringUtils
 	 * Check if given string contains digits only.
 	 *
 	 * @param stringToVerify
-	 * @return {@link code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
+	 * @return {@code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
 	 */
 	public static boolean isNumber(final String stringToVerify)
 	{
@@ -658,9 +654,6 @@ public final class StringUtils
 
 	/**
 	 * remove white space from the begin
-	 *
-	 * @param in
-	 * @return
 	 */
 	public static String cleanBeginWhitespace(String in)
 	{
@@ -678,9 +671,6 @@ public final class StringUtils
 
 	/**
 	 * @param value       note: <code>null</code> is threaded like ""
-	 * @param size
-	 * @param description
-	 * @return
 	 */
 	public static String lpadZero(final String value, final int size, final String description)
 	{
@@ -692,11 +682,6 @@ public final class StringUtils
 
 	/**
 	 * Add 0 digits at the end of a String until it gets to the size given as paraameter.
-	 *
-	 * @param value
-	 * @param size
-	 * @param description
-	 * @return
 	 */
 	public static String rpadZero(final String value, final int size, final String description)
 	{

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.window.model;
 
 import java.util.ArrayList;
@@ -25,7 +47,6 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -44,6 +65,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
@@ -79,28 +102,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Component
 public class DocumentCollection
 {
@@ -108,6 +109,7 @@ public class DocumentCollection
 	private static final int DEFAULT_CACHE_SIZE = 800;
 
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
+	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
 
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
@@ -142,10 +144,8 @@ public class DocumentCollection
 
 	/**
 	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
-	 *
-	 * @param windowId
-	 * @return
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
 	{
 		return documentDescriptorFactory.isWindowIdSupported(windowId);
@@ -162,7 +162,7 @@ public class DocumentCollection
 		return descriptor.getEntityDescriptor();
 	}
 
-	private final void addToTableName2WindowIdsCache(final DocumentEntityDescriptor entityDescriptor)
+	private void addToTableName2WindowIdsCache(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final String tableName = entityDescriptor.getTableNameOrNull();
 		if (tableName == null)
@@ -174,7 +174,7 @@ public class DocumentCollection
 		windowIds.add(entityDescriptor.getWindowId());
 	}
 
-	private final Set<WindowId> getCachedWindowIdsForTableName(final String tableName)
+	private Set<WindowId> getCachedWindowIdsForTableName(final String tableName)
 	{
 		final Set<WindowId> windowIds = tableName2windowIds.get(tableName);
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
@@ -196,7 +196,8 @@ public class DocumentCollection
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
-				final Document includedDocument = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
+				final Document includedDocument = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId())
+						.orElseThrow(() -> new DocumentNotFoundException(documentPath));
 				DocumentPermissionsHelper.assertCanView(includedDocument, UserSession.getCurrentPermissions());
 
 				return documentProcessor.apply(includedDocument);
@@ -231,7 +232,8 @@ public class DocumentCollection
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
-		try (final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
+		try (@SuppressWarnings("unused")
+		final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
 			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
@@ -262,7 +264,8 @@ public class DocumentCollection
 					}
 					else
 					{
-						document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
+						document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId())
+								.orElseThrow(() -> new DocumentNotFoundException(documentPath));
 						DocumentPermissionsHelper.assertCanEdit(rootDocument);
 					}
 
@@ -294,7 +297,8 @@ public class DocumentCollection
 			isNewRootDocument = false;
 		}
 
-		try (final IAutoCloseable writeLock = lockHolder.lockForWriting())
+		try (@SuppressWarnings("unused")
+		final IAutoCloseable writeLock = lockHolder.lockForWriting())
 		{
 			final Document rootDocument;
 			if (isNewRootDocument)
@@ -334,7 +338,6 @@ public class DocumentCollection
 	/**
 	 * Creates a new root document.
 	 *
-	 * @param documentPath
 	 * @return new root document (writable)
 	 */
 	private Document createRootDocument(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
@@ -349,6 +352,7 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
@@ -365,7 +369,9 @@ public class DocumentCollection
 		}
 	}
 
-	/** Retrieves document from repository */
+	/**
+	 * Retrieves document from repository
+	 */
 	private Document retrieveRootDocumentFromRepository(final DocumentKey documentKey)
 	{
 		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getWindowId());
@@ -567,8 +573,6 @@ public class DocumentCollection
 
 	/**
 	 * Retrieves document path for given ZoomInto info.
-	 *
-	 * @param zoomIntoInfo
 	 */
 	public DocumentPath getDocumentPath(@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
 	{
@@ -620,7 +624,7 @@ public class DocumentCollection
 					.retrieveParentDocumentId(rootEntityDescriptor);
 
 			//
-			return DocumentPath.includedDocumentPath(zoomIntoWindowIdEffective, rootDocumentId, childEntityDescriptor.getDetailId(), rowId);
+			return DocumentPath.includedDocumentPath(zoomIntoWindowIdEffective, rootDocumentId, Check.assumeNotNull(childEntityDescriptor.getDetailId(), "Expected childEntityDescriptor.getDetailId not null"), rowId);
 		}
 	}
 
@@ -661,9 +665,6 @@ public class DocumentCollection
 
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
-	 *
-	 * @param tableName
-	 * @param recordId
 	 */
 	public void invalidateDocumentByRecordId(final String tableName, final int recordId)
 	{
@@ -691,6 +692,20 @@ public class DocumentCollection
 		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
+	public void invalidateDocumentsByWindowId(@NonNull final WindowId windowId)
+
+	{
+		final ImmutableList<DocumentKey> documentKeys = rootDocuments.asMap().keySet()
+				.stream()
+				.filter(documentKey -> windowId.equals(documentKey.getWindowId()))
+				.collect(ImmutableList.toImmutableList());
+		if (documentKeys.isEmpty())
+		{
+			return;
+		}
+		rootDocuments.invalidateAll(documentKeys);
+	}
+
 	public void invalidate(final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
@@ -711,7 +726,8 @@ public class DocumentCollection
 			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
 			if (rootDocument != null)
 			{
-				try (final IAutoCloseable lock = rootDocument.lockForWriting())
+				try (@SuppressWarnings("unused")
+				final IAutoCloseable lock = rootDocument.lockForWriting())
 				{
 					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
 					{
@@ -725,11 +741,9 @@ public class DocumentCollection
 						{
 							final DetailId detailId = includedEntityDescriptor.getDetailId();
 
-							rootDocument.getIncludedDocumentsCollection(detailId).markStale(includedRowIds);
-							websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
+							rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
 						}
 					}
-
 				}
 			}
 
@@ -742,15 +756,37 @@ public class DocumentCollection
 
 			//
 			// Notify frontend, even if the root document does not exist (or it was not cached).
-			websocketPublisher.staleRootDocument(windowId, rootDocumentId);
+			sendWebsocketChangeEvents(documentToInvalidate, entityDescriptor);
+		}
+	}
+
+	private void sendWebsocketChangeEvents(
+			final DocumentToInvalidate documentToInvalidate,
+			final DocumentEntityDescriptor entityDescriptor)
+	{
+		final WindowId windowId = entityDescriptor.getWindowId();
+		final DocumentId rootDocumentId = documentToInvalidate.getDocumentId();
+
+		websocketPublisher.staleRootDocument(windowId, rootDocumentId);
+
+		for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
+		{
+			final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
+			if (includedRowIds.isEmpty())
+			{
+				continue;
+			}
+
+			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
+			{
+				final DetailId detailId = includedEntityDescriptor.getDetailId();
+				websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
+			}
 		}
 	}
 
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
-	 *
-	 * @param tableName
-	 * @param recordId
 	 */
 	public void invalidateRootDocument(@NonNull final DocumentPath documentPath)
 	{
@@ -789,6 +825,11 @@ public class DocumentCollection
 		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
 		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
 
+		if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
 		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
 		toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
 		PO.copyValues(fromPO, toPO, true);
@@ -800,8 +841,29 @@ public class DocumentCollection
 		childCRS.setBase(true);
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 
-		final DocumentPath toDocumentPath = DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
-		return toDocumentPath;
+		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+	}
+
+	public void duplicateTabRowInTrx(@NonNull final TableRecordReference parentRef, @NonNull final TableRecordReference fromRecordRef, @NonNull final AdWindowId windowId)
+	{
+		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+
+		final Object parentModel = parentRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final PO parentPO = InterfaceWrapperHelper.getPO(parentModel);
+
+		if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		final CopyRecordSupport copyRecordSupport = CopyRecordFactory.getCopyRecordSupport(tableName);
+		copyRecordSupport.setAdWindowId(windowId);
+		copyRecordSupport.setParentPO(parentPO);
+		copyRecordSupport.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
+		copyRecordSupport.setBase(true);
+		copyRecordSupport.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
@@ -834,7 +896,9 @@ public class DocumentCollection
 			return document.getFieldView(fieldName).getValue();
 		}
 
-		/** @return the given {@code defaultValue} if this document does not have a field with the given {@code fieldName} or if the field does not have a value. */
+		/**
+		 * @return the given {@code defaultValue} if this document does not have a field with the given {@code fieldName} or if the field does not have a value.
+		 */
 		@Override
 		public int getFieldValueAsInt(final String fieldName, final int defaultValue)
 		{
@@ -849,14 +913,14 @@ public class DocumentCollection
 	@Immutable
 	@Value
 	@Builder
-	public static final class DocumentPrint
+	public static class DocumentPrint
 	{
 		@NonNull
-		private final String filename;
+		String filename;
 		@NonNull
-		private final String reportContentType;
+		String reportContentType;
 		@NonNull
-		private final byte[] reportData;
+		byte[] reportData;
 	}
 
 	@Immutable

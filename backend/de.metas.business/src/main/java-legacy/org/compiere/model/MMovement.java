@@ -129,7 +129,9 @@ public class MMovement extends X_M_Movement implements IDocument
 	public MMovementConfirm[] getConfirmations(boolean requery)
 	{
 		if (m_confirms != null && !requery)
+		{
 			return m_confirms;
+		}
 
 		List<MMovementConfirm> list = new Query(getCtx(), MMovementConfirm.Table_Name, "M_Movement_ID=?", get_TrxName())
 										.setParameters(new Object[]{get_ID()})
@@ -146,9 +148,13 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	//	addDescription
 
 	/**
@@ -206,8 +212,10 @@ public class MMovement extends X_M_Movement implements IDocument
 		if (getC_DocType_ID() == 0)
 		{
 			MDocType types[] = MDocType.getOfDocBaseType(getCtx(), MDocType.DOCBASETYPE_MaterialMovement);
-			if (types.length > 0)	//	get first
+			if (types.length > 0)
+			{
 				setC_DocType_ID(types[0].getC_DocType_ID());
+			}
 			else
 			{
 				throw new AdempiereException("@NotFound@ @C_DocType_ID@");
@@ -226,7 +234,9 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		super.setProcessed (processed);
 		if (get_ID() == 0)
+		{
 			return;
+		}
 		final String sql = "UPDATE M_MovementLine SET Processed=? WHERE M_Movement_ID=?";
 		int noLine = DB.executeUpdateEx(sql, new Object[]{processed, get_ID()}, get_TrxName());
 		m_lines = null;
@@ -283,7 +293,9 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
@@ -301,15 +313,21 @@ public class MMovement extends X_M_Movement implements IDocument
 
 		//	Confirmation
 		if (dt.isInTransit())
+		{
 			createConfirmation();
+		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
+		{
 			setDocAction(DOCACTION_Complete);
+		}
 		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 
@@ -320,7 +338,9 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		MMovementConfirm[] confirmations = getConfirmations(false);
 		if (confirmations.length > 0)
+		{
 			return;
+		}
 
 		//	Create Confirmation
 		MMovementConfirm.create (this, false);
@@ -360,12 +380,16 @@ public class MMovement extends X_M_Movement implements IDocument
 		{
 			String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
+			{
 				return status;
+			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		//	Outstanding (not processed) Incoming Confirmations ?
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
@@ -383,7 +407,9 @@ public class MMovement extends X_M_Movement implements IDocument
 
 		//	Implicit Approval
 		if (!isApproved())
+		{
 			approveIt();
+		}
 		log.debug("Completed: {}", this);
 
 		//
@@ -414,16 +440,12 @@ public class MMovement extends X_M_Movement implements IDocument
 						//
 						final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
 						//Update Storage
-						if (!storageBL.add(getCtx(),
+						storageBL.add(getCtx(),
 								warehouseId.getRepoId(),
 								line.getM_Locator_ID(),
 								line.getM_Product_ID(),
 								ma.getM_AttributeSetInstance_ID(), 0,
-								ma.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
-						{
-							m_processMsg = "Cannot correct Inventory (MA)";
-							return IDocument.STATUS_Invalid;
-						}
+								ma.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
 
 						int M_AttributeSetInstanceTo_ID = line.getM_AttributeSetInstanceTo_ID();
 						//only can be same asi if locator is different
@@ -433,16 +455,12 @@ public class MMovement extends X_M_Movement implements IDocument
 						}
 						//Update Storage
 						final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
-						if (!storageBL.add(getCtx(),
+						storageBL.add(getCtx(),
 								warehouseToId.getRepoId(),
 								line.getM_LocatorTo_ID(),
 								line.getM_Product_ID(),
 								M_AttributeSetInstanceTo_ID, 0,
-								ma.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
-						{
-							m_processMsg = "Cannot correct Inventory (MA)";
-							return IDocument.STATUS_Invalid;
-						}
+								ma.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
 
 						//
 						trxFrom = new MTransaction (getCtx(),
@@ -490,29 +508,21 @@ public class MMovement extends X_M_Movement implements IDocument
 				{
 					//Update Storage
 					final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
-					if (!storageBL.add(getCtx(),
+					storageBL.add(getCtx(),
 							warehouseId.getRepoId(),
 							line.getM_Locator_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), 0,
-							line.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
-					{
-						m_processMsg = "Cannot correct Inventory (MA)";
-						return IDocument.STATUS_Invalid;
-					}
+							line.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
 
 					//Update Storage
 					final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
-					if (!storageBL.add(getCtx(),
+					storageBL.add(getCtx(),
 							warehouseToId.getRepoId(),
 							line.getM_LocatorTo_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), 0,
-							line.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
-					{
-						m_processMsg = "Cannot correct Inventory (MA)";
-						return IDocument.STATUS_Invalid;
-					}
+							line.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
 
 					//
 					trxFrom = new MTransaction (getCtx(),
@@ -582,7 +592,9 @@ public class MMovement extends X_M_Movement implements IDocument
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
+			{
 				setDocumentNo(value);
+			}
 		}
 	}
 
@@ -594,7 +606,9 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		final int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
 		if (no > 0)
+		{
 			log.debug("Deleted old #{}", no);
+		}
 
 		//	Attribute Set Instance: generate a new ASI if not already set
 		if (line.getM_AttributeSetInstance_ID() == 0)
@@ -621,7 +635,9 @@ public class MMovement extends X_M_Movement implements IDocument
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		if (DOCSTATUS_Closed.equals(getDocStatus())
 			|| DOCSTATUS_Reversed.equals(getDocStatus())
@@ -658,7 +674,9 @@ public class MMovement extends X_M_Movement implements IDocument
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
@@ -675,12 +693,16 @@ public class MMovement extends X_M_Movement implements IDocument
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		//	Close Not delivered Qty
 		setDocAction(DOCACTION_None);
@@ -697,7 +719,9 @@ public class MMovement extends X_M_Movement implements IDocument
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		if (!MPeriod.isOpen(getCtx(), getMovementDate(), dt.getDocBaseType(), getAD_Org_ID()))
@@ -756,7 +780,9 @@ public class MMovement extends X_M_Movement implements IDocument
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		//	Update Reversed (this)
 		addDescription("(" + reversal.getDocumentNo() + "<-)");
@@ -778,12 +804,16 @@ public class MMovement extends X_M_Movement implements IDocument
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return false;
 	}	//	reverseAccrualIt
@@ -798,12 +828,16 @@ public class MMovement extends X_M_Movement implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return false;
 	}	//	reActivateIt
@@ -824,7 +858,9 @@ public class MMovement extends X_M_Movement implements IDocument
 			.append(" (#").append(getLines(false).length).append(")");
 		//	 - Description
 		if (getDescription() != null && getDescription().length() > 0)
+		{
 			sb.append(" - ").append(getDescription());
+		}
 		return sb.toString();
 	}	//	getSummary
 

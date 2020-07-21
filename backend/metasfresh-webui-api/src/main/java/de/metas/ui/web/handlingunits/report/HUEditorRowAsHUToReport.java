@@ -1,8 +1,8 @@
 package de.metas.ui.web.handlingunits.report;
 
 import java.util.List;
-
 import java.util.Objects;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
@@ -56,7 +56,7 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 		this.row = row;
 
 		huId = row.getHuId();
-		partnerId = row.getBPartnerId();
+		partnerId = row.getBpartnerId();
 		huUnitType = row.getType().toHUUnitType();
 		topLevel = row.isTopLevel();
 	}

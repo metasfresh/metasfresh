@@ -3,6 +3,7 @@ import 'jest-localstorage-mock';
 import Enzyme, { shallow, render, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import { JSDOM } from 'jsdom';
+import EventSource from 'eventsourcemock';
 
 // React 16 Enzyme adapter
 Enzyme.configure({ adapter: new Adapter() });
@@ -42,6 +43,7 @@ window.HTMLDivElement.prototype.getBoundingClientRect = function() {
   };
 }
 
+global.EventSource = EventSource;
 global.window = window;
 global.document = window.document;
 

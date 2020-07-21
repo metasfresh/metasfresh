@@ -564,7 +564,7 @@ public class PaymentBL implements IPaymentBL
 	public void markReconciled(
 			@NonNull final Collection<PaymentReconcileRequest> requests,
 			@NonNull final Collection<I_C_Payment> preloadedPayments)
-		{
+	{
 		if (requests.isEmpty())
 		{
 			return;
@@ -587,7 +587,7 @@ public class PaymentBL implements IPaymentBL
 			{
 				final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 				payments.put(paymentId, payment);
-	}
+			}
 		}
 
 		for (final PaymentReconcileRequest request : requests)

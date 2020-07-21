@@ -1,6 +1,6 @@
 package de.metas.bpartner.service;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.Set;
 
@@ -44,7 +44,7 @@ import lombok.Value;
 
 /**
  * Search by external ID, bpartner's Value, bpartner's Name or location's GLN in this order.
- * Prefer the one with the specific orgId over the one with orgId "ANY".
+ * Prefer the ones with a specific orgId > 0 over the ones with orgId "ANY".
  */
 @Value
 public class BPartnerQuery
@@ -55,10 +55,13 @@ public class BPartnerQuery
 	String bpartnerName;
 	ImmutableSet<GLN> glns;
 
+	/**
+	 * If there are multiple orgIds, they are {@code OR}ed.
+	 * Note that this is is not required for security reasons.
+	 */
 	@Singular
 	ImmutableSet<OrgId> onlyOrgIds;
 
-	boolean outOfTrx;
 	boolean failIfNotExists;
 
 	@Builder(toBuilder = true)
@@ -71,7 +74,6 @@ public class BPartnerQuery
 			//
 			@NonNull @Singular final Set<OrgId> onlyOrgIds,
 			//
-			@Nullable final Boolean outOfTrx,
 			@Nullable final Boolean failIfNotExists)
 	{
 
@@ -83,7 +85,6 @@ public class BPartnerQuery
 
 		this.onlyOrgIds = ImmutableSet.copyOf(onlyOrgIds);
 
-		this.outOfTrx = coalesce(outOfTrx, true);
 		this.failIfNotExists = coalesce(failIfNotExists, false);
 
 		validate();

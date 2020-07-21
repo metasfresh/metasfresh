@@ -29,18 +29,17 @@ import java.util.List;
 
 import org.adempiere.util.test.ErrorMessage;
 
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.util.Services;
 
+/**
+ * Note that this is about the weight M_HU_Attributes. Not the storage per-se.
+ */
 public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
-	// services
-	private final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
-
 	// expectations
 	private BigDecimal weightGross;
 	private BigDecimal weightNet;
@@ -68,11 +67,6 @@ public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpec
 
 	/**
 	 * Convenient constructor.
-	 *
-	 * @param weightGross
-	 * @param weightNet
-	 * @param weightTare
-	 * @param weightTareAdjust
 	 */
 	public HUWeightsExpectation(final String weightGross,
 			final String weightNet,
@@ -88,9 +82,6 @@ public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpec
 
 	/**
 	 * Set expectation values by copying them from given expectation.
-	 *
-	 * @param from
-	 * @return
 	 */
 	public HUWeightsExpectation<ParentExpectationType> copyFrom(final HUWeightsExpectation<?> from)
 	{
@@ -127,7 +118,7 @@ public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpec
 
 		assertNotNull(messageToUse.expect("attributeStorage not null"), attributeStorage);
 
-		final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+		final IWeightable weightable = Weightables.wrap(attributeStorage);
 		return assertExpected(messageToUse, weightable);
 	}
 

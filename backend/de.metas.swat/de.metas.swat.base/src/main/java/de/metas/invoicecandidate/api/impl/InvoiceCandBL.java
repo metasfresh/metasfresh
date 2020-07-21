@@ -5,7 +5,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
@@ -192,6 +192,33 @@ import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 public class InvoiceCandBL implements IInvoiceCandBL
 {
@@ -874,6 +901,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return true;
 		}
 
+		if (ic.isSimulation())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
+							+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+			return true;
+		}
+
 		// flagged via field color
 		// ignore candidates that can't be invoiced yet
 		final LocalDate dateToInvoice = getDateToInvoice(ic);
@@ -1207,8 +1241,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final I_C_Invoice_Candidate invoiceCand = ila.getC_Invoice_Candidate();
 
 		final ICompositeQueryUpdater<I_C_Invoice_Detail> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice_Detail.class)
-				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
-				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceLine.getC_Invoice_ID());
+				.addSetColumnValue(org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
+				.addSetColumnValue(org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceLine.getC_Invoice_ID());
 		queryBL
 				.createQueryBuilder(I_C_Invoice_Detail.class, ila)
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID())
@@ -1361,7 +1395,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					Services.get(ITrxManager.class)
 							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 							.newEventListener(TrxEventTiming.AFTER_COMMIT)
-							.registerWeakly(false) // register "hard", because that's how it was before
 							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
 				}
@@ -1382,7 +1415,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
 				}
-				else if (creditMemo && !creditedInvoiceReinvoicable)
+
+				else if (creditMemo && !creditedInvoiceReinvoicable && creditedInvoiceIsReversed)
 				{
 					// the original credit memo's ila also has QtyInvoiced=0
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);
@@ -1430,7 +1464,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	/**
-	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
+	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID.
 	 */
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{
@@ -1914,7 +1948,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final BigDecimal qualityDiscountPercentage;
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
-		if(pricingConditions.isBreaksDiscountType())
+		if (pricingConditions.isBreaksDiscountType())
 		{
 			BigDecimal qty = ic.getQtyToInvoice();
 			if (qty.signum() < 0)
@@ -1947,7 +1981,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			qualityDiscountPercentage = null;
 		}
-		
+
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 

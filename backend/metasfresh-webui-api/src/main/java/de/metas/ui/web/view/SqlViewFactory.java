@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.references.ZoomInfoPermissionsFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;
@@ -45,6 +46,8 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
+import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.document.references.service.DocumentReferencesService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
@@ -57,8 +60,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -147,17 +148,21 @@ public class SqlViewFactory implements IViewFactory
 		final JSONViewDataType viewType = request.getViewType();
 		final ViewProfileId profileId = !ViewProfileId.isNull(request.getProfileId()) ? request.getProfileId() : defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
 		final SqlViewBinding sqlViewBinding = viewLayouts.getViewBinding(windowId, viewType.getRequiredFieldCharacteristic(), profileId);
-		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
+		final SqlViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
 		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
 				.setViewId(request.getViewId())
 				.setViewType(viewType)
 				.setProfileId(profileId)
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
+				.setDocumentReferenceId(request.getDocumentReferenceId())
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
-				.addStickyFilter(extractReferencedDocumentFilter(windowId, request.getSingleReferencingDocumentPathOrNull()))
+				.addStickyFilter(extractReferencedDocumentFilter(
+						windowId,
+						request.getSingleReferencingDocumentPathOrNull(),
+						request.getDocumentReferenceId()))
 				.applySecurityRestrictions(request.isApplySecurityRestrictions())
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
 				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
@@ -180,7 +185,10 @@ public class SqlViewFactory implements IViewFactory
 		return viewBuilder.build();
 	}
 
-	private DocumentFilter extractReferencedDocumentFilter(final WindowId targetWindowId, final DocumentPath referencedDocumentPath)
+	private DocumentFilter extractReferencedDocumentFilter(
+			@NonNull final WindowId targetWindowId,
+			@Nullable final DocumentPath referencedDocumentPath,
+			@Nullable final DocumentReferenceId documentReferenceId)
 	{
 		if (referencedDocumentPath == null)
 		{
@@ -193,8 +201,11 @@ public class SqlViewFactory implements IViewFactory
 		}
 		else
 		{
-			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
-			return reference.getFilter();
+			return documentReferencesService.getDocumentReferenceFilter(
+					referencedDocumentPath,
+					targetWindowId,
+					documentReferenceId,
+					ZoomInfoPermissionsFactory.allowAll());
 		}
 	}
 
@@ -271,16 +282,16 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final DocumentFilterDescriptorsProvider filterDescriptors = view.getViewDataRepository().getViewFilterDescriptors();
 		final DocumentFilterList newFilters = filterViewRequest.getFiltersUnwrapped(filterDescriptors);
-//		final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
-//
-//		final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
-//
-//		if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
-//		{
-//			// TODO
-//			throw new AdempiereException("TODO");
-//		}
-//		else
+		// final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
+		//
+		// final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
+		//
+		// if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
+		// {
+		// // TODO
+		// throw new AdempiereException("TODO");
+		// }
+		// else
 		{
 			return createView(CreateViewRequest.filterViewBuilder(view)
 					.setFilters(newFilters)

@@ -151,7 +151,7 @@ public class BoardRestController
 		final JSONBoardBuilder jsonBoard = JSONBoard.builder()
 				.boardId(boardId)
 				.caption(boardDescriptor.getCaption().translate(adLanguage))
-				.websocketEndpoint(boardDescriptor.getWebsocketEndpoint());
+				.websocketEndpoint(boardDescriptor.getWebsocketEndpoint().getAsString());
 
 		boardDescriptor.getLanes()
 				.values().stream()
