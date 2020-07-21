@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import de.metas.organization.ClientAndOrgId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
@@ -22,6 +21,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
@@ -34,6 +34,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -114,11 +115,13 @@ class HURepositoryTest
 
 		final I_M_Attribute attrRecord = newInstance(I_M_Attribute.class);
 		attrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
-		attrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value);
+		attrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(attrRecord);
 
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		final I_M_HU_PI_Attribute huPIAttributerecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attrRecord)
-				.setM_HU_PI(huPIItemPallet.getIncluded_HU_PI()));
+				.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
 
 		final I_M_HU lu = huTestHelper.createLU(
 				huContext,

@@ -1,18 +1,26 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoice.invoiceProcessingServiceCompany;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -33,29 +41,20 @@ import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 @Service
 public class InvoiceProcessingServiceCompanyService
@@ -76,25 +75,64 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
-	public Optional<InvoiceProcessingFeeCalculation> computeFee(@NonNull final InvoiceProcessingFeeComputeRequest request)
+	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeWithPrecalculatedAmountRequest request)
 	{
-		final BPartnerId customerId = request.getCustomerId();
+		final BPartnerId serviceCompanyBPartnerId = request.getServiceCompanyBPartnerId();
 		final InvoiceId invoiceId = request.getInvoiceId();
-		final Amount invoiceGrandTotal = request.getInvoiceGrandTotal();
-
-		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByCustomerId(customerId).orElse(null);
-		if (config == null)
-		{
-			return Optional.empty();
-		}
+		final Amount feeAmountIncludingTax = request.getFeeAmountIncludingTax();
 
 		if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
 		{
 			return Optional.empty();
 		}
 
+		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(serviceCompanyBPartnerId, request.getPaymentDate()).orElse(null);
+		if (config == null)
+		{
+			return Optional.empty();
+		}
+
+
+		return Optional.of(InvoiceProcessingFeeCalculation.builder()
+				.orgId(request.getOrgId())
+				.evaluationDate(request.getPaymentDate())
+				//
+				.customerId(request.getCustomerId())
+				.invoiceId(invoiceId)
+				//
+				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
+				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())
+				.serviceFeeProductId(config.getServiceFeeProductId())
+				.feeAmountIncludingTax(feeAmountIncludingTax)
+				//
+				.build());
+	}
+
+	public Optional<InvoiceProcessingFeeCalculation> computeFee(@NonNull final InvoiceProcessingFeeComputeRequest request)
+	{
+		final BPartnerId customerId = request.getCustomerId();
+		final InvoiceId invoiceId = request.getInvoiceId();
+		final Amount invoiceGrandTotal = request.getInvoiceGrandTotal();
+
+		if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
+		{
+			return Optional.empty();
+		}
+
+		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByCustomerId(customerId, request.getEvaluationDate()).orElse(null);
+		if (config == null)
+		{
+			return Optional.empty();
+		}
+
+		final Percent feePercentageOfGrandTotal = config.getFeePercentageOfGrandTotalByBpartner(customerId).orElse(null);
+		if (feePercentageOfGrandTotal == null)
+		{
+			return Optional.empty();
+		}
+
 		final CurrencyPrecision precision = moneyService.getStdPrecision(invoiceGrandTotal.getCurrencyCode());
-		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(config.getFeePercentageOfGrandTotal(), precision);
+		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(feePercentageOfGrandTotal, precision);
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
@@ -102,7 +140,6 @@ public class InvoiceProcessingServiceCompanyService
 				//
 				.customerId(customerId)
 				.invoiceId(invoiceId)
-				.invoiceGrandTotal(invoiceGrandTotal)
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
 				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())

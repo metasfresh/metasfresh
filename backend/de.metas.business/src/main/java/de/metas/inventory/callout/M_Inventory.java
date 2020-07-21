@@ -1,13 +1,5 @@
 package de.metas.inventory.callout;
 
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -16,6 +8,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 import org.springframework.stereotype.Component;
+
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.inventory.InventoryDocSubType;
+import de.metas.util.Services;
 
 @Callout(I_M_Inventory.class)
 @Component
@@ -44,7 +45,7 @@ public class M_Inventory
 			return;
 		}
 
-		if (DocBaseAndSubType.VIRTUAL_INVENTORY.getDocSubType().equals(documentNoInfo.getDocSubType()))
+		if (InventoryDocSubType.VirtualInventory.getCode().equals(documentNoInfo.getDocSubType()))
 		{
 			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_ADD_VIRTUAL_INV_NOT_ALLOWED));
 		}

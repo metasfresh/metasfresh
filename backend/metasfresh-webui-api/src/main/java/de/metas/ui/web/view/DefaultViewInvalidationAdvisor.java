@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,7 +48,10 @@ public final class DefaultViewInvalidationAdvisor implements IViewInvalidationAd
 	}
 
 	@Override
-	public Set<DocumentId> findAffectedRowIds(final TableRecordReferenceSet recordRefs, final IView view)
+	public Set<DocumentId> findAffectedRowIds(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend,
+			@NonNull IView view)
 	{
 		final String viewTableName = view.getTableNameOrNull();
 		if (viewTableName == null)

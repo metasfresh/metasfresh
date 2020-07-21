@@ -180,6 +180,8 @@ public class AdempiereTestHelper
 			// Each test shall init it's services if it wants
 			Services.clear();
 
+			SpringContextHolder.instance.clearJUnitRegisteredBeans();
+
 			//
 			// Register our cache interceptor
 			// NOTE: in normal run, it is registered from org.compiere.Adempiere.startup(RunMode)

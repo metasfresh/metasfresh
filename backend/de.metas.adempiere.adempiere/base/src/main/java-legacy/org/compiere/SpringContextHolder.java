@@ -83,8 +83,15 @@ public final class SpringContextHolder
 	public void clearApplicationContext()
 	{
 		this.applicationContext = null;
-		this.junitRegisteredBeans.clear();
 		logger.info("Cleared application context");
+
+		clearJUnitRegisteredBeans();
+	}
+
+	public void clearJUnitRegisteredBeans()
+	{
+		this.junitRegisteredBeans.clear();
+		logger.info("Cleared JUnit registered beans");
 	}
 
 	/**
@@ -124,7 +131,7 @@ public final class SpringContextHolder
 			throw e.appendParametersToMessage()
 					.setParameter("requiredType", requiredType);
 		}
-		//noinspection ConstantConditions
+		// noinspection ConstantConditions
 		return springApplicationContext.getBean(requiredType);
 	}
 
@@ -186,7 +193,7 @@ public final class SpringContextHolder
 			throw e.appendParametersToMessage()
 					.setParameter("requiredType", requiredType);
 		}
-		//noinspection ConstantConditions
+		// noinspection ConstantConditions
 		return springApplicationContext.getBeansOfType(requiredType).values();
 	}
 

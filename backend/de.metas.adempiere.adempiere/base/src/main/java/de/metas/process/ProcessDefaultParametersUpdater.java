@@ -12,7 +12,6 @@ import org.compiere.model.Null;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -59,7 +58,6 @@ public final class ProcessDefaultParametersUpdater
 
 	private ProcessDefaultParametersUpdater()
 	{
-		super();
 	}
 
 	public ProcessDefaultParametersUpdater addDefaultParametersProvider(@Nullable final IProcessDefaultParametersProvider provider)
@@ -115,12 +113,9 @@ public final class ProcessDefaultParametersUpdater
 
 	/**
 	 * Configures the default value consumer to be used by methods like {@link #updateDefaultValue(IProcessDefaultParameter)}.
-	 *
-	 * @param defaultValueConsumer
 	 */
-	public ProcessDefaultParametersUpdater onDefaultValue(final BiConsumer<IProcessDefaultParameter, Object> defaultValueConsumer)
+	public ProcessDefaultParametersUpdater onDefaultValue(@NonNull final BiConsumer<IProcessDefaultParameter, Object> defaultValueConsumer)
 	{
-		Check.assumeNotNull(defaultValueConsumer, "Parameter defaultValueConsumer is not null");
 		this.defaultValueConsumer = defaultValueConsumer;
 		return this;
 	}

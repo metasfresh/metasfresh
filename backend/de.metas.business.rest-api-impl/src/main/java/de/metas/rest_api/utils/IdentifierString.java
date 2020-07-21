@@ -7,14 +7,14 @@ import java.util.function.IntFunction;
 
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;

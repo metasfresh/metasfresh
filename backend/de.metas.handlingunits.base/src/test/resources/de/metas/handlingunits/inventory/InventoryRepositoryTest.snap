@@ -1,46 +1,71 @@
 de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
   {
-    "id": 100013,
+    "id": 100015,
+    "orgId": 100001,
     "docBaseAndSubType": {
       "docBaseType": "MMI",
       "docSubType": "ISH"
     },
     "inventoryType": "PHYSICAL",
+    "movementDate": {
+      "dateTime": {
+        "date": {
+          "year": 2020,
+          "month": 6,
+          "day": 15,
+          "leapYear": true
+        },
+        "time": {
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "nano": 0
+        }
+      },
+      "offset": {
+        "totalSeconds": -28800
+      },
+      "zone": {
+        "id": "UTC-08:00"
+      }
+    },
+    "docStatus": "Drafted",
     "lines": [
       {
-        "id": 100014,
-        "orgId": 1,
-        "asiId": 100008,
+        "id": 100016,
+        "orgId": 100001,
+        "asiId": 100010,
         "productId": 40,
         "storageAttributesKey": "10§&§11§&§12",
-        "locatorId": "100002_100003",
+        "locatorId": "100004_100005",
         "huAggregationType": "MULTI_HU",
         "inventoryType": "PHYSICAL",
+        "counted": true,
         "inventoryLineHUs": [
           {
-            "id": 100017,
+            "id": 100019,
             "huId": 100,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "10",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "1",
-              "uomId": 100001
+              "uomId": 100003
             }
           },
           {
-            "id": 100018,
+            "id": 100020,
             "huId": 200,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "20",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "2",
-              "uomId": 100001
+              "uomId": 100003
             }
           }
         ]

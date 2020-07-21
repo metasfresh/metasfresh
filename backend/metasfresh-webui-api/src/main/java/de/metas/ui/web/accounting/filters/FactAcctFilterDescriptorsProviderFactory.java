@@ -44,7 +44,7 @@ import java.util.Collection;
 @Component
 public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	private static final String FACT_ACCT_TRANSACTIONS_VIEW = "Fact_Acct_Transactions_View";
+	public static final String FACT_ACCT_TRANSACTIONS_VIEW = "Fact_Acct_Transactions_View";
 	private static final String FACT_ACCT_TABLE = I_Fact_Acct.Table_Name;
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 

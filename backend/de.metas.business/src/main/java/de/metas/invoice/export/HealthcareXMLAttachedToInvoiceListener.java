@@ -1,6 +1,6 @@
 package de.metas.invoice.export;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.io.ByteArrayInputStream;
@@ -137,6 +137,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 		{
 			logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no patient-SSN or biller-EAN; -> doing nothing",
 					attachmentEntry.getId(), attachmentEntry.getFilename());
+			return;
 		}
 
 		final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(BPartnerQuery.builder().externalId(externalId).build());
@@ -144,6 +145,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 		{
 			logger.debug("externalId={} of the patient-XML data extracted from attachmentEntry with id={} (filename={}) has no matching C_BPartner; -> doing nothing",
 					externalId.getValue(), attachmentEntry.getId(), attachmentEntry.getFilename());
+			return;
 		}
 		final BPartnerComposite bPartner = CollectionUtils.singleElement(bpartners);
 
@@ -151,6 +153,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 		{
 			logger.debug("C_Invoice with ID={} already has a Beneficiary_BPartner_ID > 0; -> doing nothing",
 					invoiceRecord.getC_Invoice_ID());
+			return;
 		}
 
 		final int beneficiaryRepoId = bPartner.getBpartner().getId().getRepoId();

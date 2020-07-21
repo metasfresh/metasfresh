@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.SyncAdvise;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -47,7 +48,7 @@ import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.common.SyncAdvise;
+
 import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.rest_api.exception.MissingPropertyException;
 import de.metas.rest_api.exception.MissingResourceException;

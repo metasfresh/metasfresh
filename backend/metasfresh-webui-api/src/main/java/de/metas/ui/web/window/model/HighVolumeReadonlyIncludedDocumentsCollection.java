@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Optional;
+
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import com.google.common.base.MoreObjects;
@@ -7,10 +9,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
@@ -121,7 +121,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public Document getDocumentById(final DocumentId documentId)
+	public Optional<Document> getDocumentById(final DocumentId documentId)
 	{
 		final Document document = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
@@ -129,13 +129,10 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 				.retriveDocumentOrNull();
 		if (document == null)
 		{
-			final DocumentPath documentPath = parentDocument
-					.getDocumentPath()
-					.createChildPath(entityDescriptor.getDetailId(), documentId);
-			throw new DocumentNotFoundException(documentPath);
+			return Optional.empty();
 		}
 
-		return document;
+		return Optional.of(document);
 	}
 
 	@Override

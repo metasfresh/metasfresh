@@ -1,5 +1,7 @@
 package de.metas.event.remote;
 
+import java.util.Optional;
+
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Binding;
@@ -17,6 +19,9 @@ import org.springframework.messaging.handler.annotation.support.MessageHandlerMe
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.event.Topic;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import lombok.NonNull;
 
 /*
@@ -45,38 +50,9 @@ import lombok.NonNull;
 @EnableRabbit // needed for @RabbitListener to be considered
 public class RabbitMQEventBusConfiguration
 {
-	private static final String EVENTS_QUEUE_BEAN_NAME = "metasfreshEventsQueue";
-	public static final String EVENTS_QUEUE_NAME_SPEL = "#{metasfreshEventsQueue.name}";
-	public static final String EVENTS_EXCHANGE_NAME = "metasfresh-events";
-
-	@Value("${spring.application.name:spring.application.name-not-set}")
+	private static final String APPLICATION_NAME_SPEL = "${spring.application.name:spring.application.name-not-set}";
+	@Value(APPLICATION_NAME_SPEL)
 	private String appName;
-
-	@Bean
-	public AnonymousQueue.NamingStrategy namingStrategy()
-	{
-		return new AnonymousQueue.Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
-	}
-
-	@Bean(EVENTS_QUEUE_BEAN_NAME)
-	public AnonymousQueue eventsQueue(AnonymousQueue.NamingStrategy eventQueueNamingStrategy)
-	{
-		return new AnonymousQueue(eventQueueNamingStrategy);
-	}
-
-	@Bean
-	public FanoutExchange eventsExchange()
-	{
-		return new FanoutExchange(EVENTS_EXCHANGE_NAME);
-	}
-
-	@Bean
-	public Binding eventsBinding(AnonymousQueue.NamingStrategy eventQueueNamingStrategy)
-	{
-		return BindingBuilder
-				.bind(eventsQueue(eventQueueNamingStrategy))
-				.to(eventsExchange());
-	}
 
 	@Bean
 	public org.springframework.amqp.support.converter.MessageConverter amqpMessageConverter(final ObjectMapper jsonObjectMapper)
@@ -111,8 +87,121 @@ public class RabbitMQEventBusConfiguration
 	}
 
 	@Bean
-	public RabbitMQEventBusRemoteEndpoint eventBusRemoteEndpoint(@NonNull final AmqpTemplate amqpTemplate)
+	public RabbitMQEventBusRemoteEndpoint eventBusRemoteEndpoint(
+			@NonNull final AmqpTemplate amqpTemplate,
+			@NonNull final Optional<PerformanceMonitoringService> performanceMonitoringService)
 	{
-		return new RabbitMQEventBusRemoteEndpoint(amqpTemplate);
+		return new RabbitMQEventBusRemoteEndpoint(
+				amqpTemplate,
+				performanceMonitoringService.orElse(NoopPerformanceMonitoringService.INSTANCE));
+	}
+
+	public static String getAMQPExchangeNameByTopicName(final String topicName)
+	{
+		if (AccountingQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return AccountingQueueConfiguration.EXCHANGE_NAME;
+		}
+		else if (CacheInvalidationQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return CacheInvalidationQueueConfiguration.EXCHANGE_NAME;
+		}
+		else
+		{
+			return DefaultQueueConfiguration.EXCHANGE_NAME;
+		}
+	}
+
+	@Configuration
+	public static class DefaultQueueConfiguration
+	{
+		private static final String QUEUE_BEAN_NAME = "metasfreshEventsQueue";
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshEventsQueue.name}";
+		private static final String EXCHANGE_NAME = "metasfresh-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue eventsQueue()
+		{
+			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public FanoutExchange eventsExchange()
+		{
+			return new FanoutExchange(EXCHANGE_NAME);
+		}
+
+		@Bean
+		public Binding eventsBinding()
+		{
+			return BindingBuilder.bind(eventsQueue()).to(eventsExchange());
+		}
+	}
+
+	@Configuration
+	public static class CacheInvalidationQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.cache.CacheInvalidationRemoteHandler");
+		private static final String QUEUE_BEAN_NAME = "metasfreshCacheInvalidationEventsQueue";
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshCacheInvalidationEventsQueue.name}";
+		private static final String EXCHANGE_NAME = "metasfresh-cache-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue cacheInvalidationQueue()
+		{
+			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public FanoutExchange cacheInvalidationExchange()
+		{
+			return new FanoutExchange(EXCHANGE_NAME);
+		}
+
+		@Bean
+		public Binding cacheInvalidationBinding()
+		{
+			return BindingBuilder.bind(cacheInvalidationQueue()).to(cacheInvalidationExchange());
+		}
+
+	}
+
+	@Configuration
+	public static class AccountingQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.acct.handler.DocumentPostRequest");
+		private static final String QUEUE_BEAN_NAME = "metasfreshAccountingEventsQueue";
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshAccountingEventsQueue.name}";
+		private static final String EXCHANGE_NAME = "metasfresh-accounting-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue accountingQueue()
+		{
+			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public FanoutExchange accountingExchange()
+		{
+			return new FanoutExchange(EXCHANGE_NAME);
+		}
+
+		@Bean
+		public Binding accountingBinding()
+		{
+			return BindingBuilder.bind(accountingQueue()).to(accountingExchange());
+		}
 	}
 }

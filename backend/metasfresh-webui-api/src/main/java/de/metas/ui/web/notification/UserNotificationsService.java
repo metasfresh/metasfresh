@@ -18,6 +18,7 @@ import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -101,7 +102,7 @@ public class UserNotificationsService
 		// TODO: implement
 	}
 
-	public String getWebsocketEndpoint(final UserId adUserId)
+	public WebsocketTopicName getWebsocketEndpoint(final UserId adUserId)
 	{
 		return getNotificationsQueue(adUserId).getWebsocketEndpoint();
 	}

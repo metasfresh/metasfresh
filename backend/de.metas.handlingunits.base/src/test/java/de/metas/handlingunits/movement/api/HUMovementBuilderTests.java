@@ -40,8 +40,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 
 import de.metas.acct.AcctSchemaTestHelper;
@@ -60,7 +60,7 @@ public class HUMovementBuilderTests
 	private LUTUProducerDestinationTestSupport testsupport;
 	private I_AD_Org org;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		testsupport = new LUTUProducerDestinationTestSupport();

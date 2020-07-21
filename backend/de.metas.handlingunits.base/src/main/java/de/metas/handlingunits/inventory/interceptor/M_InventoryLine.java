@@ -1,7 +1,7 @@
 package de.metas.handlingunits.inventory.interceptor;
 
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryLineRecordService;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.HUAggregationType;
@@ -50,9 +50,9 @@ import javax.annotation.Nullable;
 public class M_InventoryLine
 {
 	private final InventoryRepository inventoryLineRepository;
-	private final InventoryLineRecordService inventoryLineRecordService;
+	private final InventoryService inventoryLineRecordService;
 
-	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository, final InventoryLineRecordService inventoryLineRecordService)
+	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository, final InventoryService inventoryLineRecordService)
 	{
 		this.inventoryLineRepository = inventoryLineRepository;
 		this.inventoryLineRecordService = inventoryLineRecordService;

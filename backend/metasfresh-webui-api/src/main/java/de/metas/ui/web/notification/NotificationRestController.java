@@ -63,7 +63,7 @@ public class NotificationRestController
 		userSession.assertLoggedIn();
 
 		final UserId adUserId = userSession.getLoggedUserId();
-		return userNotificationsService.getWebsocketEndpoint(adUserId);
+		return userNotificationsService.getWebsocketEndpoint(adUserId).getAsString();
 	}
 
 	@GetMapping("/all")
@@ -75,7 +75,7 @@ public class NotificationRestController
 
 		final UserId adUserId = userSession.getLoggedUserId();
 		final UserNotificationsList notifications = userNotificationsService.getNotifications(adUserId, limit);
-		
+
 		final JSONOptions jsonOpts = JSONOptions.of(userSession);
 		return JSONNotificationsList.of(notifications, jsonOpts);
 	}

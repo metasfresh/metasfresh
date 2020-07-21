@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.UOMType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -167,7 +168,7 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 	}
 
 	@Override
-	public String getC_UOMTypeOrNull(final I_M_HU hu)
+	public UOMType getC_UOMTypeOrNull(final I_M_HU hu)
 	{
 		final SaveDecoupledHUStorageDAO delegate = getDelegate(hu);
 		return delegate.getC_UOMTypeOrNull(hu);

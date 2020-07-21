@@ -110,7 +110,7 @@ public class OrderLineBLTest
 				.fromUomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(priceUom.getC_UOM_ID()))
 				.fromToMultiplier(BigDecimal.ONE)
-				.toFromMultiplier(BigDecimal.ONE)
+				// .toFromMultiplier(BigDecimal.ONE)
 				.build());
 
 		final I_M_ProductPrice productprice = InterfaceWrapperHelper.create(ctx, I_M_ProductPrice.class, ITrx.TRXNAME_None);

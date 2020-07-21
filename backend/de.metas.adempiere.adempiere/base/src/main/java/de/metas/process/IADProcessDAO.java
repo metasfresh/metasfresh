@@ -1,10 +1,8 @@
 package de.metas.process;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.DBException;
@@ -12,8 +10,11 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.ISingletonService;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IADProcessDAO extends ISingletonService
 {
@@ -146,4 +147,8 @@ public interface IADProcessDAO extends ISingletonService
 	void copyProcessParameters(AdProcessId targetProcessId, AdProcessId sourceProcessId);
 
 	ITranslatableString getProcessNameById(final AdProcessId id);
+
+	ImmutableList<I_AD_Process> getProcessesByType(Set<ProcessType> processTypeSet);
+
+	ImmutableList<I_AD_Process_Para> getProcessParamsByProcessIds(Set<Integer> processIDs);
 }

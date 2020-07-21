@@ -2,7 +2,6 @@ package de.metas.event.impl;
 
 import java.util.IdentityHashMap;
 
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -38,7 +37,6 @@ import org.slf4j.MDC.MDCCloseable;
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import de.metas.event.Event;
@@ -61,16 +59,11 @@ final class EventBus implements IEventBus
 	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
 
 	/** Log all event bus exceptions */
-	private static final SubscriberExceptionHandler exceptionHandler = new SubscriberExceptionHandler()
-	{
-		@Override
-		public void handleException(final Throwable exception, final SubscriberExceptionContext context)
-		{
-			final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
-					+ "\n Event: " + context.getEvent()
-					+ "\n Bus: " + context.getEventBus();
-			logger.error(errmsg, exception);
-		}
+	private static final SubscriberExceptionHandler exceptionHandler = (exception, context) -> {
+		final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
+				+ "\n Event: " + context.getEvent()
+				+ "\n Bus: " + context.getEventBus();
+		logger.error(errmsg, exception);
 	};
 
 	private static final String PROP_Body = "body";
@@ -320,8 +313,7 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event);
-		try
+		try (final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event))
 		{
 			eventListener.onEvent(this, event);
 		}
@@ -338,10 +330,6 @@ final class EventBus implements IEventBus
 			{
 				logger.warn("Got exception while invoking eventListener={} with event={}", eventListener, event, ex);
 			}
-		}
-		finally
-		{
-			collector.close();
 		}
 	}
 }

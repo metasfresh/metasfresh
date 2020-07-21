@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
@@ -41,7 +42,7 @@ import lombok.NonNull;
 
 public class QualityNoteDAO implements IQualityNoteDAO
 {
-	public static String QualityNoteAttribute = "QualityNotice";
+	public static final AttributeCode QualityNoteAttribute = AttributeCode.ofString("QualityNotice");
 
 	@Override
 	public I_M_QualityNote getById(@NonNull final QualityNoteId qualityNoteId)

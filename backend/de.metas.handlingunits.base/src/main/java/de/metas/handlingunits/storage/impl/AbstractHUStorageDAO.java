@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_UOM;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -12,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.storage.spi.hu.IHUStorageBL;
+import de.metas.uom.UOMType;
 import de.metas.util.Check;
 
 /* package */abstract class AbstractHUStorageDAO implements IHUStorageDAO
@@ -89,7 +89,7 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public final String getC_UOMTypeOrNull(final I_M_HU hu)
+	public final UOMType getC_UOMTypeOrNull(final I_M_HU hu)
 	{
 		// FIXME: optimize more!
 
@@ -98,7 +98,7 @@ import de.metas.util.Check;
 		{
 			//
 			// TODO hardcoded (quickfix in 07088, skyped with teo - we need a compatible UOM type before storages are created when propagating WeightNet)
-			return X_C_UOM.UOMTYPE_Weigth;
+			return UOMType.Weight;
 		}
 
 		final I_C_UOM uom = getC_UOMOrNull(storages);
@@ -106,7 +106,7 @@ import de.metas.util.Check;
 		{
 			return null;
 		}
-		return uom.getUOMType();
+		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
 	}
 
 }

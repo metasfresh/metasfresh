@@ -22,6 +22,7 @@ import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
+import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
@@ -52,7 +53,7 @@ import lombok.NonNull;
 @DependsOn(Adempiere.BEAN_NAME) // needs database
 public class DocumentPostingBusService
 {
-	private static final Topic TOPIC = Topic.remote("de.metas.acct.handler.DocumentPostRequest");
+	private static final Topic TOPIC = RabbitMQEventBusConfiguration.AccountingQueueConfiguration.EVENTBUS_TOPIC;
 	private static final String PROPERTY_DocumentPostRequest = "DocumentPostRequest";
 
 	// services

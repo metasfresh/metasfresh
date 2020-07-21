@@ -45,17 +45,14 @@ import lombok.Value;
  *
  */
 @Value
-@Builder
 public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 {
 	LocatorId locatorId;
-
 	WarehouseId warehouseId;
-
 	ProductId productId;
-
 	HuForInventoryLineFactory huForInventoryLineFactory;
 
+	@Builder
 	private LocatorAndProductStrategy(
 			@Nullable final LocatorId locatorId,
 			@Nullable final WarehouseId warehouseId,

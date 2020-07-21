@@ -275,7 +275,7 @@
 
     .btn-fullscreen {
         position: absolute;
-        top: -7px;
+        top: 0px;
         right: 7px;
 
         @media (min-width: $breakpoint-sm){

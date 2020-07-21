@@ -33,6 +33,7 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -272,7 +273,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection viewDocumentIds, final SqlOptions sqlOpts)
+	public SqlViewRowsWhereClause getSqlWhereClause(final DocumentIdsSelection viewDocumentIds, final SqlOptions sqlOpts)
 	{
 		return null; // not supported
 	}
@@ -349,7 +350,9 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
+	public void notifyRecordsChanged(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend)
 	{
 		// TODO: notifyRecordsChanged: identify the sub-trees which could be affected and invalidate only those
 	}

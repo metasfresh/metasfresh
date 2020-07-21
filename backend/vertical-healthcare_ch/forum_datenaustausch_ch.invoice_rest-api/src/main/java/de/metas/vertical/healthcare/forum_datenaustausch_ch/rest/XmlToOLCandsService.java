@@ -4,7 +4,7 @@ import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 

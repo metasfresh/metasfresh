@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -109,12 +110,12 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		//
 		// Make sure all mandatory attributes are filled
 		final HUEditorRowAttributes attributes = document.getAttributes();
-		for (final String mandatoryAttributeName : attributes.getMandatoryAttributeNames())
+		for (final AttributeCode mandatoryAttributeCode : attributes.getMandatoryAttributeNames())
 		{
-			final Object value = attributes.getValue(mandatoryAttributeName);
+			final Object value = attributes.getValue(mandatoryAttributeCode);
 			if (Check.isEmpty(value))
 			{
-				final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(mandatoryAttributeName);
+				final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(mandatoryAttributeCode);
 				final I_M_Attribute translatedAttribute = InterfaceWrapperHelper.translate(attribute, I_M_Attribute.class);
 				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_MissingMandatoryHUAttribute, translatedAttribute.getName());
 				return ProcessPreconditionsResolution.reject(msg);
@@ -143,7 +144,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 
 		//
 		// NOK if not scanned and vendor != manufacturer
-		final BPartnerId vendorId = document.getBPartnerId();
+		final BPartnerId vendorId = document.getBpartnerId();
 		final BPartnerId manufacturerId = productRepository
 				.getById(document.getProductId())
 				.getManufacturerId();

@@ -1,6 +1,6 @@
 package de.metas.contracts.refund;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

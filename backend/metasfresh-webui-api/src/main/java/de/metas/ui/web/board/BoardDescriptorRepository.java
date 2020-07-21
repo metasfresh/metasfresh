@@ -64,8 +64,9 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -145,7 +146,7 @@ public class BoardDescriptorRepository
 			return;
 		}
 
-		final String websocketEndpoint = board.getWebsocketEndpoint();
+		final WebsocketTopicName websocketEndpoint = board.getWebsocketEndpoint();
 		websocketSender.convertAndSend(websocketEndpoint, events);
 		logger.trace("Notified WS {}: {}", websocketEndpoint, events);
 	}
@@ -215,7 +216,7 @@ public class BoardDescriptorRepository
 				.keyColumnName(keyColumnName)
 				.userIdColumnName(userIdColumnName)
 				//
-				.websocketEndpoint(WebSocketConfig.buildBoardTopicName(boardId));
+				.websocketEndpoint(WebsocketTopicNames.buildBoardTopicName(boardId));
 
 		//
 		// Source document filters: AD_Val_Rule_ID

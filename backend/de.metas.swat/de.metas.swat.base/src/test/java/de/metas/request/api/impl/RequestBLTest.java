@@ -145,7 +145,7 @@ public class RequestBLTest
 	private I_M_Attribute createQualityNoteAttribute()
 	{
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
-		attribute.setValue(QualityNoteDAO.QualityNoteAttribute);
+		attribute.setValue(QualityNoteDAO.QualityNoteAttribute.getCode());
 
 		save(attribute);
 		return attribute;

@@ -1,6 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.LocalDate;
@@ -94,7 +94,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 

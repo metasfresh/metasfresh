@@ -11,8 +11,8 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
@@ -64,7 +64,7 @@ public class HUTrxBLTests
 	private I_M_HU_PI_Item huDefPalet_IFCO;
 	private I_M_HU_PI huDefPalet;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		helper = new HUTestHelper();
@@ -73,7 +73,7 @@ public class HUTrxBLTests
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, helper.pTomato, TOMATOS_PER_IFCO, helper.uomEach);
+			helper.assignProduct(itemMA, helper.pTomatoProductId, TOMATOS_PER_IFCO, helper.uomEach);
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);
 		}
 
@@ -109,48 +109,48 @@ public class HUTrxBLTests
 			.newHUExpectation()
 				.huPI(huDefPalet)
 
-				.newHUItemExpectation() // the "real" item that shall hold the real IFCO with the remaining 6
+				.item() // the "real" item that shall hold the real IFCO with the remaining 6
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 					.huPIItem(huDefPalet_IFCO)
-					.newIncludedHUExpectation()
+					.includedHU()
 						.capture(realIFCO)
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
-							.newIncludedVirtualHU()
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+							.includedVirtualHU()
+								.virtualPIItem()
+									.storage()
 										.qty("6").uom(helper.uomEach).product(helper.pTomato)
 									.endExpectation()
 								.endExpectation()
 							.endExpectation()
 						.endExpectation() // end of the IFCO HU's material item
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						.endExpectation() // end of the IFCO HU's packing material item
 					.endExpectation() // end of the "IFCO" HU
 				.endExpectation() // end of the "real" item that shall hold the real IFCO with the remaining 6
 
-				.newHUItemExpectation() // the virtual item that shall hold the "bag" VHU
+				.item() // the virtual item that shall hold the "bag" VHU
 					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.huPIItem(huDefPalet_IFCO)
 					.qty("2")
-					.newIncludedHUExpectation()
+					.includedHU()
 					.capture(aggregateVHU)
 						.huPI(helper.huDefVirtual)
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
-							.newItemStorageExpectation()
+							.storage()
 								.qty("80").uom(helper.uomEach).product(helper.pTomato)
 							.endExpectation() // itemStorageExcpectation
 						.endExpectation() // material item
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 							.packingMaterial(helper.pmIFCO)
 						.endExpectation() // packing-material item
 					.endExpectation() // included "bag" VHU
 				.endExpectation()  // end of the virtual item that shall hold the "bag" VHU
 
-				.newHUItemExpectation() // the packing material item for this LU
+				.item() // the packing material item for this LU
 					.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 					.packingMaterial(helper.pmPalet)
