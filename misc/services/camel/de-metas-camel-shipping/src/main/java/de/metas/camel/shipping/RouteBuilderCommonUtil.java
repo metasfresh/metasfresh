@@ -40,9 +40,11 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 @UtilityClass
 public class RouteBuilderCommonUtil
 {
-	public static final String NUMBER_OF_ITEMS = "NumberOfItems";
+	public final String NUMBER_OF_ITEMS = "NumberOfItems";
 
-	public static final String FEEDBACK_ROUTE = "feedback";
+	public final String FEEDBACK_ROUTE = "feedback";
+
+	public final String FILEMAKER_UPLOAD_ROUTE = "FM-upload";
 
 	@NonNull
 	public JacksonDataFormat setupMetasfreshJSONFormat(
@@ -71,6 +73,24 @@ public class RouteBuilderCommonUtil
 		final PropertiesComponent pc = new PropertiesComponent();
 		pc.setLocation("classpath:shipping.properties");
 		context.setPropertiesComponent(pc);
+	}
+
+	/**
+	 * Retry uploads of FM-files to the remote sftp server.
+	 */
+	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder)
+	{
+		routeBuilder
+				.from(routeBuilder.direct(FILEMAKER_UPLOAD_ROUTE))
+				.errorHandler(routeBuilder.defaultErrorHandler()
+						.maximumRedeliveries(5)
+						.redeliveryDelay(10000)
+						.logHandled(true)
+						.retryAttemptedLogLevel(LoggingLevel.INFO)
+				)
+				.routeId("POST-MF-http")
+				.to("{{upload.endpoint.uri}}");
+
 	}
 
 	public void setupFeedbackRoute(

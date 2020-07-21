@@ -32,8 +32,6 @@ import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
-import java.util.logging.Level;
-
 public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-JSON-To-FM-XML-ShipmentCandidate";
@@ -41,9 +39,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 	@Override
 	public void configure()
 	{
-		errorHandler(defaultErrorHandler()
-				.maximumRedeliveries(5)
-				.redeliveryDelay(10000));
+		errorHandler(defaultErrorHandler());
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
 				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE));
@@ -70,12 +66,13 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.marshal(jacksonXMLDataFormat)
 				.multicast() // store the file both locally and send it to the remote folder
 				.stopOnException()
-				.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
+				.to(file("{{local.file.output_path}}"), direct(RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE))
 				.end()
 				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE))
 				.end() // "NumberOfItems" - choice
 		;
 
+		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this);
 		RouteBuilderCommonUtil.setupFeedbackRoute(this, jacksonDataFormat, "/shipments/shipmentCandidates");
 	}
 }

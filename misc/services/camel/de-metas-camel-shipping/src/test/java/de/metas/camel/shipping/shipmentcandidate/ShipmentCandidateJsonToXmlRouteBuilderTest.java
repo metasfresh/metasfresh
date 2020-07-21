@@ -38,7 +38,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 {
-
 	private MockEndpoint mockEndpoint;
 
 	@Override
@@ -80,7 +79,7 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void test_emptyResult() throws Exception
+	void test_emptyResult()
 	{
 		context.start();
 
@@ -105,7 +104,7 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void test() throws Exception
+	void test()
 	{
 		context.start();
 
