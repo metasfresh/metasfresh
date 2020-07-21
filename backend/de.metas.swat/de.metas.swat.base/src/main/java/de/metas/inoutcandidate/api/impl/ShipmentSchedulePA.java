@@ -11,9 +11,9 @@ import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -25,8 +25,6 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -62,21 +60,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public enum UnallowedExportStatuses implements ReferenceListAwareEnum
-	{
-		EXPORTED(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED),
-		EXPORTED_AND_FORWARDED(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_AND_FORWARDED),
-		EXPORTED_FORWARD_ERROR(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_FORWARD_ERROR);
-
-		@Getter
-		private final String code;
-
-		UnallowedExportStatuses(@NonNull final String code)
-		{
-			this.code = code;
-		}
-	}
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -172,8 +155,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId)
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_ExportStatus, UnallowedExportStatuses.values())
-				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTRED_STATES)
 				.create()
 				.anyMatch();
 	}
@@ -324,7 +306,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * @param value                    value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull         if true then it will update only if column value is null (not set)
 	 * @param selectionId              ShipmentSchedule selection (AD_PInstance_ID)
-	 * @param trxName
 	 */
 	private final <ValueType> void updateColumnForSelection(
 			final String inoutCandidateColumnName,

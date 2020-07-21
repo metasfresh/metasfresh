@@ -10,7 +10,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- 2020-07-21T07:54:49.689Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message SET Value='webui.salesorder.shipmentschedule.exported',Updated=TO_TIMESTAMP('2020-07-21 10:54:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544987
+UPDATE AD_Message SET Value='salesorder.shipmentschedule.exported',Updated=TO_TIMESTAMP('2020-07-21 10:54:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544987
 ;
 
 -- 2020-07-21T08:48:58.721Z
@@ -20,7 +20,7 @@ UPDATE AD_Message SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2020-07-
 
 -- 2020-07-21T08:53:06.080Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message SET MsgText='Der Beleg kann nicht geändert werden, weil bereit Lieferdispo-Datensätze exportiert wurden.',Updated=TO_TIMESTAMP('2020-07-21 11:53:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544987
+UPDATE AD_Message SET MsgText='Der Beleg kann nicht geändert werden, weil bereits Lieferdispo-Datensätze exportiert wurden.',Updated=TO_TIMESTAMP('2020-07-21 11:53:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544987
 ;
 
 -- 2020-07-21T08:53:32.534Z
@@ -30,12 +30,12 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Changing the document is no
 
 -- 2020-07-21T08:53:40.911Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Der Beleg kann nicht geändert werden, weil bereit Lieferdispo-Datensätze exportiert wurden.',Updated=TO_TIMESTAMP('2020-07-21 11:53:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544987
+UPDATE AD_Message_Trl SET MsgText='Der Beleg kann nicht geändert werden, weil bereits Lieferdispo-Datensätze exportiert wurden.',Updated=TO_TIMESTAMP('2020-07-21 11:53:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544987
 ;
 
 -- 2020-07-21T08:53:46.026Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Der Beleg kann nicht geändert werden, weil bereit Lieferdispo-Datensätze exportiert wurden.',Updated=TO_TIMESTAMP('2020-07-21 11:53:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=544987
+UPDATE AD_Message_Trl SET MsgText='Der Beleg kann nicht geändert werden, weil bereits Lieferdispo-Datensätze exportiert wurden.',Updated=TO_TIMESTAMP('2020-07-21 11:53:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=544987
 ;
 
 -- 2020-07-21T08:53:50.185Z

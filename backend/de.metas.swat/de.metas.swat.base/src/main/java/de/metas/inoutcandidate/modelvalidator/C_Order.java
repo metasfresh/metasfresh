@@ -38,7 +38,7 @@ public class C_Order
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
-	private static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("webui.salesorder.shipmentschedule.exported");
+	private static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("salesorder.shipmentschedule.exported");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
@@ -64,7 +64,10 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_VOID })
 	public void assertReActivationAllowed(final I_C_Order order)
 	{
-
+		if(!order.isSOTrx())
+		{
+			return; // we can spare us the effort
+		}
 		if (shipmentSchedulePA.existsExportedShipmentForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
 			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED)
