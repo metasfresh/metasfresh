@@ -22,11 +22,13 @@
 
 package de.metas.camel.shipping.shipmentcandidate;
 
+import de.metas.camel.shipping.FeedbackProzessor;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
+import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
 import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
@@ -35,6 +37,7 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-JSON-To-FM-XML-ShipmentCandidate";
+	public static final String SHIPMENT_CANDIDATE_FEEDBACK_ROUTE = "receiptCandidate-feedback";
 
 	@Override
 	public void configure()
@@ -42,7 +45,8 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 		errorHandler(defaultErrorHandler());
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
-				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE));
+				.logHandled(true)
+				.to(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE));
 
 		RouteBuilderCommonUtil.setupProperties(getContext());
 
@@ -68,11 +72,18 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.stopOnException()
 				.to(file("{{local.file.output_path}}"), direct(RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE))
 				.end()
-				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE))
+				.to(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE))
 				.end() // "NumberOfItems" - choice
 		;
 
 		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this);
-		RouteBuilderCommonUtil.setupFeedbackRoute(this, jacksonDataFormat, "/shipments/shipmentCandidates");
+
+		from(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE))
+				.routeId("ShipmentCandidate-Feedback-TO-MF")
+				.log(LoggingLevel.INFO, "Reporting shipmentCandidate-outcome to metasfresh")
+				.process(new FeedbackProzessor())
+				.marshal(jacksonDataFormat)
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"));
 	}
 }
