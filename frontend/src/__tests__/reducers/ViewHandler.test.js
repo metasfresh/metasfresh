@@ -197,6 +197,62 @@ describe('Views reducer for `view` type', () => {
       }),
     );
   });
+
+  it('Should handle DELETE_VIEW', () => {
+    const id = documentData.windowId;
+    const viewId = documentData.viewId;
+    const actions = [
+      {
+        type: ACTION_TYPES.CREATE_VIEW_SUCCESS,
+        payload: {
+          id,
+          viewId,
+          isModal: false,
+        },
+      },
+      {
+        type: ACTION_TYPES.DELETE_VIEW,
+        payload: {
+          id,
+          isModal: false,
+        },
+      }
+    ];
+    const state = actions.reduce(reducer, initialState);
+    const formattedData = formatData(documentData);
+
+    expect(state.views[id]).toBeFalsy();
+  });
+
+  it('Should handle RESET_VIEW', () => {
+    const id = documentData.windowId;
+    const viewId = documentData.viewId;
+    const actions = [
+      {
+        type: ACTION_TYPES.CREATE_VIEW_SUCCESS,
+        payload: {
+          id,
+          viewId,
+          isModal: false,
+        },
+      },
+      {
+        type: ACTION_TYPES.RESET_VIEW,
+        payload: {
+          id,
+          isModal: false,
+        },
+      }
+    ];
+    const state = actions.reduce(reducer, initialState);
+    const formattedData = formatData(documentData);
+
+    expect(state.views).toEqual(
+      expect.objectContaining({
+        [id]: expect.objectContaining({ viewId: null }),
+      }),
+    );
+  });
 });
 
 describe('Views reducer for `modals` type', () => {
@@ -264,7 +320,8 @@ describe('Views reducer for `modals` type', () => {
 
   it('Should handle FILTER_VIEW', () => {
     const id = documentData.windowId;
-    const viewId = documentData.viewId;
+    const filterData = fixtures.basicModalFilters1;
+    const { viewId, filters, size } = filterData;
     const actions = [
       {
         type: ACTION_TYPES.FILTER_VIEW_PENDING,
@@ -285,9 +342,9 @@ describe('Views reducer for `modals` type', () => {
     const state = actions.reduce(reducer, initialState);
     const formattedData = formatData(documentData);
 
-    expect(state.views).toEqual(
+    expect(state.modals).toEqual(
       expect.objectContaining({
-        [id]: expect.objectContaining({ pending: false, notFound: false, viewId }),
+        [id]: expect.objectContaining({ pending: false, notFound: false, viewId, filters }),
       }),
     );
   });

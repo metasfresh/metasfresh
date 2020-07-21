@@ -195,5 +195,26 @@
     "firstRow": 0,
     "pageLength": 20,
     "type": "540189"
+  },
+  "basicModalFilters1": {
+    "windowId": "540189",
+    "viewId": "540189-Y",
+    "headerProperties": {
+      "entries": []
+    },
+    "size": 0,
+    "filters": [
+      {
+        "filterId": "default",
+        "parameters": [
+          {
+            "parameterName": "Value",
+            "value": "1000",
+            "valueTo": null
+          }
+        ]
+      }
+    ],
+    "type": "540189"
   }
 }
