@@ -50,7 +50,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 	@Nullable
 	ShipmentScheduleId getShipmentScheduleIdByOrderLineId(OrderLineId orderLineId);
 
-	boolean existsExportedShipmentForOrder(@NonNull final OrderId orderId);
+	boolean existsExportedShipmentScheduleForOrder(@NonNull final OrderId orderId);
 
 	Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(OrderId orderId);
 

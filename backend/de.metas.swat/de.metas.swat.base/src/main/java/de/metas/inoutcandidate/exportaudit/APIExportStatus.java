@@ -44,7 +44,7 @@ public enum APIExportStatus implements ReferenceListAwareEnum
 	ExportedAndForwarded(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_AND_FORWARDED),
 	ExportedAndError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_FORWARD_ERROR);
 
-	public static final ImmutableSet<APIExportStatus> EXPORTRED_STATES = ImmutableSet.of(Exported, ExportedAndError, ExportedAndForwarded);
+	public static final ImmutableSet<APIExportStatus> EXPORTED_STATES = ImmutableSet.of(Exported, ExportedAndError, ExportedAndForwarded);
 
 	@Getter
 	private final String code;
