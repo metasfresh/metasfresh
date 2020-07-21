@@ -66,7 +66,7 @@ public class ShipmentCandidatesRestController
 		return ResponseEntity.ok(result);
 	}
 
-	@PostMapping("shipmentCandidates")
+	@PostMapping("shipmentCandidatesResult")
 	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestCandidateResults status)
 	{
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))

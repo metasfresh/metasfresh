@@ -77,13 +77,13 @@ public class RouteBuilderCommonUtil
 	{
 		routeBuilder
 				.from(routeBuilder.direct(FILEMAKER_UPLOAD_ROUTE))
+				.routeId(FILEMAKER_UPLOAD_ROUTE)
 				.errorHandler(routeBuilder.defaultErrorHandler()
-						.maximumRedeliveries(5)
+						.maximumRedeliveries(0)
 						.redeliveryDelay(10000)
 						.logHandled(true)
 						.retryAttemptedLogLevel(LoggingLevel.INFO)
 				)
-				.routeId("POST-MF-http")
 				.to("{{upload.endpoint.uri}}");
 	}
 }

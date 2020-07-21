@@ -37,7 +37,9 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-JSON-To-FM-XML-ShipmentCandidate";
+
 	public static final String SHIPMENT_CANDIDATE_FEEDBACK_ROUTE = "receiptCandidate-feedback";
+	public static final String SHIPMENT_CANDIDATE_FEEDBACK_TO_MF = "ShipmentCandidate-Feedback-TO-MF";
 
 	@Override
 	public void configure()
@@ -59,7 +61,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.streamCaching()
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"))
+				.to("http://{{metasfresh.api.baseurl}}/shipments/shipmentCandidates")
 				.unmarshal(jacksonDataFormat)
 
 				.process(new ShipmentCandidateJsonToXmlProcessor())
@@ -69,8 +71,8 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " + Exchange.FILE_NAME)
 				.marshal(jacksonXMLDataFormat)
 				.multicast() // store the file both locally and send it to the remote folder
-				.stopOnException()
-				.to(file("{{local.file.output_path}}"), direct(RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE))
+					.stopOnException()
+					.to(file("{{local.file.output_path}}"), direct(RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE))
 				.end()
 				.to(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE))
 				.end() // "NumberOfItems" - choice
@@ -79,11 +81,11 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this);
 
 		from(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE))
-				.routeId("ShipmentCandidate-Feedback-TO-MF")
+				.routeId(SHIPMENT_CANDIDATE_FEEDBACK_TO_MF)
 				.log(LoggingLevel.INFO, "Reporting shipmentCandidate-outcome to metasfresh")
 				.process(new FeedbackProzessor())
 				.marshal(jacksonDataFormat)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidates"));
+				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidatesResult"));
 	}
 }

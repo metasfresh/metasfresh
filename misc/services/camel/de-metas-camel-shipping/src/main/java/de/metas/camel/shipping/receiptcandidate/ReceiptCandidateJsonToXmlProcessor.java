@@ -99,9 +99,8 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 					.scheduleId(item.getId())
 					.build());
 		}
-		exchange.getIn().setBody(builder
-				.resultset(resultSet.build())
-				.build());
+		final var xmlPojo = builder.resultset(resultSet.build()).build();
+		exchange.getIn().setBody(xmlPojo);
 		exchange.getIn().setHeader(Exchange.FILE_NAME, "anlieferung_" + scheduleList.getTransactionKey() + ".xml");
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
 	}

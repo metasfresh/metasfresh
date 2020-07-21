@@ -22,54 +22,24 @@
 
 package de.metas.camel.shipping.shipmentcandidate;
 
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.test.junit5.CamelTestSupport;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Properties;
-
-import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 {
-	private MockEndpoint mockEndpoint;
-
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
 		return new ShipmentCandidateJsonToXmlRouteBuilder();
-	}
-
-	@BeforeEach
-	public void beforeEach() throws Exception
-	{
-		deleteDirectory("target/xml");
-
-		mockEndpoint = getMockEndpoint("mock:$shipmentScheduleAPI");
-
-		AdviceWithRouteBuilder
-				.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML,
-						a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentSchedules")
-								.skipSendToOriginalEndpoint()
-								.to(mockEndpoint)
-				);
-	}
-
-	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
-	{
-		final var properties = new Properties();
-		properties.put("metasfresh.api.authtoken", "123");
-		properties.put("metasfresh.api.baseurl", "baseURL");
-		properties.put("local.file.output_path", "target/xml");
-		properties.put("upload.endpoint.uri","log:upload-dummy");
-		return properties;
 	}
 
 	@Override
@@ -79,46 +49,168 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void test_emptyResult()
+	void test_emptyResult() throws Exception
 	{
+		final var emptyHttpResult = new EmptyResult();
+		AdviceWithRouteBuilder.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML,
+				a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentCandidates")
+						.skipSendToOriginalEndpoint()
+						.process(emptyHttpResult));
+
+		final var postEndpoint = new FeedbackHttpPOSTEndpoint();
+		AdviceWithRouteBuilder.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.SHIPMENT_CANDIDATE_FEEDBACK_TO_MF,
+				a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentCandidatesResult")
+						.skipSendToOriginalEndpoint()
+						.process(postEndpoint));
+
+		final var uploadEndpoint = new ResultUploadEndpoint();
+		AdviceWithRouteBuilder.adviceWith(context, RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE,
+				a -> a.interceptSendToEndpoint("log:upload-dummy")
+						.skipSendToOriginalEndpoint()
+						.process(uploadEndpoint));
+
+		final NotifyBuilder notify = new NotifyBuilder(context)
+				.whenDone(1).create();
+
 		context.start();
+		assertThat(notify.matchesWaitTime()).isTrue();
 
-		mockEndpoint.whenAnyExchangeReceived(new EmptyResult());
-
-		context.stop();
+		assertThat(emptyHttpResult.called).as("emptyHttpResult shall be called once").isEqualTo(1);
+		assertThat(uploadEndpoint.called).isEqualTo(0);
+		assertThat(postEndpoint.called).isEqualTo(0);
 	}
 
 	private static class EmptyResult implements Processor
 	{
+		private int called = 0;
+
 		@Override
 		public void process(final Exchange exchange)
 		{
+			exchange.getIn().setBody("{\n"
+					+ "    \"transactionKey\": \"74dcbcf6-265d-41b3-bb15-1cde4793684a\",\n"
+					+ "    \"items\": [],\n"
+					+ "    \"hasMoreItems\": false\n"
+					+ "}");
+			called++;
+		}
+	}
+
+	private static class ResultUploadEndpoint implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class ResultUploadEndpointWithException implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			try
 			{
-				exchange.getIn().setBody("{\n"
-						+ "    \"transactionKey\": \"74dcbcf6-265d-41b3-bb15-1cde4793684a\",\n"
-						+ "    \"items\": [],\n"
-						+ "    \"hasMoreItems\": false\n"
-						+ "}");
+				throw new GenericFileOperationFailedException("Simulated Exception");
+			}
+			finally
+			{
+				called++;
 			}
 		}
 	}
 
-	@Test
-	void test()
+	private static class FeedbackHttpPOSTEndpoint implements Processor
 	{
-		context.start();
+		private int called = 0;
+		private String messageBody;
 
-		mockEndpoint.whenExchangeReceived(0, new NormalResult());
-		mockEndpoint.whenExchangeReceived(1, new EmptyResult());
-
-		// final NotifyBuilder notify = new NotifyBuilder(context).whenDone(2).create(); // instead of waiting, go on whenever component one is ready
-		// assertThat(notify.matchesWaitTime()).isTrue();
-
-		context.stop();
+		@Override
+		public void process(final Exchange exchange)
+		{
+			messageBody = exchange.getIn().getBody(String.class);
+			called++;
+		}
 	}
 
-	private static class NormalResult implements Processor
+	@Test
+	void test_oneResultItem() throws Exception
 	{
+		final var normalHttpResult = new JsonGETEndpoint();
+		AdviceWithRouteBuilder.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML,
+				a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentCandidates")
+						.skipSendToOriginalEndpoint()
+						.process(normalHttpResult));
+
+		final var uploadEndpoint = new ResultUploadEndpoint();
+		AdviceWithRouteBuilder.adviceWith(context, RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE,
+				a -> a.interceptSendToEndpoint("log:upload-dummy")
+						.skipSendToOriginalEndpoint()
+						.process(uploadEndpoint));
+
+		final var feedbackHttpPOSTEndpoint = new FeedbackHttpPOSTEndpoint();
+		AdviceWithRouteBuilder.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.SHIPMENT_CANDIDATE_FEEDBACK_TO_MF,
+				a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentCandidatesResult")
+						.skipSendToOriginalEndpoint()
+						.process(feedbackHttpPOSTEndpoint));
+
+		final NotifyBuilder notify = new NotifyBuilder(context)
+				.wereSentTo("http://baseURL/shipments/shipmentCandidatesResult")
+				.whenDone(1).create();
+
+		context.start();
+		assertThat(notify.matchesWaitTime()).isTrue();
+
+		assertThat(normalHttpResult.called).as("normalHttpResult shall be called once").isEqualTo(1);
+		assertThat(uploadEndpoint.called).isEqualTo(1);
+		assertThat(feedbackHttpPOSTEndpoint.called).as("postEndpoint shall be called once").isEqualTo(1);
+		assertThat(feedbackHttpPOSTEndpoint.messageBody).containsSequence("\"outcome\":\"OK\"");
+	}
+
+	@Test
+	void test_uploadFail() throws Exception
+	{
+		final var normalHttpResult = new JsonGETEndpoint();
+		AdviceWithRouteBuilder.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML,
+				a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentCandidates")
+						.skipSendToOriginalEndpoint()
+						.process(normalHttpResult));
+
+		final var uploadWithExceptionEndpoint = new ResultUploadEndpointWithException();
+		AdviceWithRouteBuilder.adviceWith(context, RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE,
+				a -> a.interceptSendToEndpoint("log:upload-dummy")
+						.skipSendToOriginalEndpoint()
+						.process(uploadWithExceptionEndpoint));
+
+		final var feedbackHttpPOSTEndpoint = new FeedbackHttpPOSTEndpoint();
+		AdviceWithRouteBuilder.adviceWith(context, ShipmentCandidateJsonToXmlRouteBuilder.SHIPMENT_CANDIDATE_FEEDBACK_TO_MF,
+				a -> a.interceptSendToEndpoint("http://baseURL/shipments/shipmentCandidatesResult")
+						.skipSendToOriginalEndpoint()
+						.process(feedbackHttpPOSTEndpoint));
+
+		final NotifyBuilder notify = new NotifyBuilder(context)
+				.wereSentTo("http://baseURL/shipments/shipmentCandidatesResult")
+				.whenDone(1)
+				.create();
+
+		context.start();
+		assertThat(notify.matchesWaitTime()).isTrue();
+
+		assertThat(normalHttpResult.called).as("normalHttpResult shall be called once").isEqualTo(1);
+		assertThat(uploadWithExceptionEndpoint.called).isEqualTo(1);
+		assertThat(feedbackHttpPOSTEndpoint.called).isEqualTo(1);
+		assertThat(feedbackHttpPOSTEndpoint.messageBody).contains("GenericFileOperationFailedException: Simulated Exception");
+	}
+
+	private static class JsonGETEndpoint implements Processor
+	{
+		private int called = 0;
+
 		@Override
 		public void process(final Exchange exchange)
 		{
@@ -425,6 +517,8 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 					+ "    ],\n"
 					+ "    \"hasMoreItems\": false\n"
 					+ "}");
+
+			called++;
 		}
 	}
 
