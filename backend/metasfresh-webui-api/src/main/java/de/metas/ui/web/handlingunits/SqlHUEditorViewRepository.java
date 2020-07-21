@@ -534,7 +534,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (huQuery == null)
 		{
 			huQuery = handlingUnitsDAO.createHUQueryBuilder();
-			huQuery.setOnlyActiveHUs(false);
 		}
 		huQuery.setContext(PlainContextAware.newOutOfTrx());
 
