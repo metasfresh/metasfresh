@@ -155,7 +155,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Receipt Disposiotion Export Revision.
+	 * Set Receipt Disposition Export Revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -164,7 +164,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
 	public void setM_ReceiptSchedule_ExportAudit_ID (int M_ReceiptSchedule_ExportAudit_ID);
 
 	/**
-	 * Get Receipt Disposiotion Export Revision.
+	 * Get Receipt Disposition Export Revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
