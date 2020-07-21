@@ -446,6 +446,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
+	public void updateExportStatus(final String exportStatus, final PInstanceId pinstanceId)
+	{
+		updateColumnForSelection(
+				I_M_ShipmentSchedule.COLUMNNAME_ExportStatus,
+				exportStatus,
+				false,
+				pinstanceId,
+				true
+		);
+	}
+
+	@Override
 	public IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL

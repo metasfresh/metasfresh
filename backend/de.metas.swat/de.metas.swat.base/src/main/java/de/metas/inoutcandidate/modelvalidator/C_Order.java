@@ -64,11 +64,11 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_VOID })
 	public void assertReActivationAllowed(final I_C_Order order)
 	{
-		if(!order.isSOTrx())
+		if (!order.isSOTrx())
 		{
 			return; // we can spare us the effort
 		}
-		if (shipmentSchedulePA.existsExportedShipmentForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
+		if (shipmentSchedulePA.existsExportedShipmentScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
 			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED)
 					.markAsUserValidationError();

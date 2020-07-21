@@ -95,6 +95,9 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * <li>The selection will be created out of transaction
 	 * </ul>
 	 */
+
+	void updateExportStatus(final String exportStatus, final PInstanceId pinstanceId);
+
 	IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(Properties ctx, IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter);
 
 	/**
