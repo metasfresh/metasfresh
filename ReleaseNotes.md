@@ -10,6 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.146
+## Features
+
+## Fixes
+* metasfresh
+  * [#6967](https://github.com/metasfresh/metasfresh/issues/6967) Refreshing page looses pagination 🙏 to https://github.com/PureLandFlying 
+  * [#6526](https://github.com/metasfresh/metasfresh/issues/6526) Export SEPA Pain_001_001_03_CH_02 wrong xsi:schemaLocation 🙏 to https://github.com/KommunikativCh
+
 # metasfresh 5.145
 ## Features
 * metasfresh
