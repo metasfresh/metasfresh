@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -104,4 +105,6 @@ public interface IESRImportDAO extends ISingletonService
 	 * @param esrImportLineText
 	 */
 	I_ESR_ImportLine fetchLineForESRLineText(I_ESR_Import import1, String esrImportLineText);
+
+	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
 }
