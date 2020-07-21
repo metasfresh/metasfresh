@@ -1,7 +1,7 @@
 
 # About this document
 
-This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first)
+This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first).
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
@@ -23,6 +23,7 @@ Here come the actual release notes:
   * [#6446](https://github.com/metasfresh/metasfresh/issues/6446) Show Own Palette in HU Editor
   * [#6451](https://github.com/metasfresh/metasfresh/issues/6451) Tax Report adjustments
   * [#6466](https://github.com/metasfresh/metasfresh/issues/6466) Material Receipt Candidates: Adjustments
+  * [#6473](https://github.com/metasfresh/metasfresh/issues/6473) Tour version adjustments
   * [#6475](https://github.com/metasfresh/metasfresh/issues/6475) Pricelist export (Jasper & Excel) without HU_PI that are not on PL
   * [#6484](https://github.com/metasfresh/metasfresh/pull/6484) CompositeInterfaceWrapperHelper: getTrxName can throw exception
   * [#6485](https://github.com/metasfresh/metasfresh/issues/6485) PLV Name adjustment
@@ -53,6 +54,7 @@ Here come the actual release notes:
   * [#6743](https://github.com/metasfresh/metasfresh/issues/6743) Round up when converting UOMs
   * [#6747](https://github.com/metasfresh/metasfresh/issues/6747) 'Payment Allocation' action shall open also when Payments not available
   * [#6769](https://github.com/metasfresh/metasfresh/issues/6769) WebUI: payment allocation - book Bank Fee Amount
+  * [#6771](https://github.com/metasfresh/metasfresh/issues/6771) Allow weighing in Picking Terminal v1
   * [#6801](https://github.com/metasfresh/metasfresh/issues/6801) EDI - Allow getting excel-files from remote SFTP
   * [#6803](https://github.com/metasfresh/metasfresh/issues/6803) Generate deliverydays for selected tourversion
   * [#6812](https://github.com/metasfresh/metasfresh/issues/6812) Commission calculation without invoicing
@@ -72,6 +74,7 @@ Here come the actual release notes:
   * [#6887](https://github.com/metasfresh/metasfresh/issues/6887) Allow create Contracts in draft (docStatus: drafted)
   * [#6894](https://github.com/metasfresh/metasfresh/issues/6894) Add a default value of 10 for PP_ProductPlanning seqNo
   * [#6898](https://github.com/metasfresh/metasfresh/issues/6898) Avoid using C_UOM_Conversion.DivideRate
+  * [#6900](https://github.com/metasfresh/metasfresh/issues/6900) Allow force picking without existing HUs
   * [#6904](https://github.com/metasfresh/metasfresh/issues/6904) Servicefees per Provider Customer
   * [#6919](https://github.com/metasfresh/metasfresh/issues/6919) Excel-Sales-Order with CU-UOM and CU-per-TU multiplier
   * [#6923](https://github.com/metasfresh/metasfresh/issues/6923) Picking Terminal (V2) Changes
@@ -84,6 +87,10 @@ Here come the actual release notes:
   * [#6983](https://github.com/metasfresh/metasfresh/issues/6983) R_Request.SalesRep_ID repair default value
   * [#6985](https://github.com/metasfresh/metasfresh/issues/6985) Excel-Sales-Order Qty in Stock-UOM instead of Price-UOM
   * [#6987](https://github.com/metasfresh/metasfresh/issues/6987) Automatically mark all received HUs carrying BOM components as 'Source HUs'
+  * [#7003](https://github.com/metasfresh/metasfresh/issues/7003) Option: C_Invoice_OnlyAllow_BillToDefault_Contact
+  * [#7009](https://github.com/metasfresh/metasfresh/issues/7009) Copy w/ details for Manufacuring Order
+  * [#7011](https://github.com/metasfresh/metasfresh/issues/7011) Make Replication Transactions process parameter a search field
+  * [#7021](https://github.com/metasfresh/metasfresh/issues/7021) Picking Terminal V2: Pick&Pack: Skip rows with qty 0
 
 * metasfresh-webui-api-legacy
   * [#1253](https://github.com/metasfresh/metasfresh-webui-api-legacy/issues/1253) Clone Details
@@ -135,9 +142,11 @@ Here come the actual release notes:
   * [#6868](https://github.com/metasfresh/metasfresh/issues/6868) Packing Instruction selectable that does not fit to Businesspartner
   * [#6883](https://github.com/metasfresh/metasfresh/issues/6883) Make 'Stammdaten Mutationsprotokol' report display table name on multiple lines if it doesn't fit on one
   * [#6888](https://github.com/metasfresh/metasfresh/issues/6888) BOM verified already set after copy of Product
+  * [#6892](https://github.com/metasfresh/metasfresh/issues/6892) Jasper: Liefervertrag adjustments
   * [#6921](https://github.com/metasfresh/metasfresh/issues/6921) Set Parent and Seqno in C_ElementValue when importing accounts
   * [#6938](https://github.com/metasfresh/metasfresh/issues/6938) Jasper Pricelist & Pricelist comparison correct digits in prices
   * [#6965](https://github.com/metasfresh/metasfresh/issues/6965) WEBUI_Fact_Acct_Repost_ViewRows - DocumentToRepost seems to be ignored
+  * [#6975](https://github.com/metasfresh/metasfresh/issues/6975) Default LU and Qty not proposed
   * [#6979](https://github.com/metasfresh/metasfresh/issues/6979) Error in workpackage when trying to create invoices
 
 * metasfresh-webui-api-legacy
