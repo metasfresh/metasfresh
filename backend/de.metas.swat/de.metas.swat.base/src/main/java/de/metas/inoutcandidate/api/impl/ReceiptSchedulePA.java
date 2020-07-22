@@ -91,7 +91,7 @@ public class ReceiptSchedulePA implements IReceiptSchedulePA
 	 *
 	 * If there were any changes and the invalidate parameter is on true, those shipment schedules will be invalidated.
 	 *
-	 * @param inoutCandidateColumnName {@link I_M_ShipmentSchedule}'s column to update
+	 * @param inoutCandidateColumnName {@link I_M_ReceiptSchedule}'s column to update
 	 * @param value value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
 	 * @param selectionId ShipmentSchedule selection (AD_PInstance_ID)
@@ -176,7 +176,7 @@ public class ReceiptSchedulePA implements IReceiptSchedulePA
 		{
 			// large amount of records
 			// => instead of fetching all IDs better invalidate the whole table
-			request = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+			request = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ReceiptSchedule.Table_Name);
 		}
 
 		//
