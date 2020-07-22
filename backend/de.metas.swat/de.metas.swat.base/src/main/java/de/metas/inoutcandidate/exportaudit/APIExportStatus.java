@@ -23,7 +23,6 @@
 package de.metas.inoutcandidate.exportaudit;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.order.InvoiceRule;
@@ -44,8 +43,6 @@ public enum APIExportStatus implements ReferenceListAwareEnum
 	ExportError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORT_ERROR),
 	ExportedAndForwarded(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_AND_FORWARDED),
 	ExportedAndError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_FORWARD_ERROR);
-
-	public static final ImmutableSet<APIExportStatus> EXPORTED_STATES = ImmutableSet.of(Exported, ExportedAndError, ExportedAndForwarded);
 
 	@Getter
 	private final String code;
