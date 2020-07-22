@@ -25,6 +25,7 @@ package de.metas.edi.esb.invoicexport.stepcom;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.edi.esb.commons.ClearingCenter;
 import org.apache.camel.CamelContext;
 
 import de.metas.edi.esb.commons.Util;
@@ -43,55 +44,73 @@ public class StepComInvoicSettings
 	public enum InvoicLineQuantityInUOM
 	{
 		InvoicedUOM,
-
-		OrderedUOM;
+		OrderedUOM
 	}
 
 	public static StepComInvoicSettings forReceiverGLN(
 			@NonNull final CamelContext context,
 			@NonNull final String recipientGLN)
 	{
-		return StepComInvoicSettings
+		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
+		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
+
+		final StepComInvoicSettingsBuilder settings = StepComInvoicSettings
 				.builder()
-				.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
-				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))
-				.fileNamePrefix(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.fileNamePrefix"))
-				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
+				.clearingCenter(clearingCenter);
 
-				.invoicORSE(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.ORSE", "true"))
-				.invoicBUYRAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.AddressName1.required", "true"))
-				.invoicBUYRGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.GLN.required", "true"))
-				.invoicBUYRStreet1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.Street1.required", "false"))
-				.invoicBUYRCityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.City.required", "false"))
-				.invoicBUYRPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.PostalCode.required", "false"))
+		switch (clearingCenter)
+		{
+			case ecosio:
+				return settings.build();
+			case STEPcom:
+				return settings
+						.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
+						.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))
+						.fileNamePrefix(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.fileNamePrefix"))
+						.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
 
-				.invoicIVCEAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.AddressName1.required", "true"))
-				.invoicIVCEGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.GLN.required", "true"))
-				.invoicIVCEStreet1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.Street1.required", "false"))
-				.invoicIVCECityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.City.required", "false"))
-				.invoicIVCEPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.PostalCode.required", "false"))
+						.invoicORSE(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.ORSE", "true"))
+						.invoicBUYRAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.AddressName1.required", "true"))
+						.invoicBUYRGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.GLN.required", "true"))
+						.invoicBUYRStreet1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.Street1.required", "false"))
+						.invoicBUYRCityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.City.required", "false"))
+						.invoicBUYRPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.PostalCode.required", "false"))
 
-				.invoicDocumentTypeCMIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CMIV.alias", "CMIV")))
-				.invoicDocumentTypeCRNOAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRNO.alias", "CRNO")))
-				.invoicDocumentTypeDBNOAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.DBNO.alias", "DBNO")))
-				.invoicDocumentTypeCRNFAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRNF.alias", "CRNF")))
-				.invoicDocumentTypeDBNFAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.DBNF.alias", "DBNF")))
-				.invoicDocumentTypeCSIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CSIV.alias", "CSIV")))
-				.invoicDocumentTypeCSCNAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CSCN.alias", "CSCN")))
-				.invoicDocumentTypePFIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.PFIV.alias", "PFIV")))
-				.invoicDocumentTypeCRIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRIV.alias", "CRIV")))
+						.invoicIVCEAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.AddressName1.required", "true"))
+						.invoicIVCEGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.GLN.required", "true"))
+						.invoicIVCEStreet1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.Street1.required", "false"))
+						.invoicIVCECityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.City.required", "false"))
+						.invoicIVCEPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.PostalCode.required", "false"))
 
-				.invoicLineBUYRRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.BUYR.required", "false"))
-				.invoicLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.GTIN.required", "false"))
-				.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
-				.invoicLineEANTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANT.required", "false"))
-				.invoicLineUPCCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCC.required", "false"))
-				.invoicLineUPCTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCT.required", "false"))
+						.invoicDocumentTypeCMIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CMIV.alias", "CMIV")))
+						.invoicDocumentTypeCRNOAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRNO.alias", "CRNO")))
+						.invoicDocumentTypeDBNOAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.DBNO.alias", "DBNO")))
+						.invoicDocumentTypeCRNFAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRNF.alias", "CRNF")))
+						.invoicDocumentTypeDBNFAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.DBNF.alias", "DBNF")))
+						.invoicDocumentTypeCSIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CSIV.alias", "CSIV")))
+						.invoicDocumentTypeCSCNAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CSCN.alias", "CSCN")))
+						.invoicDocumentTypePFIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.PFIV.alias", "PFIV")))
+						.invoicDocumentTypeCRIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRIV.alias", "CRIV")))
 
-				.invoicLineQuantityInUOM(InvoicLineQuantityInUOM.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.QuantityInUOM", "InvoicedUOM")))
-				.invoicLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
-				.build();
+						.invoicLineBUYRRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.BUYR.required", "false"))
+						.invoicLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.GTIN.required", "false"))
+						.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
+						.invoicLineEANTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANT.required", "false"))
+						.invoicLineUPCCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCC.required", "false"))
+						.invoicLineUPCTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCT.required", "false"))
+
+						.invoicLineQuantityInUOM(InvoicLineQuantityInUOM.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.QuantityInUOM", "InvoicedUOM")))
+						.invoicLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
+						.build();
+			case CompuData:
+				return settings.build();
+			default:
+				throw new RuntimeException("Unsupporded clearing center property " + clearingCenterProperty);
+		}
+
 	}
+
+	ClearingCenter clearingCenter;
 
 	String applicationRef;
 
