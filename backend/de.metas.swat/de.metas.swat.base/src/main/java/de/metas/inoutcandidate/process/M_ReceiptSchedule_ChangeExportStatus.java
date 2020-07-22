@@ -37,7 +37,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 
-public class M_ReceiptSchedule_ChangeExportStatus  extends JavaProcess implements IProcessPrecondition
+public class M_ReceiptSchedule_ChangeExportStatus extends JavaProcess implements IProcessPrecondition
 {
 	private final IReceiptSchedulePA receiptSchedulePA = Services.get(IReceiptSchedulePA.class);
 

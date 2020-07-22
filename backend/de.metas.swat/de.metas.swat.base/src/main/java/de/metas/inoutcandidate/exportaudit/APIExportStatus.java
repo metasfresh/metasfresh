@@ -26,14 +26,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
-import de.metas.order.InvoiceRule;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.Arrays;
 
 public enum APIExportStatus implements ReferenceListAwareEnum

@@ -45,7 +45,9 @@ public class ReceiptSchedulePA implements IReceiptSchedulePA
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	/** When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS */
+	/**
+	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
+	 */
 	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
 
 	@Override
@@ -81,28 +83,27 @@ public class ReceiptSchedulePA implements IReceiptSchedulePA
 				I_M_ReceiptSchedule.COLUMNNAME_ExportStatus,
 				exportStatus,
 				false /* updateOnlyIfNull */,
-				pinstanceId,
-				false /* invalidate */
+				pinstanceId
 		);
 	}
 
 	/**
 	 * Mass-update a given shipment schedule column.
-	 *
+	 * <p>
 	 * If there were any changes and the invalidate parameter is on true, those shipment schedules will be invalidated.
 	 *
 	 * @param inoutCandidateColumnName {@link I_M_ReceiptSchedule}'s column to update
-	 * @param value value to set (you can also use {@link ModelColumnNameValue})
-	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
-	 * @param selectionId ShipmentSchedule selection (AD_PInstance_ID)
+	 * @param value                    value to set (you can also use {@link ModelColumnNameValue})
+	 * @param updateOnlyIfNull         if true then it will update only if column value is null (not set)
+	 * @param selectionId              ShipmentSchedule selection (AD_PInstance_ID)
 	 * @param trxName
 	 */
 	private final <ValueType> void updateColumnForSelection(
 			final String inoutCandidateColumnName,
 			final ValueType value,
 			final boolean updateOnlyIfNull,
-			final PInstanceId selectionId,
-			final boolean invalidate)
+			final PInstanceId selectionId
+	)
 	{
 		//
 		// Create the selection which we will need to update

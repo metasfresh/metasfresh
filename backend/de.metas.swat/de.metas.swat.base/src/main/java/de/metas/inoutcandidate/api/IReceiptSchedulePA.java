@@ -36,7 +36,6 @@ import java.util.Properties;
  * Implementers give database access to {@link I_M_ReceiptSchedule} instances (DAO).
  *
  * @author dp
- *
  */
 
 public interface IReceiptSchedulePA extends ISingletonService
