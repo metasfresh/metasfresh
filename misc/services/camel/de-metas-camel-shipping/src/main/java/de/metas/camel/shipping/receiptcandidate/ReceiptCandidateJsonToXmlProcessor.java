@@ -52,6 +52,7 @@ import java.util.List;
 public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {
 	public static final METADATA METADATA = de.metas.common.filemaker.METADATA.builder()
+			.field(FIELD.builder().name("_anlieferung_position_id").build())
 			.field(FIELD.builder().name("_anlieferung_nummer").build())
 			.field(FIELD.builder().name("_anlieferung_datum").build())
 			.field(FIELD.builder().name("_anlieferung_zeitstempel").build())
@@ -108,6 +109,8 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 	private ROW createROW(@NonNull final JsonResponseReceiptCandidate item)
 	{
 		final var row = ROW.builder();
+
+		row.col(COL.of(Integer.toString(item.getId().getValue()))); // _anlieferung_position_id
 		row.col(COL.of(item.getOrderDocumentNo())); // _anlieferung_nummer
 
 		final var dateOrdered = item.getDateOrdered();
