@@ -318,7 +318,7 @@ public class ADProcessPostProcessService
 		final CreateViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
 				.setReferencingDocumentPaths(referencingDocumentPaths)
 				.setParentViewId(parentViewId)
-				.setUseAutoFilters(true)
+				.setUseAutoFilters(recordsToOpen.isUseAutoFilters())
 				.build();
 		return viewRequest;
 	}
