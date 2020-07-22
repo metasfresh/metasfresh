@@ -451,9 +451,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		updateColumnForSelection(
 				I_M_ShipmentSchedule.COLUMNNAME_ExportStatus,
 				exportStatus,
-				false,
+				false /* updateOnlyIfNull */,
 				pinstanceId,
-				true
+				false /* invalidate */
 		);
 	}
 
