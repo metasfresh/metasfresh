@@ -142,7 +142,7 @@
     "immutable": "4.0.0-rc.12",
     "intro.js": "2.9.3",
     "intro.js-react": "0.1.5",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "luxon": "1.22.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.27",
