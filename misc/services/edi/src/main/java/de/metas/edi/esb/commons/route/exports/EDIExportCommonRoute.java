@@ -27,11 +27,11 @@ import java.text.DecimalFormat;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.desadvexport.compudata.CompuDataDesadvRoute;
 import de.metas.edi.esb.desadvexport.metasfresh.MetasfreshMLDesadvRoute;
-import de.metas.edi.esb.desadvexport.stepcom.StepComDesadvSettings;
+import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.desadvexport.stepcom.StepComXMLDesadvRoute;
 import de.metas.edi.esb.invoicexport.compudata.CompuDataInvoicRoute;
 import de.metas.edi.esb.invoicexport.metasfresh.MetasfreshXMLInvoicRoute;
-import de.metas.edi.esb.invoicexport.stepcom.StepComInvoicSettings;
+import de.metas.edi.esb.commons.InvoicSettings;
 import de.metas.edi.esb.commons.ClearingCenter;
 import de.metas.edi.esb.invoicexport.stepcom.StepComXMLInvoicRoute;
 import org.apache.camel.LoggingLevel;
@@ -76,7 +76,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.process(exchange -> {
 							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceivergln();
-							final ClearingCenter clearingCenter = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
+							final ClearingCenter clearingCenter = InvoicSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
 						.choice()
@@ -91,7 +91,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 						// DESADV - figure out which clearing center we shall use
 						.process(exchange -> {
 							final String receiverGLN = exchange.getIn().getBody(EDIExpDesadvType.class).getCBPartnerID().getEdiRecipientGLN();
-							final ClearingCenter clearingCenter = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
+							final ClearingCenter clearingCenter = DesadvSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
 						.choice()

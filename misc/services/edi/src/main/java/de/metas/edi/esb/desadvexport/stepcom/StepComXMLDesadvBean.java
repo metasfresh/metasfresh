@@ -43,6 +43,7 @@ import java.util.Map;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.desadvexport.LineAndPack;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -108,7 +109,7 @@ public class StepComXMLDesadvBean
 		// validate mandatory exchange properties
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 
-		final StepComDesadvSettings settings = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		final DesadvSettings settings = DesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 		final Xlief4H xlief4H = createDesadvDocumentFromXMLBean(xmlDesadv, exchange, settings);
 
 		final Document document = DESADV_objectFactory.createDocument();
@@ -122,7 +123,7 @@ public class StepComXMLDesadvBean
 	private Xlief4H createDesadvDocumentFromXMLBean(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final Exchange exchange,
-			@NonNull final StepComDesadvSettings settings)
+			@NonNull final DesadvSettings settings)
 	{
 		// TODO instead of adding all the properties above to the exchange, add them to this settings instance
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
@@ -190,7 +191,7 @@ public class StepComXMLDesadvBean
 	private void mapHeaderReferences(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
-			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DesadvSettings settings,
 			@NonNull final String dateFormat)
 	{
 		final String buyerReference = xmlDesadv.getPOReference();
@@ -255,7 +256,7 @@ public class StepComXMLDesadvBean
 	private void mapPackaging(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
-			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DesadvSettings settings,
 			@NonNull final DecimalFormat decimalFormat,
 			@NonNull final String dateFormat)
 	{
@@ -419,7 +420,7 @@ public class StepComXMLDesadvBean
 
 	private PackagingLUGroupings extractPackagingCodeLU(
 			@NonNull final List<EDIExpDesadvLineType> lines,
-			@NonNull final StepComDesadvSettings settings)
+			@NonNull final DesadvSettings settings)
 	{
 		final PackagingLUGroupings packingLUGroupings = new PackagingLUGroupings();
 
@@ -509,7 +510,7 @@ public class StepComXMLDesadvBean
 	private DETAILXlief createDETAILXliefForLineAndPack(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
-			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DesadvSettings settings,
 			@NonNull final DecimalFormat decimalFormat,
 			@NonNull final String dateFormat)
 	{
@@ -571,7 +572,7 @@ public class StepComXMLDesadvBean
 	private DETAILXlief createDETAILXliefForLine(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final EDIExpDesadvLineType line,
-			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DesadvSettings settings,
 			@NonNull final DecimalFormat decimalFormat,
 			@NonNull final String dateFormat)
 	{
@@ -630,7 +631,7 @@ public class StepComXMLDesadvBean
 	private String extractMeasurementUnitOrNull(
 			@Nullable final EDIExpCUOMType uom,
 			@NonNull final EDIExpDesadvLineType line,
-			@NonNull final StepComDesadvSettings settings)
+			@NonNull final DesadvSettings settings)
 	{
 		if (!settings.isDesadvLineMEASUREMENTUNITRequired())
 		{
@@ -658,7 +659,7 @@ public class StepComXMLDesadvBean
 	private DETAILXlief createDetailAndAddLineData(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final EDIExpDesadvLineType line,
-			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DesadvSettings settings,
 			final DecimalFormat decimalFormat)
 	{
 		final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();

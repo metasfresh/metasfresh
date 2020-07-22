@@ -20,34 +20,30 @@
  * #L%
  */
 
-package de.metas.edi.esb.desadvexport.stepcom;
+package de.metas.edi.esb.commons;
 
 import java.util.Arrays;
 import java.util.List;
 
-import de.metas.edi.esb.commons.ClearingCenter;
-import de.metas.edi.esb.invoicexport.stepcom.StepComInvoicSettings;
 import org.apache.camel.CamelContext;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.commons.MeasurementUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class StepComDesadvSettings
+public class DesadvSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
 
-	public static StepComDesadvSettings forReceiverGLN(
+	public static DesadvSettings forReceiverGLN(
 			@NonNull final CamelContext context,
 			@NonNull final String recipientGLN)
 	{
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
 		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
 
-		final StepComDesadvSettingsBuilder settings = StepComDesadvSettings
+		final DesadvSettingsBuilder settings = DesadvSettings
 				.builder()
 				.clearingCenter(clearingCenter);
 

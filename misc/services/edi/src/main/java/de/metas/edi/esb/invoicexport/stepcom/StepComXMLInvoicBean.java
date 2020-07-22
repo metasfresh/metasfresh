@@ -36,6 +36,7 @@ import java.util.Comparator;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import de.metas.edi.esb.commons.InvoicSettings;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
@@ -120,7 +121,7 @@ public class StepComXMLInvoicBean
 	{
 		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
-		final StepComInvoicSettings settings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
 		final Xrech4H xrech4H = createDocument(exchange, xmlCctopInvoice, settings);
 
 		final Document document = INVOIC_objectFactory.createDocument();
@@ -135,7 +136,7 @@ public class StepComXMLInvoicBean
 	private Xrech4H createDocument(
 			@NonNull final Exchange exchange,
 			@NonNull final EDICctopInvoicVType invoice,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 		final String ownerId = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID, String.class);
@@ -191,7 +192,7 @@ public class StepComXMLInvoicBean
 
 	private DocumentType mapDocumentType(
 			@NonNull final EDICctopInvoicVType invoice,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final String eancomDoctype = invoice.getEancomDoctype();
 
@@ -259,7 +260,7 @@ public class StepComXMLInvoicBean
 			final EDICctopInvoicVType invoice,
 			final HEADERXrech headerXrech,
 			final DecimalFormat decimalFormat,
-			final StepComInvoicSettings settings)
+			final InvoicSettings settings)
 	{
 		invoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
 		final String documentId = headerXrech.getDOCUMENTID();
@@ -409,7 +410,7 @@ public class StepComXMLInvoicBean
 	private void mapInvoicedQty(
 			@NonNull final DETAILXrech detailXrech,
 			@NonNull final EDICctopInvoic500VType xmlCctopInvoic500V,
-			@NonNull final StepComInvoicSettings settings,
+			@NonNull final InvoicSettings settings,
 			@NonNull final DecimalFormat decimalFormat)
 	{
 		final String lineNumber = formatNumber(xmlCctopInvoic500V.getLine(), decimalFormat);
@@ -516,7 +517,7 @@ public class StepComXMLInvoicBean
 	private void mapAddresses(
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final HEADERXrech headerXrech,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		for (final EDICctop119VType xmlCctop119V : invoice.getEDICctop119V())
 		{
@@ -607,7 +608,7 @@ public class StepComXMLInvoicBean
 	private String validateAndGetAddressName1(
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final EDICctop119VType xmlCctop119V,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
 		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
@@ -631,7 +632,7 @@ public class StepComXMLInvoicBean
 	private String validateAndGetGLN(
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final EDICctop119VType xmlCctop119V,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
 		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
@@ -655,7 +656,7 @@ public class StepComXMLInvoicBean
 	private String validateAndGetStreet1(
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final EDICctop119VType xmlCctop119V,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
 		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
@@ -675,7 +676,7 @@ public class StepComXMLInvoicBean
 	private String validateAndGetPostalCode(
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final EDICctop119VType xmlCctop119V,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
 		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
@@ -695,7 +696,7 @@ public class StepComXMLInvoicBean
 	private String validateAndGetCity(
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final EDICctop119VType xmlCctop119V,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
 		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
@@ -771,7 +772,7 @@ public class StepComXMLInvoicBean
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final HEADERXrech headerXrech,
 			@NonNull final String dateFormat,
-			@NonNull final StepComInvoicSettings settings)
+			@NonNull final InvoicSettings settings)
 	{
 		final HREFE1 buyerOrderRef = INVOIC_objectFactory.createHREFE1();
 		buyerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
