@@ -354,7 +354,7 @@ public class JsonPersisterService
 		for (final JsonRequestLocationUpsertItem requestItem : requestItems)
 		{
 			final IdentifierString locationIdentifier = IdentifierString.of(requestItem.getLocationIdentifier());
-			final BPartnerLocation bpartnerLocation = shortTermIndex.extract(locationIdentifier);
+			final BPartnerLocation bpartnerLocation = shortTermIndex.extractAndMarkUsed(locationIdentifier);
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getLocationIdentifier())
@@ -823,8 +823,6 @@ public class JsonPersisterService
 	{
 		final ShortTermContactIndex shortTermIndex = new ShortTermContactIndex(bpartnerComposite);
 
-		resetDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
-
 		final JsonRequestContactUpsert contacts = jsonBPartnerComposite.getContactsNotNull();
 
 		final SyncAdvise contactsSyncAdvise = coalesce(contacts.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
@@ -842,6 +840,15 @@ public class JsonPersisterService
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getContacts().removeAll(shortTermIndex.getUnusedContacts());
 		}
+		else
+		{
+			// if we have contacts with e.g. isBillToDefault, then make sure that none of the previously existing locations also have such a default flag
+			final boolean mustTakeCareOfUnusedContactDefaultFlags = contactsSyncAdvise.getIfNotExists().isCreate() || contactsSyncAdvise.getIfExists().isUpdateMerge();
+			if (mustTakeCareOfUnusedContactDefaultFlags)
+			{
+				resetUnusedContactDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
+			}
+		}
 
 		return result.build();
 	}
@@ -849,7 +856,7 @@ public class JsonPersisterService
 	/**
 	 * If the json contacts have default flags set, then this method unsets all corresponding default flags of the shortTermIndex's {@link BPartnerContact}s.
 	 */
-	private void resetDefaultFlagsIfNeeded(
+	private void resetUnusedContactDefaultFlagsIfNeeded(
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final ShortTermContactIndex shortTermIndex)
 	{
@@ -948,6 +955,8 @@ public class JsonPersisterService
 			syncOutcome = SyncOutcome.CREATED;
 		}
 
+		contact.addHandle(contactIdentifier.getRawIdentifierString());
+
 		result.syncOutcome(syncOutcome);
 		if (!Objects.equals(SyncOutcome.NOTHING_DONE, syncOutcome))
 		{
@@ -964,8 +973,6 @@ public class JsonPersisterService
 	{
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
-
-		contact.addHandle(contactIdentifier.getRawIdentifierString());
 
 		// active
 		if (jsonBPartnerContact.isActiveSet())
@@ -1204,8 +1211,6 @@ public class JsonPersisterService
 	{
 		final ShortTermLocationIndex shortTermIndex = new ShortTermLocationIndex(bpartnerComposite);
 
-		resetDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
-
 		final JsonRequestLocationUpsert locations = jsonBPartnerComposite.getLocationsNotNull();
 
 		final SyncAdvise locationsSyncAdvise = coalesce(locations.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
@@ -1222,6 +1227,15 @@ public class JsonPersisterService
 		{
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getLocations().removeAll(shortTermIndex.getUnusedLocations());
+		}
+		else
+		{
+			// if we have location with isBillToDefault or isShipToDefault, then make sure that none of the previously existing locations also have such a default flag
+			final boolean mustTakeCareOfUnusedLocationDefaultFlags = locationsSyncAdvise.getIfNotExists().isCreate() || locationsSyncAdvise.getIfExists().isUpdateMerge();
+			if (mustTakeCareOfUnusedLocationDefaultFlags)
+			{
+				resetUnusedLocationDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
+			}
 		}
 		return result.build();
 	}
@@ -1329,8 +1343,9 @@ public class JsonPersisterService
 
 	/**
 	 * If the json locations have default flags set, then this method unsets all corresponding default flags of the shortTermIndex's {@link BPartnerLocation}s.
+	 * Goal: make sure that a former default-flagged location is not left untouched, to avoid multiple locations with the same default flag set to true.
 	 */
-	private void resetDefaultFlagsIfNeeded(
+	private void resetUnusedLocationDefaultFlagsIfNeeded(
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
@@ -1370,7 +1385,7 @@ public class JsonPersisterService
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
 		final IdentifierString locationIdentifier = IdentifierString.of(locationUpsertItem.getLocationIdentifier());
-		final BPartnerLocation existingLocation = shortTermIndex.extract(locationIdentifier);
+		final BPartnerLocation existingLocation = shortTermIndex.extractAndMarkUsed(locationIdentifier);
 
 		final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
 				.identifier(locationUpsertItem.getLocationIdentifier());
