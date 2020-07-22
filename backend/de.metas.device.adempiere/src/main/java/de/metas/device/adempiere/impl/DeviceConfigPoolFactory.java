@@ -1,12 +1,14 @@
 package de.metas.device.adempiere.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-
+import org.adempiere.service.ClientId;
 import org.adempiere.util.net.IHostIdentifier;
-import org.compiere.util.Util.ArrayKey;
 
+import de.metas.device.adempiere.CompositeDeviceConfigPool;
 import de.metas.device.adempiere.IDeviceConfigPool;
 import de.metas.device.adempiere.IDeviceConfigPoolFactory;
+import de.metas.device.pool.dummy.DummyDeviceConfigPool;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -21,23 +23,36 @@ import de.metas.device.adempiere.IDeviceConfigPoolFactory;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class DeviceConfigPoolFactory implements IDeviceConfigPoolFactory
 {
-	private final ConcurrentHashMap<ArrayKey, IDeviceConfigPool> deviceConfigPools = new ConcurrentHashMap<>();
-
 	@Override
-	public IDeviceConfigPool getDeviceConfigPool(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
+	public IDeviceConfigPool createDeviceConfigPool(
+			@NonNull final IHostIdentifier clientHost,
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
 	{
-		final ArrayKey key = ArrayKey.of(clientHost, adClientId, adOrgId);
-		return deviceConfigPools.computeIfAbsent(key, k -> new SysConfigDeviceConfigPool(clientHost, adClientId, adOrgId));
+		final SysConfigDeviceConfigPool sysConfigDeviceConfigPool = new SysConfigDeviceConfigPool(
+				clientHost,
+				adClientId,
+				adOrgId);
+
+		if (DummyDeviceConfigPool.isEnabled())
+		{
+			final DummyDeviceConfigPool inMemoryMockedDeviceConfigPool = new DummyDeviceConfigPool();
+			return CompositeDeviceConfigPool.compose(sysConfigDeviceConfigPool, inMemoryMockedDeviceConfigPool);
+		}
+		else
+		{
+			return sysConfigDeviceConfigPool;
+		}
 	}
 }

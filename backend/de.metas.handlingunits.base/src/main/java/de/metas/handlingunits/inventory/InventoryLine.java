@@ -83,7 +83,12 @@ public class InventoryLine
 	@Setter
 	HUAggregationType huAggregationType;
 
+	@NonNull
 	private InventoryType inventoryType;
+
+	boolean counted;
+
+	@NonNull
 	ImmutableList<InventoryLineHU> inventoryLineHUs;
 
 	@Builder(toBuilder = true)
@@ -95,6 +100,7 @@ public class InventoryLine
 			@NonNull final AttributesKey storageAttributesKey,
 			@NonNull final LocatorId locatorId,
 			@Nullable final HUAggregationType huAggregationType,
+			final boolean counted,
 			@Singular("inventoryLineHU") @NonNull final ImmutableList<InventoryLineHU> inventoryLineHUs)
 	{
 		Check.assumeNotEmpty(inventoryLineHUs, "inventoryLineHUs is not empty");
@@ -108,6 +114,7 @@ public class InventoryLine
 		this.huAggregationType = huAggregationType;
 
 		inventoryType = extractInventoryType(inventoryLineHUs, InventoryType.PHYSICAL);
+		this.counted = counted;
 		this.inventoryLineHUs = inventoryLineHUs;
 	}
 

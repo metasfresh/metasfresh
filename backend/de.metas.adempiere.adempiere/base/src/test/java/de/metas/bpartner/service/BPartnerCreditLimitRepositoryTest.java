@@ -11,20 +11,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.StartupListener;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
@@ -56,27 +49,17 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, BPartnerCreditLimitRepository.class })
 public class BPartnerCreditLimitRepositoryTest
 {
-	@BeforeClass
-	public static void staticInit()
-	{
-		AdempiereTestHelper.get().staticInit();
-	}
-
 	private BPartnerCreditLimitRepository repository;
 	private I_C_CreditLimit_Type typeInsurance;
 	private I_C_CreditLimit_Type typeManagement;
 
-
-
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		repository = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		repository = new BPartnerCreditLimitRepository();
 
 		typeInsurance = newCreditLimitType()
 				.name("Insurance")
@@ -104,7 +87,6 @@ public class BPartnerCreditLimitRepositoryTest
 				.dateFrom(TimeUtil.parseTimestamp("2018-02-10"))
 				.build();
 
-
 		newBPCreditLimit()
 				.partner(partner)
 				.amount(BigDecimal.valueOf(200))
@@ -120,7 +102,6 @@ public class BPartnerCreditLimitRepositoryTest
 
 	}
 
-
 	@Test
 	public void retrieveLimitWhenHavingDifferentTypeWithDifferentDates1()
 	{
@@ -133,7 +114,6 @@ public class BPartnerCreditLimitRepositoryTest
 				.type(typeManagement)
 				.dateFrom(TimeUtil.parseTimestamp("2018-02-10"))
 				.build();
-
 
 		newBPCreditLimit()
 				.partner(partner)
@@ -161,7 +141,6 @@ public class BPartnerCreditLimitRepositoryTest
 				.type(typeInsurance)
 				.dateFrom(TimeUtil.parseTimestamp("2018-02-10"))
 				.build();
-
 
 		newBPCreditLimit()
 				.partner(partner)

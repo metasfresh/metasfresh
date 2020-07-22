@@ -4,7 +4,7 @@ import org.compiere.model.I_C_DocType;
 
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L

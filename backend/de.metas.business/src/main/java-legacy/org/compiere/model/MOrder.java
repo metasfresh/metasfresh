@@ -714,7 +714,6 @@ public class MOrder extends X_C_Order implements IDocument
 	/**************************************************************************
 	 * Get <b>active</b> Lines of Order
 	 *
-	 * @param whereClause where clause or null (starting with AND)
 	 * @param orderClause order clause
 	 * @return lines
 	 */
@@ -2411,14 +2410,12 @@ public class MOrder extends X_C_Order implements IDocument
 
 	/**
 	 * Get Document Owner (Responsible)
-	 *
-	 * @return AD_User_ID
 	 */
 	@Override
 	public int getDoc_User_ID()
 	{
 		return getSalesRep_ID();
-	}    // getDoc_User_ID
+	}
 
 	/**
 	 * Get Document Approval Amount

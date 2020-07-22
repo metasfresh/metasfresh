@@ -69,7 +69,7 @@ public interface IHUContextFactory extends ISingletonService
 	 *
 	 * @return mutable HU context
 	 */
-	IMutableHUContext createMutableHUContext(Properties ctx, String trxName);
+	IMutableHUContext createMutableHUContext(Properties ctx, @NonNull String trxName);
 
 	default IMutableHUContext createMutableHUContext()
 	{

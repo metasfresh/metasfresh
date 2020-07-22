@@ -1,4 +1,5 @@
 export * from './actions/TableTypes';
+export * from './actions/ViewTypes';
 
 /**
  * @constant
@@ -79,12 +80,6 @@ export const INIT_LAYOUT_SUCCESS = 'INIT_LAYOUT_SUCCESS';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const ADD_ROW_DATA = 'ADD_ROW_DATA';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const SORT_TAB = 'SORT_TAB';
 
 /**
@@ -103,24 +98,6 @@ export const UNSELECT_TAB = 'UNSELECT_TAB';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const ADD_NEW_ROW = 'ADD_NEW_ROW';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const DELETE_ROW = 'DELETE_ROW';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_ROW_PROPERTY = 'UPDATE_ROW_PROPERTY';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const UPDATE_DATA_PROPERTY = 'UPDATE_DATA_PROPERTY';
 
 /**
@@ -128,18 +105,6 @@ export const UPDATE_DATA_PROPERTY = 'UPDATE_DATA_PROPERTY';
  * @type {string} ToDo: Description for the constant.
  */
 export const UPDATE_DATA_FIELD_PROPERTY = 'UPDATE_DATA_FIELD_PROPERTY';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_ROW_FIELD_PROPERTY = 'UPDATE_ROW_FIELD_PROPERTY';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_ROW_STATUS = 'UPDATE_ROW_STATUS';
 
 /**
  * @constant
@@ -170,114 +135,6 @@ export const UPDATE_DATA_SAVE_STATUS = 'UPDATE_DATA_SAVE_STATUS';
  * @type {string} ToDo: Description for the constant.
  */
 export const UPDATE_DATA_INCLUDED_TABS_INFO = 'UPDATE_DATA_INCLUDED_TABS_INFO';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const ADD_VIEW_LOCATION_DATA = 'ADD_VIEW_LOCATION_DATA';
-
-/**
- * @constant
- * @type {string} Delete view from redux state
- */
-export const DELETE_VIEW = 'DELETE_VIEW';
-
-/**
- * @constant
- * @type {string} Reset view state in redux tree
- */
-export const RESET_VIEW = 'RESET_VIEW';
-
-/**
- * @constant
- * @type {string} Fetch data request
- */
-export const FETCH_DOCUMENT_PENDING = 'FETCH_DOCUMENT_PENDING';
-
-/**
- * @constant
- * @type {string} Success fetching data
- */
-export const FETCH_DOCUMENT_SUCCESS = 'FETCH_DOCUMENT_SUCCESS';
-
-/**
- * @constant
- * @type {string} Error when fetching data
- */
-export const FETCH_DOCUMENT_ERROR = 'FETCH_DOCUMENT_ERROR';
-
-/**
- * @constant
- * @type {string} Trigger fetching layout request
- */
-export const FETCH_LAYOUT_PENDING = 'FETCH_LAYOUT_PENDING';
-
-/**
- * @constant
- * @type {string} Success when fetching view layout
- */
-export const FETCH_LAYOUT_SUCCESS = 'FETCH_LAYOUT_SUCCESS';
-
-/**
- * @constant
- * @type {string} Error when fetching view layout
- */
-export const FETCH_LAYOUT_ERROR = 'FETCH_LAYOUT_ERROR';
-
-/**
- * @constant
- * @type {string} Trigger creating new view
- */
-export const CREATE_VIEW = 'CREATE_VIEW';
-
-/**
- * @constant
- * @type {string} Success when creating new view
- */
-export const CREATE_VIEW_SUCCESS = 'CREATE_VIEW_SUCCESS';
-
-/**
- * @constant
- * @type {string} Error when creating new view
- */
-export const CREATE_VIEW_ERROR = 'CREATE_VIEW_ERROR';
-
-/**
- * @constant
- * @type {string} Trigger filtering view
- */
-export const FILTER_VIEW_PENDING = 'FILTER_VIEW_PENDING';
-
-/**
- * @constant
- * @type {string} Success when filtering view
- */
-export const FILTER_VIEW_SUCCESS = 'FILTER_VIEW_SUCCESS';
-
-/**
- * @constant
- * @type {string} Error when filtering view
- */
-export const FILTER_VIEW_ERROR = 'FILTER_VIEW_ERROR';
-
-/**
- * @constant
- * @type {string} Update list data
- */
-export const UPDATE_VIEW_DATA = 'UPDATE_VIEW_DATA';
-
-/**
- * @constant
- * @type {string} Success when getting location config
- */
-export const FETCH_LOCATION_CONFIG_SUCCESS = 'FETCH_LOCATION_CONFIG_SUCCESS';
-
-/**
- * @constant
- * @type {string} Error when getting location config
- */
-export const FETCH_LOCATION_CONFIG_ERROR = 'FETCH_LOCATION_CONFIG_ERROR';
 
 // END OF SCOPED ACTIONS
 
@@ -364,24 +221,6 @@ export const DRAGGABLE_CARD = 'DRAGGABLE_CARD';
  * @type {string} ToDo: Description for the constant.
  */
 export const NEW_PROCESS_SUCCESS = 'NEW_PROCESS_SUCCESS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const REMOVE_TABLE_ITEMS_SELECTION = 'REMOVE_TABLE_ITEMS_SELECTION';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const SELECT_TABLE_ITEMS = 'SELECT_TABLE_ITEMS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const DESELECT_TABLE_ITEMS = 'DESELECT_TABLE_ITEMS';
 
 /**
  * @constant
@@ -537,18 +376,6 @@ export const DISABLE_OUTSIDE_CLICK = 'DISABLE_OUTSIDE_CLICK';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const SHOW_SPINNER = 'SHOW_SPINNER';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const HIDE_SPINNER = 'HIDE_SPINNER';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const INIT_KEYMAP = 'INIT_KEYMAP';
 
 /**
@@ -607,18 +434,6 @@ export const DELETE_TOP_ACTIONS = 'DELETE_TOP_ACTIONS';
 
 /**
  * @constant
- * @type {string} removes tab's quick actions on unmount.
- */
-export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';
-
-/**
- * @constant
  * @type {string} set languages in the app handler
  */
 export const SET_LANGUAGES = 'SET_LANGUAGES';
-
-/**
- * @constant
- * @type {string} update table selection
- */
-export const UPDATE_TABLE_SELECTION = 'UPDATE_TABLE_SELECTION';

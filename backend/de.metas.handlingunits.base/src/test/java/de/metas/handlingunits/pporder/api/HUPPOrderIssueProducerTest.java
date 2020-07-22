@@ -58,7 +58,6 @@ import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -86,10 +85,13 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import org.junit.jupiter.api.Test;
 
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
@@ -106,7 +108,6 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	private I_C_UOM uomMillimeter;
 	private I_C_UOM uomRolle;
 	private final BigDecimal rate_Rolle_to_Millimeter = new BigDecimal(1_500_000);
-	private final BigDecimal rate_Millimeter_to_Rolle = new BigDecimal(0.000000666667);
 
 	private I_M_Product pSalad;
 	private I_M_Product pFolie;
@@ -156,13 +157,12 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//
 		// Conversion for product Folie: Rolle -> Millimeter
 		// 1 Rolle = 1_500_000 millimeters
-		createUOMConversion(
-				pFolie,
-				uomRolle,
-				uomMillimeter,
-				rate_Rolle_to_Millimeter, // multiply rate
-				rate_Millimeter_to_Rolle  // divide rate
-		);
+		createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(pFolie.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(uomRolle.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomMillimeter.getC_UOM_ID()))
+				.fromToMultiplier(rate_Rolle_to_Millimeter)
+				.build());
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		// => expect to issue until we hit the qty required (calculated based on finished goods receipt) of that component,
 		{
 			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("57200"); // = 200items x 260(mm/item) + 10% scrap [millimeters]
-			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9618666475"); // = 1.00 - 0.04(57200mm to rolle)
+			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9618666666"); // = 1.00 - 0.04(57200mm to rolle)
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
 		}
 
@@ -293,8 +293,8 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			// 8600mm (28600-20000) still needs to be issued.
 			// 8600mm to role: 8600/1500000 = 0.0057333333333333 => rounded to 2 digits, HALF UP = 0.01role
 			// => 0.99=1.00role - 0.01(28600-20000 mm to rolle)
-			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9942666638");
-			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("8600.01");
+			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9942666667");
+			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("8600.00");
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
 		}
 

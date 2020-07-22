@@ -32,7 +32,7 @@ import de.metas.dunning_gateway.spi.model.MetasfreshVersion;
 import de.metas.dunning_gateway.spi.model.Money;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
 

@@ -28,9 +28,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
@@ -168,12 +168,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		// Get the IWeightable from VHU
 		final I_M_HU vhu = vhuItem.getM_HU();
 		final IAttributeStorage attributeStoarge = huContext.getHUAttributeStorageFactory().getAttributeStorage(vhu);
-		final IWeightable weightable = Services.get(IWeightableFactory.class).createWeightableOrNull(attributeStoarge);
-		if (weightable == null)
-		{
-			// shall not happen
-			return null;
-		}
+		final IWeightable weightable = Weightables.wrap(attributeStoarge);
 
 		//
 		// If there is no WeightNet attribute, there is no point to update it

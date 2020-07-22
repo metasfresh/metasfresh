@@ -33,7 +33,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.fullTextSearch.FullTextSearchSqlDocumentFilterConverter;
@@ -202,7 +202,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
-	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	public ImmutableMap<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return widgetTypesByFieldName;
 	}

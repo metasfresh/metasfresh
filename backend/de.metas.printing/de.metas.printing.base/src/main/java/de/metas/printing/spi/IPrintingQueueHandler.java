@@ -27,9 +27,6 @@ import de.metas.printing.model.I_C_Printing_Queue;
 
 /**
  * To implement this, I recommend to extend {@link PrintingQueueHandlerAdapter}.
- * 
- * @author ts
- *
  */
 public interface IPrintingQueueHandler
 {
@@ -37,27 +34,17 @@ public interface IPrintingQueueHandler
 	 * Method will be called after the given <code>queueItem</code> for the given <code>printOut</code> has been created and it's generic fields have been set, but before it is saved.
 	 * 
 	 * As the item will be saved after this invocation, there is no need to save it for this method's implementors.
-	 * 
-	 * @param queueItem
-	 * @param printOut
 	 */
 	void afterEnqueueBeforeSave(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
 
 	/**
 	 * Method will be called after the item was saved.
-	 * 
-	 * @param queueItem
-	 * @param printOut
 	 */
 	void afterEnqueueAfterSave(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
 
 	/**
 	 * Specifies if a given handler shall be invoked for a particular queueItem and printOut.<br>
 	 * Note: not implemented by the adapter, so each concrete handler has to implement this method.
-	 * 
-	 * @param queueItem
-	 * @param printOut
-	 * @return
 	 */
 	boolean isApplyHandler(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
 }

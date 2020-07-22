@@ -112,7 +112,6 @@ import de.metas.product.ResourceId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -448,40 +447,10 @@ public class MRPTestHelper
 		return uom;
 	}
 
-	public void createUOMConversion(
-			final int productId,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
-			final BigDecimal fromToMultipler,
-			final BigDecimal toFromMultiplier)
+	public void createUOMConversion(final CreateUOMConversionRequest request)
 	{
-		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(ProductId.ofRepoIdOrNull(productId))
-				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
-				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.fromToMultiplier(fromToMultipler)
-				.toFromMultiplier(toFromMultiplier)
-				.build());
-	}
-
-	public void createUOMConversion(
-			final I_M_Product product,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
-			final String fromToMultiplierStr,
-			final String toFromMultiplierStr)
-	{
-		final ProductId productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
-		final BigDecimal fromToMultiplier = new BigDecimal(fromToMultiplierStr);
-		final BigDecimal toFromMultiplier = new BigDecimal(toFromMultiplierStr);
-
-		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(productId)
-				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
-				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.fromToMultiplier(fromToMultiplier)
-				.toFromMultiplier(toFromMultiplier)
-				.build());
+		final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+		uomConversionDAO.createUOMConversion(request);
 	}
 
 	public I_M_Product createProduct(final String name)

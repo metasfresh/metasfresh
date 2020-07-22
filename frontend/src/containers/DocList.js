@@ -5,12 +5,8 @@ import classnames from 'classnames';
 
 import { updateUri } from '../actions/AppActions';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
-import {
-  selectTableItems,
-  setLatestNewDocument,
-} from '../actions/WindowActions';
 import Container from '../components/Container';
-import DocumentList from '../components/app/DocumentList';
+import DocumentList from './DocumentList';
 import Overlay from '../components/app/Overlay';
 
 const EMPTY_ARRAY = [];
@@ -22,26 +18,23 @@ const EMPTY_OBJECT = {};
  * @extends Component
  */
 class DocList extends PureComponent {
+  state = {};
+
+  /**
+   * getDerivedStateFromProps lifecycle - hold in the state of the component the last page
+   * @param {obj} props
+   * @param {obj} state
+   */
+  static getDerivedStateFromProps(props, state) {
+    return props.query && props.query.page !== state.lastPage
+      ? { lastPage: props.query.page }
+      : null;
+  }
+
   componentDidMount = () => {
-    const {
-      windowId,
-      latestNewDocument,
-      query,
-      getWindowBreadcrumb,
-      setLatestNewDocument,
-      selectTableItems,
-    } = this.props;
+    const { windowId, getWindowBreadcrumb } = this.props;
 
     getWindowBreadcrumb(windowId);
-
-    if (latestNewDocument) {
-      selectTableItems({
-        windowType: windowId,
-        viewId: query.viewId,
-        ids: [latestNewDocument],
-      });
-      setLatestNewDocument(null);
-    }
   };
 
   componentDidUpdate = (prevProps) => {
@@ -109,7 +102,7 @@ class DocList extends PureComponent {
         viewId={viewId}
         processStatus={processStatus}
         includedView={includedView}
-        showIndicator={!modal.visible && !rawModal.visible}
+        modalHidden={!modal.visible && !rawModal.visible}
         masterDocumentList={this.masterDocumentList}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
@@ -123,7 +116,7 @@ class DocList extends PureComponent {
             ref={this.handleDocListRef}
             type="grid"
             updateUri={this.updateUriCallback}
-            windowType={windowId}
+            windowId={windowId}
             refRowIds={refRowIds}
             includedView={includedView}
             inBackground={rawModal.visible}
@@ -133,6 +126,7 @@ class DocList extends PureComponent {
             disablePaginationShortcuts={modal.visible || rawModal.visible}
             sort={queryCopy.sort}
             page={queryCopy.page}
+            lastPage={this.state.lastPage}
             viewId={queryCopy.viewId}
             referenceId={queryCopy.referenceId}
             refType={queryCopy.refType}
@@ -146,7 +140,7 @@ class DocList extends PureComponent {
             !modal.visible && (
               <DocumentList
                 type="includedView"
-                windowType={includedView.windowType}
+                windowId={includedView.windowType}
                 defaultViewId={includedView.viewId}
                 parentWindowType={windowId}
                 parentDefaultViewId={viewId}
@@ -159,6 +153,7 @@ class DocList extends PureComponent {
                 inModal={false}
                 sort={queryCopy.sort}
                 page={queryCopy.page}
+                lastPage={this.state.lastPage}
                 viewId={queryCopy.viewId}
                 referenceId={queryCopy.referenceId}
                 refType={queryCopy.refType}
@@ -175,10 +170,8 @@ class DocList extends PureComponent {
 /**
  * @typedef {object} Props Component props
  * @prop {array} breadcrumb
- * @prop {func} dispatch
  * @prop {object} includedView
  * @prop {string} indicator
- * @prop {*} latestNewDocument
  * @prop {object} modal
  * @prop {object} overlay
  * @prop {string} pathname
@@ -190,7 +183,6 @@ class DocList extends PureComponent {
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
-  latestNewDocument: PropTypes.any,
   modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
   processStatus: PropTypes.string.isRequired,
@@ -199,8 +191,6 @@ DocList.propTypes = {
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
-  selectTableItems: PropTypes.func.isRequired,
-  setLatestNewDocument: PropTypes.func.isRequired,
   updateUri: PropTypes.func.isRequired,
 };
 
@@ -214,7 +204,6 @@ const mapStateToProps = (state) => {
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
     overlay: state.windowHandler.overlay,
-    latestNewDocument: state.windowHandler.latestNewDocument,
     includedView: state.listHandler.includedView.windowType
       ? state.listHandler.includedView
       : null,
@@ -227,8 +216,6 @@ export default connect(
   mapStateToProps,
   {
     getWindowBreadcrumb,
-    selectTableItems,
-    setLatestNewDocument,
     updateUri,
   }
 )(DocList);

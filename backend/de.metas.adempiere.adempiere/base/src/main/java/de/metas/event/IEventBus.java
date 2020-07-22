@@ -26,14 +26,13 @@ import java.util.function.Consumer;
 
 /**
  * Bus of {@link Event}s.
- *
+ * <p>
  * To get an instance of this object, please use {@link IEventBusFactory}.
  * <p>
  * Note: if an event bus is only local or also remote (i.e. events are send to other hosts as well) just depends on wheter the event bus factory registered a an apprpriate subscriber to forward events
  * to other hosts.
  *
  * @author tsa
- *
  */
 public interface IEventBus
 {
@@ -43,7 +42,6 @@ public interface IEventBus
 	String getTopicName();
 
 	/**
-	 *
 	 * @return the type (remote or local) of this event bus. If the event bus is "remote" then subscriber on other hosts will be notified about events on this host.
 	 */
 	Type getType();
@@ -75,6 +73,16 @@ public interface IEventBus
 	boolean isDestroyed();
 
 	/**
+	 * This can be configured via AD_SysConfig.
+	 * <p>
+	 * Async = true:
+	 * <li>PRO: the thread which posted the event can continue right away; the event is enqueued and processing will be done by another thread</li>
+	 * <li>CONs: no distributed tracing (didn't manage to get it to work); it's hard to keep track of the actual queue size => can lead to weird behavior</li>
+	 * <p>
+	 * Async = false:
+	 * <li>analog to the PROD and CONs of async</li>
+	 * <li>note that only one thread per eventbus is allowed to process its event (analog to the one worker thread that we have at async=true)</li>
+	 *
 	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #postEvent(Event)} doesn't have to wait for the listeners to be invoked.
 	 */
 	boolean isAsync();

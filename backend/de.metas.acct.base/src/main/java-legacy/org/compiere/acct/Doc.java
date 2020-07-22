@@ -88,7 +88,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -749,7 +749,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				services.markIssueDeprecated(previousPostingErrorIssueId);
 			}
 
-			sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append("=").append(postingErrorIssueId.getRepoId());
+			if (postingErrorIssueId != null)
+			{
+
+				sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append("=").append(postingErrorIssueId.getRepoId());
+			}
+			else
+			{
+				sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append(" = NULL ");
+			}
 		}
 
 		sql.append("\n WHERE ").append(keyColumnName).append("=").append(recordId);

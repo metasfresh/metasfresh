@@ -5,26 +5,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Print_Job_Detail
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_Print_Job_Detail, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1220123143L;
+	private static final long serialVersionUID = -328508281L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Detail (Properties ctx, int C_Print_Job_Detail_ID, String trxName)
     {
       super (ctx, C_Print_Job_Detail_ID, trxName);
-      /** if (C_Print_Job_Detail_ID == 0)
-        {
-			setAD_PrinterRouting_ID (0);
-			setC_Print_Job_Detail_ID (0);
-        } */
     }
 
     /** Load Constructor */
@@ -34,16 +26,13 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-	/** Set Drucker-Zuordnung.
-		@param AD_PrinterRouting_ID Drucker-Zuordnung	  */
 	@Override
 	public void setAD_PrinterRouting_ID (int AD_PrinterRouting_ID)
 	{
@@ -53,19 +42,12 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
 			set_Value (COLUMNNAME_AD_PrinterRouting_ID, Integer.valueOf(AD_PrinterRouting_ID));
 	}
 
-	/** Get Drucker-Zuordnung.
-		@return Drucker-Zuordnung	  */
 	@Override
-	public int getAD_PrinterRouting_ID () 
+	public int getAD_PrinterRouting_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterRouting_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_PrinterRouting_ID);
 	}
 
-	/** Set Druck-Job Detail.
-		@param C_Print_Job_Detail_ID Druck-Job Detail	  */
 	@Override
 	public void setC_Print_Job_Detail_ID (int C_Print_Job_Detail_ID)
 	{
@@ -75,15 +57,10 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
 			set_ValueNoCheck (COLUMNNAME_C_Print_Job_Detail_ID, Integer.valueOf(C_Print_Job_Detail_ID));
 	}
 
-	/** Get Druck-Job Detail.
-		@return Druck-Job Detail	  */
 	@Override
-	public int getC_Print_Job_Detail_ID () 
+	public int getC_Print_Job_Detail_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Job_Detail_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Print_Job_Detail_ID);
 	}
 
 	@Override
@@ -98,8 +75,6 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
 		set_ValueFromPO(COLUMNNAME_C_Print_Job_Line_ID, de.metas.printing.model.I_C_Print_Job_Line.class, C_Print_Job_Line);
 	}
 
-	/** Set Druck-Job Position.
-		@param C_Print_Job_Line_ID Druck-Job Position	  */
 	@Override
 	public void setC_Print_Job_Line_ID (int C_Print_Job_Line_ID)
 	{
@@ -109,14 +84,9 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
 			set_Value (COLUMNNAME_C_Print_Job_Line_ID, Integer.valueOf(C_Print_Job_Line_ID));
 	}
 
-	/** Get Druck-Job Position.
-		@return Druck-Job Position	  */
 	@Override
-	public int getC_Print_Job_Line_ID () 
+	public int getC_Print_Job_Line_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Job_Line_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Print_Job_Line_ID);
 	}
 }

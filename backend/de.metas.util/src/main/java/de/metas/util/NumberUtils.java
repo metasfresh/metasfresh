@@ -253,4 +253,18 @@ public final class NumberUtils
 			}
 		}
 	}
+
+	public static BigDecimal randomBigDecimal(
+			final BigDecimal valueMin,
+			final BigDecimal valueMax,
+			final int scale)
+	{
+		final BigDecimal range = valueMax.subtract(valueMin);
+		final BigDecimal random = new BigDecimal(Math.random());
+
+		return valueMin
+				.add(random.multiply(range))
+				.setScale(scale, RoundingMode.DOWN);
+
+	}
 }

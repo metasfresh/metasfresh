@@ -22,6 +22,8 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
 
 public class HUReceiptLineCandidatesBuilderTest
@@ -61,7 +63,12 @@ public class HUReceiptLineCandidatesBuilderTest
 
 		// we need to be able to convert between stocking-uom and the receiptSchedule's UOM
 		// we use a trivial conversion because we don'T want to complicate the tests (and we don't want to test uom-conversion in here)
-		uomHelper.createUOMConversion(productId, uomRecord, stockUOMRecord, ONE, ONE);
+		uomHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(productId)
+				.fromUomId(UomId.ofRepoId(uomRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
+				.fromToMultiplier(ONE)
+				.build());
 
 		receiptSchedule = newInstance(I_M_ReceiptSchedule.class, context);
 		receiptSchedule.setC_UOM_ID(uomRecord.getC_UOM_ID());

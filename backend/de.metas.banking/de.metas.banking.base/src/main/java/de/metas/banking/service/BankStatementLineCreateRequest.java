@@ -10,7 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -68,6 +68,8 @@ public class BankStatementLineCreateRequest
 	@NonNull
 	Money trxAmt;
 	@NonNull
+	Money bankFeeAmt;
+	@NonNull
 	Money chargeAmt;
 	@NonNull
 	Money interestAmt;
@@ -94,6 +96,7 @@ public class BankStatementLineCreateRequest
 			//
 			@NonNull final Money statementAmt,
 			@Nullable final Money trxAmt,
+			@Nullable final Money bankFeeAmt,
 			@Nullable final Money chargeAmt,
 			@Nullable final Money interestAmt,
 			@Nullable final ChargeId chargeId,
@@ -118,6 +121,7 @@ public class BankStatementLineCreateRequest
 		//
 		this.statementAmt = statementAmt;
 		this.trxAmt = trxAmt != null ? trxAmt : statementAmt.toZero();
+		this.bankFeeAmt = bankFeeAmt != null ? bankFeeAmt : statementAmt.toZero();
 		this.chargeAmt = chargeAmt != null ? chargeAmt : statementAmt.toZero();
 		this.interestAmt = interestAmt != null ? interestAmt : statementAmt.toZero();
 		this.chargeId = chargeId;

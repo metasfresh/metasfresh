@@ -53,7 +53,8 @@ public class PurchaseOrderFromItemsAggregator
 
 	private final List<I_C_Order> createdPurchaseOrders = new ArrayList<>();
 
-	private PurchaseOrderFromItemsAggregator()
+	@VisibleForTesting
+	PurchaseOrderFromItemsAggregator()
 	{
 		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::fromPurchaseOrderItem);
 	}

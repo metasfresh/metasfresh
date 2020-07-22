@@ -9,6 +9,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowsOrderBy;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
@@ -105,5 +106,5 @@ interface HUEditorViewBuffer
 	}
 
 	/** @return SQL where clause using fully qualified table name (i.e. not table alias) */
-	String getSqlWhereClause(DocumentIdsSelection rowIds);
+	SqlViewRowsWhereClause getSqlWhereClause(DocumentIdsSelection rowIds);
 }

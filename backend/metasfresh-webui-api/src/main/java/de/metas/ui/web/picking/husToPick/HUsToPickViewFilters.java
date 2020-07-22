@@ -1,21 +1,12 @@
 package de.metas.ui.web.picking.husToPick;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.DB;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -29,6 +20,12 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.DB;
+
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -63,6 +60,8 @@ class HUsToPickViewFilters
 
 	static final String PARAM_CurrentShipmentScheduleId = "CurrentShipmentScheduleId";
 	static final String PARAM_BestBeforePolicy = "BestBeforePolicy";
+
+	private static final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	public static ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
@@ -182,14 +181,18 @@ class HUsToPickViewFilters
 			final int shipmentScheduleId,
 			final boolean considerAttributes)
 	{
-		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+		final ShipmentScheduleId sScheduleID = ShipmentScheduleId.ofRepoId(shipmentScheduleId);
 
-		final PickingHUsQuery query = PickingHUsQuery.builder()
-				.shipmentSchedule(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class))
-				.onlyTopLevelHUs(false)
-				.onlyIfAttributesMatchWithShipmentSchedules(considerAttributes)
+		final RetrieveAvailableHUIdsToPickRequest request = RetrieveAvailableHUIdsToPickRequest
+				.builder()
+				.scheduleId(sScheduleID)
+				.considerAttributes(considerAttributes)
+				.onlyTopLevel(false)
 				.build();
-		final List<Integer> availableHUIdsToPick = huPickingSlotBL.retrieveAvailableHUIdsToPick(query);
-		return availableHUIdsToPick;
+
+		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(request)
+				.stream()
+				.map(HuId::getRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

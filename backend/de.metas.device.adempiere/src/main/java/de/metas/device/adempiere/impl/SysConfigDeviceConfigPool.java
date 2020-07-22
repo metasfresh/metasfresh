@@ -6,9 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.net.IHostIdentifier;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_SysConfig;
 import org.slf4j.Logger;
 
@@ -22,7 +25,9 @@ import de.metas.cache.ICacheResetListener;
 import de.metas.device.adempiere.DeviceConfig;
 import de.metas.device.adempiere.DeviceConfigException;
 import de.metas.device.adempiere.IDeviceConfigPool;
+import de.metas.device.adempiere.IDeviceConfigPoolListener;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -42,11 +47,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -69,26 +74,27 @@ import lombok.NonNull;
 	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
 	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
 
-	/*package */static final String IPADDRESS_ANY = "0.0.0.0";
+	/* package */static final String IPADDRESS_ANY = "0.0.0.0";
 
 	private final IHostIdentifier clientHost;
-	private final int adClientId;
-	private final int adOrgId;
+	private final ClientId adClientId;
+	private final OrgId adOrgId;
 
-	private final ExtendedMemorizingSupplier<ImmutableListMultimap<String, DeviceConfig>> //
+	private final ExtendedMemorizingSupplier<ImmutableListMultimap<AttributeCode, DeviceConfig>> //
 	deviceConfigsIndexedByAttributeCodeSupplier = ExtendedMemorizingSupplier.of(() -> loadDeviceConfigsIndexedByAttributeCode());
 
 	private final ICacheResetListener cacheResetListener = request -> resetDeviceConfigs();
 
 	private final WeakList<IDeviceConfigPoolListener> listeners = new WeakList<>(true); // weakDefault=true
 
-	public SysConfigDeviceConfigPool(@NonNull final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
+	public SysConfigDeviceConfigPool(
+			@NonNull final IHostIdentifier clientHost,
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
 	{
-		Check.assumeNotNull(clientHost, "Parameter clientHost is not null");
-
 		this.clientHost = clientHost;
-		this.adClientId = adClientId <= 0 ? 0 : adClientId;
-		this.adOrgId = adOrgId <= 0 ? 0 : adOrgId;
+		this.adClientId = adClientId;
+		this.adOrgId = adOrgId;
 
 		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, cacheResetListener);
 	}
@@ -111,14 +117,14 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public List<DeviceConfig> getDeviceConfigsForAttributeCode(final String attributeCode)
+	public List<DeviceConfig> getDeviceConfigsForAttributeCode(final AttributeCode attributeCode)
 	{
 		return deviceConfigsIndexedByAttributeCodeSupplier.get()
 				.get(attributeCode);
 	}
 
 	@Override
-	public Set<String> getAllAttributeCodes()
+	public Set<AttributeCode> getAllAttributeCodes()
 	{
 		return deviceConfigsIndexedByAttributeCodeSupplier.get().keySet();
 	}
@@ -143,7 +149,7 @@ import lombok.NonNull;
 		return 1;
 	}
 
-	private ImmutableListMultimap<String, DeviceConfig> loadDeviceConfigsIndexedByAttributeCode()
+	private ImmutableListMultimap<AttributeCode, DeviceConfig> loadDeviceConfigsIndexedByAttributeCode()
 	{
 		return getAllDeviceNames()
 				.stream()
@@ -162,7 +168,7 @@ import lombok.NonNull;
 			return null;
 		}
 
-		final Set<String> assignedAttributeCodes = getDeviceAssignedAttributeCodes(deviceName);
+		final Set<AttributeCode> assignedAttributeCodes = getDeviceAssignedAttributeCodes(deviceName);
 		if (assignedAttributeCodes.isEmpty())
 		{
 			// NOTE: a warning was already logged
@@ -224,24 +230,32 @@ import lombok.NonNull;
 		return paramValue;
 	}
 
-	private Set<String> getDeviceAssignedAttributeCodes(final String deviceName)
+	private ImmutableSet<AttributeCode> getDeviceAssignedAttributeCodes(final String deviceName)
 	{
 		final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AttributeInternalName;
-		final Collection<String> assignedAttributeCodes = sysConfigBL.getValuesForPrefix(attribSysConfigPrefix, adClientId, adOrgId).values();
+		final ImmutableSet<AttributeCode> assignedAttributeCodes = sysConfigBL
+				.getValuesForPrefix(attribSysConfigPrefix, adClientId, adOrgId)
+				.values()
+				.stream()
+				.map(AttributeCode::ofString)
+				.collect(ImmutableSet.toImmutableSet());
+
 		if (assignedAttributeCodes.isEmpty())
 		{
 			logger.info("Found no SysConfig assigned attribute to device {}; SysConfig-prefix={}", deviceName, attribSysConfigPrefix);
 			return ImmutableSet.of();
 		}
-
-		return ImmutableSet.copyOf(assignedAttributeCodes);
+		else
+		{
+			return assignedAttributeCodes;
+		}
 	}
 
 	/**
 	 * @param deviceName
 	 * @return M_Warehouse_IDs
 	 */
-	private Set<Integer> getDeviceWarehouseIds(final String deviceName)
+	private Set<WarehouseId> getDeviceWarehouseIds(final String deviceName)
 	{
 		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
 		return sysConfigBL.getValuesForPrefix(sysconfigPrefix, adClientId, adOrgId)
@@ -250,7 +264,7 @@ import lombok.NonNull;
 				.map(warehouseIdStr -> {
 					try
 					{
-						return Integer.parseInt(warehouseIdStr);
+						return WarehouseId.ofRepoId(Integer.parseInt(warehouseIdStr));
 					}
 					catch (Exception ex)
 					{
@@ -274,9 +288,9 @@ import lombok.NonNull;
 		return deviceClassname;
 	}
 
-	private Set<String> getDeviceRequestClassnames(final String deviceName, final String attributeCode)
+	private Set<String> getDeviceRequestClassnames(final String deviceName, final AttributeCode attributeCode)
 	{
-		final Map<String, String> requestClassNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName + "." + attributeCode, adClientId, adOrgId);
+		final Map<String, String> requestClassNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName + "." + attributeCode.getCode(), adClientId, adOrgId);
 		return ImmutableSet.copyOf(requestClassNames.values());
 	}
 

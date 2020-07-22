@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.lowagie.text.Document;
@@ -50,9 +51,8 @@ public class PdfCollator
 		this(new ByteArrayOutputStream());
 	}
 
-	public PdfCollator(final OutputStream out)
+	public PdfCollator(@NonNull final OutputStream out)
 	{
-		Check.assume(out != null, "out not null");
 		this.out = out;
 	}
 

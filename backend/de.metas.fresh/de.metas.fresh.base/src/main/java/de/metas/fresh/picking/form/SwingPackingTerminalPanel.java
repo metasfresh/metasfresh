@@ -61,10 +61,9 @@ import de.metas.fresh.picking.ProductKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.quantity.CapacityInterface;
+import de.metas.quantity.Capacity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import net.miginfocom.swing.MigLayout;
 
@@ -440,7 +439,7 @@ public class SwingPackingTerminalPanel implements ITerminalPanel, ITerminalBaseP
 		//
 		// Case: our picking slot has a finite capacity defined
 		// => use the capacity
-		final CapacityInterface pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getProductId(), productKey.getQtyUnallocatedUOM());
+		final Capacity pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getProductId(), productKey.getQtyUnallocatedUOM());
 		if (pickingSlotCapacity != null
 				&& !pickingSlotCapacity.isInfiniteCapacity())
 		{

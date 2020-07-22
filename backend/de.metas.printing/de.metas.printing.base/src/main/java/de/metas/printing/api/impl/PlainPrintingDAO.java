@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.printing.api.IPrintClientsBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -68,6 +69,7 @@ import de.metas.util.Services;
 public class PlainPrintingDAO extends AbstractPrintingDAO
 {
 	private final POJOLookupMap lookupMap = POJOLookupMap.get();
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
 
 	public POJOLookupMap getLookupMap()
 	{
@@ -146,13 +148,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(final I_AD_Printer_Matching matching, final int AD_Printer_Tray_ID)
-	{
-		return lookupMap.getFirstOnly(I_AD_PrinterTray_Matching.class, pojo -> pojo.getAD_Printer_Matching_ID() == matching.getAD_Printer_Matching_ID()
-				&& pojo.getAD_Printer_Tray_ID() == AD_Printer_Tray_ID);
-	}
-
-	@Override
 	public List<I_AD_PrinterTray_Matching> retrievePrinterTrayMatchings(final I_AD_Printer_Matching matching)
 	{
 		return lookupMap.getRecords(I_AD_PrinterTray_Matching.class, pojo -> {
@@ -178,7 +173,7 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	public I_C_Print_Job_Instructions retrieveAndLockNextPrintJobInstructions(final Properties ctx, final String trxName)
 	{
-		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
+		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
 
 		final List<I_C_Print_Job_Instructions> result = lookupMap.getRecords(I_C_Print_Job_Instructions.class, pojo -> {
 			if (!X_C_Print_Job_Instructions.STATUS_Pending.equals(pojo.getStatus()))
@@ -313,12 +308,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 		return lookupMap.getRecords(I_AD_PrinterHW_Calibration.class, pojo -> pojo.getAD_PrinterHW_ID() == printerID);
 	}
 
-	@Override
-	public List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(final I_AD_PrinterHW printerHW)
-	{
-		return lookupMap.getRecords(I_AD_PrinterHW_MediaTray.class, pojo -> pojo.getAD_PrinterHW_ID() == printerHW.getAD_PrinterHW_ID());
-	}
-
 	public I_C_Print_Job_Instructions retrievePrintJobInstructionsForPrintJob(final I_C_Print_Job printJob)
 	{
 		return lookupMap.getFirstOnly(I_C_Print_Job_Instructions.class, pojo -> pojo.getC_Print_Job_ID() == printJob.getC_Print_Job_ID());
@@ -344,24 +333,5 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 				.addComparator(cmpPrinterName));
 
 		return result;
-	}
-
-
-	@Override
-	public List<I_AD_Printer_Tray> retrieveTrays(final I_AD_Printer printer)
-	{
-		return lookupMap.getRecords(I_AD_Printer_Tray.class, pojo -> {
-
-			if (!pojo.isActive())
-			{
-				return false;
-			}
-
-			if (pojo.getAD_Printer_ID() != printer.getAD_Printer_ID())
-			{
-				return false;
-			}
-			return true;
-		});
 	}
 }

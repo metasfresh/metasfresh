@@ -24,13 +24,12 @@ package de.metas.quantity;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 import org.compiere.model.I_C_UOM;
 
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -40,7 +39,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  */
 @EqualsAndHashCode
-public class Capacity implements CapacityInterface
+public final class Capacity
 {
 
 	public static Capacity createInfiniteCapacity(
@@ -50,7 +49,7 @@ public class Capacity implements CapacityInterface
 		return new Capacity(productId, uom);
 	}
 
-	public static CapacityInterface createZeroCapacity(
+	public static Capacity createZeroCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			final boolean allowNegativeCapacity)
@@ -66,11 +65,6 @@ public class Capacity implements CapacityInterface
 	{
 		return new Capacity(qty, productId, uom, allowNegativeCapacity);
 	}
-
-	/**
-	 * Signals the logic to use the default capacity.
-	 */
-	public static BigDecimal DEFAULT = new BigDecimal(Long.MAX_VALUE);
 
 	private final ProductId productId;
 	private final I_C_UOM uom;
@@ -91,7 +85,6 @@ public class Capacity implements CapacityInterface
 		this.productId = productId;
 		this.uom = uom;
 
-		Check.assumeNotNull(capacity, "capacity not null");
 		this.capacity = capacity;
 
 		infiniteCapacity = false;
@@ -112,13 +105,11 @@ public class Capacity implements CapacityInterface
 		allowNegativeCapacity = true;
 	}
 
-	@Override
 	public boolean isInfiniteCapacity()
 	{
 		return infiniteCapacity;
 	}
 
-	@Override
 	public boolean isAllowNegativeCapacity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {}", this);
@@ -130,43 +121,40 @@ public class Capacity implements CapacityInterface
 	 *
 	 * @return capacity
 	 */
-	@Override
 	public BigDecimal toBigDecimal()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity as BigDecimal if it's infinite; this={}", this);
 		return capacity;
 	}
 
-	@Override
 	public Quantity toQuantity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Quantity if it's infinite; this={}", this);
 		return Quantity.of(capacity, uom);
 	}
 
-	@Override
-	public CapacityInterface convertToUOM(@NonNull final I_C_UOM uomTo)
+	public Capacity convertToUOM(
+			@NonNull final I_C_UOM uomTo,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		if (uom.getC_UOM_ID() == uomTo.getC_UOM_ID())
 		{
 			return this;
 		}
-		if (isInfiniteCapacity())
+		else if (isInfiniteCapacity())
 		{
 			return createInfiniteCapacity(productId, uomTo);
 		}
-
-		final BigDecimal qtyCapacityTo = Services.get(IUOMConversionBL.class).convertQty(
-				productId,
-				capacity,
-				uom,
-				uomTo);
-
-		return createCapacity(qtyCapacityTo, productId, uomTo, allowNegativeCapacity);
+		else
+		{
+			final BigDecimal capacityConv = uomConverter.convertQty(productId, capacity, uom, uomTo);
+			return createCapacity(capacityConv, productId, uomTo, allowNegativeCapacity);
+		}
 	}
 
-	@Override
-	public CapacityInterface subtractQuantity(@NonNull final Quantity quantity)
+	public Capacity subtractQuantity(
+			@NonNull final Quantity quantity,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		// If it's infinite capacity, there is nothing to adjust
 		if (infiniteCapacity)
@@ -180,7 +168,7 @@ public class Capacity implements CapacityInterface
 			return this;
 		}
 
-		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
+		final BigDecimal qtyUsedConv = uomConverter
 				.convertQty(getProductId(),
 						quantity.toBigDecimal(),
 						quantity.getUOM(),
@@ -221,34 +209,37 @@ public class Capacity implements CapacityInterface
 	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
-	public Integer calculateQtyTU(@NonNull final BigDecimal qty, @NonNull final I_C_UOM targetUom)
+	public Optional<QuantityTU> calculateQtyTU(
+			@NonNull final BigDecimal qty,
+			@NonNull final I_C_UOM targetUom,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		// Infinite capacity => one pack would be sufficient
 		if (infiniteCapacity)
 		{
-			return 1;
+			return Optional.of(QuantityTU.ONE);
 		}
 
 		// Qty is zero => zero packs
 		if (qty.signum() == 0)
 		{
-			return 0;
+			return Optional.of(QuantityTU.ZERO);
 		}
 
 		// Capacity is ZERO => N/A
 		if (capacity.signum() <= 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		// Convert Qty to Capacity's UOM
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(productId, qty, uom, targetUom);
+		final BigDecimal qtyConv = uomConverter.convertQty(productId, qty, uom, targetUom);
 
-		final BigDecimal qtyPacks = qtyConv.divide(capacity, 0, RoundingMode.UP);
-		return qtyPacks.intValueExact();
+		final int qtyTUs = qtyConv.divide(capacity, 0, RoundingMode.UP).intValueExact();
+		return Optional.of(QuantityTU.ofInt(qtyTUs));
 	}
 
-	public CapacityInterface multiply(final int multiplier)
+	public Capacity multiply(final int multiplier)
 	{
 		Check.assume(multiplier >= 0, "multiplier = {} needs to be 0", multiplier);
 
@@ -272,7 +263,6 @@ public class Capacity implements CapacityInterface
 		return productId;
 	}
 
-	@Override
 	public I_C_UOM getC_UOM()
 	{
 		return uom;

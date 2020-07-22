@@ -12,7 +12,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -1,24 +1,36 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.payment_allocation;
-
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.lang.SOTrx;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.ui.web.view.IViewRow;
@@ -34,28 +46,13 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.Set;
 
 public class InvoiceRow implements IViewRow
 {
@@ -87,6 +84,7 @@ public class InvoiceRow implements IViewRow
 	public static final String FIELD_ServiceFeeAmt = "serviceFeeAmt";
 	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "ServiceFeeAmt", fieldName = FIELD_ServiceFeeAmt)
 	@Getter
+	// @Nullable // if you uncomment this, the field will no longer be shown in the modal :^)
 	private final Amount serviceFeeAmt;
 
 	public static final String FIELD_BankFeeAmt = "bankFeeAmt";
@@ -109,8 +107,6 @@ public class InvoiceRow implements IViewRow
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
 	private final InvoiceDocBaseType docBaseType;
-	@Getter
-	private final InvoiceProcessingFeeCalculation serviceFeeCalculation;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> values;
 
@@ -126,8 +122,8 @@ public class InvoiceRow implements IViewRow
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt,
-			@Nullable final InvoiceProcessingFeeCalculation serviceFeeCalculation,
-			@Nullable final Amount bankFeeAmt)
+			@Nullable final Amount bankFeeAmt,
+			@Nullable final Amount serviceFeeAmt)
 	{
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
@@ -138,27 +134,27 @@ public class InvoiceRow implements IViewRow
 		this.grandTotal = grandTotal;
 		this.openAmt = openAmt;
 		this.discountAmt = discountAmt;
-		this.serviceFeeAmt = serviceFeeCalculation != null ? serviceFeeCalculation.getFeeAmountIncludingTax() : null;
+		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
+		//noinspection ConstantConditions
 		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
 		this.currencyCodeString = currencyCode.toThreeLetterCode();
 
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
 		this.invoiceId = invoiceId;
 		this.clientAndOrgId = clientAndOrgId;
-		this.serviceFeeCalculation = serviceFeeCalculation;
 
-		this.values = buildViewRowFieldNameAndJsonValuesHolder(serviceFeeCalculation);
+		this.values = buildViewRowFieldNameAndJsonValuesHolder(docBaseType.getSoTrx());
 	}
 
 	private static ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> buildViewRowFieldNameAndJsonValuesHolder(
-			@Nullable final InvoiceProcessingFeeCalculation serviceFeeCalculation)
+			@NonNull final SOTrx soTrx)
 	{
-		final ImmutableMap.Builder<String, ViewEditorRenderMode> viewEditorRenderModes = ImmutableMap.<String, ViewEditorRenderMode> builder()
+		final ImmutableMap.Builder<String, ViewEditorRenderMode> viewEditorRenderModes = ImmutableMap.<String, ViewEditorRenderMode>builder()
 				.put(FIELD_DiscountAmt, ViewEditorRenderMode.ALWAYS)
 				.put(FIELD_BankFeeAmt, ViewEditorRenderMode.ALWAYS);
 
-		if (serviceFeeCalculation != null)
+		if (soTrx.isSales())
 		{
 			viewEditorRenderModes.put(FIELD_ServiceFeeAmt, ViewEditorRenderMode.ALWAYS);
 		}

@@ -22,7 +22,7 @@ package de.metas.invoicecandidate.model;
  * #L%
  */
 
-public interface I_C_Invoice_Detail extends org.adempiere.model.I_C_Invoice_Detail
+public interface I_C_Invoice_Detail extends org.compiere.model.I_C_Invoice_Detail
 {
 	//@formatter:off
 	 org.adempiere.model.ModelColumn<I_C_Invoice_Detail, I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID =

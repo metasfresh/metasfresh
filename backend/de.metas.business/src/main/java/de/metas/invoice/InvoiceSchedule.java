@@ -24,7 +24,7 @@ package de.metas.invoice;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 import static java.time.temporal.TemporalAdjusters.nextOrSame;
 

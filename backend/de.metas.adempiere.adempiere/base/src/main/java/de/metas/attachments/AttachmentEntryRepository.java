@@ -1,18 +1,11 @@
 package de.metas.attachments;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
+import de.metas.attachments.listener.TableAttachmentListenerService;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -21,13 +14,17 @@ import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
-import de.metas.attachments.listener.TableAttachmentListenerService;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -190,8 +187,7 @@ public class AttachmentEntryRepository
 		}
 
 		attachmentEntryFactory.syncToRecord(attachmentEntry, attachmentEntryRecord);
-
-		saveRecord(attachmentEntryRecord);
+		saveRecord(attachmentEntryRecord); // needed in case the record was new, because we need an ID for it
 
 		syncLinkedRecords(attachmentEntry, attachmentEntryRecord);
 
@@ -223,6 +219,7 @@ public class AttachmentEntryRepository
 				}
 			}
 		}
+
 
 		// create missing
 		// i.e. iterate the references that did not yet have an I_AD_Attachment_MultiRef record

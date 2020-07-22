@@ -113,7 +113,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
@@ -146,6 +146,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
 	 */
 	private static final String PAIN_001_001_03_CH_02 = "pain.001.001.03.ch.02";
+	private static final String PAIN_001_001_03_CH_02_SCHEMALOCATION = "http://www.six-interbank-clearing.com/de/";
 
 	/** Title: "ISR" */
 	private static final String PAYMENT_TYPE_1 = "PAYMENT_TYPE_1";
@@ -223,7 +224,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 			final Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty("jaxb.formatted.output", Boolean.TRUE);
-			marshaller.setProperty("jaxb.schemaLocation", "urn:sepade:xsd:" + PAIN_001_001_03_CH_02 + " " + PAIN_001_001_03_CH_02 + ".xsd");
+			marshaller.setProperty("jaxb.schemaLocation", PAIN_001_001_03_CH_02_SCHEMALOCATION + PAIN_001_001_03_CH_02 + ".xsd " + PAIN_001_001_03_CH_02 + ".xsd");
 			marshaller.marshal(jaxbDocument, xmlWriter);
 		}
 		catch (final JAXBException e)
@@ -524,8 +525,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// Creditor Agent (i.e. Bank)
 		// not allowed for 1, 2.1 and 8, must for the rest
 		final I_C_BP_BankAccount bankAccount = line.getC_BP_BankAccount();
-		final BankId bankId = BankId.ofRepoId(bankAccount.getC_Bank_ID());
-		final Bank bank = bankRepo.getById(bankId);
+		final BankId bankId = BankId.ofRepoIdOrNull(bankAccount.getC_Bank_ID());
+		final Bank bankOrNull = bankId == null ? null : bankRepo.getById(bankId);
 
 		if (paymentType != PAYMENT_TYPE_1
 				&& paymentType != PAYMENT_TYPE_2_1
@@ -589,9 +590,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				// see if we can also export the bank's address
 				if (line.getC_BP_BankAccount_ID() > 0
 						&& bankAccount.getC_Bank_ID() > 0
-						&& bank.getLocationId() != null)
+						&& bankOrNull!= null && bankOrNull.getLocationId() != null)
 				{
-					final I_C_Location bankLocation = locationDAO.getById(bank.getLocationId());
+					final I_C_Location bankLocation = locationDAO.getById(bankOrNull.getLocationId());
 					final PostalAddress6CH pstlAdr = createStructuredPstlAdr(bankLocation);
 
 					finInstnId.setPstlAdr(pstlAdr);

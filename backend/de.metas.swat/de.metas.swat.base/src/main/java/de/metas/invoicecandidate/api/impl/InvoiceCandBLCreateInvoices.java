@@ -78,7 +78,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
-import de.metas.invoice.service.InvoiceUtil;
+import de.metas.lang.ExternalIdsUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -641,7 +641,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.map(I_C_Invoice_Candidate::getExternalLineId)
 						.filter(Objects::nonNull)
 						.collect(ImmutableList.toImmutableList());
-				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
+				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it

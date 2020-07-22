@@ -1,5 +1,7 @@
 package de.metas.ui.web.process.adprocess;
 
+import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -9,8 +11,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.annotation.Nullable;
 
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.model.*;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -35,15 +35,20 @@ import de.metas.ui.web.process.exceptions.ProcessExecutionException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-
-import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 
 /*
  * #%L
@@ -236,35 +241,43 @@ import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 		}
 
 		final IRangeAwareParams parameterFieldValues = currentProcessInstance.getParametersFromAnnotatedFields();
-		final List<JSONDocumentChangedEvent> events = parameterFieldValues.getParameterNames()
-				.stream()
-				.filter(parameters::hasField)
-				.map(parameterName -> createJSONDocumentChangedEventFromFieldValue(parameterFieldValues, parameterName))
-				.collect(ImmutableList.toImmutableList());
-		if (events.isEmpty())
+		for (final String parameterName : parameterFieldValues.getParameterNames())
 		{
-			return;
-		}
+			if (!parameters.hasField(parameterName))
+			{
+				continue;
+			}
 
-		parameters.processValueChanges(events, () -> "update from java process annotated fields");
+			final Object value = parameterFieldValues.getParameterAsObject(parameterName);
+			updateParametersDocumentFromJavaProcessAnnotatedFields(parameterName, value);
+		}
 	}
 
-	private static JSONDocumentChangedEvent createJSONDocumentChangedEventFromFieldValue(final IRangeAwareParams parameterFieldValues, final String parameterName)
+	private void updateParametersDocumentFromJavaProcessAnnotatedFields(
+			@NonNull final String parameterName,
+			@Nullable final Object value)
 	{
-		final Object fieldValue = parameterFieldValues.getParameterAsObject(parameterName);
-		if (fieldValue == null)
+		Object valueNorm;
+		if (value == null)
 		{
-			return JSONDocumentChangedEvent.replace(parameterName, null);
+			valueNorm = null;
 		}
-		else if (InterfaceWrapperHelper.isModelInterface(fieldValue.getClass()))
+		else if (InterfaceWrapperHelper.isModelInterface(value.getClass()))
 		{
-			int id = InterfaceWrapperHelper.getId(fieldValue);
-			return JSONDocumentChangedEvent.replace(parameterName, id);
+			int id = InterfaceWrapperHelper.getId(value);
+			valueNorm = id;
 		}
 		else
 		{
-			return JSONDocumentChangedEvent.replace(parameterName, fieldValue);
+			valueNorm = value;
 		}
+
+		final boolean ignoreReadonlyFlag = true;
+		parameters.processValueChange(
+				parameterName,
+				valueNorm,
+				() -> "update from java process annotated fields",
+				ignoreReadonlyFlag);
 	}
 
 	@Override

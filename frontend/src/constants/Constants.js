@@ -2,12 +2,6 @@
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const LOCAL_LANG = 'metasfreshLanguage';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const VIEW_EDITOR_RENDER_MODES_NEVER = 'never';
 
 /**
@@ -131,3 +125,4 @@ export const DROPDOWN_OFFSET_BIG = 250;
  * @type {integer} Used to indicate the offset position for resizing the table container
  */
 export const DROPUP_OFFSET_SMALL = 150;
+export const LOCAL_LANG = 'metasfreshLanguage';

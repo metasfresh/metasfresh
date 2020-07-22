@@ -1,5 +1,6 @@
 package de.metas.handlingunits.attribute;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 
@@ -46,40 +47,40 @@ public final class HUAttributeConstants
 
 	public static final String ATTR_QualityDiscountPercent_Value = "QualityDiscountPercent";
 	public static final String ATTR_QualityNotice_Value = "QualityNotice";
-	public static final String ATTR_SSCC18_Value = "SSCC18";
-	public static final String ATTR_SubProducerBPartner_Value = AttributeConstants.ATTR_SubProducerBPartner_Value;
+	public static final AttributeCode ATTR_SSCC18_Value = AttributeCode.ofString("SSCC18");
+	public static final AttributeCode ATTR_SubProducerBPartner_Value = AttributeConstants.ATTR_SubProducerBPartner_Value;
 
 	/**
 	 * @see http://dewiki908/mediawiki/index.php/07759_Stockvalue_by_FiFo_%28100951729256%29
 	 */
-	public static final String ATTR_CostPrice = "HU_CostPrice";
+	public static final AttributeCode ATTR_CostPrice = AttributeCode.ofString("HU_CostPrice");
 
 	/**
 	 * @see http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29
 	 */
-	public static final String ATTR_LotNumberDate = LotNumberDateAttributeDAO.ATTR_LotNumberDate;
+	public static final AttributeCode ATTR_LotNumberDate = LotNumberDateAttributeDAO.ATTR_LotNumberDate;
 
 	/**
 	 * The <code>M_Attribute.Value</code> for the HU-attribute referencing the purchase C_OrderLine_ID on which the given HU was ordered.
 	 *
 	 * @task 09741
 	 */
-	public static final String ATTR_PurchaseOrderLine_ID = "HU_PurchaseOrderLine_ID";
+	public static final AttributeCode ATTR_PurchaseOrderLine_ID = AttributeCode.ofString("HU_PurchaseOrderLine_ID");
 
 	/**
 	 * The <code>M_Attribute.Value</code> for the HU-attribute referencing the receipt M_InOutLine_ID on which the given HU was received.
 	 *
 	 * @task 09741
 	 */
-	public static final String ATTR_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
+	public static final AttributeCode ATTR_ReceiptInOutLine_ID = AttributeCode.ofString("HU_ReceiptInOutLine_ID");
 
-	public static final String ATTR_Expired = "HU_Expired";
+	public static final AttributeCode ATTR_Expired = AttributeCode.ofString("HU_Expired");
 	public static final String ATTR_Expired_Value_Expired = "expired";
 
-	public static final String ATTR_Age = "Age";
-	public static final String ATTR_ProductionDate = "ProductionDate";
+	public static final AttributeCode ATTR_Age = AttributeCode.ofString("Age");
+	public static final AttributeCode ATTR_ProductionDate = AttributeCode.ofString("ProductionDate");
 
-	public static final String ATTR_Quarantine = "HU_Quarantine";
+	public static final AttributeCode ATTR_Quarantine = AttributeCode.ofString("HU_Quarantine");
 	public static final String ATTR_Quarantine_Value_Quarantine = "quarantine";
 
 	public static String sqlBestBeforeDate(final String huIdColumnName)

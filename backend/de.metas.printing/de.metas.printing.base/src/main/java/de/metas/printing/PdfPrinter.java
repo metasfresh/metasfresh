@@ -36,12 +36,10 @@ public class PdfPrinter
 	 *
 	 * @param printable The {@link Printable} that has to be printed.
 	 * @param clone A clone of the first {@link Printable}. Needed because internally, it must be printed twice and the Printable may keep state and may not be re-usable.
-	 * @param orientation {@link PageFormat}.PORTRAIT or {@link PageFormat}.LANDSCAPE.
 	 * @return A byte-array with the pdf file.
 	 */
 	public static byte[] print(final Printable printable, final Printable clone)
 	{
-
 		// The bytes to be returned
 		byte[] bytes = null;
 

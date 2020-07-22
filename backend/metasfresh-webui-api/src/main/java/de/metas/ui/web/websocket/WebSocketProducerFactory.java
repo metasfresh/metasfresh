@@ -42,5 +42,5 @@ public interface WebSocketProducerFactory
 	 * @param topicName
 	 * @return
 	 */
-	WebSocketProducer createProducer(final String topicName);
+	WebSocketProducer createProducer(final WebsocketTopicName topicName);
 }

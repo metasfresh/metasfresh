@@ -1,6 +1,6 @@
 package de.metas.rest_api.common;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import lombok.NonNull;

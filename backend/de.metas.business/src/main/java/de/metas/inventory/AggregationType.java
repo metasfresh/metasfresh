@@ -38,11 +38,15 @@ public enum AggregationType
 
 	SINGLE_HU(
 			HUAggregationType.SINGLE_HU,
-			DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, "ISH")),
+			DocBaseAndSubType.of(
+					X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory,
+					InventoryDocSubType.SingleHUInventory.getCode())),
 
 	MULTIPLE_HUS(
 			HUAggregationType.MULTI_HU,
-			DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, "IAH"));
+			DocBaseAndSubType.of(
+					X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory,
+					InventoryDocSubType.AggregatedHUInventory.getCode()));
 
 	@Getter
 	private final HUAggregationType huAggregationType;

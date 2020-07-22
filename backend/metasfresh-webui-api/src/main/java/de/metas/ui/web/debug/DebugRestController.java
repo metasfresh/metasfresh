@@ -1,6 +1,5 @@
 package de.metas.ui.web.debug;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,10 +20,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.simp.SimpMessageType;
-import org.springframework.messaging.support.GenericMessage;
-import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,12 +60,8 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
-import de.metas.ui.web.view.event.JSONViewChanges;
-import de.metas.ui.web.view.event.ViewChanges;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewResult;
-import de.metas.ui.web.websocket.WebSocketConfig;
-import de.metas.ui.web.websocket.WebsocketEventLogRecord;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -138,10 +129,6 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private IQueryStatisticsLogger statisticsLogger;
-
-	@Autowired
-	@Lazy
-	private WebsocketSender websocketSender;
 
 	@Autowired
 	@Lazy
@@ -339,55 +326,6 @@ public class DebugRestController
 		Services.get(INotificationBL.class).send(request.build());
 	}
 
-	@PostMapping("/websocket/post")
-	public void postToWebsocket(
-			@RequestParam("endpoint") final String endpoint, @RequestBody final String messageStr)
-	{
-		userSession.assertLoggedIn();
-
-		final Charset charset = Charset.forName("UTF-8");
-		final Map<String, Object> headers = ImmutableMap.<String, Object> builder()
-				.put("simpMessageType", SimpMessageType.MESSAGE)
-				.put("contentType", new MimeType("application", "json", charset))
-				.build();
-		final Message<?> message = new GenericMessage<>(messageStr.getBytes(charset), headers);
-		websocketSender.sendMessage(endpoint, message);
-	}
-
-	@PostMapping("/websocket/view/fireRowChanges")
-	public void sendWebsocketViewChangedNotification(
-			@RequestParam("viewId") final String viewIdStr,
-			@RequestParam("changedIds") final String changedIdsStr)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
-		final DocumentIdsSelection changedRowIds = DocumentIdsSelection.ofCommaSeparatedString(changedIdsStr);
-		sendWebsocketViewChangedNotification(viewId, changedRowIds);
-	}
-
-	private void sendWebsocketViewChangedNotification(final ViewId viewId, final DocumentIdsSelection changedRowIds)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewChanges viewChanges = new ViewChanges(viewId);
-		viewChanges.addChangedRowIds(changedRowIds);
-		JSONViewChanges jsonViewChanges = JSONViewChanges.of(viewChanges);
-
-		final String endpoint = WebSocketConfig.buildViewNotificationsTopicName(jsonViewChanges.getViewId());
-		try
-		{
-			websocketSender.convertAndSend(endpoint, jsonViewChanges);
-		}
-		catch (final Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex)
-					.appendParametersToMessage()
-					.setParameter("json", jsonViewChanges);
-		}
-
-	}
-
 	@GetMapping("/logger/{loggerName}/_getUpToRoot")
 	public List<Map<String, Object>> getLoggersUpToRoot(@PathVariable("loggerName") final String loggerName)
 	{
@@ -532,25 +470,6 @@ public class DebugRestController
 		return ImmutableMap.of("value", useHttpAcceptLanguage, "valueOld", useHttpAcceptLanguageOld);
 	}
 
-	@GetMapping("websocketLogging")
-	public void setWebsocketLoggingConfig(
-			@RequestParam("enabled") final boolean enabled,
-			@RequestParam(value = "maxLoggedEvents", defaultValue = "500") final int maxLoggedEvents)
-	{
-		userSession.assertLoggedIn();
-
-		websocketSender.setLogEventsEnabled(enabled);
-		websocketSender.setLogEventsMaxSize(maxLoggedEvents);
-	}
-
-	@GetMapping("websocketEvents")
-	public List<WebsocketEventLogRecord> getWebsocketLoggedEvents(@RequestParam(value = "destinationFilter", required = false) final String destinationFilter)
-	{
-		userSession.assertLoggedIn();
-
-		return websocketSender.getLoggedEvents(destinationFilter);
-	}
-
 	@PostMapping("/view/{viewId}/deleteRows")
 	public String viewDeleteRowIds(
 			@PathVariable("viewId") final String viewIdStr,
@@ -575,7 +494,7 @@ public class DebugRestController
 
 		//
 		// Notify
-		sendWebsocketViewChangedNotification(viewId, rowIds);
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(view, rowIds);
 
 		return "Deleted " + countDeleted + " rows";
 	}

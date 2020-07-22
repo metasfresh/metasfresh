@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -380,4 +381,23 @@ public final class CollectionUtils
 						LinkedHashMap::new));
 		return inventoryLineRecords;
 	}
+
+	public static <T> ImmutableList<T> ofCommaSeparatedList(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Function<String, T> mapper)
+	{
+		if (Check.isBlank(commaSeparatedStr))
+		{
+			return ImmutableList.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(commaSeparatedStr)
+				.stream()
+				.map(mapper)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 }

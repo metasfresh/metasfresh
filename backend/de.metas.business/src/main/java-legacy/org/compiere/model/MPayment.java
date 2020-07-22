@@ -21,7 +21,7 @@
  */
 package org.compiere.model;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.io.File;
 import java.math.BigDecimal;

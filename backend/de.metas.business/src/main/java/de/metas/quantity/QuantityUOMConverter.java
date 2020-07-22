@@ -1,7 +1,14 @@
 package de.metas.quantity;
 
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_C_UOM;
+
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,4 +36,18 @@ import de.metas.uom.UomId;
 public interface QuantityUOMConverter
 {
 	Quantity convertQuantityTo(Quantity qty, final ProductId productId, final UomId targetUOMId);
+
+	default BigDecimal convertQty(
+			@Nullable final ProductId productId,
+			@NonNull final BigDecimal qty,
+			@NonNull final I_C_UOM uomFrom,
+			@NonNull final I_C_UOM uomTo)
+	{
+		final UomId uomToId = UomId.ofRepoId(uomTo.getC_UOM_ID());
+		final Quantity qtyConv = convertQuantityTo(
+				Quantity.of(qty, uomFrom),
+				productId,
+				uomToId);
+		return qtyConv.toBigDecimal();
+	}
 }

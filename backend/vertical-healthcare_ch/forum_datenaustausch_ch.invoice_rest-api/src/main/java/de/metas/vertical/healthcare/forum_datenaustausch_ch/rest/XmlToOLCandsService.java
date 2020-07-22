@@ -1,10 +1,10 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
@@ -200,8 +200,8 @@ public class XmlToOLCandsService
 		try
 		{
 			final ImmutableList<String> tags = ImmutableList.of(
-					ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/* name */, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/* value */,
-					ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE/* name */, externalReference/* value */,
+					ATTACHMENT_TAGNAME_EXPORT_PROVIDER/* name */, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/* value */,
+					ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE/* name */, externalReference/* value */,
 					ForumDatenaustauschChConstants.XSD_NAME, xsdName);
 
 			return orderCandidatesRestEndpoint.attachFile(
@@ -391,7 +391,6 @@ public class XmlToOLCandsService
 			@NonNull final BodyType body,
 			@NonNull final HighLevelContext context)
 	{
-
 		final JsonOrganization billerOrgInfo = createBillerOrg(
 				getBiller(body),
 				context);
@@ -544,6 +543,7 @@ public class XmlToOLCandsService
 
 			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			guarantorLocation.setName(guarantorName);
+			guarantorLocation.setBpartnerName(guarantorName);
 			guarantorLocation.setExternalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"));
 			guarantorLocation.setShipTo(false);
 			guarantorLocation.setShipToDefault(false);

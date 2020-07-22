@@ -22,23 +22,22 @@ package de.metas.handlingunits.attributes.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.comparesEqualTo;
 
 public class HUAttributeSetTest extends AbstractHUTest
 {
@@ -84,24 +83,27 @@ public class HUAttributeSetTest extends AbstractHUTest
 		Assert.assertThat("Invalid value for " + attrNumber1, (BigDecimal)as.getValue(attrNumber1), comparesEqualTo(new BigDecimal("2")));
 	}
 
-	@Test(expected = InvalidAttributeValueException.class)
+	@Test
 	public void testSettingInvalidAttributeValue()
 	{
-		final IAttributeStorage as = helper.createAttributeSetStorage(helper.createAttributeValue(attrNumber1, BigDecimal.ONE));
-
-		as.setValueNoPropagate(attrNumber1, "string value");
-
-		StaticHUAssert.assertMock("mock");
+		assertThatThrownBy(() -> {
+			final IAttributeStorage as = helper.createAttributeSetStorage(helper.createAttributeValue(attrNumber1, BigDecimal.ONE));
+			as.setValueNoPropagate(attrNumber1, "string value");
+			StaticHUAssert.assertMock("mock");
+		})
+				.isInstanceOf(InvalidAttributeValueException.class);
 	}
 
-	@Test(expected = AttributeNotFoundException.class)
+	@Test
 	public void testAttributeNotFound()
 	{
-		final IAttributeStorage as = helper.createAttributeSetStorage(helper.createAttributeValue(attrNumber1, BigDecimal.ONE));
+		assertThatThrownBy(() -> {
+			final IAttributeStorage as = helper.createAttributeSetStorage(helper.createAttributeValue(attrNumber1, BigDecimal.ONE));
+			as.getValue(attrString1);
+			StaticHUAssert.assertMock("mock");
+		})
+				.isInstanceOf(AttributeNotFoundException.class);
 
-		as.getValue(attrString1);
-
-		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test
@@ -115,14 +117,16 @@ public class HUAttributeSetTest extends AbstractHUTest
 		Assert.assertEquals("Invalid value for " + attrList1, HUAttributeSetTest.ATTRLIST1_Value2, as.getValue(attrList1));
 	}
 
-	@Test(expected = InvalidAttributeValueException.class)
+	@Test
 	public void testListAttribute_InvalidValue_OnSet()
 	{
-		final IAttributeStorage as = helper.createAttributeSetStorage(helper.createAttributeValue(attrList1, HUAttributeSetTest.ATTRLIST1_Value1));
+		assertThatThrownBy(() -> {
+			final IAttributeStorage as = helper.createAttributeSetStorage(helper.createAttributeValue(attrList1, HUAttributeSetTest.ATTRLIST1_Value1));
+			as.setValueNoPropagate(attrList1, HUAttributeSetTest.ATTRLIST1_Value2 + "_invalid_value");
+			StaticHUAssert.assertMock("mock");
+		})
+				.isInstanceOf(InvalidAttributeValueException.class);
 
-		as.setValueNoPropagate(attrList1, HUAttributeSetTest.ATTRLIST1_Value2 + "_invalid_value");
-
-		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test
@@ -131,7 +135,7 @@ public class HUAttributeSetTest extends AbstractHUTest
 		final IAttributeStorage as = helper.createAttributeSetStorage(
 				helper.createAttributeValue(attrString1, "value1"),
 				helper.createAttributeValue(attrNumber1, BigDecimal.ONE)
-				);
+		);
 
 		final Collection<I_M_Attribute> attributes = as.getAttributes();
 		Assert.assertEquals("Invalid attributes list size: " + attributes, 2, attributes.size());
@@ -145,7 +149,7 @@ public class HUAttributeSetTest extends AbstractHUTest
 		final IAttributeStorage as = helper.createAttributeSetStorage(
 				helper.createAttributeValue(attrString1, "value1"),
 				helper.createAttributeValue(attrNumber1, BigDecimal.ONE)
-				);
+		);
 
 		Assert.assertTrue("Attribute " + attrString1 + " shall be present in " + as, as.hasAttribute(attrString1));
 		Assert.assertTrue("Attribute " + attrNumber1 + " shall be present in " + as, as.hasAttribute(attrNumber1));

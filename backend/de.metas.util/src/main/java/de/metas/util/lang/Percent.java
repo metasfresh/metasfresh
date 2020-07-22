@@ -113,7 +113,7 @@ public class Percent
 			@NonNull final BigDecimal denominator,
 			final int precision)
 	{
-		return of(numerator, denominator, 2, RoundingMode.HALF_UP);
+		return of(numerator, denominator, precision, RoundingMode.HALF_UP);
 	}
 
 	public static Percent of(

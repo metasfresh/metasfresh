@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.compiere.util.NamePair;
-import org.compiere.util.ValueNamePairValidationInformation;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -24,6 +23,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue.IntegerLo
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue.StringLookupValueBuilder;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
 import io.swagger.annotations.ApiModel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -56,6 +56,11 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class JSONLookupValue
 {
+	public static JSONLookupValue of(@NonNull final RepoIdAware key, final String caption)
+	{
+		return of(key.getRepoId(), caption);
+	}
+
 	public static JSONLookupValue of(final int key, final String caption)
 	{
 		final String keyStr = String.valueOf(key);
@@ -140,7 +145,8 @@ public final class JSONLookupValue
 				.description(description)
 				.active(active);
 
-		@SuppressWarnings("unchecked") final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
+		@SuppressWarnings("unchecked")
+		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
 		if (attributes != null && !attributes.isEmpty())
 		{
 			builder.attributes(attributes);
@@ -163,9 +169,10 @@ public final class JSONLookupValue
 				.displayName(displayName)
 				.description(description)
 				.active(active)
-				.validationInformation(null); //TODO: Extract this from map for future usages
+				.validationInformation(null); // TODO: Extract this from map for future usages
 
-		@SuppressWarnings("unchecked") final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
+		@SuppressWarnings("unchecked")
+		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
 		if (attributes != null && !attributes.isEmpty())
 		{
 			builder.attributes(attributes);
@@ -198,6 +205,12 @@ public final class JSONLookupValue
 	public static JSONLookupValue unknown(final int id)
 	{
 		return of(id, "<" + id + ">");
+	}
+
+	public static JSONLookupValue unknown(@Nullable final RepoIdAware id)
+	{
+		final int idAsInt = id != null ? id.getRepoId() : -1;
+		return unknown(idAsInt);
 	}
 
 	// IMPORTANT: when changing this property name, pls also check/change de.metas.handlingunits.attribute.impl.AbstractAttributeValue.extractKey(Map<String, String>, I_M_Attribute)
