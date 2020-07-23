@@ -39,8 +39,8 @@ public class MainApp
 	public static void main(String... args) throws Exception
 	{
 		final Main main = new Main();
-		// main.configure().addRoutesBuilder(new ShipmentCandidateJsonToXmlRouteBuilder());
-		// main.configure().addRoutesBuilder(new ReceiptCandidateJsonToXmlRouteBuilder());
+		main.configure().addRoutesBuilder(new ShipmentCandidateJsonToXmlRouteBuilder());
+		main.configure().addRoutesBuilder(new ReceiptCandidateJsonToXmlRouteBuilder());
 		main.configure().addRoutesBuilder(new ShipmentXmlToJsonRouteBuilder());
 		main.run(args);
 	}
