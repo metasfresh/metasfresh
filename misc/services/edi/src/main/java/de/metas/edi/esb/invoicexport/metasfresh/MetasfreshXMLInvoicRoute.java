@@ -57,8 +57,6 @@ public class MetasfreshXMLInvoicRoute extends AbstractEDIRoute
 
 	public static final String EP_EDI_METASFRESH_XML_INVOICE_CONSUMER = "direct:edi.invoic.metasfresh-xml.consumer";
 
-	public static final String EDI_XML_OWNER_ID = "edi.props.metasfresh.owner.id";
-
 	private static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
@@ -76,7 +74,7 @@ public class MetasfreshXMLInvoicRoute extends AbstractEDIRoute
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
 		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOICE_SENDER_GLN);
-		final String ownerId = Util.resolveProperty(getContext(), EDI_XML_OWNER_ID);
+
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
 
@@ -96,7 +94,6 @@ public class MetasfreshXMLInvoicRoute extends AbstractEDIRoute
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOICE_SENDER_GLN).constant(senderGln)
-				.setProperty(EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "Setting EDI feedback headers...")

@@ -28,7 +28,6 @@ import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcesso
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
-import de.metas.edi.esb.desadvexport.stepcom.StepComXMLDesadvBean;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.stepcom.desadv.ObjectFactory;
@@ -36,7 +35,6 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
-import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
