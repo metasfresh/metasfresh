@@ -1,13 +1,9 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.order.OrderId;
-import de.metas.util.Services;
-import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -42,11 +38,10 @@ import org.compiere.model.ModelValidator;
 public class C_Order
 {
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("salesorder.shipmentschedule.exported");
-
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
