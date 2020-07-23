@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.edi.esb.ordersimport.metasfresh;
+package de.metas.edi.esb.ordersimport.ecosio;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
@@ -33,15 +33,15 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class MetasfreshXMLOrdersRoute
+public class EcosioOrdersRoute
 		extends RouteBuilder
 {
 	/**
 	 * This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}}
 	 */
-	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.metasfresh-xml.remote";
+	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.ecosio.remote";
 
-	private static final String INPUT_ORDERS_LOCAL = "{{edi.file.orders.metasfresh-xml}}";
+	private static final String INPUT_ORDERS_LOCAL = "{{edi.file.orders.ecosio}}";
 
 	@Override
 	public final void configure()
@@ -50,14 +50,14 @@ public class MetasfreshXMLOrdersRoute
 		if (!Util.isEmpty(remoteEndpoint))
 		{
 			from(remoteEndpoint)
-					.routeId("metasfresh-Remote-XML-Orders-To-Local")
+					.routeId("ecosio-Remote-XML-Orders-To-Local")
 					.log(LoggingLevel.TRACE, "Getting remote file")
 					.to(INPUT_ORDERS_LOCAL);
 		}
 
 		from(INPUT_ORDERS_LOCAL)
-				.routeId("metasfresh-XML-Orders-To-MF-OLCand")
-				.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
+				.routeId("ecosio-XML-Orders-To-MF-OLCand")
+				.log(LoggingLevel.INFO, "EDI: Sending XML Order document to ecosio...")
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to(Constants.EP_AMQP_TO_MF);
 	}

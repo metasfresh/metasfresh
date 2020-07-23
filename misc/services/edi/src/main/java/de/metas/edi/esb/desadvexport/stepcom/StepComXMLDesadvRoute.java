@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-edi-esb-camel
+ * de-metas-camel-edi
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -66,9 +66,9 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
-	private static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.stepcom-xml}}";
+	private static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.stepcom}}";
 
-	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.stepcom-xml.remote";
+	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.stepcom.remote";
 
 	private static final String JAXB_DESADV_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
@@ -122,7 +122,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 				})
 
-				.log(LoggingLevel.INFO, "Converting metasfresh-XML Java Object -> STEPcom-XML Java Object...")
+				.log(LoggingLevel.INFO, "Converting ecosio-XML Java Object -> STEPcom-XML Java Object...")
 				.bean(StepComXMLDesadvBean.class, StepComXMLDesadvBean.METHOD_createXMLEDIData)
 				.log(LoggingLevel.INFO, "Marshalling STEPcom-XML Java Object -> XML...")
 				.marshal(dataFormat)
@@ -134,11 +134,11 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.to(endPointURIs)
 				.end()
 
-				.log(LoggingLevel.INFO, "Creating metasfresh success feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "Creating ecosio success feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, StepComXMLDesadvRoute.EDIDesadvFeedback_QNAME, StepComXMLDesadvRoute.METHOD_setEDIDesadvID))
-				.log(LoggingLevel.INFO, "Marshalling metasfresh feedback XML Java Object -> XML...")
+				.log(LoggingLevel.INFO, "Marshalling ecosio feedback XML Java Object -> XML...")
 				.marshal(jaxb)
-				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
+				.log(LoggingLevel.INFO, "Sending success response to ecosio...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to(Constants.EP_AMQP_TO_MF);

@@ -20,72 +20,61 @@
  * #L%
  */
 
-package de.metas.edi.esb.invoicexport.stepcom;
+package de.metas.edi.esb.invoicexport.ecosio;
 
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.util.Arrays;
-
-import javax.xml.namespace.QName;
-
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
+import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
-import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
-import de.metas.edi.esb.jaxb.stepcom.invoice.ObjectFactory;
-import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
-import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import javax.xml.namespace.QName;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 
+/**
+ * This route is getting its stuff from {@link de.metas.edi.esb.commons.route.exports.EDIExportCommonRoute}
+ */
 @Component
 @PropertySources(value = {
 		@PropertySource(value = "classpath:/invoic-customer.properties"),
 		@PropertySource(value = "file:./invoic-customer.properties", ignoreResourceNotFound = true)
 })
-public class StepComXMLInvoicRoute extends AbstractEDIRoute
+public class EcosioInvoicRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = "MF-Invoic-To-STEPCOM-XML-Invoic";
+	public static final String ROUTE_ID = "MF-Invoic-To-ecosio-XML-Invoic";
 
-	public static final String EP_EDI_STEPCOM_XML_INVOICE_CONSUMER = "direct:edi.invoic.stepcom.consumer";
-
-	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
+	public static final String EP_EDI_METASFRESH_XML_INVOICE_CONSUMER = "direct:edi.invoic.ecosio.consumer";
 
 	private static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
-	private static final String OUTPUT_INVOIC_LOCAL = "{{edi.file.invoic.stepcom}}";
+	private static final String OUTPUT_INVOIC_LOCAL = "{{edi.file.invoic.ecosio}}";
 
-	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.stepcom.remote";
-
-	private static final String JAXB_INVOIC_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
+	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.ecosio.remote";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
-
-		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_INVOIC_CONTEXTPATH);
-		dataFormat.setCamelContext(getContext());
-		dataFormat.setEncoding(charset);
-
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
 		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOICE_SENDER_GLN);
-		final String ownerId = Util.resolveProperty(getContext(), EDI_XML_OWNER_ID);
+
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
 
@@ -100,12 +89,11 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 			endPointURIs = new String[] { OUTPUT_INVOIC_LOCAL, remoteEndpoint };
 		}
 
-		from(EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
+		from(EP_EDI_METASFRESH_XML_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOICE_SENDER_GLN).constant(senderGln)
-				.setProperty(EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "Setting EDI feedback headers...")
@@ -119,14 +107,8 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
 				})
 
-				.log(LoggingLevel.INFO, "Converting XML Java Object -> EDI XML Java Object...")
-				.bean(StepComXMLInvoicBean.class, StepComXMLInvoicBean.METHOD_createXMLEDIData)
-
-				.log(LoggingLevel.INFO, "Marshalling EDI XML Java Object to XML...")
-				.marshal(dataFormat)
-
 				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
-				.log(LoggingLevel.INFO, "Sending STEPcom-XML to the endpoint(s):\r\n" + body())
+				.log(LoggingLevel.INFO, "Sending ecosio-XML to the endpoint(s):\r\n" + body())
 				.multicast().stopOnException().parallelProcessing(false).to(endPointURIs)
 				.end()
 

@@ -45,9 +45,9 @@ public class StepComXMLOrdersRoute
 		extends RouteBuilder
 {
 	/** This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}} */
-	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.stepcom-xml.remote";
+	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.stepcom.remote";
 
-	private static final String INPUT_ORDERS_LOCAL = "{{edi.file.orders.stepcom-xml}}";
+	private static final String INPUT_ORDERS_LOCAL = "{{edi.file.orders.stepcom}}";
 
 	private static final String JAXB_ORDER_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
@@ -113,7 +113,7 @@ public class StepComXMLOrdersRoute
 
 					.marshal(olCandsJaxbDataFormat)
 
-					.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
+					.log(LoggingLevel.INFO, "EDI: Sending XML Order document to ecosio...")
 					.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 					.to(Constants.EP_AMQP_TO_MF)
 				.end();
