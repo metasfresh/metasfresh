@@ -821,6 +821,31 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_IsManual = "IsManual";
 
 	/**
+	 * Set Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReconciled (boolean IsReconciled);
+
+	/**
+	 * Get Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReconciled();
+
+    /** Column definition for IsReconciled */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "IsReconciled", null);
+    /** Column name IsReconciled */
+    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+
+	/**
 	 * Set Gültig.
 	 * Element ist gültig
 	 *

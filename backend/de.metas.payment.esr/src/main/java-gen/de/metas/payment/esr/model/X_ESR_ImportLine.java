@@ -724,6 +724,32 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return false;
 	}
 
+	/** Set Abgeglichen.
+		@param IsReconciled 
+		Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public void setIsReconciled (boolean IsReconciled)
+	{
+		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
+	}
+
+	/** Get Abgeglichen.
+		@return Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public boolean isReconciled () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReconciled);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Gültig.
 		@param IsValid 
 		Element ist gültig
