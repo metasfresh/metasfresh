@@ -39,8 +39,8 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.common.shipmentschedule</groupId>
-            <artifactId>de-metas-common-shipmentschedule</artifactId>
+            <groupId>de.metas.common.shipping</groupId>
+            <artifactId>de-metas-common-shipping</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 
