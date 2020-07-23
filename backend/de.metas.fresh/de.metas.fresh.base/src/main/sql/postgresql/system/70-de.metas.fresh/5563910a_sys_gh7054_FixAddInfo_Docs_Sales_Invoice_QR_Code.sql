@@ -29,7 +29,6 @@ select ('SPC' || E'\n' || --QRType
         coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' || -- CR Postal code and town
         E'\n' || --Do not fill in
         E'\n' || --Do not fill in
-        E'\n' || --Do not fill in
         orgc.countrycode || E'\n' || -- CR Country
         E'\n' || -- E'\n' || --UCR – AdressTyp
         E'\n' || -- E'\n' || --UCR – Name
