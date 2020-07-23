@@ -1,7 +1,7 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.api.IReceiptSchedulePA;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
@@ -36,7 +36,7 @@ import org.compiere.model.ModelValidator;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private final IReceiptSchedulePA receiptSchedulePA = Services.get(IReceiptSchedulePA.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 
@@ -71,7 +71,7 @@ public class C_Order
 		{
 			return; // we can spare us the effort
 		}
-		if (receiptSchedulePA.existsExportedReceiptScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
+		if (receiptScheduleDAO.existsExportedReceiptScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
 			throw new AdempiereException(MSG_PO_REACTIVATION_VOID_NOT_ALLOWED)
 					.markAsUserValidationError();
