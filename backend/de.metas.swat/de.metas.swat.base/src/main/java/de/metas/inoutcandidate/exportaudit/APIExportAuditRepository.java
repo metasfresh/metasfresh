@@ -1,10 +1,6 @@
 /*
  * #%L
-<<<<<<< HEAD:misc/services/camel/de-metas-camel-shipping/src/main/java/de/metas/camel/shipping/MainApp.java
- * de-metas-camel-shipping
-=======
  * de.metas.swat.base
->>>>>>> origin/blonde_monkey_uat:backend/de.metas.swat/de.metas.swat.base/src/main/java/de/metas/inoutcandidate/exportaudit/APIExportAuditRepository.java
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
