@@ -19,7 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 package de.metas.inoutcandidate.exportaudit;
 
 import lombok.NonNull;
