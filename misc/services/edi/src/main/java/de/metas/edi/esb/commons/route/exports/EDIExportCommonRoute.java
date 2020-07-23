@@ -79,6 +79,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 							final ClearingCenter clearingCenter = InvoicSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
+						.log(LoggingLevel.INFO, "EDI: ClearingCenter="+header("ClearingCenter"))
 						.choice()
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.STEPcom.toString()))
 								.to(StepComXMLInvoicRoute.EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
@@ -94,6 +95,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 							final ClearingCenter clearingCenter = DesadvSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
+						.log(LoggingLevel.INFO, "EDI: ClearingCenter="+header("ClearingCenter"))
 						.choice()
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.STEPcom.toString()))
 								.to(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)

@@ -52,7 +52,7 @@ import java.text.DecimalFormat;
 })
 public class EcosioDesadvRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = "MF-Desadv-To-STEPCOM-XML-Desadv";
+	public static final String ROUTE_ID = "MF-Desadv-To-ecosio";
 
 	public static final String EP_EDI_METASFRESH_XML_DESADV_CONSUMER = "direct:edi.desadv.ecosio.consumer";
 

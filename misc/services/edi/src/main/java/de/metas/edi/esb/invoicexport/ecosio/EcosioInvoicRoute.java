@@ -55,7 +55,7 @@ import java.util.Arrays;
 })
 public class EcosioInvoicRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = "MF-Invoic-To-ecosio-XML-Invoic";
+	public static final String ROUTE_ID = "MF-Invoic-To-ecosio";
 
 	public static final String EP_EDI_METASFRESH_XML_INVOICE_CONSUMER = "direct:edi.invoic.ecosio.consumer";
 
