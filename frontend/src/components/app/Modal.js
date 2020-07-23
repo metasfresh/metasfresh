@@ -741,14 +741,14 @@ Modal.propTypes = {
   viewId: PropTypes.string,
   windowId: PropTypes.string,
   viewDocumentIds: PropTypes.array,
-  createProcess: PropTypes.function,
-  createWindow: PropTypes.function,
-  fetchChangeLog: PropTypes.function,
-  callAPI: PropTypes.function,
-  patch: PropTypes.function,
-  processNewRecord: PropTypes.function,
-  closeModal: PropTypes.function,
-  handleProcessResponse: PropTypes.function,
+  createProcess: PropTypes.func,
+  createWindow: PropTypes.func,
+  fetchChangeLog: PropTypes.func,
+  callAPI: PropTypes.func,
+  patch: PropTypes.func,
+  processNewRecord: PropTypes.func,
+  closeModal: PropTypes.func,
+  handleProcessResponse: PropTypes.func,
 };
 
 const mapStateToProps = (state, props) => {
