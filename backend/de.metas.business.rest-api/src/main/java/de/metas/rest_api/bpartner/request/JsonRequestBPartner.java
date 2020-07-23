@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -124,6 +126,9 @@ public class JsonRequestBPartner
 	private String globalId;
 	private boolean globalIdset;
 
+	@ApiModelProperty(position = 20, // shall be last
+			required = false, value = "Sync advise about this bPartner's individual properties.\n"
+			+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 	private boolean syncAdviseSet;
 
