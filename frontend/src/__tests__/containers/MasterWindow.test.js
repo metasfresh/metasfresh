@@ -1,10 +1,8 @@
 import React from 'react';
-import * as Immutable from 'immutable';
-import { mount, shallow, render } from 'enzyme';
+import { mount } from 'enzyme';
 import nock from 'nock';
-import uuid from 'uuid/v4';
 import { Provider } from 'react-redux';
-import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
+import { applyMiddleware, createStore, combineReducers } from 'redux';
 import configureStore from 'redux-mock-store';
 import { routerReducer as routing } from 'react-router-redux';
 import { createMemoryHistory } from 'react-router';
@@ -14,6 +12,8 @@ import promiseMiddleware from 'redux-promise';
 import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
 import { createWaitForElement } from 'enzyme-wait';
+import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
+import keymap from '../../../test_setup/fixtures/keymap.json';
 
 import http from 'http';
 import StompServer from 'stomp-broker-js';
@@ -160,7 +160,7 @@ describe('MasterWindowContainer', () => {
 
       const wrapper = mount(
         <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
             <CustomRouter history={history} auth={auth} />
           </ShortcutProvider>
         </Provider>
@@ -276,7 +276,7 @@ describe('MasterWindowContainer', () => {
 
       const wrapper = mount(
         <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
             <CustomRouter history={history} auth={auth} />
           </ShortcutProvider>
         </Provider>
@@ -316,7 +316,9 @@ describe('MasterWindowContainer', () => {
     }, 20000);
 
     it('removes old and includes new rows on ws event', async (done) => {
-      const initialState = createInitialState({ routing: { ...fixtures.state2.routing } });
+      const initialState = createInitialState({
+        routing: { ...fixtures.state2.routing },
+      });
       const store = createStore(
         rootReducer,
         initialState,
@@ -384,9 +386,7 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/window/${windowType}/${docId}/${tabId}?ids=${rows}`
-        )
+        .get(`/window/${windowType}/${docId}/${tabId}?ids=${rows}`)
         .reply(200, updatedRows);
 
       nock(config.API_URL)
@@ -396,7 +396,7 @@ describe('MasterWindowContainer', () => {
 
       const wrapper = mount(
         <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
             <CustomRouter history={localHistory} auth={auth} />
           </ShortcutProvider>
         </Provider>
