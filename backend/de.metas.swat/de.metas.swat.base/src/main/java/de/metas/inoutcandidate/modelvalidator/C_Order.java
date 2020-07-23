@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.OrderId;
@@ -36,9 +37,12 @@ import org.compiere.model.ModelValidator;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("salesorder.shipmentschedule.exported");
+	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
@@ -48,6 +52,7 @@ public class C_Order
 		{
 			return;
 		}
+
 		final int billPartnerId = order.getBill_BPartner_ID();
 		final int deliveryStopShipmentConstraintId = Services.get(IShipmentConstraintsBL.class).getDeliveryStopShipmentConstraintId(billPartnerId);
 		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
@@ -71,6 +76,23 @@ public class C_Order
 		if (shipmentSchedulePA.existsExportedShipmentScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
 			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED)
+					.markAsUserValidationError();
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_VOID })
+	public void assertPOReActivationAllowed(final I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			return; // we can spare us the effort
+		}
+		if (receiptScheduleDAO.existsExportedReceiptScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
+		{
+			throw new AdempiereException(MSG_PO_REACTIVATION_VOID_NOT_ALLOWED)
 					.markAsUserValidationError();
 		}
 	}
