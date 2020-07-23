@@ -49,4 +49,9 @@ public class BPartnerLocationInfoRepository
 	{
 		return toBPartnerLocation(load(bplocationId.getRepoId(), I_C_BPartner_Location.class));
 	}
+
+	public BPartnerLocationInfo getById(final int bPartnerLocationId)
+	{
+		return toBPartnerLocation(load(bPartnerLocationId, I_C_BPartner_Location.class));
+	}
 }

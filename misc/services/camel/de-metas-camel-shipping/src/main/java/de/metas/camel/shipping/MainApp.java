@@ -23,6 +23,7 @@
 package de.metas.camel.shipping;
 
 import de.metas.camel.shipping.receiptcandidate.ReceiptCandidateJsonToXmlRouteBuilder;
+import de.metas.camel.shipping.shipment.ShipmentXmlToJsonRouteBuilder;
 import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
 import org.apache.camel.main.Main;
 
@@ -38,8 +39,9 @@ public class MainApp
 	public static void main(String... args) throws Exception
 	{
 		final Main main = new Main();
-		main.configure().addRoutesBuilder(new ShipmentCandidateJsonToXmlRouteBuilder());
-		main.configure().addRoutesBuilder(new ReceiptCandidateJsonToXmlRouteBuilder());
+		// main.configure().addRoutesBuilder(new ShipmentCandidateJsonToXmlRouteBuilder());
+		// main.configure().addRoutesBuilder(new ReceiptCandidateJsonToXmlRouteBuilder());
+		main.configure().addRoutesBuilder(new ShipmentXmlToJsonRouteBuilder());
 		main.run(args);
 	}
 

@@ -22,27 +22,10 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOut;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -51,8 +34,19 @@ import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
@@ -153,6 +147,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
+	Map<ShipmentScheduleId,I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
+
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
@@ -170,6 +166,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
+
+	void applyShipmentScheduleChanges(ApplyShipmentScheduleChangesRequest request);
 
 	/**
 	 * Close linked shipment schedules if they were partially invoiced

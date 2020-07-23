@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.Check;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -335,6 +336,20 @@ public interface IBPartnerDAO extends ISingletonService
 		 */
 		@Nullable
 		BPartnerLocationId relationBPartnerLocationId;
+
+		@Nullable
+		String postalCode;
+
+		@Nullable
+		String city;
+
+		@Nullable
+		CountryId countryId;
+
+		public boolean applyLocationChecks()
+		{
+			return countryId != null;
+		}
 	}
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);

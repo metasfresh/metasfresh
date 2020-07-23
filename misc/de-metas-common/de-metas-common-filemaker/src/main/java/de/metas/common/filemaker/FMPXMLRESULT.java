@@ -60,4 +60,14 @@ public class FMPXMLRESULT
 		this.metadata = metadata;
 		this.resultset = resultset;
 	}
+
+	public boolean isEmpty()
+	{
+		return metadata == null
+				|| metadata.getFields() == null
+				|| metadata.getFields().isEmpty()
+				|| resultset == null
+				|| resultset.getRows() == null
+				|| resultset.getRows().isEmpty();
+	}
 }

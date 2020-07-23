@@ -119,47 +119,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			return ImmutableList.of();
 		}
 
-		final IHUContext huContext = huContextFactory.createMutableHUContext();
-
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = getParameters()
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		final CreateCandidatesRequestBuilder requestBuilder = CreateCandidatesRequest.builder()
-				.huContext(huContext)
-				.quantityType(quantityTypeToUse);
-
-		final ArrayList<ShipmentScheduleWithHU> candidates = new ArrayList<>();
-
-		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-		{
-			final ImmutableList<ShipmentScheduleWithHU> scheduleCandidates = createCandidatesForSched(requestBuilder, shipmentSchedule);
-			candidates.addAll(scheduleCandidates);
-		}
-
-		// Sort our candidates
-		Collections.sort(candidates, new ShipmentScheduleWithHUComparator());
-		return candidates;
-	}
-
-	private ImmutableList<ShipmentScheduleWithHU> createCandidatesForSched(
-			@NonNull final CreateCandidatesRequestBuilder requestBuilder,
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		if (shipmentSchedule.isProcessed())
-		{
-			return ImmutableList.of();
-		}
-
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putShipmentScheduleId(shipmentScheduleId))
-		{
-			final CreateCandidatesRequest request = requestBuilder
-					.shipmentScheduleId(shipmentScheduleId)
-					.build();
-
-			return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
-		}
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse);
 	}
 
 	private List<I_M_ShipmentSchedule> retriveShipmentSchedules()

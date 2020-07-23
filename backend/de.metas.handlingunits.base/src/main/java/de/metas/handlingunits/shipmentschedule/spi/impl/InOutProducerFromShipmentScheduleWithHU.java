@@ -22,17 +22,47 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.impl.AddTrackingCodesForInOutWithoutHUReq;
+import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
@@ -48,41 +78,21 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.i18n.BooleanWithReason;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutLineId;
-import de.metas.inout.event.InOutUserNotificationsProducer;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
@@ -144,6 +154,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 * In this way, we {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>true</code> only on first assignment.
 	 */
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
+
+	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
+
+	private ShipperId shipperId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -273,7 +287,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			return today;
 		}
-
 		final ZonedDateTime deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
 		if (deliveryDateEffective == null)
 		{
@@ -314,6 +327,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment.setC_DocType_ID(docTypeId);
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);
+
+			final ShipmentScheduleExternalInfo externalInfo = scheduleId2ExternalInfo.get(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
+
+			if (externalInfo != null && Check.isNotBlank(externalInfo.getDocumentNo()))
+			{
+				shipment.setDocumentNo(externalInfo.getDocumentNo());
+			}
 		}
 
 		//
@@ -483,6 +503,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// save the shipment schedule using current transaction
 			InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 		}
+
+		//create transportation order and packages with tracking codes
+		addTrackingCodes();
+
 		Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 	}
 
@@ -650,6 +674,20 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo)
+	{
+		this.scheduleId2ExternalInfo.putAll(scheduleId2ExternalInfo);
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setShipperId(@Nullable final ShipperId shipperId)
+	{
+		this.shipperId = shipperId;
+		return this;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "InOutProducerFromShipmentSchedule [result=" + result
@@ -657,6 +695,40 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", processorCtx=" + processorCtx + ", currentShipment=" + currentShipment
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
+	}
+
+	private void addTrackingCodes()
+	{
+		// adding the tracking code will be skipped
+		// if no shipperId was provided or a ShipperTransportation order was already created
+		// as it means the tracking codes would be added/or not by whoever created the shipper transportation
+		// and the corresponding packages.
+		if (shipperId == null || currentShipment.getM_ShipperTransportation_ID() > 0)
+		{
+			return;
+		}
+
+		final List<String> trackingCodes = currentCandidates
+				.stream()
+				.map(candidate -> scheduleId2ExternalInfo.get(candidate.getShipmentScheduleId()))
+				.filter(Objects::nonNull)
+				.map(ShipmentScheduleExternalInfo::getTrackingNumbers)
+				.filter(Objects::nonNull)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
+
+		if (trackingCodes.isEmpty())
+		{
+			return;
+		}
+
+		final AddTrackingCodesForInOutWithoutHUReq addTrackingCodesForInOutWithoutHUReq = AddTrackingCodesForInOutWithoutHUReq.builder()
+				.inOutId(InOutId.ofRepoId(currentShipment.getM_InOut_ID()))
+				.shipperId(shipperId)
+				.trackingCodes(trackingCodes)
+				.build();
+
+		huShipperTransportationBL.addTrackingCodesForInOutWithoutHU(addTrackingCodesForInOutWithoutHUReq);
 	}
 
 }

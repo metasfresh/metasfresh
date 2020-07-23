@@ -1,16 +1,8 @@
-package de.metas.handlingunits;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.impl.CreatePackagesRequest;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.compiere.model.I_M_Package;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,17 +11,38 @@ import org.compiere.model.I_M_Package;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IInOutPackageDAO extends ISingletonService
+package de.metas.handlingunits.impl;
+
+import de.metas.inout.InOutId;
+import de.metas.shipping.ShipperId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+@Value
+@Builder
+public class CreatePackagesRequest
 {
 	@NonNull
-	ImmutableList<I_M_Package> createM_Packages(CreatePackagesRequest packagesRequest);
+	InOutId inOutId;
+
+	@NonNull
+	ShipperId shipperId;
+
+	boolean processed;
+
+	@Nullable
+	List<String> trackingCodes;
 }
