@@ -57,7 +57,13 @@ public enum APIExportStatus implements ReferenceListAwareEnum
 	@Nullable
 	public static APIExportStatus ofNullableCode(final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		return ofNullableCode(code, null);
+	}
+
+	@Nullable
+	public static APIExportStatus ofNullableCode(@Nullable final String code, @Nullable final APIExportStatus fallbackValue)
+	{
+		return code != null ? ofCode(code) : fallbackValue;
 	}
 
 	public static APIExportStatus ofCode(@NonNull final String code)
@@ -65,7 +71,7 @@ public enum APIExportStatus implements ReferenceListAwareEnum
 		final APIExportStatus type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + InvoiceRule.class + " found for code: " + code);
+			throw new AdempiereException("No " + APIExportStatus.class + " found for code: " + code);
 		}
 		return type;
 	}

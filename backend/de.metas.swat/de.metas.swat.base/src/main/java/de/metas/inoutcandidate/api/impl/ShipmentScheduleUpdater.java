@@ -422,19 +422,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	private void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
-				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
-				sched.getAD_Client_ID(),
-				sched.getAD_Org_ID());
-		if (canBeExportedAfterSeconds >= 0)
-		{
-			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
-			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
-			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
-		}
-	}
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(
 			@NonNull final Properties ctx,
