@@ -89,12 +89,12 @@ public interface IReceiptScheduleBL extends ISingletonService
 	/**
 	 * @return override-qty or the qty (if no override set) of the given {@code rs}.
 	 */
-	StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs);
+	StockQtyAndUOMQty getQtyToMove(I_M_ReceiptSchedule rs);
 
 	/**
 	 * @return M_Warehouse_Override_ID and falls back to M_Warehouse_ID if no override value is set
 	 */
-	WarehouseId getWarehouseEffectiveId(final I_M_ReceiptSchedule rs);
+	WarehouseId getWarehouseEffectiveId(I_M_ReceiptSchedule rs);
 
 	/**
 	 * @return M_Warehouse_Override and falls back to M_Warehouse if no override value is set

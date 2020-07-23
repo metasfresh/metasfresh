@@ -172,8 +172,13 @@ class TableContainer extends PureComponent {
       docId ? tabId : null,
       selected
     )
-      .then(() => {
+      .then((response) => {
         // TODO: In the future we probably shouldn't refresh the whole list
+        if (response.data[0] && response.data[0].includedTabsInfo) {
+          Object.keys(response.data[0].includedTabsInfo).includes(tabId) &&
+            updateDocList();
+        }
+
         // when something is removed.
         if (!docId) {
           updateDocList();

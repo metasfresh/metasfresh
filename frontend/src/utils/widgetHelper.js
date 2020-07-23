@@ -37,8 +37,15 @@ export function formatValueByWidgetType({ widgetType, value }) {
  * @param {string} widgetType
  * @param {integer} precision
  */
-export function validatePrecision({ widgetValue, widgetType, precision }) {
+export function validatePrecision({
+  widgetValue,
+  widgetType,
+  precision,
+  fieldName,
+}) {
   let precisionProcessed = precision;
+
+  if (fieldName === 'qtyToDeliverCatchOverride') return true; // hotfix for catchWeight
 
   if (!widgetValue) {
     return false;

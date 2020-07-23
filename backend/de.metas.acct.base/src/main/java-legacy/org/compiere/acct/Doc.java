@@ -88,7 +88,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -22,12 +22,49 @@
 
 package de.metas.ui.web.window.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
@@ -64,40 +101,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 
 @Component
 public class DocumentCollection
@@ -193,7 +196,8 @@ public class DocumentCollection
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
-				final Document includedDocument = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
+				final Document includedDocument = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId())
+						.orElseThrow(() -> new DocumentNotFoundException(documentPath));
 				DocumentPermissionsHelper.assertCanView(includedDocument, UserSession.getCurrentPermissions());
 
 				return documentProcessor.apply(includedDocument);
@@ -228,7 +232,8 @@ public class DocumentCollection
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
-		try (@SuppressWarnings("unused") final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
+		try (@SuppressWarnings("unused")
+		final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
 			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
@@ -259,7 +264,8 @@ public class DocumentCollection
 					}
 					else
 					{
-						document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
+						document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId())
+								.orElseThrow(() -> new DocumentNotFoundException(documentPath));
 						DocumentPermissionsHelper.assertCanEdit(rootDocument);
 					}
 
@@ -291,7 +297,8 @@ public class DocumentCollection
 			isNewRootDocument = false;
 		}
 
-		try (@SuppressWarnings("unused") final IAutoCloseable writeLock = lockHolder.lockForWriting())
+		try (@SuppressWarnings("unused")
+		final IAutoCloseable writeLock = lockHolder.lockForWriting())
 		{
 			final Document rootDocument;
 			if (isNewRootDocument)
@@ -719,7 +726,8 @@ public class DocumentCollection
 			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
 			if (rootDocument != null)
 			{
-				try (@SuppressWarnings("unused") final IAutoCloseable lock = rootDocument.lockForWriting())
+				try (@SuppressWarnings("unused")
+				final IAutoCloseable lock = rootDocument.lockForWriting())
 				{
 					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
 					{
@@ -734,7 +742,6 @@ public class DocumentCollection
 							final DetailId detailId = includedEntityDescriptor.getDetailId();
 
 							rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
-							websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
 						}
 					}
 				}
@@ -749,7 +756,32 @@ public class DocumentCollection
 
 			//
 			// Notify frontend, even if the root document does not exist (or it was not cached).
-			websocketPublisher.staleRootDocument(windowId, rootDocumentId);
+			sendWebsocketChangeEvents(documentToInvalidate, entityDescriptor);
+		}
+	}
+
+	private void sendWebsocketChangeEvents(
+			final DocumentToInvalidate documentToInvalidate,
+			final DocumentEntityDescriptor entityDescriptor)
+	{
+		final WindowId windowId = entityDescriptor.getWindowId();
+		final DocumentId rootDocumentId = documentToInvalidate.getDocumentId();
+
+		websocketPublisher.staleRootDocument(windowId, rootDocumentId);
+
+		for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
+		{
+			final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
+			if (includedRowIds.isEmpty())
+			{
+				continue;
+			}
+
+			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
+			{
+				final DetailId detailId = includedEntityDescriptor.getDetailId();
+				websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
+			}
 		}
 	}
 
@@ -883,9 +915,12 @@ public class DocumentCollection
 	@Builder
 	public static class DocumentPrint
 	{
-		@NonNull String filename;
-		@NonNull String reportContentType;
-		@NonNull byte[] reportData;
+		@NonNull
+		String filename;
+		@NonNull
+		String reportContentType;
+		@NonNull
+		byte[] reportData;
 	}
 
 	@Immutable

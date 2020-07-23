@@ -121,13 +121,25 @@ const reducer = produce((draftState, action) => {
         ? draftState[id]
         : initialTableState;
       let updatedSelected = {};
+      let selectionValid = false;
 
       if (data.rows && data.rows.length) {
-        const newSelected = [data.rows[0][data.keyProperty]];
-        updatedSelected = {
-          selected: newSelected,
-          supportAttribute: setSupportAttribute(newSelected, data.rows),
-        };
+        const currentSelected = original(prevTableStruct.selected);
+
+        if (currentSelected.length) {
+          selectionValid = doesSelectionExist({
+            data: data.rows,
+            selected: currentSelected,
+          });
+        }
+
+        if (!selectionValid) {
+          const newSelected = [data.rows[0][data.keyProperty]];
+          updatedSelected = {
+            selected: newSelected,
+            supportAttribute: setSupportAttribute(newSelected, data.rows),
+          };
+        }
       }
 
       draftState[id] = {
@@ -154,7 +166,7 @@ const reducer = produce((draftState, action) => {
 
     case types.UPDATE_TABLE_DATA: {
       const { id, rows, keyProperty } = action.payload;
-      const currentSelected = draftState[id].selected;
+      const currentSelected = original(draftState[id].selected);
       const selectionValid = doesSelectionExist({
         data: rows,
         selected: currentSelected,

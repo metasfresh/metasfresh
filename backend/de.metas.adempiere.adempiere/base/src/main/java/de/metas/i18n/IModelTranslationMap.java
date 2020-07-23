@@ -51,7 +51,6 @@ public interface IModelTranslationMap
 	Map<String, IModelTranslation> getAllTranslations();
 
 	/**
-	 * @param columnName
 	 * @param defaultValue default value to be used in case a translation is missing
 	 * @return {@link ITranslatableString} for given column name
 	 */

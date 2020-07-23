@@ -28,14 +28,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -64,6 +67,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_OrderLine;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
@@ -85,9 +90,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -118,7 +122,6 @@ import lombok.NonNull;
  *
  * @see IShipmentSchedulePA
  * @see OlAndSched
- *
  */
 @Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
@@ -127,9 +130,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
+	private static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
+
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
@@ -170,7 +176,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 * Note: we assume that *if* the value is set, it is as intended by the user
 	 */
 	@Override
-	public void updateBPArtnerAddressOverrideIfNotYetSet(final I_M_ShipmentSchedule sched)
+	public void updateBPartnerAddressOverrideIfNotYetSet(final I_M_ShipmentSchedule sched)
 	{
 		if (!Check.isEmpty(sched.getBPartnerAddress_Override(), true))
 		{
@@ -268,8 +274,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
 		return FreightCostRule.FixPrice.equals(freightCostRule)
-		// || FreightCostRule.FreightIncluded.equals(freightCostRule) // 07973: included freight cost rule shall no longer be considered "custom"
-		;
+				// || FreightCostRule.FreightIncluded.equals(freightCostRule) // 07973: included freight cost rule shall no longer be considered "custom"
+				;
 	}
 
 	@Override
@@ -630,7 +636,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				throw new AdempiereException(
 						Services.get(IMsgBL.class)
 								.getTranslatableMsgText(MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID()))
-										.markAsUserValidationError();
+						.markAsUserValidationError();
 			}
 			closeShipmentSchedule(record);
 		}
@@ -680,7 +686,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
 			try (final MDCCloseable iolrecordMDC = TableRecordMDC.putTableRecordReference(iolrecord))
@@ -708,9 +713,33 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private boolean isCloseIfPartiallyShipped(@NonNull final OrgId orgId)
 	{
-		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
-				.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
+		final boolean isCloseIfPartiallyInvoiced =
+				sysConfigBL.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
 
 		return isCloseIfPartiallyInvoiced;
+	}
+
+	@Override
+	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		// we see "not-yet-set" as equivalent to "pending"
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(sched.getExportStatus(), APIExportStatus.Pending);
+		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
+		{
+			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
+			sched.setCanBeExportedFrom(Env.MAX_DATE);
+			return;
+		}
+
+		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
+				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
+				sched.getAD_Client_ID(),
+				sched.getAD_Org_ID());
+		if (canBeExportedAfterSeconds >= 0)
+		{
+			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
+			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
+			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
+		}
 	}
 }

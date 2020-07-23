@@ -65,6 +65,14 @@ describe('Widget helpers', () => {
       });
 
       expect(resultToCheckThree).toBe(false);
+
+      const resultToCheckFour = validatePrecision({
+        widgetValue: '223,544334',
+        widgetType: 'Quantity',
+        precision: 0,
+        fieldName: 'qtyToDeliverCatchOverride',
+      });
+      expect(resultToCheckFour).toBe(true);
     });
 
     it('test null and empty object as value', () => {

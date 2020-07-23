@@ -53,8 +53,6 @@ class MasterWidget extends PureComponent {
 
     if (!edited && hasNewData) {
       return { updated: true, data: next, widgetData: nextProps.widgetData };
-    } else if (edited) {
-      return { edited: false };
     }
     return null;
   }
@@ -113,7 +111,7 @@ class MasterWidget extends PureComponent {
       viewId,
       isEdit
     );
-
+    this.setState({ edited: false });
     onChange && onChange(rowId, property, value, ret); //callback
 
     return ret;
@@ -139,14 +137,20 @@ class MasterWidget extends PureComponent {
       viewId,
       dataId,
       windowType,
+      widgetData,
     } = this.props;
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
-
+    let fieldName = widgetData[0] ? widgetData[0].field : '';
     this.setState({ edited: true, data: val }, () => {
       if (
         !dateParse.includes(widgetType) &&
-        !validatePrecision({ widgetValue: val, widgetType, precision })
+        !validatePrecision({
+          widgetValue: val,
+          widgetType,
+          precision,
+          fieldName,
+        })
       ) {
         return;
       }

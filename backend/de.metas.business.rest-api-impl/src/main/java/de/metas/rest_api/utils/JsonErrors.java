@@ -9,8 +9,8 @@ import org.compiere.model.Null;
 import org.compiere.util.Trace;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.rest_api.common.JsonErrorItem;
-import de.metas.rest_api.common.JsonErrorItem.JsonErrorItemBuilder;
+import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.JsonErrorItem.JsonErrorItemBuilder;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;

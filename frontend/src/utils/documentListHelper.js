@@ -3,6 +3,7 @@ import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import deepUnfreeze from 'deep-unfreeze';
+import { toInteger } from 'lodash';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
@@ -74,20 +75,20 @@ const DLmapStateToProps = (state, props) => {
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
   } = props;
-  const identifier = isModal ? defaultViewId : windowId;
-  let master = getView(state, identifier);
+  let master = getView(state, windowId, isModal);
 
+  // use empty view's data. This is used in tests
   if (!master) {
     master = viewState;
   }
 
   const sort = master.sort ? master.sort : querySort;
-  const page = master.page ? master.page : parseInt(queryPage);
+  const page = toInteger(queryPage) || master.page;
   let viewId = master.viewId ? master.viewId : queryViewId;
 
   // used for modals
-  if (props.defaultViewId) {
-    viewId = props.defaultViewId;
+  if (defaultViewId) {
+    viewId = defaultViewId;
   }
 
   const tableId = getTableId({ windowId, viewId });

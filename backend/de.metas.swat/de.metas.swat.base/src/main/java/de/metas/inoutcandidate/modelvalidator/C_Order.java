@@ -51,7 +51,8 @@ public class C_Order
 		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
 		if (isDeliveryStop)
 		{
-			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop);
+			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop)
+					.markAsUserValidationError();
 		}
 	}
 }
