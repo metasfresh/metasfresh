@@ -237,7 +237,6 @@ class Modal extends Component {
             options.parentViewId = parentViewId;
             options.parentViewSelectedIds = parentSelection;
           }
-
           await createProcess(options);
         } catch (error) {
           this.handleClose();

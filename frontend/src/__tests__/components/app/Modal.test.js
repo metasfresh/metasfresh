@@ -49,7 +49,9 @@ describe('Modal test', () => {
   });
 
   it('calls callProcess', () => {
+    const mockFn = jest.fn();
     const dummyProps = fixtures;
+    dummyProps.callProcess = mockFn; // we spy the callProcess funcion
     const initialState = function(state = {}) {
       const res = merge.recursive(
         true,
@@ -63,7 +65,7 @@ describe('Modal test', () => {
       return res;
     };
     const store = mockStore(initialState);
-    const wrapper = mount(
+    mount(
       <Provider store={store}>
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
           <Modal {...dummyProps} />
@@ -71,8 +73,8 @@ describe('Modal test', () => {
       </Provider>
     );
 
-    const html = wrapper.html();
-    expect(html).not.toBe(null);
-    expect(html.includes('Action')).toBe(true);
+    setTimeout(() => {
+      expect(mockFn).toHaveBeenCalled();
+    }, 200);
   });
 });
