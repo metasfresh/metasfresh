@@ -122,7 +122,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 				})
 
-				.log(LoggingLevel.INFO, "Converting ecosio-XML Java Object -> STEPcom-XML Java Object...")
+				.log(LoggingLevel.INFO, "Converting metasfresh-XML Java Object -> STEPcom-XML Java Object...")
 				.bean(StepComXMLDesadvBean.class, StepComXMLDesadvBean.METHOD_createXMLEDIData)
 				.log(LoggingLevel.INFO, "Marshalling STEPcom-XML Java Object -> XML...")
 				.marshal(dataFormat)
@@ -134,11 +134,11 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.to(endPointURIs)
 				.end()
 
-				.log(LoggingLevel.INFO, "Creating ecosio success feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "Creating metasfresh success feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, StepComXMLDesadvRoute.EDIDesadvFeedback_QNAME, StepComXMLDesadvRoute.METHOD_setEDIDesadvID))
-				.log(LoggingLevel.INFO, "Marshalling ecosio feedback XML Java Object -> XML...")
+				.log(LoggingLevel.INFO, "Marshalling metasfresh feedback XML Java Object -> XML...")
 				.marshal(jaxb)
-				.log(LoggingLevel.INFO, "Sending success response to ecosio...")
+				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to(Constants.EP_AMQP_TO_MF);

@@ -113,7 +113,7 @@ public class StepComXMLOrdersRoute
 
 					.marshal(olCandsJaxbDataFormat)
 
-					.log(LoggingLevel.INFO, "EDI: Sending XML Order document to ecosio...")
+					.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
 					.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 					.to(Constants.EP_AMQP_TO_MF)
 				.end();

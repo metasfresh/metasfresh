@@ -30,10 +30,12 @@ import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.stepcom.desadv.ObjectFactory;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
+import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
@@ -62,10 +64,16 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 
 	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.ecosio.remote";
 
+	private static final String JAXB_DESADV_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
+
 	@Override
 	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
 		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_DESADV_CONTEXTPATH);
+		dataFormat.setCamelContext(getContext());
+		dataFormat.setEncoding(charset);
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
@@ -103,18 +111,21 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 				})
 
+				.log(LoggingLevel.INFO, "Marshalling XML Java Object -> XML...")
+				.marshal(dataFormat)
+
 				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}")
-				.log(LoggingLevel.INFO, "Sending ecosio-XML to the endpoint(s):\r\n" + body())
+				.log(LoggingLevel.INFO, "Sending XML to the endpoint(s):\r\n" + body())
 				.multicast()
 				.stopOnException()
 				.to(endPointURIs)
 				.end()
 
-				.log(LoggingLevel.INFO, "Creating ecosio success feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "Creating metasfresh success feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, EcosioDesadvRoute.EDIDesadvFeedback_QNAME, EcosioDesadvRoute.METHOD_setEDIDesadvID))
-				.log(LoggingLevel.INFO, "Marshalling ecosio feedback XML Java Object -> XML...")
+				.log(LoggingLevel.INFO, "Marshalling metasfresh feedback XML Java Object -> XML...")
 				.marshal(jaxb)
-				.log(LoggingLevel.INFO, "Sending success response to ecosio...")
+				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to(Constants.EP_AMQP_TO_MF);

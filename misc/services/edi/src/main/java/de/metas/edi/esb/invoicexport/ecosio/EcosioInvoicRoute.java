@@ -30,9 +30,11 @@ import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
+import de.metas.edi.esb.jaxb.stepcom.invoice.ObjectFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
+import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
@@ -66,9 +68,16 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 
 	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.ecosio.remote";
 
+	private static final String JAXB_INVOIC_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
+
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
+		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_INVOIC_CONTEXTPATH);
+		dataFormat.setCamelContext(getContext());
+		dataFormat.setEncoding(charset);
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
@@ -106,6 +115,9 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
 				})
+
+				.log(LoggingLevel.INFO, "Marshalling EDI XML Java Object to XML...")
+				.marshal(dataFormat)
 
 				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
 				.log(LoggingLevel.INFO, "Sending ecosio-XML to the endpoint(s):\r\n" + body())
