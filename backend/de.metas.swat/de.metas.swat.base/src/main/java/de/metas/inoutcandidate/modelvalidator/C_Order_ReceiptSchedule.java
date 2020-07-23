@@ -145,13 +145,10 @@ public class C_Order_ReceiptSchedule
 
 	/**
 	 * Never reactivate an order if it already has processed receipt schedules.
-	 * 
-	 * @param order
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void reactivateIfNoReceiptScheduleProcessed(final I_C_Order order)
 	{
-
 		if (!isEligibleForReceiptSchedule(order))
 		{
 			return;

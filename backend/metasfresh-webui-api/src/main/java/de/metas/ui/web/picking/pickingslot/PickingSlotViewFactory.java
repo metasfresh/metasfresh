@@ -3,7 +3,7 @@ package de.metas.ui.web.picking.pickingslot;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
