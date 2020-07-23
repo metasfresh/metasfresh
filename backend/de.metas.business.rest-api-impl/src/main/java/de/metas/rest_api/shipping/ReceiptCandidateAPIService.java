@@ -30,7 +30,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonAttributeSetInstance;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
@@ -44,8 +43,8 @@ import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate.JsonResponseReceiptCandidateBuilder;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates.JsonResponseReceiptCandidatesBuilder;
-import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
-import de.metas.common.shipping.shipmentcandidate.JsonCustomer.JsonCustomerBuilder;
+import de.metas.common.shipping.receiptcandidate.JsonVendor;
+import de.metas.common.shipping.receiptcandidate.JsonVendor.JsonVendorBuilder;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -69,6 +68,7 @@ import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
+import de.metas.rest_api.utils.RestApiUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -77,13 +77,10 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -91,9 +88,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -161,7 +155,8 @@ class ReceiptCandidateAPIService
 						.receiptScheduleId(receiptSchedule.getId())
 						.asiId(receiptSchedule.getAttributeSetInstanceId())
 						.orderId(receiptSchedule.getOrderId())
-						.productId(receiptSchedule.getProductId());
+						.productId(receiptSchedule.getProductId())
+						.bPartnerId(receiptSchedule.getVendorId());
 			}
 			final IdsRegistry idsRegistry = idsRegistryBuilder.build();
 
@@ -176,7 +171,7 @@ class ReceiptCandidateAPIService
 			}
 
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
-					.hasMoreItems(receiptSchedules.size() == 500)
+					.hasMoreItems(receiptSchedules.size() == limit)
 					.transactionKey(transactionId);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
@@ -200,8 +195,8 @@ class ReceiptCandidateAPIService
 				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ReceiptSchedule.Table_Name, receiptSchedule.getId()))
 				{
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(receiptSchedule, attributesForASIs);
-					final JsonCustomer customer = createJsonCustomer(receiptSchedule, bpartnerIdToBPartner);
-					final JsonProduct product = createJsonProduct(receiptSchedule, customer.getLanguage(), productId2Product);
+					final JsonVendor vendor = createJsonVendor(receiptSchedule, bpartnerIdToBPartner);
+					final JsonProduct product = createJsonProduct(receiptSchedule, vendor.getLanguage(), productId2Product);
 					final I_C_Order orderRecord = orderIdToOrderRecord.get(receiptSchedule.getOrderId());
 					final Quantity quantity = receiptSchedule.getQuantityToDeliver();
 					final List<JsonQuantity> quantities = createJsonQuantities(quantity);
@@ -225,7 +220,7 @@ class ReceiptCandidateAPIService
 				}
 				catch (final ReceiptCandidateExportException e) // don't catch just any exception; just the "functional" ones
 				{
-					createExportErrorAuditItem(receiptSchedule, transactionId, e, auditBuilder);
+					createExportErrorAuditItem(receiptSchedule, e, auditBuilder);
 				}
 			}
 
@@ -242,7 +237,7 @@ class ReceiptCandidateAPIService
 		return ImmutableList.of(JsonQuantity.builder().qty(quantity.toBigDecimal()).uomCode(quantity.getUOMSymbol()).build());
 	}
 
-	private JsonCustomer createJsonCustomer(
+	private JsonVendor createJsonVendor(
 			@NonNull final ReceiptSchedule receiptSchedule,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
@@ -252,11 +247,11 @@ class ReceiptCandidateAPIService
 
 		final String adLanguage = bpartner.getLanguage() != null ? bpartner.getLanguage().getAD_Language() : Env.getAD_Language();
 
-		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
+		final JsonVendorBuilder vendorBuilder = JsonVendor.builder()
 				.companyName(CoalesceUtil.coalesce(bpartner.getCompanyName(), bpartner.getName()))
 				.language(adLanguage);
 
-		return customerBuilder.build();
+		return vendorBuilder.build();
 	}
 
 	private JsonProduct createJsonProduct(
@@ -289,12 +284,12 @@ class ReceiptCandidateAPIService
 			return null;
 		}
 		final ImmutableAttributeSet attributeSet = attributesForASIs.get(scheduleASIId);
-		return extractJsonAttributeSetInstance(attributeSet, receiptSchedule.getOrgId());
+		return RestApiUtils.extractJsonAttributeSetInstance(attributeSet, receiptSchedule.getOrgId());
 	}
 
 	private void createExportedAuditItem(
 			@NonNull final ReceiptSchedule receiptSchedule,
-			@NonNull final APIExportAuditBuilder auditBuilder)
+			@NonNull final APIExportAuditBuilder<ReceiptScheduleExportAuditItem> auditBuilder)
 	{
 		final OrgId orgId = receiptSchedule.getOrgId();
 
@@ -309,9 +304,8 @@ class ReceiptCandidateAPIService
 
 	private void createExportErrorAuditItem(
 			@NonNull final ReceiptSchedule receiptSchedule,
-			@NonNull final String transactionId,
 			@NonNull final ReceiptCandidateExportException e,
-			@NonNull final APIExportAuditBuilder auditBuilder)
+			@NonNull final APIExportAuditBuilder<ReceiptScheduleExportAuditItem> auditBuilder)
 	{
 		final OrgId orgId = receiptSchedule.getOrgId();
 
@@ -330,47 +324,6 @@ class ReceiptCandidateAPIService
 						.issueId(adIssueId)
 						.orgId(orgId)
 						.build());
-	}
-
-	private JsonAttributeSetInstance extractJsonAttributeSetInstance(
-			@NonNull final ImmutableAttributeSet attributeSet,
-			@NonNull final OrgId orgId)
-	{
-		final JsonAttributeSetInstance.JsonAttributeSetInstanceBuilder jsonAttributeSetInstance = JsonAttributeSetInstance.builder();
-		for (final AttributeId attributeId : attributeSet.getAttributeIds())
-		{
-			final AttributeCode attributeCode = attributeSet.getAttributeCode(attributeId);
-
-			final JsonAttributeInstance.JsonAttributeInstanceBuilder instanceBuilder = JsonAttributeInstance.builder()
-					.attributeName(attributeSet.getAttributeName(attributeId))
-					.attributeCode(attributeCode.getCode());
-			final String attributeValueType = attributeSet.getAttributeValueType(attributeId);
-			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
-			{
-				final Date valueAsDate = attributeSet.getValueAsDate(attributeCode);
-				if (valueAsDate != null)
-				{
-					final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-					final LocalDate localDate = valueAsDate.toInstant().atZone(timeZone).toLocalDate();
-					instanceBuilder.valueDate(localDate);
-				}
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
-			{
-				instanceBuilder.valueStr(attributeSet.getValueAsString(attributeCode));
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
-			{
-				instanceBuilder.valueStr(attributeSet.getValueAsString(attributeCode));
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
-			{
-				instanceBuilder.valueNumber(attributeSet.getValueAsBigDecimal(attributeCode));
-			}
-
-			jsonAttributeSetInstance.attributeInstance(instanceBuilder.build());
-		}
-		return jsonAttributeSetInstance.build();
 	}
 
 	@Value
@@ -401,7 +354,7 @@ class ReceiptCandidateAPIService
 		final AdIssueId generalAdIssueId = createADIssue(results.getError());
 		if (generalAdIssueId != null)
 		{
-			logger.debug("Created AD_Issue_ID={} that applies to all exported shipment schedules", generalAdIssueId.getRepoId());
+			logger.debug("Created AD_Issue_ID={} that applies to all exported receipt schedules", generalAdIssueId.getRepoId());
 		}
 
 		if (results.getItems().isEmpty())
@@ -413,6 +366,7 @@ class ReceiptCandidateAPIService
 		if (audit == null)
 		{
 			logger.debug("Given results.transactionKey={} does not match any audit records; -> return", results.getTransactionKey());
+			return;
 		}
 		final ImmutableSet<ReceiptScheduleId> receiptScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
 				results.getItems(),
@@ -458,10 +412,7 @@ class ReceiptCandidateAPIService
 			}
 
 			auditItem.setExportStatus(status);
-			if (receiptSchedule != null)
-			{
-				receiptSchedule.setExportStatus(status);
-			}
+			receiptSchedule.setExportStatus(status);
 		}
 		receiptScheduleRepository.saveAll(receiptSchedules.values());
 		receiptScheduleAuditRepository.save(audit);

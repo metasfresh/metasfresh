@@ -22,11 +22,13 @@
 
 package de.metas.camel.shipping.receiptcandidate;
 
+import de.metas.camel.shipping.FeedbackProzessor;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlProcessor;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
+import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMethods;
 import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
@@ -34,47 +36,54 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
-	public static final String MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-ShipmentCandidate-JSON-To-Filemaker-XML";
+	public static final String MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-JSON-To-FM-XML-ReceiptCandidate";
+	public static final String RECEIPT_CANDIDATE_FEEDBACK_TO_MF = "ReceiptCandidate-Feedback-TO-MF";
 
 	@Override
 	public void configure()
 	{
-		errorHandler(defaultErrorHandler()
-				.maximumRedeliveries(5)
-				.redeliveryDelay(10000));
+		errorHandler(defaultErrorHandler());
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
-				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE));
+				.logHandled(true)
+				.to(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF));
 
 		RouteBuilderCommonUtil.setupProperties(getContext());
 
-		final Class<JsonResponseShipmentCandidates> unmarshalType = JsonResponseShipmentCandidates.class;
-		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), unmarshalType);
-
+		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonResponseReceiptCandidates.class);
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
-		from(timer("pollShipmentCandidateAPI")
+		from(timer("pollReceiptCandidateAPI")
 				.period(5 * 1000))
-				.routeId(MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML)
+				.routeId(MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML)
 				.streamCaching()
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.to(http("{{metasfresh.api.baseurl}}/receipts/receiptCandidates"))
 				.unmarshal(jacksonDataFormat)
 
-				.process(new ShipmentCandidateJsonToXmlProcessor())
+				.process(new ReceiptCandidateJsonToXmlProcessor())
 
 				.choice()
-				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
-				.marshal(jacksonXMLDataFormat)
-				.multicast() // store the file both locally and send it to the remote folder
-				.stopOnException()
-				.to("file://{{local.file.output_path}}", "{{upload.endpoint.uri}}")
-				.end()
-				.to(direct(RouteBuilderCommonUtil.FEEDBACK_ROUTE))
+					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
+					.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " +  header(Exchange.FILE_NAME))
+					.marshal(jacksonXMLDataFormat)
+					.multicast() // store the file both locally and send it to the remote folder
+					.stopOnException()
+					.to(file("{{local.file.output_path}}"), direct(RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE))
+					.end()
+					.to(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF))
 				.end() // "NumberOfItems" - choice
 		;
 
-		RouteBuilderCommonUtil.setupFeedbackRoute(this, jacksonDataFormat, "/receipts/receiptCandidates");
+		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this);
+
+		from(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF))
+				.routeId("ReceiptCandidate-Feedback-TO-MF")
+				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
+				.process(new FeedbackProzessor())
+				.marshal(jacksonDataFormat)
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.to(http("{{metasfresh.api.baseurl}}/receipts/receiptCandidatesResult"));
 	}
 }

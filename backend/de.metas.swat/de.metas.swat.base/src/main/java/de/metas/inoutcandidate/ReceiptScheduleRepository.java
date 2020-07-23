@@ -34,11 +34,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,7 +57,7 @@ import java.util.Set;
 
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_AD_Client_ID;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_ExportStatus;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_Processed;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMN_CanBeExportedFrom;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMN_QtyToMove;
@@ -90,16 +89,7 @@ public class ReceiptScheduleRepository
 		{
 			queryBuilder.addCompareFilter(COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
 		}
-		if (!query.isIncludeInvalid())
-		{
-			final IQuery<I_M_ShipmentSchedule_Recompute> recomputeQuery = queryBL
-					.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
-					.create();
-			queryBuilder.addNotInSubQueryFilter(
-					COLUMNNAME_M_ShipmentSchedule_ID,
-					I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID,
-					recomputeQuery);
-		}
+
 		if (!query.isIncludeProcessed())
 		{
 			queryBuilder.addNotEqualsFilter(COLUMNNAME_Processed, true);
@@ -114,7 +104,7 @@ public class ReceiptScheduleRepository
 		}
 
 		final List<I_M_ReceiptSchedule> records = queryBuilder
-				.orderBy(COLUMNNAME_M_ShipmentSchedule_ID)
+				.orderBy(COLUMNNAME_M_ReceiptSchedule_ID)
 				.create()
 				.list();
 
@@ -127,7 +117,7 @@ public class ReceiptScheduleRepository
 		return result.build();
 	}
 
-	private ReceiptSchedule ofRecord(final I_M_ReceiptSchedule record)
+	private ReceiptSchedule ofRecord(@NonNull final I_M_ReceiptSchedule record)
 	{
 		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(record.getM_ReceiptSchedule_ID());
@@ -161,7 +151,7 @@ public class ReceiptScheduleRepository
 				.addSetColumnValue(COLUMNNAME_ExportStatus, exportStatus.getCode());
 
 		queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addInArrayFilter(COLUMNNAME_M_ShipmentSchedule_ID, receiptScheduleIds)
+				.addInArrayFilter(COLUMNNAME_M_ReceiptSchedule_ID, receiptScheduleIds)
 				.create()
 				.updateDirectly(updater);
 
@@ -208,9 +198,6 @@ public class ReceiptScheduleRepository
 
 		@Builder.Default
 		boolean includeWithQtyToDeliverZero = false;
-
-		@Builder.Default
-		boolean includeInvalid = false;
 
 		@Builder.Default
 		boolean includeProcessed = false;

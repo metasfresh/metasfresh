@@ -773,7 +773,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Wareneingangsdisposition.
+	 * Set Material Receipt Candidates.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -782,7 +782,7 @@ public interface I_M_ReceiptSchedule
 	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
 
 	/**
-	 * Get Wareneingangsdisposition.
+	 * Get Material Receipt Candidates.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

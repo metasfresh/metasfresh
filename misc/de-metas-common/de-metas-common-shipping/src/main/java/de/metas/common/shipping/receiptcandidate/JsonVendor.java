@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,47 +20,34 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
+package de.metas.common.shipping.receiptcandidate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
-public class JsonAttributeSetInstance
+public class JsonVendor
 {
-	List<JsonAttributeInstance> attributeInstances;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String companyName;
 
-	@JsonIgnore
-	ImmutableMap<String, JsonAttributeInstance> code2Instance;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String language;
 
-	@Builder
 	@JsonCreator
-	private JsonAttributeSetInstance(
-			@JsonProperty("attributeInstances") @Singular @NonNull final List<JsonAttributeInstance> attributeInstances)
+	@Builder
+	public JsonVendor(
+			@JsonProperty("companyName") @Nullable final String companyName,
+			@JsonProperty("language") @Nullable final String language
+	)
 	{
-		this.attributeInstances = attributeInstances;
-		this.code2Instance = Maps.uniqueIndex(attributeInstances, JsonAttributeInstance::getAttributeCode);
-	}
-
-	@Nullable
-	@JsonIgnore
-	public String getValueStr(@NonNull final String attributeCode)
-	{
-		final JsonAttributeInstance instance = code2Instance.get(attributeCode);
-		if (instance == null)
-		{
-			return null;
-		}
-		return instance.getValueStr();
+		this.companyName = companyName;
+		this.language = language;
 	}
 }

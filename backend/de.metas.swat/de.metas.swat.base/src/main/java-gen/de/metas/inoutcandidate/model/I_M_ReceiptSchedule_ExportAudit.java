@@ -5,13 +5,13 @@ package de.metas.inoutcandidate.model;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_M_ReceiptSchedule_ExportAudit
+public interface I_M_ReceiptSchedule_ExportAudit 
 {
 
     /** TableName=M_ReceiptSchedule_ExportAudit */
     public static final String Table_Name = "M_ReceiptSchedule_ExportAudit";
 
-    /** AD_Table_ID=541504 */
+    /** AD_Table_ID=541509 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -113,7 +113,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExportStatus (String ExportStatus);
+	public void setExportStatus (java.lang.String ExportStatus);
 
 	/**
 	 * Get Export Status.
@@ -122,7 +122,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public String getExportStatus();
+	public java.lang.String getExportStatus();
 
     /** Column definition for ExportStatus */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, Object> COLUMN_ExportStatus = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, Object>(I_M_ReceiptSchedule_ExportAudit.class, "ExportStatus", null);
@@ -155,7 +155,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Receipt disposition export revision.
+	 * Set Receipt Disposition Export Revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -164,7 +164,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
 	public void setM_ReceiptSchedule_ExportAudit_ID (int M_ReceiptSchedule_ExportAudit_ID);
 
 	/**
-	 * Get Receipt disposition export revision.
+	 * Get Receipt Disposition Export Revision.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -178,7 +178,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
     public static final String COLUMNNAME_M_ReceiptSchedule_ExportAudit_ID = "M_ReceiptSchedule_ExportAudit_ID";
 
 	/**
-	 * Set Receipt Candidate.
+	 * Set Material Receipt Candidates.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -187,7 +187,7 @@ public interface I_M_ReceiptSchedule_ExportAudit
 	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
 
 	/**
-	 * Get Receipt Candidate.
+	 * Get Material Receipt Candidates.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -195,32 +195,32 @@ public interface I_M_ReceiptSchedule_ExportAudit
 	 */
 	public int getM_ReceiptSchedule_ID();
 
-	public I_M_ReceiptSchedule getM_ReceiptSchedule();
+	public de.metas.inoutcandidate.model.I_M_ReceiptSchedule getM_ReceiptSchedule();
 
-	public void setM_ReceiptSchedule(I_M_ReceiptSchedule M_ReceiptSchedule);
+	public void setM_ReceiptSchedule(de.metas.inoutcandidate.model.I_M_ReceiptSchedule M_ReceiptSchedule);
 
     /** Column definition for M_ReceiptSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, I_M_ReceiptSchedule> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, I_M_ReceiptSchedule>(I_M_ReceiptSchedule_ExportAudit.class, "M_ReceiptSchedule_ID", I_M_ReceiptSchedule.class);
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, de.metas.inoutcandidate.model.I_M_ReceiptSchedule> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, de.metas.inoutcandidate.model.I_M_ReceiptSchedule>(I_M_ReceiptSchedule_ExportAudit.class, "M_ReceiptSchedule_ID", de.metas.inoutcandidate.model.I_M_ReceiptSchedule.class);
     /** Column name M_ReceiptSchedule_ID */
     public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
 
 	/**
-	 * Set Transaction ID API.
+	 * Set API Transaction key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTransactionIdAPI (String TransactionIdAPI);
+	public void setTransactionIdAPI (java.lang.String TransactionIdAPI);
 
 	/**
-	 * Get Transaction ID API.
+	 * Get API Transaction key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public String getTransactionIdAPI();
+	public java.lang.String getTransactionIdAPI();
 
     /** Column definition for TransactionIdAPI */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, Object> COLUMN_TransactionIdAPI = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_ExportAudit, Object>(I_M_ReceiptSchedule_ExportAudit.class, "TransactionIdAPI", null);

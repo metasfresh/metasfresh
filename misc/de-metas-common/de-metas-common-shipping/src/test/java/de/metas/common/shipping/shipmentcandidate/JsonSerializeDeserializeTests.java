@@ -63,7 +63,7 @@ class JsonSerializeDeserializeTests
 		assertOK(productOrig, JsonProduct.class);
 	}
 
-	private <T> void assertOK(T objectOrig, Class<T> valueType) throws IOException
+	private <T> void assertOK(final T objectOrig, final Class<T> valueType) throws IOException
 	{
 		final ObjectMapper objectMapper = ConfiguredJsonMapper.get();
 
@@ -85,14 +85,14 @@ class JsonSerializeDeserializeTests
 				.builder()
 				.id(JsonMetasfreshId.of(10))
 				.orgCode("orgCode")
-				.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 48))
+				.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 48))
 				.poReference("poReference")
 				.orderDocumentNo("orderDocumentNo")
 				.product(createJsonProduct())
 				.customer(JsonCustomer.builder().street("street").streetNo("streetNo").postal("postal").city("city").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.ONE).uomCode("PCE").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
-				.attributeSetInstance(JsonAttributeSetInstance.builder().id(JsonMetasfreshId.of(20))
+				.attributeSetInstance(JsonAttributeSetInstance.builder()
 						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_1").attributeCode("attributeCode_1").valueNumber(BigDecimal.TEN).build())
 						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_2").attributeCode("attributeCode_2").valueStr("valueStr").build())
 						.build())
@@ -116,7 +116,7 @@ class JsonSerializeDeserializeTests
 				.item(JsonResponseShipmentCandidate.builder()
 						.id(JsonMetasfreshId.of(10))
 						.orgCode("orgCode")
-						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 01))
+						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 1))
 						.poReference("poReference_1")
 						.orderDocumentNo("orderDocumentNo_1")
 						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").build())
@@ -125,7 +125,7 @@ class JsonSerializeDeserializeTests
 				.item(JsonResponseShipmentCandidate.builder()
 						.id(JsonMetasfreshId.of(20))
 						.orgCode("orgCode")
-						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 05, 02))
+						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 2))
 						.poReference("poReference_2")
 						.orderDocumentNo("orderDocumentNo_2")
 						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").build())
@@ -164,7 +164,7 @@ class JsonSerializeDeserializeTests
 	@Test
 	void deserializeBigJson() throws IOException
 	{
-		String jsonString = "{\n"
+		final String jsonString = "{\n"
 				+ "    \"transactionKey\": \"d7c3f93d-6eab-4360-8bf4-f45d1a66cd4d\",\n"
 				+ "    \"items\": [\n"
 				+ "        {\n"

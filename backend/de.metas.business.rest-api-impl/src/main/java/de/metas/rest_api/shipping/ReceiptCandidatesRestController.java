@@ -56,7 +56,7 @@ public class ReceiptCandidatesRestController
 	}
 
 	@GetMapping("receiptCandidates")
-	public ResponseEntity<JsonResponseReceiptCandidates> getShipmentCandidates(
+	public ResponseEntity<JsonResponseReceiptCandidates> getReceiptCandidates(
 			@ApiParam("Max number of items to be returned in one request.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
@@ -66,8 +66,8 @@ public class ReceiptCandidatesRestController
 		return ResponseEntity.ok(result);
 	}
 
-	@PostMapping("receiptCandidates")
-	public ResponseEntity<String> postShipmentCandidatesStatus(@RequestBody @NonNull final JsonRequestCandidateResults status)
+	@PostMapping("receiptCandidatesResult")
+	public ResponseEntity<String> postReceiptCandidatesStatus(@RequestBody @NonNull final JsonRequestCandidateResults status)
 	{
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
 		{

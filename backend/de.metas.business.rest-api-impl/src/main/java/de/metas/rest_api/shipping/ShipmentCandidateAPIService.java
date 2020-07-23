@@ -34,6 +34,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonAttributeSetInstance;
+import de.metas.common.rest_api.JsonAttributeSetInstance.JsonAttributeSetInstanceBuilder;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -72,6 +73,7 @@ import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
+import de.metas.rest_api.utils.RestApiUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -183,7 +185,7 @@ class ShipmentCandidateAPIService
 			}
 
 			final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
-					.hasMoreItems(shipmentSchedules.size() == 500)
+					.hasMoreItems(shipmentSchedules.size() == limit)
 					.transactionKey(transactionId);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
@@ -345,7 +347,7 @@ class ShipmentCandidateAPIService
 			return null;
 		}
 		final ImmutableAttributeSet attributeSet = attributesForASIs.get(scheduleASIId);
-		return extractJsonAttributeSetInstance(attributeSet, shipmentSchedule.getOrgId());
+		return RestApiUtils.extractJsonAttributeSetInstance(attributeSet, shipmentSchedule.getOrgId());
 	}
 
 	private void createExportedAuditItem(
@@ -385,47 +387,6 @@ class ShipmentCandidateAPIService
 						.issueId(adIssueId)
 						.orgId(orgId)
 						.build());
-	}
-
-	private JsonAttributeSetInstance extractJsonAttributeSetInstance(
-			@NonNull final ImmutableAttributeSet attributeSet,
-			@NonNull final OrgId orgId)
-	{
-		final JsonAttributeSetInstance.JsonAttributeSetInstanceBuilder jsonAttributeSetInstance = JsonAttributeSetInstance.builder();
-		for (final AttributeId attributeId : attributeSet.getAttributeIds())
-		{
-			final AttributeCode attributeCode = attributeSet.getAttributeCode(attributeId);
-
-			final JsonAttributeInstance.JsonAttributeInstanceBuilder instanceBuilder = JsonAttributeInstance.builder()
-					.attributeName(attributeSet.getAttributeName(attributeId))
-					.attributeCode(attributeCode.getCode());
-			final String attributeValueType = attributeSet.getAttributeValueType(attributeId);
-			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
-			{
-				final Date valueAsDate = attributeSet.getValueAsDate(attributeCode);
-				if (valueAsDate != null)
-				{
-					final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-					final LocalDate localDate = valueAsDate.toInstant().atZone(timeZone).toLocalDate();
-					instanceBuilder.valueDate(localDate);
-				}
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
-			{
-				instanceBuilder.valueStr(attributeSet.getValueAsString(attributeCode));
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
-			{
-				instanceBuilder.valueStr(attributeSet.getValueAsString(attributeCode));
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
-			{
-				instanceBuilder.valueNumber(attributeSet.getValueAsBigDecimal(attributeCode));
-			}
-
-			jsonAttributeSetInstance.attributeInstance(instanceBuilder.build());
-		}
-		return jsonAttributeSetInstance.build();
 	}
 
 	@Value

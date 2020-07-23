@@ -23,6 +23,8 @@
 package de.metas.camel.shipping.shipmentcandidate;
 
 import de.metas.camel.shipping.FeedbackProzessor;
+import de.metas.camel.shipping.JsonToXmlProcessorCommonUtil;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FIELD;
@@ -44,10 +46,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class ShipmentCandidateJsonToXmlProcessor implements Processor
 {
 	public static final METADATA METADATA = de.metas.common.filemaker.METADATA.builder()
+			.field(FIELD.builder().name("_bestellung_position_id").build())
 			.field(FIELD.builder().name("_bestellung_nummer").build())
 			.field(FIELD.builder().name("_bestellung_datum").build())
 			.field(FIELD.builder().name("_bestellung_zeitstempel").build())
@@ -77,17 +81,16 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		final JsonResponseShipmentCandidates scheduleList = exchange.getIn().getBody(JsonResponseShipmentCandidates.class);
 
 		final var items = scheduleList.getItems();
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, items.size());
+		if (items.isEmpty())
+		{
+			log.debug("jsonResponseReceiptCandidates.items is empty; -> nothing to do");
+			return;
+		}
+
 		log.debug("process method called; scheduleList with " + items.size() + " items");
-
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{shipmentCandidate.FMPXMLRESULT.DATABASE.NAME}}");
-
-		final FMPXMLRESULTBuilder builder = FMPXMLRESULT.builder()
-				.errorCode("0")
-				.product(new PRODUCT())
-				.database(DATABASE.builder()
-						.name(databaseName)
-						.records(Integer.toString(items.size()))
-						.build())
+		final FMPXMLRESULTBuilder builder = JsonToXmlProcessorCommonUtil
+				.createFmpxmlresultBuilder(exchange, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()
@@ -107,14 +110,15 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		exchange.getIn().setBody(builder
 				.resultset(resultSet.build())
 				.build());
-		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
+		exchange.getIn().setHeader(Exchange.FILE_NAME, "bestellung_" + scheduleList.getTransactionKey() + ".xml");
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
-		exchange.getIn().setHeader(ShipmentCandidateJsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
 	}
 
 	private ROW createROW(@NonNull final JsonResponseShipmentCandidate item)
 	{
 		final var row = ROW.builder();
+
+		row.col(COL.of(Integer.toString(item.getId().getValue()))); // _bestellung_position_id
 		row.col(COL.of(item.getOrderDocumentNo())); // _bestellung_nummer
 
 		final var dateOrdered = item.getDateOrdered();
@@ -126,14 +130,25 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(product.getName())); // _artikel_bezeichnung
 		row.col(COL.of(item.getQuantities().get(0).getQty().toString())); // _artikel_menge
 		row.col(COL.of(product.getWeight().toString())); // _artikel_gewicht_1_stueck
-		if (item.getAttributeSetInstance() != null)
+		if (item.getAttributeSetInstance() != null) // _artikel_geschmacksrichtung
 		{
-			row.col(COL.of(item.getAttributeSetInstance().getValueStr("FLAVOR"))); // _artikel_geschmacksrichtung
+			row.col(COL.of(item.getAttributeSetInstance().getValueStr("FLAVOR")));
+		}
+		else
+		{
+			row.col(COL.of(null));
 		}
 		row.col(COL.of(product.getPackageSize())); // _artikel_verpackungsgroesse
 
 		final var customer = item.getCustomer();
-		row.col(COL.of(customer.getCompanyName())); // _empfaenger_firma
+		if (Objects.equals(customer.getCompanyName(), customer.getContactName()))  // _empfaenger_firma
+		{
+			row.col(COL.of(null));
+		}
+		else
+		{
+			row.col(COL.of(customer.getCompanyName()));
+		}
 		row.col(COL.of(customer.getContactName())); // _empfaenger_ansprechpartner
 		row.col(COL.of(customer.getStreet())); // _empfaenger_strasse
 		row.col(COL.of(customer.getStreetNo())); // _empfaenger_hausnummer

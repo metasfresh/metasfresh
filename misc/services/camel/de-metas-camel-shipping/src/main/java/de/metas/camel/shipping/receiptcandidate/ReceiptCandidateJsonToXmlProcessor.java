@@ -23,6 +23,8 @@
 package de.metas.camel.shipping.receiptcandidate;
 
 import de.metas.camel.shipping.FeedbackProzessor;
+import de.metas.camel.shipping.JsonToXmlProcessorCommonUtil;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.DATABASE;
@@ -45,10 +47,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {
 	public static final METADATA METADATA = de.metas.common.filemaker.METADATA.builder()
+			.field(FIELD.builder().name("_anlieferung_position_id").build())
 			.field(FIELD.builder().name("_anlieferung_nummer").build())
 			.field(FIELD.builder().name("_anlieferung_datum").build())
 			.field(FIELD.builder().name("_anlieferung_zeitstempel").build())
@@ -70,17 +74,16 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		final JsonResponseReceiptCandidates scheduleList = exchange.getIn().getBody(JsonResponseReceiptCandidates.class);
 
 		final var items = scheduleList.getItems();
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, items.size());
+		if (items.isEmpty())
+		{
+			log.debug("jsonResponseReceiptCandidates.items is empty; -> nothing to do");
+			return;
+		}
+
 		log.debug("process method called; scheduleList with " + items.size() + " items");
-
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receiptCandidate.FMPXMLRESULT.DATABASE.NAME}}");
-
-		final FMPXMLRESULTBuilder builder = FMPXMLRESULT.builder()
-				.errorCode("0")
-				.product(new PRODUCT())
-				.database(DATABASE.builder()
-						.name(databaseName)
-						.records(Integer.toString(items.size()))
-						.build())
+		final FMPXMLRESULTBuilder builder = JsonToXmlProcessorCommonUtil
+				.createFmpxmlresultBuilder(exchange, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()
@@ -97,17 +100,17 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 					.scheduleId(item.getId())
 					.build());
 		}
-		exchange.getIn().setBody(builder
-				.resultset(resultSet.build())
-				.build());
-		exchange.getIn().setHeader(Exchange.FILE_NAME, scheduleList.getTransactionKey() + ".xml");
+		final var xmlPojo = builder.resultset(resultSet.build()).build();
+		exchange.getIn().setBody(xmlPojo);
+		exchange.getIn().setHeader(Exchange.FILE_NAME, "anlieferung_" + scheduleList.getTransactionKey() + ".xml");
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
-		exchange.getIn().setHeader(ShipmentCandidateJsonToXmlRouteBuilder.NUMBER_OF_ITEMS, items.size());
 	}
 
 	private ROW createROW(@NonNull final JsonResponseReceiptCandidate item)
 	{
 		final var row = ROW.builder();
+
+		row.col(COL.of(Integer.toString(item.getId().getValue()))); // _anlieferung_position_id
 		row.col(COL.of(item.getOrderDocumentNo())); // _anlieferung_nummer
 
 		final var dateOrdered = item.getDateOrdered();

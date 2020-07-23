@@ -25,14 +25,11 @@ package de.metas.camel.shipping;
 import de.metas.common.filemaker.ConfiguredXmlMapper;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.shipping.ConfiguredJsonMapper;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
@@ -40,14 +37,14 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 @UtilityClass
 public class RouteBuilderCommonUtil
 {
-	public static final String NUMBER_OF_ITEMS = "NumberOfItems";
+	public final String NUMBER_OF_ITEMS = "NumberOfItems";
 
-	public static final String FEEDBACK_ROUTE = "feedback";
+	public final String FILEMAKER_UPLOAD_ROUTE = "FM-upload";
 
 	@NonNull
 	public JacksonDataFormat setupMetasfreshJSONFormat(
 			@NonNull final CamelContext context,
-			@NonNull final Class<JsonResponseShipmentCandidates> unmarshalType)
+			@NonNull final Class<?> unmarshalType)
 	{
 		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
 		jacksonDataFormat.setCamelContext(context);
@@ -73,18 +70,20 @@ public class RouteBuilderCommonUtil
 		context.setPropertiesComponent(pc);
 	}
 
-	public void setupFeedbackRoute(
-			@NonNull final EndpointRouteBuilder routeBuilder,
-			@NonNull final JacksonDataFormat jacksonDataFormat,
-			@NonNull final String apiPath)
+	/**
+	 * Retry uploads of FM-files to the remote server.
+	 */
+	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder)
 	{
 		routeBuilder
-				.from(routeBuilder.direct(FEEDBACK_ROUTE))
-				.routeId("Candidate-Feedback-TO-MF")
-				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
-				.process(new FeedbackProzessor())
-				.marshal(jacksonDataFormat)
-				.setHeader(Exchange.HTTP_METHOD, routeBuilder.constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.to(routeBuilder.http("{{metasfresh.api.baseurl}}" + apiPath));
+				.from(routeBuilder.direct(FILEMAKER_UPLOAD_ROUTE))
+				.routeId(FILEMAKER_UPLOAD_ROUTE)
+				.errorHandler(routeBuilder.defaultErrorHandler()
+						.maximumRedeliveries(0)
+						.redeliveryDelay(10000)
+						.logHandled(true)
+						.retryAttemptedLogLevel(LoggingLevel.INFO)
+				)
+				.to("{{upload.endpoint.uri}}");
 	}
 }
