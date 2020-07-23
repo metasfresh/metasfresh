@@ -26,11 +26,11 @@ import java.text.DecimalFormat;
 
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.desadvexport.compudata.CompuDataDesadvRoute;
-import de.metas.edi.esb.desadvexport.metasfresh.MetasfreshMLDesadvRoute;
+import de.metas.edi.esb.desadvexport.ecosio.EcosioDesadvRoute;
 import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.desadvexport.stepcom.StepComXMLDesadvRoute;
 import de.metas.edi.esb.invoicexport.compudata.CompuDataInvoicRoute;
-import de.metas.edi.esb.invoicexport.metasfresh.MetasfreshXMLInvoicRoute;
+import de.metas.edi.esb.invoicexport.ecosio.EcosioInvoicRoute;
 import de.metas.edi.esb.commons.InvoicSettings;
 import de.metas.edi.esb.commons.ClearingCenter;
 import de.metas.edi.esb.invoicexport.stepcom.StepComXMLInvoicRoute;
@@ -85,7 +85,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.CompuData.toString()))
 								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.ecosio.toString()))
-								.to(MetasfreshXMLInvoicRoute.EP_EDI_METASFRESH_XML_INVOICE_CONSUMER)
+								.to(EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOICE_CONSUMER)
 						.endChoice()
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						// DESADV - figure out which clearing center we shall use
@@ -100,7 +100,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.CompuData.toString()))
 								.to(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.ecosio.toString()))
-								.to(MetasfreshMLDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
+								.to(EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
 						.endChoice()
 				.end();
 				// @formatter:on
