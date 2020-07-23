@@ -33,7 +33,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest.CreateCandidatesRequestBuilder;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;

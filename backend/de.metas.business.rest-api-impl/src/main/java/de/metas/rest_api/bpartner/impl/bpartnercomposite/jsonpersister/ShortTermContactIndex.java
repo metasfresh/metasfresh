@@ -45,7 +45,9 @@ public class ShortTermContactIndex
 	Map<ExternalId, BPartnerContact> externalId2Contact;
 	Map<String, BPartnerContact> value2Contact;
 
-	/** locations that were not (yet) retrieved via {@link #extract(IdentifierString)}. */
+	/**
+	 * locations that were not (yet) retrieved via {@link #extract(IdentifierString)}.
+	 */
 	Map<BPartnerContactId, BPartnerContact> id2UnusedContact;
 
 	BPartnerId bpartnerId;
@@ -150,7 +152,7 @@ public class ShortTermContactIndex
 
 	public void resetDefaultContactFlags()
 	{
-		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())
+		for (final BPartnerContact bpartnerContact : getUnusedContacts())
 		{
 			bpartnerContact.getContactType().setDefaultContact(false);
 		}
@@ -158,7 +160,7 @@ public class ShortTermContactIndex
 
 	public void resetShipToDefaultFlags()
 	{
-		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())
+		for (final BPartnerContact bpartnerContact : getUnusedContacts())
 		{
 			bpartnerContact.getContactType().setShipToDefault(false);
 		}
@@ -166,7 +168,7 @@ public class ShortTermContactIndex
 
 	public void resetPurchaseDefaultFlags()
 	{
-		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())
+		for (final BPartnerContact bpartnerContact : getUnusedContacts())
 		{
 			bpartnerContact.getContactType().setPurchaseDefault(false);
 		}
@@ -174,7 +176,7 @@ public class ShortTermContactIndex
 
 	public void resetSalesDefaultFlags()
 	{
-		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())
+		for (final BPartnerContact bpartnerContact : getUnusedContacts())
 		{
 			bpartnerContact.getContactType().setSalesDefault(false);
 		}
@@ -182,7 +184,7 @@ public class ShortTermContactIndex
 
 	public void resetBillToDefaultFlags()
 	{
-		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())
+		for (final BPartnerContact bpartnerContact : getUnusedContacts())
 		{
 			bpartnerContact.getContactType().setBillToDefault(false);
 		}

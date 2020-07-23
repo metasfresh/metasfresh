@@ -13,7 +13,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // stage('Build edi')  // too many stages clutter the build info
     //{
     currentBuild.description = """${currentBuild.description}<p/>
-			<h3>shipment-schedule-adapter</h3>
+			<h4>de-metas-camel-shipping</h4>
 		"""
 
     def anyFileChanged
@@ -55,12 +55,13 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
     }
 
-    final def dockerInfo = readJSON file: 'de-metas-camel-shipmentschedule/target/jib-image.json'
+    final def dockerInfo = readJSON file: 'de-metas-camel-shipping/target/jib-image.json'
 
     currentBuild.description = """${currentBuild.description}<p/>
 		This build's main artifact (if not yet cleaned up) is
 <ul>
-<li>a docker image with name <code>${dockerInfo.image}:${dockerInfo.tags.first()}</code></li>
+<li>a docker image with name<br>
+<code>${dockerInfo.image}</code></li>
 <li>Alternative tag: <code>${dockerInfo.tags.last()}</code></li>
 <li>Image-Id: <code>${dockerInfo.imageId}</code></li>
 </ul>
@@ -69,8 +70,8 @@ Example: to connect a debugger on port 8793, you can run the docker image like t
 docker run --rm\\<br/>
  -p 8793:8793 \\<br/>
  -e "JAVA_TOOL_OPTIONS='agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8793'"\\<br/>
- ${dockerInfo.image}:${dockerInfo.tags.first()}
-</code>
+ ${dockerInfo.image}
+</code><br/>
 If will run with it's local <code>application.properties</code> and <code>log4j2.properties</code> that probably make no sense for you.
 To run with your own instead, include something as <code>-v /tmp/my-own-resources:/app/resources</code> in the <code>docker run</code>.
 <p/>
