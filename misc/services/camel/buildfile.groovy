@@ -13,7 +13,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // stage('Build edi')  // too many stages clutter the build info
     //{
     currentBuild.description = """${currentBuild.description}<p/>
-			<h3>shipment-schedule-adapter</h3>
+			<h4>de-metas-camel-shipping</h4>
 		"""
 
     def anyFileChanged
@@ -61,7 +61,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 		This build's main artifact (if not yet cleaned up) is
 <ul>
 <li>a docker image with name<br>
-<code>${dockerInfo.image}:${dockerInfo.tags.first()}</code></li>
+<code>${dockerInfo.image}</code></li>
 <li>Alternative tag: <code>${dockerInfo.tags.last()}</code></li>
 <li>Image-Id: <code>${dockerInfo.imageId}</code></li>
 </ul>
