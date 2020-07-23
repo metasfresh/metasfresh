@@ -22,7 +22,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
@@ -1318,11 +1317,11 @@ public class ESRImportBL implements IESRImportBL
 
 		final List<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveLines(paymentIds);
 
-		final ImmutableMap<PaymentId, I_ESR_ImportLine> paySelectionLinesByPaymentId = Maps.uniqueIndex(
+		final ImmutableMap<PaymentId, I_ESR_ImportLine> esrImportLinesByPaymentId = Maps.uniqueIndex(
 				esrImportLines,
 				esrImportLine -> PaymentId.ofRepoId(esrImportLine.getC_Payment_ID()));
 
-		for (final Map.Entry<PaymentId, I_ESR_ImportLine> e : paySelectionLinesByPaymentId.entrySet())
+		for (final Map.Entry<PaymentId, I_ESR_ImportLine> e : esrImportLinesByPaymentId.entrySet())
 		{
 			final PaymentId paymentId = e.getKey();
 			final I_ESR_ImportLine esrImportLine = e.getValue();
@@ -1351,16 +1350,7 @@ public class ESRImportBL implements IESRImportBL
 			return;
 		}
 
-		final ImmutableSet<ESRImportId> notReconciledESRImportIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_ESR_ImportLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, esrImportIds)
-				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatement_ID, null) // not reconciled
-				.create()
-				.listDistinct(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, Integer.class)
-				.stream()
-				.map(ESRImportId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<ESRImportId> notReconciledESRImportIds = esrImportDAO.retrieveNotReconciledESRImportIds(esrImportIds);
 
 		for (final I_ESR_Import esrImport : esrImportDAO.getByIds(esrImportIds))
 		{
@@ -1371,6 +1361,8 @@ public class ESRImportBL implements IESRImportBL
 			esrImportDAO.save(esrImport);
 		}
 	}
+
+	
 
 	@Override
 	public void linkESRImportLineToBankStatement(@NonNull final I_ESR_ImportLine esrImportLine, @NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)

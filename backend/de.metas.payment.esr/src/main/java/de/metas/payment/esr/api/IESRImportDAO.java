@@ -34,6 +34,8 @@ import javax.annotation.Nullable;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -107,4 +109,6 @@ public interface IESRImportDAO extends ISingletonService
 	I_ESR_ImportLine fetchLineForESRLineText(I_ESR_Import import1, String esrImportLineText);
 
 	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
+
+	ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull Set<ESRImportId> esrImportIds);
 }

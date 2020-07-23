@@ -49,6 +49,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
@@ -351,4 +352,19 @@ public class ESRImportDAO implements IESRImportDAO
 				.firstOnly(I_ESR_ImportLine.class);
 	}
 
+	@Override
+	public ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(final Set<ESRImportId> esrImportIds)
+	{
+		final ImmutableSet<ESRImportId> notReconciledESRImportIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, esrImportIds)
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatement_ID, null) // not reconciled
+				.create()
+				.listDistinct(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, Integer.class)
+				.stream()
+				.map(ESRImportId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return notReconciledESRImportIds;
+	}
 }
