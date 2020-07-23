@@ -45,7 +45,8 @@
 
     <modules>
         <module>de-metas-common-rest_api</module>
-        <module>de-metas-common-shipmentschedule</module>
+        <module>de-metas-common-filemaker</module>
+        <module>de-metas-common-shipping</module>
         <module>de-metas-common-util</module>
     </modules>
 </project>

@@ -58,7 +58,7 @@ import lombok.NonNull;
 
 /**
  * Immutable {@link IAttributeSet} implementation.
- *
+ * <p>
  * To get your instance for an {@link AttributeSetInstanceId},
  * you can use {@link IAttributeDAO#getImmutableAttributeSetById(AttributeSetInstanceId)}.
  */

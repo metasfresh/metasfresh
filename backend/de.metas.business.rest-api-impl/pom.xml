@@ -39,8 +39,15 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.common.shipmentschedule</groupId>
-            <artifactId>de-metas-common-shipmentschedule</artifactId>
+            <groupId>de.metas.common.shipping</groupId>
+            <artifactId>de-metas-common-shipping</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <!-- needed for shipment schedules -->
+        <dependency>
+            <groupId>de.metas.swat</groupId>
+            <artifactId>de.metas.swat.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 

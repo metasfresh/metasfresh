@@ -75,7 +75,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
@@ -136,8 +136,6 @@ public class ShipmentScheduleWithHU
 
 	/**
 	 * Create an "empty" instance with no HUs inside. Used if a shipment without HU allocation has to be created.
-	 *
-	 * @param qtyPicked in this case qtyPicked can only be the quantity of an "unconfirmed" (i.e. drafted) shipment line.
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final IHUContext huContext,

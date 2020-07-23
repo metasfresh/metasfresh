@@ -7,7 +7,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
