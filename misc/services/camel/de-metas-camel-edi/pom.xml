@@ -11,24 +11,21 @@
         <relativePath>../../../parent-pom/pom.xml</relativePath>
     </parent>
 
-    <groupId>de.metas.edi.esb</groupId>
-    <artifactId>de-metas-edi-esb-camel</artifactId>
+    <groupId>de.metas.camel</groupId>
+    <artifactId>de-metas-camel-edi</artifactId>
     <version>10.0.0</version>
     <properties>
         <java.version>14</java.version>
+        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <camel.version>3.4.0</camel.version>
         <guava.version>21.0</guava.version>
-        <smooks.version>1.5.1</smooks.version>
-        <jackson.version>2.10.4</jackson.version>
+        <smooks.version>1.7.1</smooks.version>
+        <jackson.version>2.11.0</jackson.version>
         <org.apache.poi.version>3.15</org.apache.poi.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
         <jaxb.order.packageName>de.metas.edi.esb.jaxb.stepcom.order</jaxb.order.packageName>
         <jaxb.invoice.packageName>de.metas.edi.esb.jaxb.stepcom.invoice</jaxb.invoice.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
-
-        <!-- Testing -->
-        <junit.version>5.6.2</junit.version>
-
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -42,9 +39,17 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-bom</artifactId>
-                <version>3.4.0</version>
+                <version>${camel.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -54,13 +59,14 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-library</artifactId>
-                <scope>test</scope>
-                <version>${hamcrest.version}</version>
-            </dependency>
+            <!--
+                        <dependency>
+                            <groupId>org.hamcrest</groupId>
+                            <artifactId>hamcrest-library</artifactId>
+                            <scope>test</scope>
+                            <version>${hamcrest.version}</version>
+                        </dependency>
+            -->
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
@@ -85,6 +91,11 @@
         </dependency>
 -->
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
             <version>6.2.0</version>
@@ -92,15 +103,37 @@
 
         <!-- Camel -->
         <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-spring-boot-starter</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-main</artifactId>
+            <artifactId>camel-spring-javaconfig</artifactId>
             <exclusions>
                 <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.camel</groupId>-->
+        <!--            <artifactId>camel-main</artifactId>-->
+        <!--            <exclusions>-->
+        <!--                <exclusion>-->
+        <!--                    <artifactId>slf4j-api</artifactId>-->
+        <!--                    <groupId>org.slf4j</groupId>-->
+        <!--                </exclusion>-->
+        <!--            </exclusions>-->
+        <!--        </dependency>-->
+
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-endpointdsl</artifactId>
@@ -120,6 +153,41 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jaxb</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.3</version>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>javax.xml.bind</groupId>-->
+        <!--            <artifactId>jaxb-api</artifactId>-->
+        <!--            <version>2.3.1</version>-->
+        <!--            <exclusions>-->
+        <!--                <exclusion>-->
+        <!--                    <groupId>javax.activation</groupId>-->
+        <!--                    <artifactId>javax.activation-api</artifactId>-->
+        <!--                </exclusion>-->
+        <!--            </exclusions>-->
+        <!--        </dependency>-->
+
+        <!-- java.lang.NoClassDefFoundError: com/sun/istack/FinalArrayList -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0.1</version>
+        </dependency>
+        <!-- java.lang.ClassNotFoundException: com.sun.xml.bind.v2.ContextFactory -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.2</version>
         </dependency>
 
         <dependency>
@@ -163,25 +231,36 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.milyn</groupId>
-            <artifactId>milyn-smooks-all</artifactId>
+            <artifactId>milyn-smooks-camel</artifactId>
             <version>${smooks.version}</version>
             <exclusions>
-                <!-- excluding xercesImpl to get rid of org.xml.sax.SAXNotRecognizedException:
-                    Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not
-                    recognized. thx to http://stackoverflow.com/questions/25644023/error-unmarshalling-xml-in-java-8-secure-processing-org-xml-sax-saxnotrecognize -->
-                <exclusion>
-                    <artifactId>xercesImpl</artifactId>
-                    <groupId>xerces</groupId>
-                </exclusion>
                 <exclusion>
                     <artifactId>commons-logging</artifactId>
                     <groupId>commons-logging</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.milyn</groupId>-->
+        <!--            <artifactId>milyn-smooks-all</artifactId>-->
+        <!--            <version>${smooks.version}</version>-->
+        <!--            <exclusions>-->
+        <!--                &lt;!&ndash; excluding xercesImpl to get rid of org.xml.sax.SAXNotRecognizedException:-->
+        <!--                    Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not-->
+        <!--                    recognized. thx to http://stackoverflow.com/questions/25644023/error-unmarshalling-xml-in-java-8-secure-processing-org-xml-sax-saxnotrecognize &ndash;&gt;-->
+        <!--                <exclusion>-->
+        <!--                    <artifactId>xercesImpl</artifactId>-->
+        <!--                    <groupId>xerces</groupId>-->
+        <!--                </exclusion>-->
+        <!--                <exclusion>-->
+        <!--                    <artifactId>commons-logging</artifactId>-->
+        <!--                    <groupId>commons-logging</groupId>-->
+        <!--                </exclusion>-->
+        <!--            </exclusions>-->
+        <!--        </dependency>-->
         <!-- needed by smooks -->
         <dependency>
             <artifactId>commons-logging</artifactId>
@@ -311,6 +390,13 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>2.3.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>

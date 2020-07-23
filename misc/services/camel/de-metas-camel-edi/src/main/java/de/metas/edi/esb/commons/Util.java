@@ -1,7 +1,19 @@
 package de.metas.edi.esb.commons;
 
-import static java.math.BigDecimal.ZERO;
+import de.metas.edi.esb.commons.api.ILookupTemplate;
+import de.metas.edi.esb.commons.api.ILookupValue;
+import lombok.NonNull;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Message;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.component.properties.PropertiesComponent;
+import org.apache.camel.support.DefaultMessage;
+import org.springframework.lang.Nullable;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -17,17 +29,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.apache.camel.CamelContext;
-import org.apache.camel.Message;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.impl.DefaultMessage;
-import org.springframework.lang.Nullable;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -51,10 +53,6 @@ import org.springframework.lang.Nullable;
  * #L%
  */
 
-import de.metas.edi.esb.commons.api.ILookupTemplate;
-import de.metas.edi.esb.commons.api.ILookupValue;
-import lombok.NonNull;
-
 public final class Util
 {
 	private static final transient Logger LOGGER = Logger.getLogger(Util.class.getName());
@@ -64,24 +62,24 @@ public final class Util
 		super();
 	}
 
-	public static void readProperties(
-			final CamelContext context,
-			final String... propertiesLocations)
-	{
-		if (context.hasComponent("properties") == null)
-		{
-			final StringBuilder msg = new StringBuilder("Going to add a PropertiesComponent with propertiesLocation(s)=");
-			for (final String loc : propertiesLocations)
-			{
-				msg.append(loc + " ");
-			}
-			Util.LOGGER.info(msg.toString());
-
-			final PropertiesComponent pc = new PropertiesComponent();
-			pc.setLocations(propertiesLocations);
-			context.addComponent("properties", pc);
-		}
-	}
+	// public static void readProperties(
+	// 		final CamelContext context,
+	// 		final String... propertiesLocations)
+	// {
+	// 	if (context.hasComponent("properties") == null)
+	// 	{
+	// 		final StringBuilder msg = new StringBuilder("Going to add a PropertiesComponent with propertiesLocation(s)=");
+	// 		for (final String loc : propertiesLocations)
+	// 		{
+	// 			msg.append(loc + " ");
+	// 		}
+	// 		Util.LOGGER.info(msg.toString());
+	//
+	// 		final PropertiesComponent pc = new PropertiesComponent();
+	// 		pc.setLocations(propertiesLocations);
+	// 		context.addComponent("properties", pc);
+	// 	}
+	// }
 
 	/**
 	 * @return date converted to {@link XMLGregorianCalendar} or <code>null</code> if date was <code>null</code>.
@@ -199,8 +197,6 @@ public final class Util
 	 * <br />
 	 * Date pattern used: {@link Constants#METASFRESH_DATE_PATTERN}
 	 *
-	 * @param date
-	 * @param isNewDateOverride
 	 * @return {@link XMLGregorianCalendar} date
 	 */
 	public static XMLGregorianCalendar createCalendarDate(final String date)
@@ -210,9 +206,6 @@ public final class Util
 
 	/**
 	 * Use UNIX line endings.
-	 *
-	 * @param s
-	 * @return String
 	 */
 	public static String fixLineEnding(final String s)
 	{

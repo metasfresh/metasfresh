@@ -22,12 +22,12 @@
 
 package de.metas.edi.esb.commons.processor.strategy.aggregation;
 
+import org.apache.camel.AggregationStrategy;
+import org.apache.camel.Exchange;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
 
 public class ValidTypeAggregationStrategy implements AggregationStrategy
 {
@@ -35,8 +35,6 @@ public class ValidTypeAggregationStrategy implements AggregationStrategy
 
 	public ValidTypeAggregationStrategy(final Set<Class<?>> validElementTypes)
 	{
-		super();
-
 		this.validElementTypes = validElementTypes;
 	}
 

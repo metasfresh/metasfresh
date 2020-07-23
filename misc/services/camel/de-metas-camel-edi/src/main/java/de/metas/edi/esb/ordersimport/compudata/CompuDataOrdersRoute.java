@@ -26,14 +26,14 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.processor.strategy.aggregation.ValidTypeAggregationStrategy;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
-import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.ProcessorDefinition;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.spi.DataFormat;
+import org.apache.camel.support.builder.ValueBuilder;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 

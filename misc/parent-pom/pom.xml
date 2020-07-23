@@ -333,15 +333,15 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxb2-maven-plugin</artifactId>
-                    <version>2.3.1</version> <!-- https://github.com/metasfresh/metasfresh/issues/1598 -->
+                    <version>2.5.0</version> <!-- https://github.com/metasfresh/metasfresh/issues/1598 -->
                 </plugin>
-
+<!--
                 <plugin>
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
                 </plugin>
-
+-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
@@ -639,6 +639,10 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile
                                             javax.servlet:javax.servlet-api:jar:3.1.0:provided -->
                                         <ignoreClass>javax.servlet.*</ignoreClass>
+<!--                                        <ignoreClass>javax.persistence.*</ignoreClass>-->
+<!--                                        <ignoreClass>javassist</ignoreClass>-->
+                                        <ignoreClass>org.milyn.*</ignoreClass>
+                                        <ignoreClass>com.sun.xml.bind.*</ignoreClass>
                                     </ignoreClasses>
 
                                     <dependencies>

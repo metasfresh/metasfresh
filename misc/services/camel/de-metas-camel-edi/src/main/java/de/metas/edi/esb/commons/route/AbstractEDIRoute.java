@@ -26,6 +26,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -115,7 +116,7 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	{
 		final DecimalFormat decimalFormat = (DecimalFormat)NumberFormat.getInstance();
 
-		final ModelCamelContext context = getContext();
+		final CamelContext context = getContext();
 		decimalFormat.setMaximumFractionDigits(Integer.valueOf(Util.resolveProperty(context, "edi.decimalformat.maximumFractionDigits")));
 
 		final boolean isGroupingUsed = Boolean.valueOf(Util.resolveProperty(context, "edi.decimalformat.isGroupingUsed"));
