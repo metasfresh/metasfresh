@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-camel-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,33 +20,28 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
+package de.metas.camel.shipping;
 
-import java.util.List;
+import de.metas.camel.shipping.receiptcandidate.ReceiptCandidateJsonToXmlRouteBuilder;
+import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
+import org.apache.camel.main.Main;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Value
-public class JsonError
+/**
+ * A Camel Application
+ */
+public class MainApp
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
+
+	/**
+	 * A main() so we can easily run these routing rules in our IDE
+	 */
+	public static void main(String... args) throws Exception
 	{
-		return JsonError.builder().error(item).build();
+		final Main main = new Main();
+		main.configure().addRoutesBuilder(new ShipmentCandidateJsonToXmlRouteBuilder());
+		main.configure().addRoutesBuilder(new ReceiptCandidateJsonToXmlRouteBuilder());
+		main.run(args);
 	}
 
-	List<JsonErrorItem> errors;
-
-	@Builder
-	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
-	{
-		this.errors = errors;
-	}
 }
+

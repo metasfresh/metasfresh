@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,9 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
-
-import java.util.List;
+package de.metas.common.shipping.receiptcandidate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,22 +29,26 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
-public class JsonError
+public class JsonResponseReceiptCandidates
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	String transactionKey;
 
-	List<JsonErrorItem> errors;
+	List<JsonResponseReceiptCandidate> items;
+
+	boolean hasMoreItems;
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	private JsonResponseReceiptCandidates(
+			@JsonProperty("transactionKey") @NonNull final String transactionKey,
+			@JsonProperty("items") @Singular @NonNull final List<JsonResponseReceiptCandidate> items,
+			@JsonProperty("hasMoreItems") @NonNull final Boolean hasMoreItems)
 	{
-		this.errors = errors;
+		this.transactionKey = transactionKey;
+		this.items = items;
+		this.hasMoreItems = hasMoreItems;
 	}
 }

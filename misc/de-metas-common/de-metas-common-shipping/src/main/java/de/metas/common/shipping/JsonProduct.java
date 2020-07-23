@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,33 +20,46 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
-
-import java.util.List;
+package de.metas.common.shipping;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
-public class JsonError
+public class JsonProduct
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	String productNo; // we also call it "productNo" in the product-rest-api
 
-	List<JsonErrorItem> errors;
+	String name;
 
-	@Builder
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String description;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String packageSize;
+
+	BigDecimal weight;
+
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	@Builder
+	private JsonProduct(
+			@JsonProperty("productNo") @NonNull final String productNo,
+			@JsonProperty("name") @NonNull final String name,
+			@JsonProperty("description") @Nullable final String description,
+			@JsonProperty("packageSize") @Nullable final String packageSize,
+			@JsonProperty("weight") @Nullable final BigDecimal weight)
 	{
-		this.errors = errors;
+		this.productNo = productNo;
+		this.name = name;
+		this.description = description;
+		this.packageSize = packageSize;
+		this.weight = weight;
 	}
 }

@@ -22,31 +22,33 @@
 
 package de.metas.common.rest_api;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
-public class JsonError
+public class JsonQuantity
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	@ApiModelProperty(position = 10, required = true)
+	BigDecimal qty;
 
-	List<JsonErrorItem> errors;
+	@ApiModelProperty(position = 20, required = true, //
+			value = "Unit of measurement; this translates to `C_UOM.X12DE355`.\n"
+					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_Invoice_candidate.C_UOM_ID`.")
+	String uomCode;
 
-	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	@Builder
+	private JsonQuantity(
+			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("uomCode") @NonNull final String uomCode)
 	{
-		this.errors = errors;
+		this.qty = qty;
+		this.uomCode = uomCode;
 	}
 }

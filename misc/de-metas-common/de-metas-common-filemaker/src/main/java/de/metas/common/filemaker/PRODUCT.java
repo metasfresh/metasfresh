@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-filemaker
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,33 +20,24 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
+package de.metas.common.filemaker;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-public class JsonError
+@JsonPropertyOrder(alphabetic = true)
+public class PRODUCT
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	@JacksonXmlProperty(isAttribute = true, localName = "BUILD")
+	String build = "04-29-2019";
 
-	List<JsonErrorItem> errors;
+	@JacksonXmlProperty(isAttribute = true, localName = "NAME")
+	String name = "FileMaker";
 
-	@Builder
-	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
-	{
-		this.errors = errors;
-	}
+	@JacksonXmlProperty(isAttribute = true, localName = "VERSION")
+	String version = "ProAdvanced 18.0.1";
 }

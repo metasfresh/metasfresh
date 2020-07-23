@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,33 +20,49 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
-
-import java.util.List;
+package de.metas.common.shipping;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import static de.metas.common.shipping.Outcome.ERROR;
+
 @Value
-public class JsonError
+@Builder
+public class JsonRequestCandidateResult
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
+	JsonMetasfreshId scheduleId;
+
+	Outcome outcome;
+
+	@JsonInclude(Include.NON_NULL)
+	JsonError error;
+
+	@JsonCreator
+	private JsonRequestCandidateResult(
+			@JsonProperty("scheduleId") @NonNull final JsonMetasfreshId scheduleId,
+			@JsonProperty("outcome") @NonNull final Outcome outcome,
+			@JsonProperty("error") @Nullable final JsonError error)
 	{
-		return JsonError.builder().error(item).build();
+		this.scheduleId = scheduleId;
+		this.outcome = outcome;
+		this.error = error;
 	}
 
-	List<JsonErrorItem> errors;
-
-	@Builder
-	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	public JsonRequestCandidateResult withError()
 	{
-		this.errors = errors;
+		return JsonRequestCandidateResult.builder()
+				.scheduleId(scheduleId)
+				.outcome(ERROR)
+				.build();
 	}
 }

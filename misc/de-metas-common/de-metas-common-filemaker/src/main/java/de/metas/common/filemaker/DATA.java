@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-filemaker
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,33 +20,21 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
-
-import java.util.List;
+package de.metas.common.filemaker;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-public class JsonError
+public class DATA
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	@JacksonXmlText
+	String value;
 
-	List<JsonErrorItem> errors;
-
-	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	public DATA(final String value)
 	{
-		this.errors = errors;
+		this.value = value;
 	}
 }

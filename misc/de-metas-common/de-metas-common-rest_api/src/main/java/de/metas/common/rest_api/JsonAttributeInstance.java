@@ -22,31 +22,42 @@
 
 package de.metas.common.rest_api;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Value
-public class JsonError
+public class JsonAttributeInstance
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	String attributeName;
 
-	List<JsonErrorItem> errors;
+	String attributeCode;
 
-	@Builder
+	String valueStr;
+
+	BigDecimal valueNumber;
+
+	LocalDate valueDate;
+
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	@Builder
+	private JsonAttributeInstance(
+			@JsonProperty("attributeName") @NonNull final String attributeName,
+			@JsonProperty("attributeCode") @NonNull final String attributeCode,
+			@JsonProperty("valueStr") @Nullable final String valueStr,
+			@JsonProperty("valueNumber") @Nullable final BigDecimal valueNumber,
+			@JsonProperty("valueDate") @Nullable final LocalDate valueDate)
 	{
-		this.errors = errors;
+		this.attributeName = attributeName;
+		this.attributeCode = attributeCode;
+		this.valueStr = valueStr;
+		this.valueNumber = valueNumber;
+		this.valueDate = valueDate;
 	}
 }

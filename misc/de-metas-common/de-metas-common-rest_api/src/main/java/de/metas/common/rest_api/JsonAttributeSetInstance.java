@@ -22,31 +22,45 @@
 
 package de.metas.common.rest_api;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
-public class JsonError
+public class JsonAttributeSetInstance
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	List<JsonAttributeInstance> attributeInstances;
 
-	List<JsonErrorItem> errors;
+	@JsonIgnore
+	ImmutableMap<String, JsonAttributeInstance> code2Instance;
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	private JsonAttributeSetInstance(
+			@JsonProperty("attributeInstances") @Singular @NonNull final List<JsonAttributeInstance> attributeInstances)
 	{
-		this.errors = errors;
+		this.attributeInstances = attributeInstances;
+		this.code2Instance = Maps.uniqueIndex(attributeInstances, JsonAttributeInstance::getAttributeCode);
+	}
+
+	@Nullable
+	@JsonIgnore
+	public String getValueStr(@NonNull final String attributeCode)
+	{
+		final JsonAttributeInstance instance = code2Instance.get(attributeCode);
+		if (instance == null)
+		{
+			return null;
+		}
+		return instance.getValueStr();
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-filemaker
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,33 +20,35 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
-
-import java.util.List;
+package de.metas.common.filemaker;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-public class JsonError
+@JsonPropertyOrder({ "EMPTYOK", "MAXREPEAT", "NAME", "TYPE" })
+public class FIELD
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	@JacksonXmlProperty(isAttribute = true, localName = "EMPTYOK")
+	String emptyOk = "YES";
 
-	List<JsonErrorItem> errors;
+	@JacksonXmlProperty(isAttribute = true, localName = "MAXREPEAT")
+	String maxRepeat = "1";
+
+	@JacksonXmlProperty(isAttribute = true, localName = "NAME")
+	String name;
+
+	@JacksonXmlProperty(isAttribute = true, localName = "TYPE")
+	String type = "TEXT";
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	public FIELD(@JacksonXmlProperty(isAttribute = true, localName = "NAME") final String name)
 	{
-		this.errors = errors;
+		this.name = name;
 	}
 }

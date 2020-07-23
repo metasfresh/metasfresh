@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,33 +20,34 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
-
-import java.util.List;
+package de.metas.common.shipping.receiptcandidate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-public class JsonError
+public class JsonVendor
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String companyName;
 
-	List<JsonErrorItem> errors;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String language;
 
-	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	@Builder
+	public JsonVendor(
+			@JsonProperty("companyName") @Nullable final String companyName,
+			@JsonProperty("language") @Nullable final String language
+	)
 	{
-		this.errors = errors;
+		this.companyName = companyName;
+		this.language = language;
 	}
 }
