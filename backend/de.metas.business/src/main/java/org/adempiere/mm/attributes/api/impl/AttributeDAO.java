@@ -796,17 +796,14 @@ public class AttributeDAO implements IAttributeDAO
 
 	@Override
 	public Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(
-			final Set<AttributeSetInstanceId> asiIds,
-			final Set<AttributeId> attributeIds)
+			@NonNull final Set<AttributeSetInstanceId> asiIds)
 	{
 		Check.assumeNotEmpty(asiIds, "asiIds is not empty");
-		Check.assumeNotEmpty(attributeIds, "attributeIds is not empty");
 
 		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> //
 		instancesByAsiId = queryBL
 				.createQueryBuilder(I_M_AttributeInstance.class)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiIds)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeIds)
+				.addInArrayFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiIds)
 				.create()
 				.list()
 				.stream()

@@ -108,6 +108,11 @@ final class BPartnerEndpointAdapter
 		return asBPartnerInfo(response, billTo);
 	}
 
+	/**
+	 * Note that the resulting jsonRequestBPartnerUpsert has 3 levels of syncAdvises,
+	 * but the given jsonBPartnerInfo lacks the "middle" one of those 3.
+	 * We supplement the jsonBPartnerInfo's parent (outer) one for both the 1st and 2nd level of the resulting jsonRequestBPartnerUpsert.
+	 */
 	private JsonRequestBPartnerUpsert asJsonRequestBPartnerUpsert(
 			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
@@ -122,7 +127,7 @@ final class BPartnerEndpointAdapter
 					.locationIdentifier(constructLocationIdentifier(location, jsonBPartnerInfo.getBpartnerLookupAdvise()))
 					.location(location)
 					.build())
-					.syncAdvise(location.getSyncAdvise())
+					.syncAdvise(jsonBPartnerInfo.getSyncAdvise())
 					.build();
 		}
 
@@ -136,7 +141,7 @@ final class BPartnerEndpointAdapter
 							.contactIdentifier(IdentifierString.PREFIX_EXTERNAL_ID + jsonBPartnerInfo.getContact().getExternalId().getValue())
 							.contact(jsonBPartnerInfo.getContact())
 							.build())
-					.syncAdvise(jsonBPartnerInfo.getContact().getSyncAdvise())
+					.syncAdvise(jsonBPartnerInfo.getSyncAdvise())
 					.build();
 		}
 
@@ -303,7 +308,7 @@ final class BPartnerEndpointAdapter
 	private Comparator<JsonResponseLocation> createBillToLocationComparator()
 	{
 		return Comparator
-				.<JsonResponseLocation, Boolean> comparing(l -> !l.isBillTo() /* billTo=true first */)
+				.<JsonResponseLocation, Boolean>comparing(l -> !l.isBillTo() /* billTo=true first */)
 				.thenComparing(
 						Comparator.comparing(l -> !l.isBillToDefault())/* billToDefault=true first */);
 	}
@@ -311,7 +316,7 @@ final class BPartnerEndpointAdapter
 	private Comparator<JsonResponseLocation> createShipToLocationComparator()
 	{
 		return Comparator
-				.<JsonResponseLocation, Boolean> comparing(l -> !l.isShipTo() /* shipTo=true first */)
+				.<JsonResponseLocation, Boolean>comparing(l -> !l.isShipTo() /* shipTo=true first */)
 				.thenComparing(
 						Comparator.comparing(l -> !l.isShipToDefault())/* shipToDefault=true first */);
 	}

@@ -31,6 +31,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class JsonError
 {
@@ -43,7 +45,7 @@ public class JsonError
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular @NonNull final List<JsonErrorItem> errors)
+	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
 	{
 		this.errors = errors;
 	}
