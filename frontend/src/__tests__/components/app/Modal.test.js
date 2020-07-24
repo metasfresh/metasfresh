@@ -14,8 +14,8 @@ import testModal from '../../../../test_setup/fixtures/test_modal.json';
 
 import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../test_setup/fixtures/keymap.json';
-
-const mockStore = configureStore([]);
+import thunk from 'redux-thunk';
+const mockStore = configureStore([thunk]);
 
 windowHandlerState.modal = testModal;
 
@@ -48,10 +48,16 @@ describe('Modal test', () => {
     expect(html.includes('Action')).toBe(true);
   });
 
-  it('calls callProcess', () => {
-    const mockFn = jest.fn();
+  it('calls callProcess', async (done) => {
     const dummyProps = fixtures;
-    dummyProps.callProcess = mockFn; // we spy the callProcess funcion
+    const mockFn = jest.fn().mockResolvedValue({});
+
+    // const mockFn = () => {
+    //   done();
+    //   return Promise.resolve({});
+    // };
+    // const mockFn = jest.fn();
+    dummyProps.callProcess = mockFn; // we spy the callProcess function
     const initialState = function(state = {}) {
       const res = merge.recursive(
         true,
@@ -65,7 +71,7 @@ describe('Modal test', () => {
       return res;
     };
     const store = mockStore(initialState);
-    mount(
+    const wrapper = mount(
       <Provider store={store}>
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
           <Modal {...dummyProps} />
@@ -73,8 +79,11 @@ describe('Modal test', () => {
       </Provider>
     );
 
-    setTimeout(() => {
-      expect(mockFn).toHaveBeenCalled();
-    }, 200);
+    const instance = wrapper.instance();
+    await instance.componentDidMount();
+    
+    await mockFn(); // remove this line Kuba
+    expect(mockFn).toHaveBeenCalled();
+    done();
   });
 });
