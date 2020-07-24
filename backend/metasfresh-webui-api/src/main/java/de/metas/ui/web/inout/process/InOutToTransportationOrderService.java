@@ -25,6 +25,7 @@ package de.metas.ui.web.inout.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -83,7 +84,10 @@ public class InOutToTransportationOrderService
 				{
 					continue;
 				}
-				huShipperTransportationBL.addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(inOut));
+
+				final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.of(inOut);
+				huShipperTransportationBL.addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
+
 				InterfaceWrapperHelper.save(inOut);
 				Loggables.addLog("M_InOut={} added to M_ShipperTransportation_ID={}", inOut.getM_InOut_ID(), shipperTransportationId);
 			}

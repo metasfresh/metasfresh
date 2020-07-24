@@ -1,5 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.NONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -222,7 +225,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		}
 
 		@Test
-		public void Today_IsShipmentDateTodayTrue()
+		public void Today_CalculateShipmentRule_ForceToday()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 10, 15, 0));
 
@@ -230,13 +233,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_TODAY);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
 
 		@Test
-		public void Today_IsShipmentDateTodayFalse()
+		public void Today_CalculateShipmentRule_None()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 17, 16));
 
@@ -244,13 +247,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
 
 		@Test
-		public void AnotherDate_IsShipmentDateTodayTrue()
+		public void AnotherDate_CalculateShipmentRule_ForceToday()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 13, 13, 13));
 
@@ -260,13 +263,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(anotherDate);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_TODAY);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
 
 		@Test
-		public void DateInFuture_IsShipmentDateTodayFalse()
+		public void DateInFuture_CalculateShipmentRule_None()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
 
@@ -274,13 +277,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(dateInFuture);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
 
 			assertThat(shipmentDate).isEqualTo(dateInFuture);
 		}
 
 		@Test
-		public void DateInPast_IsShipmentDateTodayFalse()
+		public void DateInPast_CalculateShipmentRule_None()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
 
@@ -289,9 +292,24 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
 
 			assertThat(shipmentDate).isEqualTo(today);
+		}
+
+		@Test
+		public void DateInPast_CalculateShipmentRule_ForceDeliveryDate()
+		{
+			//set up today
+			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
+
+			final LocalDate dateInPast = LocalDate.of(2017, 11, 3);
+
+			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
+
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_DELIVERY_DATE);
+
+			assertThat(shipmentDate).isEqualTo(dateInPast);
 		}
 	}
 

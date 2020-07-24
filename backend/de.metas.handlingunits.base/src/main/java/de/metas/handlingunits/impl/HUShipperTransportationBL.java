@@ -31,12 +31,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,7 +75,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
+	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = BPartnerLocationInfoRepository.get();
 
 	@Override
 	public List<I_M_Package> addHUsToShipperTransportation(final ShipperTransportationId shipperTransportationId, final Collection<I_M_HU> hus)
@@ -347,7 +347,14 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		return firstPackage.getM_ShipperTransportation();
 	}
 
-	public void addTrackingCodesForInOutWithoutHU(@NonNull final AddTrackingCodesForInOutWithoutHUReq req)
+	@NonNull
+	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return load(shipperTransportationId, I_M_ShipperTransportation.class);
+	}
+
+	@NonNull
+	public ShipperTransportationId addTrackingCodesForInOutWithoutHU(@NonNull final AddTrackingCodesForInOutWithoutHUReq req)
 	{
 		final I_M_InOut inOut = inOutDAO.getById(req.getInOutId());
 
@@ -364,6 +371,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipperId(req.getShipperId())
 				.bPartnerLocationId(bPartnerLocationInfo.getId())
 				.orgId(OrgId.ofRepoId(inOut.getAD_Org_ID()))
+				.shipDate(req.getShipDate())
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = createHUShipperTransportation(createShipperTransportationRequest);
@@ -375,6 +383,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.build();
 
 		addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
+
+		return shipperTransportationId;
 	}
 
 	private ShipperTransportationId createHUShipperTransportation(@NonNull final CreateShipperTransportationRequest request)
@@ -385,6 +395,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
 		shipperTransportation.setShipper_BPartner_ID(request.getBPartnerLocationId().getBpartnerId().getRepoId());
 		shipperTransportation.setShipper_Location_ID(request.getBPartnerLocationId().getRepoId());
+		shipperTransportation.setDateDoc(Timestamp.valueOf(request.getShipDate()));
 
 		saveRecord(shipperTransportation);
 

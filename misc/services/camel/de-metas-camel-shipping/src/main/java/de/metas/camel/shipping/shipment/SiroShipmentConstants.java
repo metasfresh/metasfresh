@@ -2,11 +2,9 @@ package de.metas.camel.shipping.shipment;
 
 import com.google.common.collect.ImmutableList;
 
-import java.util.List;
-
 public interface SiroShipmentConstants
 {
-	String SIRO_FTP_PATH = "{{siro.ftp.retrieve.shipments.uri}}";
+	String SIRO_FTP_PATH = "{{siro.ftp.retrieve.shipments.endpoint}}";
 	String CREATE_SHIPMENT_MF_URL = "{{metasfresh.api.baseurl}}/shipment";
 	String AUTHORIZATION = "Authorization";
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";

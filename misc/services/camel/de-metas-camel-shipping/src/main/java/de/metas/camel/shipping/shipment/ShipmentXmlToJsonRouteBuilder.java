@@ -2,6 +2,7 @@ package de.metas.camel.shipping.shipment;
 
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
+import de.metas.common.shipment.JsonCreateShipmentResponse;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
@@ -25,7 +26,8 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 
 		RouteBuilderCommonUtil.setupProperties(getContext());
 
-		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonCreateShipmentRequest.class);
+		final JacksonDataFormat requestJacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonCreateShipmentRequest.class);
+		final JacksonDataFormat responseJacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonCreateShipmentResponse.class);
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
 		from(SIRO_FTP_PATH)
@@ -38,10 +40,12 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 						.log(LoggingLevel.INFO, "Nothing to do! no shipments were found in file:" + header(Exchange.FILE_NAME))
 					.otherwise()
 				   		.log(LoggingLevel.INFO, "Posting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipments to metasfresh.")
-				        .marshal(jacksonDataFormat)
+				        .marshal(requestJacksonDataFormat)
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				 		.to(http(CREATE_SHIPMENT_MF_URL))
+				        .unmarshal(responseJacksonDataFormat)
+				        .process(new ShipmentResponseProcessor())
 				.end()
 		;
 	}

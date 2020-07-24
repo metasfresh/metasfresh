@@ -23,6 +23,7 @@
 package de.metas.common.filemaker;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -61,6 +62,7 @@ public class FMPXMLRESULT
 		this.resultset = resultset;
 	}
 
+	@JsonIgnore
 	public boolean isEmpty()
 	{
 		return metadata == null

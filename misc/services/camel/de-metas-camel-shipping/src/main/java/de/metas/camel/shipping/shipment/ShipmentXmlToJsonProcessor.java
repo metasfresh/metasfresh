@@ -39,7 +39,6 @@ import static de.metas.camel.shipping.shipment.ShipmentField.DOCUMENT_NO;
 import static de.metas.camel.shipping.shipment.ShipmentField.EXPIRY_DATE;
 import static de.metas.camel.shipping.shipment.ShipmentField.HOUSE_NO;
 import static de.metas.camel.shipping.shipment.ShipmentField.LOT_NUMBER;
-import static de.metas.camel.shipping.shipment.ShipmentField.ORDER_NO;
 import static de.metas.camel.shipping.shipment.ShipmentField.POSTAL_CODE;
 import static de.metas.camel.shipping.shipment.ShipmentField.PRODUCT_VALUE;
 import static de.metas.camel.shipping.shipment.ShipmentField.SHIPMENT_SCHEDULE_ID;
@@ -82,6 +81,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.collect(Collectors.toList());
 
 		final JsonCreateShipmentRequest jsonCreateShipmentRequest = JsonCreateShipmentRequest.builder()
+				.shipperCode(SIRO_SHIPPER_SEARCH_KEY)
 				.createShipmentInfoList(createShipmentInfos)
 				.build();
 
@@ -101,7 +101,6 @@ public class ShipmentXmlToJsonProcessor implements Processor
 
 		return JsonCreateShipmentInfo.builder()
 				.deliveryRule(DEFAULT_DELIVERY_RULE_FORCE)
-				.shipperSearchKey(SIRO_SHIPPER_SEARCH_KEY)
 				.shipmentScheduleId(JsonMetasfreshId.of(Integer.parseInt(shipmentScheduleId)))
 				.shipToLocation(getLocation(row, fieldName2Index, shipmentScheduleId))
 				.attributes(getAttributes(row, fieldName2Index))

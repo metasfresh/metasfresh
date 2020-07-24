@@ -24,7 +24,9 @@ package de.metas.rest_api.shipping;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
+import de.metas.common.shipment.JsonCreateShipmentResponse;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.logging.LogManager;
@@ -77,14 +79,20 @@ public class ShipmentRestController
 
 		final InOutGenerateResult result = shipmentService.generateShipments(generateShipmentsRequest);
 
-		final ImmutableList<Integer> shipmentIds = result
+		final ImmutableList<JsonMetasfreshId> shipmentIds = result
 				.getInOuts()
 				.stream()
 				.map(I_M_InOut::getM_InOut_ID)
+				.map(JsonMetasfreshId::of)
 				.collect(ImmutableList.toImmutableList());
+
+		final JsonCreateShipmentResponse jsonCreateShipmentResponse = JsonCreateShipmentResponse
+				.builder()
+				.createdShipmentIdList(shipmentIds)
+				.build();
 
 		log.debug("*** createShipments: Execution done! Created shipment ids: {}", shipmentIds);
 
-		return ResponseEntity.ok(shipmentIds);
+		return ResponseEntity.ok(jsonCreateShipmentResponse);
 	}
 }

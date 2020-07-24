@@ -36,6 +36,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
+import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
@@ -188,7 +189,7 @@ public class ShipmentService
 
 		return UpdateShipmentScheduleRequest.builder()
 				.shipmentScheduleId(scheduleId)
-				.bPartnerCode(createShipmentInfo.getBPartnerSearchKey())
+				.bPartnerCode(createShipmentInfo.getBusinessPartnerSearchKey())
 				.bPartnerLocation(locationBasicInfo)
 				.attributes(createShipmentInfo.getAttributes())
 				.deliveryDate(createShipmentInfo.getMovementDate())
@@ -252,6 +253,7 @@ public class ShipmentService
 				.setProcessShipments(true)
 				.setScheduleIdToExternalInfo(request.getScheduleToExternalInfo())
 				.setShipperId(request.getShipperId())
+				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE)
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(scheduleWithHUS);
 	}

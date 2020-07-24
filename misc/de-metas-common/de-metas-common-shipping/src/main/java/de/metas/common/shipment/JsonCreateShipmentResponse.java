@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,30 +20,25 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.common.shipment;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.organization.OrgId;
-import de.metas.shipping.ShipperId;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Value
 @Builder
-public class CreateShipperTransportationRequest
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(builder = JsonCreateShipmentResponse.JsonCreateShipmentResponseBuilder.class)
+public class JsonCreateShipmentResponse
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	ShipperId shipperId;
-
-	@NonNull
-	BPartnerLocationId bPartnerLocationId;
-
-	@NonNull
-	LocalDateTime shipDate;
+	@JsonProperty("createdShipmentIdList")
+	List<JsonMetasfreshId> createdShipmentIdList;
 }

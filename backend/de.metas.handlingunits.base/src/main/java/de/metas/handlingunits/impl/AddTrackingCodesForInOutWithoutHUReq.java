@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Value
@@ -39,6 +40,9 @@ public class AddTrackingCodesForInOutWithoutHUReq
 
 	@NonNull
 	ShipperId shipperId;
+
+	@NonNull
+	LocalDateTime shipDate;
 
 	@NonNull
 	List<String> trackingCodes;

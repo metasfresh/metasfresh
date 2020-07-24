@@ -48,16 +48,17 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -93,6 +94,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
 
 /**
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
@@ -144,7 +148,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private boolean createPackingLines = false;
 
-	private boolean shipmentDateToday = false;
+	private CalculateShippingDateRule calculateShippingDateRule = CalculateShippingDateRule.NONE;
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
@@ -155,8 +159,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 */
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
+	@NonNull
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
+	@Nullable
 	private ShipperId shipperId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
@@ -259,7 +265,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final LocalDate shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
+		final LocalDate shipmentDate = calculateShipmentDate(shipmentSchedule, calculateShippingDateRule);
 
 		//
 		// Search for existing shipment to consolidate on
@@ -280,17 +286,25 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@VisibleForTesting
-	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
+	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule,@NonNull final CalculateShippingDateRule calculateShippingDateType)
 	{
 		final LocalDate today = SystemTime.asLocalDate();
-		if (isShipmentDateToday)
+
+		if (FORCE_SHIPMENT_DATE_TODAY.equals(calculateShippingDateType))
 		{
 			return today;
 		}
+
 		final ZonedDateTime deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
+
 		if (deliveryDateEffective == null)
 		{
 			return today;
+		}
+
+		if (FORCE_SHIPMENT_DATE_DELIVERY_DATE.equals(calculateShippingDateType))
+		{
+			return deliveryDateEffective.toLocalDate();
 		}
 
 		if (deliveryDateEffective.toLocalDate().isBefore(today))
@@ -575,7 +589,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
-		final LocalDate candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
+		final LocalDate candidateShipmentDate = calculateShipmentDate(schedule, calculateShippingDateRule);
 
 		// the shipment was created before but wasn't yet completed;
 		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
@@ -667,9 +681,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
+	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(final CalculateShippingDateRule calculateShippingDateRule)
 	{
-		this.shipmentDateToday = forceDateToday;
+		this.calculateShippingDateRule = calculateShippingDateRule;
 		return this;
 	}
 
@@ -699,7 +713,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private void addTrackingCodes()
 	{
-		// adding the tracking code will be skipped
+		// adding the tracking codes will be skipped
 		// if no shipperId was provided or a ShipperTransportation order was already created
 		// as it means the tracking codes would be added/or not by whoever created the shipper transportation
 		// and the corresponding packages.
@@ -726,9 +740,18 @@ public class InOutProducerFromShipmentScheduleWithHU
 				.inOutId(InOutId.ofRepoId(currentShipment.getM_InOut_ID()))
 				.shipperId(shipperId)
 				.trackingCodes(trackingCodes)
+				.shipDate(currentShipment.getMovementDate().toLocalDateTime())
 				.build();
 
-		huShipperTransportationBL.addTrackingCodesForInOutWithoutHU(addTrackingCodesForInOutWithoutHUReq);
+		final ShipperTransportationId shipperTransportationId =
+				huShipperTransportationBL.addTrackingCodesForInOutWithoutHU(addTrackingCodesForInOutWithoutHUReq);
+
+		if (processShipments)
+		{
+			final I_M_ShipperTransportation shipperTransportation = huShipperTransportationBL.getById(shipperTransportationId);
+
+			docActionBL.processEx(shipperTransportation, IDocument.ACTION_Complete, null);
+		}
 	}
 
 }

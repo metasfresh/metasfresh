@@ -48,11 +48,8 @@ public class JsonCreateShipmentInfo
 	@JsonProperty("productSearchKey")
 	String productSearchKey;
 
-	@JsonProperty("bPartnerSearchKey")
-	String bPartnerSearchKey;
-
-	@JsonProperty("shipperSearchKey")
-	String shipperSearchKey;
+	@JsonProperty("businessPartnerSearchKey")
+	String businessPartnerSearchKey;
 
 	@JsonProperty("movementQuantity")
 	BigDecimal movementQuantity;

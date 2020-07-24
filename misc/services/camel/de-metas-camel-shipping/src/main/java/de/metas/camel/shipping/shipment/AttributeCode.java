@@ -14,6 +14,6 @@ public enum AttributeCode
 	ARTICLE_FLAVOR("Article_Flavor", STRING),
 	EXPIRY_DATE("HU_ExpiryDate", DATE);
 
-	private String attributeCode;
-	private AttributeValueType attributeValueType;
+	private final String attributeCode;
+	private final AttributeValueType attributeValueType;
 }

@@ -84,5 +84,9 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	@Nullable
 	I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(Collection<I_M_HU> hus);
 
-	void addTrackingCodesForInOutWithoutHU(AddTrackingCodesForInOutWithoutHUReq req);
+	@NonNull
+	ShipperTransportationId addTrackingCodesForInOutWithoutHU(AddTrackingCodesForInOutWithoutHUReq req);
+
+	@NonNull
+	I_M_ShipperTransportation getById(ShipperTransportationId shipperTransportationId);
 }

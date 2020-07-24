@@ -23,5 +23,5 @@ public enum ShipmentField
 	DOCUMENT_NO("_aussendungen_siro_warenkorb_nummer"),
 	TRACKING_NUMBERS("_sendung_nummern");
 
-	private String name;
+	private final String name;
 }

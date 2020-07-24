@@ -1,14 +1,15 @@
 package de.metas.bpartner.service;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import org.compiere.model.I_C_BPartner_Location;
-import org.springframework.stereotype.Repository;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
 import lombok.NonNull;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.springframework.stereotype.Repository;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -35,6 +36,15 @@ import lombok.NonNull;
 @Repository
 public class BPartnerLocationInfoRepository
 {
+	public static BPartnerLocationInfoRepository get()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return new BPartnerLocationInfoRepository();
+		}
+		return SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
+	}
+
 	private BPartnerLocationInfo toBPartnerLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 	{
 

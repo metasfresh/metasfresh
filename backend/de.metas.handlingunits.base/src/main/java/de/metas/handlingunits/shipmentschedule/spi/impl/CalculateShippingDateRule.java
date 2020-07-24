@@ -20,30 +20,11 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipmentschedule.spi.impl;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.organization.OrgId;
-import de.metas.shipping.ShipperId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import java.time.LocalDateTime;
-
-@Value
-@Builder
-public class CreateShipperTransportationRequest
+public enum CalculateShippingDateRule
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	ShipperId shipperId;
-
-	@NonNull
-	BPartnerLocationId bPartnerLocationId;
-
-	@NonNull
-	LocalDateTime shipDate;
+	FORCE_SHIPMENT_DATE_TODAY,
+	FORCE_SHIPMENT_DATE_DELIVERY_DATE,
+	NONE
 }
