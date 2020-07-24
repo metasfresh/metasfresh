@@ -1,12 +1,5 @@
 package de.metas.ui.web.procurement.process;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.springframework.context.annotation.Profile;
-
 import de.metas.Profiles;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -17,6 +10,9 @@ import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.springframework.context.annotation.Profile;
 
 /*
  * #%L
@@ -70,11 +66,9 @@ public class PMM_Purchase_Candidate_CreatePurchaseOrder
 	@Override
 	protected String doIt() throws Exception
 	{
-		final SqlOptions sqlOptions = SqlOptions.usingTableName(I_PMM_PurchaseCandidate.Table_Name);
-		final SqlViewRowsWhereClause sqlWhereClause = getView().getSqlWhereClause(DocumentIdsSelection.ALL, sqlOptions);
+		final SqlViewRowsWhereClause sqlWhereClause = getView().getSqlWhereClause(DocumentIdsSelection.ALL, SqlOptions.usingTableName(I_PMM_PurchaseCandidate.Table_Name));
 
 		final ICompositeQueryFilter<I_PMM_PurchaseCandidate> i_pmm_purchaseCandidateICompositeQueryFilter = queryBL.createCompositeQueryFilter(I_PMM_PurchaseCandidate.class)
-				.addCompareFilter(I_PMM_PurchaseCandidate.COLUMNNAME_QtyOrdered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.addFilter(sqlWhereClause.toQueryFilter());
 
 		recordsEnqueued = PMM_GenerateOrders.prepareEnqueuing()
