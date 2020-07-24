@@ -76,6 +76,12 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall be allowed to process");
 		}
 
+		final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
+		if (rows.isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no unprocessed rows");
+		}
+
 		if (partialDeliveryNotAllowed())
 		{
 			if (!getView().isApproved())
@@ -83,14 +89,16 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows were approved");
 			}
 
-			final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
-			if (rows.isEmpty())
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("no unprocessed rows");
-			}
 			if (!rows.stream().allMatch(ProductsToPickRow::isEligibleForProcessing))
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows eligible for processing");
+			}
+		}
+		else
+		{
+			if (rows.stream().noneMatch(ProductsToPickRow::isEligibleForProcessing))
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("no rows eligible for processing");
 			}
 		}
 
