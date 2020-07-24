@@ -7,13 +7,13 @@ import _ from 'lodash';
 import viewHandler, { viewState, initialState } from '../../reducers/viewHandler';
 import tablesHandler, {  getTableId } from '../../reducers/tables';
 import windowState from '../../reducers/windowHandler';
+import { initialState as listState } from '../../reducers/listHandler';
 
 import * as viewActions from '../../actions/ViewActions';
 import { createTableData } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
 
-import gridDataFixtures from '../../../test_setup/fixtures/grid/data.json';
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
 import fixtures from '../../../test_setup/fixtures/grid/reducers.json';
@@ -28,6 +28,7 @@ const createStore = function(state = {}) {
       viewHandler: initialState,
       tables: { ...tablesHandler(undefined, {}) },
       windowHandler: windowState,
+      listHandler: listState,
     },
     state
   );
@@ -276,4 +277,105 @@ describe('ViewActions thunks', () => {
         expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
       });
   });
+
+  it(`dispatches 'TOGGLE_INCLUDED_VIEW' and 'SET_LIST_INCLUDED_VIEW' actions when
+   fetching view rows data for included views`, () => {
+    const layoutData = gridLayoutFixtures.layout2_parent;
+    const rowsData = gridRowFixtures.data2_parent;
+    const { windowId, viewId, pageLength } = rowsData;
+    const tableId = getTableId({ windowId, viewId });
+    const page = 1;
+    const state = createStore({
+      viewHandler: {
+        modals: {
+          [windowId]: {
+            ...viewState,
+            layout: { ...layoutData },
+          },
+        },
+      },
+    });
+    const store = mockStore(state);
+    const includedWindowId = rowsData.result[0].includedView.windowId;
+    const includedViewId = rowsData.result[0].includedView.viewId;
+
+    const payload1 = {
+      id: windowId, showIncludedView: true, isModal: true,
+    };
+    const payload2 = {
+      windowType: includedWindowId, viewId: includedViewId, viewProfileId: null,
+    };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload1 },
+      { type: ACTION_TYPES.SET_LIST_INCLUDED_VIEW, payload: payload2 },
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+      (page - 1)}&pageLength=${pageLength}`)
+      .reply(200, rowsData);
+
+    return store
+      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: true }))
+      .then(() => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      });
+  });
+
+  it(`dispatches 'CLOSE_LIST_INCLUDED_VIEW' action with viewId from the listHandler if it exists`, () => {
+    const layoutData = gridLayoutFixtures.layout2_parent;
+    const rowsData = gridRowFixtures.data2_parent;
+    const { windowId, viewId, pageLength } = rowsData;
+    const tableId = getTableId({ windowId, viewId });
+    const includedWindowId = 'pickingSlot';
+    const includedViewId = 'pickingSlot-Ne-1001024';
+    const page = 1;
+    const state = createStore({
+      viewHandler: {
+        modals: {
+          [windowId]: {
+            ...viewState,
+            layout: { ...layoutData },
+          },
+        },
+      },
+      listHandler: {
+        ...listState,
+        includedView: {
+          viewId: includedViewId,
+          windowType: includedWindowId,
+          viewProfileId: null,
+        }
+      }
+    });
+    const store = mockStore(state);
+
+    const payload1 = {
+      id: windowId, showIncludedView: true, isModal: true,
+    };
+    const payload2 = {
+      windowType: includedWindowId, viewId: includedViewId, viewProfileId: null,
+    };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload1 },
+      { type: ACTION_TYPES.SET_LIST_INCLUDED_VIEW, payload: payload2 },
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+      (page - 1)}&pageLength=${pageLength}`)
+      .reply(200, rowsData);
+
+    return store
+      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: true }))
+      .then(() => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      });
+  });
+
+  it.todo(`dispatches 'FILTER_VIEW_*' when the view is filtered`);
 });
