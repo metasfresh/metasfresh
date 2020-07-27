@@ -1,9 +1,12 @@
 package de.metas.event.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.compiere.Adempiere;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -74,7 +77,14 @@ public class PlainEventBusFactory implements IEventBusFactory
 	public IEventBus getEventBusIfExists(final Topic topic)
 	{
 		assertJUnitTestMode();
-		return null;
+		return eventBuses.get(topic);
+	}
+
+	@Override
+	public List<IEventBus> getAllEventBusInstances()
+	{
+		assertJUnitTestMode();
+		return ImmutableList.copyOf(eventBuses.values());
 	}
 
 	@Override
