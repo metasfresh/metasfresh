@@ -36,7 +36,6 @@ import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,8 +43,6 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -76,6 +73,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = BPartnerLocationInfoRepository.get();
+	private final ShipperTransportationRepository shipperTransportationRepository = ShipperTransportationRepository.get();
 
 	@Override
 	public List<I_M_Package> addHUsToShipperTransportation(final ShipperTransportationId shipperTransportationId, final Collection<I_M_HU> hus)
@@ -362,19 +360,19 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
-		final int bPartnerLocationId = warehouse.getC_BPartner_Location_ID();
+		final int warehouseBPLocationId = warehouse.getC_BPartner_Location_ID();
 
-		final BPartnerLocationInfo bPartnerLocationInfo = bPartnerLocationInfoRepository.getById(bPartnerLocationId);
+		final BPartnerLocationInfo warehouseBPLocationInfo = bPartnerLocationInfoRepository.getById(warehouseBPLocationId);
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
 				.builder()
 				.shipperId(req.getShipperId())
-				.bPartnerLocationId(bPartnerLocationInfo.getId())
+				.shipperBPartnerAndLocationId(warehouseBPLocationInfo.getId())
 				.orgId(OrgId.ofRepoId(inOut.getAD_Org_ID()))
 				.shipDate(req.getShipDate())
 				.build();
 
-		final ShipperTransportationId shipperTransportationId = createHUShipperTransportation(createShipperTransportationRequest);
+		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
 
 		final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.builder()
 				.inOut(InterfaceWrapperHelper.create(inOut, de.metas.inout.model.I_M_InOut.class))
@@ -385,20 +383,5 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
 
 		return shipperTransportationId;
-	}
-
-	private ShipperTransportationId createHUShipperTransportation(@NonNull final CreateShipperTransportationRequest request)
-	{
-		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
-
-		shipperTransportation.setAD_Org_ID(request.getOrgId().getRepoId());
-		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
-		shipperTransportation.setShipper_BPartner_ID(request.getBPartnerLocationId().getBpartnerId().getRepoId());
-		shipperTransportation.setShipper_Location_ID(request.getBPartnerLocationId().getRepoId());
-		shipperTransportation.setDateDoc(Timestamp.valueOf(request.getShipDate()));
-
-		saveRecord(shipperTransportation);
-
-		return ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 	}
 }

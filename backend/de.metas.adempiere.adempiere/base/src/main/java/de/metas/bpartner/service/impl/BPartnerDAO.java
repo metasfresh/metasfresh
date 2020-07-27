@@ -1180,9 +1180,8 @@ public class BPartnerDAO implements IBPartnerDAO
 			locationIQueryBuilder.addEqualsFilter(I_C_Location.COLUMNNAME_Postal, query.getPostalCode());
 		}
 
-		final List<Integer> ids = locationIQueryBuilder.create().listIds();
-
-		bpLocationQueryBuilder.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_Location_ID, ids);
+		bpLocationQueryBuilder.addInSubQueryFilter(I_C_BPartner_Location.COLUMN_C_Location_ID,
+				I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
 	private BPartnerLocationId createLocationIdOrNull(

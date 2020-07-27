@@ -32,7 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Value
@@ -42,7 +42,7 @@ public class UpdateShipmentScheduleRequest
 	ShipmentScheduleId shipmentScheduleId;
 
 	@Nullable
-	LocalDateTime deliveryDate;
+	ZonedDateTime deliveryDate;
 
 	@Nullable
 	BigDecimal qtyToDeliver;
@@ -61,7 +61,7 @@ public class UpdateShipmentScheduleRequest
 
 	@Builder
 	public UpdateShipmentScheduleRequest(@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@Nullable final LocalDateTime deliveryDate,
+			@Nullable final ZonedDateTime deliveryDate,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final LocationBasicInfo bPartnerLocation,
 			@Nullable final String bPartnerCode,
@@ -70,7 +70,7 @@ public class UpdateShipmentScheduleRequest
 	{
 		if (Check.isNotBlank(bPartnerCode) && bPartnerLocation == null)
 		{
-			throw new AdempiereException("Invalid request!");
+			throw new AdempiereException("Invalid request! The bPartenr cannot be changed without changing the location!");
 		}
 
 		this.shipmentScheduleId = shipmentScheduleId;
@@ -82,7 +82,7 @@ public class UpdateShipmentScheduleRequest
 		this.deliveryRuleCode = deliveryRuleCode;
 	}
 
-	public boolean emptyRequest()
+	public boolean isEmptyRequest()
 	{
 		return deliveryDate == null
 				&& qtyToDeliver == null

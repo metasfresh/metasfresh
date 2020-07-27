@@ -31,6 +31,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,14 +51,14 @@ public class LocationBasicInfo
 	@Nullable
 	String streetAndNumber;
 
-	@Nullable
-	public static LocationBasicInfo of(@NonNull final JsonLocation location)
+	@NonNull
+	public static Optional<LocationBasicInfo> of(@NonNull final JsonLocation location)
 	{
 		if (Check.isBlank(location.getCountryCode())
 				|| Check.isBlank(location.getCity())
 		        || Check.isBlank(location.getZipCode()))
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final List<String> streetAndHouseNoParts = Stream.of(location.getStreet(), location.getHouseNo())
@@ -68,11 +69,11 @@ public class LocationBasicInfo
 				? Joiner.on(",").join(streetAndHouseNoParts)
 				: null;
 
-		return LocationBasicInfo.builder()
+		return Optional.of(LocationBasicInfo.builder()
 				.countryCode(location.getCountryCode())
 				.city(location.getCity())
 				.postalCode(location.getZipCode())
 				.streetAndNumber(streetAndHouseNo)
-				.build();
+				.build());
 	}
 }

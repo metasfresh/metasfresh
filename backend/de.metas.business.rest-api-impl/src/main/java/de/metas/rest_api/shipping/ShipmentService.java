@@ -47,6 +47,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.order.DeliveryRule;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.rest_api.shipping.info.GenerateShipmentsRequest;
@@ -65,9 +67,11 @@ import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +88,7 @@ public class ShipmentService
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
 
@@ -134,7 +139,7 @@ public class ShipmentService
 
 	public void updateShipmentSchedule(@NonNull final UpdateShipmentScheduleRequest request)
 	{
-		if (request.emptyRequest())
+		if (request.isEmptyRequest())
 		{
 			return;//nothing to do
 		}
@@ -183,8 +188,12 @@ public class ShipmentService
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(createShipmentInfo.getShipmentScheduleId().getValue());
 
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(scheduleId);
+
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
+
 		final LocationBasicInfo locationBasicInfo = createShipmentInfo.getShipToLocation() != null
-				? LocationBasicInfo.of(createShipmentInfo.getShipToLocation())
+				? LocationBasicInfo.of(createShipmentInfo.getShipToLocation()).orElse(null)
 				: null;
 
 		return UpdateShipmentScheduleRequest.builder()
@@ -192,7 +201,7 @@ public class ShipmentService
 				.bPartnerCode(createShipmentInfo.getBusinessPartnerSearchKey())
 				.bPartnerLocation(locationBasicInfo)
 				.attributes(createShipmentInfo.getAttributes())
-				.deliveryDate(createShipmentInfo.getMovementDate())
+				.deliveryDate(TimeUtil.asZonedDateTime(createShipmentInfo.getMovementDate(), zoneId))
 				.qtyToDeliver(createShipmentInfo.getMovementQuantity())
 				.deliveryRuleCode(createShipmentInfo.getDeliveryRule())
 				.build();

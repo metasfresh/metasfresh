@@ -44,6 +44,10 @@ public class CreatePackagesForInOutRequest
 
 	public static CreatePackagesForInOutRequest of(@NonNull final I_M_InOut inOut)
 	{
-		return new CreatePackagesForInOutRequest(inOut, false, null);
+		return CreatePackagesForInOutRequest.builder()
+				.processed(false)
+				.trackingNumbers(null)
+				.inOut(inOut)
+				.build();
 	}
 }

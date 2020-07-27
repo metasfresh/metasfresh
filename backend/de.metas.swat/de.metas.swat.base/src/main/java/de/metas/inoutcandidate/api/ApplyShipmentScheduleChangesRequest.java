@@ -33,7 +33,7 @@ import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Value
@@ -53,7 +53,7 @@ public class ApplyShipmentScheduleChangesRequest
 	List<CreateAttributeInstanceReq> attributes;
 
 	@Nullable
-	LocalDateTime deliveryDate;
+	ZonedDateTime deliveryDate;
 
 	@Nullable
 	DeliveryRule deliveryRule;

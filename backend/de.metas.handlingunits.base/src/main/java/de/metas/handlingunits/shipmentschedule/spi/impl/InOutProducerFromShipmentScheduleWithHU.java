@@ -736,11 +736,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 			return;
 		}
 
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(currentShipment.getAD_Org_ID()));
+
 		final AddTrackingCodesForInOutWithoutHUReq addTrackingCodesForInOutWithoutHUReq = AddTrackingCodesForInOutWithoutHUReq.builder()
 				.inOutId(InOutId.ofRepoId(currentShipment.getM_InOut_ID()))
 				.shipperId(shipperId)
 				.trackingCodes(trackingCodes)
-				.shipDate(currentShipment.getMovementDate().toLocalDateTime())
+				.shipDate(TimeUtil.asZonedDateTime(currentShipment.getMovementDate(), timeZone))
 				.build();
 
 		final ShipperTransportationId shipperTransportationId =

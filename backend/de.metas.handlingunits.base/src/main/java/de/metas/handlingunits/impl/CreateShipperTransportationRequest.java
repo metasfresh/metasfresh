@@ -29,11 +29,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
-public class CreateShipperTransportationRequest
+class CreateShipperTransportationRequest
 {
 	@NonNull
 	OrgId orgId;
@@ -42,8 +42,8 @@ public class CreateShipperTransportationRequest
 	ShipperId shipperId;
 
 	@NonNull
-	BPartnerLocationId bPartnerLocationId;
+	BPartnerLocationId shipperBPartnerAndLocationId;
 
 	@NonNull
-	LocalDateTime shipDate;
+	ZonedDateTime shipDate;
 }

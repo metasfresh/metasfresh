@@ -80,7 +80,6 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -751,7 +750,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (request.getDeliveryDate() != null)
 		{
-			shipmentSchedule.setDeliveryDate_Override(Timestamp.valueOf(request.getDeliveryDate()));
+			shipmentSchedule.setDeliveryDate_Override(TimeUtil.asTimestamp(request.getDeliveryDate()));
 		}
 
 		if (request.getDeliveryRule() != null)

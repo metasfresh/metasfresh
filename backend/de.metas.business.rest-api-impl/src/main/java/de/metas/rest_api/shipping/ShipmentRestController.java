@@ -31,7 +31,9 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.shipping.info.GenerateShipmentsRequest;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +69,9 @@ public class ShipmentRestController
 		}
 		catch (final Exception e)
 		{
-			return ResponseEntity.badRequest().body(e.getMessage());
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.badRequest()
+					.body(JsonErrors.ofThrowable(e, adLanguage));
 		}
 
 		request.getCreateShipmentInfoList()
