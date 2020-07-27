@@ -82,7 +82,14 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no unprocessed rows");
 		}
 
-		if (partialDeliveryNotAllowed())
+		if (partialDeliveryAllowed())
+		{
+			if (rows.stream().noneMatch(ProductsToPickRow::isEligibleForProcessing))
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("no rows eligible for processing");
+			}
+		}
+		else
 		{
 			if (!getView().isApproved())
 			{
@@ -92,13 +99,6 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			if (!rows.stream().allMatch(ProductsToPickRow::isEligibleForProcessing))
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows eligible for processing");
-			}
-		}
-		else
-		{
-			if (rows.stream().noneMatch(ProductsToPickRow::isEligibleForProcessing))
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("no rows eligible for processing");
 			}
 		}
 
@@ -148,7 +148,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	@Override
 	protected String doIt()
 	{
-		if (partialDeliveryNotAllowed())
+		if (!partialDeliveryAllowed())
 		{
 			if (!getView().isApproved())
 			{
@@ -213,8 +213,8 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private boolean partialDeliveryNotAllowed()
+	private boolean partialDeliveryAllowed()
 	{
-		return !sysConfigBL.getBooleanValue(SYSCONFIG_AllowPartialDelivery, false);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_AllowPartialDelivery, false);
 	}
 }
