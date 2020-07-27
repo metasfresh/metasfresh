@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -25,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -113,6 +115,10 @@ public final class DefaultView implements IEditableView
 	private final JSONViewDataType viewType;
 	@Getter
 	private final ViewProfileId profileId;
+
+	private final ViewHeaderPropertiesProvider headerPropertiesProvider;
+	private Optional<ViewHeaderProperties> headerProperties;
+
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 	private final DocumentReferenceId documentReferenceId;
@@ -157,6 +163,7 @@ public final class DefaultView implements IEditableView
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		profileId = builder.getProfileId();
+		headerPropertiesProvider = CoalesceUtil.coalesce(builder.headerPropertiesProvider, NullViewHeaderPropertiesProvider.instance);
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
@@ -219,6 +226,18 @@ public final class DefaultView implements IEditableView
 	public ITranslatableString getDescription()
 	{
 		return TranslatableStrings.empty();
+	}
+
+	@Override
+	public ViewHeaderProperties getHeaderProperties()
+	{
+		Optional<ViewHeaderProperties> headerProperties = this.headerProperties;
+		if (headerProperties == null)
+		{
+			headerProperties = this.headerProperties = Optional.ofNullable(headerPropertiesProvider.computeHeaderProperties(this));
+		}
+
+		return headerProperties.get();
 	}
 
 	/**
@@ -691,6 +710,7 @@ public final class DefaultView implements IEditableView
 		private ViewId viewId;
 		private JSONViewDataType viewType;
 		private ViewProfileId profileId;
+		private ViewHeaderPropertiesProvider headerPropertiesProvider;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private DocumentReferenceId documentReferenceId;
 		private ViewId parentViewId;
@@ -764,6 +784,12 @@ public final class DefaultView implements IEditableView
 		public ViewProfileId getProfileId()
 		{
 			return profileId;
+		}
+
+		public Builder setHeaderPropertiesProvider(@NonNull final ViewHeaderPropertiesProvider headerPropertiesProvider)
+		{
+			this.headerPropertiesProvider = headerPropertiesProvider;
+			return this;
 		}
 
 		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)

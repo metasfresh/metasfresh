@@ -1,17 +1,12 @@
 package de.metas.ui.web.view;
 
-import com.google.common.collect.ImmutableList;
-
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,39 +24,23 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ViewHeaderProperties
+public final class NullViewHeaderPropertiesProvider implements ViewHeaderPropertiesProvider
 {
-	public static final ViewHeaderProperties EMPTY = builder().build();
+	public static final transient NullViewHeaderPropertiesProvider instance = new NullViewHeaderPropertiesProvider();
 
-	@NonNull
-	@Singular
-	ImmutableList<ViewHeaderProperty> entries;
-
-	public boolean isEmpty()
+	private NullViewHeaderPropertiesProvider()
 	{
-		return entries.isEmpty();
 	}
 
-	public ViewHeaderProperties append(@NonNull final ViewHeaderProperties other)
+	@Override
+	public String getAppliesOnlyToTableName()
 	{
-		if (isEmpty())
-		{
-			return other;
-		}
-		else if (other.isEmpty())
-		{
-			return this;
-		}
-		else
-		{
-			return ViewHeaderProperties.builder()
-					.entries(ImmutableList.<ViewHeaderProperty> builder()
-							.addAll(this.entries)
-							.addAll(other.entries)
-							.build())
-					.build();
-		}
+		throw null;
+	}
+
+	@Override
+	public @NonNull ViewHeaderProperties computeHeaderProperties(@NonNull final IView view)
+	{
+		return ViewHeaderProperties.EMPTY;
 	}
 }
