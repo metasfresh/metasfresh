@@ -14,7 +14,15 @@ import RawWidget from '../widget/RawWidget';
  * @extends PureComponent
  */
 class SelectionAttributes extends PureComponent {
+  componentDidMount = () => {
+    this.shouldFetchActions();
+  };
+
   componentDidUpdate = (prevProps) => {
+    this.shouldFetchActions(prevProps);
+  };
+
+  shouldFetchActions = (prevProps) => {
     const {
       selected,
       DLWrapperSetData,
@@ -27,13 +35,18 @@ class SelectionAttributes extends PureComponent {
       return;
     }
 
-    if (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) {
+    if (
+      !prevProps ||
+      (prevProps &&
+        JSON.stringify(prevProps.selected) !== JSON.stringify(selected))
+    ) {
       DLWrapperSetData([], null, () => {
         DLWrapperSetLayout([], () => {
           if (supportAttribute && selected.length === 1) {
             if (selected[0] == 0) {
               return;
             }
+
             this.fetchActions();
           }
         });
@@ -43,16 +56,16 @@ class SelectionAttributes extends PureComponent {
 
   fetchActions = () => {
     const {
-      windowType,
+      windowId,
       viewId,
       selected,
       DLWrapperSetData,
       DLWrapperSetLayout,
     } = this.props;
-    getViewAttributesLayout(windowType, viewId, selected[0])
+    getViewAttributesLayout(windowId, viewId, selected[0])
       .then((response) => {
         DLWrapperSetLayout(response.data.elements);
-        return getViewAttributes(windowType, viewId, selected[0]);
+        return getViewAttributes(windowId, viewId, selected[0]);
       })
       .then((response) => {
         DLWrapperSetData(response.data.fieldsByName, response.data.id);
@@ -79,7 +92,7 @@ class SelectionAttributes extends PureComponent {
 
   render() {
     const {
-      windowType,
+      windowId,
       viewId,
       DLWrapperLayout,
       DLWrapperData,
@@ -104,7 +117,7 @@ class SelectionAttributes extends PureComponent {
                 widgetType={item.widgetType}
                 fields={item.fields}
                 dataId={DLWrapperDataId}
-                windowType={windowType}
+                windowType={windowId}
                 viewId={viewId}
                 widgetData={item.fields.map(
                   (elem) => DLWrapperData[elem.field] || -1
@@ -135,7 +148,7 @@ class SelectionAttributes extends PureComponent {
 }
 
 SelectionAttributes.propTypes = {
-  windowType: PropTypes.string,
+  windowId: PropTypes.string,
   selected: PropTypes.any,
   viewId: PropTypes.string,
   DLWrapperSetLayout: PropTypes.func,
