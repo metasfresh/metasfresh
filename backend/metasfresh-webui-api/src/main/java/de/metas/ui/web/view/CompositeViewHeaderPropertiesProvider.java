@@ -1,8 +1,12 @@
 package de.metas.ui.web.view;
 
 import java.util.Collection;
+import java.util.Objects;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -47,16 +51,46 @@ public class CompositeViewHeaderPropertiesProvider implements ViewHeaderProperti
 		}
 	}
 
+	private final String appliesOnTableName;
 	private final ImmutableList<ViewHeaderPropertiesProvider> providers;
 
 	private CompositeViewHeaderPropertiesProvider(@NonNull final ImmutableList<ViewHeaderPropertiesProvider> providers)
 	{
 		Check.assumeNotEmpty(providers, "providers is not empty");
+
+		this.appliesOnTableName = extractAppliesOnTableName(providers);
 		this.providers = providers;
 	}
 
+	private static String extractAppliesOnTableName(final ImmutableList<ViewHeaderPropertiesProvider> providers)
+	{
+		final ImmutableSet<String> tableNames = providers.stream()
+				.map(ViewHeaderPropertiesProvider::getAppliesOnlyToTableName)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+		if (tableNames.isEmpty())
+		{
+			return null;
+		}
+		else if (tableNames.size() == 1)
+		{
+			return tableNames.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("Generic providers and providers for same table can be groupped: " + providers);
+		}
+	}
+
 	@Override
-	public ViewHeaderProperties computeHeaderProperties(@NonNull final DefaultView view)
+	public String getAppliesOnlyToTableName()
+	{
+		return appliesOnTableName;
+	}
+
+	@Override
+	public ViewHeaderProperties computeHeaderProperties(@NonNull final IView view)
 	{
 		ViewHeaderProperties result = ViewHeaderProperties.EMPTY;
 
@@ -68,5 +102,4 @@ public class CompositeViewHeaderPropertiesProvider implements ViewHeaderProperti
 
 		return result;
 	}
-
 }
