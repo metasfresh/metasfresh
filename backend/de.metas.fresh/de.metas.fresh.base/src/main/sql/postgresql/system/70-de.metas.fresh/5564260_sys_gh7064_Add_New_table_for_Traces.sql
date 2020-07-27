@@ -1687,4 +1687,77 @@ UPDATE AD_Table SET AD_Window_ID=540945,Updated=TO_TIMESTAMP('2020-07-27 13:22:2
 
 
 
+-- 2020-07-27T10:54:07.399Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2020-07-27 13:54:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=542830
+;
+
+-- 2020-07-27T10:54:10.715Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsTranslationTab='Y',Updated=TO_TIMESTAMP('2020-07-27 13:54:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=542830
+;
+
+-- 2020-07-27T11:06:02.548Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsTranslationTab='N',Updated=TO_TIMESTAMP('2020-07-27 14:06:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=542830
+;
+
+-- 2020-07-27T11:07:31.916Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ CREATE TABLE public.M_Allergen_Trace_Trl (AD_Client_ID NUMERIC(10) NOT NULL, AD_Language VARCHAR(6) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Description VARCHAR(255), IsActive CHAR(1) DEFAULT 'Y' CHECK (IsActive IN ('Y','N')) NOT NULL, IsTranslated CHAR(1) DEFAULT 'N' CHECK (IsTranslated IN ('Y','N')) NOT NULL, M_Allergen_Trace_ID NUMERIC(10) NOT NULL, Name VARCHAR(60) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT M_Allergen_Trace_Trl_Key PRIMARY KEY (AD_Language, M_Allergen_Trace_ID), CONSTRAINT ADLangu_MAllergenTraceTrl FOREIGN KEY (AD_Language) REFERENCES public.AD_Language DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MAllergenTrace_MAllergenTraceTrl FOREIGN KEY (M_Allergen_Trace_ID) REFERENCES public.M_Allergen_Trace DEFERRABLE INITIALLY DEFERRED)
+;
+
+
+-- 2020-07-27T13:14:55.560Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET TabLevel=1,Updated=TO_TIMESTAMP('2020-07-27 16:14:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=542829
+;
+
+-- 2020-07-27T13:19:59.700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-07-27 16:19:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=571058
+;
+
+-- 2020-07-27T13:20:05.759Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-07-27 16:20:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=571059
+;
+
+
+
+
+-- 2020-07-27T13:40:01.234Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-07-27 16:40:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578015 AND AD_Language='de_CH'
+;
+
+-- 2020-07-27T13:40:01.301Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578015,'de_CH') 
+;
+
+-- 2020-07-27T13:40:19.460Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='May contain', PrintName='May contain',Updated=TO_TIMESTAMP('2020-07-27 16:40:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578015 AND AD_Language='en_US'
+;
+
+-- 2020-07-27T13:40:19.461Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578015,'en_US') 
+;
+
+-- 2020-07-27T13:40:27.982Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-07-27 16:40:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578015 AND AD_Language='de_DE'
+;
+
+-- 2020-07-27T13:40:27.983Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578015,'de_DE') 
+;
+
+-- 2020-07-27T13:40:27.990Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578015,'de_DE') 
+;
 
