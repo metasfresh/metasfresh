@@ -22,11 +22,7 @@ $$
 select ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
-<<<<<<< HEAD
         COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
-=======
-        COALESCE(qr_iban, iban, '') || E'\n' || -- Account
->>>>>>> cf2886107ce98064f290235ae726ee75d5ce0455
         'K' || E'\n' || -- CR - AdressTyp = Combined address
         orgbp.name || E'\n' || --CR – Name
         orgl.address1 || E'\n' || --CR –Street and building number of P.O. Box
