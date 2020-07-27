@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -28,6 +29,7 @@ import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LeastRecentTransactionStrategy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
@@ -66,6 +68,7 @@ public class DD_Order
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
@@ -85,30 +88,33 @@ public class DD_Order
 
 	
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder) {
+	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
+	{
 
 		final List<I_DD_OrderLine> ddOrderLines = ddOrderDAO.retrieveLines(ddOrder);
 
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ddOrder.getAD_Org_ID()));
-		final LocalDate movementDate = TimeUtil.asLocalDate(ddOrder.getPickDate(), timeZone);
-		
-		 final HUsForInventoryStrategy strategy = LeastRecentTransactionStrategy.builder()
-		 .movementDate(movementDate)
-		 .build();
+		final LocalDate movementDate = TimeUtil.asLocalDate(ddOrder.getDatePromised(), timeZone);
 
-			final Iterator<HuForInventoryLine> huLines = strategy.streamHus().iterator();
+		final HUsForInventoryStrategy strategy = LeastRecentTransactionStrategy.builder()
+				.movementDate(movementDate)
+				.huForInventoryLineFactory(huForInventoryLineFactory)
+				.build();
 
-			final List<I_M_HU> hus = new ArrayList<I_M_HU>();
+		final Iterator<HuForInventoryLine> huLines = strategy.streamHus().iterator();
 
-			while (huLines.hasNext()) {
-				final HuForInventoryLine hu = huLines.next();
-				final HuId huID = hu.getHuId();
+		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
 
-				hus.add(handlingUnitsDAO.getById(huID));
-			}
-		 
-		 processDDOrderLines(ddOrderLines, hus);
-		 
+		while (huLines.hasNext())
+		{
+			final HuForInventoryLine hu = huLines.next();
+			final HuId huID = hu.getHuId();
+
+			hus.add(handlingUnitsDAO.getById(huID));
+		}
+
+		processDDOrderLines(ddOrderLines, hus);
+
 	}
 	
 
