@@ -7,6 +7,29 @@ $BODY$
 DECLARE
     rowcount      integer;
 BEGIN
+	--
+	-- Remove duplicate enqueued documents
+	WITH duplicates AS (
+	    SELECT r.tablename,
+	           r.record_id,
+	           count(1)   AS count,
+	           min(r.oid) AS min_oid
+	    FROM "de_metas_acct".accounting_docs_to_repost r
+	    GROUP BY r.tablename,
+	             r.record_id
+	    HAVING count(1) > 1
+	)
+	DELETE
+	FROM "de_metas_acct".accounting_docs_to_repost r
+	WHERE exists(SELECT 1
+	             FROM duplicates
+	             WHERE r.tablename = duplicates.tablename
+	               AND r.record_id = duplicates.record_id
+	               AND r.oid <> duplicates.min_oid)
+	;
+
+	--
+	-- Re-order enqueued documents by DateAcct (and some other fields)
 	WITH docs AS (
 	SELECT t.*,
 	       row_number() OVER (
