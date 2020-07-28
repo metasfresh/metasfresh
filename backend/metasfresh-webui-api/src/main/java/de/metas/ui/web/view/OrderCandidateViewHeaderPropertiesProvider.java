@@ -75,7 +75,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 						.build(),
 				ViewHeaderProperty.builder()
 						.caption(TranslatableStrings.constant("||"))
-						.value(" ")
+						.value("")
 						.build(),
 				ViewHeaderProperty.builder()
 						.caption(TranslatableStrings.constant("Net (Ohne Freigabe)"))
@@ -91,7 +91,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 						.build(),
 				ViewHeaderProperty.builder()
 						.caption(TranslatableStrings.constant("||"))
-						.value(" ")
+						.value("")
 						.build()
 		);
 	}
