@@ -1,29 +1,8 @@
 package de.metas.ui.web.view;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.common.util.CoalesceUtil;
@@ -60,6 +39,24 @@ import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -85,7 +82,6 @@ import lombok.ToString;
 
 /**
  * Default {@link IView} implementation.
- *
  */
 public final class DefaultView implements IEditableView
 {
@@ -116,8 +112,7 @@ public final class DefaultView implements IEditableView
 	@Getter
 	private final ViewProfileId profileId;
 
-	private final ViewHeaderPropertiesProvider headerPropertiesProvider;
-	private Optional<ViewHeaderProperties> headerProperties;
+	private ExtendedMemorizingSupplier<ViewHeaderProperties> headerProperties;
 
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
@@ -130,10 +125,14 @@ public final class DefaultView implements IEditableView
 	//
 	// Filters
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	/** Sticky filters (i.e. active filters which cannot be changed) */
+	/**
+	 * Sticky filters (i.e. active filters which cannot be changed)
+	 */
 	@Getter
 	private final DocumentFilterList stickyFilters;
-	/** Regular filters */
+	/**
+	 * Regular filters
+	 */
 	@Getter
 	private final DocumentFilterList filters;
 	private transient DocumentFilterList _allFilters; // lazy
@@ -163,7 +162,8 @@ public final class DefaultView implements IEditableView
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		profileId = builder.getProfileId();
-		headerPropertiesProvider = CoalesceUtil.coalesce(builder.headerPropertiesProvider, NullViewHeaderPropertiesProvider.instance);
+		final ViewHeaderPropertiesProvider propertiesProvider = CoalesceUtil.coalesce(builder.headerPropertiesProvider, NullViewHeaderPropertiesProvider.instance);
+		headerProperties = ExtendedMemorizingSupplier.of(() -> propertiesProvider.computeHeaderProperties(this));
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
@@ -192,7 +192,7 @@ public final class DefaultView implements IEditableView
 
 		//
 		// Cache
-		cache_rowsById = CCache.<DocumentId, IViewRow> builder()
+		cache_rowsById = CCache.<DocumentId, IViewRow>builder()
 				.cacheMapType(CacheMapType.LRU)
 				.cacheName("ViewRows#" + viewId)
 				.additionalTableNameToResetFor(viewDataRepository.getTableName())
@@ -231,12 +231,6 @@ public final class DefaultView implements IEditableView
 	@Override
 	public ViewHeaderProperties getHeaderProperties()
 	{
-		Optional<ViewHeaderProperties> headerProperties = this.headerProperties;
-		if (headerProperties == null)
-		{
-			headerProperties = this.headerProperties = Optional.ofNullable(headerPropertiesProvider.computeHeaderProperties(this));
-		}
-
 		return headerProperties.get();
 	}
 
@@ -310,12 +304,14 @@ public final class DefaultView implements IEditableView
 	public void invalidateAll()
 	{
 		cache_rowsById.reset();
+		headerProperties.forget();
 	}
 
 	@Override
 	public void invalidateRowById(final DocumentId rowId)
 	{
 		cache_rowsById.remove(rowId);
+		headerProperties.forget();
 	}
 
 	@Override
@@ -508,7 +504,7 @@ public final class DefaultView implements IEditableView
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
 
-			return IteratorUtils.<IViewRow> newPagedIterator()
+			return IteratorUtils.<IViewRow>newPagedIterator()
 					.firstRow(0)
 					.maxRows(1000) // MAX rows to fetch
 					.pageSize(100) // fetch 100items/chunk
