@@ -312,10 +312,12 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 						line.getCurrencyId(),
 						line.getAmtSourceDr(),
 						line.getAmtSourceCr());
-				if (factLine != null) {
-					factLine.setCurrencyConversionCtx(currencyConversionCtx);
-					factLine.convert();					
+				if (factLine == null) {
+					continue;
 				}
+				
+				factLine.setCurrencyConversionCtx(currencyConversionCtx);
+				factLine.convert();					
 			}    // for all lines
 		}
 		else
