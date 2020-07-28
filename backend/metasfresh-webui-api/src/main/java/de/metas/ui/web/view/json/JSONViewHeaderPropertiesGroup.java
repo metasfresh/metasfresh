@@ -23,41 +23,41 @@
 package de.metas.ui.web.view.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.view.ViewHeaderProperties;
+import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
 import lombok.NonNull;
 
 import java.util.List;
 
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JSONViewHeaderProperties
+public class JSONViewHeaderPropertiesGroup
 {
-	public static JSONViewHeaderProperties of(@NonNull final ViewHeaderProperties properties, final String adLanguage)
+	@JsonProperty("entries")
+	private ImmutableList<JSONViewHeaderProperty> entries;
+
+	private static final JSONViewHeaderPropertiesGroup EMPTY = new JSONViewHeaderPropertiesGroup(ImmutableList.of());
+
+	public static JSONViewHeaderPropertiesGroup of(@NonNull final ViewHeaderPropertiesGroup group, final String adLanguage)
 	{
-		if (properties.getGroups().isEmpty())
+		if (group.getEntries().isEmpty())
 		{
 			return EMPTY;
 		}
 
-		final ImmutableList<JSONViewHeaderPropertiesGroup> jsonEntries = properties.getGroups()
+		final ImmutableList<JSONViewHeaderProperty> jsonEntries = group.getEntries()
 				.stream()
-				.map(group -> JSONViewHeaderPropertiesGroup.of(group, adLanguage))
+				.map(entry -> JSONViewHeaderProperty.of(entry, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 
-		return new JSONViewHeaderProperties(jsonEntries);
+		return new JSONViewHeaderPropertiesGroup(jsonEntries);
 	}
 
-	private static JSONViewHeaderProperties EMPTY = new JSONViewHeaderProperties(ImmutableList.of());
-
-	@JsonProperty("groups")
-	private ImmutableList<JSONViewHeaderPropertiesGroup> groups;
-
-	private JSONViewHeaderProperties(
-			@JsonProperty("groups") final List<JSONViewHeaderPropertiesGroup> groups)
+	private JSONViewHeaderPropertiesGroup(
+			@JsonProperty("entries") final List<JSONViewHeaderProperty> entries)
 	{
-		this.groups = groups != null ? ImmutableList.copyOf(groups) : ImmutableList.of();
+		this.entries = entries != null ? ImmutableList.copyOf(entries) : ImmutableList.of();
 	}
-
 }

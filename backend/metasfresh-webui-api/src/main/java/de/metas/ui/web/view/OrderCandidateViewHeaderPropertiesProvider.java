@@ -43,8 +43,8 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 	public @NonNull ViewHeaderProperties computeHeaderProperties(@NonNull final IView view)
 	{
 		return ViewHeaderProperties.builder()
-				.entries(
-						ImmutableList.<ViewHeaderProperty>builder()
+				.groups(
+						ImmutableList.<ViewHeaderPropertiesGroup>builder()
 								.addAll(computeDummyDataForTesting())
 								.addAll(computeRealData())
 								.build()
@@ -52,48 +52,74 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 				.build();
 	}
 
-	private List<ViewHeaderProperty> computeRealData()
+	private List<ViewHeaderPropertiesGroup> computeRealData()
 	{
 		return ImmutableList.of();
 	}
 
 	@NonNull
-	private List<ViewHeaderProperty> computeDummyDataForTesting()
+	private List<ViewHeaderPropertiesGroup> computeDummyDataForTesting()
 	{
 		return ImmutableList.of(
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("Net (Approved for Invoicing)"))
-						.value("123.456 EUR")
+				ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Net (Approved for Invoicing)"))
+								.value("123.456 EUR")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Trading Unit"))
+								.value("100.456 EUR")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Not Trading Unit"))
+								.value("23 EUR")
+								.build())
 						.build(),
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("Trading Unit"))
-						.value("100.456 EUR")
+				ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Net (Ohne Freigabe)"))
+								.value("987.654 EUR")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Trading Unit"))
+								.value("987 EUR")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Not Trading Unit"))
+								.value("0.654 EUR")
+								.build())
 						.build(),
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("Not Trading Unit"))
-						.value("23 EUR")
+
+				ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Net (Approved for Invoicing)"))
+								.value("123.456 CHF")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Trading Unit"))
+								.value("100.456 CHF")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Not Trading Unit"))
+								.value("23 CHF")
+								.build())
 						.build(),
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("||"))
-						.value("")
-						.build(),
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("Net (Ohne Freigabe)"))
-						.value("987.654 EUR")
-						.build(),
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("Trading Unit"))
-						.value("987 EUR")
-						.build(),
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("Not Trading Unit"))
-						.value("0.654 EUR")
-						.build(),
-				ViewHeaderProperty.builder()
-						.caption(TranslatableStrings.constant("||"))
-						.value("")
+
+				ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Net (Ohne Freigabe)"))
+								.value("987.654 CHF")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Trading Unit"))
+								.value("987 CHF")
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(TranslatableStrings.constant("Not Trading Unit"))
+								.value("0.654 CHF")
+								.build())
 						.build()
-		);
+				);
 	}
 
 }
