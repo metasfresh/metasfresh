@@ -35,6 +35,7 @@ public final class NullViewHeaderPropertiesProvider implements ViewHeaderPropert
 	@Override
 	public String getAppliesOnlyToTableName()
 	{
+		//noinspection ConstantConditions
 		throw null;
 	}
 

@@ -191,6 +191,7 @@ public class SqlViewFactory implements IViewFactory
 		return viewBuilder.build();
 	}
 
+	@Nullable
 	private DocumentFilter extractReferencedDocumentFilter(
 			@NonNull final WindowId targetWindowId,
 			@Nullable final DocumentPath referencedDocumentPath,

@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -62,6 +64,7 @@ public class CompositeViewHeaderPropertiesProvider implements ViewHeaderProperti
 		this.providers = providers;
 	}
 
+	@Nullable
 	private static String extractAppliesOnTableName(final ImmutableList<ViewHeaderPropertiesProvider> providers)
 	{
 		final ImmutableSet<String> tableNames = providers.stream()
@@ -90,11 +93,11 @@ public class CompositeViewHeaderPropertiesProvider implements ViewHeaderProperti
 	}
 
 	@Override
-	public ViewHeaderProperties computeHeaderProperties(@NonNull final IView view)
+	public @NonNull ViewHeaderProperties computeHeaderProperties(@NonNull final IView view)
 	{
 		ViewHeaderProperties result = ViewHeaderProperties.EMPTY;
 
-		for (ViewHeaderPropertiesProvider provider : providers)
+		for (final ViewHeaderPropertiesProvider provider : providers)
 		{
 			final ViewHeaderProperties properties = provider.computeHeaderProperties(view);
 			result = result.append(properties);

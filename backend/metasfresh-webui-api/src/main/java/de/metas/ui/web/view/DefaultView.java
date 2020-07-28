@@ -379,6 +379,7 @@ public final class DefaultView implements IEditableView
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
 	private ViewResultColumn extractViewResultColumnOrNull(
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,

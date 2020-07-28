@@ -42,9 +42,10 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class ViewHeaderPropertiesProviderMap
 {
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static ViewHeaderPropertiesProviderMap of(@NonNull final Optional<List<ViewHeaderPropertiesProvider>> optionalProviders)
 	{
-		return optionalProviders.map(providers -> of(providers))
+		return optionalProviders.map(ViewHeaderPropertiesProviderMap::of)
 				.orElse(ViewHeaderPropertiesProviderMap.EMPTY);
 	}
 
@@ -79,7 +80,7 @@ public class ViewHeaderPropertiesProviderMap
 				genericProviders.add(provider);
 
 				final Set<String> tableNames = ImmutableSet.copyOf(providersByTableName.keySet());
-				for (String tableName : tableNames)
+				for (final String tableName : tableNames)
 				{
 					providersByTableName.put(tableName, provider);
 				}
