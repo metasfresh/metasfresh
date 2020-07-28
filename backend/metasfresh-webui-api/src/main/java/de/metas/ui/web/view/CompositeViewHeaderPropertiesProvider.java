@@ -100,7 +100,7 @@ public class CompositeViewHeaderPropertiesProvider implements ViewHeaderProperti
 		for (final ViewHeaderPropertiesProvider provider : providers)
 		{
 			final ViewHeaderProperties properties = provider.computeHeaderProperties(view);
-			result = result.append(properties);
+			result = result.combine(properties);
 		}
 
 		return result;

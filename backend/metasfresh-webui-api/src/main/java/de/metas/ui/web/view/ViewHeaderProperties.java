@@ -1,7 +1,6 @@
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -17,12 +16,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +43,7 @@ public class ViewHeaderProperties
 		return entries.isEmpty();
 	}
 
-	public ViewHeaderProperties append(@NonNull final ViewHeaderProperties other)
+	public ViewHeaderProperties combine(@NonNull final ViewHeaderProperties other)
 	{
 		if (isEmpty())
 		{
@@ -57,7 +56,7 @@ public class ViewHeaderProperties
 		else
 		{
 			return ViewHeaderProperties.builder()
-					.entries(ImmutableList.<ViewHeaderProperty> builder()
+					.entries(ImmutableList.<ViewHeaderProperty>builder()
 							.addAll(this.entries)
 							.addAll(other.entries)
 							.build())
