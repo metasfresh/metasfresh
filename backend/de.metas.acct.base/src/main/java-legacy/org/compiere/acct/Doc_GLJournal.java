@@ -317,7 +317,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 				}
 				
 				factLine.setCurrencyConversionCtx(currencyConversionCtx);
-				factLine.convert();					
+				factLine.convert();
 			}    // for all lines
 		}
 		else
