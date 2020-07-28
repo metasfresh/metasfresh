@@ -22,17 +22,6 @@
 
 package de.metas.rest_api.shipping;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.Profiles;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.shipment.JsonCreateShipmentRequest;
-import de.metas.common.shipment.JsonCreateShipmentResponse;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.logging.LogManager;
-import de.metas.rest_api.shipping.info.GenerateShipmentsRequest;
-import de.metas.rest_api.utils.JsonErrors;
-import de.metas.util.web.MetasfreshRestAPIConstants;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -41,6 +30,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.Profiles;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.shipment.JsonCreateShipmentRequest;
+import de.metas.common.shipment.JsonCreateShipmentResponse;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.logging.LogManager;
+import de.metas.rest_api.utils.JsonErrors;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import lombok.NonNull;
 
 @RequestMapping(ShipmentRestController.ENDPOINT)
 @RestController
@@ -53,7 +55,7 @@ public class ShipmentRestController
 
 	private final de.metas.rest_api.shipping.ShipmentService shipmentService;
 
-	public ShipmentRestController(final de.metas.rest_api.shipping.ShipmentService shipmentService)
+	public ShipmentRestController(@NonNull final de.metas.rest_api.shipping.ShipmentService shipmentService)
 	{
 		this.shipmentService = shipmentService;
 	}
@@ -65,38 +67,32 @@ public class ShipmentRestController
 
 		try
 		{
-			shipmentService.validateRequest(request);
+			final InOutGenerateResult result = shipmentService.updateShipmentSchedulesAndGenerateShipments(request);
+
+			final ImmutableList<JsonMetasfreshId> shipmentIds = extractShipmentIds(result);
+			final JsonCreateShipmentResponse jsonCreateShipmentResponse = JsonCreateShipmentResponse
+					.builder()
+					.createdShipmentIdList(shipmentIds)
+					.build();
+
+			log.debug("*** createShipments: Execution done! Created shipment ids: {}", shipmentIds);
+
+			return ResponseEntity.ok(jsonCreateShipmentResponse);
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.badRequest()
-					.body(JsonErrors.ofThrowable(e, adLanguage));
+					.body(JsonErrors.ofThrowable(ex, adLanguage));
 		}
+	}
 
-		request.getCreateShipmentInfoList()
-				.stream()
-				.map(shipmentService::buildUpdateShipmentScheduleRequest)
-				.forEach(shipmentService::updateShipmentSchedule);
-
-		final GenerateShipmentsRequest generateShipmentsRequest = shipmentService.buildGenerateShipmentsRequest(request);
-
-		final InOutGenerateResult result = shipmentService.generateShipments(generateShipmentsRequest);
-
-		final ImmutableList<JsonMetasfreshId> shipmentIds = result
-				.getInOuts()
+	private static ImmutableList<JsonMetasfreshId> extractShipmentIds(final InOutGenerateResult result)
+	{
+		return result.getInOuts()
 				.stream()
 				.map(I_M_InOut::getM_InOut_ID)
 				.map(JsonMetasfreshId::of)
 				.collect(ImmutableList.toImmutableList());
-
-		final JsonCreateShipmentResponse jsonCreateShipmentResponse = JsonCreateShipmentResponse
-				.builder()
-				.createdShipmentIdList(shipmentIds)
-				.build();
-
-		log.debug("*** createShipments: Execution done! Created shipment ids: {}", shipmentIds);
-
-		return ResponseEntity.ok(jsonCreateShipmentResponse);
 	}
 }

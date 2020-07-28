@@ -23,7 +23,6 @@
 package de.metas.bpartner.service;
 
 import java.util.Collection;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +32,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import de.metas.util.Check;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;

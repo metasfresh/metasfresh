@@ -22,32 +22,53 @@
 
 package de.metas.handlingunits.impl;
 
-import de.metas.inout.model.I_M_InOut;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.List;
 
 import javax.annotation.Nullable;
-import java.util.List;
+
+import de.metas.inout.InOutId;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.shipping.model.ShipperTransportationId;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
 @Value
 @Builder
 public class CreatePackagesForInOutRequest
 {
 	@NonNull
-	I_M_InOut inOut;
+	@Getter(AccessLevel.NONE)
+	I_M_InOut shipment;
 
 	boolean processed;
 
 	@Nullable
 	List<String> trackingNumbers;
 
-	public static CreatePackagesForInOutRequest of(@NonNull final I_M_InOut inOut)
+	public static CreatePackagesForInOutRequest ofShipment(@NonNull final I_M_InOut shipment)
 	{
 		return CreatePackagesForInOutRequest.builder()
+				.shipment(shipment)
 				.processed(false)
 				.trackingNumbers(null)
-				.inOut(inOut)
 				.build();
+	}
+
+	public InOutId getShipmentId()
+	{
+		return InOutId.ofRepoId(shipment.getM_InOut_ID());
+	}
+
+	public ShipperTransportationId getShipperTransportationId()
+	{
+		return ShipperTransportationId.ofRepoIdOrNull(shipment.getM_ShipperTransportation_ID());
+	}
+
+	public void setShipperTransportationId(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		shipment.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
 	}
 }

@@ -20,23 +20,26 @@
  * #L%
  */
 
-package de.metas.rest_api.shipping.info;
+package de.metas.rest_api.shipping;
 
-import de.metas.common.rest_api.JsonAttributeInstance;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.order.DeliveryRule;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
-public class UpdateShipmentScheduleRequest
+class UpdateShipmentScheduleRequest
 {
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
@@ -45,7 +48,7 @@ public class UpdateShipmentScheduleRequest
 	ZonedDateTime deliveryDate;
 
 	@Nullable
-	BigDecimal qtyToDeliver;
+	BigDecimal qtyToDeliverInStockingUOM;
 
 	@Nullable
 	LocationBasicInfo bPartnerLocation;
@@ -54,41 +57,42 @@ public class UpdateShipmentScheduleRequest
 	String bPartnerCode;
 
 	@Nullable
-	List<JsonAttributeInstance> attributes;
+	List<CreateAttributeInstanceReq> attributes;
 
 	@Nullable
-	String deliveryRuleCode;
+	DeliveryRule deliveryRule;
 
 	@Builder
-	public UpdateShipmentScheduleRequest(@NonNull final ShipmentScheduleId shipmentScheduleId,
+	public UpdateShipmentScheduleRequest(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final ZonedDateTime deliveryDate,
-			@Nullable final BigDecimal qtyToDeliver,
+			@Nullable final BigDecimal qtyToDeliverInStockingUOM,
 			@Nullable final LocationBasicInfo bPartnerLocation,
 			@Nullable final String bPartnerCode,
-			@Nullable final String deliveryRuleCode,
-			@Nullable final List<JsonAttributeInstance> attributes)
+			@Nullable final DeliveryRule deliveryRule,
+			@Nullable final List<CreateAttributeInstanceReq> attributes)
 	{
 		if (Check.isNotBlank(bPartnerCode) && bPartnerLocation == null)
 		{
 			throw new AdempiereException("Invalid request! The bPartenr cannot be changed without changing the location!");
 		}
 
-		this.shipmentScheduleId = shipmentScheduleId;
-		this.deliveryDate = deliveryDate;
-		this.qtyToDeliver = qtyToDeliver;
-		this.bPartnerLocation = bPartnerLocation;
-		this.bPartnerCode = bPartnerCode;
-		this.attributes = attributes;
-		this.deliveryRuleCode = deliveryRuleCode;
-	}
-
-	public boolean isEmptyRequest()
-	{
-		return deliveryDate == null
-				&& qtyToDeliver == null
+		if (deliveryDate == null
+				&& qtyToDeliverInStockingUOM == null
 				&& bPartnerLocation == null
 				&& Check.isBlank(bPartnerCode)
 				&& Check.isEmpty(attributes)
-				&& Check.isBlank(deliveryRuleCode);
+				&& deliveryRule == null)
+		{
+			throw new AdempiereException("Empty request");
+		}
+
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.deliveryDate = deliveryDate;
+		this.qtyToDeliverInStockingUOM = qtyToDeliverInStockingUOM;
+		this.bPartnerLocation = bPartnerLocation;
+		this.bPartnerCode = bPartnerCode;
+		this.attributes = attributes;
+		this.deliveryRule = deliveryRule;
 	}
 }

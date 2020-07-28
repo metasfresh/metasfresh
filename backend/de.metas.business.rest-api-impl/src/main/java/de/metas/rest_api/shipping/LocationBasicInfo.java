@@ -20,27 +20,31 @@
  * #L%
  */
 
-package de.metas.rest_api.shipping.info;
+package de.metas.rest_api.shipping;
 
-import com.google.common.base.Joiner;
-import de.metas.common.shipment.JsonLocation;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
+import com.google.common.base.Joiner;
+
+import de.metas.common.shipment.JsonLocation;
+import de.metas.location.CountryCode;
+import de.metas.location.ICountryCodeFactory;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
 @Builder
-public class LocationBasicInfo
+class LocationBasicInfo
 {
 	@NonNull
-	String countryCode;
+	CountryCode countryCode;
 
 	@NonNull
 	String city;
@@ -52,11 +56,21 @@ public class LocationBasicInfo
 	String streetAndNumber;
 
 	@NonNull
-	public static Optional<LocationBasicInfo> of(@NonNull final JsonLocation location)
+	public static Optional<LocationBasicInfo> ofNullable(
+			@Nullable final JsonLocation location,
+			@NonNull final ICountryCodeFactory countryCodeFactory)
+	{
+		return location != null ? of(location, countryCodeFactory) : Optional.empty();
+	}
+
+	@NonNull
+	public static Optional<LocationBasicInfo> of(
+			@NonNull final JsonLocation location,
+			@NonNull final ICountryCodeFactory countryCodeFactory)
 	{
 		if (Check.isBlank(location.getCountryCode())
 				|| Check.isBlank(location.getCity())
-		        || Check.isBlank(location.getZipCode()))
+				|| Check.isBlank(location.getZipCode()))
 		{
 			return Optional.empty();
 		}
@@ -70,7 +84,7 @@ public class LocationBasicInfo
 				: null;
 
 		return Optional.of(LocationBasicInfo.builder()
-				.countryCode(location.getCountryCode())
+				.countryCode(countryCodeFactory.getCountryCodeByAlpha2(location.getCountryCode()))
 				.city(location.getCity())
 				.postalCode(location.getZipCode())
 				.streetAndNumber(streetAndHouseNo)
