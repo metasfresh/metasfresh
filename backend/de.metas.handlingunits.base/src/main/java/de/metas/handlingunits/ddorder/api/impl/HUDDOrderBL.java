@@ -264,7 +264,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.allocateHUs(hus)
 				.setDoDirectMovements(true)
 				.setSkipCompletingDDOrder(true)
-				.processWithinOwnTrx();
+				.process();
 	}
 	
 	@Override
