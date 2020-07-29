@@ -404,17 +404,21 @@ export default function viewHandler(state = initialState, action) {
       const type = getViewType(isModal);
       const view = getLocalView(state, id, isModal);
 
-      return {
-        ...state,
-        [`${type}`]: {
-          ...state[`${type}`],
-          [`${id}`]: {
-            ...view,
-            isShowIncluded: !!showIncludedView,
-            hasShowIncluded: !!showIncludedView,
+      if (view.windowId) {
+        return {
+          ...state,
+          [`${type}`]: {
+            ...state[`${type}`],
+            [`${id}`]: {
+              ...view,
+              isShowIncluded: !!showIncludedView,
+              hasShowIncluded: !!showIncludedView,
+            },
           },
-        },
-      };
+        };
+      }
+
+      return state;
     }
 
     case DELETE_VIEW: {
@@ -422,7 +426,7 @@ export default function viewHandler(state = initialState, action) {
       const type = getViewType(isModal);
 
       if (id) {
-        delete state.views[id];
+        delete state[`${type}`][id];
 
         return state;
       } else {
