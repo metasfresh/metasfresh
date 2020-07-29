@@ -287,7 +287,7 @@ public class AddressBuilder
 			}
 			else if (token.equals("CO"))
 			{
-				String language = adLanguage == null ? Env.getAD_Language() : adLanguage;
+				String language = adLanguage == null ? Language.getBaseAD_Language() : adLanguage;
 				final String countryName = countriesRepo.getCountryNameById(countryId).translate(language);
 				if (!Check.isEmpty(countryName, true))
 				{
