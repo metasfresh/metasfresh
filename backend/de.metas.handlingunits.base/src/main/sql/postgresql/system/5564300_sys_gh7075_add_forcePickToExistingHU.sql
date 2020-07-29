@@ -68,3 +68,69 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 UPDATE AD_Message SET MsgText='Picking to VHUs is not allowed.',Updated=TO_TIMESTAMP('2020-07-29 09:43:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544992
 ;
 
+-- 2020-07-29T08:34:24.259Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Es wurde keine kommissionierte HU gefunden.',Updated=TO_TIMESTAMP('2020-07-29 11:34:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544991
+;
+
+-- 2020-07-29T08:34:32.048Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Es wurde keine kommissionierte HU gefunden.',Updated=TO_TIMESTAMP('2020-07-29 11:34:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544991
+;
+
+-- 2020-07-29T08:34:34.931Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Es wurde keine kommissionierte HU gefunden.',Updated=TO_TIMESTAMP('2020-07-29 11:34:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=544991
+;
+
+-- 2020-07-29T08:34:44.557Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Es wurde keine kommissionierte HU gefunden.',Updated=TO_TIMESTAMP('2020-07-29 11:34:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=544991
+;
+
+-- 2020-07-29T08:35:12.293Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Das Kommissionieren in virtuelle HUs ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:35:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544992
+;
+
+-- 2020-07-29T08:35:19.415Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Das Kommissionieren in virtuelle HUs ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:35:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544992
+;
+
+-- 2020-07-29T08:35:24.226Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Das Kommissionieren in virtuelle HUs ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:35:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=544992
+;
+
+-- 2020-07-29T08:35:34.514Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Picking toVHUs is not allowed.',Updated=TO_TIMESTAMP('2020-07-29 11:35:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544992
+;
+
+-- 2020-07-29T08:35:40.637Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Das Kommissionieren in virtuelle HUs ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:35:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=544992
+;
+
+-- 2020-07-29T08:35:52.453Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Das Kommissionieren in dieselbe HU für mehrere Aufträge ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:35:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544993
+;
+
+-- 2020-07-29T08:35:56.675Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Das Kommissionieren in dieselbe HU für mehrere Aufträge ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:35:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=544993
+;
+
+-- 2020-07-29T08:36:01.971Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Das Kommissionieren in dieselbe HU für mehrere Aufträge ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:36:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=544993
+;
+
+-- 2020-07-29T08:36:06.941Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Das Kommissionieren in dieselbe HU für mehrere Aufträge ist nicht erlaubt.',Updated=TO_TIMESTAMP('2020-07-29 11:36:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544993
+;
+
+
