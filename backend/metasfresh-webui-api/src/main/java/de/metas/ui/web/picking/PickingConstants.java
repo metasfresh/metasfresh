@@ -61,4 +61,8 @@ public final class PickingConstants
 	public static final AdMessageKey MSG_WEBUI_PICKING_DIVERGING_LOCATIONS = AdMessageKey.of("WEBUI_Picking_Diverging_Locations");
 	public static final AdMessageKey MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P = AdMessageKey.of("WEBUI_Picking_Too_Many_Packageables");
 	public static final AdMessageKey MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS = AdMessageKey.of("WEBUI_Picking_CannotPickIncludedRows");
+
+	public static final AdMessageKey MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND = AdMessageKey.of("WEBUI_Picking_NoPickedHuFound");
+	public static final AdMessageKey MSG_WEBUI_PICKING_TO_EXISTING_CUS_NOT_ALLOWED = AdMessageKey.of("WEBUI_Picking_PickingToExistingCUsNotAllowed");
+	public static final AdMessageKey MSG_WEBUI_PICKING_TO_THE_SAME_HU_FOR_MULTIPLE_ORDERS_NOT_ALLOWED = AdMessageKey.of("WEBUI_Picking_PickingToTheSameHUForMultipleOrders");
 }

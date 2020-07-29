@@ -25,10 +25,11 @@ package de.metas.ui.web.picking.pickingslot.process;
 import de.metas.handlingunits.HuId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 
 import java.util.Optional;
 
-public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
+public class WEBUI_Picking_ForcePickToExistingHU extends WEBUI_Picking_PickQtyToExistingHU
 		implements IProcessPrecondition
 {
 	@Override
@@ -43,22 +44,25 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 
 		if (!isForceDelivery())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(" Use 'WEBUI_Picking_PickQtyToNewHU' for non force shipping records!");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Use WEBUI_Picking_PickQtyToExistingHU for non force shipping cases!");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
-		final HuId packToHuId = createNewHuId();
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+
+		final HuId packToHuId = pickingSlotRow.getHuId();
+
+		validatePickingToHU();
 
 		forcePick(getQtyToPack(), packToHuId);
 
-		printPickingLabel(packToHuId);
+		invalidateView();
+		invalidateParentView();
 
-		invalidatePackablesView();
-		invalidatePickingSlotsView();
 		return MSG_OK;
 	}
 }
