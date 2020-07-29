@@ -35,6 +35,7 @@ import org.adempiere.mmovement.MovementLineId;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
+import org.eevolution.model.I_DD_Order;
 
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
@@ -77,6 +78,16 @@ public class MovementDAO implements IMovementDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Movement.class)
 				.addEqualsFilter(I_M_Movement.COLUMN_M_Inventory_ID, inventoryId);
+	}
+	
+	@Override
+	public List<I_M_Movement> retrieveMovementsForDDOrder(@NonNull final int ddOrderId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Movement.class)
+				.addEqualsFilter(I_M_Movement.COLUMN_DD_Order_ID, ddOrderId)
+				.create()
+				.list();
 	}
 
 	@Override

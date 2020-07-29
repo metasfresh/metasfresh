@@ -2,40 +2,21 @@ package de.metas.handlingunits.model.validator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_MovementLine;
+import org.adempiere.mmovement.api.IMovementDAO;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.api.IDDOrderMovementBuilder;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
-import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
-import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
-import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
-import de.metas.handlingunits.inventory.draftlinescreator.LeastRecentTransactionStrategy;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
 import de.metas.util.Services;
 
@@ -65,10 +46,9 @@ import de.metas.util.Services;
 public class DD_Order
 {
 
-	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
+	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class); 
+	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
+	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
@@ -91,42 +71,15 @@ public class DD_Order
 	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
 	{
 
-		final List<I_DD_OrderLine> ddOrderLines = ddOrderDAO.retrieveLines(ddOrder);
-
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ddOrder.getAD_Org_ID()));
-		final LocalDate movementDate = TimeUtil.asLocalDate(ddOrder.getDatePromised(), timeZone);
-
-		final HUsForInventoryStrategy strategy = LeastRecentTransactionStrategy.builder()
-				.movementDate(movementDate)
-				.huForInventoryLineFactory(huForInventoryLineFactory)
-				.build();
-
-		final Iterator<HuForInventoryLine> huLines = strategy.streamHus().iterator();
-
-		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
-
-		while (huLines.hasNext())
+		if (movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID()).size() > 0)
 		{
-			final HuForInventoryLine hu = huLines.next();
-			final HuId huID = hu.getHuId();
-
-			hus.add(handlingUnitsDAO.getById(huID));
+			return;
 		}
-
-		processDDOrderLines(ddOrderLines, hus);
+		
+		huDDOrderBL.processDDOrderLines(ddOrder);
 
 	}
 	
-
-	public void processDDOrderLines(final Collection<I_DD_OrderLine> ddOrderLines, final List<I_M_HU> hus)
-	{
-		final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-		huDDOrderBL.createMovements()
-				.setDDOrderLines(ddOrderLines)
-				.allocateHUs(hus)
-				.processWithinOwnTrx();
-	}
-
 	
 	private List<Integer> retrieveLineToQuarantineWarehouseIds(final I_DD_Order ddOrder)
 	{

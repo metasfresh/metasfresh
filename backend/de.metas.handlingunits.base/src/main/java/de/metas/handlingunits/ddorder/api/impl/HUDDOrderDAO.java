@@ -11,18 +11,24 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_Order;
 
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_DD_OrderLine_HU_Candidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -190,5 +196,37 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huId)
 				.create()
 				.anyMatch();
+	}
+	
+	/**
+	 * Retrieves available Hus for given locator and product
+	 * 
+	 * @param ddOrderLine
+	 * @return
+	 */
+	@Override
+	public List<I_M_HU> retrievePossibleAvailableHus(@NonNull final I_DD_OrderLine ddOrderLine)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
+		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ddOrderLine.getM_Locator().getM_Warehouse_ID());
+		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
+		final int locatorId = ddOrderLine.getM_Locator_ID();
+		huQueryBuilder.addOnlyInLocatorId(locatorId);
+
+		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+
+		// Order by
+		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
+				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
+				.addColumn(I_M_HU.COLUMN_Created)
+				.createQueryOrderBy();
+
+		return huQueryBuilder.createQuery()
+				.setOrderBy(queryOrderBy)
+				.list();
 	}
 }
