@@ -1,11 +1,9 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -22,10 +20,8 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -82,11 +78,6 @@ public class ShipmentScheduleWithHUTests
 	@BeforeEach
 	public void init()
 	{
-		AdempiereTestHelper.get().init();
-
-		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
-
 		this.testSupport = new LUTUProducerDestinationTestSupport();
 		contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
 
