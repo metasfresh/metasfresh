@@ -31,6 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Warehouse;
@@ -72,8 +73,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = BPartnerLocationInfoRepository.get();
-	private final ShipperTransportationRepository shipperTransportationRepository = ShipperTransportationRepository.get();
+	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
+	private final ShipperTransportationRepository shipperTransportationRepository = SpringContextHolder.instance.getBean(ShipperTransportationRepository.class);
 
 	@Override
 	public List<I_M_Package> addHUsToShipperTransportation(final ShipperTransportationId shipperTransportationId, final Collection<I_M_HU> hus)

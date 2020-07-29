@@ -5,8 +5,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Repository;
 
@@ -36,15 +34,6 @@ import org.springframework.stereotype.Repository;
 public class BPartnerLocationInfoRepository
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	public static BPartnerLocationInfoRepository get()
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return new BPartnerLocationInfoRepository();
-		}
-		return SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
-	}
 
 	public BPartnerLocationInfo getByBPartnerLocationId(@NonNull final BPartnerLocationId bplocationId)
 	{

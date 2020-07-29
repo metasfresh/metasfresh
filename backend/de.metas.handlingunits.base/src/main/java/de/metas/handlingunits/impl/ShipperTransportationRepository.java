@@ -25,8 +25,6 @@ package de.metas.handlingunits.impl;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -36,15 +34,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class ShipperTransportationRepository
 {
-	public static ShipperTransportationRepository get()
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return new ShipperTransportationRepository();
-		}
-		return SpringContextHolder.instance.getBean(ShipperTransportationRepository.class);
-	}
-
 	public ShipperTransportationId create(@NonNull final CreateShipperTransportationRequest request)
 	{
 		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
