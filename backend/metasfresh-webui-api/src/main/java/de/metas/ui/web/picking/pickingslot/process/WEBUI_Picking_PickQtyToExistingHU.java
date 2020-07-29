@@ -1,6 +1,7 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -141,32 +142,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TO_EXISTING_CUS_NOT_ALLOWED));
 		}
 
-		final Set<ShipmentScheduleId> shipmentScheduleIds = getPickingCandidateService().getScheduleIdsByHuId(pickingSlotRow.getHuId());
-
-		if (shipmentScheduleIds.isEmpty())
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND));
-		}
-
-		final ImmutableSet<OrderId> orderIds = getShipmentSchedulePA().getByIds(shipmentScheduleIds)
-				.values()
-				.stream()
-				.map(I_M_ShipmentSchedule::getC_Order_ID)
-				.map(OrderId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (orderIds.isEmpty())
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND));
-		}
-
-		if (orderIds.size() > 1)
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TO_THE_SAME_HU_FOR_MULTIPLE_ORDERS_NOT_ALLOWED));
-		}
-
-		final OrderId orderIdOfThePickedHU = orderIds.asList().asList().get(0);
+		final OrderId orderIdOfThePickedHU = extractCorrespondingOrderId(pickingSlotRow.getHuId());
 		final OrderId orderIdOfTheCurrentSchedule = OrderId.ofRepoIdOrNull(getCurrentShipmentSchedule().getC_Order_ID());
 
 		if (!orderIdOfThePickedHU.equals(orderIdOfTheCurrentSchedule))
@@ -175,6 +151,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		}
 	}
 
+	@NonNull
 	protected Optional<ProcessPreconditionsResolution> checkValidSelection()
 	{
 		if (getParentViewRowIdsSelection() == null)
@@ -200,5 +177,36 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		}
 
 		return Optional.empty();
+	}
+
+	@NonNull
+	private OrderId extractCorrespondingOrderId(@NonNull final HuId huId)
+	{
+		final Set<ShipmentScheduleId> shipmentScheduleIds = getPickingCandidateService().getScheduleIdsByHuId(huId);
+
+		if (shipmentScheduleIds.isEmpty())
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND));
+		}
+
+		final ImmutableSet<OrderId> orderIds = getShipmentSchedulePA().getByIds(shipmentScheduleIds)
+				.values()
+				.stream()
+				.map(I_M_ShipmentSchedule::getC_Order_ID)
+				.map(OrderId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (orderIds.isEmpty())
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND));
+		}
+
+		if (orderIds.size() > 1)
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TO_THE_SAME_HU_FOR_MULTIPLE_ORDERS_NOT_ALLOWED));
+		}
+
+		return orderIds.asList().get(0);
 	}
 }

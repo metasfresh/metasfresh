@@ -33,6 +33,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
@@ -52,6 +53,9 @@ public class CreateVirtualInventoryWithQtyReq
 
 	@NonNull
 	Quantity qty;
+
+	@NonNull
+	ZonedDateTime movementDate;
 
 	@Nullable
 	AttributeSetInstanceId attributeSetInstanceId;

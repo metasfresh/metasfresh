@@ -23,7 +23,6 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.time.SystemTime;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -216,7 +215,7 @@ public class InventoryService
 				.builder()
 				.orgId(req.getOrgId())
 				.docTypeId(getVirtualInventoryDocTypeId(req.getClientId(), req.getOrgId()))
-				.movementDate(SystemTime.asZonedDateTime())
+				.movementDate(req.getMovementDate())
 				.warehouseId(req.getWarehouseId())
 				.build();
 
@@ -226,7 +225,7 @@ public class InventoryService
 				.builder()
 				.inventoryId(inventoryId)
 				.productId(req.getProductId())
-				.qtyBooked(Quantity.zero(req.getQty().getUOM()))
+				.qtyBooked(req.getQty().toZero())
 				.qtyCount(req.getQty())
 				.attributeSetId(req.getAttributeSetInstanceId())
 				.locatorId(locatorId)

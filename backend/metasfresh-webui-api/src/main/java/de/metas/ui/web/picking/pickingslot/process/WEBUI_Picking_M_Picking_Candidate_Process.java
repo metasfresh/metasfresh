@@ -27,7 +27,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -166,6 +165,6 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 
 		final I_M_HU hu = handlingUnitsBL.getById(pickingSlotRowOrHU.getHuId());
 
-		return handlingUnitsBL.getStorageFactory().streamHUProductStorages(hu).allMatch(IProductStorage::isEmpty);
+		return handlingUnitsBL.isEmptyStorage(hu);
 	}
 }

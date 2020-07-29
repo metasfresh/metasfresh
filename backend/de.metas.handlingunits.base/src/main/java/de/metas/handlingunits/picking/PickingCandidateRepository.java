@@ -606,8 +606,6 @@ public class PickingCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
-				.list()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
+				.listImmutable(I_M_Picking_Candidate.class);
 	}
 }

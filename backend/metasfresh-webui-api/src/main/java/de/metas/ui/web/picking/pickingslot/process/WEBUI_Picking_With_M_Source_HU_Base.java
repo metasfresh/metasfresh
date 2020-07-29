@@ -25,6 +25,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -228,6 +229,7 @@ import java.util.List;
 				.warehouseId(warehouseId)
 				.productId(productId)
 				.qty(qtyToBeAdded)
+				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 
