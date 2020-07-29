@@ -50,6 +50,7 @@ import lombok.Value;
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 
+	private static final String MSG_NoHU_for_product = "de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product";
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL .class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -226,16 +227,16 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			final List<I_M_HU> hus = huDDOrderDAO.retrievePossibleAvailableHus(InterfaceWrapperHelper.create(ddOrderLine, de.metas.handlingunits.model.I_DD_OrderLine.class));
 			if (hus.isEmpty())
 			{
-				throw new HUException("No Hu was found for our product"
-						+ "\n @M_Product_ID@: " + ddOrderLine.getM_Product()
-						+ "\n warehouse: " + ddOrderLine.getM_Locator().getM_Warehouse()
-						+ "\n Locator: " + ddOrderLine.getM_Locator());
+				throw HUException.ofAD_Message(MSG_NoHU_for_product)
+						.appendParametersToMessage()
+						.setParameter("\\n @M_Product_ID@:", ddOrderLine.getM_Product())
+						.setParameter("\\n @M_Warehouse_ID@:", ddOrderLine.getM_Locator().getM_Warehouse())
+						.setParameter("\\n @M_Locator_ID@:", ddOrderLine.getM_Locator());
 			}
 			processDDOrderLine(ddOrderLine, hus);
 		}
 
 	}
-
 
 	private void processDDOrderLine(@NonNull final I_DD_OrderLine ddOrderLine, @NonNull final List<I_M_HU> hus)
 	{
