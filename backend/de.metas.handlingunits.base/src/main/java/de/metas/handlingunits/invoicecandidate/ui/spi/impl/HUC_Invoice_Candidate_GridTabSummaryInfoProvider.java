@@ -57,6 +57,6 @@ public class HUC_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTa
 
 	public final InvoiceCandidatesAmtSelectionSummary getInvoiceCandidatesSelectionSummary(final String icWhereClause)
 	{
-		return invoiceCandBL.calculateSummary(icWhereClause);
+		return invoiceCandBL.calculateAmtSelectionSummary(icWhereClause);
 	}
 }

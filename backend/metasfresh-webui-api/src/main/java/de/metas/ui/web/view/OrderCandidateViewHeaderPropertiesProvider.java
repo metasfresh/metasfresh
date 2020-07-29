@@ -74,7 +74,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 
 		final SqlViewRowsWhereClause sqlWhereClause = view.getSqlWhereClause(DocumentIdsSelection.ALL, SqlOptions.usingTableName(I_C_Invoice_Candidate.Table_Name));
 		final SqlAndParams sqlAndParams = SqlAndParams.of(sqlWhereClause.toSqlString());
-		final InvoiceCandidatesAmtSelectionSummary summary = invoiceCandBL.calculateSummary(sqlAndParams.getSql());
+		final InvoiceCandidatesAmtSelectionSummary summary = invoiceCandBL.calculateAmtSelectionSummary(sqlAndParams.getSql());
 
 		return toViewHeaderProperties(summary);
 	}

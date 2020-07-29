@@ -415,5 +415,5 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	I_C_Invoice voidAndRecreateInvoice(org.compiere.model.I_C_Invoice invoice);
 
-	InvoiceCandidatesAmtSelectionSummary calculateSummary(@Nullable String extraWhereClause);
+	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
 }

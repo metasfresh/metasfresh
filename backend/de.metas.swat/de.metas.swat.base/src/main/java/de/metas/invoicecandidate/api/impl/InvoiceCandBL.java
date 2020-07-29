@@ -2310,7 +2310,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
 	@Override
-	public InvoiceCandidatesAmtSelectionSummary calculateSummary(@Nullable final String extraWhereClause)
+	public InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable final String extraWhereClause)
 	{
 		return new InvoiceCandidatesAmtSelectionSummaryCommand(extraWhereClause).execute();
 	}
