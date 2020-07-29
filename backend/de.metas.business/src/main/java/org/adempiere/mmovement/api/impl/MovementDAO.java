@@ -81,7 +81,7 @@ public class MovementDAO implements IMovementDAO
 	}
 	
 	@Override
-	public List<I_M_Movement> retrieveMovementsForDDOrder(@NonNull final int ddOrderId)
+	public List<I_M_Movement> retrieveMovementsForDDOrder(final int ddOrderId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Movement.class)

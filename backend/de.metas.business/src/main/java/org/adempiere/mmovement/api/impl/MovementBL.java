@@ -139,6 +139,6 @@ public class MovementBL implements IMovementBL
 	public void voidMovement(final I_M_Movement movement)
 	{
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-			docActionBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+			docActionBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Reversed);
 	}
 }

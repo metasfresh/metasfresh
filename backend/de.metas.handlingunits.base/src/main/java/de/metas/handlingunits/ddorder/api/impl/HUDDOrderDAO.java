@@ -27,6 +27,7 @@ import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_DD_OrderLine_HU_Candidate;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -219,6 +220,8 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
 		final int locatorId = ddOrderLine.getM_Locator_ID();
 		huQueryBuilder.addOnlyInLocatorId(locatorId);
+		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
+		huQueryBuilder.addOnlyWithProductId(productId);
 
 		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
 

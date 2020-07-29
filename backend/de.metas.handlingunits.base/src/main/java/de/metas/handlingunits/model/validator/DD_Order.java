@@ -71,7 +71,7 @@ public class DD_Order
 
 	}
 	
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	public void DD_Order_voidMovements(final I_DD_Order ddOrder)
 	{
 		// void if creating them automating is activated
@@ -90,12 +90,6 @@ public class DD_Order
 	{
 		if (huDDOrderDAO.isCreateMovementOnComplete())
 		{
-
-			if (movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID()).size() > 0)
-			{
-				return;
-			}
-			
 			huDDOrderBL.processDDOrderLines(ddOrder);
 		}
 	}
