@@ -342,11 +342,11 @@ public class DDOrderLinesAllocator
 		// Shall not happen, but ignore it for now.
 		if (ddOrderLinesToAllocate.isEmpty())
 		{
-			new HUException("No DD Order Lines where found for our product"
+			throw new HUException("No DD Order Lines where found for our product"
 					+ "\n @M_Product_ID@: " + Services.get(IProductBL.class).getProductValueAndName(huProductStorage.getProductId())
-					+ "\n HUProductStorage: " + huProductStorage)
-							.throwOrLogWarning(failIfCannotAllocate, logger);
-			return this;
+					+ "\n HUProductStorage: " + huProductStorage);
+//							.throwOrLogWarning(failIfCannotAllocate, logger);
+//			return this;
 		}
 
 		final I_M_HU hu = huProductStorage.getM_HU();

@@ -1,26 +1,12 @@
 package de.metas.handlingunits.ddorder.api.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.adempiere.gui.search.IHUPackingAwareBL;
-import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.ddorder.api.DDOrderLineCreateRequest;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
-import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
-import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
-import de.metas.handlingunits.inout.IHUInOutDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Function;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -32,16 +18,34 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.eevolution.api.DDOrderLineId;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_OrderLine;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.ddorder.api.DDOrderLineCreateRequest;
+import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
+import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
+import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public class HUDDOrderBL implements IHUDDOrderBL
 {
@@ -49,6 +53,8 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL .class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
+	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -208,5 +214,35 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	{
 		int bpartnerId;
 		int bpartnerLocationId;
+	}
+
+	@Override
+	public void processDDOrderLines(@NonNull final I_DD_Order ddOrder)
+	{
+		final List<I_DD_OrderLine> ddOrderLines = ddOrderDAO.retrieveLines(ddOrder);
+
+		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
+		{
+			final List<I_M_HU> hus = huDDOrderDAO.retrievePossibleAvailableHus(InterfaceWrapperHelper.create(ddOrderLine, de.metas.handlingunits.model.I_DD_OrderLine.class));
+			if (hus.isEmpty())
+			{
+				throw new HUException("No Hu was found for our product"
+						+ "\n @M_Product_ID@: " + ddOrderLine.getM_Product()
+						+ "\n warehouse: " + ddOrderLine.getM_Locator().getM_Warehouse()
+						+ "\n Locator: " + ddOrderLine.getM_Locator());
+			}
+			processDDOrderLine(ddOrderLine, hus);
+		}
+
+	}
+
+
+	private void processDDOrderLine(@NonNull final I_DD_OrderLine ddOrderLine, @NonNull final List<I_M_HU> hus)
+	{
+		createMovements()
+				.setDDOrderLine(ddOrderLine)
+				.allocateHUs(hus)
+				.setDoDirectMovements(true)
+				.processWithinOwnTrx();
 	}
 }

@@ -26,6 +26,8 @@ import de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
 import org.eevolution.api.DDOrderLineId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -63,4 +65,6 @@ public interface IHUDDOrderBL extends ISingletonService
 	List<I_DD_Order> createQuarantineDDOrderForHUs(List<HUToDistribute> hus);
 
 	DDOrderLineId addDDOrderLine(DDOrderLineCreateRequest ddOrderLineCreateRequest);
+
+	void processDDOrderLines(@NonNull I_DD_Order ddOrder);
 }

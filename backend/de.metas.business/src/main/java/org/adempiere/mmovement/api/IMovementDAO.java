@@ -31,6 +31,7 @@ import org.compiere.model.I_M_MovementLine;
 
 import de.metas.inventory.InventoryId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IMovementDAO extends ISingletonService
 {
@@ -59,4 +60,6 @@ public interface IMovementDAO extends ISingletonService
 	void save(final I_M_Movement movement);
 
 	void save(final I_M_MovementLine movementLine);
+
+	List<I_M_Movement> retrieveMovementsForDDOrder(@NonNull int ddOrderId);
 }
