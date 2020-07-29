@@ -28,6 +28,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.DB;
@@ -58,6 +59,7 @@ public class InvoiceCandidatesAmtSelectionSummaryCommand
 		this.extraWhereClause = extraWhereClause;
 	}
 
+	@NonNull
 	public InvoiceCandidatesAmtSelectionSummary execute()
 	{
 		// NOTE: we chose to do it with hard-coded SQL because the have little time to implement it better and maintain the performance, because this method is called very frequently.
@@ -182,7 +184,7 @@ public class InvoiceCandidatesAmtSelectionSummaryCommand
 		{
 			logger.error(sql.toString(), e);
 
-			return null;  // TODO tbp: not sure if i should return null here, or an empty Summary
+			return InvoiceCandidatesAmtSelectionSummary.builder().build(); // empty summary
 		}
 		finally
 		{
