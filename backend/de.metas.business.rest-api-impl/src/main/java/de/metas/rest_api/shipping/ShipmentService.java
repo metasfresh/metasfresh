@@ -22,32 +22,9 @@
 
 package de.metas.rest_api.shipping;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeValueType;
-import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerQuery;
@@ -83,6 +60,26 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ShipmentService
@@ -260,11 +257,15 @@ public class ShipmentService
 		final OrgId orgId = cache.getOrgId(shipmentScheduleId);
 		final ZoneId timeZoneId = orgDAO.getTimeZone(orgId);
 
+		final List<CreateAttributeInstanceReq> attributeInstanceRequestList = Check.isEmpty(attributes)
+				? null
+				: toCreateAttributeInstanceReqList(attributes);
+
 		return UpdateShipmentScheduleRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
 				.bPartnerCode(bpartnerCode)
 				.bPartnerLocation(bPartnerLocation)
-				.attributes(toCreateAttributeInstanceReqList(attributes))
+				.attributes(attributeInstanceRequestList)
 				.deliveryDate(TimeUtil.asZonedDateTime(deliveryDate, timeZoneId))
 				.qtyToDeliverInStockingUOM(qtyToDeliverInStockingUOM)
 				.deliveryRule(deliveryRule)

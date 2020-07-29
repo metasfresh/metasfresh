@@ -22,17 +22,7 @@
 
 package de.metas.rest_api.shipping;
 
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
@@ -43,6 +33,14 @@ import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping(ShipmentRestController.ENDPOINT)
 @RestController
@@ -81,6 +79,8 @@ public class ShipmentRestController
 		}
 		catch (final Exception ex)
 		{
+			log.error(ex.getMessage(), ex);
+
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.badRequest()
 					.body(JsonErrors.ofThrowable(ex, adLanguage));
