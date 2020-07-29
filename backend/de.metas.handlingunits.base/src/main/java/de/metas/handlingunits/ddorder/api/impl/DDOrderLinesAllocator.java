@@ -88,6 +88,7 @@ public class DDOrderLinesAllocator
 	private int locatorToIdOverride = -1;
 	private boolean failIfCannotAllocate = false; // default=false for backward compatibility
 	private boolean doDirectMovements = false;
+	private boolean skipCompletingDDOrder = false;
 
 	// State
 	private ImmutableList<DDOrderLineToAllocate> _ddOrderLinesToAllocate;
@@ -95,7 +96,7 @@ public class DDOrderLinesAllocator
 	private final Map<Integer, IDDOrderMovementBuilder> ddOrderId2ReceiptMovementBuilder = new HashMap<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedShipment = new HashSet<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedReceipt = new HashSet<>();
-	
+
 	private static final String MSG_DD_Order_NoLine_for_product = "de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product";
 
 	private DDOrderLinesAllocator()
@@ -186,6 +187,12 @@ public class DDOrderLinesAllocator
 		return this;
 	}
 
+	public DDOrderLinesAllocator setskipCompletingDDOrder(final boolean skipCompletingDDOrder)
+	{
+		this.skipCompletingDDOrder = skipCompletingDDOrder;
+		return this;
+	}
+
 	/**
 	 * Process allocations and create material movement documents
 	 */
@@ -247,7 +254,10 @@ public class DDOrderLinesAllocator
 
 		//
 		// Make sure DD Order is completed
-		ddOrderBL.completeDDOrderIfNeeded(ddOrderLine);
+		if (!skipCompletingDDOrder)
+		{
+			ddOrderBL.completeDDOrderIfNeeded(ddOrderLine);
+		}
 
 		//
 		// Make sure given HUs are no longer assigned to this DD Order Line

@@ -244,6 +244,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.setDDOrderLine(ddOrderLine)
 				.allocateHUs(hus)
 				.setDoDirectMovements(true)
+				.setskipCompletingDDOrder(true)
 				.processWithinOwnTrx();
 	}
 }
