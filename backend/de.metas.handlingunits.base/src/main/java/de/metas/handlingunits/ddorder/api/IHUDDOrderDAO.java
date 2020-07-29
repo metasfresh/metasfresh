@@ -91,14 +91,5 @@ public interface IHUDDOrderDAO extends ISingletonService
 
 	boolean existsDDOrderLineCandidateForHUId(int huId);
 
-	/**
-	 * Retrieves available Hus for given locator and product
-	 * 
-	 * @param ddOrderLine
-	 * @return
-	 */
-	List<I_M_HU> retrievePossibleAvailableHus(@NonNull I_DD_OrderLine ddOrderLine);
-
 	boolean isCreateMovementOnComplete();
-
 }
