@@ -32,6 +32,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
@@ -131,5 +133,12 @@ public class MovementBL implements IMovementBL
 		final int movementId = movement.getM_Movement_ID();
 		final boolean reversal = movementId > reversalId;
 		return reversal;
+	}
+	
+	@Override
+	public void voidMovement(final I_M_Movement movement)
+	{
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+			docActionBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 }
