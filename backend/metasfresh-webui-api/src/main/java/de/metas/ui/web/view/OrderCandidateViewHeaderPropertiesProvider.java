@@ -25,7 +25,6 @@ package de.metas.ui.web.view;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUInvoiceCandidatesSelectionSummaryInfo;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -55,12 +54,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 	public @NonNull ViewHeaderProperties computeHeaderProperties(@NonNull final IView view)
 	{
 		return ViewHeaderProperties.builder()
-				.groups(
-						ImmutableList.<ViewHeaderPropertiesGroup>builder()
-								.addAll(computeDummyDataForTesting())
-								.addAll(computeRealData(view))
-								.build()
-				)
+				.groups(computeRealData(view))
 				.build();
 	}
 
@@ -102,7 +96,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 						.value(summary.getAmountFormatted(summary.getHUNetAmtApproved()))
 						.build())
 				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("Not Trading Unit")) // TODO tbp: need trl here
+						.caption(msgBL.translatable("IsGoods"))
 						.value(summary.getAmountFormatted(summary.getCUNetAmtApproved()))
 						.build())
 				.build();
@@ -118,7 +112,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 						.value(summary.getAmountFormatted(summary.getHUNetAmtNotApproved()))
 						.build())
 				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("Not Trading Unit"))  // TODO tbp: need trl here
+						.caption(msgBL.translatable("IsGoods"))
 						.value(summary.getAmountFormatted(summary.getCUNetAmtNotApproved()))
 						.build())
 				.build();
@@ -137,27 +131,6 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 
 		return result.build();
 
-	}
-
-	@NonNull
-	private List<ViewHeaderPropertiesGroup> computeDummyDataForTesting()
-	{
-		return ImmutableList.of(
-				ViewHeaderPropertiesGroup.builder()
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Net (Approved for Invoicing)"))
-								.value("123.456 EUR")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Trading Unit"))
-								.value("100.456 EUR")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Not Trading Unit"))
-								.value("23 EUR")
-								.build())
-						.build()
-		);
 	}
 
 }
