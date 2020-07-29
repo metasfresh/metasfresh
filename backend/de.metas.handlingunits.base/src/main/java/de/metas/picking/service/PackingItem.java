@@ -228,6 +228,13 @@ final class PackingItem implements IPackingItem
 	{
 		addParts(packingItem.getParts());
 	}
+	@Override
+	public final IPackingItem addPartsAndReturn(final IPackingItem packingItem)
+	{
+		addParts(packingItem.getParts());
+		return this;
+	}
+
 
 	@Override
 	public final void setPartsFrom(final IPackingItem packingItem)

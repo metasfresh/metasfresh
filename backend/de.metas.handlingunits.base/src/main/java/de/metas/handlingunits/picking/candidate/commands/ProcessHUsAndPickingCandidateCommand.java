@@ -158,7 +158,7 @@ public class ProcessHUsAndPickingCandidateCommand
 				.map(this::createPackingItemPart)
 				.map(PackingItems::newPackingItem)
 				.forEach(item -> {
-					packingItems.merge(item.getGroupingKey(), item, IPackingItem::addParts);
+					packingItems.merge(item.getGroupingKey(), item, IPackingItem::addPartsAndReturn);
 				});
 
 		return ImmutableList.copyOf(packingItems.values());
