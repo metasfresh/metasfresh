@@ -207,7 +207,7 @@ public class DDOrderLinesAllocator
 		Services.get(ITrxManager.class).runInNewTrx(localTrx -> process());
 	}
 
-	private void process()
+	public void process()
 	{
 		// Clean previous state
 		ddOrderId2ShipmentMovementBuilder.clear();
