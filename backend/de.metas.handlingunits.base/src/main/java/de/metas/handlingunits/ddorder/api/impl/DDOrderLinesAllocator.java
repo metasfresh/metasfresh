@@ -53,6 +53,9 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -82,6 +85,7 @@ public class DDOrderLinesAllocator
 	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	// Parameters
 	private final Date movementDate = SystemTime.asDayTimestamp();
@@ -96,8 +100,10 @@ public class DDOrderLinesAllocator
 	private final Map<Integer, IDDOrderMovementBuilder> ddOrderId2ReceiptMovementBuilder = new HashMap<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedShipment = new HashSet<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedReceipt = new HashSet<>();
+	
+	;
 
-	private static final String MSG_DD_Order_NoLine_for_product = "de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product";
+	private static final AdMessageKey AD_Message_DD_Order_NoLine_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product");
 
 	private DDOrderLinesAllocator()
 	{
@@ -187,7 +193,7 @@ public class DDOrderLinesAllocator
 		return this;
 	}
 
-	public DDOrderLinesAllocator setskipCompletingDDOrder(final boolean skipCompletingDDOrder)
+	public DDOrderLinesAllocator setSkipCompletingDDOrder(final boolean skipCompletingDDOrder)
 	{
 		this.skipCompletingDDOrder = skipCompletingDDOrder;
 		return this;
@@ -357,10 +363,10 @@ public class DDOrderLinesAllocator
 		if (ddOrderLinesToAllocate.isEmpty())
 		{
 			// DD_Order_NoLine_for_product
-			throw HUException.ofAD_Message(MSG_DD_Order_NoLine_for_product)
+			throw new HUException(AD_Message_DD_Order_NoLine_for_product)
 					.appendParametersToMessage()
-					.setParameter("\\n @M_Product_ID@:", Services.get(IProductBL.class).getProductValueAndName(huProductStorage.getProductId()))
-					.setParameter("\\n HUProductStorage:", huProductStorage);
+					.setParameter("\n Product:", productBL.getProductValueAndName(huProductStorage.getProductId()))
+					.setParameter("\n HUProductStorage:", huProductStorage);
 		}
 
 		final I_M_HU hu = huProductStorage.getM_HU();

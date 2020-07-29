@@ -202,39 +202,6 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 				.anyMatch();
 	}
 	
-	/**
-	 * Retrieves available Hus for given locator and product
-	 * 
-	 * @param ddOrderLine
-	 * @return
-	 */
-	@Override
-	public List<I_M_HU> retrievePossibleAvailableHus(@NonNull final I_DD_OrderLine ddOrderLine)
-	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
-		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
-
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(ddOrderLine.getM_Locator().getM_Warehouse_ID());
-		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
-		final int locatorId = ddOrderLine.getM_Locator_ID();
-		huQueryBuilder.addOnlyInLocatorId(locatorId);
-		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
-		huQueryBuilder.addOnlyWithProductId(productId);
-
-		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
-
-		// Order by
-		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
-				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
-				.addColumn(I_M_HU.COLUMN_Created)
-				.createQueryOrderBy();
-
-		return huQueryBuilder.createQuery()
-				.setOrderBy(queryOrderBy)
-				.list();
-	}
 
 	@Override
 	public boolean isCreateMovementOnComplete()

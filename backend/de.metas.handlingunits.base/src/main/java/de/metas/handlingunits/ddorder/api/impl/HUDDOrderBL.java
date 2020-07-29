@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -32,6 +34,9 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.DDOrderLineCreateRequest;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -40,6 +45,7 @@ import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribut
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -50,12 +56,14 @@ import lombok.Value;
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 
-	private static final String MSG_NoHU_for_product = "de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product";
+	private static final AdMessageKey AD_Message_oHU_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
+	
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL .class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -222,16 +230,22 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	{
 		final List<I_DD_OrderLine> ddOrderLines = ddOrderDAO.retrieveLines(ddOrder);
 
+		// Order by
+		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
+				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
+				.addColumn(I_M_HU.COLUMN_Created)
+				.createQueryOrderBy();
+		
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
-			final List<I_M_HU> hus = huDDOrderDAO.retrievePossibleAvailableHus(InterfaceWrapperHelper.create(ddOrderLine, de.metas.handlingunits.model.I_DD_OrderLine.class));
+			final List<I_M_HU> hus = retrievePossibleAvailableHus(InterfaceWrapperHelper.create(ddOrderLine, de.metas.handlingunits.model.I_DD_OrderLine.class), queryOrderBy);
 			if (hus.isEmpty())
 			{
-				throw HUException.ofAD_Message(MSG_NoHU_for_product)
+				throw new HUException(AD_Message_oHU_for_product)
 						.appendParametersToMessage()
-						.setParameter("\\n @M_Product_ID@:", ddOrderLine.getM_Product())
-						.setParameter("\\n @M_Warehouse_ID@:", ddOrderLine.getM_Locator().getM_Warehouse())
-						.setParameter("\\n @M_Locator_ID@:", ddOrderLine.getM_Locator());
+						.setParameter("Product", ddOrderLine.getM_Product())
+						.setParameter("Warehouse", ddOrderLine.getM_Locator().getM_Warehouse())
+						.setParameter("Locator", ddOrderLine.getM_Locator());
 			}
 			processDDOrderLine(ddOrderLine, hus);
 		}
@@ -244,7 +258,27 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.setDDOrderLine(ddOrderLine)
 				.allocateHUs(hus)
 				.setDoDirectMovements(true)
-				.setskipCompletingDDOrder(true)
+				.setSkipCompletingDDOrder(true)
 				.processWithinOwnTrx();
+	}
+	
+	@Override
+	public List<I_M_HU> retrievePossibleAvailableHus(@NonNull final I_DD_OrderLine ddOrderLine, @NonNull final IQueryOrderBy queryOrderBy)
+	{
+
+		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ddOrderLine.getM_Locator().getM_Warehouse_ID());
+		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
+		final int locatorId = ddOrderLine.getM_Locator_ID();
+		huQueryBuilder.addOnlyInLocatorId(locatorId);
+		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
+		huQueryBuilder.addOnlyWithProductId(productId);
+
+		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+
+		return huQueryBuilder.createQuery()
+				.setOrderBy(queryOrderBy)
+				.list();
 	}
 }
