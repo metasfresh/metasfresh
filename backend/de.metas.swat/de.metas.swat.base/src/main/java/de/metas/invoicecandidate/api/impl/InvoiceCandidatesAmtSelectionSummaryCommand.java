@@ -22,7 +22,6 @@
 
 package de.metas.invoicecandidate.api.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
@@ -159,28 +158,20 @@ public class InvoiceCandidatesAmtSelectionSummaryCommand
 		try
 		{
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-			String a = "select * from T_WEBUI_ViewSelection"
-					// ;
-					+ " where  UUID='540092-"
-					+ "E"
-					+ "'";
-			// DB.getSQL_ResultRowsAsListsOfStrings(a, ImmutableList.of(), ITrx.TRXNAME_None);
-			DB.getSQL_ResultRowsAsListsOfStrings(a, ImmutableList.of(), ITrx.TRXNAME_ThreadInherited);
-
 			rs = pstmt.executeQuery();
 
 			while (rs.next())
 			{
 				final BigDecimal netAmtTotal = rs.getBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice);
-				final Boolean isPackingMaterial = rs.getBoolean(COLUMNNAME_IsPackingMaterial);
-				final Boolean isApprovedForInvoicing = "Y".equals(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing));
+				final boolean isPackingMaterial = rs.getBoolean(COLUMNNAME_IsPackingMaterial);
+				final boolean isApprovedForInvoicing = "Y".equals(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing));
 				final String curSymbol = rs.getString(I_C_Currency.COLUMNNAME_CurSymbol);
 				final boolean isToRecompute = "Y".equals(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute));
 				final int countToRecompute = rs.getInt(COLUMNNAME_Count);
 
-				summaryBuilder.addTotalNetAmt(netAmtTotal, isApprovedForInvoicing, isPackingMaterial);
-				summaryBuilder.addCurrencySymbol(curSymbol);
+				summaryBuilder
+						.addTotalNetAmt(netAmtTotal, isApprovedForInvoicing, isPackingMaterial)
+						.addCurrencySymbol(curSymbol);
 				if (isToRecompute)
 				{
 					summaryBuilder.addCountToRecompute(countToRecompute);
@@ -191,13 +182,11 @@ public class InvoiceCandidatesAmtSelectionSummaryCommand
 		{
 			logger.error(sql.toString(), e);
 
-			return null;
+			return null;  // TODO tbp: not sure if i should return null here, or an empty Summary
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			pstmt = null;
-			rs = null;
 		}
 
 		return summaryBuilder.build();

@@ -23,10 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -101,21 +98,10 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return cuNetAmtNotApproved;
 	}
 
+	@SuppressWarnings("unused")
 	public BigDecimal getTotalNetAmt()
 	{
 		return totalNetAmtApproved.add(totalNetAmtNotApproved);
-	}
-
-	public BigDecimal getTotalNetAmt(final boolean isApprovedForInvoicing)
-	{
-		if (isApprovedForInvoicing)
-		{
-			return getTotalNetAmtApproved();
-		}
-		else
-		{
-			return getTotalNetAmt();
-		}
 	}
 
 	public int getCountTotalToRecompute()
@@ -178,7 +164,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 
 		final boolean isSameCurrency = currencySymbols.size() == 1;
 
-		String curSymbol = null;
+		String curSymbol;
 		if (isSameCurrency)
 		{
 			curSymbol = currencySymbols.iterator().next();
@@ -201,7 +187,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		private BigDecimal cuNetAmtNotApproved = BigDecimal.ZERO;
 
 		private int countTotalToRecompute = 0;
-		private final ImmutableSet.Builder<String> currencySymbols = ImmutableSet.<String>builder();
+		private final ImmutableSet.Builder<String> currencySymbols = ImmutableSet.builder();
 
 		private Builder()
 		{
@@ -242,6 +228,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 			return this;
 		}
 
+		@SuppressWarnings("UnusedReturnValue")
 		public Builder addCurrencySymbol(final String currencySymbol)
 		{
 			if (Check.isEmpty(currencySymbol, true))
@@ -262,27 +249,6 @@ public class InvoiceCandidatesAmtSelectionSummary
 			countTotalToRecompute += countToRecomputeToAdd;
 		}
 
-		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
-		{
-			final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
-			Check.assumeNotNull(ic, "ic not null");
-
-			final BigDecimal netAmt = ic.getNetAmtToInvoice();
-			final boolean isApprovedForInvoicing = ic.isApprovalForInvoicing();
-			addTotalNetAmt(netAmt, isApprovedForInvoicing, false); // isPackingMaterial TODO
-
-			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
-			final String currencySymbol = currencyId != null
-					? currencyDAO.getById(currencyId).getSymbol().getDefaultValue()
-					: null;
-			addCurrencySymbol(currencySymbol);
-
-			if (ic.isToRecompute())
-			{
-				addCountToRecompute(1);
-			}
-		}
 	}
 }
 
