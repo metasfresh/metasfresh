@@ -23,6 +23,8 @@
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUInvoiceCandidatesSelectionSummaryInfo;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
@@ -40,8 +42,8 @@ import java.util.List;
 @Component
 public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPropertiesProvider
 {
-
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Override
 	public String getAppliesOnlyToTableName()
@@ -71,7 +73,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 		 */
 		final long rowsToDisplay = view.size();
 
-		if (rowsToDisplay==0)
+		if (rowsToDisplay == 0)
 		{
 			return ImmutableList.of();
 		}
@@ -83,10 +85,58 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 		return toViewHeaderProperties(summary);
 	}
 
+	/**
+	 * Keep in sync with {@link HUInvoiceCandidatesSelectionSummaryInfo#getSummaryMessage()}
+	 */
 	private List<ViewHeaderPropertiesGroup> toViewHeaderProperties(final InvoiceCandidatesAmtSelectionSummary summary)
 	{
-		 // TODO tbp: implement this similar to HUInvoiceCandidatesSelectionSummaryInfo.getSummaryMessageTranslated
-		return ImmutableList.of();
+		final ImmutableList.Builder<ViewHeaderPropertiesGroup> result = ImmutableList.builder();
+
+		final ViewHeaderPropertiesGroup amtNetApproved = ViewHeaderPropertiesGroup.builder()
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgBL.translatable("NetIsApprovedForInvoicing"))
+						.value(summary.getAmountFormatted(summary.getTotalNetAmtApproved()))
+						.build())
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgBL.translatable("isTradingUnit"))
+						.value(summary.getAmountFormatted(summary.getHUNetAmtApproved()))
+						.build())
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgBL.translatable("Not Trading Unit")) // TODO tbp: need trl here
+						.value(summary.getAmountFormatted(summary.getCUNetAmtApproved()))
+						.build())
+				.build();
+		result.add(amtNetApproved);
+
+		final ViewHeaderPropertiesGroup amtNetNotApproved = ViewHeaderPropertiesGroup.builder()
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgBL.translatable("NetIsNotApprovedForInvoicing"))
+						.value(summary.getAmountFormatted(summary.getTotalNetAmtNotApproved()))
+						.build())
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgBL.translatable("isTradingUnit"))
+						.value(summary.getAmountFormatted(summary.getHUNetAmtNotApproved()))
+						.build())
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgBL.translatable("Not Trading Unit"))  // TODO tbp: need trl here
+						.value(summary.getAmountFormatted(summary.getCUNetAmtNotApproved()))
+						.build())
+				.build();
+		result.add(amtNetNotApproved);
+
+		if (summary.getCountTotalToRecompute() > 0)
+		{
+			final ViewHeaderPropertiesGroup toRecompute = ViewHeaderPropertiesGroup.builder()
+					.entry(ViewHeaderProperty.builder()
+							.caption(msgBL.translatable("IsToRecompute"))
+							.value(Integer.toString(summary.getCountTotalToRecompute()))
+							.build())
+					.build();
+			result.add(toRecompute);
+		}
+
+		return result.build();
+
 	}
 
 	@NonNull
@@ -105,50 +155,6 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 						.entry(ViewHeaderProperty.builder()
 								.caption(TranslatableStrings.constant("Not Trading Unit"))
 								.value("23 EUR")
-								.build())
-						.build(),
-				ViewHeaderPropertiesGroup.builder()
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Net (Ohne Freigabe)"))
-								.value("987.654 EUR")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Trading Unit"))
-								.value("987 EUR")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Not Trading Unit"))
-								.value("0.654 EUR")
-								.build())
-						.build(),
-
-				ViewHeaderPropertiesGroup.builder()
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Net (Approved for Invoicing)"))
-								.value("123.456 CHF")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Trading Unit"))
-								.value("100.456 CHF")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Not Trading Unit"))
-								.value("23 CHF")
-								.build())
-						.build(),
-
-				ViewHeaderPropertiesGroup.builder()
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Net (Ohne Freigabe)"))
-								.value("987.654 CHF")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Trading Unit"))
-								.value("987 CHF")
-								.build())
-						.entry(ViewHeaderProperty.builder()
-								.caption(TranslatableStrings.constant("Not Trading Unit"))
-								.value("0.654 CHF")
 								.build())
 						.build()
 		);

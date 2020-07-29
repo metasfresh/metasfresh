@@ -23,15 +23,12 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -114,48 +111,8 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return currencySymbols;
 	}
 
-	public String getSummaryMessageTranslated(final Properties ctx)
-	{
-		final String message = getSummaryMessage();
-		final String messageTrl = Services.get(IMsgBL.class).parseTranslation(ctx, message);
-		return messageTrl;
-	}
 
-	public String getSummaryMessage()
-	{
-		final StringBuilder message = new StringBuilder();
-
-		message.append("@Netto@ (@ApprovalForInvoicing@): ");
-		final BigDecimal totalNetAmtApproved = getTotalNetAmtApproved();
-		message.append(getAmountFormatted(totalNetAmtApproved));
-
-		final BigDecimal huNetAmtApproved = getHUNetAmtApproved();
-		message.append(" - ").append("Gebinde ").append(getAmountFormatted(huNetAmtApproved));
-
-		final BigDecimal cuNetAmtApproved = getCUNetAmtApproved();
-		message.append(" - ").append("Ware ").append(getAmountFormatted(cuNetAmtApproved));
-
-		message.append(" | @Netto@ (@NotApprovedForInvoicing@): ");
-
-		final BigDecimal totalNetAmtNotApproved = getTotalNetAmtNotApproved();
-		message.append(getAmountFormatted(totalNetAmtNotApproved));
-
-		final BigDecimal huNetAmtNotApproved = getHUNetAmtNotApproved();
-		message.append(" - ").append("Gebinde ").append(getAmountFormatted(huNetAmtNotApproved));
-
-		final BigDecimal cuNetAmtNotApproved = getCUNetAmtNotApproved();
-		message.append(" - ").append("Ware ").append(getAmountFormatted(cuNetAmtNotApproved));
-
-		if (countTotalToRecompute > 0)
-		{
-			message.append(", @IsToRecompute@: ");
-			message.append(countTotalToRecompute);
-		}
-
-		return message.toString();
-	}
-
-	private String getAmountFormatted(final BigDecimal amt)
+	public String getAmountFormatted(final BigDecimal amt)
 	{
 		final DecimalFormat amountFormat = DisplayType.getNumberFormat(DisplayType.Amount);
 		final StringBuilder amountFormatted = new StringBuilder();
@@ -164,7 +121,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 
 		final boolean isSameCurrency = currencySymbols.size() == 1;
 
-		String curSymbol;
+		final String curSymbol;
 		if (isSameCurrency)
 		{
 			curSymbol = currencySymbols.iterator().next();

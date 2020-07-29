@@ -137,6 +137,9 @@ public final class HUInvoiceCandidatesSelectionSummaryInfo implements IGridTabSu
 		return getSummaryMessage();
 	}
 
+	/**
+	 * Keep in sync with {@link de.metas.ui.web.view.OrderCandidateViewHeaderPropertiesProvider#toViewHeaderProperties(de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary)}
+	 */
 	public String getSummaryMessage()
 	{
 		final StringBuilder message = new StringBuilder();
