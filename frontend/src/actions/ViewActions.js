@@ -29,11 +29,7 @@ import {
   TOGGLE_INCLUDED_VIEW,
 } from '../constants/ActionTypes';
 
-import {
-  createGridTable,
-  updateGridTable,
-  deleteTable,
-} from './TableActions';
+import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
