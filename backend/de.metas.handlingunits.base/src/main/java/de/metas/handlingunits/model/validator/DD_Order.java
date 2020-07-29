@@ -85,7 +85,7 @@ public class DD_Order
 		}
 	}
 	
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
 	{
 		if (huDDOrderDAO.isCreateMovementOnComplete())

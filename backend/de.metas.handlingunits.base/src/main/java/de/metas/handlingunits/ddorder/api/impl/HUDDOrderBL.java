@@ -64,6 +64,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IWarehouseDAO warehouseDao = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -241,12 +242,16 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			final List<I_M_HU> hus = retrievePossibleAvailableHus(InterfaceWrapperHelper.create(ddOrderLine, de.metas.handlingunits.model.I_DD_OrderLine.class), queryOrderBy);
 			if (hus.isEmpty())
 			{
+				final WarehouseId warehouseId = warehouseDao.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID());
+				final String whName = warehouseDao.getWarehouseName(warehouseId);
+				
 				throw new HUException(AD_Message_oHU_for_product)
 						.appendParametersToMessage()
 						.setParameter("Product", ddOrderLine.getM_Product())
-						.setParameter("Warehouse", ddOrderLine.getM_Locator().getM_Warehouse())
+						.setParameter("Warehouse", whName)
 						.setParameter("Locator", ddOrderLine.getM_Locator());
 			}
+			
 			processDDOrderLine(ddOrderLine, hus);
 		}
 
@@ -268,7 +273,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(ddOrderLine.getM_Locator().getM_Warehouse_ID());
+		final WarehouseId warehouseId = warehouseDao.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID());
 		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
 		final int locatorId = ddOrderLine.getM_Locator_ID();
 		huQueryBuilder.addOnlyInLocatorId(locatorId);
