@@ -122,7 +122,7 @@ export default class DocumentList extends Component {
       updateParentSelectedIds,
       modal,
       parentWindowType,
-      reduxData,
+      viewData,
       layout,
       layoutNotFound,
       page,
@@ -160,7 +160,8 @@ export default class DocumentList extends Component {
       locationData,
       pending,
       layoutPending,
-    } = reduxData;
+      headerProperties,
+    } = viewData;
     const { clickOutsideLock, toggleWidth } = this.state;
     const selected = table.selected;
     const modalType = modal ? modal.modalType : null;
@@ -175,7 +176,7 @@ export default class DocumentList extends Component {
     const blurWhenOpen =
       layout && layout.includedView && layout.includedView.blurWhenOpen;
 
-    if (layoutNotFound || reduxData.notFound) {
+    if (layoutNotFound || viewData.notFound) {
       return (
         <BlankPage what={counterpart.translate('view.error.windowName')} />
       );
@@ -187,6 +188,7 @@ export default class DocumentList extends Component {
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
       layout && layout.supportGeoLocations && locationData;
+    const viewGroups = !isModal && headerProperties && headerProperties.groups;
 
     return (
       <div
@@ -197,6 +199,39 @@ export default class DocumentList extends Component {
         })}
         style={styleObject}
       >
+        {!!(viewGroups && viewGroups.length) && (
+          <div className="panel panel-primary">
+            <div className="panel-groups-header">
+              <div className="optional">
+                {viewGroups.reduce((acc, group, idx) => {
+                  let cursor = 0;
+
+                  do {
+                    const entry = group.entries[cursor];
+
+                    acc.push(
+                      <span key={`${idx}_${cursor}`} className="optional-name">
+                        <p className="caption">{entry.caption}:</p>{' '}
+                        <p className="value">{entry.value}</p>
+                      </span>
+                    );
+
+                    cursor += 1;
+                  } while (cursor < group.entries.length);
+
+                  if (idx !== viewGroups.length - 1) {
+                    acc.push(
+                      <span key={`${idx}_${cursor}`} className="separator" />
+                    );
+                  }
+
+                  return acc;
+                }, [])}
+              </div>
+            </div>
+          </div>
+        )}
+
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
             <button

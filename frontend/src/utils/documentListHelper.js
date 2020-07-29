@@ -124,7 +124,7 @@ const DLmapStateToProps = (state, props) => {
     sort,
     viewId,
     table,
-    reduxData: master,
+    viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
     referenceId: queryReferenceId,

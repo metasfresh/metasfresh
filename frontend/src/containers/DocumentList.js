@@ -543,7 +543,7 @@ class DocumentListContainer extends Component {
     const {
       windowId,
       viewId,
-      reduxData: { mapConfig },
+      viewData: { mapConfig },
       isModal,
     } = this.props;
 
@@ -578,12 +578,12 @@ class DocumentListContainer extends Component {
    * @summary ToDo: Describe the method.
    */
   handleChangePage = (index) => {
-    const { table, reduxData, sort } = this.props;
-    let currentPage = reduxData.page;
+    const { table, viewData, sort } = this.props;
+    let currentPage = viewData.page;
 
     switch (index) {
       case 'up':
-        currentPage * reduxData.pageLength < table.size ? currentPage++ : null;
+        currentPage * viewData.pageLength < table.size ? currentPage++ : null;
         break;
       case 'down':
         currentPage !== 1 ? currentPage-- : null;
@@ -592,7 +592,7 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
-    this.getData(reduxData.viewId, currentPage, sort);
+    this.getData(viewData.viewId, currentPage, sort);
   };
 
   /**
@@ -663,7 +663,7 @@ class DocumentListContainer extends Component {
       isModal,
       windowId,
       isSideListShow,
-      reduxData,
+      viewData,
       push,
       page,
       sort,
@@ -682,7 +682,7 @@ class DocumentListContainer extends Component {
       // Caching last settings
       setListPagination(page, windowId);
       setListSorting(sort, windowId);
-      setListId(reduxData.viewId, windowId);
+      setListId(viewData.viewId, windowId);
     }
   };
 
@@ -734,7 +734,7 @@ class DocumentListContainer extends Component {
       includedView,
       layout,
       layoutPending,
-      reduxData: { pending },
+      viewData: { pending },
     } = this.props;
 
     const hasIncluded =
