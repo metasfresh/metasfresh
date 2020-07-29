@@ -49,6 +49,7 @@ public class DD_Order
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class); 
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
@@ -65,19 +66,20 @@ public class DD_Order
 		C_Request_CreateFromDDOrder_Async.createWorkpackage(ddOrderLineToQuarantineIds);
 
 	}
-
 	
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
 	{
-
-		if (movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID()).size() > 0)
+		if (huDDOrderDAO.isCreateMovementOnComplete())
 		{
-			return;
-		}
-		
-		huDDOrderBL.processDDOrderLines(ddOrder);
 
+			if (movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID()).size() > 0)
+			{
+				return;
+			}
+
+			huDDOrderBL.processDDOrderLines(ddOrder);
+		}
 	}
 	
 	

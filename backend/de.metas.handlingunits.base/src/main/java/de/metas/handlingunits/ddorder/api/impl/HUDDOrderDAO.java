@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -54,6 +55,8 @@ import lombok.NonNull;
 
 public class HUDDOrderDAO implements IHUDDOrderDAO
 {
+	private static final String SYS_Config_DDOrder_isCreateMovementOnComplete = "DDOrder_isCreateMovementOnComplete";
+	
 	@Override
 	public IQueryFilter<I_M_HU> getHUsNotAlreadyScheduledToMoveFilter()
 	{
@@ -228,5 +231,14 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		return huQueryBuilder.createQuery()
 				.setOrderBy(queryOrderBy)
 				.list();
+	}
+
+	@Override
+	public boolean isCreateMovementOnComplete()
+	{
+		final boolean isCreateMovementOnComplete = Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYS_Config_DDOrder_isCreateMovementOnComplete, false);
+
+		return isCreateMovementOnComplete;
 	}
 }

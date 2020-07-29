@@ -99,4 +99,6 @@ public interface IHUDDOrderDAO extends ISingletonService
 	 */
 	List<I_M_HU> retrievePossibleAvailableHus(@NonNull I_DD_OrderLine ddOrderLine);
 
+	boolean isCreateMovementOnComplete();
+
 }
