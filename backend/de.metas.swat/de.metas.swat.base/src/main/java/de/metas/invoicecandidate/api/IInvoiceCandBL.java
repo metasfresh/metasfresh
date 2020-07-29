@@ -1,13 +1,8 @@
-/**
- *
- */
-package de.metas.invoicecandidate.api;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,12 +20,15 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+package de.metas.invoicecandidate.api;
+
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
@@ -59,9 +57,11 @@ import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 
+import javax.annotation.Nullable;
+
 public interface IInvoiceCandBL extends ISingletonService
 {
-	public interface IInvoiceGenerateResult
+	interface IInvoiceGenerateResult
 	{
 		int getInvoiceCount();
 
@@ -203,7 +203,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * This information is currently used by {@link de.metas.invoicecandidate.process.C_Invoice_Candidate_Update}.
 	 *
 	 * Used inside the invalidate code within {@link IInvoiceCandDAO}, to avoid invalidating candidates while the process validates or creates them.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isUpdateProcessInProgress();
@@ -285,7 +285,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param note error note (optional)
 	 */
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note);
-
 	/**
 	 * See {@link #setError(I_C_Invoice_Candidate, String, I_AD_Note)}
 	 *
@@ -395,7 +394,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Note: This behavior is determined by the value of the sys config {@code C_Invoice_Candidate_Close_PartiallyInvoice}.
 	 * The candidates will be closed only if the sys config is set to 'Y'.
 	 *
-	 * @see IInvoiceCandBL#isCloseIfPartiallyInvoiced(OrgId) 
+	 * @see IInvoiceCandBL#isCloseIfPartiallyInvoiced(OrgId)
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 
@@ -415,4 +414,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
 	I_C_Invoice voidAndRecreateInvoice(org.compiere.model.I_C_Invoice invoice);
+
+	InvoiceCandidatesAmtSelectionSummary calculateSummary(@Nullable String extraWhereClause);
 }

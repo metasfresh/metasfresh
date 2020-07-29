@@ -24,7 +24,14 @@ package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +40,9 @@ import java.util.List;
 @Component
 public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPropertiesProvider
 {
+
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
 	@Override
 	public String getAppliesOnlyToTableName()
 	{
@@ -46,14 +56,36 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 				.groups(
 						ImmutableList.<ViewHeaderPropertiesGroup>builder()
 								.addAll(computeDummyDataForTesting())
-								.addAll(computeRealData())
+								.addAll(computeRealData(view))
 								.build()
 				)
 				.build();
 	}
 
-	private List<ViewHeaderPropertiesGroup> computeRealData()
+	private List<ViewHeaderPropertiesGroup> computeRealData(final @NonNull IView view)
 	{
+		/*
+			Implementation detail
+			The `view.size()` call is needed because the rows in table `T_WEBUI_ViewSelection` are lazily inserted, on the first view usage.
+			If this call is not done, querying from the view will return 0 rows.
+		 */
+		final long rowsToDisplay = view.size();
+
+		if (rowsToDisplay==0)
+		{
+			return ImmutableList.of();
+		}
+
+		final SqlViewRowsWhereClause sqlWhereClause = view.getSqlWhereClause(DocumentIdsSelection.ALL, SqlOptions.usingTableName(I_C_Invoice_Candidate.Table_Name));
+		final SqlAndParams sqlAndParams = SqlAndParams.of(sqlWhereClause.toSqlString());
+		final InvoiceCandidatesAmtSelectionSummary summary = invoiceCandBL.calculateSummary(sqlAndParams.getSql());
+
+		return toViewHeaderProperties(summary);
+	}
+
+	private List<ViewHeaderPropertiesGroup> toViewHeaderProperties(final InvoiceCandidatesAmtSelectionSummary summary)
+	{
+		 // TODO tbp: implement this similar to HUInvoiceCandidatesSelectionSummaryInfo.getSummaryMessageTranslated
 		return ImmutableList.of();
 	}
 
@@ -119,7 +151,7 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 								.value("0.654 CHF")
 								.build())
 						.build()
-				);
+		);
 	}
 
 }
