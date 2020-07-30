@@ -123,7 +123,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Version());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine());
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order());
+		engine.addModelValidator(de.metas.handlingunits.model.validator.DD_Order.INSTANCE);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
