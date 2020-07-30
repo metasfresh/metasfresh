@@ -78,6 +78,9 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 
 
 	@Override
@@ -92,7 +95,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		ddOrderLine.setIsDelivered_Override(X_DD_OrderLine.ISDELIVERED_OVERRIDE_Yes);
 		InterfaceWrapperHelper.save(ddOrderLine);
 
-		final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 		huDDOrderDAO.clearHUsScheduledToMoveList(ddOrderLine);
 	}
 
@@ -101,12 +103,10 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	{
 		//
 		// Unassign the given HUs from DD_OrderLine
-		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.unassignHUs(ddOrderLine, hus);
 
 		//
 		// Remove those HUs from scheduled to move list (task 08639)
-		final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 		huDDOrderDAO.removeFromHUsScheduledToMoveList(ddOrderLine, hus);
 	}
 
@@ -124,7 +124,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 	private List<HUToDistribute> createHUsToQuarantine(final QuarantineInOutLine receiptLine)
 	{
-		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 		return huInOutDAO.retrieveHUsForReceiptLineId(receiptLine.getReceiptLineId())
 				.stream()
 				.map(hu -> HUToDistribute.builder()
@@ -139,9 +138,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	@Override
 	public List<I_DD_Order> createQuarantineDDOrderForHUs(final List<HUToDistribute> husToDistribute)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
 		final I_M_Warehouse quarantineWarehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
 		if (quarantineWarehouse == null)
 		{
