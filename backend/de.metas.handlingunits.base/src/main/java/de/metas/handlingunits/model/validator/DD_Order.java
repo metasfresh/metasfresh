@@ -21,7 +21,6 @@ import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -53,7 +52,6 @@ public class DD_Order
 	private final IMovementBL movementBL = Services.get(IMovementBL.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
@@ -75,7 +73,7 @@ public class DD_Order
 	public void DD_Order_voidMovements(final I_DD_Order ddOrder)
 	{
 		// void if creating them automating is activated
-		if (huDDOrderDAO.isCreateMovementOnComplete())
+		if (huDDOrderBL.isCreateMovementOnComplete())
 		{
 			final List<I_M_Movement> movements =  movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID());
 			for (final I_M_Movement movement : movements)
@@ -88,7 +86,7 @@ public class DD_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
 	{
-		if (huDDOrderDAO.isCreateMovementOnComplete())
+		if (huDDOrderBL.isCreateMovementOnComplete())
 		{
 			huDDOrderBL.processDDOrderLines(ddOrder);
 		}

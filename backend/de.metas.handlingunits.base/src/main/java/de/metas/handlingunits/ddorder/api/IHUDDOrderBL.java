@@ -76,4 +76,6 @@ public interface IHUDDOrderBL extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU> retrieveAvailableHusToMove(@NonNull I_DD_OrderLine ddOrderLine, @NonNull IQueryOrderBy queryOrderBy);
+
+	boolean isCreateMovementOnComplete();
 }

@@ -13,7 +13,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_Order;
@@ -49,8 +48,6 @@ import de.metas.util.Services;
 
 public class HUDDOrderDAO implements IHUDDOrderDAO
 {
-	private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private static final String SYS_Config_DDOrder_isCreateMovementOnComplete = "DDOrder_isCreateMovementOnComplete";
 	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	
 	@Override
@@ -191,12 +188,5 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 				.anyMatch();
 	}
 	
-	@Override
-	public boolean isCreateMovementOnComplete()
-	{
-		final boolean isCreateMovementOnComplete = sysConfigBL
-				.getBooleanValue(SYS_Config_DDOrder_isCreateMovementOnComplete, false);
 
-		return isCreateMovementOnComplete;
-	}
 }

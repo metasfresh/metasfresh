@@ -3,6 +3,7 @@ package de.metas.handlingunits.ddorder.api.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -64,8 +66,11 @@ import lombok.Value;
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 
+	
+	private static final String SYS_Config_DDOrder_isCreateMovementOnComplete = "DDOrder_isCreateMovementOnComplete";
 	private static final AdMessageKey MSG_HU_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
 	
+	private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL .class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -249,7 +254,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 				throw new HUException(MSG_HU_for_product)
 						.appendParametersToMessage()
-						.setParameter("Product", ddOrderLine.getM_Product())
+						.setParameter("Product", ddOrderLine.getM_Product_ID())
 						.setParameter("Warehouse", warehouseId)
 						.setParameter("Locator", locatorId);
 			}
@@ -303,17 +308,16 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		
 		final List<I_M_HU> hus = retrieveAvailableHusToMove(ddOrderLine, queryOrderBy);
 		final I_C_UOM uom = uomDAO.getById(ddOrderLine.getC_UOM_ID());
-		BigDecimal qtyFromHus = BigDecimal.ZERO;
-		BigDecimal unallocatedQty = ddOrderLine.getQtyEntered();
-		final BigDecimal qtyEntered = ddOrderLine.getQtyEntered();
+		Quantity qtyFromHus = Quantity.zero(uom);
+		Quantity unallocatedQty = Quantity.of(ddOrderLine.getQtyEntered(), uom);
+		final Quantity qtyEntered = Quantity.of(ddOrderLine.getQtyEntered(), uom);
 		
 		final List<I_M_HU> neededHus = new ArrayList<I_M_HU>();
 		
 		for (final I_M_HU hu : hus)
 		{
-			final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
 			final IHUStorage storage = storageFactory.getStorage(hu);
-			final BigDecimal qtyActual = storage.getQty(productId, uom);
+			final Quantity qtyActual = storage.getQtyForProductStorages(uom);
 			
 			if (qtyEntered.compareTo(qtyFromHus) > 0)
 			{
@@ -325,10 +329,10 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				if (unallocatedQty.signum() < 0)
 				{
 					// transform
-					final Quantity qtyCU = Quantity.of(unallocatedQty.negate(), uom);
+					final Quantity qtyCU = unallocatedQty.negate();
 					transformHu(hu, qtyCU);
 					
-					unallocatedQty = BigDecimal.ZERO;
+					unallocatedQty = Quantity.zero(uom);
 				}
 			}
 			
@@ -339,6 +343,11 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			}
 		}
 
+		// if we do not have enough HUs, return empty list
+		if (unallocatedQty.signum() > 0)
+		{
+			return Collections.emptyList();
+		}
 		return neededHus;
 	}
 	
@@ -347,5 +356,14 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		final HUTransformService huTransformService = HUTransformService.newInstance();
 		
 		huTransformService.cuToNewCU(hu, qtyCU);
+	}
+	
+	@Override
+	public boolean isCreateMovementOnComplete()
+	{
+		final boolean isCreateMovementOnComplete = sysConfigBL
+				.getBooleanValue(SYS_Config_DDOrder_isCreateMovementOnComplete, false);
+
+		return isCreateMovementOnComplete;
 	}
 }

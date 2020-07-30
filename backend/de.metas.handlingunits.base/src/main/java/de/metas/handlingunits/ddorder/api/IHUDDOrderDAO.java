@@ -11,7 +11,6 @@ import org.eevolution.model.I_DD_Order;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -90,6 +89,4 @@ public interface IHUDDOrderDAO extends ISingletonService
 	void removeFromHUsScheduledToMoveList(org.eevolution.model.I_DD_OrderLine ddOrderline, Collection<I_M_HU> hus);
 
 	boolean existsDDOrderLineCandidateForHUId(int huId);
-
-	boolean isCreateMovementOnComplete();
 }
