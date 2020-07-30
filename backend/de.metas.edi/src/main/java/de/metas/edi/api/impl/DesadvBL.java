@@ -305,7 +305,12 @@ public class DesadvBL implements IDesadvBL
 			desadv.setDateOrdered(order.getDateOrdered());
 			desadv.setMovementDate(order.getDatePromised());
 			desadv.setC_Currency_ID(order.getC_Currency_ID());
+
+			desadv.setHandOver_Partner_ID(order.getHandOver_Partner_ID());
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
+			desadv.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
+			desadv.setDropShip_Location_ID(order.getDropShip_Location_ID());
+
 			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
 			// note: the minimal acceptable fulfillment is currently set by a model interceptor
 			InterfaceWrapperHelper.save(desadv);
