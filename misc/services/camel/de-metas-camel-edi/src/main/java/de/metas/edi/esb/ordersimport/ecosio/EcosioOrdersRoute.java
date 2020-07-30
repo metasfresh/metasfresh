@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.ordersimport.ecosio;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import org.apache.camel.CamelContext;
@@ -41,7 +42,8 @@ public class EcosioOrdersRoute
 	 */
 	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.ecosio.remote";
 
-	private static final String INPUT_ORDERS_LOCAL = "{{edi.file.orders.ecosio}}";
+	@VisibleForTesting
+	static final String INPUT_ORDERS_LOCAL = "edi.file.orders.ecosio";
 
 	@Override
 	public final void configure()
@@ -52,11 +54,12 @@ public class EcosioOrdersRoute
 			from(remoteEndpoint)
 					.routeId("ecosio-Remote-XML-Orders-To-Local")
 					.log(LoggingLevel.TRACE, "Getting remote file")
-					.to(INPUT_ORDERS_LOCAL);
+					.to("{{" + INPUT_ORDERS_LOCAL + "}}");
 		}
 
-		from(INPUT_ORDERS_LOCAL)
+		from("{{" + INPUT_ORDERS_LOCAL + "}}")
 				.routeId("ecosio-XML-Orders-To-MF-OLCand")
+				.split(xpath("/EDI_Imp_C_OLCands/EDI_Imp_C_OLCand"))
 				.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");

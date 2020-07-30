@@ -42,7 +42,7 @@ class EcosioInvoicRouteTest extends CamelTestSupport
 	@EndpointInject("mock:fileOutputEndpoint")
 	private MockEndpoint fileOutputEndpoint;
 
-	@EndpointInject(uri = "mock:ep.rabbitmq.to.mf")
+	@EndpointInject("mock:ep.rabbitmq.to.mf")
 	private MockEndpoint feedbackOutputEndpoint;
 
 	@Override
