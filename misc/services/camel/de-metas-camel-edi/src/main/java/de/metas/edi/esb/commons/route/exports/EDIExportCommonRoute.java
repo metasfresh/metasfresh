@@ -86,7 +86,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.CompuData.toString()))
 								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.ecosio.toString()))
-								.to(EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOICE_CONSUMER)
+								.to(EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 						.endChoice()
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						// DESADV - figure out which clearing center we shall use

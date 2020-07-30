@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.invoicexport.ecosio;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
@@ -30,7 +31,6 @@ import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
-import de.metas.edi.esb.jaxb.stepcom.invoice.ObjectFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
@@ -57,27 +57,26 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Invoic-To-ecosio";
 
-	public static final String EP_EDI_METASFRESH_XML_INVOICE_CONSUMER = "direct:edi.invoic.ecosio.consumer";
+	public static final String EP_EDI_METASFRESH_XML_INVOIC_CONSUMER = "direct:edi.invoic.ecosio.consumer";
 
 	private static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
-	private static final String OUTPUT_INVOIC_LOCAL = "{{edi.file.invoic.ecosio}}";
+	@VisibleForTesting
+	static final String OUTPUT_INVOIC_LOCAL = "edi.file.invoic.ecosio";
 
 	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.ecosio.remote";
-
-	private static final String JAXB_INVOIC_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
 		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 
-		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_INVOIC_CONTEXTPATH);
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(EDICctopInvoicVType.class.getPackage().getName());
 		dataFormat.setCamelContext(getContext());
-		dataFormat.setEncoding(charset);
+		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
@@ -91,14 +90,14 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 		final String[] endPointURIs;
 		if (Util.isEmpty(remoteEndpoint)) // if we send everything to the remote-EP, then log what we send to file only on "TRACE" log level
 		{
-			endPointURIs = new String[] { OUTPUT_INVOIC_LOCAL };
+			endPointURIs = new String[] { "{{" + OUTPUT_INVOIC_LOCAL + "}}" };
 		}
 		else
 		{
-			endPointURIs = new String[] { OUTPUT_INVOIC_LOCAL, remoteEndpoint };
+			endPointURIs = new String[] { "{{" + OUTPUT_INVOIC_LOCAL + "}}", remoteEndpoint };
 		}
 
-		from(EP_EDI_METASFRESH_XML_INVOICE_CONSUMER)
+		from(EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")

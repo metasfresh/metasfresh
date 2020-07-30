@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.edi.esb.desadvexport.ecosio;
+package de.metas.edi.esb.invoicexport.ecosio;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
@@ -37,7 +37,7 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EcosioDesadvRouteTest extends CamelTestSupport
+class EcosioInvoicRouteTest extends CamelTestSupport
 {
 	@EndpointInject("mock:fileOutputEndpoint")
 	private MockEndpoint fileOutputEndpoint;
@@ -48,7 +48,7 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new EcosioDesadvRoute();
+		return new EcosioInvoicRoute();
 	}
 
 	@Override
@@ -57,8 +57,8 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(EcosioDesadvRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			properties.setProperty(EcosioDesadvRoute.OUTPUT_DESADV_LOCAL, "mock:fileOutputEndpoint");
+			properties.load(EcosioInvoicRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.setProperty(EcosioInvoicRoute.OUTPUT_INVOIC_LOCAL, "mock:fileOutputEndpoint");
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 			return properties;
 		}
@@ -69,36 +69,36 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 	}
 
 	@Test
-	void empty_desadv() throws Exception
+	void empty_invoic() throws Exception
 	{
-		final var ediExpDesadvType = new ObjectFactory().createEDIExpDesadvType();
-		ediExpDesadvType.setEDIDesadvID(new BigInteger("1001"));
-		ediExpDesadvType.setADClientValueAttr("ADClientValueAttr");
+		final var ediExpInvoicType = new ObjectFactory().createEDICctopInvoicVType();
+		ediExpInvoicType.setCInvoiceID(new BigInteger("1001"));
+		ediExpInvoicType.setADClientValueAttr("ADClientValueAttr");
 
 		template.sendBodyAndHeader(
-				EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER /*endpoint-URI*/,
-				ediExpDesadvType /*actual desadvBody*/,
+				EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER /*endpoint-URI*/,
+				ediExpInvoicType /*actual invoicBody*/,
 
-				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, ediExpDesadvType // this header is otherwise set by the preceeding generic route
+				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, ediExpInvoicType // this header is otherwise set by the preceeding generic route
 		);
 
 		fileOutputEndpoint.expectedMessageCount(1);
 		fileOutputEndpoint.assertIsSatisfied(1000);
-		final var desadvBody = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
-		assertThat(desadvBody).isEqualToIgnoringWhitespace(
+		final var invoicBody = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(invoicBody).isEqualToIgnoringWhitespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-						+ "<EDI_Exp_Desadv AD_Client_Value=\"ADClientValueAttr\">\n"
-						+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
-						+ "</EDI_Exp_Desadv>");
+						+ "<EDI_cctop_invoic_v AD_Client_Value=\"ADClientValueAttr\">\n"
+						+ "    <C_Invoice_ID>1001</C_Invoice_ID>\n"
+						+ "</EDI_cctop_invoic_v>");
 
 		feedbackOutputEndpoint.expectedMessageCount(1);
 		feedbackOutputEndpoint.assertIsSatisfied(1000);
 		final var feedBackBody = feedbackOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(feedBackBody).isEqualToIgnoringWhitespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-						+ "<EDI_Desadv_Feedback AD_Client_Value=\"ADClientValueAttr\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\">\n"
-						+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
+						+ "<EDI_Invoice_Feedback AD_Client_Value=\"ADClientValueAttr\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\">\n"
+						+ "    <C_Invoice_ID>1001</C_Invoice_ID>\n"
 						+ "    <EDI_ExportStatus>S</EDI_ExportStatus>\n"
-						+ "</EDI_Desadv_Feedback>");
+						+ "</EDI_Invoice_Feedback>");
 	}
 }
