@@ -299,22 +299,19 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	 */
 	private List<I_M_HU> retrieveNeededHusToMove(@NonNull final I_DD_OrderLine ddOrderLine)
 	{
-		final List<I_M_HU> neededHus = new ArrayList<I_M_HU>();
-		
 		// Order by
 		final IQueryOrderBy queryOrderBy = queryBL.createQueryOrderByBuilder(I_M_HU.class)
 				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
 				.addColumn(I_M_HU.COLUMN_Created)
 				.createQueryOrderBy();
+		
 		final List<I_M_HU> hus = retrieveAvailableHusToMove(ddOrderLine, queryOrderBy);
-		
 		final I_C_UOM uom = uomDAO.getById(ddOrderLine.getC_UOM_ID());
-		
 		BigDecimal qtyFromHus = BigDecimal.ZERO;
-		
 		BigDecimal unallocatedQty = ddOrderLine.getQtyEntered();
-		
 		final BigDecimal qtyEntered = ddOrderLine.getQtyEntered();
+		
+		final List<I_M_HU> neededHus = new ArrayList<I_M_HU>();
 		
 		for (final I_M_HU hu : hus)
 		{
@@ -334,7 +331,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 					// transform
 					final Quantity qtyCU = Quantity.of(unallocatedQty.negate(), uom);
 					transformHu(hu, qtyCU);
-					
 					unallocatedQty = BigDecimal.ZERO;
 				}
 			}
