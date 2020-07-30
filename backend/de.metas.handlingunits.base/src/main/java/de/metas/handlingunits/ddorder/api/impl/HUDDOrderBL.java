@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -36,7 +35,6 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
@@ -66,7 +64,7 @@ import lombok.Value;
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 
-	private static final AdMessageKey AD_Message_oHU_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
+	private static final AdMessageKey MSG_HU_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
 	
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL .class);
@@ -241,21 +239,15 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	{
 		final List<I_DD_OrderLine> ddOrderLines = ddOrderDAO.retrieveLines(ddOrder);
 
-		// Order by
-		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
-				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
-				.addColumn(I_M_HU.COLUMN_Created)
-				.createQueryOrderBy();
-		
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
-			final List<I_M_HU> hus = retrieveAvailableHusToMove(InterfaceWrapperHelper.create(ddOrderLine, de.metas.handlingunits.model.I_DD_OrderLine.class), queryOrderBy);
+			final List<I_M_HU> hus = retrieveNeededHusToMove(ddOrderLine);
 			if (hus.isEmpty())
 			{
 				final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID());
 				final LocatorId locatorId = LocatorId.ofRepoId(warehouseId, ddOrderLine.getM_Locator_ID());
 
-				throw new HUException(AD_Message_oHU_for_product)
+				throw new HUException(MSG_HU_for_product)
 						.appendParametersToMessage()
 						.setParameter("Product", ddOrderLine.getM_Product())
 						.setParameter("Warehouse", warehouseId)
@@ -279,7 +271,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	@Override
 	public List<I_M_HU> retrieveAvailableHusToMove(@NonNull final I_DD_OrderLine ddOrderLine, @NonNull final IQueryOrderBy queryOrderBy)
 	{
-
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
 
 		
@@ -296,7 +287,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.setOrderBy(queryOrderBy)
 				.list();
 	}
-
+	
 	/**
 	 * retrieve the Hus needed to move in order to be able to move the dd orderline qty
 	 * if the qty needed is less then one from storage, will split the HU
@@ -341,6 +332,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				}
 			}
 			
+			// if we allocated entire qty, exit
 			if(unallocatedQty.signum() == 0)
 			{
 				break;
