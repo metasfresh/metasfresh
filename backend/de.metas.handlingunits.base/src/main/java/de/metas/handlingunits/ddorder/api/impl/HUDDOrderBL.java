@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -35,11 +36,13 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.ddorder.api.DDOrderLineCreateRequest;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -53,6 +56,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -302,7 +306,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	 * retrieve the Hus needed to move in order to be able to move the dd orderline qty
 	 * @param ddOrderLine
 	 */
-	private List<I_M_HU> retrieveNeededHusToMove(final I_DD_OrderLine ddOrderLine)
+	private List<I_M_HU> retrieveNeededHusToMove(@NonNull final I_DD_OrderLine ddOrderLine)
 	{
 		final List<I_M_HU> neededHus = new ArrayList<I_M_HU>();
 		
@@ -315,24 +319,49 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		
 		final I_C_UOM uom = uomDAO.getById(ddOrderLine.getC_UOM_ID());
 		
-		BigDecimal qty = BigDecimal.ZERO;
+		BigDecimal qtyFromHus = BigDecimal.ZERO;
+		
+		BigDecimal unallocatedQty = ddOrderLine.getQtyEntered();
+		
+		final BigDecimal qtyEntered = ddOrderLine.getQtyEntered();
 		
 		for (final I_M_HU hu : hus)
 		{
 			final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
 			final IHUStorage storage = storageFactory.getStorage(hu);
 			final BigDecimal qtyActual = storage.getQty(productId, uom);
-			qty = qty.add(qtyActual);
-			if (ddOrderLine.getQtyEntered().compareTo(qty) > 0)
+			
+			if (qtyEntered.compareTo(qtyFromHus) > 0)
 			{
 				neededHus.add(hu);
+				qtyFromHus = qtyFromHus.add(qtyActual);
+				unallocatedQty = qtyEntered.subtract(qtyFromHus);
+				
+				// transform HU if needed
+				if (unallocatedQty.signum() < 0)
+				{
+					// transform
+					final Quantity qtyCU = Quantity.of(unallocatedQty.negate(), uom);
+					transformHu(hu, qtyCU);
+					
+					unallocatedQty = BigDecimal.ZERO;
+				}
 			}
-			else 
+			
+			if(unallocatedQty.signum() == 0)
 			{
 				break;
 			}
+			
 		}
 
 		return neededHus;
+	}
+	
+	private void transformHu(@NonNull final I_M_HU hu, @NonNull final Quantity qtyCU)
+	{
+		final HUTransformService huTransformService = HUTransformService.newInstance();
+		
+		huTransformService.cuToNewCU(hu, qtyCU);
 	}
 }

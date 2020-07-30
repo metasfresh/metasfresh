@@ -101,7 +101,7 @@ public class DDOrderLinesAllocator
 	
 	;
 
-	private static final AdMessageKey AD_Message_DD_Order_NoLine_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product");
+	private static final AdMessageKey MSG_DD_Order_NoLine_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product");
 
 	private DDOrderLinesAllocator()
 	{
@@ -361,7 +361,7 @@ public class DDOrderLinesAllocator
 		if (ddOrderLinesToAllocate.isEmpty())
 		{
 			// DD_Order_NoLine_for_product
-			throw new HUException(AD_Message_DD_Order_NoLine_for_product)
+			throw new HUException(MSG_DD_Order_NoLine_for_product)
 					.appendParametersToMessage()
 					.setParameter("Product", productBL.getProductValueAndName(huProductStorage.getProductId()))
 					.setParameter("HUProductStorage", huProductStorage);
