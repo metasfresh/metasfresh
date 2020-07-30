@@ -48,16 +48,11 @@ import de.metas.util.Services;
 @Interceptor(I_DD_Order.class)
 public class DD_Order
 {
-	public static final DD_Order INSTANCE = new DD_Order();
-	
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class); 
 	private final IMovementBL movementBL = Services.get(IMovementBL.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 
-	private DD_Order()
-	{
-	}
 	
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)

@@ -74,7 +74,7 @@ public class HUAssignmentBLTest
 		//
 		// Make sure Main handling units interceptor is registered
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(new PickingBOMService()));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(DD_Order.INSTANCE);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order());
 
 		//
 		// BL under test

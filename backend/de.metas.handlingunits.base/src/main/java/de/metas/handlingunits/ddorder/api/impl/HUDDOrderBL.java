@@ -70,7 +70,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	private static final String SYS_Config_DDOrder_isCreateMovementOnComplete = "DDOrder_isCreateMovementOnComplete";
 	private static final AdMessageKey MSG_HU_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
 	
-	private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL .class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
