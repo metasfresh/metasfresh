@@ -22,12 +22,7 @@
 
 package de.metas.ui.web.picking.pickingslot.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-
-import org.compiere.SpringContextHolder;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -35,6 +30,9 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 
 /**
  * Processes the unprocessed picking candidate of the currently selected TU.<br>

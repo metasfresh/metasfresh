@@ -3,7 +3,6 @@ package de.metas.picking.service;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -11,6 +10,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -138,7 +138,7 @@ public final class PackingItemParts implements Iterable<PackingItemPart>
 	{
 		return ImmutableList.copyOf(partsMap.values());
 	}
-	
+
 	@Override
 	public Iterator<PackingItemPart> iterator()
 	{
