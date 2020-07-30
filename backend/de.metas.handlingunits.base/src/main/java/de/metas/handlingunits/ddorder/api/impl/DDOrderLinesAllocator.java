@@ -357,10 +357,9 @@ public class DDOrderLinesAllocator
 		final ImmutableList<DDOrderLineToAllocate> ddOrderLinesToAllocate = getDDOrderLinesForProduct(productId);
 
 		// No DD Order Lines were found for our Product
-		// Shall not happen, but ignore it for now.
+		// Shall not happen
 		if (ddOrderLinesToAllocate.isEmpty())
 		{
-			// DD_Order_NoLine_for_product
 			throw new HUException(MSG_DD_Order_NoLine_for_product)
 					.appendParametersToMessage()
 					.setParameter("Product", productBL.getProductValueAndName(huProductStorage.getProductId()))
