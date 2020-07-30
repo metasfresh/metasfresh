@@ -1,17 +1,5 @@
 package de.metas.handlingunits.inventory;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.X_C_DocType;
-import org.springframework.stereotype.Service;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -34,6 +22,17 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
