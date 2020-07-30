@@ -321,7 +321,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			
 			if (qtyEntered.compareTo(qtyFromHus) > 0)
 			{
-				neededHus.add(hu);
 				qtyFromHus = qtyFromHus.add(qtyActual);
 				unallocatedQty = qtyEntered.subtract(qtyFromHus);
 				
@@ -329,10 +328,18 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				if (unallocatedQty.signum() < 0)
 				{
 					// transform
-					final Quantity qtyCU = unallocatedQty.negate();
-					transformHu(hu, qtyCU);
+					final Quantity qtyCU = qtyActual.add(unallocatedQty);
+					final List<I_M_HU> createdHUs = transformHu(hu, qtyCU);
 					
+					// move the newlly created hus
+					neededHus.addAll(createdHUs);
+
 					unallocatedQty = Quantity.zero(uom);
+				}
+				else
+				{
+
+					neededHus.add(hu);
 				}
 			}
 			
@@ -351,11 +358,11 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		return neededHus;
 	}
 	
-	private void transformHu(@NonNull final I_M_HU hu, @NonNull final Quantity qtyCU)
+	private final List<I_M_HU> transformHu(@NonNull final I_M_HU hu, @NonNull final Quantity qtyCU)
 	{
 		final HUTransformService huTransformService = HUTransformService.newInstance();
 		
-		huTransformService.cuToNewCU(hu, qtyCU);
+		return huTransformService.cuToNewCU(hu, qtyCU);
 	}
 	
 	@Override
