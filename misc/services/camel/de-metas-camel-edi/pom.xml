@@ -322,6 +322,28 @@
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <!-- we *also* need the normal main jar to be used in app
+                    so don't replace the normal jar, but create the executable jar with this classifier -->
+                    <classifier>exec</classifier>
+
+                    <executable>true</executable>
+                    <mainClass>de.metas.edi.esb.ESBCamelApplication</mainClass>
+
+                </configuration>
+            </plugin>
 
             <!-- Allows the example to be run via 'mvn camel:run' -->
             <plugin>

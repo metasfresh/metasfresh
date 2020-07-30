@@ -8,7 +8,7 @@ ARG CACHEBUST=1
 
 RUN apk update && apk upgrade && apk add bash && apk add curl && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
-COPY ./target/de-metas-edi-esb-camel-exec.jar /opt/metasfresh-esb-camel/
+COPY ./target/de-metas-camel-edi-exec.jar /opt/metasfresh-esb-camel/
 COPY ./start_esb-camel_docker.sh /opt/metasfresh-esb-camel/
 
 # get the APM agent binary
