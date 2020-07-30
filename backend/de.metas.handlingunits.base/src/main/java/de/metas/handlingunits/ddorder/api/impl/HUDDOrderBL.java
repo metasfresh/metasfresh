@@ -295,6 +295,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	
 	/**
 	 * retrieve the Hus needed to move in order to be able to move the dd orderline qty
+	 * if the qty needed is less then one from storage, will split the HU
 	 * @param ddOrderLine
 	 */
 	private List<I_M_HU> retrieveNeededHusToMove(@NonNull final I_DD_OrderLine ddOrderLine)
@@ -331,6 +332,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 					// transform
 					final Quantity qtyCU = Quantity.of(unallocatedQty.negate(), uom);
 					transformHu(hu, qtyCU);
+					
 					unallocatedQty = BigDecimal.ZERO;
 				}
 			}
@@ -339,7 +341,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			{
 				break;
 			}
-			
 		}
 
 		return neededHus;
