@@ -48,13 +48,13 @@ import lombok.NonNull;
 
 public class MovementBL implements IMovementBL
 {
-	private static final IProductBL productBL = Services.get(IProductBL.class);
-	private final static IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final static IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	
 	@Override
 	public I_C_UOM getC_UOM(final I_M_MovementLine movementLine)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
 		return productBL.getStockUOM(movementLine.getM_Product_ID());
 	}
 
@@ -85,8 +85,7 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setC_Activities(final I_M_MovementLine movementLine)
 	{
-		final IProductActivityProvider activityProvider = Services.get(IProductActivityProvider.class);
-		final ActivityId productActivityId = activityProvider.retrieveActivityForAcct(
+		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(movementLine.getAD_Client_ID()),
 				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
 				ProductId.ofRepoId(movementLine.getM_Product_ID()));
