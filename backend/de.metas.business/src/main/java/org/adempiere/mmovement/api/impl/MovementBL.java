@@ -48,10 +48,15 @@ import lombok.NonNull;
 
 public class MovementBL implements IMovementBL
 {
+	private static final IProductActivityProvider activityProvide = Services.get(IProductActivityProvider.class);
+	private static final IProductBL productBL = Services.get(IProductBL.class);
+	private final static IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final static IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	
 	@Override
 	public I_C_UOM getC_UOM(final I_M_MovementLine movementLine)
 	{
-		return Services.get(IProductBL.class).getStockUOM(movementLine.getM_Product_ID());
+		return productBL.getStockUOM(movementLine.getM_Product_ID());
 	}
 
 	@Override
@@ -61,7 +66,6 @@ public class MovementBL implements IMovementBL
 		final I_C_UOM movementQtyUOM = getC_UOM(movementLine);
 		final Quantity movementQty = new Quantity(movementQtyValue, movementQtyUOM);
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final int productId = movementLine.getM_Product_ID();
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 
@@ -74,7 +78,6 @@ public class MovementBL implements IMovementBL
 		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 		final I_C_UOM uomTo = getC_UOM(movementLine);
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal movementQtyConv = uomConversionBL.convertQty(productId, movementQty, uom, uomTo);
 
 		movementLine.setMovementQty(movementQtyConv);
@@ -83,7 +86,7 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setC_Activities(final I_M_MovementLine movementLine)
 	{
-		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).retrieveActivityForAcct(
+		final ActivityId productActivityId = activityProvide.retrieveActivityForAcct(
 				ClientId.ofRepoId(movementLine.getAD_Client_ID()),
 				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
 				ProductId.ofRepoId(movementLine.getM_Product_ID()));
@@ -138,7 +141,6 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void voidMovement(final I_M_Movement movement)
 	{
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-			docActionBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Reversed);
+		docActionBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Reversed);
 	}
 }
