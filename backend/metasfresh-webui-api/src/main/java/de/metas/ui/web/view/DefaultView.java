@@ -39,6 +39,7 @@ import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.val;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -318,6 +319,7 @@ public final class DefaultView implements IEditableView
 	public void invalidateSelection()
 	{
 		selectionsRef.forgetCurrentSelections();
+		headerProperties.forget();
 
 		invalidateAll();
 
@@ -558,6 +560,12 @@ public final class DefaultView implements IEditableView
 
 		// Invalidate local rowsById cache
 		cache_rowsById.removeAll(rowIds);
+
+		final boolean headerPropertiesChanged = headerProperties.forget() != null;
+		if (headerPropertiesChanged)
+		{
+			ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(this);
+		}
 
 		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
 		// TODO: introduce a SysConfig to be able to disable this feature
