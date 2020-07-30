@@ -29,11 +29,7 @@ import {
   TOGGLE_INCLUDED_VIEW,
 } from '../constants/ActionTypes';
 
-import {
-  createGridTable,
-  updateGridTable,
-  clearTableData,
-} from './TableActions';
+import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
@@ -238,7 +234,7 @@ export function toggleIncludedView(id, showIncludedView, isModal) {
 
 /**
  * @method fetchDocument
- * @summary Get grid rows
+ * @summary Get grid rows when the view already exists
  *
  * @param {*} windowId
  * @param {*} viewId
@@ -417,9 +413,10 @@ export function filterView(windowId, viewId, filters, isModal = false) {
       .then((response) => {
         dispatch(filterViewSuccess(windowId, response.data, isModal));
 
-        // clear data, so that we won't add filtered rows to previous data
+        // remove table, so that we won't add filtered rows to the previous data
         const tableId = getTableId({ windowId, viewId });
-        dispatch(clearTableData(tableId));
+
+        dispatch(deleteTable(tableId));
 
         return Promise.resolve(response.data);
       })
