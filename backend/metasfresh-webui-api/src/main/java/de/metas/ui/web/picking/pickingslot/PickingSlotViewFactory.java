@@ -1,18 +1,7 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util.ArrayKey;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.printing.esb.base.util.Check;
@@ -45,6 +34,14 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util.ArrayKey;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L

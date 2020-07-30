@@ -31,11 +31,11 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
-import org.slf4j.Logger;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -62,12 +62,12 @@ import lombok.NonNull;
 public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 		implements IProcessPrecondition
 {
-	private static final Logger log = LogManager.getLogger(WEBUI_Picking_ForcePickToNewHU.class);	
+	private static final Logger log = LogManager.getLogger(WEBUI_Picking_ForcePickToNewHU.class);
 
-	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);	
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);	
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -96,112 +96,112 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 		invalidatePickingSlotsView();
 		return MSG_OK;
 	}
-	
-	private HuId forcePick()	
-	{	
-		final HuId packToHuId = createNewHuId();	
 
-		Quantity qtyToPack = getQtyToPack();	
-		if (qtyToPack.signum() <= 0)	
-		{	
-			throw new AdempiereException("@QtyCU@ > 0");	
-		}	
+	private HuId forcePick()
+	{
+		final HuId packToHuId = createNewHuId();
 
-		// 1. try to pick from source HUs if any are available	
-		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();	
+		Quantity qtyToPack = getQtyToPack();
+		if (qtyToPack.signum() <= 0)
+		{
+			throw new AdempiereException("@QtyCU@ > 0");
+		}
 
-		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} sourceHUIds: {}", qtyToPack, sourceHUIds);	
+		// 1. try to pick from source HUs if any are available
+		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
 
-		if (!sourceHUIds.isEmpty())	
-		{	
-			final Quantity qtyPickedFromSourceHUs = pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);	
+		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} sourceHUIds: {}", qtyToPack, sourceHUIds);
 
-			qtyToPack = qtyToPack.subtract(qtyPickedFromSourceHUs);	
+		if (!sourceHUIds.isEmpty())
+		{
+			final Quantity qtyPickedFromSourceHUs = pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);
 
-			if (qtyToPack.signum() <= 0)	
-			{	
-				return packToHuId;	
-			}	
-		}	
+			qtyToPack = qtyToPack.subtract(qtyPickedFromSourceHUs);
 
-		// 2. if the qtyToPack couldn't be fulfilled from the available source HUs, try to allocate from the existing HUs	
-		final ImmutableList<HuId> availableHUIds = retrieveTopLevelHUIdsAvailableForPicking();	
+			if (qtyToPack.signum() <= 0)
+			{
+				return packToHuId;
+			}
+		}
 
-		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} availableHUsForPicking: {}", qtyToPack, availableHUIds);	
+		// 2. if the qtyToPack couldn't be fulfilled from the available source HUs, try to allocate from the existing HUs
+		final ImmutableList<HuId> availableHUIds = retrieveTopLevelHUIdsAvailableForPicking();
 
-		if (!availableHUIds.isEmpty())	
-		{	
+		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} availableHUsForPicking: {}", qtyToPack, availableHUIds);
 
-			final Quantity qtyPickedFromAvailableHus = pickHUsAndPackTo(availableHUIds, qtyToPack, packToHuId);	
+		if (!availableHUIds.isEmpty())
+		{
 
-			qtyToPack = qtyToPack.subtract(qtyPickedFromAvailableHus);	
+			final Quantity qtyPickedFromAvailableHus = pickHUsAndPackTo(availableHUIds, qtyToPack, packToHuId);
 
-			if (qtyToPack.signum() <= 0)	
-			{	
-				return packToHuId;	
-			}	
-		}	
+			qtyToPack = qtyToPack.subtract(qtyPickedFromAvailableHus);
 
-		// 3. if the qtyToPack is still not met, supply the missing qty via a virtual inventory	
-		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): supplementing qty: {} via inventory! ", qtyToPack);	
+			if (qtyToPack.signum() <= 0)
+			{
+				return packToHuId;
+			}
+		}
 
-		final HuId suppliedHUId = createInventoryForMissingQty(qtyToPack);	
+		// 3. if the qtyToPack is still not met, supply the missing qty via a virtual inventory
+		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): supplementing qty: {} via inventory! ", qtyToPack);
 
-		final Quantity qtyPickedFromSuppliedHU = pickHUsAndPackTo(ImmutableList.of(suppliedHUId), qtyToPack, packToHuId);	
+		final HuId suppliedHUId = createInventoryForMissingQty(qtyToPack);
 
-		qtyToPack = qtyToPack.subtract(qtyPickedFromSuppliedHU);	
+		final Quantity qtyPickedFromSuppliedHU = pickHUsAndPackTo(ImmutableList.of(suppliedHUId), qtyToPack, packToHuId);
 
-		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);	
+		qtyToPack = qtyToPack.subtract(qtyPickedFromSuppliedHU);
 
-		return packToHuId;	
-	}	
+		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
 
-	private HuId createInventoryForMissingQty(@NonNull final Quantity qtyToBeAdded)	
-	{	
-		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();	
+		return packToHuId;
+	}
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentSchedule.getM_Warehouse_ID());	
-		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);	
-		final OrgId orgId = OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID());	
-		final ClientId clientId = ClientId.ofRepoId(shipmentSchedule.getAD_Client_ID());	
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentSchedule.getM_AttributeSetInstance_ID());	
+	private HuId createInventoryForMissingQty(@NonNull final Quantity qtyToBeAdded)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
-		final InventoryHeaderCreateRequest createHeaderRequest = InventoryHeaderCreateRequest	
-				.builder()	
-				.orgId(orgId)	
-				.docTypeId(getVirtualInventoryDocTypeId(clientId, orgId))	
-				.movementDate(SystemTime.asZonedDateTime())	
-				.warehouseId(warehouseId)	
-				.build();	
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentSchedule.getM_Warehouse_ID());
+		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+		final OrgId orgId = OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID());
+		final ClientId clientId = ClientId.ofRepoId(shipmentSchedule.getAD_Client_ID());
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentSchedule.getM_AttributeSetInstance_ID());
 
-		final InventoryId inventoryId = inventoryService.createInventoryHeader(createHeaderRequest).getId();	
+		final InventoryHeaderCreateRequest createHeaderRequest = InventoryHeaderCreateRequest
+				.builder()
+				.orgId(orgId)
+				.docTypeId(getVirtualInventoryDocTypeId(clientId, orgId))
+				.movementDate(SystemTime.asZonedDateTime())
+				.warehouseId(warehouseId)
+				.build();
 
-		final InventoryLineCreateRequest createLineRequest = InventoryLineCreateRequest	
-				.builder()	
-				.inventoryId(inventoryId)	
-				.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))	
-				.qtyBooked(Quantity.zero(qtyToBeAdded.getUOM()))	
-				.qtyCount(qtyToBeAdded)	
-				.attributeSetId(attributeSetInstanceId)	
-				.locatorId(locatorId)	
-				.build();	
+		final InventoryId inventoryId = inventoryService.createInventoryHeader(createHeaderRequest).getId();
 
-		inventoryService.createInventoryLine(createLineRequest);	
+		final InventoryLineCreateRequest createLineRequest = InventoryLineCreateRequest
+				.builder()
+				.inventoryId(inventoryId)
+				.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
+				.qtyBooked(Quantity.zero(qtyToBeAdded.getUOM()))
+				.qtyCount(qtyToBeAdded)
+				.attributeSetId(attributeSetInstanceId)
+				.locatorId(locatorId)
+				.build();
 
-		inventoryService.completeDocument(inventoryId);	
+		inventoryService.createInventoryLine(createLineRequest);
 
-		final Inventory inventory = inventoryService.getById(inventoryId);	
+		inventoryService.completeDocument(inventoryId);
 
-		return CollectionUtils.singleElement(inventory.getHuIds());	
-	}	
+		final Inventory inventory = inventoryService.getById(inventoryId);
 
-	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)	
-	{	
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()	
-				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())	
-				.docSubType(InventoryDocSubType.VirtualInventory.getCode())	
-				.adClientId(clientId.getRepoId())	
-				.adOrgId(orgId.getRepoId())	
-				.build());	
+		return CollectionUtils.singleElement(inventory.getHuIds());
+	}
+
+	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
+				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
+				.adClientId(clientId.getRepoId())
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 }
