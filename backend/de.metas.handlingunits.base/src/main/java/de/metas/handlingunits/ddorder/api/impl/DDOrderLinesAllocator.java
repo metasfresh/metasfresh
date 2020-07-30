@@ -99,8 +99,6 @@ public class DDOrderLinesAllocator
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedShipment = new HashSet<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedReceipt = new HashSet<>();
 	
-	;
-
 	private static final AdMessageKey MSG_DD_Order_NoLine_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product");
 
 	private DDOrderLinesAllocator()
