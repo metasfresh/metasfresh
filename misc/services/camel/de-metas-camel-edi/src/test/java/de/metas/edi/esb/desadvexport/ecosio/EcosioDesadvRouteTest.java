@@ -22,9 +22,12 @@
 
 package de.metas.edi.esb.desadvexport.ecosio;
 
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -32,21 +35,27 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EcosioDesadvRouteTest extends CamelTestSupport
 {
+	@EndpointInject("mock:fileOutputEndpoint")
+	private MockEndpoint fileOutputEndpoint;
+
+	@EndpointInject(uri = "mock:ep.rabbitmq.to.mf")
+	private MockEndpoint feedbackOutputEndpoint;
+
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
 		return new EcosioDesadvRoute();
 	}
 
-	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
-	}
+	// @Override
+	// public boolean isUseAdviceWith()
+	// {
+	// 	return true;
+	// }
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -55,6 +64,8 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 		try
 		{
 			properties.load(EcosioDesadvRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.setProperty(EcosioDesadvRoute.OUTPUT_DESADV_LOCAL, "mock:fileOutputEndpoint");
+			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 			return properties;
 		}
 		catch (IOException e)
@@ -64,16 +75,36 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 	}
 
 	@Test
-	void test() throws Exception
+	void empty_ediExpDesadvType() throws Exception
 	{
 		final var ediExpDesadvType = new ObjectFactory().createEDIExpDesadvType();
 		ediExpDesadvType.setEDIDesadvID(new BigInteger("1001"));
 		ediExpDesadvType.setADClientValueAttr("ADClientValueAttr");
 
-		//EcosioDesadvRoute.OUTPUT_DESADV_LOCAL;
+		template.sendBodyAndHeader(
+				EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER /*endpoint-URI*/,
+				ediExpDesadvType /*actual desadvBody*/,
 
-		template.sendBody(
-				EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER,
-				ediExpDesadvType);
+				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, ediExpDesadvType // this header is otherwise set by the preceeding generic route
+		);
+
+		fileOutputEndpoint.expectedMessageCount(1);
+		fileOutputEndpoint.assertIsSatisfied(1000);
+		final var desadvBody = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(desadvBody).isEqualTo(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+						+ "<EDI_Exp_Desadv AD_Client_Value=\"ADClientValueAttr\">\n"
+						+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
+						+ "</EDI_Exp_Desadv>\n");
+
+		feedbackOutputEndpoint.expectedMessageCount(1);
+		feedbackOutputEndpoint.assertIsSatisfied(1000);
+		final var feedBackBody = feedbackOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(feedBackBody).isEqualTo(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+						+ "<EDI_Desadv_Feedback AD_Client_Value=\"ADClientValueAttr\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\">\n"
+						+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
+						+ "    <EDI_ExportStatus>S</EDI_ExportStatus>\n"
+						+ "</EDI_Desadv_Feedback>\n");
 	}
 }

@@ -116,7 +116,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 						// Send the feedback to metasfresh
 						.log(LoggingLevel.INFO, "EDI: Sending error response to metasfresh...")
 						.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
-						.to(Constants.EP_AMQP_TO_MF)
+						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
 				.end();
 		// @formatter:on
 	}

@@ -31,7 +31,6 @@ import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
-import de.metas.edi.esb.jaxb.stepcom.desadv.ObjectFactory;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -62,20 +61,19 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
 	@VisibleForTesting
-	static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.ecosio}}";
+	static final String OUTPUT_DESADV_LOCAL = "edi.file.desadv.ecosio";
 
 	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.ecosio.remote";
 
-	private static final String JAXB_DESADV_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
 	@Override
 	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
-		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+		//final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 
-		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_DESADV_CONTEXTPATH);
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(EDIExpDesadvType.class.getPackage().getName());
 		dataFormat.setCamelContext(getContext());
-		dataFormat.setEncoding(charset);
+		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
@@ -89,11 +87,11 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 		final String[] endPointURIs;
 		if (Util.isEmpty(remoteEndpoint)) // if we send everything to the remote-EP, then log what we send to file only on "TRACE" log level
 		{
-			endPointURIs = new String[] { EcosioDesadvRoute.OUTPUT_DESADV_LOCAL };
+			endPointURIs = new String[] { "{{" + EcosioDesadvRoute.OUTPUT_DESADV_LOCAL + "}}" };
 		}
 		else
 		{
-			endPointURIs = new String[] { EcosioDesadvRoute.OUTPUT_DESADV_LOCAL, remoteEndpoint };
+			endPointURIs = new String[] { "{{" + EcosioDesadvRoute.OUTPUT_DESADV_LOCAL + "}}", remoteEndpoint };
 		}
 
 		from(EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
@@ -130,6 +128,6 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
-				.to(Constants.EP_AMQP_TO_MF);
+				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 	}
 }

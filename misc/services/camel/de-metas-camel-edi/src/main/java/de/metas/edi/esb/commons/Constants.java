@@ -35,7 +35,7 @@ public final class Constants
 	public static final String METASFRESH_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS"; // TODO extract pattern to props file
 
 	public static final String EP_AMQP_FROM_MF = "{{ep.rabbitmq.from.mf}}";
-	public static final String EP_AMQP_TO_MF = "{{ep.rabbitmq.to.mf}}";
+	public static final String EP_AMQP_TO_MF = "ep.rabbitmq.to.mf";
 	public static final String EP_AMQP_TO_MF_DURABLE_ROUTING_KEY = "{{rabbitmq.out.exchange.durable}}";
 
 	public static final String JAXB_ContextPath = ObjectFactory.class.getPackage().getName();

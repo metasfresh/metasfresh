@@ -24,5 +24,18 @@ package de.metas.edi.esb.ordersimport.stepcom.qualifier;
 
 public enum AddressQual
 {
-	SUPL, BUYR, DELV, IVCE, ULCO
+	/** Supplier */
+	SUPL,
+
+	/** Buyer */
+	BUYR,
+
+	/** Delivery party */
+	DELV,
+
+	/** Invoicee */
+	IVCE,
+
+	/** Untimate consignee */
+	ULCO
 }

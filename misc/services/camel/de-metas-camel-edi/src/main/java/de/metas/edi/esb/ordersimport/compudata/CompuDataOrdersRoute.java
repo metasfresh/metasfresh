@@ -151,7 +151,7 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 					.marshal(jaxb)
 					//
 					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
-					.to(Constants.EP_AMQP_TO_MF)
+					.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
 				.end();
 		// @formatter:on
 	}

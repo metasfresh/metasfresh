@@ -268,6 +268,12 @@
             </xsd:enumeration>
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:element name="EDI_Imp_C_OLCands" type="EDI_Imp_C_OLCandsType"/>
+    <xsd:complexType name="EDI_Imp_C_OLCandsType">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Imp_C_OLCand" type="EDI_Imp_C_OLCandType"/>
+        </xsd:sequence>
+    </xsd:complexType>
     <xsd:element name="EDI_Imp_C_OLCand" type="EDI_Imp_C_OLCandType"/>
     <xsd:element name="EDI_Imp_C_BPartner_Location_Lookup_GLN" type="EDI_Imp_C_BPartner_Location_Lookup_GLNType"/>
     <xsd:element name="EDI_Imp_C_UOM_Lookup_UOMSymbol" type="EDI_Imp_C_UOM_Lookup_UOMSymbolType"/>
@@ -752,6 +758,7 @@
             <xsd:element minOccurs="0" name="Bill_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
             <xsd:element minOccurs="0" name="C_Currency_ID" type="EDI_Exp_C_CurrencyType"/>
             <xsd:element minOccurs="0" name="HandOver_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
+            <xsd:element minOccurs="0" name="Dropship_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
         <xsd:attribute ref="ReplicationEvent"/>

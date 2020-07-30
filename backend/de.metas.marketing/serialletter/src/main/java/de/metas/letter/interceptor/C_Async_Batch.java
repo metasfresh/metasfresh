@@ -53,6 +53,5 @@ public class C_Async_Batch
 	{
 		final SerialLetterService serialLetterService = Adempiere.getBean(SerialLetterService.class);
 		serialLetterService.printAutomaticallyLetters(asyncBatch);
-		}
-
+	}
 }

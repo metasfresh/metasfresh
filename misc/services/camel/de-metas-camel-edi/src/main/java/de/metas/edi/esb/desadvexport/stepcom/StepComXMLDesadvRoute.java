@@ -141,6 +141,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
-				.to(Constants.EP_AMQP_TO_MF);
+				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 	}
 }
