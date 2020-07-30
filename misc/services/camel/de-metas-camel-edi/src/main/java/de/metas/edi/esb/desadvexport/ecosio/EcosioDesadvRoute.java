@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.desadvexport.ecosio;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
@@ -60,7 +61,8 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
-	private static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.ecosio}}";
+	@VisibleForTesting
+	static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.ecosio}}";
 
 	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.ecosio.remote";
 
