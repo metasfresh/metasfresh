@@ -54,8 +54,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -365,8 +363,8 @@ public class DDOrderLinesAllocator
 			// DD_Order_NoLine_for_product
 			throw new HUException(AD_Message_DD_Order_NoLine_for_product)
 					.appendParametersToMessage()
-					.setParameter("\n Product:", productBL.getProductValueAndName(huProductStorage.getProductId()))
-					.setParameter("\n HUProductStorage:", huProductStorage);
+					.setParameter("Product", productBL.getProductValueAndName(huProductStorage.getProductId()))
+					.setParameter("HUProductStorage", huProductStorage);
 		}
 
 		final I_M_HU hu = huProductStorage.getM_HU();

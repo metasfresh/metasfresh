@@ -71,6 +71,9 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -242,8 +245,8 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			final List<I_M_HU> hus = retrieveNeededHusToMove(ddOrderLine);
 			if (hus.isEmpty())
 			{
-				final LocatorId locatorId = LocatorId.ofRecordOrNull(ddOrderLine.getM_Locator()); 
-				final WarehouseId warehouseId = locatorId.getWarehouseId();
+				final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID());
+				final LocatorId locatorId = LocatorId.ofRepoId(warehouseId, ddOrderLine.getM_Locator_ID());
 
 				throw new HUException(MSG_HU_for_product)
 						.appendParametersToMessage()
@@ -272,8 +275,9 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	{
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
 
-		final LocatorId locatorId = LocatorId.ofRecordOrNull(ddOrderLine.getM_Locator()); 
-		final WarehouseId warehouseId = locatorId.getWarehouseId();
+		
+		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID());
+		final LocatorId locatorId = LocatorId.ofRepoId(warehouseId, ddOrderLine.getM_Locator_ID());
 		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
 		
 		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
@@ -300,12 +304,8 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.addColumn(I_M_HU.COLUMN_Created)
 				.createQueryOrderBy();
 		final List<I_M_HU> hus = retrieveAvailableHusToMove(ddOrderLine, queryOrderBy);
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomDAO.getById(ddOrderLine.getC_UOM_ID());
-
 		
-		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+		final I_C_UOM uom = uomDAO.getById(ddOrderLine.getC_UOM_ID());
 		
 		BigDecimal qty = BigDecimal.ZERO;
 		
