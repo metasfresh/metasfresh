@@ -25,7 +25,7 @@ package de.metas.edi.esb.commons;
 
 import java.util.Calendar;
 
-public class FixedTimeSource implements TimeSource
+public class FixedTimeSourceTest implements TimeSource
 {
 	private long ts = -1;
 
@@ -44,7 +44,7 @@ public class FixedTimeSource implements TimeSource
 		ts = millis;
 	}
 
-	public FixedTimeSource setTime(final int year, final int month, final int day, final int hour, final int minute, final int sec)
+	public FixedTimeSourceTest setTime(final int year, final int month, final int day, final int hour, final int minute, final int sec)
 	{
 		final Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.YEAR, year);
