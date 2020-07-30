@@ -1,9 +1,17 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -18,9 +26,9 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.service.IPackingItem;
-import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemPartId;
+import de.metas.picking.service.PackingItemParts;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.util.Check;
@@ -28,14 +36,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /*
  * #%L
@@ -138,30 +138,23 @@ public class ProcessHUsAndPickingCandidateCommand
 
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)
 	{
-		final List<IPackingItem> itemsToPack = createItemsToPack(HuId.ofRepoId(hu.getM_HU_ID()));
+		final IPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
-		itemsToPack.forEach(itemToPack -> {
-			HU2PackingItemsAllocator.builder()
-					.itemToPack(itemToPack)
-					.allowOverDelivery(allowOverDelivery)
-					.pickFromHU(hu)
-					.allocate();
-		});
+		HU2PackingItemsAllocator.builder()
+				.itemToPack(itemToPack)
+				.allowOverDelivery(allowOverDelivery)
+				.pickFromHU(hu)
+				.allocate();
 	}
 
-	private ImmutableList<IPackingItem> createItemsToPack(final HuId huId)
+	private IPackingItem createItemToPack(final HuId huId)
 	{
-		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new LinkedHashMap<>();
-
-		getPickingCandidatesForHUId(huId)
+		final PackingItemParts parts = getPickingCandidatesForHUId(huId)
 				.stream()
 				.map(this::createPackingItemPart)
-				.map(PackingItems::newPackingItem)
-				.forEach(item -> {
-					packingItems.merge(item.getGroupingKey(), item, IPackingItem::addPartsAndReturn);
-				});
-
-		return ImmutableList.copyOf(packingItems.values());
+				.collect(PackingItemParts.collect());
+		
+		return PackingItems.newPackingItem(parts);
 	}
 
 	private PackingItemPart createPackingItemPart(final PickingCandidate pc)

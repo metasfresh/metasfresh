@@ -1,14 +1,5 @@
 package de.metas.picking.service;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.quantity.Quantity;
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +8,16 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.quantity.Quantity;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -137,18 +138,7 @@ public final class PackingItemParts implements Iterable<PackingItemPart>
 	{
 		return ImmutableList.copyOf(partsMap.values());
 	}
-
-	public I_C_UOM getCommonUOM()
-	{
-		//validate that all qtys have the same UOM
-		mapReduce(part -> part.getQty().getUomId())
-				.orElseThrow(()-> new AdempiereException("Missing I_C_UOM!")
-						.appendParametersToMessage()
-						.setParameter("Parts", this));
-
-		return toList().get(0).getQty().getUOM();
-	}
-
+	
 	@Override
 	public Iterator<PackingItemPart> iterator()
 	{

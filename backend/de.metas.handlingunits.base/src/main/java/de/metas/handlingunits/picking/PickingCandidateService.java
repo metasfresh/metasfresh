@@ -1,10 +1,19 @@
 package de.metas.handlingunits.picking;
 
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -30,13 +39,6 @@ import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /*
  * #%L
@@ -275,14 +277,4 @@ public class PickingCandidateService
 				.build()
 				.perform();
 	}
-
-	public ImmutableSet<ShipmentScheduleId> getScheduleIdsByHuId(@NonNull final HuId huId)
-	{
-		return pickingCandidateRepository.retrieveCandidatesByHUId(huId)
-				.stream()
-				.map(I_M_Picking_Candidate::getM_ShipmentSchedule_ID)
-				.map(ShipmentScheduleId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 }

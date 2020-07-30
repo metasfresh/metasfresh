@@ -22,21 +22,19 @@
 
 package de.metas.ui.web.picking.pickingslot.process;
 
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
+
+import org.compiere.SpringContextHolder;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
-import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
-
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 
 /**
  * Processes the unprocessed picking candidate of the currently selected TU.<br>
@@ -55,7 +53,6 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 {
 
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -114,7 +111,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
-		if (checkIsEmpty(pickingSlotRowOrHU))
+		if (pickingSlotRowOrHU.getHuQtyCU().signum() <= 0)
 		{
 			return false;
 			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_PICK_SOMETHING));
@@ -152,19 +149,5 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 
 		invalidatePickingSlotsView();
 		invalidatePackablesView();
-	}
-
-	private boolean checkIsEmpty(final PickingSlotRow pickingSlotRowOrHU)
-	{
-		Check.assume(pickingSlotRowOrHU.isPickedHURow(), "Was expecting an HuId but found none!");
-
-		if (pickingSlotRowOrHU.getHuQtyCU() != null && pickingSlotRowOrHU.getHuQtyCU().signum() > 0)
-		{
-			return false;
-		}
-
-		final I_M_HU hu = handlingUnitsBL.getById(pickingSlotRowOrHU.getHuId());
-
-		return handlingUnitsBL.isEmptyStorage(hu);
 	}
 }
