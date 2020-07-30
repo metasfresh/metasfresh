@@ -332,6 +332,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				}
 			}
 			
+			// if we allocated entire qty, exit
 			if(unallocatedQty.signum() == 0)
 			{
 				break;
