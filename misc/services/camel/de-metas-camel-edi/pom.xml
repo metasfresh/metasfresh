@@ -240,6 +240,11 @@
             <artifactId>milyn-smooks-fixed-length</artifactId>
             <version>${smooks.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.milyn</groupId>
+            <artifactId>milyn-smooks-templating</artifactId>
+            <version>${smooks.version}</version>
+        </dependency>
 
         <!--        <dependency>-->
         <!--            <groupId>org.milyn</groupId>-->
