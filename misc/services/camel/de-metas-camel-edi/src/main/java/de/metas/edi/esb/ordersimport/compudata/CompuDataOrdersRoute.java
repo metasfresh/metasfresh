@@ -51,7 +51,7 @@ import java.util.Set;
 @Component
 public class CompuDataOrdersRoute extends AbstractEDIRoute
 {
-	public static final String EDI_INPUT_ORDERS = "{{edi.file.orders.compudata}}";
+	public static final String EDI_INPUT_ORDERS = "edi.file.orders.compudata";
 
 	private static final Set<Class<?>> pojoTypes = new HashSet<Class<?>>();
 	static
@@ -85,7 +85,7 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 		final AggregationStrategy validTypeAggregationStrategy = new ValidTypeAggregationStrategy(CompuDataOrdersRoute.pojoTypes);
 
 		// create route and split it
-		ProcessorDefinition<?> ediToXMLOrdersRoute = from(CompuDataOrdersRoute.EDI_INPUT_ORDERS)
+		ProcessorDefinition<?> ediToXMLOrdersRoute = from("{{" + EDI_INPUT_ORDERS + "}}")
 				.routeId("COMPUDATA-Order-To-MF-OLCand")
 
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")

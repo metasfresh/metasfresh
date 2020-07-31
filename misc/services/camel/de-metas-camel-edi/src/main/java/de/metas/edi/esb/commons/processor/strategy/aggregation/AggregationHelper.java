@@ -22,12 +22,12 @@
 
 package de.metas.edi.esb.commons.processor.strategy.aggregation;
 
+import org.apache.camel.RuntimeCamelException;
+
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.camel.RuntimeCamelException;
 
 public final class AggregationHelper
 {
@@ -40,9 +40,6 @@ public final class AggregationHelper
 
 	/**
 	 * @see {@link #aggregateElement(Collection, Object, boolean, Set)}, under the assumption that isNullableResultElement=true && validElementTypes=null
-	 *
-	 * @param aggregationResult
-	 * @param element
 	 */
 	public static void aggregateElement(final Collection<Object> aggregationResult, final Object element)
 	{
@@ -57,11 +54,6 @@ public final class AggregationHelper
 	 * <li>element is not null, and it can be any supported type (validElementType=null)</li>
 	 * <li>element is not null, and it matches the supported types</li>
 	 * </ul>
-	 *
-	 * @param aggregationResult
-	 * @param element
-	 * @param isNullableResultElement
-	 * @param validElementTypes
 	 */
 	public static void aggregateElement(final Collection<Object> aggregationResult, final Object element, final boolean isNullableResultElement, final Set<Class<?>> validElementTypes)
 	{

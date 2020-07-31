@@ -59,14 +59,7 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-            <!--
-                        <dependency>
-                            <groupId>org.hamcrest</groupId>
-                            <artifactId>hamcrest-library</artifactId>
-                            <scope>test</scope>
-                            <version>${hamcrest.version}</version>
-                        </dependency>
-            -->
+
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
@@ -241,6 +234,11 @@
                     <groupId>commons-logging</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.milyn</groupId>
+            <artifactId>milyn-smooks-fixed-length</artifactId>
+            <version>${smooks.version}</version>
         </dependency>
 
         <!--        <dependency>-->
