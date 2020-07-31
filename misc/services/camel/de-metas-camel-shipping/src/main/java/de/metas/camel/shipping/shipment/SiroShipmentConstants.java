@@ -6,6 +6,7 @@ public interface SiroShipmentConstants
 {
 	String SIRO_FTP_PATH = "{{siro.ftp.retrieve.shipments.endpoint}}";
 	String CREATE_SHIPMENT_MF_URL = "{{metasfresh.api.baseurl}}/shipment";
+	String LOCAL_STORAGE_URL = "{{siro.shipments.local.storage}}";
 	String AUTHORIZATION = "Authorization";
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
 

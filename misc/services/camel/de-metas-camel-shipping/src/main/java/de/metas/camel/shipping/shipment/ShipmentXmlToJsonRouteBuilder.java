@@ -13,6 +13,7 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.CREATE_SHIPMENT_MF_URL;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.LOCAL_STORAGE_URL;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_FTP_PATH;
 
 public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
@@ -32,6 +33,7 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 
 		from(SIRO_FTP_PATH)
 				.routeId(MF_SHIPMENT_FILEMAKER_XML_TO_JSON)
+				.to(LOCAL_STORAGE_URL)
 				.streamCaching()
 				.unmarshal(jacksonXMLDataFormat)
 				.process(new ShipmentXmlToJsonProcessor())
