@@ -109,7 +109,6 @@
 
 .panel-groups-header {
     position: relative;
-    z-index: 500;
     width: 100%;
     color: $brand-color-primary;
     border-bottom: 1px solid $brand-border-color;
@@ -165,6 +164,8 @@
 }
 
 .panel-modal-header {
+    z-index: 500;
+
     .optional {
         padding-left: inherit;
 
