@@ -4,29 +4,32 @@ import {
   filterViewRequest,
   getViewLayout,
   locationConfigRequest,
+  headerPropertiesRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
 
 import {
   ADD_VIEW_LOCATION_DATA,
+  CREATE_VIEW,
+  CREATE_VIEW_SUCCESS,
+  CREATE_VIEW_ERROR,
+  DELETE_VIEW,
   FETCH_DOCUMENT_PENDING,
   FETCH_DOCUMENT_SUCCESS,
   FETCH_DOCUMENT_ERROR,
   FETCH_LAYOUT_PENDING,
   FETCH_LAYOUT_SUCCESS,
   FETCH_LAYOUT_ERROR,
-  CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
-  CREATE_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
-  DELETE_VIEW,
   TOGGLE_INCLUDED_VIEW,
+  UPDATE_VIEW_DATA_ERROR,
+  UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
 import {
@@ -234,6 +237,28 @@ export function toggleIncludedView(id, showIncludedView, isModal) {
   };
 }
 
+/**
+ * @method toggleIncludedView
+ * @summary success when updating view's properties
+ */
+export function updateViewSuccess(id, data, isModal) {
+  return {
+    type: UPDATE_VIEW_DATA_SUCCESS,
+    payload: { id, data, isModal },
+  };
+}
+
+/**
+ * @method toggleIncludedView
+ * @summary failure when updating view's properties
+ */
+export function updateViewError(id, error, isModal) {
+  return {
+    type: UPDATE_VIEW_DATA_ERROR,
+    payload: { id, error, isModal },
+  };
+}
+
 // THUNK ACTIONS
 
 /**
@@ -437,8 +462,6 @@ export function filterView(windowId, viewId, filters, isModal = false) {
  */
 export function fetchLocationConfig(windowId, isModal = false) {
   return (dispatch) => {
-    const windowId = windowId;
-
     return locationConfigRequest()
       .then((response) => {
         dispatch(fetchLocationConfigSuccess(windowId, response.data, isModal));
@@ -477,5 +500,28 @@ export function showIncludedView({
         closeListIncludedView({ windowType: windowId, viewId, forceClose })
       );
     }
+  };
+}
+
+/**
+ * @method fetchHeaderProperties
+ * @summary Request view's header properties
+ */
+export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
+  return (dispatch) => {
+    dispatch(fetchDocumentPending(windowId, isModal));
+
+    return headerPropertiesRequest({ windowId, viewId })
+      .then((response) => {
+        const updatedData = {
+          headerProperties: response.data,
+        };
+        dispatch(updateViewSuccess(windowId, updatedData, isModal));
+      })
+      .catch((error) => {
+        dispatch(updateViewError(windowId, error, isModal));
+
+        return Promise.resolve(error);
+      });
   };
 }

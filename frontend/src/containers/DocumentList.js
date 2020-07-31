@@ -19,6 +19,7 @@ import {
   fetchDocument,
   fetchLayout,
   fetchLocationConfig,
+  fetchHeaderProperties,
   filterView,
   resetView,
   deleteView,
@@ -193,11 +194,17 @@ class DocumentListContainer extends Component {
    * @summary Subscribe to websocket stream for this view
    */
   connectWebSocket = (customViewId) => {
-    const { windowId, deselectTableItems, updateGridTableData } = this.props;
+    const {
+      windowId,
+      deselectTableItems,
+      updateGridTableData,
+      fetchHeaderProperties,
+      isModal,
+    } = this.props;
     const viewId = customViewId ? customViewId : this.props.viewId;
 
     connectWS.call(this, `/view/${viewId}`, (msg) => {
-      const { fullyChanged, changedIds } = msg;
+      const { fullyChanged, changedIds, headerPropertiesChanged } = msg;
       const table = this.props.table;
 
       if (changedIds) {
@@ -226,6 +233,10 @@ class DocumentListContainer extends Component {
             updateGridTableData(tableId, rows);
           }
         );
+      }
+
+      if (headerPropertiesChanged) {
+        fetchHeaderProperties({ windowId, viewId, isModal });
       }
 
       if (fullyChanged === true) {
@@ -803,7 +814,7 @@ export default connect(
     fetchLocationConfig,
     clearAllFilters,
     updateGridTableData,
-    // createGridTable,
+    fetchHeaderProperties,
   },
   null,
   { forwardRef: true }
