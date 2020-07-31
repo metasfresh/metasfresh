@@ -122,7 +122,7 @@ java_params="${java_params} ${java_additional_jvm_params}"
 run_metasfresh(){
 
  resolve_java_params
- cd /opt/metasfresh-esb-camel/ && java ${java_params} -jar de-metas-edi-esb-camel-exec.jar
+ cd /opt/metasfresh-esb-camel/ && java ${java_params} -jar de-metas-camel-edi-exec.jar
  
 }
 
