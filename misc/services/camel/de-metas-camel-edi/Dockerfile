@@ -13,7 +13,7 @@ COPY ./start_esb-camel_docker.sh /opt/metasfresh-esb-camel/
 
 # get the APM agent binary
 # the preceeding COPY created the target folder on-the-fly
-RUN curl -s -o /opt/metasfresh-esb-camel/elastic-apm-agent.jar https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.12.0/elastic-apm-agent-1.12.0.jar
+RUN curl -s -o /opt/metasfresh-esb-camel/elastic-apm-agent.jar https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.17.0/elastic-apm-agent-1.17.0.jar
 
 RUN dos2unix /opt/metasfresh-esb-camel/start_esb-camel_docker.sh
 
