@@ -19,6 +19,9 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
@@ -76,7 +79,7 @@ import lombok.NonNull;
  * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v02.loadXML()/code>
  * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v02.verifyTransactionCurrency(EntryTransaction8, ESRTransactionBuilder)/code>
  * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v02.extractAmountAndType(ReportEntry8, EntryTransaction8, ESRTransactionBuilder)</code>
- * </ul>	
+ * </ul>
  * For the rest, the difference is the object generated from xsd
  * 
  * <p>
@@ -92,8 +95,9 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ESRDataImporterCamt54v02 
+public class ESRDataImporterCamt54v02
 {
+	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 
 	private final I_ESR_Import header;
 	private final MultiVersionStreamReaderDelegate xsr;
@@ -152,6 +156,7 @@ public class ESRDataImporterCamt54v02
 	
 	/**
 	 * iterateEntryDetails for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
+	 * 
 	 * @param stmtBuilder builder to which the individual {@link ESRTransaction}s are added.
 	 * @param ctrlQty
 	 * @param ntry
@@ -196,6 +201,7 @@ public class ESRDataImporterCamt54v02
 
 	/**
 	 * iterateTransactionDetails for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
+	 * 
 	 * @param ntry
 	 * @param ntryDtl
 	 * @return
@@ -324,7 +330,9 @@ public class ESRDataImporterCamt54v02
 			@NonNull final EntryTransaction2 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
-		if (header.getC_BP_BankAccount_ID() <= 0)
+		int bankAccountRecordId = header.getC_BP_BankAccount_ID();
+
+		if (bankAccountRecordId <= 0)
 		{
 			return; // nothing to do
 		}
@@ -333,8 +341,10 @@ public class ESRDataImporterCamt54v02
 		final AmountAndCurrencyExchangeDetails3 transactionInstdAmt = transactionDetailAmt.getInstdAmt();
 		final ActiveOrHistoricCurrencyAndAmount amt = transactionInstdAmt.getAmt();
 
-		final CurrencyId currencyId = CurrencyId.ofRepoId(header.getC_BP_BankAccount().getC_Currency_ID());
-		final String headerCurrencyISO = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId).toThreeLetterCode(); 
+		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoId(bankAccountRecordId));
+		final CurrencyId currencyId = bankAccount.getCurrencyId();
+
+		final String headerCurrencyISO = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId).toThreeLetterCode();
 		if (!headerCurrencyISO.equalsIgnoreCase(amt.getCcy()))
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);

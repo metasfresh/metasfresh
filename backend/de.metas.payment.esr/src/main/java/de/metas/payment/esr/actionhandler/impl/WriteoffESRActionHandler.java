@@ -13,15 +13,14 @@ package de.metas.payment.esr.actionhandler.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -34,6 +33,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.PaymentId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;
@@ -66,18 +66,21 @@ public class WriteoffESRActionHandler extends AbstractESRActionHandler
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		// sanity check: there must be an payment with a negative OverUnderAmt
-		final I_C_Payment payment = line.getC_Payment();
-		
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		final I_C_Payment payment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-		
+
 		InterfaceWrapperHelper.refresh(payment, trxName); // refresh the payment : very important; otherwise the over amount is not seen
 		InterfaceWrapperHelper.refresh(writeoffInvoice, trxName); // refresh the payment : very important; otherwise the over amount is not seen
 		Check.assumeNotNull(payment, "Null payment for line {}", line.getESR_ImportLine_ID());
 		Check.errorIf(payment.getOverUnderAmt().signum() > 0, "Exces payment for line {}. Can't write this off", line.getESR_ImportLine_ID());
 
 		final BigDecimal writeOffAmt = invoiceDAO.retrieveOpenAmt(writeoffInvoice);
-		
+
 		trxManager.run(trxName, new TrxRunnable()
 		{
 			@Override
