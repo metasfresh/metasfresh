@@ -1,7 +1,5 @@
 package de.metas.payment.esr.dataimporter;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
 import java.util.List;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -12,6 +10,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -25,7 +26,6 @@ import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.IESRLineHandlersService;
-import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
@@ -80,6 +80,11 @@ public class ESRDataLoaderUtil
 
 	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
 
+	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
+	private final IESRBPBankAccountDAO esrbpBankAccountRepo = Services.get(IESRBPBankAccountDAO.class);
+	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
+	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+
 	public I_ESR_ImportLine newLine(@NonNull final I_ESR_Import esrImport)
 	{
 		final I_ESR_ImportLine newLine = InterfaceWrapperHelper.newInstance(I_ESR_ImportLine.class, esrImport);
@@ -87,13 +92,17 @@ public class ESRDataLoaderUtil
 		newLine.setESR_Import(esrImport);
 
 		// all lines of one esrImport have the same C_BP_BankAccount_ID, so in future these two column can be removed from the line
-		newLine.setC_BP_BankAccount(esrImport.getC_BP_BankAccount());
-		if (esrImport.getC_BP_BankAccount_ID() > 0)
-		{
-			newLine.setAccountNo(esrImport.getC_BP_BankAccount().getAccountNo());
-		}
+
+		int bankAccountRecordId = esrImport.getC_BP_BankAccount_ID();
+		Check.assumeGreaterThanZero(bankAccountRecordId, "C_BP_BankAccount_ID is mandatory in ESR_Import");
+
+		newLine.setC_BP_BankAccount_ID(bankAccountRecordId);
+
+		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoIdOrNull(bankAccountRecordId));
+		newLine.setAccountNo(bankAccount.getAccountNo());
 
 		return newLine;
+
 	}
 
 	/**
@@ -116,7 +125,6 @@ public class ESRDataLoaderUtil
 
 		importLine.setESRReferenceNumber(esrReferenceNumberToMatch);
 
-		final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = esrImportDAO
 				.retrieveESRInvoiceReferenceNumberDocument(OrgId.ofRepoIdOrAny(importLine.getAD_Org_ID()), esrReferenceNumberToMatch);
 
@@ -148,7 +156,8 @@ public class ESRDataLoaderUtil
 				// check the org: should not match with invoices from other orgs
 				if (match)
 				{
-					Services.get(IESRImportBL.class).setInvoice(importLine, invoice);
+
+					esrImportBL.setInvoice(importLine, invoice);
 
 					// If the retrieved I_C_ReferenceNo_Doc is manual, then don't try to parse anything from it, but take them from the invoice instead.
 					if (importLine.isESR_IsManual_ReferenceNo())
@@ -339,7 +348,7 @@ public class ESRDataLoaderUtil
 				}
 				else
 				{
-					Services.get(IESRImportBL.class).setInvoice(importLine, invoiceFallback);
+					esrImportBL.setInvoice(importLine, invoiceFallback);
 				}
 			}
 		}
@@ -400,16 +409,20 @@ public class ESRDataLoaderUtil
 
 	public void evaluateESRAccountNumber(final I_ESR_Import esrImport, final I_ESR_ImportLine importLine)
 	{
-		final I_C_BP_BankAccount bankAcct = create(esrImport.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
+		int bankAccountRecordId = esrImport.getC_BP_BankAccount_ID();
+		Check.assumeGreaterThanZero(bankAccountRecordId, "C_BP_BankAccount_ID is mandatory in ESR_Import");
+
+		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoId(bankAccountRecordId));
 
 		final String postAcctNo = importLine.getESRPostParticipantNumber();
 
-		final String renderedPostAccountNo = bankAcct.getESR_RenderedAccountNo();
+		final String renderedPostAccountNo = bankAccount.getEsrRenderedAccountNo();
 		final String unrenderedPostAcctNo = unrenderPostAccountNo(renderedPostAccountNo);
 
 		final boolean esrLineFitsBankAcctESRPostAcct = unrenderedPostAcctNo.equals(postAcctNo);
 
-		final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers = Services.get(IESRBPBankAccountDAO.class).retrieveESRPostFinanceUserNumbers(bankAcct);
+		final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers = esrbpBankAccountRepo
+				.retrieveESRPostFinanceUserNumbers(BankAccountId.ofRepoId(bankAccountRecordId));
 
 		final boolean existsFittingPostFinanceUserNumber = existsPostFinanceUserNumberFitsPostAcctNo(postFinanceUserNumbers, postAcctNo);
 

@@ -67,4 +67,6 @@ public interface IMovementBL extends ISingletonService
 	 */
 	boolean isReversal(I_M_Movement movement);
 
+	void voidMovement(I_M_Movement movement);
+
 }

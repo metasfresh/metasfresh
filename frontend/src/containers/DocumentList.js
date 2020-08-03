@@ -24,7 +24,6 @@ import {
   resetView,
   deleteView,
   showIncludedView,
-  toggleIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
@@ -99,7 +98,6 @@ class DocumentListContainer extends Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       viewId: nextViewId,
-      includedView: nextIncludedView,
       isIncluded: nextIsIncluded,
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
@@ -114,19 +112,15 @@ class DocumentListContainer extends Component {
       closeListIncludedView,
       viewId,
       resetView,
+      deleteView,
       clearAllFilters,
       deleteTable,
-      toggleIncludedView,
       isModal,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
     const included =
       includedView && includedView.windowType && includedView.viewId;
-    const nextIncluded =
-      nextIncludedView &&
-      nextIncludedView.windowType &&
-      nextIncludedView.viewId;
     const location = document.location;
 
     if (nextProps.filters.clearAll) {
@@ -155,8 +149,16 @@ class DocumentListContainer extends Component {
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
-      resetView(windowId, isModal);
       deleteTable(getTableId({ windowId, viewId }));
+
+      // if for instance we're replacing included view with a completely
+      // different view, we have no use of the old one and can safely
+      // remove it
+      if (nextWindowId === windowId) {
+        resetView(windowId, isModal);
+      } else {
+        deleteView(windowId, isModal);
+      }
 
       this.setState(
         {
@@ -177,10 +179,6 @@ class DocumentListContainer extends Component {
     }
 
     const stateChanges = {};
-
-    if (included && !nextIncluded) {
-      toggleIncludedView(windowId, false, isModal);
-    }
 
     if (Object.keys(stateChanges).length) {
       this.setState({
@@ -708,7 +706,7 @@ class DocumentListContainer extends Component {
   };
 
   /**
-   * @method showIncludedView
+   * @method showSelectedIncludedView
    * @summary ToDo: Describe the method.
    */
   showSelectedIncludedView = (selected) => {
@@ -806,7 +804,6 @@ export default connect(
     setListSorting,
     setListId,
     showIncludedView,
-    toggleIncludedView,
     push,
     updateRawModal,
     updateTableSelection,

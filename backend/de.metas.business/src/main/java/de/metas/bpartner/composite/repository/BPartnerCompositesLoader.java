@@ -271,6 +271,7 @@ final class BPartnerCompositesLoader
 		final BPartnerLocationBuilder location = BPartnerLocation.builder()
 				.active(bPartnerLocationRecord.isActive())
 				.name(bPartnerLocationRecord.getName())
+				.bpartnerName(bPartnerLocationRecord.getBPartnerName())
 				.locationType(BPartnerLocationType.builder()
 						.billTo(bPartnerLocationRecord.isBillTo())
 						.billToDefault(bPartnerLocationRecord.isBillToDefault())

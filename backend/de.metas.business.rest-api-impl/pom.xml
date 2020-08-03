@@ -110,6 +110,12 @@
             <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>

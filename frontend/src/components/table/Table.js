@@ -155,6 +155,7 @@ export default class Table extends PureComponent {
           ? item.includedView.windowType || item.includedView.windowId
           : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+        isModal,
       });
     }
   };
