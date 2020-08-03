@@ -22,7 +22,12 @@
 
 package de.metas.ui.web.view;
 
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUInvoiceCandidatesSelectionSummaryInfo;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -34,12 +39,9 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
-public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPropertiesProvider
+public class InvoiceCandidateViewHeaderPropertiesProvider implements ViewHeaderPropertiesProvider
 {
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -61,9 +63,10 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 	private List<ViewHeaderPropertiesGroup> computeRealData(final @NonNull IView view)
 	{
 		/*
-			Implementation detail
-			The `view.size()` call is needed because the rows in table `T_WEBUI_ViewSelection` are lazily inserted, on the first view usage.
-			If this call is not done, querying from the view will return 0 rows.
+		 * IMPORTANT!
+		 * Implementation detail
+		 * The `view.size()` call is needed because the rows in table `T_WEBUI_ViewSelection` are lazily inserted, on the first view usage.
+		 * If this call is not done, querying from the view will return 0 rows.
 		 */
 		final long rowsToDisplay = view.size();
 
@@ -84,53 +87,46 @@ public class OrderCandidateViewHeaderPropertiesProvider implements ViewHeaderPro
 	 */
 	private List<ViewHeaderPropertiesGroup> toViewHeaderProperties(final InvoiceCandidatesAmtSelectionSummary summary)
 	{
-		final ImmutableList.Builder<ViewHeaderPropertiesGroup> result = ImmutableList.builder();
-
-		final ViewHeaderPropertiesGroup amtNetApproved = ViewHeaderPropertiesGroup.builder()
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("NetIsApprovedForInvoicing"))
-						.value(summary.getAmountFormatted(summary.getTotalNetAmtApproved()))
+		final ImmutableList.Builder<ViewHeaderPropertiesGroup> result = ImmutableList.<ViewHeaderPropertiesGroup> builder()
+				.add(ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable("NetIsApprovedForInvoicing"))
+								.value(summary.getTotalNetAmtApprovedAsTranslatableString())
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable("isTradingUnit"))
+								.value(summary.getHUNetAmtApprovedAsTranslatableString())
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable("IsGoods"))
+								.value(summary.getCUNetAmtApprovedAsTranslatableString())
+								.build())
 						.build())
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("isTradingUnit"))
-						.value(summary.getAmountFormatted(summary.getHUNetAmtApproved()))
-						.build())
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("IsGoods"))
-						.value(summary.getAmountFormatted(summary.getCUNetAmtApproved()))
-						.build())
-				.build();
-		result.add(amtNetApproved);
-
-		final ViewHeaderPropertiesGroup amtNetNotApproved = ViewHeaderPropertiesGroup.builder()
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("NetIsNotApprovedForInvoicing"))
-						.value(summary.getAmountFormatted(summary.getTotalNetAmtNotApproved()))
-						.build())
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("isTradingUnit"))
-						.value(summary.getAmountFormatted(summary.getHUNetAmtNotApproved()))
-						.build())
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgBL.translatable("IsGoods"))
-						.value(summary.getAmountFormatted(summary.getCUNetAmtNotApproved()))
-						.build())
-				.build();
-		result.add(amtNetNotApproved);
+				.add(ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable("NetIsNotApprovedForInvoicing"))
+								.value(summary.getTotalNetAmtNotApprovedAsTranslatableString())
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable("isTradingUnit"))
+								.value(summary.getHUNetAmtNotApprovedAsTranslatableString())
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable("IsGoods"))
+								.value(summary.getCUNetAmtNotApprovedAsTranslatableString())
+								.build())
+						.build());
 
 		if (summary.getCountTotalToRecompute() > 0)
 		{
-			final ViewHeaderPropertiesGroup toRecompute = ViewHeaderPropertiesGroup.builder()
+			result.add(ViewHeaderPropertiesGroup.builder()
 					.entry(ViewHeaderProperty.builder()
 							.caption(msgBL.translatable("IsToRecompute"))
-							.value(Integer.toString(summary.getCountTotalToRecompute()))
+							.value(summary.getCountTotalToRecompute())
 							.build())
-					.build();
-			result.add(toRecompute);
+					.build());
 		}
 
 		return result.build();
-
 	}
-
 }

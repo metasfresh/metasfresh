@@ -22,14 +22,18 @@
 
 package de.metas.invoicecandidate.api.impl;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Set;
+
 import org.compiere.util.DisplayType;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.Set;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Represent a summary information (immutable) about a selection of invoice candidates
@@ -44,7 +48,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 	private final BigDecimal cuNetAmtNotApproved;
 	private final int countTotalToRecompute;
 
-	private final Set<String> currencySymbols;
+	private final ImmutableSet<String> currencySymbols;
 
 	public static Builder builder()
 	{
@@ -70,9 +74,19 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return totalNetAmtApproved;
 	}
 
+	public ITranslatableString getTotalNetAmtApprovedAsTranslatableString()
+	{
+		return toTranslatableString(getTotalNetAmtApproved());
+	}
+
 	public BigDecimal getHUNetAmtApproved()
 	{
 		return huNetAmtApproved;
+	}
+
+	public ITranslatableString getHUNetAmtApprovedAsTranslatableString()
+	{
+		return toTranslatableString(getHUNetAmtApproved());
 	}
 
 	public BigDecimal getCUNetAmtApproved()
@@ -80,9 +94,19 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return cuNetAmtApproved;
 	}
 
+	public ITranslatableString getCUNetAmtApprovedAsTranslatableString()
+	{
+		return toTranslatableString(getCUNetAmtApproved());
+	}
+
 	public BigDecimal getTotalNetAmtNotApproved()
 	{
 		return totalNetAmtNotApproved;
+	}
+
+	public ITranslatableString getTotalNetAmtNotApprovedAsTranslatableString()
+	{
+		return toTranslatableString(getTotalNetAmtNotApproved());
 	}
 
 	public BigDecimal getHUNetAmtNotApproved()
@@ -90,12 +114,21 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return huNetAmtNotApproved;
 	}
 
+	public ITranslatableString getHUNetAmtNotApprovedAsTranslatableString()
+	{
+		return toTranslatableString(getHUNetAmtNotApproved());
+	}
+
 	public BigDecimal getCUNetAmtNotApproved()
 	{
 		return cuNetAmtNotApproved;
 	}
 
-	@SuppressWarnings("unused")
+	public ITranslatableString getCUNetAmtNotApprovedAsTranslatableString()
+	{
+		return toTranslatableString(getCUNetAmtNotApproved());
+	}
+
 	public BigDecimal getTotalNetAmt()
 	{
 		return totalNetAmtApproved.add(totalNetAmtNotApproved);
@@ -111,23 +144,25 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return currencySymbols;
 	}
 
-
-	public String getAmountFormatted(final BigDecimal amt)
+	private String getSingleCurrencySymbolOrNull()
 	{
-		final DecimalFormat amountFormat = DisplayType.getNumberFormat(DisplayType.Amount);
-		final StringBuilder amountFormatted = new StringBuilder();
+		final boolean singleCurrencySymbol = currencySymbols.size() == 1;
+		return singleCurrencySymbol ? currencySymbols.iterator().next() : null;
+	}
 
-		amountFormatted.append(amountFormat.format(amt));
+	private ITranslatableString toTranslatableString(final BigDecimal amt)
+	{
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
 
-		final boolean isSameCurrency = currencySymbols.size() == 1;
+		builder.append(amt, DisplayType.Amount);
 
-		final String curSymbol;
-		if (isSameCurrency)
+		final String singleCurrencySymbol = getSingleCurrencySymbolOrNull();
+		if (singleCurrencySymbol != null)
 		{
-			curSymbol = currencySymbols.iterator().next();
-			amountFormatted.append(curSymbol);
+			builder.append(" ").append(singleCurrencySymbol);
 		}
-		return amountFormatted.toString();
+
+		return builder.build();
 	}
 
 	/**
@@ -148,7 +183,6 @@ public class InvoiceCandidatesAmtSelectionSummary
 
 		private Builder()
 		{
-			super();
 		}
 
 		public InvoiceCandidatesAmtSelectionSummary build()
@@ -208,4 +242,3 @@ public class InvoiceCandidatesAmtSelectionSummary
 
 	}
 }
-
