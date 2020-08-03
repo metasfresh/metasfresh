@@ -1,94 +1,7 @@
 package de.metas.handlingunits;
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createProduct;
-import static de.metas.business.BusinessTestHelper.createUOMConversion;
-import static de.metas.business.BusinessTestHelper.createUomEach;
-import static de.metas.business.BusinessTestHelper.createUomKg;
-import static de.metas.business.BusinessTestHelper.createUomPCE;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_Test;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.util.DDNetworkBuilder;
-import org.eevolution.util.ProductBOMBuilder;
-import org.junit.Assert;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -131,6 +44,7 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -165,6 +79,92 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
+import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_Test;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.util.DDNetworkBuilder;
+import org.eevolution.util.ProductBOMBuilder;
+import org.junit.Assert;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createUOMConversion;
+import static de.metas.business.BusinessTestHelper.createUomEach;
+import static de.metas.business.BusinessTestHelper.createUomKg;
+import static de.metas.business.BusinessTestHelper.createUomPCE;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  * This class sets up basic master data like attributes and HU-items.
@@ -413,6 +413,9 @@ public class HUTestHelper
 		}
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
+		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
+		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);

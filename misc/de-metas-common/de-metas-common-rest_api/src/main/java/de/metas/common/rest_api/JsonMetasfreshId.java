@@ -22,14 +22,15 @@
 
 package de.metas.common.rest_api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.common.util.EmptyUtil;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import lombok.NonNull;
+import lombok.Value;
 
 @Value
 public class JsonMetasfreshId

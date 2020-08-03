@@ -233,6 +233,12 @@
                 <version>2.0.1</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>21.0</version>
+            </dependency>
+
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
             <dependency>
                 <groupId>jp.osdn.ocra</groupId>
