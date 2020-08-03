@@ -22,27 +22,30 @@
 
 package de.metas.invoicecandidate.api.impl;
 
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
-public class InvoiceCandidatesAmtSelectionSummaryCommand
+class InvoiceCandidatesAmtSelectionSummaryCommand
 {
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesAmtSelectionSummaryCommand.class);
 
 	private static final String COLUMNNAME_IsPackingMaterial = "IsPackingMaterial";
 	private static final String COLUMNNAME_Count = "Count";
@@ -153,12 +156,12 @@ public class InvoiceCandidatesAmtSelectionSummaryCommand
 				+ ", "
 				+ COLUMNNAME_IsPackingMaterial);
 
-		final InvoiceCandidatesAmtSelectionSummary.Builder summaryBuilder = InvoiceCandidatesAmtSelectionSummary.builder();
-
 		ResultSet rs = null;
 		PreparedStatement pstmt = null;
 		try
 		{
+			final InvoiceCandidatesAmtSelectionSummary.Builder summaryBuilder = InvoiceCandidatesAmtSelectionSummary.builder();
+
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			rs = pstmt.executeQuery();
 
@@ -166,9 +169,9 @@ public class InvoiceCandidatesAmtSelectionSummaryCommand
 			{
 				final BigDecimal netAmtTotal = rs.getBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice);
 				final boolean isPackingMaterial = rs.getBoolean(COLUMNNAME_IsPackingMaterial);
-				final boolean isApprovedForInvoicing = "Y".equals(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing));
+				final boolean isApprovedForInvoicing = StringUtils.toBoolean(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing));
 				final String curSymbol = rs.getString(I_C_Currency.COLUMNNAME_CurSymbol);
-				final boolean isToRecompute = "Y".equals(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute));
+				final boolean isToRecompute = StringUtils.toBoolean(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute));
 				final int countToRecompute = rs.getInt(COLUMNNAME_Count);
 
 				summaryBuilder
@@ -179,18 +182,19 @@ public class InvoiceCandidatesAmtSelectionSummaryCommand
 					summaryBuilder.addCountToRecompute(countToRecompute);
 				}
 			}
-		}
-		catch (final Exception e)
-		{
-			logger.error(sql.toString(), e);
 
-			return InvoiceCandidatesAmtSelectionSummary.builder().build(); // empty summary
+			return summaryBuilder.build();
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed fetching summary. Returning empty. SQL={}", sql, ex);
+
+			return InvoiceCandidatesAmtSelectionSummary.EMPTY;
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 		}
 
-		return summaryBuilder.build();
 	}
 }

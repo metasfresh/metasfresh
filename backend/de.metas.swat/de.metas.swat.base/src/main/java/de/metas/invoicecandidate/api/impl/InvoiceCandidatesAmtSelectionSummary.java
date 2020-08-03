@@ -40,6 +40,8 @@ import lombok.NonNull;
  */
 public class InvoiceCandidatesAmtSelectionSummary
 {
+	public static final InvoiceCandidatesAmtSelectionSummary EMPTY = builder().build();
+
 	private final BigDecimal totalNetAmtApproved;
 	private final BigDecimal huNetAmtApproved;
 	private final BigDecimal cuNetAmtApproved;
