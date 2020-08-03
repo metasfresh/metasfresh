@@ -8,7 +8,7 @@ import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvi
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 
-import Modal from '../../../components/app/Modal';
+import Modal, { Modal as DisconnectedModal } from '../../../components/app/Modal';
 import fixtures from '../../../../test_setup/fixtures/modal.json';
 import testModal from '../../../../test_setup/fixtures/test_modal.json';
 
@@ -48,42 +48,19 @@ describe('Modal test', () => {
     expect(html.includes('Action')).toBe(true);
   });
 
-  it('calls callProcess', async (done) => {
+  it(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
     const dummyProps = fixtures;
-    const mockFn = jest.fn().mockResolvedValue({});
-
-    // const mockFn = () => {
-    //   done();
-    //   return Promise.resolve({});
-    // };
-    // const mockFn = jest.fn();
-    dummyProps.callProcess = mockFn; // we spy the callProcess function
-    const initialState = function(state = {}) {
-      const res = merge.recursive(
-        true,
-        {
-          appHandler: { ...appHandlerState },
-          windowHandler: { ...windowHandlerState },
-        },
-        state
-      );
-
-      return res;
-    };
-    const store = mockStore(initialState);
+    const startProcessMock = jest.fn().mockResolvedValue({});
     const wrapper = mount(
-      <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-          <Modal {...dummyProps} />
-        </ShortcutProvider>
-      </Provider>
+      <DisconnectedModal
+        {...dummyProps}
+        createProcess={startProcessMock}
+        data={null}
+        layout={null}
+      />
     );
 
-    const instance = wrapper.instance();
-    await instance.componentDidMount();
-    
-    await mockFn(); // remove this line Kuba
-    expect(mockFn).toHaveBeenCalled();
+    expect(startProcessMock).toHaveBeenCalled();
     done();
   });
 });
