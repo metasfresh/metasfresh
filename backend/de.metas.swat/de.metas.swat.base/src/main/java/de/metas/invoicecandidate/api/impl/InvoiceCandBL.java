@@ -2312,7 +2312,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public @NonNull InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable final String extraWhereClause)
 	{
-		return new InvoiceCandidatesAmtSelectionSummaryCommand(extraWhereClause).execute();
+		return new GetInvoiceCandidatesAmtSelectionSummaryCommand(extraWhereClause).execute();
 	}
 
 }

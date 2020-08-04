@@ -43,9 +43,9 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
-class InvoiceCandidatesAmtSelectionSummaryCommand
+class GetInvoiceCandidatesAmtSelectionSummaryCommand
 {
-	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesAmtSelectionSummaryCommand.class);
+	private static final Logger logger = LogManager.getLogger(GetInvoiceCandidatesAmtSelectionSummaryCommand.class);
 
 	private static final String COLUMNNAME_IsPackingMaterial = "IsPackingMaterial";
 	private static final String COLUMNNAME_Count = "Count";
@@ -57,7 +57,7 @@ class InvoiceCandidatesAmtSelectionSummaryCommand
 	final String extraWhereClause;
 
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
-	public InvoiceCandidatesAmtSelectionSummaryCommand(@Nullable final String extraWhereClause)
+	public GetInvoiceCandidatesAmtSelectionSummaryCommand(@Nullable final String extraWhereClause)
 	{
 		this.extraWhereClause = extraWhereClause;
 	}
