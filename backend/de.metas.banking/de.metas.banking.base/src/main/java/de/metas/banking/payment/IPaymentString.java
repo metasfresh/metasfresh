@@ -63,6 +63,12 @@ public interface IPaymentString
 
 	Timestamp getAccountDate();
 
+	String getIbanAccountNo();
+
+	String getCurrency();
+	
+	Boolean isQRPaymentString();
+
 	/**
 	 *
 	 * @return the original, raw and unparsed payment string this instance is based on.
