@@ -57,8 +57,8 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 		this.delegate = delegate;
 	}
 
-	@SuppressWarnings("ConstantConditions") // TODO not sure if this is NonNull or Nullable. Can the supplier return null?
 	@Override
+	@Nullable
 	public T get()
 	{
 		// A 2-field variant of Double Checked Locking.

@@ -35,6 +35,8 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Represent a summary information (immutable) about a selection of invoice candidates
  */
@@ -146,6 +148,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return currencySymbols;
 	}
 
+	@Nullable
 	private String getSingleCurrencySymbolOrNull()
 	{
 		final boolean singleCurrencySymbol = currencySymbols.size() == 1;
