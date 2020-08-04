@@ -21,11 +21,18 @@ describe('TableCell', () => {
     expect(html).toContain(`data-cy="cell-AD_Org_ID"`);
     expect(html).toContain('0141');
     expect(html).toContain(
-      `class="text-left cell-disabled td-md Lookup pulse-off"`
+      `class="table-cell text-left cell-disabled td-md Lookup pulse-off"`
     );
     expect(html).toContain(
-      `<div class="cell-text-wrapper lookup-cell" title="0141">0141</div></div>`
+      `title="0141">0141</div>`
     );
+  });
+
+  it('renders notification indicator', () => {
+    const wrapperTableCell = shallow(<TableCell hasComments={true} {...tableCellProps} />);
+    const html = wrapperTableCell.html();
+
+    expect(html).toContain('notification-number');
   });
 
   it('Changing the widget type should be present in the output', () => {
