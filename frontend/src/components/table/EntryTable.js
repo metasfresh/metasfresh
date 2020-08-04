@@ -147,7 +147,7 @@ class EntryTable extends PureComponent {
         <tbody>
           {columns.map((cols, idx) => {
             return (
-              <tr className="table-row" key={`entry-row-${idx}`}>
+              <tr className="table-context" key={`entry-row-${idx}`}>
                 {this.renderElements(cols, cols.colsCount)}
               </tr>
             );

@@ -102,6 +102,7 @@ export const initialState = {
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
+    hasComments: false,
     docId: undefined,
     websocket: null,
     topActions: {
@@ -299,6 +300,7 @@ export default function windowHandler(state = initialState, action) {
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
+          hasComments: action.hasComments,
         },
       };
     case UPDATE_MASTER_DATA:

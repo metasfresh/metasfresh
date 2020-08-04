@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
+import counterpart from 'counterpart';
 
 import {
   getDateFormat,
@@ -228,6 +229,7 @@ class TableCell extends PureComponent {
       onClickOutside,
       updateHeight,
       rowIndex,
+      hasComments,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     const docId = `${this.props.docId}`;
@@ -261,6 +263,7 @@ class TableCell extends PureComponent {
         onKeyDown={this.handleKeyDown}
         onContextMenu={this.handleRightClick}
         className={classnames(
+          'table-cell',
           {
             [`text-${item.gridAlign}`]: item.gridAlign,
             'cell-disabled': widgetData[0].readonly,
@@ -275,6 +278,12 @@ class TableCell extends PureComponent {
         )}
         data-cy={`cell-${property}`}
       >
+        {hasComments && (
+          <span
+            className="notification-number size-sm"
+            title={counterpart.translate('window.comments.caption')}
+          />
+        )}
         {isEdited ? (
           <MasterWidget
             {...item}
@@ -369,6 +378,7 @@ TableCell.propTypes = {
   docId: PropTypes.any,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  hasComments: PropTypes.bool,
 };
 
 export default TableCell;
