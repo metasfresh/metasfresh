@@ -24,11 +24,15 @@ package de.metas.ui.web.comments;
 
 import de.metas.comments.CommentEntry;
 import de.metas.comments.CommentEntryId;
-import de.metas.comments.CommentEntryRepository;
 import de.metas.comments.CommentEntryParentId;
+import de.metas.comments.CommentEntryRepository;
 import de.metas.ui.web.comments.json.JSONComment;
 import de.metas.ui.web.comments.json.JSONCommentCreateRequest;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.user.UserId;
 import de.metas.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,6 +50,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -61,6 +66,7 @@ class CommentsServiceTest
 
 	private CommentEntryRepository commentEntryRepository;
 	private CommentsService commentsService;
+	private DocumentDescriptorFactory documentDescriptorFactory;
 
 	@BeforeEach
 	public void init()
@@ -73,7 +79,28 @@ class CommentsServiceTest
 
 		createDefaultUser();
 		commentEntryRepository = new CommentEntryRepository();
-		commentsService = new CommentsService(commentEntryRepository);
+		documentDescriptorFactory = new DocumentDescriptorFactory()
+		{
+			 // TODO tbp: for now just make this compile. DefaultDocumentDescriptorFactory has a lot of recursive dependencies :(
+			@Override
+			public boolean isWindowIdSupported(@Nullable final WindowId windowId)
+			{
+				return false;
+			}
+
+			@Override
+			public DocumentDescriptor getDocumentDescriptor(final WindowId windowId) throws DocumentLayoutBuildException
+			{
+				return null;
+			}
+
+			@Override
+			public void invalidateForWindow(final WindowId windowId)
+			{
+
+			}
+		};
+		commentsService = new CommentsService(commentEntryRepository, documentDescriptorFactory);
 	}
 
 	@Nested

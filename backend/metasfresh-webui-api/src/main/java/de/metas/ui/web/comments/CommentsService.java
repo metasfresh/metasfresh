@@ -22,11 +22,16 @@
 
 package de.metas.ui.web.comments;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.comments.CommentEntry;
 import de.metas.comments.CommentEntryRepository;
 import de.metas.ui.web.comments.json.JSONComment;
 import de.metas.ui.web.comments.json.JSONCommentCreateRequest;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -34,19 +39,71 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CommentsService
 {
 	private final CommentEntryRepository commentEntryRepository;
+	private final DocumentDescriptorFactory documentDescriptorFactory;
 	final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	public CommentsService(final CommentEntryRepository commentEntryRepository)
+	public static final IdentityHashMap<IViewRow, Boolean> NO_COMMENTS = new IdentityHashMap<>(0);
+
+	public CommentsService(final CommentEntryRepository commentEntryRepository, final DocumentDescriptorFactory documentDescriptorFactory)
 	{
 		this.commentEntryRepository = commentEntryRepository;
+		this.documentDescriptorFactory = documentDescriptorFactory;
+	}
+
+	@NonNull
+	public final IdentityHashMap<IViewRow, Boolean> hasComments(@Nullable final IViewRow row)
+	{
+		if (row == null)
+		{
+			return NO_COMMENTS;
+		}
+
+		return hasComments(Collections.singletonList(row));
+	}
+
+	@NonNull
+	public final IdentityHashMap<IViewRow, Boolean> hasComments(@NonNull final List<? extends IViewRow> rows)
+	{
+		if (rows.isEmpty())
+		{
+			return NO_COMMENTS;
+		}
+
+		final ImmutableMap<IViewRow, TableRecordReference> rowsForReferences = rows.stream()
+				.flatMap(iViewRow -> iViewRow.streamRecursive())
+				.map(row -> GuavaCollectors.entry(row, documentDescriptorFactory.getTableRecordReference(row.getDocumentPath())))
+				.collect(GuavaCollectors.toImmutableMap());
+
+		final Map<TableRecordReference, Boolean> referencesWithComments = commentEntryRepository.hasComments(rowsForReferences.values());
+
+		final IdentityHashMap<IViewRow, Boolean> result = new IdentityHashMap<>();
+		for (final IViewRow row : rowsForReferences.keySet())
+		{
+			final TableRecordReference ref = rowsForReferences.get(row);
+			result.put(row, referencesWithComments.getOrDefault(ref, false));
+		}
+
+		return result;
+	}
+
+	@NonNull
+	public Boolean hasComments(@NonNull final DocumentPath documentPath)
+	{
+		final TableRecordReference reference = documentDescriptorFactory.getTableRecordReference(documentPath);
+		final Map<TableRecordReference, Boolean> referencesWithComments = commentEntryRepository.hasComments(ImmutableList.of(reference));
+		return referencesWithComments.getOrDefault(reference, false);
 	}
 
 	@NonNull
@@ -61,6 +118,11 @@ public class CommentsService
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
+	public void addComment(@NonNull final TableRecordReference tableRecordReference, @NonNull final JSONCommentCreateRequest jsonCommentCreateRequest)
+	{
+		commentEntryRepository.createCommentEntry(jsonCommentCreateRequest.getText(), tableRecordReference);
+	}
+
 	@NonNull
 	private JSONComment toJsonComment(@NonNull final CommentEntry comment, final ZoneId zoneId)
 	{
@@ -73,10 +135,5 @@ public class CommentsService
 				.created(created)
 				.createdBy(createdBy)
 				.build();
-	}
-
-	public void addComment(@NonNull final TableRecordReference tableRecordReference, @NonNull final JSONCommentCreateRequest jsonCommentCreateRequest)
-	{
-		commentEntryRepository.createCommentEntry(jsonCommentCreateRequest.getText(), tableRecordReference);
 	}
 }

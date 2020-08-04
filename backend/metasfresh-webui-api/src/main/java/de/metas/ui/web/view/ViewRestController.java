@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
@@ -5,6 +27,7 @@ import de.metas.impexp.excel.ExcelFormat;
 import de.metas.impexp.excel.ExcelFormats;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
+import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
@@ -56,30 +79,10 @@ import org.springframework.web.context.request.WebRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Api
 @RestController
@@ -106,17 +109,20 @@ public class ViewRestController
 	private final IViewsRepository viewsRepo;
 	private final ProcessRestController processRestController;
 	private final WindowRestController windowRestController;
+	private final CommentsService commentsService;
 
 	public ViewRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final ProcessRestController processRestController,
-			@NonNull final WindowRestController windowRestController)
+			@NonNull final WindowRestController windowRestController,
+			@NonNull final CommentsService commentsService)
 	{
 		this.userSession = userSession;
 		this.viewsRepo = viewsRepo;
 		this.processRestController = processRestController;
 		this.windowRestController = windowRestController;
+		this.commentsService = commentsService;
 	}
 
 	private JSONOptions newJSONOptions()
@@ -168,7 +174,11 @@ public class ViewRestController
 
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewResult.of(result, rowOverrides, jsonOpts);
+
+		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
+		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+
+		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
 
 	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
@@ -201,7 +211,12 @@ public class ViewRestController
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts);
+		final ViewResult viewResult = ViewResult.ofView(newView);
+
+		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
+		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+
+		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, documentsWithComments);
 	}
 
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
@@ -214,7 +229,12 @@ public class ViewRestController
 
 		final IView newView = viewsRepo.deleteStickyFilter(viewId, filterId);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts);
+		final ViewResult viewResult = ViewResult.ofView(newView);
+
+		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
+		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+
+		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts,documentsWithComments);
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -249,7 +269,11 @@ public class ViewRestController
 				pageLength,
 				ViewRowsOrderBy.parseString(orderBysListStr, jsonOpts));
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewResult.of(result, rowOverrides, jsonOpts);
+
+		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
+		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+
+		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
 
 	@GetMapping("/layout")
@@ -316,7 +340,10 @@ public class ViewRestController
 		final List<? extends IViewRow> result = view.streamByIds(rowIds).collect(ImmutableList.toImmutableList());
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts);
+
+		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(result);
+
+		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
 
 	private Evaluatee createFilterParameterLookupContext(final IView view)
