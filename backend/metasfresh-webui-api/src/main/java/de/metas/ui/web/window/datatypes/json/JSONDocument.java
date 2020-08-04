@@ -212,6 +212,7 @@ public final class JSONDocument extends JSONDocumentBase
 		return jsonChanges;
 	}
 
+	@Nullable
 	private static JSONDocument ofEventOrNull(final DocumentChanges documentChangedEvents, final JSONDocumentOptions options)
 	{
 		if (documentChangedEvents.isEmpty())
@@ -351,6 +352,7 @@ public final class JSONDocument extends JSONDocumentBase
 		this.websocketEndpoint = null; // NOTE: this constructor is used when creating websocket events and there we don't need the websocket endpoint
 	}
 
+	@Nullable
 	private static String buildWebsocketEndpointOrNull(final WindowId windowId, final DocumentId documentId)
 	{
 		if (windowId != null && documentId != null)

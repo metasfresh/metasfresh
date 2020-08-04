@@ -323,11 +323,7 @@ public class WindowRestController
 	}
 
 	/**
-	 * @param windowIdStr
 	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
-	 * @param advanced
-	 * @param events
-	 * @return
 	 */
 	@PatchMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> patchRootDocument(
@@ -722,7 +718,7 @@ public class WindowRestController
 		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final DetailId selectedTabId = DetailId.fromJson(tabIdStr);
 		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
-		boolean returnDisabled = false;
+		final boolean returnDisabled = false;
 
 		return getDocumentActions(
 				rootDocumentPath,
@@ -805,7 +801,7 @@ public class WindowRestController
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/1090
+	 * task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
 	@GetMapping("/{windowId}/{documentId}/processNewRecord")
 	public int processRecord(
@@ -826,10 +822,9 @@ public class WindowRestController
 				throw new AdempiereException("Not saved");
 			}
 
-			final int newRecordId = newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
+			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
 					.processNewRecordDocument(document);
-			return newRecordId;
 		}));
 	}
 
