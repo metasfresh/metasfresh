@@ -718,15 +718,6 @@ body {
     text-transform: uppercase;
 }
 
-.header-super-faded {
-    box-shadow: none;
-    transition: all 0.2s ease;
-}
-
-.header-shadow {
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
-}
-
 .overlay-shadow {
     box-shadow: 0 5px 15px 0 rgba(165, 165, 165, 0.8);
 }
@@ -776,19 +767,28 @@ body {
 }
 
 .notification-number {
-    width: 15px;
-    height: 15px;
     background: $brand-font-color-danger;
     color: #fff;
-    font-size: 8px;
     display: inline-block;
     vertical-align: middle;
     line-height: 16px;
     text-align: center;
     border-radius: 50%;
     position: absolute;
-    top: -5px;
-    right: 10px;
+    top: 0;
+    left: 0;
+
+    &.size-sm {
+        width: 8px;
+        height: 8px;
+        font-size: 6px;
+    }
+
+    &.size-md {
+        width: 15px;
+        height: 15px;
+        font-size: 8px;
+    }
 }
 
 .queried-result {
