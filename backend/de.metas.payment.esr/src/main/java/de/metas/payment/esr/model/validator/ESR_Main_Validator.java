@@ -40,6 +40,7 @@ import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.payment.spi.impl.ESRCreaLogixStringParser;
+import de.metas.payment.spi.impl.ESRQRStringParser;
 import de.metas.payment.spi.impl.ESRRegularLineParser;
 import de.metas.util.Services;
 
