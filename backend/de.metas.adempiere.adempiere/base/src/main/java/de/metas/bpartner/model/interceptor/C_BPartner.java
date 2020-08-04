@@ -1,19 +1,6 @@
 package de.metas.bpartner.model.interceptor;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.compiere.model.ModelValidator;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerPOCopyRecordSupport;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -21,8 +8,22 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.location.ILocationBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.ModelValidator;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -50,6 +51,9 @@ import lombok.NonNull;
 public class C_BPartner
 {
 	private static final String MSG_CycleDetectedError = "CycleDetectedError";
+
+	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	final ILocationBL locationBL = Services.get(ILocationBL.class);
 
 	@Init
 	public void init()
@@ -90,6 +94,25 @@ public class C_BPartner
 						.build());
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_AD_Language)
+	public void updateLocation(@NonNull final I_C_BPartner bpartner)
+	{
+		final List<I_C_BPartner_Location> bPartnerLocations = bPartnerDAO.retrieveBPartnerLocations(bpartner);
+
+		for (I_C_BPartner_Location location : bPartnerLocations)
+		{
+			final String address = locationBL.mkAddress(
+					location.getC_Location(),
+					bpartner,
+					"",  // bPartnerBlock
+					"" // userBlock
+			);
+
+			location.setAddress(address);
+			InterfaceWrapperHelper.save(location);
+		}
+	}
+
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_NEW/* needs to be after-new bc we need a C_BPartner_ID */, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_BPartner_Parent_ID)
@@ -106,7 +129,7 @@ public class C_BPartner
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		if (parentPath.contains(bpartnerId))
 		{
-			final List<BPartnerId> path = ImmutableList.<BPartnerId> builder()
+			final List<BPartnerId> path = ImmutableList.<BPartnerId>builder()
 					.addAll(parentPath)
 					.add(bpartnerId)
 					.build();
