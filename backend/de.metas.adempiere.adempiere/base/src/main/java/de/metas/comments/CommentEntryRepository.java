@@ -23,8 +23,12 @@
 package de.metas.comments;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +36,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_CM_Chat;
 import org.compiere.model.I_CM_ChatEntry;
 import org.compiere.model.X_CM_Chat;
@@ -41,7 +46,11 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A CommentEntry is made of an {@link I_CM_Chat} as the parent storing the table and record IDs,
@@ -57,6 +66,13 @@ public class CommentEntryRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
+	private final CCache<TableRecordReference, Boolean> referenceHasCommentsCache = CCache.<TableRecordReference, Boolean>builder()
+			.cacheName("referenceHasCommentsCache")
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(10_000) // is this enough?
+			.tableName(I_CM_Chat.Table_Name)
+			.build();
+
 	public void createCommentEntry(final @NonNull String characterData, @NonNull final TableRecordReference tableRecordReference)
 	{
 		final CommentEntryParentId commentEntryParentId = getOrCreateParent(tableRecordReference);
@@ -67,6 +83,8 @@ public class CommentEntryRepository
 		chatEntry.setCharacterData(characterData);
 		chatEntry.setChatEntryType(X_CM_ChatEntry.CHATENTRYTYPE_NoteFlat);
 		InterfaceWrapperHelper.save(chatEntry);
+
+		referenceHasCommentsCache.put(tableRecordReference, true);
 	}
 
 	@NonNull
@@ -87,6 +105,17 @@ public class CommentEntryRepository
 				.iterateAndStream()
 				.map(CommentEntryRepository::toCommentEntry)
 				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	@NonNull
+	public Map<TableRecordReference, Boolean> hasComments(@NonNull final Collection<TableRecordReference> references)
+	{
+		final ImmutableMap.Builder<TableRecordReference, Boolean> result = ImmutableMap.builder();
+
+		referenceHasCommentsCache.getAllOrLoad(references, this::retrieveReferenceHasComments);
+		references.forEach(trr -> result.put(trr, referenceHasCommentsCache.get(trr, (Supplier<Boolean>)() -> Boolean.FALSE)));
+
+		return result.build();
 	}
 
 	@NonNull
@@ -131,10 +160,44 @@ public class CommentEntryRepository
 	private CommentEntryParentId getParentIdOrNull(final @NonNull TableRecordReference tableRecordReference)
 	{
 		return queryBL.createQueryBuilder(I_CM_Chat.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID())
 				.addEqualsFilter(I_CM_Chat.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
 				.orderBy(I_CM_Chat.COLUMNNAME_CM_Chat_ID)
 				.create()
 				.firstId(CommentEntryParentId::ofRepoIdOrNull);
+	}
+
+	@NonNull
+	private Map<TableRecordReference, Boolean> retrieveReferenceHasComments(@NonNull final Collection<TableRecordReference> referencesUnknownStatus)
+	{
+		final ImmutableListMultimap<Integer, Integer> tablesForRecords = referencesUnknownStatus.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(TableRecordReference::getAD_Table_ID, TableRecordReference::getRecord_ID));
+
+		// TODO tbp: not sure if this first query is all right. i don't want it to return everything
+		final IQuery<I_CM_Chat> query = queryBL.createQueryBuilder(I_CM_Chat.class)
+				.create();
+
+		for (final Integer tableId : tablesForRecords.keySet())
+		{
+			final ImmutableList<Integer> recordIds = tablesForRecords.get(tableId);
+
+			final IQuery<I_CM_Chat> q = queryBL.createQueryBuilder(I_CM_Chat.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableId)
+					.addInArrayFilter(I_CM_Chat.COLUMNNAME_Record_ID, recordIds)
+					.create();
+
+			query.addUnion(q, false);
+		}
+
+		final List<TableRecordReference> comments = query.list()
+				.stream()
+				.map(chat -> TableRecordReference.of(chat.getAD_Table_ID(), chat.getRecord_ID()))
+				.collect(Collectors.toList());
+
+		return referencesUnknownStatus.stream()
+				.map(r -> ImmutableMapEntry.of(r, comments.contains(r)))
+				.collect(GuavaCollectors.toImmutableMap());
 	}
 }
