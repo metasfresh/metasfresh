@@ -19,6 +19,7 @@ import { deleteTable } from '../../actions/TableActions';
 
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
+import { renderHeaderProperties } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 
@@ -361,14 +362,7 @@ class RawModal extends Component {
               </span>
               {!!rawModal.headerProperties && (
                 <div className="optional">
-                  {rawModal.headerProperties.groups.map((group, idx) =>
-                    group.entries.map((entry, idy) => (
-                      <span key={`${idx}_${idy}`} className="optional-name">
-                        <p className="caption">{entry.caption}:</p>{' '}
-                        <p className="value">{entry.value}</p>
-                      </span>
-                    ))
-                  )}
+                  {renderHeaderProperties(rawModal.headerProperties.groups)}
                 </div>
               )}
               <div className="items-row-2">{this.renderButtons()}</div>

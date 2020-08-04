@@ -1,3 +1,4 @@
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
@@ -504,4 +505,29 @@ export function createCollapsedMap(node, isCollapsed, initialMap) {
   }
 
   return collapsedMap;
+}
+
+export function renderHeaderProperties(groups) {
+  return groups.reduce((acc, group, idx) => {
+    let cursor = 0;
+
+    do {
+      const entry = group.entries[cursor];
+
+      acc.push(
+        <span key={`${idx}_${cursor}`} className="optional-name">
+          <p className="caption">{entry.caption}:</p>{' '}
+          <p className="value">{entry.value}</p>
+        </span>
+      );
+
+      cursor += 1;
+    } while (cursor < group.entries.length);
+
+    if (idx !== groups.length - 1) {
+      acc.push(<span key={`${idx}_${cursor}`} className="separator" />);
+    }
+
+    return acc;
+  }, []);
 }

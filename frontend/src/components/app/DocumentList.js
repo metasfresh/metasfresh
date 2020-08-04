@@ -10,6 +10,7 @@ import {
   GEO_PANEL_STATES,
   filtersToMap,
   DLpropTypes,
+  renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
@@ -202,30 +203,7 @@ export default class DocumentList extends Component {
           <div className="panel panel-primary">
             <div className="panel-groups-header">
               <div className="optional">
-                {viewGroups.reduce((acc, group, idx) => {
-                  let cursor = 0;
-
-                  do {
-                    const entry = group.entries[cursor];
-
-                    acc.push(
-                      <span key={`${idx}_${cursor}`} className="optional-name">
-                        <p className="caption">{entry.caption}:</p>{' '}
-                        <p className="value">{entry.value}</p>
-                      </span>
-                    );
-
-                    cursor += 1;
-                  } while (cursor < group.entries.length);
-
-                  if (idx !== viewGroups.length - 1) {
-                    acc.push(
-                      <span key={`${idx}_${cursor}`} className="separator" />
-                    );
-                  }
-
-                  return acc;
-                }, [])}
+                {renderHeaderProperties(viewGroups)}
               </div>
             </div>
           </div>
