@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
@@ -74,7 +75,7 @@ public class CommentsService
 	}
 
 	@NonNull
-	public final IdentityHashMap<IViewRow, Boolean> hasComments(@NonNull final List<? extends IViewRow> rows)
+	public final IdentityHashMap<IViewRow, Boolean> hasComments(@NonNull final Collection<? extends IViewRow> rows)
 	{
 		if (rows.isEmpty())
 		{
@@ -82,7 +83,7 @@ public class CommentsService
 		}
 
 		final ImmutableMap<IViewRow, TableRecordReference> rowsForReferences = rows.stream()
-				.flatMap(iViewRow -> iViewRow.streamRecursive())
+				.flatMap(IViewRow::streamRecursive)
 				.map(row -> GuavaCollectors.entry(row, documentDescriptorFactory.getTableRecordReference(row.getDocumentPath())))
 				.collect(GuavaCollectors.toImmutableMap());
 

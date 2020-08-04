@@ -22,23 +22,40 @@
 
 package de.metas.ui.web.comments;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.comments.CommentEntry;
 import de.metas.comments.CommentEntryId;
 import de.metas.comments.CommentEntryParentId;
 import de.metas.comments.CommentEntryRepository;
 import de.metas.ui.web.comments.json.JSONComment;
 import de.metas.ui.web.comments.json.JSONCommentCreateRequest;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRow;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.user.UserId;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_CM_Chat;
 import org.compiere.model.I_CM_ChatEntry;
@@ -55,14 +72,20 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 class CommentsServiceTest
 {
 	public static final int AD_USER_ID = 10;
 	public static final String THE_USER_NAME = "The User Name";
 	public static final ZonedDateTime ZONED_DATE_TIME = ZonedDateTime.of(2020, Month.APRIL.getValue(), 23, 1, 1, 1, 0, ZoneId.of("UTC+8"));
+
+	public static final String DUMMY_TABLE_NAME = "DummyTable";
+	private final WindowId windowId = WindowId.of(123);
 
 	private CommentEntryRepository commentEntryRepository;
 	private CommentsService commentsService;
@@ -76,30 +99,57 @@ class CommentsServiceTest
 
 		// all created POs will have this user
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(AD_USER_ID));
-
 		createDefaultUser();
-		commentEntryRepository = new CommentEntryRepository();
-		documentDescriptorFactory = new DocumentDescriptorFactory()
+
 		{
-			 // TODO tbp: for now just make this compile. DefaultDocumentDescriptorFactory has a lot of recursive dependencies :(
-			@Override
-			public boolean isWindowIdSupported(@Nullable final WindowId windowId)
+			final DocumentFilterDescriptorsProviderFactory documentFilterDescriptorsProviderFactory = new DocumentFilterDescriptorsProviderFactory()
 			{
-				return false;
-			}
+				@Nullable
+				@Override
+				public DocumentFilterDescriptorsProvider createFiltersProvider(final AdTabId adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
+				{
+					return null;
+				}
+			};
 
-			@Override
-			public DocumentDescriptor getDocumentDescriptor(final WindowId windowId) throws DocumentLayoutBuildException
+			SpringContextHolder.registerJUnitBean(new DocumentFilterDescriptorsProvidersService(ImmutableList.of(documentFilterDescriptorsProviderFactory)));
+
+			documentDescriptorFactory = new DocumentDescriptorFactory()
 			{
-				return null;
-			}
+				final DocumentDescriptor documentDescriptor = DocumentDescriptor.builder()
+						.setLayout(DocumentLayoutDescriptor.builder()
+								.setWindowId(windowId)
+								.setSingleRowLayout(DocumentLayoutSingleRow.builder())
+								.setGridView(ViewLayout.builder())
+								.setSideListView(ViewLayout.builder().build())
+								.build())
+						.setEntityDescriptor(DocumentEntityDescriptor.builder()
+								.setDocumentType(windowId.toAdWindowId())
+								.setTableName(DUMMY_TABLE_NAME)
+								.build())
+						.build();
 
-			@Override
-			public void invalidateForWindow(final WindowId windowId)
-			{
+				@Override
+				public boolean isWindowIdSupported(@Nullable final WindowId windowId)
+				{
+					return false;
+				}
 
-			}
-		};
+				@Override
+				public DocumentDescriptor getDocumentDescriptor(final WindowId windowId) throws DocumentLayoutBuildException
+				{
+					return documentDescriptor;
+				}
+
+				@Override
+				public void invalidateForWindow(final WindowId windowId)
+				{
+
+				}
+			};
+		}
+
+		commentEntryRepository = new CommentEntryRepository();
 		commentsService = new CommentsService(commentEntryRepository, documentDescriptorFactory);
 	}
 
@@ -110,7 +160,7 @@ class CommentsServiceTest
 		void create2Comments()
 		{
 			// create test data
-			final TableRecordReference tableRecordReference = TableRecordReference.of("DummyTable", 1);
+			final TableRecordReference tableRecordReference = TableRecordReference.of(DUMMY_TABLE_NAME, 1);
 
 			apiAddComment(tableRecordReference, "comment1");
 			apiAddComment(tableRecordReference, "comment2");
@@ -162,7 +212,7 @@ class CommentsServiceTest
 		void commentsExist()
 		{
 			// create test data
-			final TableRecordReference tableRecordReference = TableRecordReference.of("DummyTable", 1);
+			final TableRecordReference tableRecordReference = TableRecordReference.of(DUMMY_TABLE_NAME, 1);
 			final CommentEntryParentId commentEntryParentId = createChat(tableRecordReference);
 			createChatEntry(commentEntryParentId, "comment1");
 			createChatEntry(commentEntryParentId, "comment2");
@@ -185,7 +235,7 @@ class CommentsServiceTest
 		void noCommentsExist()
 		{
 			// create test data
-			final TableRecordReference tableRecordReference = TableRecordReference.of("DummyTable", 1);
+			final TableRecordReference tableRecordReference = TableRecordReference.of(DUMMY_TABLE_NAME, 1);
 
 			//
 			final List<JSONComment> actual = commentsService.getCommentsFor(tableRecordReference, ZoneId.of("UTC+8"));
@@ -202,6 +252,124 @@ class CommentsServiceTest
 					.created(zonedDateTimeString)
 					.text(comment)
 					.createdBy(THE_USER_NAME)
+					.build();
+		}
+	}
+
+	@Nested
+	class Test_CommentRepository_HasComments
+	{
+		@Test
+		void hasSomeComments()
+		{
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 111));
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 112));
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 113));
+
+			final TableRecordReference hasComments1 = TableRecordReference.of(DUMMY_TABLE_NAME, 11);
+			createChat(hasComments1);
+
+			final TableRecordReference hasComments2 = TableRecordReference.of(DUMMY_TABLE_NAME, 12);
+			createChat(hasComments2);
+
+			final ImmutableMap<TableRecordReference, Boolean> expected = ImmutableMap.of(
+					TableRecordReference.of(DUMMY_TABLE_NAME, 21), false,
+					TableRecordReference.of(DUMMY_TABLE_NAME, 22), false,
+					hasComments1, true,
+					hasComments2, true
+			);
+
+			final Map<TableRecordReference, Boolean> actual = commentEntryRepository.hasComments(expected.keySet());
+
+			Assertions.assertThat(actual)
+					.isEqualTo(expected)
+					.hasSize(4)
+			;
+		}
+
+		@Test
+		void emptyInputList()
+		{
+			final ImmutableMap<TableRecordReference, Boolean> expected = ImmutableMap.of();
+
+			final Map<TableRecordReference, Boolean> actual = commentEntryRepository.hasComments(ImmutableList.of());
+
+			Assertions.assertThat(actual)
+					.isEqualTo(expected)
+					.hasSize(0)
+			;
+		}
+	}
+
+	@Nested
+	class Test_CommentService_HasComments
+	{
+		@Test
+		void usingDocumentPath_noComments()
+		{
+			final IViewRow row = createViewRow(10);
+			final DocumentPath documentPath = row.getDocumentPath();
+
+			final Boolean actual = commentsService.hasComments(documentPath);
+
+			Assertions.assertThat(actual).isFalse()
+			;
+		}
+
+		@Test
+		void usingDocumentPath_hasComments()
+		{
+			// create test data
+			final TableRecordReference hasComments1 = TableRecordReference.of(DUMMY_TABLE_NAME, 10);
+			createChat(hasComments1);
+
+			final IViewRow row = createViewRow(10);
+			final DocumentPath documentPath = row.getDocumentPath();
+
+			final Boolean actual = commentsService.hasComments(documentPath);
+
+			Assertions.assertThat(actual).isTrue()
+			;
+		}
+
+		@Test
+		void usingRowList_someComments()
+		{
+			// create test data
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 111));
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 112));
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 113));
+
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 11));
+			final IViewRow row11Yes = createViewRow(11);
+
+			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 12));
+			final IViewRow row12Yes = createViewRow(12);
+
+			final IViewRow row21No = createViewRow(21);
+			final IViewRow row22No = createViewRow(22);
+			final IViewRow row23No = createViewRow(23);
+
+			final IdentityHashMap<IViewRow, Boolean> expected = new IdentityHashMap<>();
+			expected.put(row11Yes, true);
+			expected.put(row12Yes, true);
+			expected.put(row21No, false);
+			expected.put(row22No, false);
+			expected.put(row23No, false);
+
+			final IdentityHashMap<IViewRow, Boolean> actual = commentsService.hasComments(expected.keySet());
+
+			Assertions.assertThat(actual)
+					.isEqualTo(expected)
+					.hasSize(5)
+			;
+		}
+
+		@NonNull
+		private IViewRow createViewRow(final int rowId)
+		{
+			return ViewRow.builder(windowId)
+					.setRowId(DocumentId.of(rowId))
 					.build();
 		}
 	}
