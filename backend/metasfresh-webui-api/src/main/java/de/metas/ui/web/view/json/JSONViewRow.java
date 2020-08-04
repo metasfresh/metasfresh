@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -131,6 +132,13 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		}
 
 		//
+		// Has Comments
+		{
+			 // TODO tbp: dummy data for frontend development
+			jsonRow.hasComments = new Random().nextBoolean();
+		}
+
+		//
 		// Single column row
 		if (row.isSingleColumn())
 		{
@@ -141,7 +149,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		return jsonRow;
 	}
 
-	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final JSONOptions jsonOpts)
+	private static Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final JSONOptions jsonOpts)
 	{
 		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
 		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
@@ -166,6 +174,10 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 	@JsonProperty("processed")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean processed;
+
+	@JsonProperty("hasComments")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean hasComments;
 
 	@JsonProperty(value = JSONViewLayout.PROPERTY_supportAttributes)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -198,9 +210,9 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@Value
-	private static final class JSONIncludedViewId
+	private static class JSONIncludedViewId
 	{
-		private final WindowId windowId;
-		private final String viewId;
+		WindowId windowId;
+		String viewId;
 	}
 }
