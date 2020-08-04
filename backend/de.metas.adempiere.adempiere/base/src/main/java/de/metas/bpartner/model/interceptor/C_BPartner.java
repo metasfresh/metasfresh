@@ -3,6 +3,7 @@ package de.metas.bpartner.model.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerPOCopyRecordSupport;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
@@ -18,7 +19,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
 
@@ -54,6 +54,7 @@ public class C_BPartner
 
 	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	final ILocationBL locationBL = Services.get(ILocationBL.class);
+	final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	@Init
 	public void init()
@@ -98,18 +99,14 @@ public class C_BPartner
 	public void updateLocation(@NonNull final I_C_BPartner bpartner)
 	{
 		final List<I_C_BPartner_Location> bPartnerLocations = bPartnerDAO.retrieveBPartnerLocations(bpartner);
+		updateAllAddresses(bPartnerLocations, bpartner);
+	}
 
+	private void updateAllAddresses(List<I_C_BPartner_Location> bPartnerLocations, I_C_BPartner bpartner)
+	{
 		for (I_C_BPartner_Location location : bPartnerLocations)
 		{
-			final String address = locationBL.mkAddress(
-					location.getC_Location(),
-					bpartner,
-					"",  // bPartnerBlock
-					"" // userBlock
-			);
-
-			location.setAddress(address);
-			InterfaceWrapperHelper.save(location);
+			bPartnerBL.setAddress(location, bpartner);
 		}
 	}
 
