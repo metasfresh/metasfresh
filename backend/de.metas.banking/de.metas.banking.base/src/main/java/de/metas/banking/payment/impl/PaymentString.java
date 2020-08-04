@@ -44,6 +44,9 @@ public class PaymentString implements IPaymentString
 	private final Timestamp paymentDate;
 	private final Timestamp accountDate;
 	private final String orgValue;
+	private final String ibanAccountNo;
+	private final String currency;
+	private final Boolean qrPaymentString; 
 
 	private IPaymentStringDataProvider dataProvider = null;
 
@@ -68,7 +71,37 @@ public class PaymentString implements IPaymentString
 		this.paymentDate = paymentDate;
 		this.accountDate = accountDate;
 		this.orgValue = orgValue;
+		
+		this.ibanAccountNo = null;
+		this.currency = null;
+		this.qrPaymentString = false;
 	}
+	
+	public PaymentString(
+			final List<String> collectedErrors,
+			final String rawPaymentString,
+			final Boolean qrPaymentString,
+			final BigDecimal amount,
+			final String ibanAccountNo,
+			final String referenceNoComplete,
+			final String currency)
+	{
+		this.collectedErrors = collectedErrors;
+
+		this.rawPaymentString = rawPaymentString;
+		this.qrPaymentString = qrPaymentString;
+		
+		this.amount = amount;
+		this.ibanAccountNo = ibanAccountNo;
+		this.referenceNoComplete = referenceNoComplete;
+		this.currency = currency;
+
+		this.postAccountNo = null;
+		this.innerAccountNo = null;
+		this.paymentDate = null;
+		this.accountDate = null;
+		this.orgValue = null;
+}
 
 	@Override
 	public void setDataProvider(final IPaymentStringDataProvider dataProvider)
@@ -122,6 +155,21 @@ public class PaymentString implements IPaymentString
 	public Timestamp getAccountDate()
 	{
 		return accountDate;
+	}
+
+	@Override
+	public String getIbanAccountNo() {
+		return ibanAccountNo;
+	}
+
+	@Override
+	public String getCurrency() {
+		return currency;
+	}
+
+	@Override
+	public Boolean isQRPaymentString() {
+		return qrPaymentString;
 	}
 
 	/**
