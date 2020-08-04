@@ -20,6 +20,8 @@ import {
   FILTER_VIEW_ERROR,
   RESET_VIEW,
   TOGGLE_INCLUDED_VIEW,
+  UPDATE_VIEW_DATA_ERROR,
+  UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
 export const viewState = {
@@ -211,6 +213,7 @@ export default function viewHandler(state = initialState, action) {
         },
       };
     }
+    case UPDATE_VIEW_DATA_ERROR:
     case FETCH_DOCUMENT_ERROR: {
       const { id, error, isModal } = action.payload;
       const type = getViewType(isModal);
@@ -284,6 +287,28 @@ export default function viewHandler(state = initialState, action) {
         },
       };
     }
+
+    case UPDATE_VIEW_DATA_SUCCESS: {
+      const { id, data, isModal } = action.payload;
+      const viewType = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
+      const viewState = {
+        ...view,
+        ...data,
+        pending: false,
+        error: null,
+        notFound: false,
+      };
+
+      return {
+        ...state,
+        [`${viewType}`]: {
+          ...state[`${viewType}`],
+          [`${id}`]: { ...viewState },
+        },
+      };
+    }
+
     case FILTER_VIEW_PENDING: {
       const { id, isModal } = action.payload;
       const type = getViewType(isModal);

@@ -3,7 +3,7 @@
     "windowId": "143",
     "viewId": "143-F",
     "headerProperties": {
-      "entries": []
+      "groups": []
     },
     "size": 1,
     "orderBy": [
@@ -579,7 +579,7 @@
     "windowId": "540350",
     "viewId": "540350-NP",
     "headerProperties": {
-      "entries": []
+      "groups": []
     },
     "size": 3,
     "result": [
@@ -749,10 +749,5 @@
     "firstRow": 0,
     "pageLength": 20,
     "type": "540350"
-  },
-  "data3_parent": {
-
-
-    
   }
 }
