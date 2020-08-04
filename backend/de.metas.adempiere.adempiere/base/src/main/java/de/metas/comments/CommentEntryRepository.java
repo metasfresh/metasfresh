@@ -49,6 +49,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -112,7 +113,7 @@ public class CommentEntryRepository
 	{
 		final ImmutableMap.Builder<TableRecordReference, Boolean> result = ImmutableMap.builder();
 
-		referenceHasCommentsCache.getAllOrLoad(references, this::retrieveReferenceHasComments);
+		referenceHasCommentsCache.getAllOrLoad(references, this::checkReferenceHasComments);
 		references.forEach(trr -> result.put(trr, referenceHasCommentsCache.get(trr, (Supplier<Boolean>)() -> Boolean.FALSE)));
 
 		return result.build();
@@ -169,13 +170,14 @@ public class CommentEntryRepository
 	}
 
 	@NonNull
-	private Map<TableRecordReference, Boolean> retrieveReferenceHasComments(@NonNull final Collection<TableRecordReference> referencesUnknownStatus)
+	private Map<TableRecordReference, Boolean> checkReferenceHasComments(@NonNull final Collection<TableRecordReference> referencesUnknownStatus)
 	{
 		final ImmutableListMultimap<Integer, Integer> tablesForRecords = referencesUnknownStatus.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(TableRecordReference::getAD_Table_ID, TableRecordReference::getRecord_ID));
 
-		// TODO tbp: not sure if this first query is all right. i don't want it to return everything
+		// first query returns nothing. Rest of the queries return the correct data
 		final IQuery<I_CM_Chat> query = queryBL.createQueryBuilder(I_CM_Chat.class)
+				.addEqualsFilter(I_CM_Chat.COLUMNNAME_CM_Chat_ID, -1)
 				.create();
 
 		for (final Integer tableId : tablesForRecords.keySet())
@@ -188,13 +190,13 @@ public class CommentEntryRepository
 					.addInArrayFilter(I_CM_Chat.COLUMNNAME_Record_ID, recordIds)
 					.create();
 
-			query.addUnion(q, false);
+			query.addUnion(q, true);
 		}
 
-		final List<TableRecordReference> comments = query.list()
+		final Set<TableRecordReference> comments = query.list()
 				.stream()
 				.map(chat -> TableRecordReference.of(chat.getAD_Table_ID(), chat.getRecord_ID()))
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 
 		return referencesUnknownStatus.stream()
 				.map(r -> ImmutableMapEntry.of(r, comments.contains(r)))
