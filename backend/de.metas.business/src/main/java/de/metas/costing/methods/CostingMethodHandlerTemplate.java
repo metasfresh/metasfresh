@@ -150,7 +150,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	protected CostDetailCreateResult createCostForMovementLine(final CostDetailCreateRequest request)
 	{
-		return createOutboundCostDefaultImpl(request);
+		return null; //createOutboundCostDefaultImpl(request); TODO!!!!!
 	}
 
 	protected CostDetailCreateResult createCostForInventoryLine(final CostDetailCreateRequest request)
