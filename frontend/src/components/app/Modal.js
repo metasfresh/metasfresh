@@ -481,7 +481,7 @@ class Modal extends Component {
       <div className="modal-content-wrapper">
         <div className="panel panel-modal panel-modal-primary">
           <div
-            className={classnames('panel-groups-header', 'panel-modal-header', {
+            className={classnames('panel-modal-header', {
               'header-shadow': scrolled,
             })}
           >

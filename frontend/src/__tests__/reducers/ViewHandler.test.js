@@ -8,8 +8,6 @@ import reducer, {
 
 // limited data sets as we don't need everything for those tests
 import fixtures from '../../../test_setup/fixtures/grid/reducers.json';
-import generalData from '../../../test_setup/fixtures/grid/data.json';
-
 
 const createState = function(state = {}) {
   return merge.recursive(
@@ -145,118 +143,10 @@ describe('Views reducer for `view` type', () => {
       modals: {},
     }));
   });
-
-  it('Should handle FETCH_DOCUMENT_ERROR', () => {
-    const id = layoutData.windowId;
-    const error = 'Error';
-    const localState = createState({ pending: true });
-    const actions = [
-      {
-        type: ACTION_TYPES.FETCH_DOCUMENT_ERROR,
-        payload: {
-          id,
-          error,
-          isModal: false,
-        },
-      }
-    ];
-    const state = actions.reduce(reducer, localState);
-
-    expect(state).toEqual(expect.objectContaining({
-      views: expect.objectContaining({
-        [id]: expect.objectContaining({ pending: false, error: false, notFound: true, error }),
-      }),
-      modals: {},
-    }));
-  });
-
-  it('Should handle CREATE_VIEW', () => {
-    const id = documentData.windowId;
-    const viewId = documentData.viewId;
-    const actions = [
-      {
-        type: ACTION_TYPES.CREATE_VIEW_PENDING,
-        payload: {
-          id,
-          isModal: false,
-        },
-      },
-      {
-        type: ACTION_TYPES.CREATE_VIEW_SUCCESS,
-        payload: {
-          id,
-          viewId,
-          isModal: false,
-        },
-      }
-    ];
-    const state = actions.reduce(reducer, initialState);
-
-    expect(state.views).toEqual(
-      expect.objectContaining({
-        [id]: expect.objectContaining({ pending: false, notFound: false, viewId }),
-      }),
-    );
-  });
-
-  it('Should handle DELETE_VIEW', () => {
-    const id = documentData.windowId;
-    const viewId = documentData.viewId;
-    const actions = [
-      {
-        type: ACTION_TYPES.CREATE_VIEW_SUCCESS,
-        payload: {
-          id,
-          viewId,
-          isModal: false,
-        },
-      },
-      {
-        type: ACTION_TYPES.DELETE_VIEW,
-        payload: {
-          id,
-          isModal: false,
-        },
-      }
-    ];
-    const state = actions.reduce(reducer, initialState);
-
-    expect(state.views[id]).toBeFalsy();
-  });
-
-  it('Should handle RESET_VIEW', () => {
-    const id = documentData.windowId;
-    const viewId = documentData.viewId;
-    const actions = [
-      {
-        type: ACTION_TYPES.CREATE_VIEW_SUCCESS,
-        payload: {
-          id,
-          viewId,
-          isModal: false,
-        },
-      },
-      {
-        type: ACTION_TYPES.RESET_VIEW,
-        payload: {
-          id,
-          isModal: false,
-        },
-      }
-    ];
-    const state = actions.reduce(reducer, initialState);
-
-    expect(state.views).toEqual(
-      expect.objectContaining({
-        [id]: expect.objectContaining({ viewId: null }),
-      }),
-    );
-  });
 });
 
 describe('Views reducer for `modals` type', () => {
   const layoutData = fixtures.modalLayout1;
-  const documentData = fixtures.basicModalData1;
 
   it('Should handle FETCH_LAYOUT', () => {
     const id = layoutData.windowId;
@@ -285,87 +175,5 @@ describe('Views reducer for `modals` type', () => {
       }),
       views: {},
     }));
-  });
-
-  it('Should handle CREATE_VIEW_ERROR', () => {
-    const id = documentData.windowId;
-    const error = 'Error';
-    const actions = [
-      {
-        type: ACTION_TYPES.CREATE_VIEW_PENDING,
-        payload: {
-          id,
-          isModal: true,
-        },
-      },
-      {
-        type: ACTION_TYPES.CREATE_VIEW_ERROR,
-        payload: {
-          id,
-          error,
-          isModal: true,
-        },
-      }
-    ];
-    const state = actions.reduce(reducer, initialState);
-
-    expect(state.modals).toEqual(
-      expect.objectContaining({
-        [id]: expect.objectContaining({ pending: false, notFound: true, error }),
-      }),
-    );
-  });
-
-  it('Should handle FILTER_VIEW', () => {
-    const id = documentData.windowId;
-    const filterData = fixtures.basicModalFilters1;
-    const { viewId, filters, size } = filterData;
-    const actions = [
-      {
-        type: ACTION_TYPES.FILTER_VIEW_PENDING,
-        payload: {
-          id,
-          isModal: true,
-        },
-      },
-      {
-        type: ACTION_TYPES.FILTER_VIEW_SUCCESS,
-        payload: {
-          id,
-          data: { filters, viewId, size },
-          isModal: true,
-        },
-      }
-    ];
-    const state = actions.reduce(reducer, initialState);
-
-    expect(state.modals).toEqual(
-      expect.objectContaining({
-        [id]: expect.objectContaining({ pending: false, notFound: false, viewId, filters }),
-      }),
-    );
-  });
-
-  it('Should handle UPDATE_VIEW_DATA_SUCCESS', () => {
-    const id = documentData.windowId;
-    const headersData = generalData.headerProperties1;
-    const actions = [
-      {
-        type: ACTION_TYPES.UPDATE_VIEW_DATA_SUCCESS,
-        payload: {
-          id,
-          data: { headerProperties: headersData },
-          isModal: false,
-        },
-      }
-    ];
-
-    const state = actions.reduce(reducer, initialState);
-
-    expect(state.views).toEqual(
-      expect.objectContaining({
-        [id]: expect.objectContaining({ headerProperties: headersData }),
-      }),
-    );
   });
 });

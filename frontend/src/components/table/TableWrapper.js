@@ -222,7 +222,6 @@ class TableWrapper extends PureComponent {
         showIncludedView: false,
         windowId,
         viewId,
-        isModal,
       });
     }
   };

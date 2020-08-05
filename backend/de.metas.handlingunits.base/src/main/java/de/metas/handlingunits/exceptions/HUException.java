@@ -24,9 +24,7 @@ package de.metas.handlingunits.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
-import lombok.NonNull;
 
 /**
  * Root of Handling Units module exceptions hierarchy.
@@ -61,11 +59,6 @@ public class HUException extends AdempiereException
 	{
 		super(cause);
 		appendParametersToMessage(); // preserve HUException's historical behavior
-	}
-	
-	public HUException(@NonNull final AdMessageKey message)
-	{
-		super(message);
 	}
 
 	@Override

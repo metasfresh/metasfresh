@@ -386,8 +386,6 @@ class TableItem extends PureComponent {
       isGerman,
       isSelected,
       focusOnFieldName,
-      updateHeight,
-      rowIndex,
       fieldsByName: cells,
       /*
        * This function is called when cell's value changes and triggers re-fetching
@@ -449,7 +447,6 @@ class TableItem extends PureComponent {
                   keyProperty,
                   modalVisible,
                   isGerman,
-                  rowIndex,
                 }}
                 ref={(c) => {
                   if (c && isSelected) {
@@ -480,7 +477,6 @@ class TableItem extends PureComponent {
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
                 closeTableField={this.closeTableField}
-                updateHeight={updateHeight}
               />
             );
           }
@@ -642,8 +638,6 @@ TableItem.propTypes = {
   keyProperty: PropTypes.string,
   page: PropTypes.number,
   activeSort: PropTypes.bool,
-  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
-  rowIndex: PropTypes.number, // used for knowing the row index within the Table
 };
 
 export default TableItem;

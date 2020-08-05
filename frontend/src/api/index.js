@@ -10,20 +10,19 @@ import {
   deleteRequest,
 } from './window';
 import {
-  browseViewRequest,
-  createViewRequest,
-  deleteStaticFilter,
-  filterViewRequest,
   getData,
   getRowsData,
   getLayout,
+  patchRequest,
   getViewLayout,
   getViewRowsByIds,
-  headerPropertiesRequest,
+  browseViewRequest,
   locationSearchRequest,
   locationConfigRequest,
   deleteViewRequest,
-  patchRequest,
+  createViewRequest,
+  filterViewRequest,
+  deleteStaticFilter,
   quickActionsRequest,
 } from './view';
 import {
@@ -66,7 +65,6 @@ export {
   getViewLayout,
   getViewRowsByIds,
   getZoomIntoWindow,
-  headerPropertiesRequest,
   localLoginRequest,
   locationConfigRequest,
   locationSearchRequest,

@@ -25,10 +25,14 @@ package de.metas.camel.shipping.receiptcandidate;
 import de.metas.camel.shipping.FeedbackProzessor;
 import de.metas.camel.shipping.JsonToXmlProcessorCommonUtil;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
 import de.metas.common.filemaker.COL;
+import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FIELD;
+import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
 import de.metas.common.filemaker.METADATA;
+import de.metas.common.filemaker.PRODUCT;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
 import de.metas.common.shipping.JsonRequestCandidateResult;
@@ -43,6 +47,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {

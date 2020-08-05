@@ -1,27 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -43,6 +21,28 @@ import org.springframework.stereotype.Service;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -333,35 +333,17 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public void updateAllAddresses(@NonNull final I_C_BPartner bpartner)
+	public void setAddress(final I_C_BPartner_Location bpLocation)
 	{
-		final List<I_C_BPartner_Location> bpLocations = bpartnersRepo.retrieveBPartnerLocations(bpartner);
-		for (final I_C_BPartner_Location bpLocation : bpLocations)
-		{
-			updateAddressNoSave(bpLocation, bpartner);
-			bpartnersRepo.save(bpLocation);
-		}
-	}
-
-	@Override
-	public void setAddress(@NonNull final I_C_BPartner_Location bpLocation)
-	{
-		final I_C_BPartner bpartner = bpartnersRepo.getById(bpLocation.getC_BPartner_ID());
-		updateAddressNoSave(bpLocation, bpartner);
-	}
-
-	private void updateAddressNoSave(final I_C_BPartner_Location bpLocation, final I_C_BPartner bpartner)
-	{
-		final ILocationBL locationBL = Services.get(ILocationBL.class);
-		
-		final String address = locationBL.mkAddress(
+		final String address = Services.get(ILocationBL.class).mkAddress(
 				bpLocation.getC_Location(),
-				bpartner,
+				bpartnersRepo.getById(bpLocation.getC_BPartner_ID()),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);
 
 		bpLocation.setAddress(address);
+
 	}
 
 	@Override

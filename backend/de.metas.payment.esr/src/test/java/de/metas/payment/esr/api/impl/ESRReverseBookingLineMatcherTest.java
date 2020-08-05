@@ -9,10 +9,7 @@ import java.io.ByteArrayInputStream;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Test;
 
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.money.CurrencyId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.ESRTestUtil;
@@ -29,15 +26,15 @@ public class ESRReverseBookingLineMatcherTest extends ESRTestBase
 
 		final I_ESR_Import esrImport = createImport();
 
-		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
-		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-062822-7",
-				currencyEUR);
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setESR_RenderedAccountNo("01-062822-7");
+		save(account);
 
-		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);

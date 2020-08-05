@@ -20,6 +20,27 @@ import { mapIncluded } from '../utils/documentListHelper';
 import Table from '../components/table/TableWrapper';
 
 class TableContainer extends PureComponent {
+  componentWillUnmount() {
+    const {
+      showIncludedView,
+      viewId,
+      windowId,
+      isIncluded,
+      isModal,
+    } = this.props;
+
+    if (!isIncluded) {
+      const identifier = isModal ? viewId : windowId;
+
+      showIncludedView({
+        id: identifier,
+        showIncludedView: false,
+        windowId,
+        viewId,
+      });
+    }
+  }
+
   /**
    * @method getAllLeaves
    * @summary select parent and all it's leaves

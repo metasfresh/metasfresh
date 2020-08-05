@@ -1,10 +1,7 @@
-import React, { PureComponent } from 'react';
+import React, { cloneElement, PureComponent } from 'react';
 import PropTypes from 'prop-types';
-
 import { patchViewAttributes } from '../actions/ViewAttributesActions';
 import { parseToDisplay } from '../utils/documentListHelper';
-
-import SelectionAttributes from './app/SelectionAttributes';
 
 /**
  * @file Class based component.
@@ -43,7 +40,7 @@ export default class DataLayoutWrapper extends PureComponent {
   };
 
   handlePatch = (prop, value, cb) => {
-    const { windowId, viewId, onRowEdited } = this.props;
+    const { windowType: windowId, viewId, onRowEdited } = this.props;
     const { dataId: rowId } = this.state;
 
     onRowEdited && onRowEdited(true);
@@ -79,9 +76,11 @@ export default class DataLayoutWrapper extends PureComponent {
       this.setState(
         {
           data: preparedData,
-          dataId,
+          dataId: dataId,
         },
-        cb
+        () => {
+          cb && cb();
+        }
       );
   };
 
@@ -89,31 +88,36 @@ export default class DataLayoutWrapper extends PureComponent {
     this.mounted &&
       this.setState(
         {
-          layout,
+          layout: layout,
         },
-        cb
+        () => {
+          cb && cb();
+        }
       );
   };
 
   render() {
     const { layout, data } = this.state;
-    const { className } = this.props;
+    const { children, className } = this.props;
 
     // sometimes it's a number, and React complains about wrong type
     const dataId = this.state.dataId + '';
 
     return (
       <div className={className}>
-        <SelectionAttributes
-          {...this.props}
-          DLWrapperData={data}
-          DLWrapperDataId={dataId}
-          DLWrapperLayout={layout}
-          DLWrapperSetData={this.setData}
-          DLWrapperSetLayout={this.setLayout}
-          DLWrapperHandleChange={this.handleChange}
-          DLWrapperHandlePatch={this.handlePatch}
-        />
+        {// The naming of props has a significant prefix
+        // to suggest dev that these props are from wrapper
+        cloneElement(children, {
+          ...this.props,
+          DLWrapperData: data,
+          DLWrapperDataId: dataId,
+          DLWrapperLayout: layout,
+
+          DLWrapperSetData: this.setData,
+          DLWrapperSetLayout: this.setLayout,
+          DLWrapperHandleChange: this.handleChange,
+          DLWrapperHandlePatch: this.handlePatch,
+        })}
       </div>
     );
   }
@@ -121,7 +125,7 @@ export default class DataLayoutWrapper extends PureComponent {
 
 DataLayoutWrapper.propTypes = {
   onRowEdited: PropTypes.func,
-  windowId: PropTypes.string,
+  windowType: PropTypes.string,
   viewId: PropTypes.string,
   children: PropTypes.node,
   className: PropTypes.string,

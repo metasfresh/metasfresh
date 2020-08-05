@@ -23,17 +23,12 @@
 package de.metas.common.shipping.shipmentcandidate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonAttributeSetInstance;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
-import de.metas.common.shipment.JsonCreateShipmentInfo;
-import de.metas.common.shipment.JsonCreateShipmentRequest;
-import de.metas.common.shipment.JsonCreateShipmentResponse;
-import de.metas.common.shipment.JsonLocation;
 import de.metas.common.shipping.ConfiguredJsonMapper;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.JsonRequestCandidateResult;
@@ -44,7 +39,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
@@ -59,57 +53,6 @@ class JsonSerializeDeserializeTests
 		// important to register the jackson-datatype-jsr310 module which we have in our pom and
 		// which is needed to serialize/deserialize java.time.Instant
 		assertThat(com.fasterxml.jackson.datatype.jsr310.JavaTimeModule.class).isNotNull(); // just to get a compile error if not present
-	}
-
-	@Test
-	void jsonCreateShipmentRequest() throws IOException
-	{
-		final JsonLocation location = JsonLocation.builder()
-				.city("city")
-				.countryCode("DE")
-				.houseNo("11ER")
-				.street("P street")
-				.zipCode("151212")
-				.build();
-
-		final JsonAttributeInstance attributeInstance = JsonAttributeInstance.builder()
-				.attributeName("name")
-				.valueStr("valueStr")
-				.valueNumber(BigDecimal.ONE)
-				.valueDate(LocalDate.of(2020,7,24))
-				.attributeCode("atrCode")
-				.build(); // not a real case but it's fine for testing
-
-		final JsonCreateShipmentInfo jsonCreateShipmentInfo = JsonCreateShipmentInfo.builder()
-				.shipmentScheduleId(JsonMetasfreshId.of(1))
-				.businessPartnerSearchKey("bp_key")
-				.deliveryRule("d_rule")
-				.documentNo("dNo")
-				.movementQuantity(BigDecimal.ONE)
-				.productSearchKey("p_key")
-				.trackingNumbers(ImmutableList.of("tr-no1"))
-				.movementDate(LocalDateTime.of(2020,7,24,18,13))
-				.attributes(ImmutableList.of(attributeInstance))
-				.shipToLocation(location)
-				.build();
-
-		final JsonCreateShipmentRequest jsonCreateShipmentRequest = JsonCreateShipmentRequest
-				.builder()
-				.shipperCode("shippercode")
-				.createShipmentInfoList(ImmutableList.of(jsonCreateShipmentInfo))
-				.build();
-
-		assertOK(jsonCreateShipmentRequest, JsonCreateShipmentRequest.class);
-	}
-
-	@Test
-	void jsonCreateShipmentResponse() throws IOException
-	{
-		final JsonCreateShipmentResponse createShipmentResponse = JsonCreateShipmentResponse.builder()
-				.createdShipmentIdList(ImmutableList.of(JsonMetasfreshId.of(1)))
-				.build();
-
-		assertOK(createShipmentResponse, JsonCreateShipmentResponse.class);
 	}
 
 	@Test

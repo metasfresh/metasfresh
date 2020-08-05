@@ -76,26 +76,18 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall be allowed to process");
 		}
 
-		final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
-		if (rows.isEmpty())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("no unprocessed rows");
-		}
-
-		if (isPartialDeliveryAllowed())
-		{
-			if (rows.stream().noneMatch(ProductsToPickRow::isEligibleForProcessing))
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("no rows eligible for processing");
-			}
-		}
-		else
+		if (partialDeliveryNotAllowed())
 		{
 			if (!getView().isApproved())
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows were approved");
 			}
 
+			final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
+			if (rows.isEmpty())
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("no unprocessed rows");
+			}
 			if (!rows.stream().allMatch(ProductsToPickRow::isEligibleForProcessing))
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows eligible for processing");
@@ -148,7 +140,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	@Override
 	protected String doIt()
 	{
-		if (!isPartialDeliveryAllowed())
+		if (partialDeliveryNotAllowed())
 		{
 			if (!getView().isApproved())
 			{
@@ -213,8 +205,8 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private boolean isPartialDeliveryAllowed()
+	private boolean partialDeliveryNotAllowed()
 	{
-		return sysConfigBL.getBooleanValue(SYSCONFIG_AllowPartialDelivery, false);
+		return !sysConfigBL.getBooleanValue(SYSCONFIG_AllowPartialDelivery, false);
 	}
 }

@@ -1,16 +1,17 @@
 package de.metas.picking.service;
 
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-
-import java.util.Set;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -72,8 +73,6 @@ public interface IPackingItem
 	void setPartsFrom(IPackingItem packingItem);
 
 	void addParts(IPackingItem packingItem);
-
-	IPackingItem addPartsAndReturn(IPackingItem packingItem);
 
 	void addParts(PackingItemParts toAdd);
 

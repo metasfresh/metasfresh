@@ -11,10 +11,15 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.order.DeliveryRule;
+import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -35,6 +40,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -78,6 +84,12 @@ public class WEBUI_Picking_PickQtyToNewHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	@Autowired
+	private PickingCandidateService pickingCandidateService;
+
+	@Autowired
+	private PickingConfigRepository pickingConfigRepo;
+
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
@@ -113,13 +125,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 	protected Optional<ProcessPreconditionsResolution> checkValidSelection()
 	{
-		if (getParentViewRowIdsSelection() == null)
-		{
-			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNoSelection());
-		}
-
-		if (getSelectedRowIds().isMoreThanOneDocumentId()
-	        ||  getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId() )
+		if (!getSelectedRowIds().isSingleDocumentId()
+	        || (getParentViewRowIdsSelection() != null
+				&& getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId()) )
 		{
 			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNotSingleSelection());
 		}
@@ -131,6 +139,11 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 
 		return Optional.empty();
+	}
+
+	protected boolean isForceDelivery()
+	{
+		return DeliveryRule.ofCode(getCurrentShipmentSchedule().getDeliveryRule()).isForce();
 	}
 
 	protected Quantity getQtyToPack()
@@ -170,6 +183,23 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final HUToReportWrapper huToReport = HUToReportWrapper.of(hu);
 		final boolean onlyIfAutoPrintIsEnabled = true;
 		huReportService.printPickingLabel(huToReport, onlyIfAutoPrintIsEnabled);
+	}
+
+	protected Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
+	{
+		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
+
+		return pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
+				.qtyToPack(qtyToPack)
+				.packToHuId(packToHuId)
+				.sourceHUIds(huIdsToPick)
+				.pickingSlotId(pickingSlotId)
+				.shipmentScheduleId(getCurrentShipmentScheduleId())
+				.allowOverDelivery(allowOverDelivery)
+				.build());
 	}
 
 	@NonNull

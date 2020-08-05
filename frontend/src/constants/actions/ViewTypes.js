@@ -105,15 +105,3 @@ export const FETCH_LOCATION_CONFIG_ERROR = 'FETCH_LOCATION_CONFIG_ERROR';
  * @type {string} Toggles included views in master view
  */
 export const TOGGLE_INCLUDED_VIEW = 'TOGGLE_INCLUDED_VIEW';
-
-/**
- * @constant
- * @type {string} Update view data error
- */
-export const UPDATE_VIEW_DATA_ERROR = 'UPDATE_VIEW_DATA_ERROR';
-
-/**
- * @constant
- * @type {string} Update view data success
- */
-export const UPDATE_VIEW_DATA_SUCCESS = 'UPDATE_VIEW_DATA_SUCCESS';

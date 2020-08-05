@@ -1,12 +1,14 @@
 package de.metas.bpartner.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import org.compiere.model.I_C_BPartner_Location;
+import org.springframework.stereotype.Repository;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_BPartner_Location;
-import org.springframework.stereotype.Repository;
 
 /*
  * #%L
@@ -33,16 +35,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class BPartnerLocationInfoRepository
 {
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	public BPartnerLocationInfo getByBPartnerLocationId(@NonNull final BPartnerLocationId bplocationId)
+	private BPartnerLocationInfo toBPartnerLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 	{
-		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bplocationId);
-		return toBPartnerLocation(bpLocation);
-	}
 
-	private static BPartnerLocationInfo toBPartnerLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
-	{
 		return BPartnerLocationInfo.builder()
 				.id(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()), bpartnerLocationRecord.getC_BPartner_Location_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()))
@@ -50,4 +45,8 @@ public class BPartnerLocationInfoRepository
 				.build();
 	}
 
+	public BPartnerLocationInfo getByBPartnerLocationId(@NonNull final BPartnerLocationId bplocationId)
+	{
+		return toBPartnerLocation(load(bplocationId.getRepoId(), I_C_BPartner_Location.class));
+	}
 }

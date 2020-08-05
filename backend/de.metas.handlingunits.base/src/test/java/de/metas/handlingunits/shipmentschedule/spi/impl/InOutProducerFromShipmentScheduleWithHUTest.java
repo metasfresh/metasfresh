@@ -1,7 +1,34 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.order.model.I_C_OrderLine;
@@ -12,7 +39,6 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -41,37 +67,6 @@ import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.NONE;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -102,10 +97,6 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
-
 		Loggables.temporarySetLoggable(Loggables.console());
 	}
 
@@ -231,7 +222,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		}
 
 		@Test
-		public void Today_CalculateShipmentRule_ForceToday()
+		public void Today_IsShipmentDateTodayTrue()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 10, 15, 0));
 
@@ -239,13 +230,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_TODAY);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
 
 		@Test
-		public void Today_CalculateShipmentRule_None()
+		public void Today_IsShipmentDateTodayFalse()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 17, 16));
 
@@ -253,13 +244,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
 
 		@Test
-		public void AnotherDate_CalculateShipmentRule_ForceToday()
+		public void AnotherDate_IsShipmentDateTodayTrue()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 13, 13, 13));
 
@@ -269,13 +260,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(anotherDate);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_TODAY);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
 
 		@Test
-		public void DateInFuture_CalculateShipmentRule_None()
+		public void DateInFuture_IsShipmentDateTodayFalse()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
 
@@ -283,13 +274,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(dateInFuture);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
 			assertThat(shipmentDate).isEqualTo(dateInFuture);
 		}
 
 		@Test
-		public void DateInPast_CalculateShipmentRule_None()
+		public void DateInPast_IsShipmentDateTodayFalse()
 		{
 			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
 
@@ -298,24 +289,9 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
+			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
 			assertThat(shipmentDate).isEqualTo(today);
-		}
-
-		@Test
-		public void DateInPast_CalculateShipmentRule_ForceDeliveryDate()
-		{
-			//set up today
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
-
-			final LocalDate dateInPast = LocalDate.of(2017, 11, 3);
-
-			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
-
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_DELIVERY_DATE);
-
-			assertThat(shipmentDate).isEqualTo(dateInPast);
 		}
 	}
 

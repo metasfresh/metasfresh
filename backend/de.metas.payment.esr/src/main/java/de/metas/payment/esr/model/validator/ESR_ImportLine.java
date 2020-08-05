@@ -34,8 +34,6 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -44,11 +42,9 @@ import de.metas.util.Services;
 @Validator(I_ESR_ImportLine.class)
 public class ESR_ImportLine
 {
-	private static final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	
 	public static final String ERR_Wrong_Org_For_Invoice = "ESR_Wrong_Org_For_Manually_Entered_Invoice";
 	public static final String ERR_Wrong_Org_For_Partner = "ESR_Wrong_Org_For_Manually_Entered_Partner";
-	
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ifColumnsChanged = I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID)
 	public void onChangeInvoice(I_ESR_ImportLine esrImportLine)
@@ -111,11 +107,7 @@ public class ESR_ImportLine
 			}
 		}
 
-		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
-		final I_C_Payment payment = esrImportLinePaymentId == null ? null
-				: paymentDAO.getById(esrImportLinePaymentId);
-		
-	
+		final I_C_Payment payment = esrImportLine.getC_Payment();
 
 		handlePayment(
 				BPartnerId.ofRepoIdOrNull(esrImportLine.getC_BPartner_ID()),

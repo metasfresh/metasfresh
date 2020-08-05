@@ -60,7 +60,6 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.money.CurrencyId;
-import de.metas.payment.PaymentId;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.ESRValidationRuleTools;
@@ -141,15 +140,16 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final I_ESR_Import esrImport = createImport();
 
-		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
-		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setESR_RenderedAccountNo("01-059931-0");
 
-		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		save(account);
+
+		esrImport.setC_BP_BankAccount(account);
 
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
@@ -167,6 +167,8 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		save(type);
+
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -243,15 +245,16 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final I_ESR_Import esrImport = createImport();
 
-		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
-		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setESR_RenderedAccountNo("01-059931-0");
 
-		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		save(account);
+
+		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
@@ -415,26 +418,16 @@ public class ESRImportBLTest extends ESRTestBase
 		refresh(esrImportLine1, true);
 		refresh(esrImportLine2, true);
 		refresh(esrImportLine3, true);
-
-		final PaymentId esrImportLine1PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine1.getC_Payment_ID());
-		final I_C_Payment esrLine1Payment = esrImportLine1PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine1PaymentId);
-
+		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 
-		final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
-		final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine2PaymentId);
-
+		final I_C_Payment esrLine2Payment = esrImportLine2.getC_Payment();
 		assertThat(esrLine2Payment, not(esrLine1Payment));
 		assertThat(esrLine2Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.5)));
 		assertThat(esrLine2Payment.getC_Invoice_ID(), is(0));
 
-		final PaymentId esrImportLine3PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine3.getC_Payment_ID());
-		final I_C_Payment esrLine3Payment = esrImportLine3PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine3PaymentId);
-
+		final I_C_Payment esrLine3Payment = esrImportLine3.getC_Payment();
 		assertThat(esrLine3Payment, not(esrLine1Payment));
 		assertThat(esrLine3Payment, not(esrLine2Payment));
 		assertThat(esrLine3Payment.getPayAmt(), comparesEqualTo(new BigDecimal(62.50)));
@@ -483,26 +476,16 @@ public class ESRImportBLTest extends ESRTestBase
 		refresh(esrImportLine1, true);
 		refresh(esrImportLine2, true);
 		refresh(esrImportLine3, true);
-
-		final PaymentId esrImportLine1PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine1.getC_Payment_ID());
-		final I_C_Payment esrLine1Payment = esrImportLine1PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine1PaymentId);
-
+		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 
-		final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
-		final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine2PaymentId);
-
+		final I_C_Payment esrLine2Payment = esrImportLine2.getC_Payment();
 		assertThat(esrLine2Payment, not(esrLine1Payment));
 		assertThat(esrLine2Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.5)));
 		assertThat(esrLine2Payment.getC_Invoice_ID(), is(0));
 
-		final PaymentId esrImportLine3PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine3.getC_Payment_ID());
-		final I_C_Payment esrLine3Payment = esrImportLine3PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine3PaymentId);
-
+		final I_C_Payment esrLine3Payment = esrImportLine3.getC_Payment();
 		assertThat(esrLine3Payment, not(esrLine2Payment));
 		assertThat(esrLine3Payment.getPayAmt(), comparesEqualTo(new BigDecimal(62.50)));
 		assertThat(esrLine3Payment.getC_Invoice_ID(), is(0));
@@ -580,25 +563,16 @@ public class ESRImportBLTest extends ESRTestBase
 	{
 		// there is no perfect match (the amount is not matching perfect), so shall be no allocation and no payment match at this moment
 
-		final PaymentId esrImportLine1PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine1.getC_Payment_ID());
-		final I_C_Payment esrLine1Payment = esrImportLine1PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine1PaymentId);
-
+		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 
-		final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
-		final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine2PaymentId);
-
+		final I_C_Payment esrLine2Payment = esrImportLine2.getC_Payment();
 		assertThat(esrLine2Payment, not(esrLine1Payment));
 		assertThat(esrLine2Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.5)));
 		assertThat(esrLine2Payment.getC_Invoice_ID(), is(0));
 
-		final PaymentId esrImportLine3PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine3.getC_Payment_ID());
-		final I_C_Payment esrLine3Payment = esrImportLine3PaymentId == null ? null
-				: paymentDAO.getById(esrImportLine3PaymentId);
-
+		final I_C_Payment esrLine3Payment = esrImportLine3.getC_Payment();
 		assertThat(esrLine3Payment, not(esrLine1Payment));
 		assertThat(esrLine3Payment.getPayAmt(), comparesEqualTo(new BigDecimal(62.50)));
 		assertThat(esrLine3Payment.getC_Invoice_ID(), is(0));
@@ -758,7 +732,7 @@ public class ESRImportBLTest extends ESRTestBase
 		payment.setAD_Org_ID(lines.get(0).getAD_Org_ID());
 		save(payment);
 
-		lines.get(0).setC_Payment_ID(payment.getC_Payment_ID());
+		lines.get(0).setC_Payment(payment);
 
 		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
@@ -809,7 +783,7 @@ public class ESRImportBLTest extends ESRTestBase
 		save(payment);
 
 		// if the line has a C_Payment_ID>0 payment assigned, then we assume that ESR_LINE_1_AMOUNT was allocated against the invoice
-		line1.setC_Payment_ID(payment.getC_Payment_ID());
+		line1.setC_Payment(payment);
 
 		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
@@ -853,8 +827,8 @@ public class ESRImportBLTest extends ESRTestBase
 		save(payment);
 
 		final I_ESR_ImportLine line1 = lines.get(0);
-		line1.setC_Payment_ID(payment.getC_Payment_ID()); // if the line has a C_Payment_ID>0 payment assigned, then we assume that ESR_LINE_1_AMOUNT is *already* allocated against the invoice and is therefore part of the
-		// sum that makes up alreadyAllocatedAmt
+		line1.setC_Payment(payment); // if the line has a C_Payment_ID>0 payment assigned, then we assume that ESR_LINE_1_AMOUNT is *already* allocated against the invoice and is therefore part of the
+									 // sum that makes up alreadyAllocatedAmt
 
 		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 

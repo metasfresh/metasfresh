@@ -1,6 +1,5 @@
 export * from './actions/TableTypes';
 export * from './actions/ViewTypes';
-export * from './actions/ListTypes';
 
 /**
  * @constant

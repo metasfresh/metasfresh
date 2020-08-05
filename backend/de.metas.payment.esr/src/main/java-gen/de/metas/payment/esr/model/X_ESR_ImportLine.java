@@ -15,7 +15,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2058300620L;
+	private static final long serialVersionUID = 14844844L;
 
     /** Standard Constructor */
     public X_ESR_ImportLine (Properties ctx, int ESR_ImportLine_ID, String trxName)
@@ -28,7 +28,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 			setESR_ImportLine_ID (0);
 			setESR_IsManual_ReferenceNo (true); // Y
 			setESRLineText (null);
-			setIsReconciled (false); // N
 			setIsValid (false); // N
 			setProcessed (false); // N
         } */
@@ -150,7 +149,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return ii.intValue();
 	}
 
-	/** Set Auszugsposition.
+	/** Set Auszugs-Position.
 		@param C_BankStatementLine_ID 
 		Position auf einem Bankauszug zu dieser Bank
 	  */
@@ -163,7 +162,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 			set_Value (COLUMNNAME_C_BankStatementLine_ID, Integer.valueOf(C_BankStatementLine_ID));
 	}
 
-	/** Get Auszugsposition.
+	/** Get Auszugs-Position.
 		@return Position auf einem Bankauszug zu dieser Bank
 	  */
 	@Override
@@ -175,8 +174,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return ii.intValue();
 	}
 
-	/** Set Bankauszugszeile Referenz.
-		@param C_BankStatementLine_Ref_ID Bankauszugszeile Referenz	  */
+	/** Set Bankstatementline Reference.
+		@param C_BankStatementLine_Ref_ID Bankstatementline Reference	  */
 	@Override
 	public void setC_BankStatementLine_Ref_ID (int C_BankStatementLine_Ref_ID)
 	{
@@ -186,37 +185,12 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 			set_Value (COLUMNNAME_C_BankStatementLine_Ref_ID, Integer.valueOf(C_BankStatementLine_Ref_ID));
 	}
 
-	/** Get Bankauszugszeile Referenz.
-		@return Bankauszugszeile Referenz	  */
+	/** Get Bankstatementline Reference.
+		@return Bankstatementline Reference	  */
 	@Override
 	public int getC_BankStatementLine_Ref_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatementLine_Ref_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -259,6 +233,31 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return ii.intValue();
 	}
 
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
@@ -294,6 +293,18 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Payment getC_Payment()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
+	}
+
+	@Override
+	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
 	}
 
 	/** Set Zahlung.
@@ -377,25 +388,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return bd;
 	}
 
-	/** Set ESR Rechnungsnummer.
-		@param ESR_DocumentNo 
-		Belegnummer der zugeordneten Rechnung
-	  */
-	@Override
-	public void setESR_DocumentNo (java.lang.String ESR_DocumentNo)
-	{
-		set_Value (COLUMNNAME_ESR_DocumentNo, ESR_DocumentNo);
-	}
-
-	/** Get ESR Rechnungsnummer.
-		@return Belegnummer der zugeordneten Rechnung
-	  */
-	@Override
-	public java.lang.String getESR_DocumentNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESR_DocumentNo);
-	}
-
 	/** 
 	 * ESR_Document_Status AD_Reference_ID=540375
 	 * Reference name: ESR_Document_Statuses
@@ -424,23 +416,23 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return (java.lang.String)get_Value(COLUMNNAME_ESR_Document_Status);
 	}
 
-	/** Set ESR Referenznummer (komplett).
-		@param ESRFullReferenceNumber 
-		Referenznummer inkl. bankinterner Teilnehmernummer
+	/** Set ESR Rechnungsnummer.
+		@param ESR_DocumentNo 
+		Belegnummer der zugeordneten Rechnung
 	  */
 	@Override
-	public void setESRFullReferenceNumber (java.lang.String ESRFullReferenceNumber)
+	public void setESR_DocumentNo (java.lang.String ESR_DocumentNo)
 	{
-		set_Value (COLUMNNAME_ESRFullReferenceNumber, ESRFullReferenceNumber);
+		set_Value (COLUMNNAME_ESR_DocumentNo, ESR_DocumentNo);
 	}
 
-	/** Get ESR Referenznummer (komplett).
-		@return Referenznummer inkl. bankinterner Teilnehmernummer
+	/** Get ESR Rechnungsnummer.
+		@return Belegnummer der zugeordneten Rechnung
 	  */
 	@Override
-	public java.lang.String getESRFullReferenceNumber () 
+	public java.lang.String getESR_DocumentNo () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESRFullReferenceNumber);
+		return (java.lang.String)get_Value(COLUMNNAME_ESR_DocumentNo);
 	}
 
 	@Override
@@ -566,25 +558,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return false;
 	}
 
-	/** Set Importierte ESR-Zeile.
-		@param ESRLineText 
-		ESR complete line text
-	  */
-	@Override
-	public void setESRLineText (java.lang.String ESRLineText)
-	{
-		set_Value (COLUMNNAME_ESRLineText, ESRLineText);
-	}
-
-	/** Get Importierte ESR-Zeile.
-		@return ESR complete line text
-	  */
-	@Override
-	public java.lang.String getESRLineText () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESRLineText);
-	}
-
 	/** 
 	 * ESR_Payment_Action AD_Reference_ID=540386
 	 * Reference name: ESR_Payment_Action_List
@@ -623,6 +596,44 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public java.lang.String getESR_Payment_Action () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ESR_Payment_Action);
+	}
+
+	/** Set ESR Referenznummer (komplett).
+		@param ESRFullReferenceNumber 
+		Referenznummer inkl. bankinterner Teilnehmernummer
+	  */
+	@Override
+	public void setESRFullReferenceNumber (java.lang.String ESRFullReferenceNumber)
+	{
+		set_Value (COLUMNNAME_ESRFullReferenceNumber, ESRFullReferenceNumber);
+	}
+
+	/** Get ESR Referenznummer (komplett).
+		@return Referenznummer inkl. bankinterner Teilnehmernummer
+	  */
+	@Override
+	public java.lang.String getESRFullReferenceNumber () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ESRFullReferenceNumber);
+	}
+
+	/** Set Importierte ESR-Zeile.
+		@param ESRLineText 
+		ESR complete line text
+	  */
+	@Override
+	public void setESRLineText (java.lang.String ESRLineText)
+	{
+		set_Value (COLUMNNAME_ESRLineText, ESRLineText);
+	}
+
+	/** Get Importierte ESR-Zeile.
+		@return ESR complete line text
+	  */
+	@Override
+	public java.lang.String getESRLineText () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ESRLineText);
 	}
 
 	/** Set Post-Teilnehmernummer.

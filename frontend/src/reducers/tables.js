@@ -99,10 +99,8 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
 
       if (data.rows && data.rows.length) {
-        const selected = [data.rows[0][data.keyProperty]];
         updatedSelected = {
-          selected,
-          supportAttribute: setSupportAttribute(selected, data.rows),
+          selected: [data.rows[0][data.keyProperty]],
         };
       }
 

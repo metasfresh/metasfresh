@@ -23,6 +23,7 @@
 package de.metas.bpartner.service;
 
 import java.util.Collection;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -334,20 +335,6 @@ public interface IBPartnerDAO extends ISingletonService
 		 */
 		@Nullable
 		BPartnerLocationId relationBPartnerLocationId;
-
-		@Nullable
-		String postalCode;
-
-		@Nullable
-		String city;
-
-		@Nullable
-		CountryId countryId;
-
-		public boolean applyLocationChecks()
-		{
-			return countryId != null;
-		}
 	}
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);

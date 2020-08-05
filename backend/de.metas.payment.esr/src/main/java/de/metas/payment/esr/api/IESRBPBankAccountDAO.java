@@ -27,7 +27,6 @@ import java.util.List;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.banking.BankAccountId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.util.ISingletonService;
@@ -58,6 +57,6 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	 * 
 	 * @return All the ESR_PostFinanceUserNumber entries for the bank account
 	 */
-	public List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(BankAccountId bankAcctId);
+	public List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(I_C_BP_BankAccount bankAcct);
 
 }

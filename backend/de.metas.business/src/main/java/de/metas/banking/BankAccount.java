@@ -46,12 +46,6 @@ public class BankAccount
 	@Nullable
 	String accountName;
 
-	@Nullable
-	String accountNo;
-
-	@Nullable
-	String esrRenderedAccountNo;
-
 	@NonNull
 	CurrencyId currencyId;
 

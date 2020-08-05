@@ -1,7 +1,6 @@
-DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(p_M_Product_ID numeric, p_ReorderDocs char(1));
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(p_M_Product_ID numeric);
 
-CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate(p_M_Product_ID numeric,
-                                                                  p_ReorderDocs  char(1) = 'Y')
+CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate(p_M_Product_ID numeric)
     RETURNS text
 AS
 $BODY$
@@ -48,11 +47,6 @@ BEGIN
                   ) t
          ) t;
     v_result := v_result || rowcount || ' document(s) unposted; ';
-
-    IF (p_ReorderDocs = 'Y') THEN
-        PERFORM "de_metas_acct".accounting_docs_to_repost_reorder();
-        v_result := v_result || 'reordered enqueued docs';
-    END IF;
 
     RETURN v_result;
 END;

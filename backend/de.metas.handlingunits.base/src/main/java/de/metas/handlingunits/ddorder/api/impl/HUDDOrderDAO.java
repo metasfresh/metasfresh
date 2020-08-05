@@ -48,12 +48,11 @@ import de.metas.util.Services;
 
 public class HUDDOrderDAO implements IHUDDOrderDAO
 {
-	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
 	@Override
 	public IQueryFilter<I_M_HU> getHUsNotAlreadyScheduledToMoveFilter()
 	{
 		final Properties ctx = Env.getCtx();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final ICompositeQueryFilter<I_M_HU> filter = queryBL.createCompositeQueryFilter(I_M_HU.class);
 
@@ -95,6 +94,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 			return Collections.emptyList();
 		}
 
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayOrAllFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderLineIds)
@@ -115,6 +115,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 
 		//
 		// Create a query to select ALL candidate assignments for given DD_OrderLine
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ddOrderline)
 				.addInArrayOrAllFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderline.getDD_OrderLine_ID());
 
@@ -127,6 +128,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 	{
 		Check.assumeNotNull(ddOrder, "ddOrder not null");
 
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(org.eevolution.model.I_DD_OrderLine.class, ddOrder)
 				.addEqualsFilter(I_DD_OrderLine.COLUMN_DD_Order_ID, ddOrder.getDD_Order_ID())
 				//
@@ -160,6 +162,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 
 		//
 		// Create the query to select the lines we want to remove
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ddOrderline)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderline.getDD_OrderLine_ID())
@@ -181,12 +184,11 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 	@Override
 	public boolean existsDDOrderLineCandidateForHUId(final int huId)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huId)
 				.create()
 				.anyMatch();
 	}
-	
-
 }

@@ -1,7 +1,5 @@
 package de.metas.event;
 
-import java.util.List;
-
 import de.metas.util.ISingletonService;
 
 /**
@@ -23,8 +21,6 @@ public interface IEventBusFactory extends ISingletonService
 	 * @return event bus or null
 	 */
 	IEventBus getEventBusIfExists(Topic topic);
-
-	List<IEventBus> getAllEventBusInstances();
 
 	/**
 	 * Create an remotely bind all {@link IEventBus}es for which we have global listeners registered.
@@ -66,4 +62,5 @@ public interface IEventBusFactory extends ISingletonService
 	 * @return true if remote endpoint connection is up
 	 */
 	boolean checkRemoteEndpointStatus();
+
 }

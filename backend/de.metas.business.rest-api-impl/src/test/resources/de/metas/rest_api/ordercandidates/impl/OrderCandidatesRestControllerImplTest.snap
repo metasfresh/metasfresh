@@ -347,7 +347,6 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "metasfreshId": 100031,
         "externalId": "shipToId-1-2",
         "name": "dropShipPartner.lcocation.address1 28",
-        "bpartnerName": "First  Last",
         "active": true,
         "address1": "dropShipPartner.lcocation.address1 28",
         "postal": "bpartner.location.postal",

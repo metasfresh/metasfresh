@@ -89,4 +89,5 @@ public interface IHUDDOrderDAO extends ISingletonService
 	void removeFromHUsScheduledToMoveList(org.eevolution.model.I_DD_OrderLine ddOrderline, Collection<I_M_HU> hus);
 
 	boolean existsDDOrderLineCandidateForHUId(int huId);
+
 }

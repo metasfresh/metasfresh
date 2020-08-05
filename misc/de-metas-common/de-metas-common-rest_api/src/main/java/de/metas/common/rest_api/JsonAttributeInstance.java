@@ -22,26 +22,27 @@
 
 package de.metas.common.rest_api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Value
 public class JsonAttributeInstance
 {
 	String attributeName;
+
 	String attributeCode;
 
 	String valueStr;
+
 	BigDecimal valueNumber;
+
 	LocalDate valueDate;
 
 	@JsonCreator

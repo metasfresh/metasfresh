@@ -24,7 +24,6 @@ package de.metas.ui.web.view;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -78,14 +77,12 @@ public class SqlViewFactory implements IViewFactory
 	private final DocumentReferencesService documentReferencesService;
 	private final ViewLayoutFactory viewLayouts;
 	private final CompositeDefaultViewProfileIdProvider defaultProfileIdProvider;
-	private final ViewHeaderPropertiesProviderMap headerPropertiesProvider;
 
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentReferencesService documentReferencesService,
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
-			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
 			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
 			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
@@ -111,8 +108,6 @@ public class SqlViewFactory implements IViewFactory
 				.viewCustomizers(viewCustomizers)
 				.geoLocationDocumentService(geoLocationDocumentService)
 				.build();
-
-		this.headerPropertiesProvider = ViewHeaderPropertiesProviderMap.of(headerPropertiesProvider);
 	}
 
 	private static CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
@@ -159,7 +154,6 @@ public class SqlViewFactory implements IViewFactory
 				.setViewId(request.getViewId())
 				.setViewType(viewType)
 				.setProfileId(profileId)
-				.setHeaderPropertiesProvider(headerPropertiesProvider.getProvidersByTableName(sqlViewBinding.getTableName()))
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 				.setDocumentReferenceId(request.getDocumentReferenceId())
 				.setParentViewId(request.getParentViewId())
@@ -191,7 +185,6 @@ public class SqlViewFactory implements IViewFactory
 		return viewBuilder.build();
 	}
 
-	@Nullable
 	private DocumentFilter extractReferencedDocumentFilter(
 			@NonNull final WindowId targetWindowId,
 			@Nullable final DocumentPath referencedDocumentPath,
