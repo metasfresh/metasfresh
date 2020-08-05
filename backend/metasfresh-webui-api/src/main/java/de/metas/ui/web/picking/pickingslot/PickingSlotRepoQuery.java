@@ -21,18 +21,18 @@ package de.metas.ui.web.picking.pickingslot;
  * #L%
  */
 
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Set;
 
 /**
  * Used in the repo services, to specify which data we want to be retrieved.
@@ -49,19 +49,23 @@ public class PickingSlotRepoQuery
 		return builder().currentShipmentScheduleId(shipmentScheduleId).shipmentScheduleId(shipmentScheduleId).build();
 	}
 
+	@NonNull
 	ShipmentScheduleId currentShipmentScheduleId;
+
 	ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
+
 	boolean onlyNotClosedOrNotRackSystem;
+
 	String pickingSlotBarcode;
 
 	@Builder
 	private PickingSlotRepoQuery(
-			final ShipmentScheduleId currentShipmentScheduleId,
+			@NonNull final ShipmentScheduleId currentShipmentScheduleId,
 			@Singular final Set<ShipmentScheduleId> shipmentScheduleIds,
 			final Boolean onlyNotClosedOrNotRackSystem,
 			final String pickingSlotBarcode)
 	{
-		if (currentShipmentScheduleId != null && !shipmentScheduleIds.contains(currentShipmentScheduleId))
+		if (!Check.isEmpty(shipmentScheduleIds) && !shipmentScheduleIds.contains(currentShipmentScheduleId))
 		{
 			throw new AdempiereException("Current shipment schedule " + currentShipmentScheduleId + " is not in all shipment schedules list: " + shipmentScheduleIds);
 		}
@@ -70,5 +74,19 @@ public class PickingSlotRepoQuery
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
 		this.onlyNotClosedOrNotRackSystem = onlyNotClosedOrNotRackSystem != null ? onlyNotClosedOrNotRackSystem : true;
 		this.pickingSlotBarcode = pickingSlotBarcode;
+	}
+
+	@Value
+	@Builder
+	public static class CreatePickingSlotRepoQueryReq
+	{
+		DocumentFilterList filters;
+
+		@NonNull
+		ShipmentScheduleId currentShipmentScheduleId;
+
+		Set<ShipmentScheduleId> allShipmentScheduleIds;
+
+		boolean includeAllShipmentSchedules;
 	}
 }

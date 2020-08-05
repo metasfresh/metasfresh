@@ -22,14 +22,13 @@ package de.metas.handlingunits.inout;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_M_InOut;
-
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_InOut;
+
+import java.util.List;
 
 public interface IHUInOutDAO extends ISingletonService
 {

@@ -486,6 +486,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 		}
 
 		//
+		// Iterate all candidates which were added on this shipment and notify them about the generated shipment
+		for (final ShipmentScheduleWithHU candidate : currentCandidates)
+		{
+			candidate.setM_InOut(currentShipment);
+		}
+
+		//
 		// Process current shipment
 		// 07113: if the CompleteShipment is false, we will have them only drafted (as default)
 		if (processShipments)
@@ -493,13 +500,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 			docActionBL.processEx(currentShipment, IDocument.ACTION_Complete, null);
 		}
 		result.addInOut(currentShipment);
-
-		//
-		// Iterate all candidates which were added on this shipment and notify them about the generated shipment
-		for (final ShipmentScheduleWithHU candidate : currentCandidates)
-		{
-			candidate.setM_InOut(currentShipment);
-		}
 
 		//
 		// Iterate all candidates and update shipment schedule's HU related Qtys

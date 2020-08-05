@@ -383,7 +383,10 @@ public class PickingCandidateRepository
 
 		//
 		// Shipment schedules
-		queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingCandidatesQuery.getShipmentScheduleIds());
+		if (!Check.isEmpty(pickingCandidatesQuery.getShipmentScheduleIds()))
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingCandidatesQuery.getShipmentScheduleIds());
+		}
 
 		//
 		// Not Closed + Not Rack System Picking slots
@@ -596,16 +599,5 @@ public class PickingCandidateRepository
 				.addInArrayFilter(I_M_Picking_Candidate_IssueToOrder.COLUMNNAME_M_Picking_Candidate_ID, pickingCandidateIds)
 				.create()
 				.delete();
-	}
-
-
-	public ImmutableList<I_M_Picking_Candidate> retrieveCandidatesByHUId(@NonNull final HuId huId)
-	{
-		return queryBL
-				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.create()
-				.listImmutable(I_M_Picking_Candidate.class);
 	}
 }
