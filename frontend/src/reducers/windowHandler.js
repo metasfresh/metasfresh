@@ -382,7 +382,9 @@ export default function windowHandler(state = initialState, action) {
       } else if (property === 'standardActions') {
         // TODO: Use normal array
         newValue = iSet(value);
-      } else if (['saveStatus', 'validStatus'].includes(property)) {
+      } else if (
+        ['saveStatus', 'validStatus', 'hasComments'].includes(property)
+      ) {
         newValue = value;
       } else {
         const currentVal = state[scope] ? state[scope][property] : {};
