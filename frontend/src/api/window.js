@@ -96,7 +96,9 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
         ...row,
         fieldsByName: parseToDisplay(row.fieldsByName),
       }))
-  );
+  ).catch(error => {
+    console.error('getTabRequest error: ', error);
+  });
 }
 
 /**

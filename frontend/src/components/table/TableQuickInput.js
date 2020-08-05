@@ -82,7 +82,6 @@ class TableQuickInput extends Component {
             });
           })
           .catch((err) => {
-            // console.log('ERRRR: ', err)
             if (err.response.status === 404) {
               addNotification(
                 'Batch entry error',
@@ -95,13 +94,16 @@ class TableQuickInput extends Component {
           });
 
         !layout &&
-          getLayout('window', docType, tabId, 'quickInput', docId).then(
-            (layout) => {
+          getLayout('window', docType, tabId, 'quickInput', docId)
+            .then((layout) => {
               this.setState({
                 layout: layout.data.elements,
               });
-            }
-          );
+            })
+            .catch((err) => {
+              // eslint-disable-next-line no-console
+              console.error(err);
+            });
       }
     );
   };
