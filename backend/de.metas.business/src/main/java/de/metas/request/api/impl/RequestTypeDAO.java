@@ -1,14 +1,17 @@
 package de.metas.request.api.impl;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.request.RequestTypeId;
-import de.metas.request.api.IRequestTypeDAO;
-import de.metas.util.Services;
+import java.util.Optional;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_R_RequestType;
 
-import javax.annotation.Nullable;
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.util.Optionals;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -63,47 +66,40 @@ public class RequestTypeDAO implements IRequestTypeDAO
 
 		if (requestTypeId == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_RequestType_ID@ (@InternalName@: " + internalName);
+			throw new AdempiereException("@NotFound@ @R_RequestType_ID@ (@InternalName@: " + internalName);
 		}
 
 		return requestTypeId;
 	}
 
-	public RequestTypeId retrieveDefaultRequestTypeOrFirstActiveOrNull()
+	@Override
+	public RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive()
 	{
-		final RequestTypeId requestTypeId;
-		requestTypeId = queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
+		return Optionals.firstPresentOfSuppliers(
+				this::retrieveDefaultRequestTypeId,
+				this::retrieveFirstActiveRequestTypeId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @R_RequestType_ID@").markAsUserValidationError());
+	}
+
+	private Optional<RequestTypeId> retrieveDefaultRequestTypeId()
+	{
+		final RequestTypeId requestTypeId = queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_R_RequestType.COLUMNNAME_IsDefault, "Y")
+				.addEqualsFilter(I_R_RequestType.COLUMNNAME_IsDefault, true)
 				.create()
 				.firstIdOnly(RequestTypeId::ofRepoIdOrNull);
 
-		if (requestTypeId == null)
-		{
-			final RequestTypeId firstActiveRequestTypeId = retrieveFirstActiveRequestTypeOrNull();
-			if (firstActiveRequestTypeId == null)
-			{
-				throw new AdempiereException("No active request type existing").markAsUserValidationError();
-			}
-			else
-			{
-				return firstActiveRequestTypeId;
-			}
-		}
-
-		return requestTypeId;
+		return Optional.ofNullable(requestTypeId);
 	}
 
-	@Nullable
-	private RequestTypeId retrieveFirstActiveRequestTypeOrNull()
+	private Optional<RequestTypeId> retrieveFirstActiveRequestTypeId()
 	{
-		final RequestTypeId requestTypeId;
-		requestTypeId = queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
+		final RequestTypeId requestTypeId = queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_R_RequestType.COLUMNNAME_R_RequestType_ID)
 				.create()
 				.firstId(RequestTypeId::ofRepoIdOrNull);
 
-		return requestTypeId;
+		return Optional.ofNullable(requestTypeId);
 	}
 }
