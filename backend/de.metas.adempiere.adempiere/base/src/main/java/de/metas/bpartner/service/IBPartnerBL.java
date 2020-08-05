@@ -1,6 +1,19 @@
 package de.metas.bpartner.service;
 
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_QuickInput;
+
 import com.google.common.base.Predicates;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -16,17 +29,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
-
-import javax.annotation.Nullable;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -83,14 +85,10 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Compute and set {@link I_C_BPartner_Location#COLUMNNAME_Address} field.
-	 *
-	 * @param bpLocation
 	 */
 	void setAddress(I_C_BPartner_Location bpLocation);
 
-	void setAddress(I_C_BPartner_Location bpLocation, I_C_BPartner bPartner);
-
-	void updateAllAddresses(List<I_C_BPartner_Location> bPartnerLocations, I_C_BPartner bPartner);
+	void updateAllAddresses(I_C_BPartner bpartner);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
