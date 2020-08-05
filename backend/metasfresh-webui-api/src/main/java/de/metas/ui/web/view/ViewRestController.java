@@ -1,11 +1,38 @@
 package de.metas.ui.web.view;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.List;
-import java.util.Objects;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.impexp.excel.ExcelFormat;
+import de.metas.impexp.excel.ExcelFormats;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.process.ProcessRestController;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
+import de.metas.ui.web.process.WebuiPreconditionsContext;
+import de.metas.ui.web.process.json.JSONDocumentActionsList;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONCreateViewRequest;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONViewHeaderProperties;
+import de.metas.ui.web.view.json.JSONViewLayout;
+import de.metas.ui.web.view.json.JSONViewProfilesList;
+import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.view.json.JSONViewRow;
+import de.metas.ui.web.window.controller.WindowRestController;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -26,39 +53,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.impexp.excel.ExcelFormat;
-import de.metas.impexp.excel.ExcelFormats;
-import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ui.web.cache.ETagResponseEntityBuilder;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.process.ProcessRestController;
-import de.metas.ui.web.process.ViewAsPreconditionsContext;
-import de.metas.ui.web.process.WebuiPreconditionsContext;
-import de.metas.ui.web.process.json.JSONDocumentActionsList;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONCreateViewRequest;
-import de.metas.ui.web.view.json.JSONFilterViewRequest;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.view.json.JSONViewLayout;
-import de.metas.ui.web.view.json.JSONViewProfilesList;
-import de.metas.ui.web.view.json.JSONViewResult;
-import de.metas.ui.web.view.json.JSONViewRow;
-import de.metas.ui.web.window.controller.WindowRestController;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import lombok.Builder;
-import lombok.NonNull;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -280,6 +279,21 @@ public class ViewRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final List<ViewProfile> availableProfiles = viewsRepo.getAvailableProfiles(windowId, viewDataType);
 		return JSONViewProfilesList.of(availableProfiles, userSession.getAD_Language());
+	}
+
+	@GetMapping("/{viewId}/headerProperties")
+	public JSONViewHeaderProperties getHeaderProperties(
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr//
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		final IView view = viewsRepo.getView(viewId);
+		final JSONOptions jsonOpts = newJSONOptions();
+		final ViewHeaderProperties headerProperties = view.getHeaderProperties();
+		return JSONViewHeaderProperties.of(headerProperties, jsonOpts.getAdLanguage());
 	}
 
 	@GetMapping("/{viewId}/byIds")

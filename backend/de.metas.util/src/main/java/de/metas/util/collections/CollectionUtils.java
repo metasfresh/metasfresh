@@ -329,7 +329,7 @@ public final class CollectionUtils
 	public static <K, V> Collection<V> getAllOrLoad(
 			@NonNull final Map<K, V> map,
 			@NonNull final Collection<K> keys,
-			@NonNull final Function<Collection<K>, Map<K, V>> valuesLoader)
+			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)
 	{
 		if (keys.isEmpty())
 		{

@@ -53,8 +53,6 @@ class MasterWidget extends PureComponent {
 
     if (!edited && hasNewData) {
       return { updated: true, data: next, widgetData: nextProps.widgetData };
-    } else if (edited) {
-      return { edited: false };
     }
     return null;
   }
@@ -113,7 +111,7 @@ class MasterWidget extends PureComponent {
       viewId,
       isEdit
     );
-
+    this.setState({ edited: false });
     onChange && onChange(rowId, property, value, ret); //callback
 
     return ret;

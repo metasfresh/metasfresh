@@ -13,11 +13,11 @@ package de.metas.payment.esr.actionhandler.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,6 +30,8 @@ import org.compiere.model.I_C_Payment;
 
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
@@ -43,6 +45,7 @@ import de.metas.util.Services;
  */
 public class AbstractESRActionHandler implements IESRActionHandler
 {
+	protected final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	@Override
 	public boolean process(final I_ESR_ImportLine line, final String message)
@@ -51,7 +54,11 @@ public class AbstractESRActionHandler implements IESRActionHandler
 
 		// 08500: allocate when process
 		final I_C_Invoice invoice = line.getC_Invoice();
-		final I_C_Payment payment = line.getC_Payment();
+
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		final I_C_Payment payment = paymentId == null ? null
+				: paymentDAO.getById(paymentId);
+
 		if (invoice != null && payment != null)
 		{
 			if (!payment.isAllocated() && !invoice.isPaid())

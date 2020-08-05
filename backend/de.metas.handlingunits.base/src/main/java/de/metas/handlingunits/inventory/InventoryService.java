@@ -13,15 +13,21 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Service;
@@ -61,6 +67,7 @@ public class InventoryService
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@Getter
 	private final InventoryRepository inventoryRepository;
 	private final SourceHUsService sourceHUsService;
@@ -197,5 +204,49 @@ public class InventoryService
 	public Inventory createInventoryLine(@NonNull final InventoryLineCreateRequest request)
 	{
 		return inventoryRepository.createInventoryLine(request);
+	}
+
+	@NonNull
+	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req)
+	{
+		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(req.getWarehouseId());
+
+		final InventoryHeaderCreateRequest createHeaderRequest = InventoryHeaderCreateRequest
+				.builder()
+				.orgId(req.getOrgId())
+				.docTypeId(getVirtualInventoryDocTypeId(req.getClientId(), req.getOrgId()))
+				.movementDate(req.getMovementDate())
+				.warehouseId(req.getWarehouseId())
+				.build();
+
+		final InventoryId inventoryId = createInventoryHeader(createHeaderRequest).getId();
+
+		final InventoryLineCreateRequest createLineRequest = InventoryLineCreateRequest
+				.builder()
+				.inventoryId(inventoryId)
+				.productId(req.getProductId())
+				.qtyBooked(req.getQty().toZero())
+				.qtyCount(req.getQty())
+				.attributeSetId(req.getAttributeSetInstanceId())
+				.locatorId(locatorId)
+				.build();
+
+		createInventoryLine(createLineRequest);
+
+		completeDocument(inventoryId);
+
+		final Inventory inventory = getById(inventoryId);
+
+		return CollectionUtils.singleElement(inventory.getHuIds());
+	}
+
+	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
+				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
+				.adClientId(clientId.getRepoId())
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 }

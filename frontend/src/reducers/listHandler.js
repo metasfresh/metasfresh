@@ -1,4 +1,4 @@
-import * as types from '../constants/ListTypes';
+import * as types from '../constants/ActionTypes';
 
 export const initialState = {
   sorting: {

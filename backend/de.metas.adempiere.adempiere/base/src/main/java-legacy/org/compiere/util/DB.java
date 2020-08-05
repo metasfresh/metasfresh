@@ -1,52 +1,45 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.util;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-import javax.sql.RowSet;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CacheMgt;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.organization.OrgId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.service.ISystemBL;
@@ -77,62 +70,45 @@ import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import javax.sql.RowSet;
+import java.math.BigDecimal;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
-import de.metas.cache.CacheMgt;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.ILanguageDAO;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.organization.OrgId;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * General Database Interface
- *
- * @author Jorg Janke
- * @author Ashley Ramdass (Posterita)
- *         <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
- *         connections set rw/ro properties for the connection accordingly.
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>BF [ 1647864 ] WAN: delete record error
- *         <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
- *         <li>FR [ 1904460 ] DB.executeUpdate should handle
- *         Boolean params
- *         <li>BF [ 1962568 ] DB.executeUpdate should handle null params
- *         <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
- *         <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
- *         Object[], String)
- *         <li>BF [ 2030233 ] Remove duplicate code from DB class
- *         <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
- *         <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
- *         <li>FR
- *         [ 2781053 ] Introduce DB.getValueNamePairs
- *         <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
- *         https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
- * @author Teo Sarca, teo.sarca@gmail.com
- *         <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
- *         <li>FR [
- *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
- * @version $Id: DB.java,v 1.8 2006/10/09 00:22:29 jjanke Exp $ ---
  */
 @UtilityClass
-public final class DB
+public class DB
 {
-	public static final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
+	public final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
 
-	private static final IStatementsFactory statementsFactory = StatementsFactory.instance;
+	private final IStatementsFactory statementsFactory = StatementsFactory.instance;
 
 	/**
 	 * Specifies what to do in case the SQL command fails.
@@ -172,18 +148,18 @@ public final class DB
 	/**
 	 * Connection Descriptor
 	 */
-	private static CConnection s_connection = null;
-	private static final ReentrantLock s_connectionLock = new ReentrantLock();
+	private CConnection s_connection = null;
+	private final ReentrantLock s_connectionLock = new ReentrantLock();
 
 	/**
 	 * Logger
 	 */
-	private static final Logger log = LogManager.getLogger(DB.class);
+	private final Logger log = LogManager.getLogger(DB.class);
 
 	/**
 	 * SQL Statement Separator "; "
 	 */
-	public static final String SQLSTATEMENT_SEPARATOR = "; ";
+	public final String SQLSTATEMENT_SEPARATOR = "; ";
 
 	/**************************************************************************
 	 * Check need for post Upgrade
@@ -192,7 +168,7 @@ public final class DB
 	 * @return true if post upgrade ran - false if there was no need
 	 */
 	@Deprecated
-	public static boolean afterMigration(final Properties ctx)
+	public boolean afterMigration(final Properties ctx)
 	{
 		// UPDATE AD_System SET IsJustMigrated='Y'
 		final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
@@ -243,7 +219,7 @@ public final class DB
 	 *
 	 * @param cc connection
 	 */
-	public static void setDBTarget(final CConnection cc)
+	public void setDBTarget(final CConnection cc)
 	{
 		if (cc == null)
 		{
@@ -281,7 +257,7 @@ public final class DB
 	/**************************************************************************
 	 * Close Target
 	 */
-	public static void closeTarget()
+	public void closeTarget()
 	{
 		boolean closed = false;
 
@@ -308,7 +284,7 @@ public final class DB
 	/**
 	 * @return current {@link CConnection} or <code>null</code>
 	 */
-	private static CConnection getCConnection()
+	private CConnection getCConnection()
 	{
 		s_connectionLock.lock();
 		try
@@ -326,7 +302,7 @@ public final class DB
 	 *
 	 * @return True if success, false otherwise
 	 */
-	public static boolean connect()
+	public boolean connect()
 	{
 		// direct connection
 		boolean success = false;
@@ -376,7 +352,7 @@ public final class DB
 	 *
 	 * @return true, if connected to database
 	 */
-	public static boolean isConnected()
+	public boolean isConnected()
 	{
 		final CConnection cc = getCConnection();
 		if (cc == null)
@@ -391,7 +367,7 @@ public final class DB
 	/**
 	 * @return Connection (r/w)
 	 */
-	public static Connection getConnectionRW()
+	public Connection getConnectionRW()
 	{
 		return createConnection(true, false, Connection.TRANSACTION_READ_COMMITTED);
 	}   // getConnectionRW
@@ -401,7 +377,7 @@ public final class DB
 	 *
 	 * @return Connection (r/w)
 	 */
-	public static Connection getConnectionID()
+	public Connection getConnectionID()
 	{
 		return createConnection(false, false, Connection.TRANSACTION_READ_COMMITTED);
 	}   // getConnectionID
@@ -411,7 +387,7 @@ public final class DB
 	 *
 	 * @return Connection (r/o)
 	 */
-	public static Connection getConnectionRO()
+	public Connection getConnectionRO()
 	{
 		return createConnection(true, true, Connection.TRANSACTION_READ_COMMITTED);     // see below
 	}    // getConnectionRO
@@ -420,10 +396,10 @@ public final class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
-	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
+	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 * @return Connection connection
 	 */
-	public static Connection createConnection(final boolean autoCommit, final int trxLevel)
+	public Connection createConnection(final boolean autoCommit, final int trxLevel)
 	{
 
 		final CConnection cc = getCConnection();
@@ -468,9 +444,9 @@ public final class DB
 	 *
 	 * @param autoCommit auto commit
 	 * @param readOnly
-	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
+	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
-	public static Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
+	public Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
 	{
 		// NOTE: hengsin: this could be problematic as it can be reuse for readwrite activites after return to pool,
 		/*
@@ -485,7 +461,7 @@ public final class DB
 	 *
 	 * @return Adempiere Database Driver
 	 */
-	public static AdempiereDatabase getDatabase()
+	public AdempiereDatabase getDatabase()
 	{
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
@@ -503,7 +479,7 @@ public final class DB
 	 *
 	 * @return true if connected to PostgreSQL
 	 */
-	public static boolean isPostgreSQL()
+	public boolean isPostgreSQL()
 	{
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
@@ -521,7 +497,7 @@ public final class DB
 	 *
 	 * @return info
 	 */
-	public static String getDatabaseInfo()
+	public String getDatabaseInfo()
 	{
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
@@ -534,7 +510,7 @@ public final class DB
 	/**************************************************************************
 	 * Prepare Call
 	 */
-	public static CallableStatement prepareCall(final String SQL, final int resultSetConcurrency, final String trxName)
+	public CallableStatement prepareCall(final String SQL, final int resultSetConcurrency, final String trxName)
 	{
 		if (SQL == null || SQL.length() == 0)
 		{
@@ -551,7 +527,7 @@ public final class DB
 	 * @deprecated
 	 */
 	@Deprecated
-	public static CPreparedStatement prepareStatement(final String sql)
+	public CPreparedStatement prepareStatement(final String sql)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		final String upper = sql.toUpperCase();
@@ -562,7 +538,7 @@ public final class DB
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
 	}    // prepareStatement
 
-	public static CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
+	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		final String upper = sql.toUpperCase();
@@ -576,14 +552,14 @@ public final class DB
 	/**
 	 * Prepare Statement.
 	 *
-	 * @param sql sql statement
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param sql                  sql statement
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 * @deprecated
 	 */
 	@Deprecated
-	public static CPreparedStatement prepareStatement(final String sql,
+	public CPreparedStatement prepareStatement(final String sql,
 			final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
@@ -592,13 +568,13 @@ public final class DB
 	/**
 	 * Prepare Statement.
 	 *
-	 * @param sql sql statement
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param sql                  sql statement
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
-	 * @param trxName transaction name
+	 * @param trxName              transaction name
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
-	public static CPreparedStatement prepareStatement(final String sql,
+	public CPreparedStatement prepareStatement(final String sql,
 			final int resultSetType,
 			final int resultSetConcurrency,
 			final String trxName)
@@ -614,10 +590,10 @@ public final class DB
 	/**
 	 * @return a connection and prepared statement that will internally fetch only 1000 rows at a time, in order not to overuse local memory.
 	 * Please make sure to close them both!
-	 *
+	 * <p>
 	 * Also see https://jdbc.postgresql.org/documentation/head/query.html
 	 */
-	public static ImmutablePair<Connection, PreparedStatement> prepareConnectionAndStatementForDataExport(
+	public ImmutablePair<Connection, PreparedStatement> prepareConnectionAndStatementForDataExport(
 			@NonNull final String sqlSelect,
 			@Nullable final List<?> sqlParams/* not ImmutableList because list elements might be null */)
 	{
@@ -650,7 +626,7 @@ public final class DB
 	 *
 	 * @return Statement
 	 */
-	public static Statement createStatement()
+	public Statement createStatement()
 	{
 		return createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, null);
 	}    // createStatement
@@ -658,12 +634,12 @@ public final class DB
 	/**
 	 * Create Statement.
 	 *
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
-	 * @param trxName transaction name
+	 * @param trxName              transaction name
 	 * @return Statement - either r/w ir r/o depending on concur
 	 */
-	public static Statement createStatement(final int resultSetType, final int resultSetConcurrency, final String trxName)
+	public Statement createStatement(final int resultSetType, final int resultSetConcurrency, final String trxName)
 	{
 		return statementsFactory.newCStatement(resultSetType, resultSetConcurrency, trxName);
 	}    // createStatement
@@ -671,10 +647,10 @@ public final class DB
 	/**
 	 * Set parameters for given statement
 	 *
-	 * @param stmt statements
+	 * @param stmt   statements
 	 * @param params parameters array; if null or empty array, no parameters are set
 	 */
-	public static void setParameters(@NonNull final PreparedStatement stmt, @Nullable final Object... params) throws SQLException
+	public void setParameters(@NonNull final PreparedStatement stmt, @Nullable final Object... params) throws SQLException
 	{
 		if (params == null || params.length == 0)
 		{
@@ -690,10 +666,10 @@ public final class DB
 	/**
 	 * Set parameters for given statement
 	 *
-	 * @param stmt statements
+	 * @param stmt   statements
 	 * @param params parameters list; if null or empty list, no parameters are set
 	 */
-	public static void setParameters(@NonNull final PreparedStatement stmt, @Nullable final List<?> params)
+	public void setParameters(@NonNull final PreparedStatement stmt, @Nullable final List<?> params)
 			throws SQLException
 	{
 		if (params == null || params.size() == 0)
@@ -709,7 +685,7 @@ public final class DB
 	/**
 	 * Set PreparedStatement's parameter. Similar with calling <code>pstmt.setObject(index, param)</code>
 	 */
-	public static void setParameter(
+	public void setParameter(
 			@NonNull final PreparedStatement pstmt,
 			final int index,
 			@Nullable final Object param) throws SQLException
@@ -780,7 +756,7 @@ public final class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static int executeUpdate(final String sql, final String trxName)
+	public int executeUpdate(final String sql, final String trxName)
 	{
 		final Object[] params = null;
 		final int timeOut = 0;
@@ -793,12 +769,12 @@ public final class DB
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
-	 * @param trxName transaction
+	 * @param trxName     transaction
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static int executeUpdate(final String sql, final boolean ignoreError, final String trxName)
+	public int executeUpdate(final String sql, final boolean ignoreError, final String trxName)
 	{
 		final Object[] sqlParams = null;
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
@@ -815,7 +791,7 @@ public final class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static int executeUpdate(final String sql, final int param, final String trxName)
+	public int executeUpdate(final String sql, final int param, final String trxName)
 	{
 		final Object[] params = new Object[] { param };
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
@@ -828,12 +804,12 @@ public final class DB
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
-	 * @param trxName optional transaction name
+	 * @param trxName     optional transaction name
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static int executeUpdate(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
+	public int executeUpdate(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
 	{
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
@@ -844,14 +820,14 @@ public final class DB
 	/**
 	 * Execute SQL Update.
 	 *
-	 * @param onFail what to do if the update fails
+	 * @param onFail                what to do if the update fails
 	 * @param updateReturnProcessor
 	 * @return update count
 	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static int executeUpdate(final String sql,
+	public int executeUpdate(final String sql,
 			final Object[] params,
 			@NonNull final OnFail onFail,
 			final String trxName,
@@ -994,12 +970,12 @@ public final class DB
 	 * Execute Update and throw exception.
 	 *
 	 * @param sql
-	 * @param params statement parameters
+	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 * @throws DBException
 	 */
-	public static int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
 	{
 		final int timeOut = 0;
 		return executeUpdateEx(sql, params, trxName, timeOut);
@@ -1009,13 +985,13 @@ public final class DB
 	 * Execute Update and throw exception.
 	 *
 	 * @param sql
-	 * @param params statement parameters
+	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @param timeOut optional timeOut parameter
 	 * @return number of rows updated
 	 * @throws DBException
 	 */
-	public static int executeUpdateEx(final String sql, final Object[] params, final String trxName, final int timeOut) throws DBException
+	public int executeUpdateEx(final String sql, final Object[] params, final String trxName, final int timeOut) throws DBException
 	{
 		final OnFail onFail = OnFail.ThrowException;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
@@ -1027,7 +1003,7 @@ public final class DB
 	 *
 	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
-	public static int executeUpdateEx(final String sql, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, final String trxName) throws DBException
 	{
 		final Object[] params = null;
 		final int timeOut = 0;
@@ -1041,7 +1017,7 @@ public final class DB
 	 *
 	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
-	public static int executeUpdateEx(final String sql, final String trxName, final int timeOut) throws DBException
+	public int executeUpdateEx(final String sql, final String trxName, final int timeOut) throws DBException
 	{
 		final Object[] params = null;
 		final OnFail onFail = OnFail.ThrowException;
@@ -1049,7 +1025,7 @@ public final class DB
 		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}    // executeUpdateEx
 
-	public static int executeUpdateEx(final String sql,
+	public int executeUpdateEx(final String sql,
 			final Object[] params,
 			final String trxName,
 			final int timeOut,
@@ -1063,7 +1039,7 @@ public final class DB
 	 *
 	 * @param functionCall something like <code>"select " + function + "(?,?,?)"</code>
 	 */
-	public static void executeFunctionCallEx(
+	public void executeFunctionCallEx(
 			final String trxName,
 			final String functionCall,
 			final Object[] params)
@@ -1083,11 +1059,11 @@ public final class DB
 	 * Commit - commit on RW connection. Is not required as RW connection is AutoCommit (exception: with transaction)
 	 *
 	 * @param throwException if true, re-throws exception
-	 * @param trxName transaction name
+	 * @param trxName        transaction name
 	 * @return true if not needed or success
 	 * @throws SQLException
 	 */
-	public static boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
+	public boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
 	{
 		// Not on transaction scope, Connection are thus auto commit
 		if (trxName == null)
@@ -1127,11 +1103,11 @@ public final class DB
 	 * Rollback - rollback on RW connection. Is has no effect as RW connection is AutoCommit (exception: with transaction)
 	 *
 	 * @param throwException if true, re-throws exception
-	 * @param trxName transaction name
+	 * @param trxName        transaction name
 	 * @return true if not needed or success
 	 * @throws SQLException
 	 */
-	public static boolean rollback(final boolean throwException, final String trxName) throws SQLException
+	public boolean rollback(final boolean throwException, final String trxName) throws SQLException
 	{
 		try
 		{
@@ -1168,7 +1144,7 @@ public final class DB
 	 * @param sql sql
 	 * @return row set or null
 	 */
-	public static RowSet getRowSet(final String sql, final List<Object> sqlParams)
+	public RowSet getRowSet(final String sql, final List<Object> sqlParams)
 	{
 		// Bugfix Gunther Hoppe, 02.09.2005, vpj-cd e-evolution
 		final String sqlConverted = DB.getDatabase().convertStatement(sql);
@@ -1195,12 +1171,12 @@ public final class DB
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or -1 if not found
 	 * @throws DBException if there is any SQLException
 	 */
-	public static int getSQLValueEx(final String trxName, final String sql, final Object... params) throws DBException
+	public int getSQLValueEx(final String trxName, final String sql, final Object... params) throws DBException
 	{
 		int retValue = -1;
 		PreparedStatement pstmt = null;
@@ -1236,12 +1212,12 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or -1
 	 * @throws DBException if there is any SQLException
 	 */
-	public static int getSQLValueEx(final String trxName, final String sql, final List<Object> params)
+	public int getSQLValueEx(final String trxName, final String sql, final List<Object> params)
 	{
 		return getSQLValueEx(trxName, sql, params.toArray(new Object[params.size()]));
 	}
@@ -1250,13 +1226,13 @@ public final class DB
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or -1 if not found or error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static int getSQLValue(final String trxName, final String sql, final Object... params)
+	public int getSQLValue(final String trxName, final String sql, final Object... params)
 	{
 		int retValue = -1;
 		try
@@ -1274,13 +1250,13 @@ public final class DB
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static int getSQLValue(final String trxName, final String sql, final List<Object> params)
+	public int getSQLValue(final String trxName, final String sql, final List<Object> params)
 	{
 		return getSQLValue(trxName, sql, params.toArray(new Object[params.size()]));
 	}
@@ -1289,12 +1265,12 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
-	public static String getSQLValueStringEx(final String trxName, final String sql, final Object... params)
+	public String getSQLValueStringEx(final String trxName, final String sql, final Object... params)
 	{
 		String retValue = null;
 		PreparedStatement pstmt = null;
@@ -1330,12 +1306,12 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
-	public static String getSQLValueStringEx(final String trxName, final String sql, final List<Object> params)
+	public String getSQLValueStringEx(final String trxName, final String sql, final List<Object> params)
 	{
 		return getSQLValueStringEx(trxName, sql, params.toArray(new Object[params.size()]));
 	}
@@ -1344,13 +1320,13 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static String getSQLValueString(final String trxName, final String sql, final Object... params)
+	public String getSQLValueString(final String trxName, final String sql, final Object... params)
 	{
 		String retValue = null;
 		try
@@ -1368,13 +1344,13 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static String getSQLValueString(final String trxName, final String sql, final List<Object> params)
+	public String getSQLValueString(final String trxName, final String sql, final List<Object> params)
 	{
 		return getSQLValueString(trxName, sql, params.toArray(new Object[params.size()]));
 	}
@@ -1383,12 +1359,12 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null if not found
 	 * @throws DBException if there is any SQLException
 	 */
-	public static BigDecimal getSQLValueBDEx(final String trxName, final String sql, final Object... params) throws DBException
+	public BigDecimal getSQLValueBDEx(final String trxName, final String sql, final Object... params) throws DBException
 	{
 		BigDecimal retValue = null;
 		PreparedStatement pstmt = null;
@@ -1425,12 +1401,12 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null if not found
 	 * @throws DBException if there is any SQLException
 	 */
-	public static BigDecimal getSQLValueBDEx(final String trxName, final String sql, final List<Object> params) throws DBException
+	public BigDecimal getSQLValueBDEx(final String trxName, final String sql, final List<Object> params) throws DBException
 	{
 		return getSQLValueBDEx(trxName, sql, params.toArray(new Object[params.size()]));
 	}
@@ -1439,13 +1415,13 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static BigDecimal getSQLValueBD(final String trxName, final String sql, final Object... params)
+	public BigDecimal getSQLValueBD(final String trxName, final String sql, final Object... params)
 	{
 		try
 		{
@@ -1462,13 +1438,13 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static BigDecimal getSQLValueBD(final String trxName, final String sql, final List<Object> params)
+	public BigDecimal getSQLValueBD(final String trxName, final String sql, final List<Object> params)
 	{
 		return getSQLValueBD(trxName, sql, params.toArray(new Object[params.size()]));
 	}
@@ -1477,12 +1453,12 @@ public final class DB
 	 * Get Timestamp Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
-	public static Timestamp getSQLValueTSEx(final String trxName, final String sql, final Object... params)
+	public Timestamp getSQLValueTSEx(final String trxName, final String sql, final Object... params)
 	{
 		Timestamp retValue = null;
 		PreparedStatement pstmt = null;
@@ -1518,12 +1494,12 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null if not found
 	 * @throws DBException if there is any SQLException
 	 */
-	public static Timestamp getSQLValueTSEx(final String trxName, final String sql, final List<Object> params) throws DBException
+	public Timestamp getSQLValueTSEx(final String trxName, final String sql, final List<Object> params) throws DBException
 	{
 		return getSQLValueTSEx(trxName, sql, params.toArray(new Object[params.size()]));
 	}
@@ -1532,13 +1508,13 @@ public final class DB
 	 * Get Timestamp Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static Timestamp getSQLValueTS(final String trxName, final String sql, final Object... params)
+	public Timestamp getSQLValueTS(final String trxName, final String sql, final Object... params)
 	{
 		try
 		{
@@ -1558,14 +1534,14 @@ public final class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public static Timestamp getSQLValueTS(final String trxName, final String sql, final List<Object> params)
+	public Timestamp getSQLValueTS(final String trxName, final String sql, final List<Object> params)
 	{
 		final Object[] arr = new Object[params.size()];
 		params.toArray(arr);
 		return getSQLValueTS(trxName, sql, arr);
 	}
 
-	public static <T> T[] getSQLValueArrayEx(
+	public <T> T[] getSQLValueArrayEx(
 			@Nullable final String trxName,
 			@NonNull final String sql,
 			@Nullable final Object... params)
@@ -1607,12 +1583,12 @@ public final class DB
 	/**
 	 * Get Array of Key Name Pairs
 	 *
-	 * @param sql select with id / name as first / second column
+	 * @param sql      select with id / name as first / second column
 	 * @param optional if true (-1,"") is added
 	 * @return array of {@link KeyNamePair}
 	 * @see #getKeyNamePairs(String, boolean, Object...)
 	 */
-	public static KeyNamePair[] getKeyNamePairs(final String sql, final boolean optional)
+	public KeyNamePair[] getKeyNamePairs(final String sql, final boolean optional)
 	{
 		return getKeyNamePairs(sql, optional, (Object[])null);
 	}
@@ -1620,11 +1596,11 @@ public final class DB
 	/**
 	 * Get Array of Key Name Pairs
 	 *
-	 * @param sql select with id / name as first / second column
+	 * @param sql      select with id / name as first / second column
 	 * @param optional if true (-1,"") is added
-	 * @param params query parameters
+	 * @param params   query parameters
 	 */
-	public static KeyNamePair[] getKeyNamePairs(final String sql, final boolean optional, final Object... params)
+	public KeyNamePair[] getKeyNamePairs(final String sql, final boolean optional, final Object... params)
 	{
 		return getKeyNamePairs(null, sql, optional, params);
 	}
@@ -1632,11 +1608,11 @@ public final class DB
 	/**
 	 * Get Array of Key Name Pairs
 	 *
-	 * @param sql select with id as first column, name as second column and optionally description as third column
+	 * @param sql      select with id as first column, name as second column and optionally description as third column
 	 * @param optional if true (-1,"") is added
-	 * @param params query parameters
+	 * @param params   query parameters
 	 */
-	public static KeyNamePair[] getKeyNamePairs(
+	public KeyNamePair[] getKeyNamePairs(
 			@Nullable final String trxName,
 			@NonNull final String sql,
 			final boolean optional,
@@ -1692,11 +1668,11 @@ public final class DB
 	/**
 	 * Is Sales Order Trx. Assumes Sales Order. Queries IsSOTrx of table with where clause
 	 *
-	 * @param tableName table
+	 * @param tableName   table
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
-	public static Optional<SOTrx> retrieveRecordSOTrx(final String tableName, final String whereClause)
+	public Optional<SOTrx> retrieveRecordSOTrx(final String tableName, final String whereClause)
 	{
 		if (Check.isEmpty(tableName, true))
 		{
@@ -1784,7 +1760,7 @@ public final class DB
 	 * @param trxName optionl transaction name
 	 * @return next no
 	 */
-	public static int getNextID(final Properties ctx, final String TableName, final String trxName)
+	public int getNextID(final Properties ctx, final String TableName, final String trxName)
 	{
 		if (ctx == null)
 		{
@@ -1807,7 +1783,7 @@ public final class DB
 	 * @param trxName optional Transaction Name
 	 * @return next primary key number
 	 */
-	public static int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
+	public int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
 	{
 		final boolean useNativeSequences = DB.isUseNativeSequences(AD_Client_ID, TableName);
 		if (useNativeSequences)
@@ -1820,7 +1796,7 @@ public final class DB
 		return MSequence.getNextID(AD_Client_ID, TableName, trxName);
 	}    // getNextID
 
-	public static String TO_TABLESEQUENCE_NEXTVAL(final String tableName)
+	public String TO_TABLESEQUENCE_NEXTVAL(final String tableName)
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		return CConnection.get().getDatabase().TO_SEQUENCE_NEXTVAL(sequenceName);
@@ -1835,7 +1811,7 @@ public final class DB
 	 * @deprecated
 	 */
 	@Deprecated
-	public static boolean isRemoteObjects()
+	public boolean isRemoteObjects()
 	{
 		return false;
 	}    // isRemoteObjects
@@ -1849,7 +1825,7 @@ public final class DB
 	 * @deprecated
 	 */
 	@Deprecated
-	public static boolean isRemoteProcess()
+	public boolean isRemoteProcess()
 	{
 		return false;
 	}    // isRemoteProcess
@@ -1860,7 +1836,7 @@ public final class DB
 	 * @param param
 	 * @return parameter as SQL code
 	 */
-	public static String TO_SQL(final Object param)
+	public String TO_SQL(final Object param)
 	{
 		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)
@@ -1905,7 +1881,7 @@ public final class DB
 		}
 	}
 
-	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
+	public String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
 		return Database.TO_DATE(zdt);
 	}
@@ -1917,7 +1893,7 @@ public final class DB
 	 * @return 'YYYY-MM-DD'::timestamp without time zone
 	 */
 	@NonNull
-	public static String TO_DATE(@NonNull final LocalDate localDate)
+	public String TO_DATE(@NonNull final LocalDate localDate)
 	{
 		return Database.TO_DATE(localDate);
 	}
@@ -1925,11 +1901,11 @@ public final class DB
 	/**
 	 * Create SQL TO Date String from Timestamp
 	 *
-	 * @param time Date to be converted
+	 * @param time    Date to be converted
 	 * @param dayOnly true if time set to 00:00:00
 	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ') or TO_DATE('2001-01-30',''YYYY-MM-DD')
 	 */
-	public static String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
+	public String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
 	{
 		return Database.TO_DATE(time, dayOnly);
 	}
@@ -1940,7 +1916,7 @@ public final class DB
 	 * @param day day time
 	 * @return TO_DATE String (day only)
 	 */
-	public static String TO_DATE(final Timestamp day)
+	public String TO_DATE(final Timestamp day)
 	{
 		return TO_DATE(day, true);
 	}
@@ -1948,14 +1924,14 @@ public final class DB
 	/**
 	 * Create SQL for formatted Date, Number
 	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
+	 * @param columnName          the column name in the SQL
+	 * @param displayType         Display Type
 	 * @param AD_Language_NOTUSED not used
 	 * @return TRIM(TO_CHAR ( columnName, ' 999G999G999G990D00 ', ' NLS_NUMERIC_CHARACTERS = ' ', . ' ' ')) or TRIM(TO_CHAR(columnName,'TM9')) depending on DisplayType and Language
 	 * @see org.compiere.util.DisplayType
 	 * @see org.compiere.util.Env
 	 */
-	public static String TO_CHAR(final String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
+	public String TO_CHAR(final String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
 	{
 		return Database.TO_CHAR(columnName, displayType);
 	}
@@ -1963,7 +1939,7 @@ public final class DB
 	/**
 	 * @see #TO_CHAR(String, int, String)
 	 */
-	public static String TO_CHAR(final String columnName, final int displayType)
+	public String TO_CHAR(final String columnName, final int displayType)
 	{
 		return Database.TO_CHAR(columnName, displayType);
 	}
@@ -1971,15 +1947,15 @@ public final class DB
 	/**
 	 * Create SQL for formatted Date, Number.
 	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
+	 * @param columnName          the column name in the SQL
+	 * @param displayType         Display Type
 	 * @param AD_Language_NOTUSED 6 character language setting (from Env.LANG_*)
-	 * @param formatPattern formatting pattern to be used ( {@link DecimalFormat} pattern, {@link SimpleDateFormat} pattern etc). In case the formatting pattern is not supported or is not valid, the
-	 *            implementation method can ignore it silently.
+	 * @param formatPattern       formatting pattern to be used ( {@link DecimalFormat} pattern, {@link SimpleDateFormat} pattern etc). In case the formatting pattern is not supported or is not valid, the
+	 *                            implementation method can ignore it silently.
 	 * @return SQL code
 	 * @see Database#TO_CHAR(String, int, String)
 	 */
-	public static String TO_CHAR(final String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED, final String formatPattern)
+	public String TO_CHAR(final String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED, final String formatPattern)
 	{
 		if (columnName == null || columnName.length() == 0)
 		{
@@ -1991,11 +1967,11 @@ public final class DB
 	/**
 	 * Return number as string for INSERT statements with correct precision
 	 *
-	 * @param number number
+	 * @param number      number
 	 * @param displayType display Type
 	 * @return number as string
 	 */
-	public static String TO_NUMBER(final BigDecimal number, final int displayType)
+	public String TO_NUMBER(final BigDecimal number, final int displayType)
 	{
 		return Database.TO_NUMBER(number, displayType);
 	}
@@ -2006,7 +1982,7 @@ public final class DB
 	 * @param txt String with text
 	 * @return escaped string for insert statement (NULL if null)
 	 */
-	public static String TO_STRING(final String txt)
+	public String TO_STRING(final String txt)
 	{
 		return TO_STRING(txt, 0);
 	}   // TO_STRING
@@ -2019,14 +1995,14 @@ public final class DB
 	 * 	-	replace ' with ''
 	 * </pre>
 	 *
-	 * @param txt String with text
+	 * @param txt       String with text
 	 * @param maxLength Maximum Length of content or 0 to ignore
 	 * @return escaped string for insert statement (NULL if null)
 	 */
-	public static String TO_STRING(final String txt, final int maxLength)
+	public String TO_STRING(final String txt, final int maxLength)
 	{
 		if (txt == null
-		// || txt.length() == 0 gh #213: don't return null for the empty string, (e.g. we have X_MRP_ProductInfo_Detail.ASIKey='' which is different from NULL)
+			// || txt.length() == 0 gh #213: don't return null for the empty string, (e.g. we have X_MRP_ProductInfo_Detail.ASIKey='' which is different from NULL)
 		)
 		{
 			return "NULL";
@@ -2058,7 +2034,7 @@ public final class DB
 		return out.toString();
 	}    // TO_STRING
 
-	public static String TO_BOOLEAN(final Boolean value)
+	public String TO_BOOLEAN(final Boolean value)
 	{
 		final String valueStr = DisplayType.toBooleanString(value);
 		return TO_STRING(valueStr);
@@ -2068,7 +2044,7 @@ public final class DB
 	 * @param comment
 	 * @return SQL multiline comment
 	 */
-	public static String TO_COMMENT(final String comment)
+	public String TO_COMMENT(final String comment)
 	{
 		if (Check.isEmpty(comment, true))
 		{
@@ -2082,10 +2058,8 @@ public final class DB
 
 	/**
 	 * convenient method to close result set
-	 *
-	 * @param rs
 	 */
-	public static void close(final ResultSet rs)
+	public void close(@Nullable final ResultSet rs)
 	{
 		try
 		{
@@ -2094,7 +2068,7 @@ public final class DB
 				rs.close();
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ignored)
 		{
 
 		}
@@ -2105,7 +2079,7 @@ public final class DB
 	 *
 	 * @param st
 	 */
-	public static void close(@Nullable final Statement st)
+	public void close(@Nullable final Statement st)
 	{
 		try
 		{
@@ -2123,12 +2097,12 @@ public final class DB
 	/**
 	 * convenient method to close result set and statement
 	 *
-	 * @param rs result set
+	 * @param rs    result set
 	 * @param pstmt statement
 	 * @see #close(ResultSet)
 	 * @see #close(Statement)
 	 */
-	public static void close(final ResultSet rs, final Statement pstmt)
+	public void close(@Nullable final ResultSet rs, @Nullable final Statement pstmt)
 	{
 		close(rs);
 		close(pstmt);
@@ -2140,7 +2114,7 @@ public final class DB
 	 * @param rs result set
 	 * @see POResultSet#close()
 	 */
-	public static void close(final POResultSet<?> rs)
+	public void close(final POResultSet<?> rs)
 	{
 		if (rs != null)
 		{
@@ -2155,7 +2129,7 @@ public final class DB
 	 *
 	 * @param conn database connection.
 	 */
-	public static void close(final Connection conn)
+	public void close(final Connection conn)
 	{
 		if (conn != null)
 		{
@@ -2173,43 +2147,43 @@ public final class DB
 	/**
 	 * Quote
 	 */
-	private static final char QUOTE = '\'';
-	public static final String QUOTE_STRING = String.valueOf(QUOTE);
+	private final char QUOTE = '\'';
+	public final String QUOTE_STRING = String.valueOf(QUOTE);
 
 	// Following methods are kept for BeanShell compatibility.
 	// See BF [ 2030233 ] Remove duplicate code from DB class
 	// TODO: remove this when BeanShell will support varargs methods
-	public static int getSQLValue(final String trxName, final String sql)
+	public int getSQLValue(final String trxName, final String sql)
 	{
 		return getSQLValue(trxName, sql, new Object[] {});
 	}
 
-	public static int getSQLValue(final String trxName, final String sql, final int int_param1)
+	public int getSQLValue(final String trxName, final String sql, final int int_param1)
 	{
 		return getSQLValue(trxName, sql, new Object[] { int_param1 });
 	}
 
-	public static int getSQLValue(final String trxName, final String sql, final int int_param1, final int int_param2)
+	public int getSQLValue(final String trxName, final String sql, final int int_param1, final int int_param2)
 	{
 		return getSQLValue(trxName, sql, new Object[] { int_param1, int_param2 });
 	}
 
-	public static int getSQLValue(final String trxName, final String sql, final String str_param1)
+	public int getSQLValue(final String trxName, final String sql, final String str_param1)
 	{
 		return getSQLValue(trxName, sql, new Object[] { str_param1 });
 	}
 
-	public static int getSQLValue(final String trxName, final String sql, final int int_param1, final String str_param2)
+	public int getSQLValue(final String trxName, final String sql, final int int_param1, final String str_param2)
 	{
 		return getSQLValue(trxName, sql, new Object[] { int_param1, str_param2 });
 	}
 
-	public static String getSQLValueString(final String trxName, final String sql, final int int_param1)
+	public String getSQLValueString(final String trxName, final String sql, final int int_param1)
 	{
 		return getSQLValueString(trxName, sql, new Object[] { int_param1 });
 	}
 
-	public static BigDecimal getSQLValueBD(final String trxName, final String sql, final int int_param1)
+	public BigDecimal getSQLValueBD(final String trxName, final String sql, final int int_param1)
 	{
 		return getSQLValueBD(trxName, sql, new Object[] { int_param1 });
 	}
@@ -2217,7 +2191,7 @@ public final class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 */
-	public static void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, final String trxName)
+	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, final String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
 
@@ -2256,26 +2230,26 @@ public final class DB
 	 *
 	 * @return generated AD_PInstance_ID that can be used to identify the selection
 	 */
-	public static PInstanceId createT_Selection(final Iterable<Integer> selection, final String trxName)
+	public PInstanceId createT_Selection(final Iterable<Integer> selection, final String trxName)
 	{
 		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		createT_Selection(pinstanceId, selection, trxName);
 		return pinstanceId;
 	}
 
-	public static PInstanceId createT_Selection(final Set<? extends RepoIdAware> selection, final String trxName)
+	public PInstanceId createT_Selection(final Set<? extends RepoIdAware> selection, final String trxName)
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);
 	}
 
-	public static PInstanceId createT_Selection(@NonNull final TableRecordReferenceSet recordRefs, final String trxName)
+	public PInstanceId createT_Selection(@NonNull final TableRecordReferenceSet recordRefs, final String trxName)
 	{
 		final Set<Integer> ids = recordRefs.toIntSet();
 		return createT_Selection(ids, trxName);
 	}
 
-	public static String createT_Selection_SqlWhereClause(
+	public String createT_Selection_SqlWhereClause(
 			@NonNull final PInstanceId selectionId,
 			@NonNull final String sqlJoinColumn)
 	{
@@ -2292,7 +2266,7 @@ public final class DB
 	 * @param trxName
 	 * @return number of records that were deleted
 	 */
-	public static int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
+	public int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);
@@ -2306,7 +2280,7 @@ public final class DB
 	 * Note that there might be more than one instance per thread, but there is only one active instance at a time. See {@link #saveConstraints()} and {@link #restoreConstraints()} for details.
 	 */
 	// metas 02367
-	public static ITrxConstraints getConstraints()
+	public ITrxConstraints getConstraints()
 	{
 		return Services.get(ITrxConstraintsBL.class).getConstraints();
 	}
@@ -2320,7 +2294,7 @@ public final class DB
 	 * @see #restoreConstraints()
 	 */
 	// metas 02367
-	public static void saveConstraints()
+	public void saveConstraints()
 	{
 		Services.get(ITrxConstraintsBL.class).saveConstraints();
 	}
@@ -2331,12 +2305,12 @@ public final class DB
 	 * @see #saveConstraints()
 	 */
 	// metas 02367
-	public static void restoreConstraints()
+	public void restoreConstraints()
 	{
 		Services.get(ITrxConstraintsBL.class).restoreConstraints();
 	}
 
-	public static final String SQL_EmptyList = "(-1)";
+	public final String SQL_EmptyList = "(-1)";
 
 	/**
 	 * Build an SQL list for the given parameters.<br>
@@ -2347,12 +2321,12 @@ public final class DB
 	 * @param paramsOut a list containing the prepared statement parameters for the returned SQL's question marks.
 	 * @return SQL list (string)
 	 */
-	public static String buildSqlList(final Collection<? extends Object> paramsIn, @NonNull final List<Object> paramsOut)
+	public String buildSqlList(final Collection<? extends Object> paramsIn, @NonNull final List<Object> paramsOut)
 	{
 		return buildSqlList(paramsIn, paramsOut::addAll);
 	}
 
-	public static String buildSqlList(final Collection<? extends Object> paramsIn, @NonNull final Consumer<Collection<? extends Object>> paramsOutCollector)
+	public String buildSqlList(final Collection<? extends Object> paramsIn, @NonNull final Consumer<Collection<? extends Object>> paramsOutCollector)
 	{
 		if (paramsIn == null || paramsIn.isEmpty())
 		{
@@ -2374,7 +2348,7 @@ public final class DB
 	/**
 	 * @return e.g. (e.g. ColumnName IN (1, 2) OR ColumnName IS NULL)
 	 */
-	public static String buildSqlList(
+	public String buildSqlList(
 			@NonNull final String columnName,
 			@NonNull final Collection<? extends Object> paramsIn)
 	{
@@ -2387,11 +2361,11 @@ public final class DB
 	 *
 	 * @param columnName
 	 * @param paramsIn
-	 * @param paramsOut if null, the parameters will be embedded in returned SQL
+	 * @param paramsOut  if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
-	public static String buildSqlList(
+	public String buildSqlList(
 			@NonNull final String columnName,
 			@NonNull final Collection<? extends Object> paramsIn,
 			@Nullable final List<Object> paramsOut)
@@ -2431,7 +2405,7 @@ public final class DB
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
 	 */
-	public static String buildSqlList(final Collection<? extends Object> paramsIn)
+	public String buildSqlList(final Collection<? extends Object> paramsIn)
 	{
 		if (paramsIn == null || paramsIn.isEmpty())
 		{
@@ -2472,14 +2446,14 @@ public final class DB
 		return sql.insert(0, "(").append(")").toString();
 	}
 
-	public static boolean isUseNativeSequences()
+	public boolean isUseNativeSequences()
 	{
 		final boolean useNativeSequencesDefault = false;
 		final boolean result = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, useNativeSequencesDefault);
 		return result;
 	}
 
-	public static boolean isUseNativeSequences(final int AD_Client_ID, final String TableName)
+	public boolean isUseNativeSequences(final int AD_Client_ID, final String TableName)
 	{
 		log.debug("Checking if we shall use native sequences for {} (AD_Client_ID={})", TableName, AD_Client_ID);
 
@@ -2515,7 +2489,7 @@ public final class DB
 		return useNativeSequences;
 	}
 
-	public static void setUseNativeSequences(final boolean enabled)
+	public void setUseNativeSequences(final boolean enabled)
 	{
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
@@ -2525,7 +2499,7 @@ public final class DB
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
 
-	public static String getTableSequenceName(final String tableName)
+	public String getTableSequenceName(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		return tableName + "_SEQ";
@@ -2534,7 +2508,7 @@ public final class DB
 	/**
 	 * Create database table sequence for given table name.
 	 */
-	public static void createTableSequence(final String tableName)
+	public void createTableSequence(final String tableName)
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
@@ -2549,11 +2523,11 @@ public final class DB
 	 * Get SQL DataType
 	 *
 	 * @param displayType AD_Reference_ID
-	 * @param columnName name
+	 * @param columnName  name
 	 * @param fieldLength length
 	 * @return SQL Data Type in Oracle Notation
 	 */
-	public static String getSQLDataType(final int displayType, final String columnName, final int fieldLength)
+	public String getSQLDataType(final int displayType, final String columnName, final int fieldLength)
 	{
 		return getDatabase().getSQLDataType(displayType, columnName, fieldLength);
 	}
@@ -2570,7 +2544,7 @@ public final class DB
 	 * @param sql
 	 * @return converted SQL
 	 */
-	public static String convertSqlToNative(final String sql)
+	public String convertSqlToNative(final String sql)
 	{
 		Check.assumeNotEmpty(sql, "sql not empty");
 		final Convert converter = getDatabase().getConvert();
@@ -2594,7 +2568,7 @@ public final class DB
 	 * @return default value for given <code>returnType</code>
 	 */
 	@SuppressWarnings("unchecked")
-	public static <AT> AT retrieveDefaultValue(final Class<AT> returnType)
+	public <AT> AT retrieveDefaultValue(final Class<AT> returnType)
 	{
 		if (returnType.isAssignableFrom(BigDecimal.class))
 		{
@@ -2631,7 +2605,7 @@ public final class DB
 	 * The value is converted to given type.<br/>
 	 */
 	@SuppressWarnings("unchecked")
-	public static <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
+	public <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
 	{
 		final AT value;
 		if (returnType.isAssignableFrom(BigDecimal.class))
@@ -2676,7 +2650,7 @@ public final class DB
 	 * The value is converted to given type.<br/>
 	 */
 	@SuppressWarnings("unchecked")
-	public static <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	public <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value;
 		if (returnType.isAssignableFrom(BigDecimal.class))
@@ -2726,7 +2700,7 @@ public final class DB
 		return value;
 	}
 
-	public static <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	public <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value = retrieveValue(rs, columnIndex, returnType);
 		if (value != null)
@@ -2743,7 +2717,7 @@ public final class DB
 		void accept(ResultSet rs) throws SQLException;
 	}
 
-	public static void forEachRow(
+	public void forEachRow(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetConsumer rowConsumer)
@@ -2776,7 +2750,7 @@ public final class DB
 		T retrieveRowOrNull(ResultSet rs) throws SQLException;
 	}
 
-	public static <T> List<T> retrieveRowsOutOfTrx(
+	public <T> List<T> retrieveRowsOutOfTrx(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2784,7 +2758,7 @@ public final class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
 	}
 
-	public static <T> List<T> retrieveRows(
+	public <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2792,7 +2766,7 @@ public final class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
 	}
 
-	private static <T> List<T> retrieveRows(
+	private <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@Nullable final String trxName,
@@ -2828,7 +2802,7 @@ public final class DB
 		}
 	}
 
-	public static <T> T retrieveFirstRowOrNull(
+	public <T> T retrieveFirstRowOrNull(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2859,7 +2833,7 @@ public final class DB
 		}
 	}
 
-	public static String normalizeDBIdentifier(@NonNull final String dbIdentifier, @NonNull final DatabaseMetaData md)
+	public String normalizeDBIdentifier(@NonNull final String dbIdentifier, @NonNull final DatabaseMetaData md)
 	{
 		try
 		{
@@ -2882,7 +2856,7 @@ public final class DB
 		}
 	}
 
-	public static boolean isDBColumnPresent(@NonNull final String tableName, @NonNull final String columnName)
+	public boolean isDBColumnPresent(@NonNull final String tableName, @NonNull final String columnName)
 	{
 		final String catalog = getDatabase().getCatalog();
 		final String schema = getDatabase().getSchema();
@@ -2928,11 +2902,11 @@ public final class DB
 
 	/**
 	 * @param sqlStatement SQL statement to be executed
-	 * @param parameters Parameters to be used in the {@param sqlStatement}
-	 * @param trxName transaction name
+	 * @param parameters   Parameters to be used in the {@param sqlStatement}
+	 * @param trxName      transaction name
 	 * @return each resulted row as a {@link List<String>}
 	 */
-	public static ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
+	public ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
 	{
 		List<List<String>> result = null;
 		PreparedStatement pstmt = null;
