@@ -85,7 +85,7 @@ public final class CurrentCost
 		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 
 		this.costPrice = CostPrice.builder()
-				.ownCostPrice(ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId))
+				.ownCostPrice(ownCostPrice != null && ownCostPrice.signum() > 0 ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId))
 				.componentsCostPrice(componentsCostPrice != null ? CostAmount.of(componentsCostPrice, currencyId) : CostAmount.zero(currencyId))
 				.build();
 		this.currentQty = currentQty != null ? Quantity.of(currentQty, uom) : Quantity.zero(uom);
@@ -164,7 +164,7 @@ public final class CurrentCost
 		if (newQty.signum() != 0)
 		{
 			final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
-			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
+			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice.signum() >= 0 ? ownCostPrice : CostAmount.zero(getCurrencyId()));
 		}
 		currentQty = newQty;
 

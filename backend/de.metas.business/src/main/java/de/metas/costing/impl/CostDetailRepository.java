@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -91,7 +92,8 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostDetailPreviousAmounts previousAmounts = cd.getPreviousAmounts();
 		if (previousAmounts != null)
 		{
-			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().getValue());
+			final BigDecimal prevPrice = previousAmounts.getCostPrice().getOwnCostPrice().getValue();
+			record.setPrev_CurrentCostPrice(prevPrice.signum() >= 0 ? prevPrice : BigDecimal.ZERO);
 			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().getValue());
 			record.setPrev_CurrentQty(previousAmounts.getQty().toBigDecimal());
 

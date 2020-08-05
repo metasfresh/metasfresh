@@ -79,7 +79,7 @@ public class CostPrice
 
 	public CostPrice addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)
 	{
-		if (ownCostPriceToAdd.isZero())
+		if (ownCostPriceToAdd.signum() <= 0)
 		{
 			return this;
 		}

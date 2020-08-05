@@ -82,12 +82,13 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 			if (qty.signum() != 0)
 			{
 				final CostAmount price = amt.divide(qty, currentCosts.getPrecision());
-				currentCosts.setCostPrice(CostPrice.ownCostPrice(price));
+
+				currentCosts.setCostPrice(CostPrice.ownCostPrice(price.signum() >= 0 ? price : price.toZero()));
 			}
 			else
 			{
 				final CostAmount priceAdjust = amt;
-				currentCosts.addToOwnCostPrice(priceAdjust);
+				currentCosts.addToOwnCostPrice(priceAdjust.signum() >= 0 ? priceAdjust : priceAdjust.toZero() );
 			}
 		}
 
