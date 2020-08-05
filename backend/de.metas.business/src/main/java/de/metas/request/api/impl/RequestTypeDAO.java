@@ -102,7 +102,7 @@ public class RequestTypeDAO implements IRequestTypeDAO
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_R_RequestType.COLUMNNAME_R_RequestType_ID)
 				.create()
-				.firstIdOnly(RequestTypeId::ofRepoIdOrNull);
+				.firstId(RequestTypeId::ofRepoIdOrNull);
 
 		return requestTypeId;
 	}
