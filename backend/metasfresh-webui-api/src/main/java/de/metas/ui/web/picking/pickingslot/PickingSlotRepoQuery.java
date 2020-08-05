@@ -24,7 +24,6 @@ package de.metas.ui.web.picking.pickingslot;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -74,19 +73,5 @@ public class PickingSlotRepoQuery
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
 		this.onlyNotClosedOrNotRackSystem = onlyNotClosedOrNotRackSystem != null ? onlyNotClosedOrNotRackSystem : true;
 		this.pickingSlotBarcode = pickingSlotBarcode;
-	}
-
-	@Value
-	@Builder
-	public static class CreatePickingSlotRepoQueryReq
-	{
-		DocumentFilterList filters;
-
-		@NonNull
-		ShipmentScheduleId currentShipmentScheduleId;
-
-		Set<ShipmentScheduleId> allShipmentScheduleIds;
-
-		boolean includeAllShipmentSchedules;
 	}
 }

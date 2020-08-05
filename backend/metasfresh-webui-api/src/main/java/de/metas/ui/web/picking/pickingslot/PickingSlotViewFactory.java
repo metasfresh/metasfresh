@@ -35,7 +35,9 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Util.ArrayKey;
@@ -146,7 +148,7 @@ public class PickingSlotViewFactory implements IViewFactory
 		final ShipmentScheduleId currentShipmentScheduleId = extractCurrentShipmentScheduleId(request);
 		final boolean includeAllShipmentSchedules = sysConfigBL.getBooleanValue(SYS_CONFIG_SHOW_ALL_PICKING_CANDIDATES_ON_PICKING_SLOTS, false);
 
-		final PickingSlotRepoQuery.CreatePickingSlotRepoQueryReq createQueryReq = PickingSlotRepoQuery.CreatePickingSlotRepoQueryReq.builder()
+		final CreatePickingSlotRepoQueryReq createQueryReq = CreatePickingSlotRepoQueryReq.builder()
 				.allShipmentScheduleIds(allShipmentScheduleIds)
 				.currentShipmentScheduleId(currentShipmentScheduleId)
 				.filters(filters)
@@ -168,7 +170,7 @@ public class PickingSlotViewFactory implements IViewFactory
 				.build();
 	}
 
-	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(@NonNull final PickingSlotRepoQuery.CreatePickingSlotRepoQueryReq pickingSlotRepoQueryReq)
+	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(@NonNull final CreatePickingSlotRepoQueryReq pickingSlotRepoQueryReq)
 	{
 		//
 		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
@@ -244,5 +246,19 @@ public class PickingSlotViewFactory implements IViewFactory
 				.processId(processId)
 				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
+	}
+
+	@Value
+	@Builder
+	private static class CreatePickingSlotRepoQueryReq
+	{
+		DocumentFilterList filters;
+
+		@NonNull
+		ShipmentScheduleId currentShipmentScheduleId;
+
+		Set<ShipmentScheduleId> allShipmentScheduleIds;
+
+		boolean includeAllShipmentSchedules;
 	}
 }

@@ -184,6 +184,8 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 
 		if (packageableView != null)
 		{
+			//we have to invalidate all the related pickingSlotViews in order to make sure the
+			//changes available in UI when selecting different `packageableRows`
 			packageableView.invalidatePickingSlotViews();
 		}
 
