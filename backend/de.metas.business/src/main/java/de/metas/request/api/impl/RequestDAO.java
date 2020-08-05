@@ -73,7 +73,7 @@ public class RequestDAO implements IRequestDAO
 	{
 		final I_R_Request request = newInstance(I_R_Request.class);
 		request.setSummary("");
-		request.setR_RequestType_ID(requestTypeDAO.retrieveDefaultRequestTypeOrFirstActiveOrNull().getRepoId());
+		request.setR_RequestType_ID(requestTypeDAO.retrieveDefaultRequestTypeIdOrFirstActive().getRepoId());
 		return request;
 	}
 

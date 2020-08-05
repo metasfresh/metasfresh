@@ -31,5 +31,5 @@ public interface IRequestTypeDAO extends ISingletonService
 
 	RequestTypeId retrieveCustomerRequestTypeId();
 
-	RequestTypeId retrieveDefaultRequestTypeOrFirstActiveOrNull();
+	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
 }
