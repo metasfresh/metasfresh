@@ -123,8 +123,6 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 
 		request.setSalesRep_ID(getAD_User_ID());
 		request.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		request.setR_RequestType_ID(REQUEST_TYPE_CUSTOMER_COMPLAINT_ID);
-
 		if (defaultContact != null)
 		{
 			request.setAD_User_ID(defaultContact.getAD_User_ID());
