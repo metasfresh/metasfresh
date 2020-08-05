@@ -58,8 +58,6 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 {
 	private static Logger logger = LogManager.getLogger(WEBUI_CreateRequest.class);
 
-	private static final int REQUEST_TYPE_CUSTOMER_COMPLAINT_ID = 540005;
-
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
