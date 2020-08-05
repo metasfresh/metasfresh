@@ -222,16 +222,8 @@ class SubHeader extends Component {
    * @param {*} icon
    * @param {*} caption
    * @param {*} hotkey
-   * @param {bool} notificationDot
    */
-  renderDocLink = ({
-    action,
-    handler,
-    icon,
-    caption,
-    hotkey,
-    notificationDot = false,
-  }) => {
+  renderDocLink = ({ action, handler, icon, caption, hotkey }) => {
     const { closeSubheader } = this.props;
 
     return (
@@ -245,9 +237,7 @@ class SubHeader extends Component {
           closeSubheader();
         }}
       >
-        <i className={icon}>
-          {notificationDot && <span className="notification-number size-sm" />}
-        </i>
+        <i className={icon} />
 
         {caption}
 
@@ -340,7 +330,6 @@ class SubHeader extends Component {
         icon: 'meta-icon-message',
         caption: counterpart.translate('window.comments.caption'),
         hotkey: keymap.OPEN_COMMENTS,
-        notificationDot: true,
       },
     ]
       .filter((docLink) => standardActions.has(docLink.action))
