@@ -59,7 +59,7 @@ class Prompt extends Component {
     return (
       <div className="screen-freeze screen-prompt-freeze">
         <div className="panel panel-modal-primary panel-prompt prompt-shadow">
-          <div className="panel-modal-header panel-prompt-header">
+          <div className="panel-groups-header panel-modal-header panel-prompt-header">
             <span className="panel-prompt-header-title panel-modal-header-title">
               {title}
             </span>
@@ -68,7 +68,7 @@ class Prompt extends Component {
           <div className="panel-modal-content panel-prompt-content">
             <p>{this.props.text}</p>
           </div>
-          <div className="panel-modal-header panel-prompt-header panel-prompt-footer">
+          <div className="panel-groups-header panel-modal-header panel-prompt-header panel-prompt-footer">
             <div className="prompt-button-wrapper">
               {cancel ? this.renderCancelButton() : ''}
               {submit ? this.renderSubmitButton() : ''}

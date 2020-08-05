@@ -132,7 +132,7 @@
 
 .header-super-faded {
     background-color: #FFF;
-    border-bottom-color: #dee6ec;
+    border-bottom-color: $brand-border-color;
 }
 
 .header-input-sm {
@@ -594,8 +594,8 @@
 }
 
 .header-item-open {
-    background-color: #F8FAFB;
-    border: 1px solid #e1e8ee;
+    background-color: $brand-bright-color;
+    border: 1px solid $brand-border-color-2;
     pointer-events: none;
     z-index: 2;
     border-bottom: 0 !important;

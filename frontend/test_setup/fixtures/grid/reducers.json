@@ -60,7 +60,7 @@
     "windowId": "169",
     "viewId": "169-Bd",
     "headerProperties": {
-      "entries": []
+      "groups": []
     },
     "size": 125,
     "orderBy": [
@@ -175,7 +175,7 @@
     "windowId": "540189",
     "viewId": "540189-B6",
     "headerProperties": {
-      "entries": []
+      "groups": []
     },
     "size": 1,
     "result": [
@@ -200,7 +200,7 @@
     "windowId": "540189",
     "viewId": "540189-Y",
     "headerProperties": {
-      "entries": []
+      "groups": []
     },
     "size": 0,
     "filters": [

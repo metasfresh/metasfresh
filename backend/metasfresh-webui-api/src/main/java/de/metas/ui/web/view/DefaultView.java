@@ -1,30 +1,11 @@
 package de.metas.ui.web.view;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -58,6 +39,25 @@ import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.val;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -83,7 +83,6 @@ import lombok.ToString;
 
 /**
  * Default {@link IView} implementation.
- *
  */
 public final class DefaultView implements IEditableView
 {
@@ -113,6 +112,9 @@ public final class DefaultView implements IEditableView
 	private final JSONViewDataType viewType;
 	@Getter
 	private final ViewProfileId profileId;
+
+	private ExtendedMemorizingSupplier<ViewHeaderProperties> headerProperties;
+
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 	private final DocumentReferenceId documentReferenceId;
@@ -124,10 +126,14 @@ public final class DefaultView implements IEditableView
 	//
 	// Filters
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	/** Sticky filters (i.e. active filters which cannot be changed) */
+	/**
+	 * Sticky filters (i.e. active filters which cannot be changed)
+	 */
 	@Getter
 	private final DocumentFilterList stickyFilters;
-	/** Regular filters */
+	/**
+	 * Regular filters
+	 */
 	@Getter
 	private final DocumentFilterList filters;
 	private transient DocumentFilterList _allFilters; // lazy
@@ -157,6 +163,8 @@ public final class DefaultView implements IEditableView
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		profileId = builder.getProfileId();
+		final ViewHeaderPropertiesProvider propertiesProvider = CoalesceUtil.coalesce(builder.headerPropertiesProvider, NullViewHeaderPropertiesProvider.instance);
+		headerProperties = ExtendedMemorizingSupplier.of(() -> propertiesProvider.computeHeaderProperties(this));
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
@@ -185,7 +193,7 @@ public final class DefaultView implements IEditableView
 
 		//
 		// Cache
-		cache_rowsById = CCache.<DocumentId, IViewRow> builder()
+		cache_rowsById = CCache.<DocumentId, IViewRow>builder()
 				.cacheMapType(CacheMapType.LRU)
 				.cacheName("ViewRows#" + viewId)
 				.additionalTableNameToResetFor(viewDataRepository.getTableName())
@@ -219,6 +227,12 @@ public final class DefaultView implements IEditableView
 	public ITranslatableString getDescription()
 	{
 		return TranslatableStrings.empty();
+	}
+
+	@Override
+	public ViewHeaderProperties getHeaderProperties()
+	{
+		return headerProperties.get();
 	}
 
 	/**
@@ -291,18 +305,21 @@ public final class DefaultView implements IEditableView
 	public void invalidateAll()
 	{
 		cache_rowsById.reset();
+		headerProperties.forget();
 	}
 
 	@Override
 	public void invalidateRowById(final DocumentId rowId)
 	{
 		cache_rowsById.remove(rowId);
+		headerProperties.forget();
 	}
 
 	@Override
 	public void invalidateSelection()
 	{
 		selectionsRef.forgetCurrentSelections();
+		headerProperties.forget();
 
 		invalidateAll();
 
@@ -360,6 +377,7 @@ public final class DefaultView implements IEditableView
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
 	private ViewResultColumn extractViewResultColumnOrNull(
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
@@ -488,7 +506,7 @@ public final class DefaultView implements IEditableView
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
 
-			return IteratorUtils.<IViewRow> newPagedIterator()
+			return IteratorUtils.<IViewRow>newPagedIterator()
 					.firstRow(0)
 					.maxRows(1000) // MAX rows to fetch
 					.pageSize(100) // fetch 100items/chunk
@@ -542,6 +560,12 @@ public final class DefaultView implements IEditableView
 
 		// Invalidate local rowsById cache
 		cache_rowsById.removeAll(rowIds);
+
+		final boolean headerPropertiesChanged = headerProperties.forget() != null;
+		if (headerPropertiesChanged)
+		{
+			ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(this);
+		}
 
 		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
 		// TODO: introduce a SysConfig to be able to disable this feature
@@ -691,6 +715,7 @@ public final class DefaultView implements IEditableView
 		private ViewId viewId;
 		private JSONViewDataType viewType;
 		private ViewProfileId profileId;
+		private ViewHeaderPropertiesProvider headerPropertiesProvider;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private DocumentReferenceId documentReferenceId;
 		private ViewId parentViewId;
@@ -764,6 +789,12 @@ public final class DefaultView implements IEditableView
 		public ViewProfileId getProfileId()
 		{
 			return profileId;
+		}
+
+		public Builder setHeaderPropertiesProvider(@NonNull final ViewHeaderPropertiesProvider headerPropertiesProvider)
+		{
+			this.headerPropertiesProvider = headerPropertiesProvider;
+			return this;
 		}
 
 		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)
