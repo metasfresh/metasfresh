@@ -1,23 +1,23 @@
 package de.metas.request.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.stream.Stream;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_R_Request;
+import org.compiere.util.TimeUtil;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.QualityNoteId;
 import de.metas.product.ProductId;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestDAO;
-import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_R_Request;
-import org.compiere.util.TimeUtil;
-
-import java.util.stream.Stream;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -43,8 +43,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class RequestDAO implements IRequestDAO
 {
-	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
-
 	@Override
 	public I_R_Request createRequest(@NonNull final RequestCandidate candidate)
 	{
@@ -73,7 +71,6 @@ public class RequestDAO implements IRequestDAO
 	{
 		final I_R_Request request = newInstance(I_R_Request.class);
 		request.setSummary("");
-		request.setR_RequestType_ID(requestTypeDAO.retrieveDefaultRequestTypeIdOrFirstActive().getRepoId());
 		return request;
 	}
 
