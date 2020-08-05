@@ -99,15 +99,7 @@ public class C_BPartner
 	public void updateLocation(@NonNull final I_C_BPartner bpartner)
 	{
 		final List<I_C_BPartner_Location> bPartnerLocations = bPartnerDAO.retrieveBPartnerLocations(bpartner);
-		updateAllAddresses(bPartnerLocations, bpartner);
-	}
-
-	private void updateAllAddresses(List<I_C_BPartner_Location> bPartnerLocations, I_C_BPartner bpartner)
-	{
-		for (I_C_BPartner_Location location : bPartnerLocations)
-		{
-			bPartnerBL.setAddress(location, bpartner);
-		}
+		bPartnerBL.updateAllAddresses(bPartnerLocations, bpartner);
 	}
 
 	@ModelChange(//

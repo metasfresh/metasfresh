@@ -23,6 +23,7 @@ import org.compiere.model.I_C_BPartner_QuickInput;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Predicate;
@@ -88,6 +89,8 @@ public interface IBPartnerBL extends ISingletonService
 	void setAddress(I_C_BPartner_Location bpLocation);
 
 	void setAddress(I_C_BPartner_Location bpLocation, I_C_BPartner bPartner);
+
+	void updateAllAddresses(List<I_C_BPartner_Location> bPartnerLocations, I_C_BPartner bPartner);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 

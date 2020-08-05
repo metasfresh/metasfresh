@@ -344,7 +344,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public void setAddress(final I_C_BPartner_Location bpLocation, I_C_BPartner bPartner)
+	public void setAddress(final I_C_BPartner_Location bpLocation, final I_C_BPartner bPartner)
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(
 				bpLocation.getC_Location(),
@@ -355,6 +355,15 @@ public class BPartnerBL implements IBPartnerBL
 
 		bpLocation.setAddress(address);
 		InterfaceWrapperHelper.save(bpLocation);
+	}
+
+	@Override
+	public void updateAllAddresses(List<I_C_BPartner_Location> bPartnerLocations, final I_C_BPartner bPartner)
+	{
+		for (I_C_BPartner_Location location : bPartnerLocations)
+		{
+			setAddress(location, bPartner);
+		}
 	}
 
 	@Override
