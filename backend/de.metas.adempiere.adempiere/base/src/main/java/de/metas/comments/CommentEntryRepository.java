@@ -47,6 +47,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,7 +71,7 @@ public class CommentEntryRepository
 	private final CCache<TableRecordReference, Boolean> referenceHasCommentsCache = CCache.<TableRecordReference, Boolean>builder()
 			.cacheName("referenceHasCommentsCache")
 			.cacheMapType(CCache.CacheMapType.LRU)
-			.initialCapacity(10_000)
+			.initialCapacity(1_000)
 			.tableName(I_CM_Chat.Table_Name)
 			.build();
 
@@ -85,7 +86,7 @@ public class CommentEntryRepository
 		chatEntry.setChatEntryType(X_CM_ChatEntry.CHATENTRYTYPE_NoteFlat);
 		InterfaceWrapperHelper.save(chatEntry);
 
-		referenceHasCommentsCache.put(tableRecordReference, true);
+		referenceHasCommentsCache.remove(tableRecordReference);
 	}
 
 	@NonNull
@@ -111,12 +112,13 @@ public class CommentEntryRepository
 	@NonNull
 	public Map<TableRecordReference, Boolean> hasComments(@NonNull final Collection<TableRecordReference> references)
 	{
-		final ImmutableMap.Builder<TableRecordReference, Boolean> result = ImmutableMap.builder();
+		// Implementation detail: use a hash map to protect against duplicate keys
+		final HashMap<TableRecordReference, Boolean> result = new HashMap<>();
 
 		referenceHasCommentsCache.getAllOrLoad(references, this::checkReferenceHasComments);
 		references.forEach(trr -> result.put(trr, referenceHasCommentsCache.get(trr, (Supplier<Boolean>)() -> Boolean.FALSE)));
 
-		return result.build();
+		return ImmutableMap.copyOf(result);
 	}
 
 	@NonNull
@@ -172,26 +174,22 @@ public class CommentEntryRepository
 	@NonNull
 	private Map<TableRecordReference, Boolean> checkReferenceHasComments(@NonNull final Collection<TableRecordReference> referencesUnknownStatus)
 	{
-		final ImmutableListMultimap<Integer, Integer> tablesForRecords = referencesUnknownStatus.stream()
+		final ImmutableListMultimap<Integer, Integer> recordIdsByTableId = referencesUnknownStatus.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(TableRecordReference::getAD_Table_ID, TableRecordReference::getRecord_ID));
 
-		// first query returns nothing. Rest of the queries return the correct data
-		final IQuery<I_CM_Chat> query = queryBL.createQueryBuilder(I_CM_Chat.class)
-				.addEqualsFilter(I_CM_Chat.COLUMNNAME_CM_Chat_ID, -1)
-				.create();
+		@SuppressWarnings("OptionalGetWithoutIsPresent")
+		final IQuery<I_CM_Chat> query = recordIdsByTableId.keySet().stream()
+				.map(tableId -> {
+					final ImmutableList<Integer> recordIds = recordIdsByTableId.get(tableId);
 
-		for (final Integer tableId : tablesForRecords.keySet())
-		{
-			final ImmutableList<Integer> recordIds = tablesForRecords.get(tableId);
-
-			final IQuery<I_CM_Chat> q = queryBL.createQueryBuilder(I_CM_Chat.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableId)
-					.addInArrayFilter(I_CM_Chat.COLUMNNAME_Record_ID, recordIds)
-					.create();
-
-			query.addUnion(q, true);
-		}
+					return queryBL.createQueryBuilder(I_CM_Chat.class)
+							.addOnlyActiveRecordsFilter()
+							.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableId)
+							.addInArrayFilter(I_CM_Chat.COLUMNNAME_Record_ID, recordIds)
+							.create();
+				})
+				.reduce(IQuery.unionDistict())
+				.get();
 
 		final Set<TableRecordReference> comments = query.list()
 				.stream()
