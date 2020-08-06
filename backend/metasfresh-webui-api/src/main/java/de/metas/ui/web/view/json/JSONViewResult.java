@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import de.metas.ui.web.comments.ViewRowComments;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
 import de.metas.ui.web.view.IViewRow;
@@ -48,7 +49,7 @@ import java.util.Map;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewResult
 {
-	public static JSONViewResult of(final ViewResult viewResult, IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final IdentityHashMap<IViewRow, Boolean> documentsWithComments)
+	public static JSONViewResult of(final ViewResult viewResult, IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final ViewRowComments documentsWithComments)
 	{
 		List<? extends JSONViewRowBase> jsonRows;
 		if (viewResult.isPageLoaded())

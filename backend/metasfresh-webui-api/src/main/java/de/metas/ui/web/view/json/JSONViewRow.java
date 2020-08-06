@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.ui.web.comments.ViewRowComments;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
@@ -43,7 +44,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,14 +57,14 @@ import java.util.stream.Collectors;
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final IdentityHashMap<IViewRow, Boolean> documentsWithComments)
+	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final ViewRowComments documentsWithComments)
 	{
 		return rows.stream()
 				.map(row -> ofRow(row, rowOverrides, jsonOpts, documentsWithComments))
 				.collect(Collectors.toList());
 	}
 
-	public static JSONViewRow ofRow(@NonNull final IViewRow row, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final IdentityHashMap<IViewRow, Boolean> documentsWithComments)
+	public static JSONViewRow ofRow(@NonNull final IViewRow row, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final ViewRowComments documentsWithComments)
 	{
 		//
 		// Document view record
@@ -133,7 +133,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		//
 		// Has Comments
 		{
-			jsonRow.hasComments = documentsWithComments.getOrDefault(row, false);
+			jsonRow.hasComments = documentsWithComments.hasComments(row.getId());
 		}
 
 		//

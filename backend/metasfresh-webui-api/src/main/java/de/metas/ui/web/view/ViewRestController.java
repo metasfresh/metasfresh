@@ -28,6 +28,7 @@ import de.metas.impexp.excel.ExcelFormats;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
+import de.metas.ui.web.comments.ViewRowComments;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
@@ -80,7 +81,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -176,7 +176,7 @@ public class ViewRestController
 		final JSONOptions jsonOpts = newJSONOptions();
 
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
-		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
 
 		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
@@ -214,7 +214,7 @@ public class ViewRestController
 		final ViewResult viewResult = ViewResult.ofView(newView);
 
 		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
-		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
 
 		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, documentsWithComments);
 	}
@@ -232,9 +232,9 @@ public class ViewRestController
 		final ViewResult viewResult = ViewResult.ofView(newView);
 
 		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
-		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
 
-		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts,documentsWithComments);
+		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, documentsWithComments);
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -271,7 +271,7 @@ public class ViewRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
-		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
 
 		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
@@ -341,7 +341,7 @@ public class ViewRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
 
-		final IdentityHashMap<IViewRow, Boolean> documentsWithComments = commentsService.hasComments(result);
+		final ViewRowComments documentsWithComments = commentsService.hasComments(result);
 
 		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts, documentsWithComments);
 	}

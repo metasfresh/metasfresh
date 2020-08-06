@@ -74,7 +74,6 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,7 +88,6 @@ class CommentsServiceTest
 
 	private CommentEntryRepository commentEntryRepository;
 	private CommentsService commentsService;
-	private DocumentDescriptorFactory documentDescriptorFactory;
 
 	@BeforeEach
 	public void init()
@@ -101,6 +99,7 @@ class CommentsServiceTest
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(AD_USER_ID));
 		createDefaultUser();
 
+		final DocumentDescriptorFactory documentDescriptorFactory;
 		{
 			final DocumentFilterDescriptorsProviderFactory documentFilterDescriptorsProviderFactory = new DocumentFilterDescriptorsProviderFactory()
 			{
@@ -351,18 +350,19 @@ class CommentsServiceTest
 			final IViewRow row22No = createViewRow(22);
 			final IViewRow row23No = createViewRow(23);
 
-			final IdentityHashMap<IViewRow, Boolean> expected = new IdentityHashMap<>();
-			expected.put(row11Yes, true);
-			expected.put(row12Yes, true);
-			expected.put(row21No, false);
-			expected.put(row22No, false);
-			expected.put(row23No, false);
+			final ViewRowComments expected = ViewRowComments.of(
+					ImmutableMap.of(
+							row11Yes.getId(), true,
+							row12Yes.getId(), true,
+							row21No.getId(), false,
+							row22No.getId(), false,
+							row23No.getId(), false)
+			);
 
-			final IdentityHashMap<IViewRow, Boolean> actual = commentsService.hasComments(expected.keySet());
+			final ViewRowComments actual = commentsService.hasComments(Arrays.asList(row11Yes, row12Yes, row21No, row22No, row23No));
 
 			Assertions.assertThat(actual)
 					.isEqualTo(expected)
-					.hasSize(5)
 			;
 		}
 
