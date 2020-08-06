@@ -21,7 +21,6 @@ Here come the actual release notes:
   * [#6420](https://github.com/metasfresh/metasfresh/issues/6420) Customer return not working bc HUs cannot be selected
   * [#6526](https://github.com/metasfresh/metasfresh/issues/6526) Export SEPA Pain_001_001_03_CH_02 wrong xsi:schemaLocation 🙏 to [Peter Wyss (@KommunikativCh)](https://github.com/KommunikativCh)
   * [#6967](https://github.com/metasfresh/metasfresh/issues/6967) Refreshing page looses pagination 🙏 to [Merry Space (@PureLandFlying)](https://github.com/PureLandFlying)
-  * [#7028](https://github.com/metasfresh/metasfresh/pull/7028) Fix WEBUI_M_HU_ReturnFromCustomer
   * [#7029](https://github.com/metasfresh/metasfresh/issues/7029) QR Code Implementation de_metas_endcustomer_fresh_reports.docs_sales_invoice_qr_code 🙏 to [Peter Wyss (@KommunikativCh)](https://github.com/KommunikativCh)
   * [#7044](https://github.com/metasfresh/metasfresh/issues/7044) Fix Corner Case for Reference from Product to BOM Component
   * [#7046](https://github.com/metasfresh/metasfresh/pull/7046) Fix regarding sync-advise "IfExists.DONT_UPDATE"
