@@ -85,7 +85,7 @@ class CommentsServiceTest
 	public static final ZonedDateTime ZONED_DATE_TIME = ZonedDateTime.of(2020, Month.APRIL.getValue(), 23, 1, 1, 1, 0, ZoneId.of("UTC+8"));
 
 	public static final String DUMMY_TABLE_NAME = "DummyTable";
-	private final WindowId windowId = WindowId.of(123);
+	private static final WindowId WINDOW_ID = WindowId.of(123);
 
 	private CommentEntryRepository commentEntryRepository;
 	private CommentsService commentsService;
@@ -118,13 +118,13 @@ class CommentsServiceTest
 			{
 				final DocumentDescriptor documentDescriptor = DocumentDescriptor.builder()
 						.setLayout(DocumentLayoutDescriptor.builder()
-								.setWindowId(windowId)
+								.setWindowId(WINDOW_ID)
 								.setSingleRowLayout(DocumentLayoutSingleRow.builder())
 								.setGridView(ViewLayout.builder())
 								.setSideListView(ViewLayout.builder().build())
 								.build())
 						.setEntityDescriptor(DocumentEntityDescriptor.builder()
-								.setDocumentType(windowId.toAdWindowId())
+								.setDocumentType(WINDOW_ID.toAdWindowId())
 								.setTableName(DUMMY_TABLE_NAME)
 								.build())
 						.build();
@@ -180,7 +180,8 @@ class CommentsServiceTest
 
 		private void apiAddComment(final TableRecordReference tableRecordReference, final String comment)
 		{
-			commentsService.addComment(tableRecordReference, new JSONCommentCreateRequest(comment));
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(WINDOW_ID, tableRecordReference.getRecord_ID());
+			commentsService.addComment(documentPath, new JSONCommentCreateRequest(comment));
 		}
 
 		private CommentEntry createCommentEntry(final String comment)
@@ -218,8 +219,8 @@ class CommentsServiceTest
 			createChatEntry(commentEntryParentId, "comment2");
 
 			//
-			final List<JSONComment> actual = commentsService.getCommentsFor(tableRecordReference, ZoneId.of("UTC+8"));
-			System.out.println(actual);
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(WINDOW_ID, tableRecordReference.getRecord_ID());
+			final List<JSONComment> actual = commentsService.getCommentsFor(documentPath, ZoneId.of("UTC+8"));
 
 			final String zonedDateTimeString = DateTimeConverters.toJson(ZONED_DATE_TIME, ZoneId.of("UTC+8"));
 
@@ -238,8 +239,8 @@ class CommentsServiceTest
 			final TableRecordReference tableRecordReference = TableRecordReference.of(DUMMY_TABLE_NAME, 1);
 
 			//
-			final List<JSONComment> actual = commentsService.getCommentsFor(tableRecordReference, ZoneId.of("UTC+8"));
-			System.out.println(actual);
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(WINDOW_ID, tableRecordReference.getRecord_ID());
+			final List<JSONComment> actual = commentsService.getCommentsFor(documentPath, ZoneId.of("UTC+8"));
 
 			final List<JSONComment> expected = Collections.emptyList();
 
@@ -368,7 +369,7 @@ class CommentsServiceTest
 		@NonNull
 		private IViewRow createViewRow(final int rowId)
 		{
-			return ViewRow.builder(windowId)
+			return ViewRow.builder(WINDOW_ID)
 					.setRowId(DocumentId.of(rowId))
 					.build();
 		}

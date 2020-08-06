@@ -70,7 +70,7 @@ public class CommentEntryRepository
 	private final CCache<TableRecordReference, Boolean> referenceHasCommentsCache = CCache.<TableRecordReference, Boolean>builder()
 			.cacheName("referenceHasCommentsCache")
 			.cacheMapType(CCache.CacheMapType.LRU)
-			.initialCapacity(10_000) // is this enough?
+			.initialCapacity(10_000)
 			.tableName(I_CM_Chat.Table_Name)
 			.build();
 

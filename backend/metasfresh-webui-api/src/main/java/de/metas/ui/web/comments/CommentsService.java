@@ -117,9 +117,9 @@ public class CommentsService
 	}
 
 	@NonNull
-	public List<JSONComment> getCommentsFor(@NonNull final TableRecordReference tableRecordReference, final ZoneId zoneId)
+	public List<JSONComment> getCommentsFor(@NonNull final DocumentPath documentPath, final ZoneId zoneId)
 	{
-
+		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
 		final List<CommentEntry> comments = commentEntryRepository.retrieveLastCommentEntries(tableRecordReference, 100);
 
 		return comments.stream()
@@ -128,8 +128,10 @@ public class CommentsService
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public void addComment(@NonNull final TableRecordReference tableRecordReference, @NonNull final JSONCommentCreateRequest jsonCommentCreateRequest)
+	public void addComment(@NonNull final DocumentPath documentPath, @NonNull final JSONCommentCreateRequest jsonCommentCreateRequest)
 	{
+		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
+
 		commentEntryRepository.createCommentEntry(jsonCommentCreateRequest.getText(), tableRecordReference);
 	}
 

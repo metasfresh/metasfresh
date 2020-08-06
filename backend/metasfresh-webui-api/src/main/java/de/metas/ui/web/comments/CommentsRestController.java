@@ -70,10 +70,8 @@ public class CommentsRestController
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
 
-		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
-
 		final ZoneId zoneId = JSONOptions.of(userSession).getZoneId();
-		return commentsService.getCommentsFor(tableRecordReference, zoneId);
+		return commentsService.getCommentsFor(documentPath, zoneId);
 	}
 
 	@PostMapping
@@ -87,8 +85,6 @@ public class CommentsRestController
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
 
-		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
-
-		commentsService.addComment(tableRecordReference, jsonCommentCreateRequest);
+		commentsService.addComment(documentPath, jsonCommentCreateRequest);
 	}
 }
