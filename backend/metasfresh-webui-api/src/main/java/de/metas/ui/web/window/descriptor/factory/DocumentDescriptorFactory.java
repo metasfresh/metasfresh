@@ -100,6 +100,11 @@ public interface DocumentDescriptorFactory
 
 	default Optional<TableRecordReference> getTableRecordReferenceIfPossible(@NonNull final DocumentPath documentPath)
 	{
+		if (documentPath.getWindowIdOrNull() == null || !documentPath.getWindowId().isInt())
+		{
+			return Optional.empty();
+		}
+
 		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getWindowId());
 
 		if (documentPath.isRootDocument())
