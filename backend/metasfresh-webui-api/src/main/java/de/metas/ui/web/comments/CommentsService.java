@@ -34,6 +34,7 @@ import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -47,6 +48,8 @@ import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class CommentsService
@@ -84,13 +87,13 @@ public class CommentsService
 
 		final ImmutableMap<IViewRow, TableRecordReference> rowsForReferences = rows.stream()
 				.flatMap(IViewRow::streamRecursive)
-				.map(row -> GuavaCollectors.entry(row, documentDescriptorFactory.getTableRecordReference(row.getDocumentPath())))
+				.flatMap(this::toStreamOfValidTableReferences)
 				.collect(GuavaCollectors.toImmutableMap());
 
 		final Map<TableRecordReference, Boolean> referencesWithComments = commentEntryRepository.hasComments(rowsForReferences.values());
 
 		final IdentityHashMap<IViewRow, Boolean> result = new IdentityHashMap<>();
-		for (final IViewRow row : rowsForReferences.keySet())
+		for (final IViewRow row : rows)
 		{
 			final TableRecordReference ref = rowsForReferences.get(row);
 			result.put(row, referencesWithComments.getOrDefault(ref, false));
@@ -102,7 +105,13 @@ public class CommentsService
 	@NonNull
 	public Boolean hasComments(@NonNull final DocumentPath documentPath)
 	{
-		final TableRecordReference reference = documentDescriptorFactory.getTableRecordReference(documentPath);
+		final Optional<TableRecordReference> referenceOptional = documentDescriptorFactory.getTableRecordReferenceIfPossible(documentPath);
+		if (!referenceOptional.isPresent())
+		{
+			return false;
+		}
+
+		final TableRecordReference reference = referenceOptional.get();
 		final Map<TableRecordReference, Boolean> referencesWithComments = commentEntryRepository.hasComments(ImmutableList.of(reference));
 		return referencesWithComments.getOrDefault(reference, false);
 	}
@@ -122,6 +131,17 @@ public class CommentsService
 	public void addComment(@NonNull final TableRecordReference tableRecordReference, @NonNull final JSONCommentCreateRequest jsonCommentCreateRequest)
 	{
 		commentEntryRepository.createCommentEntry(jsonCommentCreateRequest.getText(), tableRecordReference);
+	}
+
+	@NonNull
+	private Stream<ImmutableMapEntry<IViewRow, TableRecordReference>> toStreamOfValidTableReferences(@NonNull final IViewRow row)
+	{
+		if (row.getDocumentPath() == null)
+		{
+			return Stream.empty();
+		}
+		final Optional<TableRecordReference> optionalReference = documentDescriptorFactory.getTableRecordReferenceIfPossible(row.getDocumentPath());
+		return optionalReference.map(tableRecordReference -> Stream.of(GuavaCollectors.entry(row, tableRecordReference))).orElseGet(Stream::empty);
 	}
 
 	@NonNull
