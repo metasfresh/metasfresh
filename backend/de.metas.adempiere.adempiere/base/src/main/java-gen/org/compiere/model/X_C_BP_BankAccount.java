@@ -11,7 +11,7 @@ import java.util.Properties;
 public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_BankAccount, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -649509635L;
+	private static final long serialVersionUID = -671767815L;
 
     /** Standard Constructor */
     public X_C_BP_BankAccount (Properties ctx, int C_BP_BankAccount_ID, String trxName)
@@ -31,6 +31,21 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	protected org.compiere.model.POInfo initPO(Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_User_ID (int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+	}
+
+	@Override
+	public int getAD_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
 	@Override
@@ -153,43 +168,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
 	}
 
-	@Override
-	public void setAD_User_ID (int AD_User_ID)
-	{
-		if (AD_User_ID < 0) 
-			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
-	}
-
-	@Override
-	public int getAD_User_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
-	}
-
-	/** 
-	 * BankAccountType AD_Reference_ID=216
-	 * Reference name: C_Bank Account Type
-	 */
-	public static final int BANKACCOUNTTYPE_AD_Reference_ID=216;
-	/** Girokonto = C */
-	public static final String BANKACCOUNTTYPE_Girokonto = "C";
-	/** Sparkonto = S */
-	public static final String BANKACCOUNTTYPE_Sparkonto = "S";
-	@Override
-	public void setBankAccountType (java.lang.String BankAccountType)
-	{
-
-		set_Value (COLUMNNAME_BankAccountType, BankAccountType);
-	}
-
-	@Override
-	public java.lang.String getBankAccountType() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_BankAccountType);
-	}
-
 	/** 
 	 * BPBankAcctUse AD_Reference_ID=393
 	 * Reference name: C_BPartner BPBankAcctUse
@@ -218,19 +196,26 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		return (java.lang.String)get_Value(COLUMNNAME_BPBankAcctUse);
 	}
 
+	/** 
+	 * BankAccountType AD_Reference_ID=216
+	 * Reference name: C_Bank Account Type
+	 */
+	public static final int BANKACCOUNTTYPE_AD_Reference_ID=216;
+	/** Girokonto = C */
+	public static final String BANKACCOUNTTYPE_Girokonto = "C";
+	/** Sparkonto = S */
+	public static final String BANKACCOUNTTYPE_Sparkonto = "S";
 	@Override
-	public void setC_Bank_ID (int C_Bank_ID)
+	public void setBankAccountType (java.lang.String BankAccountType)
 	{
-		if (C_Bank_ID < 1) 
-			set_Value (COLUMNNAME_C_Bank_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Bank_ID, Integer.valueOf(C_Bank_ID));
+
+		set_Value (COLUMNNAME_BankAccountType, BankAccountType);
 	}
 
 	@Override
-	public int getC_Bank_ID() 
+	public java.lang.String getBankAccountType() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Bank_ID);
+		return (java.lang.String)get_Value(COLUMNNAME_BankAccountType);
 	}
 
 	@Override
@@ -261,6 +246,21 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_Bank_ID (int C_Bank_ID)
+	{
+		if (C_Bank_ID < 1) 
+			set_Value (COLUMNNAME_C_Bank_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Bank_ID, Integer.valueOf(C_Bank_ID));
+	}
+
+	@Override
+	public int getC_Bank_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Bank_ID);
 	}
 
 	@Override
@@ -464,6 +464,18 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getName() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setQR_IBAN (java.lang.String QR_IBAN)
+	{
+		set_Value (COLUMNNAME_QR_IBAN, QR_IBAN);
+	}
+
+	@Override
+	public java.lang.String getQR_IBAN() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_QR_IBAN);
 	}
 
 	/** 

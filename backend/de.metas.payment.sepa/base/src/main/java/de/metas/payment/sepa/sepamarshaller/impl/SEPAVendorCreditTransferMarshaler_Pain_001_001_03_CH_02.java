@@ -678,7 +678,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		{
 			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
 			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true)
-					|| paymentType == PAYMENT_TYPE_3
+					|| (paymentType == PAYMENT_TYPE_3 && !isQrIBAN(line.getIBAN()))
 					|| paymentType == PAYMENT_TYPE_5)
 			{
 				Check.errorIf(paymentType == PAYMENT_TYPE_1, SepaMarshallerException.class,
@@ -864,6 +864,32 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		final boolean isIbanWithBC = ibanToUse.startsWith("CH") || ibanToUse.startsWith("LI");
 
 		return isIbanWithBC;
+	}
+
+	/**
+	 * Returns true if the given IBAN is supposed to be a QR IBAN. This can be assumes if the given IBAN has QR-IID (CHXX?????XXXXXXXXXXXX ????? = QR-IID) the value between 30000 and 31999.
+	 *
+	 * @param iban
+	 * @return
+	 */
+	@VisibleForTesting
+	static boolean isQrIBAN(final String iban)
+	{
+		if (Check.isEmpty(iban, true))
+		{
+			return false;
+		}
+		final String ibanToUse = iban.replaceAll(" ", "");
+		Integer qr_iid = 0;
+		try {
+			qr_iid = Integer.parseInt(ibanToUse.substring(4, 9));
+
+		} catch (Exception exception) {
+			qr_iid = 0;
+		}
+		final boolean isQrIban = qr_iid >= 30000 && qr_iid <= 31999;
+
+		return isQrIban;
 	}
 
 	protected String getBankNameIfAny(final I_SEPA_Export_Line line)

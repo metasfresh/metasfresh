@@ -40,9 +40,7 @@ import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
-import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -63,31 +61,36 @@ public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvid
 		final IPaymentString paymentString = getPaymentString();
 
 		final String ibanAccountNo = paymentString.getIbanAccountNo();
-
-		final IESRBPBankAccountDAO esrbpBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
+		final Boolean isQRIBAN = paymentString.isQRIBAN();
 
 		final List<org.compiere.model.I_C_BP_BankAccount> bankAccounts = InterfaceWrapperHelper.createList(
-				this.retrieveQRBPBankAccounts(ibanAccountNo),
+				this.retrieveQRBPBankAccounts(ibanAccountNo, isQRIBAN),
 				org.compiere.model.I_C_BP_BankAccount.class);
 
 		return bankAccounts;
 	}
 	
 	private final List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(
-			@NonNull final String ibanAccountNo)
+			@NonNull final String ibanAccountNo,
+			@NonNull final Boolean isQRIBAN)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 
 		final IQueryBuilder<I_C_BP_BankAccount> bankAccountQuery = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, ibanAccountNo)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true);
-	
-		bankAccountQuery
-				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
+		if (isQRIBAN) {
+			bankAccountQuery
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, ibanAccountNo);
+		} else {
+			bankAccountQuery
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, ibanAccountNo);
+		}
+		
+		bankAccountQuery
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, false);
+	
 
 		return bankAccountQuery
 				.create()
@@ -106,13 +109,18 @@ public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvid
 
 		final Currency currency = Services.get(ICurrencyDAO.class).getByCurrencyCode(CurrencyCode.ofThreeLetterCode(paymentString.getCurrency()));
 		bpBankAccount.setC_Currency_ID(currency.getId().getRepoId());
-		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR string
+		bpBankAccount.setIsEsrAccount(false);
 		bpBankAccount.setIsACH(true);
 		final String bPartnerName = Services.get(IBPartnerDAO.class).getBPartnerNameById(BPartnerId.ofRepoId(bpartnerId));
 		bpBankAccount.setA_Name(bPartnerName);
 		bpBankAccount.setName(bPartnerName);
 
-		bpBankAccount.setIBAN(paymentString.getIbanAccountNo());
+		if (paymentString.isQRIBAN()) {
+			bpBankAccount.setQR_IBAN(paymentString.getIbanAccountNo());
+			
+		} else {
+			bpBankAccount.setIBAN(paymentString.getIbanAccountNo());			
+		}
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 

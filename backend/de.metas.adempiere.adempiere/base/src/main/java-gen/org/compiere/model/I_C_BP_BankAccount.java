@@ -16,6 +16,65 @@ public interface I_C_BP_BankAccount
 
 
 	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
+
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_User_ID();
+
+    /** Column name AD_User_ID */
+    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Set Ort.
 	 * City or the Credit Card or Account Holder
 	 *
@@ -266,90 +325,6 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_AccountNo = "AccountNo";
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Client_ID();
-
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Org_ID();
-
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_User_ID (int AD_User_ID);
-
-	/**
-	 * Get Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_User_ID();
-
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
-	/**
-	 * Set Kontenart.
-	 * Bank Account Type
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setBankAccountType (java.lang.String BankAccountType);
-
-	/**
-	 * Get Kontenart.
-	 * Bank Account Type
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getBankAccountType();
-
-    /** Column definition for BankAccountType */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_BankAccountType = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "BankAccountType", null);
-    /** Column name BankAccountType */
-    public static final String COLUMNNAME_BankAccountType = "BankAccountType";
-
-	/**
 	 * Set Kontonutzung.
 	 * Business Partner Bank Account usage
 	 *
@@ -375,27 +350,29 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_BPBankAcctUse = "BPBankAcctUse";
 
 	/**
-	 * Set Bank.
-	 * Bank
+	 * Set Kontenart.
+	 * Bank Account Type
 	 *
-	 * <br>Type: Search
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Bank_ID (int C_Bank_ID);
+	public void setBankAccountType (java.lang.String BankAccountType);
 
 	/**
-	 * Get Bank.
-	 * Bank
+	 * Get Kontenart.
+	 * Bank Account Type
 	 *
-	 * <br>Type: Search
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Bank_ID();
+	public java.lang.String getBankAccountType();
 
-    /** Column name C_Bank_ID */
-    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
+    /** Column definition for BankAccountType */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_BankAccountType = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "BankAccountType", null);
+    /** Column name BankAccountType */
+    public static final String COLUMNNAME_BankAccountType = "BankAccountType";
 
 	/**
 	 * Set Partner Bank Account.
@@ -442,6 +419,29 @@ public interface I_C_BP_BankAccount
 
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Bank.
+	 * Bank
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Bank_ID (int C_Bank_ID);
+
+	/**
+	 * Get Bank.
+	 * Bank
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Bank_ID();
+
+    /** Column name C_Bank_ID */
+    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
 
 	/**
 	 * Set Currency.
@@ -856,6 +856,31 @@ public interface I_C_BP_BankAccount
     public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set QR IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQR_IBAN (java.lang.String QR_IBAN);
+
+	/**
+	 * Get QR IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getQR_IBAN();
+
+    /** Column definition for QR_IBAN */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_QR_IBAN = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "QR_IBAN", null);
+    /** Column name QR_IBAN */
+    public static final String COLUMNNAME_QR_IBAN = "QR_IBAN";
 
 	/**
 	 * Set Addresse verifiziert.

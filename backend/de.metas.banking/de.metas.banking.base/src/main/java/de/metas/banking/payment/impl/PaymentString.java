@@ -47,6 +47,7 @@ public class PaymentString implements IPaymentString
 	private final String ibanAccountNo;
 	private final String currency;
 	private final Boolean qrPaymentString; 
+	private final Boolean qrIBAN; 
 
 	private IPaymentStringDataProvider dataProvider = null;
 
@@ -73,6 +74,7 @@ public class PaymentString implements IPaymentString
 		this.orgValue = orgValue;
 		
 		this.ibanAccountNo = null;
+		this.qrIBAN = false;
 		this.currency = null;
 		this.qrPaymentString = false;
 	}
@@ -83,6 +85,7 @@ public class PaymentString implements IPaymentString
 			final Boolean qrPaymentString,
 			final BigDecimal amount,
 			final String ibanAccountNo,
+			final Boolean qrIBAN,
 			final String referenceNoComplete,
 			final String currency)
 	{
@@ -93,6 +96,7 @@ public class PaymentString implements IPaymentString
 		
 		this.amount = amount;
 		this.ibanAccountNo = ibanAccountNo;
+		this.qrIBAN = qrIBAN;
 		this.referenceNoComplete = referenceNoComplete;
 		this.currency = currency;
 
@@ -160,6 +164,11 @@ public class PaymentString implements IPaymentString
 	@Override
 	public String getIbanAccountNo() {
 		return ibanAccountNo;
+	}
+
+	@Override
+	public Boolean isQRIBAN() {
+		return qrIBAN;
 	}
 
 	@Override

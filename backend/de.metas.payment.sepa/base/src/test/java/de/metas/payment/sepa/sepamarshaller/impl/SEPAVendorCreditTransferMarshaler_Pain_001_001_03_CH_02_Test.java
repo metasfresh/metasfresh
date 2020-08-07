@@ -3,6 +3,8 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 
@@ -204,4 +206,23 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(output).isEqualTo(expected);
 	}
 
+	@Test
+	public void testQrIbanCheck()
+	{
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN(""));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92abc99001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9219999001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9229999001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9232000001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9242000001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3200 0001 4068 0949 7"));
+
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9230000001406809497"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9230999001406809497"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9231999001406809497"));
+	
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3000 0001 4068 0949 7"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3099 9001 4068 0949 7"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3199 9001 4068 0949 7"));
+	}
 }
