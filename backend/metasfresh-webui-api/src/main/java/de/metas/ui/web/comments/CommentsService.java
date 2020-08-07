@@ -22,10 +22,24 @@
 
 package de.metas.ui.web.comments;
 
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.comments.CommentEntry;
-import de.metas.comments.CommentEntryRepository;
+import de.metas.comments.CommentsRepository;
 import de.metas.ui.web.comments.json.JSONComment;
 import de.metas.ui.web.comments.json.JSONCommentCreateRequest;
 import de.metas.ui.web.view.IViewRow;
@@ -38,92 +52,83 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.stereotype.Service;
-
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class CommentsService
 {
-	private final CommentEntryRepository commentEntryRepository;
+	private final CommentsRepository commentsRepository;
 	private final DocumentDescriptorFactory documentDescriptorFactory;
-	final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	public CommentsService(final CommentEntryRepository commentEntryRepository, final DocumentDescriptorFactory documentDescriptorFactory)
+	public CommentsService(
+			@NonNull final CommentsRepository commentsRepository,
+			@NonNull final DocumentDescriptorFactory documentDescriptorFactory)
 	{
-		this.commentEntryRepository = commentEntryRepository;
+		this.commentsRepository = commentsRepository;
 		this.documentDescriptorFactory = documentDescriptorFactory;
 	}
 
 	@NonNull
-	public final ViewRowComments getRowComments(@NonNull final IViewRow row)
+	public final ViewRowCommentsSummary getRowCommentsSummary(@NonNull final IViewRow row)
 	{
-		return getRowComments(Collections.singletonList(row));
+		return getRowCommentsSummary(ImmutableList.of(row));
 	}
 
 	@NonNull
-	public final ViewRowComments getRowComments(@NonNull final Collection<? extends IViewRow> rows)
+	public final ViewRowCommentsSummary getRowCommentsSummary(@NonNull final Collection<? extends IViewRow> rows)
 	{
 		if (rows.isEmpty())
 		{
-			return ViewRowComments.EMPTY;
+			return ViewRowCommentsSummary.EMPTY;
 		}
 
-		final ImmutableMap<IViewRow, TableRecordReference> rowsForReferences = rows.stream()
+		final ImmutableList<IViewRow> allRows = rows.stream()
 				.flatMap(IViewRow::streamRecursive)
-				.flatMap(this::toStreamOfValidTableReferences)
-				.collect(GuavaCollectors.toImmutableMap());
+				.collect(ImmutableList.toImmutableList());
 
-		final Map<TableRecordReference, Boolean> referencesWithComments = commentEntryRepository.hasComments(rowsForReferences.values());
+		final Map<DocumentPath, TableRecordReference> recordRefsByDocumentPath = getTableRecordReferences(allRows);
+		final ImmutableMap<TableRecordReference, Boolean> hasCommentsByRecordRef = commentsRepository.hasComments(recordRefsByDocumentPath.values());
 
-		final ImmutableMap.Builder<DocumentId, Boolean> result = ImmutableMap.builder();
-		for (final IViewRow row : rows)
+		final ImmutableMap.Builder<DocumentId, Boolean> hasCommentsByDocumentId = ImmutableMap.builder();
+		for (final IViewRow row : allRows)
 		{
-			final TableRecordReference ref = rowsForReferences.get(row);
-			result.put(row.getId(), referencesWithComments.getOrDefault(ref, false));
+			final DocumentPath documentPath = row.getDocumentPath();
+			if (documentPath == null)
+			{
+				continue;
+			}
+
+			final TableRecordReference recordRef = recordRefsByDocumentPath.get(documentPath);
+			if (recordRef == null)
+			{
+				continue;
+			}
+
+			final boolean hasComments = hasCommentsByRecordRef.getOrDefault(recordRef, false);
+			hasCommentsByDocumentId.put(row.getId(), hasComments);
 		}
 
-		return ViewRowComments.of(result.build());
+		return ViewRowCommentsSummary.ofMap(hasCommentsByDocumentId.build());
 	}
 
-	public boolean getRowComments(@NonNull final DocumentPath documentPath)
+	private HashMap<DocumentPath, TableRecordReference> getTableRecordReferences(final ImmutableList<IViewRow> rows)
 	{
-		final Optional<TableRecordReference> referenceOptional = documentDescriptorFactory.getTableRecordReferenceIfPossible(documentPath);
-		if (!referenceOptional.isPresent())
+		final ImmutableSet<DocumentPath> documentPaths = rows.stream()
+				.map(IViewRow::getDocumentPath)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final HashMap<DocumentPath, TableRecordReference> recordRefsByDocumentPath = new HashMap<>(rows.size());
+		for (final DocumentPath documentPath : documentPaths)
 		{
-			return false;
+			final TableRecordReference recordRef = documentDescriptorFactory.getTableRecordReferenceIfPossible(documentPath).orElse(null);
+			if (recordRef != null)
+			{
+				recordRefsByDocumentPath.put(documentPath, recordRef);
+			}
 		}
 
-		final TableRecordReference reference = referenceOptional.get();
-		final Map<TableRecordReference, Boolean> referencesWithComments = commentEntryRepository.hasComments(ImmutableList.of(reference));
-		return referencesWithComments.getOrDefault(reference, false);
-	}
-
-	@NonNull
-	public List<JSONComment> getComments(@NonNull final DocumentPath documentPath, final ZoneId zoneId)
-	{
-		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
-		final List<CommentEntry> comments = commentEntryRepository.retrieveLastCommentEntries(tableRecordReference, 100);
-
-		return comments.stream()
-				.map(comment -> toJsonComment(comment, zoneId))
-				.sorted(Comparator.comparing(JSONComment::getCreated).reversed())
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	public void addComment(@NonNull final DocumentPath documentPath, @NonNull final JSONCommentCreateRequest jsonCommentCreateRequest)
-	{
-		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
-
-		commentEntryRepository.createCommentEntry(jsonCommentCreateRequest.getText(), tableRecordReference);
+		return recordRefsByDocumentPath;
 	}
 
 	@NonNull
@@ -133,8 +138,43 @@ public class CommentsService
 		{
 			return Stream.empty();
 		}
-		final Optional<TableRecordReference> optionalReference = documentDescriptorFactory.getTableRecordReferenceIfPossible(row.getDocumentPath());
-		return optionalReference.map(tableRecordReference -> Stream.of(GuavaCollectors.entry(row, tableRecordReference))).orElseGet(Stream::empty);
+		else
+		{
+			return documentDescriptorFactory.getTableRecordReferenceIfPossible(row.getDocumentPath())
+					.map(tableRecordReference -> Stream.of(GuavaCollectors.entry(row, tableRecordReference)))
+					.orElseGet(Stream::empty);
+		}
+	}
+
+	public boolean hasComments(@NonNull final DocumentPath documentPath)
+	{
+		final TableRecordReference reference = documentDescriptorFactory.getTableRecordReferenceIfPossible(documentPath).orElse(null);
+		if (reference == null)
+		{
+			return false;
+		}
+
+		final Map<TableRecordReference, Boolean> referencesWithComments = commentsRepository.hasComments(ImmutableList.of(reference));
+		return referencesWithComments.getOrDefault(reference, false);
+	}
+
+	@NonNull
+	public ImmutableList<JSONComment> getRowCommentsAsJson(@NonNull final DocumentPath documentPath, final ZoneId zoneId)
+	{
+		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
+		final List<CommentEntry> comments = commentsRepository.retrieveLastCommentEntries(tableRecordReference, 100);
+
+		return comments.stream()
+				.map(comment -> toJsonComment(comment, zoneId))
+				.sorted(Comparator.comparing(JSONComment::getCreated).reversed())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void addComment(@NonNull final DocumentPath documentPath, @NonNull final JSONCommentCreateRequest jsonCommentCreateRequest)
+	{
+		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
+
+		commentsRepository.createCommentEntry(jsonCommentCreateRequest.getText(), tableRecordReference);
 	}
 
 	@NonNull

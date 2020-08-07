@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import de.metas.ui.web.comments.CommentsService;
-import de.metas.ui.web.comments.ViewRowComments;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -394,6 +394,6 @@ public class BoardRestController
 	{
 		final ViewResult viewResult = ViewResult.ofView(view);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewResult.of(viewResult, rowOverrides, jsonOpts, ViewRowComments.EMPTY);
+		return JSONViewResult.of(viewResult, rowOverrides, jsonOpts, ViewRowCommentsSummary.EMPTY);
 	}
 }

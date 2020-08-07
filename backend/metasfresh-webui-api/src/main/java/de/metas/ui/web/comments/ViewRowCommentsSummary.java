@@ -22,32 +22,37 @@
 
 package de.metas.ui.web.comments;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import lombok.NonNull;
-import lombok.Value;
-
 import java.util.Map;
 
-@Value
-public class ViewRowComments
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+
+@EqualsAndHashCode
+@ToString
+public final class ViewRowCommentsSummary
 {
-	ImmutableMap<DocumentId, Boolean> documentsWithComments;
+	private final ImmutableMap<DocumentId, Boolean> hasCommentsByDocumentId;
 
-	public static final ViewRowComments EMPTY = new ViewRowComments(ImmutableMap.of());
+	public static final ViewRowCommentsSummary EMPTY = new ViewRowCommentsSummary(ImmutableMap.of());
 
-	public static ViewRowComments of(@NonNull final Map<DocumentId, Boolean> documentsWithComments)
+	public static ViewRowCommentsSummary ofMap(@NonNull final Map<DocumentId, Boolean> hasCommentsByDocumentId)
 	{
-		return new ViewRowComments(ImmutableMap.copyOf(documentsWithComments));
+		return !hasCommentsByDocumentId.isEmpty()
+				? new ViewRowCommentsSummary(ImmutableMap.copyOf(hasCommentsByDocumentId))
+				: EMPTY;
 	}
 
-	private ViewRowComments(final ImmutableMap<DocumentId, Boolean> documentsWithComments)
+	private ViewRowCommentsSummary(@NonNull final ImmutableMap<DocumentId, Boolean> documentsWithComments)
 	{
-		this.documentsWithComments = documentsWithComments;
+		this.hasCommentsByDocumentId = documentsWithComments;
 	}
 
 	public boolean hasComments(@NonNull final DocumentId documentId)
 	{
-		return documentsWithComments.getOrDefault(documentId, false);
+		return hasCommentsByDocumentId.getOrDefault(documentId, false);
 	}
 }

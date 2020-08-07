@@ -22,11 +22,19 @@
 
 package de.metas.ui.web.view.json;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.ui.web.comments.ViewRowComments;
+
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
@@ -43,13 +51,6 @@ import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 /**
  * View document (row).
  *
@@ -57,14 +58,22 @@ import java.util.stream.Collectors;
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final ViewRowComments documentsWithComments)
+	public static List<JSONViewRow> ofViewRows(
+			final List<? extends IViewRow> rows,
+			final IViewRowOverrides rowOverrides,
+			final JSONOptions jsonOpts,
+			@NonNull final ViewRowCommentsSummary viewRowCommentsSummary)
 	{
 		return rows.stream()
-				.map(row -> ofRow(row, rowOverrides, jsonOpts, documentsWithComments))
+				.map(row -> ofRow(row, rowOverrides, jsonOpts, viewRowCommentsSummary))
 				.collect(Collectors.toList());
 	}
 
-	public static JSONViewRow ofRow(@NonNull final IViewRow row, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts, @NonNull final ViewRowComments documentsWithComments)
+	public static JSONViewRow ofRow(
+			@NonNull final IViewRow row,
+			final IViewRowOverrides rowOverrides,
+			final JSONOptions jsonOpts,
+			@NonNull final ViewRowCommentsSummary viewRowCommentsSummary)
 	{
 		//
 		// Document view record
@@ -108,7 +117,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			{
 				jsonRow.includedDocuments = includedDocuments
 						.stream()
-						.map(includedRow -> ofRow(includedRow, rowOverrides, jsonOpts, documentsWithComments))
+						.map(includedRow -> ofRow(includedRow, rowOverrides, jsonOpts, viewRowCommentsSummary))
 						.collect(GuavaCollectors.toImmutableList());
 			}
 		}
@@ -133,7 +142,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		//
 		// Has Comments
 		{
-			jsonRow.hasComments = documentsWithComments.hasComments(row.getId());
+			jsonRow.hasComments = viewRowCommentsSummary.hasComments(row.getId());
 		}
 
 		//

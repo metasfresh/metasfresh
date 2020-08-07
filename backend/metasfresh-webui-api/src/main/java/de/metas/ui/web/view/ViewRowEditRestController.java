@@ -23,7 +23,7 @@
 package de.metas.ui.web.view;
 
 import de.metas.ui.web.comments.CommentsService;
-import de.metas.ui.web.comments.ViewRowComments;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.json.JSONViewRow;
@@ -111,9 +111,9 @@ public class ViewRowEditRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
 
-		final ViewRowComments documentsWithComments = commentsService.getRowComments(row);
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(row);
 
-		return JSONViewRow.ofRow(row, rowOverrides, jsonOpts, documentsWithComments);
+		return JSONViewRow.ofRow(row, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	@GetMapping("/{fieldName}/typeahead")

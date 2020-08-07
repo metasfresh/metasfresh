@@ -28,7 +28,7 @@ import de.metas.impexp.excel.ExcelFormats;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
-import de.metas.ui.web.comments.ViewRowComments;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
@@ -176,9 +176,9 @@ public class ViewRestController
 		final JSONOptions jsonOpts = newJSONOptions();
 
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
-		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
+		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
@@ -214,9 +214,9 @@ public class ViewRestController
 		final ViewResult viewResult = ViewResult.ofView(newView);
 
 		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
-		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, documentsWithComments);
+		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
@@ -232,9 +232,9 @@ public class ViewRestController
 		final ViewResult viewResult = ViewResult.ofView(newView);
 
 		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
-		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, documentsWithComments);
+		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -271,9 +271,9 @@ public class ViewRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
-		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
+		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	@GetMapping("/layout")
@@ -341,9 +341,9 @@ public class ViewRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
 
-		final ViewRowComments documentsWithComments = commentsService.getRowComments(result);
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(result);
 
-		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts, documentsWithComments);
+		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	private Evaluatee createFilterParameterLookupContext(final IView view)

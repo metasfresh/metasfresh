@@ -22,17 +22,13 @@
 
 package de.metas.comments;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import de.metas.cache.CCache;
-import de.metas.user.UserId;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.ImmutableMapEntry;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -46,13 +42,18 @@ import org.compiere.model.X_CM_ChatEntry;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+
+import de.metas.cache.CCache;
+import de.metas.user.UserId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * A CommentEntry is made of an {@link I_CM_Chat} as the parent storing the table and record IDs,
@@ -63,12 +64,12 @@ import java.util.stream.Collectors;
  * Even though {@link CommentEntryParentId} exists, it has extremely limited purpose. Most likely you want to use {@link CommentEntryId}.
  */
 @Repository
-public class CommentEntryRepository
+public class CommentsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	private final CCache<TableRecordReference, CommentSummary> commentSummaryCache = CCache.<TableRecordReference, CommentSummary>builder()
+	private final CCache<TableRecordReference, CommentSummary> commentSummaryCache = CCache.<TableRecordReference, CommentSummary> builder()
 			.cacheName("referenceHasCommentsCache")
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(1_000)
@@ -105,18 +106,24 @@ public class CommentEntryRepository
 				.setLimit(maxNumberOfRecords)
 				.create()
 				.iterateAndStream()
-				.map(CommentEntryRepository::toCommentEntry)
+				.map(CommentsRepository::toCommentEntry)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@NonNull
-	public Map<TableRecordReference, Boolean> hasComments(@NonNull final Collection<TableRecordReference> references)
+	public ImmutableMap<TableRecordReference, Boolean> hasComments(@NonNull final Collection<TableRecordReference> recordRefs)
 	{
+		if (recordRefs.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
 
-		final Collection<CommentSummary> summaries = commentSummaryCache.getAllOrLoad(references, this::checkReferenceHasComments);
+		final Collection<CommentSummary> summaries = commentSummaryCache.getAllOrLoad(recordRefs, this::retrieveCommentSummaries);
 
 		return summaries.stream()
-				.collect(ImmutableMap.toImmutableMap(CommentSummary::getReference, CommentSummary::isHasComments, (firstValue, secondValue) -> firstValue));
+				.collect(ImmutableMap.toImmutableMap(
+						CommentSummary::getReference,
+						CommentSummary::isHasComments));
 	}
 
 	@NonNull
@@ -171,45 +178,51 @@ public class CommentEntryRepository
 	}
 
 	@NonNull
-	private Map<TableRecordReference, CommentSummary> checkReferenceHasComments(
-			@NonNull final Collection<TableRecordReference> referencesUnknownStatus)
+	private ImmutableMap<TableRecordReference, CommentSummary> retrieveCommentSummaries(
+			@NonNull final Collection<TableRecordReference> references)
 	{
-		final ImmutableListMultimap<Integer, Integer> recordIdsByTableId = referencesUnknownStatus.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(TableRecordReference::getAD_Table_ID, TableRecordReference::getRecord_ID));
+		if (references.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+		final ImmutableSetMultimap<Integer, Integer> recordIdsByTableId = references.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						TableRecordReference::getAD_Table_ID,
+						TableRecordReference::getRecord_ID));
 
 		@SuppressWarnings("OptionalGetWithoutIsPresent")
-		final IQuery<I_CM_Chat> query = recordIdsByTableId.keySet().stream()
-				.map(tableId -> {
-					final ImmutableList<Integer> recordIds = recordIdsByTableId.get(tableId);
-
-					return queryBL.createQueryBuilder(I_CM_Chat.class)
-							.addOnlyActiveRecordsFilter()
-							.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableId)
-							.addInArrayFilter(I_CM_Chat.COLUMNNAME_Record_ID, recordIds)
-							.create();
-				})
+		final IQuery<I_CM_Chat> query = recordIdsByTableId.keySet()
+				.stream()
+				.map(tableId -> createCMChatQueryByTableAndRecordIds(tableId, recordIdsByTableId.get(tableId)))
 				.reduce(IQuery.unionDistict())
 				.get();
 
-		final Set<TableRecordReference> comments = query.list()
-				.stream()
+		final ImmutableSet<TableRecordReference> referencesWithComments = query.stream()
 				.map(chat -> TableRecordReference.of(chat.getAD_Table_ID(), chat.getRecord_ID()))
-				.collect(Collectors.toSet());
+				.collect(ImmutableSet.toImmutableSet());
 
-		return referencesUnknownStatus.stream()
-				.map(r -> ImmutableMapEntry.of(r, CommentSummary.builder()
-								.reference(r)
-								.hasComments(comments.contains(r))
-								.build()
-						)
-				)
-				.collect(GuavaCollectors.toImmutableMap());
+		return references.stream()
+				.map(reference -> CommentSummary.builder()
+						.reference(reference)
+						.hasComments(referencesWithComments.contains(reference))
+						.build())
+				.collect(GuavaCollectors.toImmutableMapByKey(CommentSummary::getReference));
+	}
+
+	private IQuery<I_CM_Chat> createCMChatQueryByTableAndRecordIds(final int tableId, final Set<Integer> recordIds)
+	{
+		return queryBL.createQueryBuilder(I_CM_Chat.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableId)
+				.addInArrayFilter(I_CM_Chat.COLUMNNAME_Record_ID, recordIds)
+				.create();
 	}
 
 	@Value
 	@Builder
 	private static class CommentSummary
 	{
+		@NonNull
 		TableRecordReference reference;
 		boolean hasComments;
 	}

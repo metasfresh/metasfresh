@@ -70,7 +70,7 @@ public class CommentsRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
 
 		final ZoneId zoneId = JSONOptions.of(userSession).getZoneId();
-		return commentsService.getComments(documentPath, zoneId);
+		return commentsService.getRowCommentsAsJson(documentPath, zoneId);
 	}
 
 	@PostMapping

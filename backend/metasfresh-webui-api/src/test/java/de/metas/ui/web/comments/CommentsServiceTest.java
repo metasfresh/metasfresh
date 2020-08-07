@@ -22,12 +22,41 @@
 
 package de.metas.ui.web.comments;
 
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_CM_Chat;
+import org.compiere.model.I_CM_ChatEntry;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.X_CM_ChatEntry;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
 import de.metas.comments.CommentEntry;
 import de.metas.comments.CommentEntryId;
 import de.metas.comments.CommentEntryParentId;
-import de.metas.comments.CommentEntryRepository;
+import de.metas.comments.CommentsRepository;
 import de.metas.ui.web.comments.json.JSONComment;
 import de.metas.ui.web.comments.json.JSONCommentCreateRequest;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -50,32 +79,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.user.UserId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.assertj.core.api.Assertions;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_CM_Chat;
-import org.compiere.model.I_CM_ChatEntry;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_CM_ChatEntry;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nullable;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 class CommentsServiceTest
 {
@@ -86,7 +89,7 @@ class CommentsServiceTest
 	public static final String DUMMY_TABLE_NAME = "DummyTable";
 	private static final WindowId WINDOW_ID = WindowId.of(123);
 
-	private CommentEntryRepository commentEntryRepository;
+	private CommentsRepository commentsRepository;
 	private CommentsService commentsService;
 
 	@BeforeEach
@@ -148,8 +151,8 @@ class CommentsServiceTest
 			};
 		}
 
-		commentEntryRepository = new CommentEntryRepository();
-		commentsService = new CommentsService(commentEntryRepository, documentDescriptorFactory);
+		commentsRepository = new CommentsRepository();
+		commentsService = new CommentsService(commentsRepository, documentDescriptorFactory);
 	}
 
 	@Nested
@@ -165,12 +168,11 @@ class CommentsServiceTest
 			apiAddComment(tableRecordReference, "comment2");
 
 			// check the comments exist
-			final List<CommentEntry> actual = commentEntryRepository.retrieveLastCommentEntries(tableRecordReference, 2);
+			final List<CommentEntry> actual = commentsRepository.retrieveLastCommentEntries(tableRecordReference, 2);
 
 			final List<CommentEntry> expected = Arrays.asList(
 					createCommentEntry("comment1"),
-					createCommentEntry("comment2")
-			);
+					createCommentEntry("comment2"));
 
 			Assertions.assertThat(actual)
 					.usingElementComparatorIgnoringFields("id")
@@ -213,20 +215,19 @@ class CommentsServiceTest
 		{
 			// create test data
 			final TableRecordReference tableRecordReference = TableRecordReference.of(DUMMY_TABLE_NAME, 1);
-			final CommentEntryParentId commentEntryParentId = createChat(tableRecordReference);
-			createChatEntry(commentEntryParentId, "comment1");
-			createChatEntry(commentEntryParentId, "comment2");
+			final CommentEntryParentId commentEntryParentId = createChatRecord(tableRecordReference);
+			createChatEntryRecord(commentEntryParentId, "comment1");
+			createChatEntryRecord(commentEntryParentId, "comment2");
 
 			//
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(WINDOW_ID, tableRecordReference.getRecord_ID());
-			final List<JSONComment> actual = commentsService.getComments(documentPath, ZoneId.of("UTC+8"));
+			final List<JSONComment> actual = commentsService.getRowCommentsAsJson(documentPath, ZoneId.of("UTC+8"));
 
 			final String zonedDateTimeString = DateTimeConverters.toJson(ZONED_DATE_TIME, ZoneId.of("UTC+8"));
 
 			final List<JSONComment> expected = Arrays.asList(
 					createJsonComment(zonedDateTimeString, "comment1"),
-					createJsonComment(zonedDateTimeString, "comment2")
-			);
+					createJsonComment(zonedDateTimeString, "comment2"));
 
 			Assertions.assertThat(actual).isEqualTo(expected);
 		}
@@ -239,7 +240,7 @@ class CommentsServiceTest
 
 			//
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(WINDOW_ID, tableRecordReference.getRecord_ID());
-			final List<JSONComment> actual = commentsService.getComments(documentPath, ZoneId.of("UTC+8"));
+			final List<JSONComment> actual = commentsService.getRowCommentsAsJson(documentPath, ZoneId.of("UTC+8"));
 
 			final List<JSONComment> expected = Collections.emptyList();
 
@@ -262,42 +263,34 @@ class CommentsServiceTest
 		@Test
 		void hasSomeComments()
 		{
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 111));
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 112));
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 113));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 111));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 112));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 113));
 
 			final TableRecordReference hasComments1 = TableRecordReference.of(DUMMY_TABLE_NAME, 11);
-			createChat(hasComments1);
+			createChatRecord(hasComments1);
 
 			final TableRecordReference hasComments2 = TableRecordReference.of(DUMMY_TABLE_NAME, 12);
-			createChat(hasComments2);
+			createChatRecord(hasComments2);
 
 			final ImmutableMap<TableRecordReference, Boolean> expected = ImmutableMap.of(
 					TableRecordReference.of(DUMMY_TABLE_NAME, 21), false,
 					TableRecordReference.of(DUMMY_TABLE_NAME, 22), false,
 					hasComments1, true,
-					hasComments2, true
-			);
+					hasComments2, true);
 
-			final Map<TableRecordReference, Boolean> actual = commentEntryRepository.hasComments(expected.keySet());
+			final Map<TableRecordReference, Boolean> actual = commentsRepository.hasComments(expected.keySet());
 
 			Assertions.assertThat(actual)
 					.isEqualTo(expected)
-					.hasSize(4)
-			;
+					.hasSize(4);
 		}
 
 		@Test
 		void emptyInputList()
 		{
-			final ImmutableMap<TableRecordReference, Boolean> expected = ImmutableMap.of();
-
-			final Map<TableRecordReference, Boolean> actual = commentEntryRepository.hasComments(ImmutableList.of());
-
-			Assertions.assertThat(actual)
-					.isEqualTo(expected)
-					.hasSize(0)
-			;
+			final Map<TableRecordReference, Boolean> actual = commentsRepository.hasComments(ImmutableList.of());
+			Assertions.assertThat(actual).isEmpty();
 		}
 	}
 
@@ -310,10 +303,9 @@ class CommentsServiceTest
 			final IViewRow row = createViewRow(10);
 			final DocumentPath documentPath = row.getDocumentPath();
 
-			final Boolean actual = commentsService.getRowComments(documentPath);
+			final Boolean actual = commentsService.hasComments(documentPath);
 
-			Assertions.assertThat(actual).isFalse()
-			;
+			Assertions.assertThat(actual).isFalse();
 		}
 
 		@Test
@@ -321,49 +313,46 @@ class CommentsServiceTest
 		{
 			// create test data
 			final TableRecordReference hasComments1 = TableRecordReference.of(DUMMY_TABLE_NAME, 10);
-			createChat(hasComments1);
+			createChatRecord(hasComments1);
 
 			final IViewRow row = createViewRow(10);
 			final DocumentPath documentPath = row.getDocumentPath();
 
-			final Boolean actual = commentsService.getRowComments(documentPath);
+			final Boolean actual = commentsService.hasComments(documentPath);
 
-			Assertions.assertThat(actual).isTrue()
-			;
+			Assertions.assertThat(actual).isTrue();
 		}
 
 		@Test
 		void usingRowList_someComments()
 		{
 			// create test data
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 111));
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 112));
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 113));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 111));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 112));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 113));
 
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 11));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 11));
 			final IViewRow row11Yes = createViewRow(11);
 
-			createChat(TableRecordReference.of(DUMMY_TABLE_NAME, 12));
+			createChatRecord(TableRecordReference.of(DUMMY_TABLE_NAME, 12));
 			final IViewRow row12Yes = createViewRow(12);
 
 			final IViewRow row21No = createViewRow(21);
 			final IViewRow row22No = createViewRow(22);
 			final IViewRow row23No = createViewRow(23);
 
-			final ViewRowComments expected = ViewRowComments.of(
+			final ViewRowCommentsSummary expected = ViewRowCommentsSummary.ofMap(
 					ImmutableMap.of(
 							row11Yes.getId(), true,
 							row12Yes.getId(), true,
 							row21No.getId(), false,
 							row22No.getId(), false,
-							row23No.getId(), false)
-			);
+							row23No.getId(), false));
 
-			final ViewRowComments actual = commentsService.getRowComments(Arrays.asList(row11Yes, row12Yes, row21No, row22No, row23No));
+			final ViewRowCommentsSummary actual = commentsService.getRowCommentsSummary(Arrays.asList(row11Yes, row12Yes, row21No, row22No, row23No));
 
 			Assertions.assertThat(actual)
-					.isEqualTo(expected)
-			;
+					.isEqualTo(expected);
 		}
 
 		@NonNull
@@ -386,17 +375,17 @@ class CommentsServiceTest
 		InterfaceWrapperHelper.save(user);
 	}
 
-	private CommentEntryParentId createChat(final TableRecordReference tableRecordReference)
+	private CommentEntryParentId createChatRecord(final TableRecordReference recordRef)
 	{
 		final I_CM_Chat chat = InterfaceWrapperHelper.newInstance(I_CM_Chat.class);
 		chat.setDescription("Table name: " + I_C_BPartner.Table_Name);
-		chat.setAD_Table_ID(tableRecordReference.getAD_Table_ID());
-		chat.setRecord_ID(tableRecordReference.getRecord_ID());
+		chat.setAD_Table_ID(recordRef.getAD_Table_ID());
+		chat.setRecord_ID(recordRef.getRecord_ID());
 		InterfaceWrapperHelper.save(chat);
 		return CommentEntryParentId.ofRepoId(chat.getCM_Chat_ID());
 	}
 
-	private void createChatEntry(final CommentEntryParentId commentEntryParentId, final String characterData)
+	private void createChatEntryRecord(final CommentEntryParentId commentEntryParentId, final String characterData)
 	{
 		final I_CM_ChatEntry chatEntry = InterfaceWrapperHelper.newInstance(I_CM_ChatEntry.class);
 		chatEntry.setCM_Chat_ID(commentEntryParentId.getRepoId());
