@@ -219,7 +219,7 @@ class CommentsServiceTest
 
 			//
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(WINDOW_ID, tableRecordReference.getRecord_ID());
-			final List<JSONComment> actual = commentsService.getCommentsFor(documentPath, ZoneId.of("UTC+8"));
+			final List<JSONComment> actual = commentsService.getComments(documentPath, ZoneId.of("UTC+8"));
 
 			final String zonedDateTimeString = DateTimeConverters.toJson(ZONED_DATE_TIME, ZoneId.of("UTC+8"));
 
@@ -239,7 +239,7 @@ class CommentsServiceTest
 
 			//
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(WINDOW_ID, tableRecordReference.getRecord_ID());
-			final List<JSONComment> actual = commentsService.getCommentsFor(documentPath, ZoneId.of("UTC+8"));
+			final List<JSONComment> actual = commentsService.getComments(documentPath, ZoneId.of("UTC+8"));
 
 			final List<JSONComment> expected = Collections.emptyList();
 
@@ -310,7 +310,7 @@ class CommentsServiceTest
 			final IViewRow row = createViewRow(10);
 			final DocumentPath documentPath = row.getDocumentPath();
 
-			final Boolean actual = commentsService.hasComments(documentPath);
+			final Boolean actual = commentsService.getRowComments(documentPath);
 
 			Assertions.assertThat(actual).isFalse()
 			;
@@ -326,7 +326,7 @@ class CommentsServiceTest
 			final IViewRow row = createViewRow(10);
 			final DocumentPath documentPath = row.getDocumentPath();
 
-			final Boolean actual = commentsService.hasComments(documentPath);
+			final Boolean actual = commentsService.getRowComments(documentPath);
 
 			Assertions.assertThat(actual).isTrue()
 			;
@@ -359,7 +359,7 @@ class CommentsServiceTest
 							row23No.getId(), false)
 			);
 
-			final ViewRowComments actual = commentsService.hasComments(Arrays.asList(row11Yes, row12Yes, row21No, row22No, row23No));
+			final ViewRowComments actual = commentsService.getRowComments(Arrays.asList(row11Yes, row12Yes, row21No, row22No, row23No));
 
 			Assertions.assertThat(actual)
 					.isEqualTo(expected)

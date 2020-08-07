@@ -42,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.IdentityHashMap;
 import java.util.List;
 
 /**
@@ -112,7 +111,7 @@ public class ViewRowEditRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
 
-		final ViewRowComments documentsWithComments = commentsService.hasComments(row);
+		final ViewRowComments documentsWithComments = commentsService.getRowComments(row);
 
 		return JSONViewRow.ofRow(row, rowOverrides, jsonOpts, documentsWithComments);
 	}

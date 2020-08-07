@@ -24,17 +24,17 @@ package de.metas.ui.web.comments;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.util.Map;
 
 @Value
-@Data
 public class ViewRowComments
 {
 	ImmutableMap<DocumentId, Boolean> documentsWithComments;
+
+	public static final ViewRowComments EMPTY = new ViewRowComments(ImmutableMap.of());
 
 	public static ViewRowComments of(@NonNull final Map<DocumentId, Boolean> documentsWithComments)
 	{

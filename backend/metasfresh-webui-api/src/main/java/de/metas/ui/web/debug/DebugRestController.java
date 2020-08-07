@@ -39,6 +39,7 @@ import de.metas.notification.UserNotificationTargetType;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.comments.CommentsService;
+import de.metas.ui.web.comments.ViewRowComments;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -263,7 +264,7 @@ public class DebugRestController
 		return viewsRepo.getViews()
 				.stream()
 				.map(ViewResult::ofView)
-				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, jsonOpts, CommentsService.NO_COMMENTS))
+				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, jsonOpts, ViewRowComments.EMPTY))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

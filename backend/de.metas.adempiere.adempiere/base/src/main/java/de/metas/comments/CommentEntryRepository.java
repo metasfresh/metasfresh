@@ -30,7 +30,9 @@ import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -47,11 +49,9 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -68,7 +68,7 @@ public class CommentEntryRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	private final CCache<TableRecordReference, Boolean> referenceHasCommentsCache = CCache.<TableRecordReference, Boolean>builder()
+	private final CCache<TableRecordReference, CommentSummary> commentSummaryCache = CCache.<TableRecordReference, CommentSummary>builder()
 			.cacheName("referenceHasCommentsCache")
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(1_000)
@@ -86,7 +86,7 @@ public class CommentEntryRepository
 		chatEntry.setChatEntryType(X_CM_ChatEntry.CHATENTRYTYPE_NoteFlat);
 		InterfaceWrapperHelper.save(chatEntry);
 
-		referenceHasCommentsCache.remove(tableRecordReference);
+		commentSummaryCache.remove(tableRecordReference);
 	}
 
 	@NonNull
@@ -112,17 +112,16 @@ public class CommentEntryRepository
 	@NonNull
 	public Map<TableRecordReference, Boolean> hasComments(@NonNull final Collection<TableRecordReference> references)
 	{
-		// Implementation detail: use a hash map to protect against duplicate keys
-		final HashMap<TableRecordReference, Boolean> result = new HashMap<>();
 
-		referenceHasCommentsCache.getAllOrLoad(references, this::checkReferenceHasComments);
-		references.forEach(trr -> result.put(trr, referenceHasCommentsCache.get(trr, (Supplier<Boolean>)() -> Boolean.FALSE)));
+		final Collection<CommentSummary> summaries = commentSummaryCache.getAllOrLoad(references, this::checkReferenceHasComments);
 
-		return ImmutableMap.copyOf(result);
+		return summaries.stream()
+				.collect(ImmutableMap.toImmutableMap(CommentSummary::getReference, CommentSummary::isHasComments, (firstValue, secondValue) -> firstValue));
 	}
 
 	@NonNull
-	private static CommentEntry toCommentEntry(@NonNull final I_CM_ChatEntry chatEntry)
+	private static CommentEntry toCommentEntry(
+			@NonNull final I_CM_ChatEntry chatEntry)
 	{
 		final UserId createdBy = UserId.ofRepoId(chatEntry.getCreatedBy());
 		final ZonedDateTime created = TimeUtil.asZonedDateTime(chatEntry.getCreated());
@@ -172,7 +171,8 @@ public class CommentEntryRepository
 	}
 
 	@NonNull
-	private Map<TableRecordReference, Boolean> checkReferenceHasComments(@NonNull final Collection<TableRecordReference> referencesUnknownStatus)
+	private Map<TableRecordReference, CommentSummary> checkReferenceHasComments(
+			@NonNull final Collection<TableRecordReference> referencesUnknownStatus)
 	{
 		final ImmutableListMultimap<Integer, Integer> recordIdsByTableId = referencesUnknownStatus.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(TableRecordReference::getAD_Table_ID, TableRecordReference::getRecord_ID));
@@ -197,7 +197,21 @@ public class CommentEntryRepository
 				.collect(Collectors.toSet());
 
 		return referencesUnknownStatus.stream()
-				.map(r -> ImmutableMapEntry.of(r, comments.contains(r)))
+				.map(r -> ImmutableMapEntry.of(r, CommentSummary.builder()
+								.reference(r)
+								.hasComments(comments.contains(r))
+								.build()
+						)
+				)
 				.collect(GuavaCollectors.toImmutableMap());
 	}
+
+	@Value
+	@Builder
+	private static class CommentSummary
+	{
+		TableRecordReference reference;
+		boolean hasComments;
+	}
+
 }

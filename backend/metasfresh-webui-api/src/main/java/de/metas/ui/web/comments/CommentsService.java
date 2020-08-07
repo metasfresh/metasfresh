@@ -57,8 +57,6 @@ public class CommentsService
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	public static final ViewRowComments NO_COMMENTS = ViewRowComments.of(ImmutableMap.of());
-
 	public CommentsService(final CommentEntryRepository commentEntryRepository, final DocumentDescriptorFactory documentDescriptorFactory)
 	{
 		this.commentEntryRepository = commentEntryRepository;
@@ -66,17 +64,17 @@ public class CommentsService
 	}
 
 	@NonNull
-	public final ViewRowComments hasComments(@NonNull final IViewRow row)
+	public final ViewRowComments getRowComments(@NonNull final IViewRow row)
 	{
-		return hasComments(Collections.singletonList(row));
+		return getRowComments(Collections.singletonList(row));
 	}
 
 	@NonNull
-	public final ViewRowComments hasComments(@NonNull final Collection<? extends IViewRow> rows)
+	public final ViewRowComments getRowComments(@NonNull final Collection<? extends IViewRow> rows)
 	{
 		if (rows.isEmpty())
 		{
-			return NO_COMMENTS;
+			return ViewRowComments.EMPTY;
 		}
 
 		final ImmutableMap<IViewRow, TableRecordReference> rowsForReferences = rows.stream()
@@ -96,7 +94,7 @@ public class CommentsService
 		return ViewRowComments.of(result.build());
 	}
 
-	public boolean hasComments(@NonNull final DocumentPath documentPath)
+	public boolean getRowComments(@NonNull final DocumentPath documentPath)
 	{
 		final Optional<TableRecordReference> referenceOptional = documentDescriptorFactory.getTableRecordReferenceIfPossible(documentPath);
 		if (!referenceOptional.isPresent())
@@ -110,7 +108,7 @@ public class CommentsService
 	}
 
 	@NonNull
-	public List<JSONComment> getCommentsFor(@NonNull final DocumentPath documentPath, final ZoneId zoneId)
+	public List<JSONComment> getComments(@NonNull final DocumentPath documentPath, final ZoneId zoneId)
 	{
 		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
 		final List<CommentEntry> comments = commentEntryRepository.retrieveLastCommentEntries(tableRecordReference, 100);

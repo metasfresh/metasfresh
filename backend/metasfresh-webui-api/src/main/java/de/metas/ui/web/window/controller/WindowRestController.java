@@ -317,7 +317,7 @@ public class WindowRestController
 				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds()).toList();
 			}
 
-			final Boolean hasComments = documentPath.isRootDocument() ? commentsService.hasComments(documentPath) : null;
+			final Boolean hasComments = documentPath.isRootDocument() ? commentsService.getRowComments(documentPath) : null;
 			return JSONDocument.ofDocumentsList(documents, jsonOpts, hasComments);
 		});
 	}

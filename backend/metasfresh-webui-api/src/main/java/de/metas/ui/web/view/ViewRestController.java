@@ -176,7 +176,7 @@ public class ViewRestController
 		final JSONOptions jsonOpts = newJSONOptions();
 
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
 
 		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
@@ -214,7 +214,7 @@ public class ViewRestController
 		final ViewResult viewResult = ViewResult.ofView(newView);
 
 		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
 
 		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, documentsWithComments);
 	}
@@ -232,7 +232,7 @@ public class ViewRestController
 		final ViewResult viewResult = ViewResult.ofView(newView);
 
 		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
 
 		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, documentsWithComments);
 	}
@@ -271,7 +271,7 @@ public class ViewRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
-		final ViewRowComments documentsWithComments = commentsService.hasComments(rows);
+		final ViewRowComments documentsWithComments = commentsService.getRowComments(rows);
 
 		return JSONViewResult.of(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
@@ -341,7 +341,7 @@ public class ViewRestController
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
 
-		final ViewRowComments documentsWithComments = commentsService.hasComments(result);
+		final ViewRowComments documentsWithComments = commentsService.getRowComments(result);
 
 		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts, documentsWithComments);
 	}
