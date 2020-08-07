@@ -1,8 +1,18 @@
 package de.metas.handlingunits.inout;
 
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_InOut;
+
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -25,18 +35,6 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.Properties;
-
-import org.compiere.model.I_M_InOut;
-
-import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.util.ISingletonService;
 
 public interface IHUInOutBL extends ISingletonService
 {
