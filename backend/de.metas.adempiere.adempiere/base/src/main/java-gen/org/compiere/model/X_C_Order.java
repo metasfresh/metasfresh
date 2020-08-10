@@ -83,6 +83,24 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
       return poi;
     }
 
+	@Override
+	public int getAD_InputDataSource_ID()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_InputDataSource_ID);
+		if (ii == null)
+			return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public void setAD_InputDataSource_ID(final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1)
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, Integer.valueOf(AD_InputDataSource_ID));
+	}
+
 	/** Set Buchende Organisation.
 		@param AD_OrgTrx_ID 
 		Performing or initiating organization

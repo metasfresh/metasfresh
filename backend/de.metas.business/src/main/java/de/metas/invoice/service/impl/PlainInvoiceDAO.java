@@ -24,8 +24,12 @@ package de.metas.invoice.service.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -56,6 +60,18 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 	public POJOLookupMap getDB()
 	{
 		return db;
+	}
+
+	@Override
+	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(final List<OrderId> orderIds)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public I_C_Invoice getByOrderId(final OrderId orderId)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
