@@ -22,6 +22,8 @@
 
 package de.metas.edi.esb.invoicexport.compudata;
 
+import static de.metas.edi.esb.commons.Util.extractDateOrdered;
+import static de.metas.edi.esb.commons.Util.extractMovementDate;
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
 import static de.metas.edi.esb.commons.Util.normalize;
@@ -101,12 +103,12 @@ public class CompuDataInvoicBean
 		}
 
 		invoice.setDateInvoiced(toDate(xmlCctopInvoice.getDateInvoiced()));
-		invoice.setDateOrdered(toDate(xmlCctopInvoice.getDateOrdered()));
+		invoice.setDateOrdered(extractDateOrdered(xmlCctopInvoice));
 
 		invoice.setGrandTotal(formatNumber(xmlCctopInvoice.getGrandTotal(), decimalFormat));
 		invoice.setInvoiceDocumentno(xmlCctopInvoice.getInvoiceDocumentno());
 		invoice.setIsoCode(xmlCctopInvoice.getISOCode());
-		invoice.setMovementDate(toDate(xmlCctopInvoice.getMovementDate()));
+		invoice.setMovementDate(extractMovementDate(xmlCctopInvoice));
 		// 05768
 		if (xmlCctopInvoice.getPOReference() != null && !xmlCctopInvoice.getPOReference().isEmpty())
 		{
@@ -148,16 +150,13 @@ public class CompuDataInvoicBean
 	private void sortCctop500VLines(final EDICctopInvoicVType xmlCctopInvoice)
 	{
 		final List<EDICctopInvoic500VType> cctop500VLines = xmlCctopInvoice.getEDICctopInvoic500V();
-		Collections.sort(cctop500VLines, new Comparator<EDICctopInvoic500VType>()
-		{
-			@Override
-			public int compare(final EDICctopInvoic500VType iol1, final EDICctopInvoic500VType iol2)
-			{
-				final BigInteger line1 = iol1.getLine();
-				final BigInteger line2 = iol2.getLine();
-				return line1.compareTo(line2);
-			}
-		});
+		Collections.sort(
+				cctop500VLines,
+				(iol1, iol2) -> {
+					final BigInteger line1 = iol1.getLine();
+					final BigInteger line2 = iol2.getLine();
+					return line1.compareTo(line2);
+				});
 	}
 
 	private Cctop000V createCctop000V(final EDICctopInvoicVType xmlCctopInvoice, final DecimalFormat decimalFormat, final Exchange exchange)
@@ -240,14 +239,14 @@ public class CompuDataInvoicBean
 		return cctop111V;
 	}
 
-	private boolean isSet(String str)
+	private boolean isSet(final String str)
 	{
 		return str != null && !str.trim().isEmpty();
 	}
 
 	private List<Cctop119V> createCctop119VList(final List<EDICctop119VType> xmlCctop119VList, final DecimalFormat decimalFormat)
 	{
-		final List<Cctop119V> cctop119VList = new ArrayList<Cctop119V>();
+		final List<Cctop119V> cctop119VList = new ArrayList<>();
 
 		for (final EDICctop119VType xmlCctop119V : xmlCctop119VList)
 		{
@@ -298,7 +297,7 @@ public class CompuDataInvoicBean
 
 	private List<Cctop120V> createCctop120VList(final List<EDICctop120VType> xmlCctop120VList, final DecimalFormat decimalFormat)
 	{
-		final List<Cctop120V> cctop120VList = new ArrayList<Cctop120V>();
+		final List<Cctop120V> cctop120VList = new ArrayList<>();
 
 		for (final EDICctop120VType xmlCctop120V : xmlCctop120VList)
 		{
@@ -317,7 +316,7 @@ public class CompuDataInvoicBean
 
 	private List<Cctop140V> createCctop140VList(final List<EDICctop140VType> xmlCctop140VList, final DecimalFormat decimalFormat)
 	{
-		final List<Cctop140V> cctop140VList = new ArrayList<Cctop140V>();
+		final List<Cctop140V> cctop140VList = new ArrayList<>();
 
 		for (final EDICctop140VType xmlCctop140V : xmlCctop140VList)
 		{
@@ -335,7 +334,7 @@ public class CompuDataInvoicBean
 
 	private List<Cctop901991V> createCctop901991VList(final List<EDICctop901991VType> xmlCctop901991VList, final DecimalFormat decimalFormat)
 	{
-		final List<Cctop901991V> cctop901991VList = new ArrayList<Cctop901991V>();
+		final List<Cctop901991V> cctop901991VList = new ArrayList<>();
 
 		for (final EDICctop901991VType xmlCctop901991V : xmlCctop901991VList)
 		{
@@ -361,7 +360,7 @@ public class CompuDataInvoicBean
 
 	private List<CctopInvoice500V> createCctopInvoice500VList(final List<EDICctopInvoic500VType> xmlCctopInvoic500VList, final DecimalFormat decimalFormat)
 	{
-		final List<CctopInvoice500V> cctopInvoice500VList = new ArrayList<CctopInvoice500V>();
+		final List<CctopInvoice500V> cctopInvoice500VList = new ArrayList<>();
 
 		for (final EDICctopInvoic500VType xmlCctopInvoic500V : xmlCctopInvoic500VList)
 		{
@@ -394,7 +393,7 @@ public class CompuDataInvoicBean
 			else
 			{
 				// task 09182: we output the order's POReference which might be different from the POReference of the invoice header.
-				cctopInvoice500V.setOrderPOReference(xmlCctopInvoic500V.getOrderPOReference().toString());
+				cctopInvoice500V.setOrderPOReference(xmlCctopInvoic500V.getOrderPOReference());
 				cctopInvoice500V.setOrderLine(xmlCctopInvoic500V.getOrderLine().toString());
 			}
 			cctopInvoice500V.setTaxAmount(formatNumber(xmlCctopInvoic500V.getTaxAmtInfo(), decimalFormat));
@@ -413,7 +412,9 @@ public class CompuDataInvoicBean
 			else
 			{
 				final BigDecimal hundret = new BigDecimal("100");
-				lineGrossAmt = hundret.add(xmlCctopInvoic500V.getRate()).divide(hundret).multiply(xmlCctopInvoic500V.getLineNetAmt()).setScale(3, RoundingMode.HALF_UP);
+				lineGrossAmt = hundret.add(xmlCctopInvoic500V.getRate())
+						.divide(hundret, RoundingMode.UNNECESSARY)
+						.multiply(xmlCctopInvoic500V.getLineNetAmt()).setScale(3, RoundingMode.HALF_UP);
 			}
 			cctopInvoice500V.setLineGrossAmt(formatNumber(lineGrossAmt, decimalFormat));
 

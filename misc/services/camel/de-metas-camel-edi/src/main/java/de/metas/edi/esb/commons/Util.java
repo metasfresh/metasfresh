@@ -2,6 +2,7 @@ package de.metas.edi.esb.commons;
 
 import de.metas.edi.esb.commons.api.ILookupTemplate;
 import de.metas.edi.esb.commons.api.ILookupValue;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
@@ -17,8 +18,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -108,7 +111,7 @@ public final class Util
 		{
 			return null;
 		}
-		SimpleDateFormat dateFormat = new SimpleDateFormat(datePattern);
+		final SimpleDateFormat dateFormat = new SimpleDateFormat(datePattern);
 		return dateFormat.format(date);
 	}
 
@@ -136,9 +139,6 @@ public final class Util
 	 * Creates an {@link XMLGregorianCalendar} date.<br />
 	 * If the isNewDateOverride is used, on exception, create today's date.
 	 *
-	 * @param date
-	 * @param isNewDateOverride
-	 * @param datePattern
 	 * @return {@link XMLGregorianCalendar} date
 	 */
 	public static XMLGregorianCalendar createCalendarDate(final String date, final boolean isNewDateOverride, final String datePattern)
@@ -167,8 +167,6 @@ public final class Util
 	 * <br />
 	 * Date pattern used: {@link Constants#METASFRESH_DATE_PATTERN}
 	 *
-	 * @param date
-	 * @param isNewDateOverride
 	 * @return {@link XMLGregorianCalendar} date
 	 */
 	public static XMLGregorianCalendar createCalendarDate(final String date, final boolean isNewDateOverride)
@@ -182,8 +180,6 @@ public final class Util
 	 * See {@link #createCalendarDate(String, boolean, String)}<br />
 	 * <br />
 	 *
-	 * @param date
-	 * @param datePattern
 	 * @return {@link XMLGregorianCalendar} date or null if the given date was null or empty
 	 */
 	public static XMLGregorianCalendar createCalendarDate(final String date, final String datePattern)
@@ -220,7 +216,6 @@ public final class Util
 	/**
 	 * Returns metasfresh boolean String
 	 *
-	 * @param value
 	 * @return String "Y" or "N"
 	 */
 	public static String getADBooleanString(final String value)
@@ -243,27 +238,6 @@ public final class Util
 		return value;
 	}
 
-	/**
-	 * Returns metasfresh boolean String
-	 *
-	 * @param value
-	 * @return String "Y" or "N"
-	 */
-	public static String getADBooleanString(final Boolean value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-
-		if (Boolean.TRUE.equals(value))
-		{
-			return "Y";
-		}
-
-		return "N";
-	}
-
 	public static boolean isEmpty(final String s)
 	{
 		if (s == null)
@@ -271,27 +245,6 @@ public final class Util
 			return true;
 		}
 		return s.trim().isEmpty();
-	}
-
-	/**
-	 * Set matching locale, otherwise throw exception.
-	 *
-	 * @param localeCodeISO3
-	 */
-	public static void initializeLocale(final String localeCodeISO3)
-	{
-		for (final Locale locale : Locale.getAvailableLocales())
-		{
-			if (!locale.getISO3Country().equals(localeCodeISO3))
-			{
-				continue;
-			}
-
-			Locale.setDefault(locale);
-			return;
-		}
-
-		throw new RuntimeCamelException("No locale was found for settings' ISO3=" + localeCodeISO3);
 	}
 
 	/**
@@ -310,7 +263,6 @@ public final class Util
 	/**
 	 * Returns null if the string is null or the trimmed string is empty, or the trimmed string otherwise
 	 *
-	 * @param value
 	 * @return {@link String}
 	 */
 	public static String trimString(@Nullable final String value)
@@ -340,20 +292,12 @@ public final class Util
 	}
 
 	/**
-	 * @param templateClass
-	 * @param lookupValues
 	 * @return generic lookup object
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
-	 * @throws SecurityException
-	 * @throws NoSuchMethodException
 	 */
 	public static <T> T createGenericLookup(final Class<T> templateClass, final ILookupValue<?>... lookupValues)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException
 	{
-		final T object = templateClass.newInstance();
+		final T object = templateClass.getDeclaredConstructor().newInstance();
 
 		// flag used to decide if the lookup is valid or not (return null if not to not confuse replication)
 		boolean containsValue = false;
@@ -379,7 +323,7 @@ public final class Util
 	}
 
 	private static <T, KT extends Object> KT setLookupValue(final Class<T> templateClass, final T templateInstance, final ILookupValue<KT> lookupValue)
-			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, SecurityException
 	{
 		final KT key = lookupValue.getValue();
 		if (key == null || isEmptyKey(key))
@@ -468,19 +412,10 @@ public final class Util
 		return Integer.parseInt(valueStr);
 	}
 
-	public static int resolvePropertyPlaceholdersAsInt(
-			@NonNull final CamelContext context,
-			@NonNull final String propertyKey,
-			@NonNull final String defaultValue)
-	{
-		final String valueStr = resolveProperty(context, propertyKey, defaultValue);
-		return Integer.parseInt(valueStr);
-	}
-
 	public static boolean resolvePropertyAsBool(
 			@NonNull final CamelContext context,
 			@NonNull final String propertyKey,
-			String defaultValue)
+			final String defaultValue)
 	{
 		final String valueStr = resolveProperty(context, propertyKey, defaultValue);
 		return Boolean.parseBoolean(valueStr);
@@ -490,7 +425,7 @@ public final class Util
 	 * Invoke setter method on object.
 	 */
 	public static <T> void invokeSetterMethod(final T object, final Object value, final Class<?> valueType, final String methodName)
-			throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException
+			throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException
 	{
 		final Method setterMethod;
 		try
@@ -508,19 +443,9 @@ public final class Util
 
 	/**
 	 * Invoke getter method on object.
-	 *
-	 * @param object
-	 * @param methodName
-	 * @return value
-	 * @throws IllegalArgumentException
-	 * @throws SecurityException
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
-	 * @throws InstantiationException
-	 * @throws NoSuchMethodException
 	 */
 	public static <T> T invokeGetterMethod(final Object object, final String methodName)
-			throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException
+			throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException
 	{
 		final Method getterMethod;
 		try
@@ -562,7 +487,7 @@ public final class Util
 	/**
 	 * TODO: please check this and remove duplicates later...
 	 */
-	private static final Map<CharSequence, CharSequence> notNormalizableChars = new HashMap<CharSequence, CharSequence>();
+	private static final Map<CharSequence, CharSequence> notNormalizableChars = new HashMap<>();
 
 	static
 	{
@@ -661,7 +586,6 @@ public final class Util
 	 * Normalize string using {@link Normalizer}, and replacing remaining special characters with "".<br>
 	 * <br>
 	 *
-	 * @param str
 	 * @return ASCII-friendly string
 	 * @see <a href="http://stackoverflow.com/questions/3322152/java-getting-rid-of-accents-and-converting-them-to-regular-letters">Reference 1</a>
 	 * @see <a href="http://stackoverflow.com/questions/2096667/convert-unicode-to-ascii-without-changing-the-string-length-in-java">Reference 2</a>
@@ -679,8 +603,8 @@ public final class Util
 			normalizedString = normalizedString.replace(charDuo.getKey(), charDuo.getValue());
 		}
 
-		final String result = Util.DIACRITICS_AND_FRIENDS.matcher(normalizedString).replaceAll("");
-		return result; // remove remaining special characters with "" (should not normally occur, as Normalize is enough)
+		// remove remaining special characters with "" (should not normally occur, as Normalize is enough)
+		return Util.DIACRITICS_AND_FRIENDS.matcher(normalizedString).replaceAll("");
 	}
 
 	/**
@@ -743,10 +667,37 @@ public final class Util
 		// If after removing our scale is negative, we can safely set the scale to ZERO because we don't want to get rid of zeros before decimal point
 		if (result.scale() < 0)
 		{
-			result = result.setScale(0);
+			result = result.setScale(0, RoundingMode.UNNECESSARY);
 		}
 
 		return result;
 	}
 
+	public static Date extractDateOrdered(@NonNull final EDICctopInvoicVType invoice)
+	{
+		try
+		{
+			final EDICctopInvoicVType.DateOrdered dateOrderedXML = ValidationHelper.validateObject(invoice.getDateOrdered(),
+					"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @DateOrdered@");
+			return new SimpleDateFormat(invoice.getMovementDate().getDateFormat()).parse(dateOrderedXML.getValue());
+		}
+		catch (final ParseException e)
+		{
+			throw new RuntimeCamelException(e);
+		}
+	}
+
+	public static Date extractMovementDate(@NonNull final EDICctopInvoicVType invoice)
+	{
+		try
+		{
+			final EDICctopInvoicVType.MovementDate movementDateXML = ValidationHelper.validateObject(invoice.getMovementDate(),
+					"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @MovementDate@");
+			return new SimpleDateFormat(invoice.getMovementDate().getDateFormat()).parse(movementDateXML.getValue());
+		}
+		catch (final ParseException e)
+		{
+			throw new RuntimeCamelException(e);
+		}
+	}
 }

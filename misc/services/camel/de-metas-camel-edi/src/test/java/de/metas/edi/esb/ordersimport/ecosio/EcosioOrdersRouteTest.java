@@ -52,7 +52,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 			return properties;
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -65,14 +65,16 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 	}
 
 	@Test
-	void createXML() throws IOException, JAXBException, InterruptedException
+	void createXML() throws InterruptedException
 	{
 		// given
 		final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-				+ "<EDI_Imp_C_OLCands>"
-				+ "   <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered></EDI_Imp_C_OLCand>"
-				+ "   <EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered></EDI_Imp_C_OLCand>"
-				+ "</EDI_Imp_C_OLCands>";
+				+ "<EDI_Message>"
+				+ "   <EDI_Imp_C_OLCands>"
+				+ "      <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered></EDI_Imp_C_OLCand>"
+				+ "      <EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered></EDI_Imp_C_OLCand>"
+				+ "   </EDI_Imp_C_OLCands>"
+				+ "</EDI_Message>";
 
 		metasfreshOutputEndpoint.expectedMessageCount(2);
 

@@ -32,9 +32,12 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -45,6 +48,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.desadvexport.LineAndPack;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
@@ -559,9 +563,8 @@ public class StepComXMLDesadvBean
 				dmark1.setIDENTIFICATIONCODE(lotNumber);
 				if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
 				{
-					final XMLGregorianCalendar bestBefore = validateObject(pack.getBestBeforeDate(),
-							"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
-					dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
+					final var bestBefore = extractBestBeforeDate(lineAndPack);
+					dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(bestBefore, dateFormat));
 				}
 				detail.getDMARK1().add(dmark1);
 			}
@@ -652,8 +655,7 @@ public class StepComXMLDesadvBean
 
 	private String extractLineNumber(@NonNull final EDIExpDesadvLineType line, @NonNull final DecimalFormat decimalFormat)
 	{
-		final String lineNumber = formatNumber(line.getLine(), decimalFormat);
-		return lineNumber;
+		return formatNumber(line.getLine(), decimalFormat);
 	}
 
 	private DETAILXlief createDetailAndAddLineData(
@@ -843,7 +845,7 @@ public class StepComXMLDesadvBean
 			@Nullable final String isSubsequentDeliveryPlanned,
 			@NonNull final BigDecimal diff)
 	{
-		DiscrepencyCode discrepancyCode;
+		final DiscrepencyCode discrepancyCode;
 		if (diff.signum() > 0)
 		{
 			discrepancyCode = DiscrepencyCode.OVSH; // = Over-shipped
@@ -858,5 +860,20 @@ public class StepComXMLDesadvBean
 			discrepancyCode = DiscrepencyCode.BCOM; // = shipment partial - considered complete, no backorder;
 		}
 		return discrepancyCode;
+	}
+
+	public static Date extractBestBeforeDate(@NonNull final LineAndPack lineAndPack)
+	{
+		try
+		{
+			final var bestBeforeXML = validateObject(lineAndPack.getPack().getBestBeforeDate(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @BestBeforeDate@");
+
+			return new SimpleDateFormat(bestBeforeXML.getDateFormat()).parse(bestBeforeXML.getValue());
+		}
+		catch (final ParseException e)
+		{
+			throw new RuntimeCamelException(e);
+		}
 	}
 }

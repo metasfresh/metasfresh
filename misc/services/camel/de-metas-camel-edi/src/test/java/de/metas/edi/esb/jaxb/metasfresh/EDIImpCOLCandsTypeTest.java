@@ -40,9 +40,12 @@ class EDIImpCOLCandsTypeTest extends CamelTestSupport
 	private ObjectFactory objectFactory = new ObjectFactory();
 
 	@Test
-	void createXML() throws IOException, JAXBException
+	void createXML() throws JAXBException
 	{
+		final var ediMessage = objectFactory.createEDIMessage();
+
 		final var olCands = objectFactory.createEDIImpCOLCandsType();
+		ediMessage.setEDIImpCOLCands(olCands);
 
 		final var olCand1 = objectFactory.createEDIImpCOLCandType();
 		olCand1.setQtyEntered(new BigDecimal("10"));
@@ -56,14 +59,16 @@ class EDIImpCOLCandsTypeTest extends CamelTestSupport
 		final var marshaller = jaxbContext.createMarshaller();
 
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		marshaller.marshal(objectFactory.createEDIImpCOLCands(olCands), baos);
+		marshaller.marshal(ediMessage, baos);
 
 		final String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
 		assertThat(result).isEqualToIgnoringWhitespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-						+ "<EDI_Imp_C_OLCands>"
-						+ "   <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered></EDI_Imp_C_OLCand>"
-						+ "   <EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered></EDI_Imp_C_OLCand>"
-						+ "</EDI_Imp_C_OLCands>");
+						+ "<EDI_Message>"
+						+ "   <EDI_Imp_C_OLCands>"
+						+ "      <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered></EDI_Imp_C_OLCand>"
+						+ "      <EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered></EDI_Imp_C_OLCand>"
+						+ "   </EDI_Imp_C_OLCands>"
+						+ "</EDI_Message>");
 	}
 }

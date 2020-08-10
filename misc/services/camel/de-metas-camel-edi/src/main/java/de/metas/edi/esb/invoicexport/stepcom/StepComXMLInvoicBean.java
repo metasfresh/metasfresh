@@ -22,28 +22,33 @@
 
 package de.metas.edi.esb.invoicexport.stepcom;
 
-import static de.metas.edi.esb.commons.Util.formatNumber;
-import static de.metas.edi.esb.commons.Util.isEmpty;
-import static de.metas.edi.esb.commons.Util.normalize;
-import static de.metas.edi.esb.commons.Util.toDate;
-import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
-import static de.metas.edi.esb.commons.Util.trimAndTruncate;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.Comparator;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.edi.esb.commons.InvoicSettings;
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.commons.lang.StringUtils;
-
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.InvoicSettings;
+import de.metas.edi.esb.commons.MeasurementUnit;
 import de.metas.edi.esb.commons.SystemTime;
+import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.ValidationHelper;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.AddressQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.AmountQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.ControlQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.CurrencyQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.DateQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.DocumentFunction;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.DocumentType;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.EancomLocationQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.PriceQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.PriceSpecCode;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductDescLang;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductDescQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductDescType;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.QuantityQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.ReferenceQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.TaxQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.TermsQual;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.TimePeriodType;
+import de.metas.edi.esb.invoicexport.stepcom.qualifier.TimeRelation;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
@@ -72,29 +77,25 @@ import de.metas.edi.esb.jaxb.stepcom.invoice.TAMOU1;
 import de.metas.edi.esb.jaxb.stepcom.invoice.TRAILR;
 import de.metas.edi.esb.jaxb.stepcom.invoice.TTAXI1;
 import de.metas.edi.esb.jaxb.stepcom.invoice.Xrech4H;
-import de.metas.edi.esb.commons.MeasurementUnit;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.AddressQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.AmountQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.ControlQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.CurrencyQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.DateQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.DocumentFunction;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.DocumentType;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.EancomLocationQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.PriceQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.PriceSpecCode;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductDescLang;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductDescQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductDescType;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.ProductQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.QuantityQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.ReferenceQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.TaxQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.TermsQual;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.TimePeriodType;
-import de.metas.edi.esb.invoicexport.stepcom.qualifier.TimeRelation;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.commons.lang.StringUtils;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.Comparator;
+import java.util.Date;
+
+import static de.metas.edi.esb.commons.Util.extractDateOrdered;
+import static de.metas.edi.esb.commons.Util.formatNumber;
+import static de.metas.edi.esb.commons.Util.isEmpty;
+import static de.metas.edi.esb.commons.Util.normalize;
+import static de.metas.edi.esb.commons.Util.toDate;
+import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
+import static de.metas.edi.esb.commons.Util.trimAndTruncate;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 public class StepComXMLInvoicBean
 {
@@ -102,19 +103,29 @@ public class StepComXMLInvoicBean
 
 	private static final ObjectFactory INVOIC_objectFactory = new ObjectFactory();
 
-	/** Credit note - metasfresh "ARC" base doc type and "CR" sub doc type */
+	/**
+	 * Credit note - metasfresh "ARC" base doc type and "CR" sub doc type
+	 */
 	private static final String DOC_CRNO_83 = "83";
 
-	/** Credit note - metasfresh "ARC" base doc type and "CQ"="quality-adjustment-credit-memo", "CS"="material-return-credit-memo" sub doc types */
+	/**
+	 * Credit note - metasfresh "ARC" base doc type and "CQ"="quality-adjustment-credit-memo", "CS"="material-return-credit-memo" sub doc types
+	 */
 	private static final String DOC_CRNF_381 = "381";
 
-	/** Commercial invoice - metasfresh "ARI" base doc type */
+	/**
+	 * Commercial invoice - metasfresh "ARI" base doc type
+	 */
 	private static final String DOC_CMIV_380 = "380";
 
-	/** Debit note - metasfresh "ARI" base doc type and "AQ"="quantity-adjustment-debit-note" sub doc type */
+	/**
+	 * Debit note - metasfresh "ARI" base doc type and "AQ"="quantity-adjustment-debit-note" sub doc type
+	 */
 	private static final String DOC_DBNO_383 = "383";
 
-	/** Debit note - metasfresh "ARI" base doc type and "AP"="price-adjustment-debit-note" sub doc type */
+	/**
+	 * Debit note - metasfresh "ARI" base doc type and "AP"="price-adjustment-debit-note" sub doc type
+	 */
 	private static final String DOC_DBNF_84 = "84";
 
 	public void createXMLEDIData(final Exchange exchange)
@@ -423,11 +434,10 @@ public class StepComXMLInvoicBean
 
 		switch (settings.getInvoicLineQuantityInUOM())
 		{
-			case InvoicedUOM:
+			case InvoicedUOM -> {
 				final BigDecimal qtyInvoiced = ValidationHelper.validateObject(xmlCctopInvoic500V.getQtyInvoiced(),
 						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @QtyInvoiced@");
 				dQuan1.setQUANTITY(formatNumber(qtyInvoiced, decimalFormat));
-
 				if (settings.isInvoicLineMEASUREMENTUNITRequired())
 				{
 					final String eanComUom = ValidationHelper.validateString(xmlCctopInvoic500V.getEanComUOM(),
@@ -439,12 +449,11 @@ public class StepComXMLInvoicBean
 					}
 					dQuan1.setMEASUREMENTUNIT(measurementUnit.name());
 				}
-				break;
-			case OrderedUOM:
+			}
+			case OrderedUOM -> {
 				final BigDecimal qtyInvoicedInOrderedUOM = ValidationHelper.validateObject(xmlCctopInvoic500V.getQtyInvoicedInOrderedUOM(),
 						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @QtyInvoicedInOrderedUOM@");
 				dQuan1.setQUANTITY(formatNumber(qtyInvoicedInOrderedUOM, decimalFormat));
-
 				if (settings.isInvoicLineMEASUREMENTUNITRequired())
 				{
 					final String eanComUom = ValidationHelper.validateString(xmlCctopInvoic500V.getEanComOrderedUOM(),
@@ -456,9 +465,8 @@ public class StepComXMLInvoicBean
 					}
 					dQuan1.setMEASUREMENTUNIT(measurementUnit.name());
 				}
-				break;
-			default:
-				throw new RuntimeCamelException("Unexpected InvoicLineQuantityInUOM=" + settings.getInvoicLineQuantityInUOM());
+			}
+			default -> throw new RuntimeCamelException("Unexpected InvoicLineQuantityInUOM=" + settings.getInvoicLineQuantityInUOM());
 		}
 	}
 
@@ -713,7 +721,9 @@ public class StepComXMLInvoicBean
 		return city;
 	}
 
-	/** Note: currently doesn't copy the address. */
+	/**
+	 * Note: currently doesn't copy the address.
+	 */
 	private HADRE1 copyAddress(
 			@NonNull final HADRE1 address,
 			@NonNull final AddressQual qualifier)
@@ -739,31 +749,11 @@ public class StepComXMLInvoicBean
 		AddressQual addressQual = null;
 		switch (eancomLocationQual)
 		{
-			case DP:
-			{
-				addressQual = AddressQual.DELV;
-				break;
-			}
-			case IV:
-			{
-				addressQual = AddressQual.IVCE;
-				break;
-			}
-			case BY:
-			{
-				addressQual = AddressQual.BUYR;
-				break;
-			}
-			case SU:
-			{
-				addressQual = AddressQual.SUPL;
-				break;
-			}
-			case SN:
-			{
-				addressQual = AddressQual.ULCO;
-				break;
-			}
+			case DP -> addressQual = AddressQual.DELV;
+			case IV -> addressQual = AddressQual.IVCE;
+			case BY -> addressQual = AddressQual.BUYR;
+			case SU -> addressQual = AddressQual.SUPL;
+			case SN -> addressQual = AddressQual.ULCO;
 		}
 		return addressQual;
 	}
@@ -781,7 +771,7 @@ public class StepComXMLInvoicBean
 		final String poReference = validateString(invoice.getPOReference(), "@FillMandatory@ @POReference@");
 		buyerOrderRef.setREFERENCE(poReference);
 
-		buyerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
+		buyerOrderRef.setREFERENCEDATE1(toFormattedStringDate(extractDateOrdered(invoice), dateFormat));
 		headerXrech.getHREFE1().add(buyerOrderRef);
 
 		if (settings.isInvoicORSE())
@@ -790,7 +780,7 @@ public class StepComXMLInvoicBean
 			sellerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 			sellerOrderRef.setREFERENCEQUAL(ReferenceQual.ORSE.name());
 			sellerOrderRef.setREFERENCE(invoice.getEDICctop111V().getCOrderID().toString());
-			sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
+			sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(extractDateOrdered(invoice), dateFormat));
 			headerXrech.getHREFE1().add(sellerOrderRef);
 		}
 		if (!isEmpty(invoice.getShipmentDocumentno()))
@@ -799,7 +789,7 @@ public class StepComXMLInvoicBean
 			despatchAdvRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 			despatchAdvRef.setREFERENCEQUAL(ReferenceQual.DADV.name());
 			despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
-			despatchAdvRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getMovementDate()), dateFormat));
+			despatchAdvRef.setREFERENCEDATE1(toFormattedStringDate(extractMovementDate(invoice), dateFormat));
 			headerXrech.getHREFE1().add(despatchAdvRef);
 		}
 	}
@@ -827,25 +817,28 @@ public class StepComXMLInvoicBean
 		headerXrech.getHDATE1().add(valueDate);
 
 		// DELV
-		final XMLGregorianCalendar movementDate;
-		if (DOC_CRNF_381.equals(invoice.getEancomDoctype()))
-		{
-			// may be null, if the invoice is a material return credit memo
-			// TODO DOC_CRNF_381 means EITHER CQ => "credit memo - Lieferdifferenz" OR CS => "credit memo - Retoure"; missing movement date is only OK for "Retoure"
-			movementDate = invoice.getMovementDate();
-		}
-		else
-		{
-			movementDate = ValidationHelper.validateObject(invoice.getMovementDate(),
-					"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @MovementDate@");
-		}
+		final Date movementDate = extractMovementDate(invoice);
 		if (movementDate != null)
 		{
 			final HDATE1 deliveryDate = INVOIC_objectFactory.createHDATE1();
 			deliveryDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
 			deliveryDate.setDATEQUAL(DateQual.DELV.name());
-			deliveryDate.setDATEFROM(toFormattedStringDate(toDate(movementDate), dateFormat));
+			deliveryDate.setDATEFROM(toFormattedStringDate(movementDate, dateFormat));
 			headerXrech.getHDATE1().add(deliveryDate);
 		}
+	}
+
+	public static Date extractMovementDate(@NonNull final EDICctopInvoicVType invoice)
+	{
+		if (DOC_CRNF_381.equals(invoice.getEancomDoctype()))
+		{
+			// may be null, if the invoice is a material return credit memo
+			// TODO DOC_CRNF_381 means EITHER CQ => "credit memo - Lieferdifferenz" OR CS => "credit memo - Retoure"; missing movement date is only OK for "Retoure"
+			if (invoice.getMovementDate() == null)
+			{
+				return null;
+			}
+		}
+		return Util.extractMovementDate(invoice);
 	}
 }

@@ -59,7 +59,7 @@ public class EcosioOrdersRoute
 
 		from("{{" + INPUT_ORDERS_LOCAL + "}}")
 				.routeId("ecosio-XML-Orders-To-MF-OLCand")
-				.split(xpath("/EDI_Imp_C_OLCands/EDI_Imp_C_OLCand"))
+				.split(xpath("/EDI_Message/EDI_Imp_C_OLCands/EDI_Imp_C_OLCand"))
 				.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
