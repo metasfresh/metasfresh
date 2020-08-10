@@ -22,23 +22,7 @@ package de.metas.invoice.service;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_InvoiceTax;
-import org.compiere.model.I_C_LandedCost;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MInvoice;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -46,8 +30,25 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_InvoiceTax;
+import org.compiere.model.I_C_LandedCost;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.MInvoice;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 public interface IInvoiceDAO extends ISingletonService
 {
@@ -56,6 +57,10 @@ public interface IInvoiceDAO extends ISingletonService
 	void delete(org.compiere.model.I_C_Invoice invoice);
 
 	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(final List<OrderId> orderIds);
+
+	I_C_Invoice getByOrderId(final OrderId orderId);
 
 	/**
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}

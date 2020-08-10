@@ -32,9 +32,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.payment.PaymentRule;
+import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,6 +51,7 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
@@ -98,6 +104,7 @@ public class PaymentBL implements IPaymentBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -417,6 +424,53 @@ public class PaymentBL implements IPaymentBL
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean isPaypalOrCreditCardPayment(I_C_Payment payment)
+	{
+		final I_C_Order order = orderBL.getByExternalId(ExternalId.of(payment.getExternalOrderId()));
+		return order.getAD_InputDataSource_ID() == 540175 || order.getAD_InputDataSource_ID() == 1;
+	}
+
+	@Override
+	public List<ExternalId> getExternalIdsList(List<I_C_Payment> payments)
+	{
+		final List<ExternalId> externalIds = new ArrayList<ExternalId>();
+		for (final I_C_Payment payment : payments)
+		{
+			externalIds.add(ExternalId.of(payment.getExternalOrderId()));
+		}
+		return externalIds;
+	}
+
+	@Override
+	public List<OrderId> getOrderIdsList(List<I_C_Payment> payments)
+	{
+		final List<OrderId> orderIds = new ArrayList<OrderId>();
+		for (final I_C_Payment payment : payments)
+		{
+			orderIds.add(OrderId.ofRepoId(payment.getC_Order_ID()));
+		}
+		return orderIds;
+	}
+
+	@Override
+	public void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids)
+	{
+		for (I_C_Payment payment : payments)
+		{
+			payment.setC_Order_ID(ids.get(ExternalId.of(payment.getExternalOrderId())).getRepoId());
+		}
+	}
+
+	@Override
+	public void setPaymentInvoiceIds(List<I_C_Payment> payments, Map<OrderId, InvoiceId> ids)
+	{
+		for (I_C_Payment payment : payments)
+		{
+			payment.setC_Invoice_ID(ids.get(OrderId.ofRepoId(payment.getC_Order_ID())).getRepoId());
+		}
 	}
 
 	@Override

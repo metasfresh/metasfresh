@@ -69,6 +69,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -111,6 +112,12 @@ public class OrderBL implements IOrderBL
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
 		return Services.get(IOrderDAO.class).getById(orderId);
+	}
+
+	@Override
+	public I_C_Order getByExternalId(@NonNull final ExternalId externalId)
+	{
+		return Services.get(IOrderDAO.class).getByExternalId(externalId);
 	}
 
 	@Override

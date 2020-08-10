@@ -25,6 +25,7 @@ package de.metas.order;
 import java.time.ZoneId;
 import java.util.Properties;
 
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -47,6 +48,8 @@ import de.metas.util.ISingletonService;
 public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
+
+	I_C_Order getByExternalId(ExternalId externalId);
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.

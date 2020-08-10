@@ -8,6 +8,10 @@ package org.compiere.model;
 public interface I_C_Order 
 {
 
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+	int getAD_InputDataSource_ID();
+	void setAD_InputDataSource_ID(int AD_InputDataSource_ID);
+
     /** TableName=C_Order */
     public static final String Table_Name = "C_Order";
 

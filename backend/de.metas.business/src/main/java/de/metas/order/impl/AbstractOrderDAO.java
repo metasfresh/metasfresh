@@ -27,12 +27,14 @@ import java.util.Collection;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -60,6 +62,8 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
 	@Override
@@ -72,6 +76,34 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		}
 		return order;
 	}
+
+	@Override
+	public I_C_Order getByExternalId(@NonNull final ExternalId externalId)
+	{
+		final I_C_Order order = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
+				.create()
+				.firstOnlyOrNull(I_C_Order.class);
+		if (order == null)
+		{
+			throw new AdempiereException("@NotFound@: " + externalId.getValue());
+		}
+		return order;
+	}
+
+	@Override
+	public Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds)
+	{
+		Map<ExternalId, OrderId> externalIdOrderIdMap = new HashMap<ExternalId, OrderId>();
+
+		for (ExternalId externalId : externalIds)
+		{
+			externalIdOrderIdMap.put(externalId, OrderId.ofRepoId(getByExternalId(externalId).getC_Order_ID()));
+		}
+		return externalIdOrderIdMap;
+	}
+
 
 	@Override
 	public <T extends I_C_Order> T getById(

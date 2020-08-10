@@ -29,8 +29,12 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
+import de.metas.util.lang.ExternalId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -96,6 +100,17 @@ public interface IPaymentBL extends ISingletonService
 	 * @return
 	 */
 	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
+
+	boolean isPaypalOrCreditCardPayment(I_C_Payment payment);
+
+	List<ExternalId> getExternalIdsList(List<I_C_Payment> payments);
+
+	List<OrderId> getOrderIdsList(List<I_C_Payment> payments);
+
+
+	void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids);
+
+	void setPaymentInvoiceIds(List<I_C_Payment> payments, Map<OrderId, InvoiceId> ids);
 
 	/**
 	 * Test Allocation (and set allocated flag)
