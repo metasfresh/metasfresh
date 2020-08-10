@@ -354,6 +354,7 @@ export default class MasterWindow extends PureComponent {
         showSidelist
         modalHidden={!modal.visible}
         handleDeletedStatus={this.handleDeletedStatus}
+        hasComments={master.hasComments}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 

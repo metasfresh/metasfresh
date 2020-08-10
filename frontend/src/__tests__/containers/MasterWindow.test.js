@@ -108,7 +108,7 @@ describe('MasterWindowContainer', () => {
     // afterEach stop server
     afterAll(() => {
       server.close();
-    });    
+    });
 
     it('reacts to websocket events and updates the UI correctly', async (done) => {
       const initialState = createInitialState();
@@ -228,7 +228,9 @@ describe('MasterWindowContainer', () => {
     }, 20000);
 
     it('removes old and includes new rows on ws event', async (done) => {
-      const initialState = createInitialState({ routing: { ...fixtures.state2.routing } });
+      const initialState = createInitialState({
+        routing: { ...fixtures.state2.routing },
+      });
       const store = createStore(
         rootReducer,
         initialState,
@@ -296,9 +298,7 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/window/${windowType}/${docId}/${tabId}?ids=${rows}`
-        )
+        .get(`/window/${windowType}/${docId}/${tabId}?ids=${rows}`)
         .reply(200, updatedRows);
 
       nock(config.API_URL)
@@ -412,23 +412,22 @@ describe('MasterWindowContainer', () => {
       let wrapper;
       try {
         wrapper = mount(
-        <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}}>
-            <CustomRouter history={history} auth={auth} />
-          </ShortcutProvider>
-        </Provider>
-      );
-      } catch(e) {
+          <Provider store={store}>
+            <ShortcutProvider hotkeys={{}} keymap={{}}>
+              <CustomRouter history={history} auth={auth} />
+            </ShortcutProvider>
+          </Provider>
+        );
+      } catch (e) {
         console.log('e: ', e);
       }
 
       await waitForExpect(() => {
         try {
           wrapper.update();
-        } catch(e) {
-          console.log(e)
+        } catch (e) {
+          console.log(e);
         }
-        
 
         const html = wrapper.html();
         expect(html).toContain('<table');

@@ -102,6 +102,7 @@ export const initialState = {
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
+    hasComments: false,
     docId: undefined,
     websocket: null,
     topActions: {
@@ -299,6 +300,7 @@ export default function windowHandler(state = initialState, action) {
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
+          hasComments: action.hasComments,
         },
       };
     case UPDATE_MASTER_DATA:
@@ -380,7 +382,9 @@ export default function windowHandler(state = initialState, action) {
       } else if (property === 'standardActions') {
         // TODO: Use normal array
         newValue = iSet(value);
-      } else if (['saveStatus', 'validStatus'].includes(property)) {
+      } else if (
+        ['saveStatus', 'validStatus', 'hasComments'].includes(property)
+      ) {
         newValue = value;
       } else {
         const currentVal = state[scope] ? state[scope][property] : {};

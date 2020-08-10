@@ -407,6 +407,7 @@ export default class Table extends PureComponent {
         caption={item.caption ? item.caption : ''}
         colspan={item.colspan}
         notSaved={item.saveStatus && !item.saveStatus.saved}
+        hasComments={item.hasComments}
         onRowCollapse={onRowCollapse}
         onItemChange={onItemChange}
         onCopy={handleCopy}
