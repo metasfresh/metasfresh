@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
@@ -48,8 +47,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.user.api.IUserDAO;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -111,7 +108,7 @@ public class CommentsService
 		return ViewRowCommentsSummary.ofMap(hasCommentsByDocumentId.build());
 	}
 
-	private HashMap<DocumentPath, TableRecordReference> getTableRecordReferences(final ImmutableList<IViewRow> rows)
+	private HashMap<DocumentPath, TableRecordReference> getTableRecordReferences(@NonNull final ImmutableList<IViewRow> rows)
 	{
 		final ImmutableSet<DocumentPath> documentPaths = rows.stream()
 				.map(IViewRow::getDocumentPath)
@@ -121,6 +118,7 @@ public class CommentsService
 		final HashMap<DocumentPath, TableRecordReference> recordRefsByDocumentPath = new HashMap<>(rows.size());
 		for (final DocumentPath documentPath : documentPaths)
 		{
+			@SuppressWarnings("SimplifyOptionalCallChains")
 			final TableRecordReference recordRef = documentDescriptorFactory.getTableRecordReferenceIfPossible(documentPath).orElse(null);
 			if (recordRef != null)
 			{
@@ -129,21 +127,6 @@ public class CommentsService
 		}
 
 		return recordRefsByDocumentPath;
-	}
-
-	@NonNull
-	private Stream<ImmutableMapEntry<IViewRow, TableRecordReference>> toStreamOfValidTableReferences(@NonNull final IViewRow row)
-	{
-		if (row.getDocumentPath() == null)
-		{
-			return Stream.empty();
-		}
-		else
-		{
-			return documentDescriptorFactory.getTableRecordReferenceIfPossible(row.getDocumentPath())
-					.map(tableRecordReference -> Stream.of(GuavaCollectors.entry(row, tableRecordReference)))
-					.orElseGet(Stream::empty);
-		}
 	}
 
 	public boolean hasComments(@NonNull final DocumentPath documentPath)
