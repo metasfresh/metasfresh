@@ -657,38 +657,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order_Term() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class, C_Order_Term);
-	}
-
-	/** Set Vertrags-Auftrag.
-		@param C_Order_Term_ID 
-		Auftrag, mit der der Vertrag abgeschlossen wurde
-	  */
-	@Override
 	public void setC_Order_Term_ID (int C_Order_Term_ID)
 	{
-		throw new IllegalArgumentException ("C_Order_Term_ID is virtual column");	}
+		if (C_Order_Term_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, Integer.valueOf(C_Order_Term_ID));
+	}
 
-	/** Get Vertrags-Auftrag.
-		@return Auftrag, mit der der Vertrag abgeschlossen wurde
-	  */
 	@Override
-	public int getC_Order_Term_ID () 
+	public int getC_Order_Term_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_Term_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Order_Term_ID);
 	}
 
 	@Override
