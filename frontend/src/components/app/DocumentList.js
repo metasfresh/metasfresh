@@ -334,7 +334,7 @@ export default class DocumentList extends Component {
 
         {layout && (
           <div className="document-list-body">
-            <div className="row table-row">
+            <div className="row table-context">
               <Table
                 entity="documentView"
                 ref={this.setTableRef}

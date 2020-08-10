@@ -245,6 +245,7 @@ export function initDataSuccess({
   standardActions,
   validStatus,
   websocket,
+  hasComments,
 }) {
   return {
     data,
@@ -256,6 +257,7 @@ export function initDataSuccess({
     type: INIT_DATA_SUCCESS,
     validStatus,
     websocket,
+    hasComments,
   };
 }
 
@@ -565,6 +567,7 @@ export function createWindow(
           validStatus: data.validStatus,
           includedTabsInfo: data.includedTabsInfo,
           websocket: data.websocketEndpoint,
+          hasComments: data.hasComments,
         })
       );
 

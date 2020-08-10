@@ -133,7 +133,7 @@ describe('Table component', () => {
 
     const html = tableWrapper.html();
     expect(html).toContain('row-selected');
-    expect(html).toContain('row-0-143-B row-1000194 row-selected tr-even');
+    expect(html).toContain('row-0-143-B table-row row-1000194 row-selected tr-even');
   });
 
   it.todo('Lookup widget is focused on selecting row');
