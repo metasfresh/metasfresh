@@ -3,7 +3,6 @@ import { mount } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, combineReducers } from 'redux';
-import configureStore from 'redux-mock-store';
 import { routerReducer as routing } from 'react-router-redux';
 import { createMemoryHistory } from 'react-router';
 import merge from 'merge';
@@ -52,7 +51,6 @@ import topActionsFixtures from '../../../test_setup/fixtures/master_window/top_a
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
 
-const mockStore = configureStore(middleware);
 const middleware = [thunk, promiseMiddleware];
 const FIXTURES_PROPS = fixtures;
 const history = createMemoryHistory('/window/143/1000000');
@@ -186,7 +184,7 @@ describe('MasterWindowContainer', () => {
         .get(`/window/${windowType}/${docId}/?noTabs=true`)
         .reply(200, dataFixtures.data1);
 
-      const wrapper = mount(
+      const wrapper = await mount(
         <Provider store={store}>
           <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
             <CustomRouter history={history} auth={auth} />
@@ -211,7 +209,13 @@ describe('MasterWindowContainer', () => {
         }, 5000);
       });
 
-      createWaitForElement('tbody')(wrapper).then((component) => {
+      // createWaitForElement('tbody')(wrapper).then(() => {
+      //   expect(wrapper.find('tbody tr').length).toBe(7);
+      // });
+      // -- Commented the above code and replaced with below one that uses await waitForExpect because it seems that
+      // the `createWaitForElement` is introducing that flaky issue
+      await waitForExpect(() => {
+        wrapper.update();
         expect(wrapper.find('tbody tr').length).toBe(7);
       });
 
@@ -419,7 +423,7 @@ describe('MasterWindowContainer', () => {
           </Provider>
         );
       } catch (e) {
-        console.log('e: ', e);
+          console.log('e: ', e);
       }
 
       await waitForExpect(() => {
