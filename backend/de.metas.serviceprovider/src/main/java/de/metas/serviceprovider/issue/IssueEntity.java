@@ -118,6 +118,8 @@ public class IssueEntity
 	@Nullable
 	private Instant latestActivityOnIssue;
 
+	private boolean processed;
+
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if ( this.estimatedEffort == null || this.estimatedEffort.signum() == 0 )
@@ -131,14 +133,6 @@ public class IssueEntity
 		if ( this.budgetedEffort == null || this.budgetedEffort.signum() == 0 )
 		{
 			this.budgetedEffort = budgetedEffort;
-		}
-	}
-
-	public void setRoughEstimationIfNotSet(@Nullable final BigDecimal roughEstimation)
-	{
-		if ( this.roughEstimation == null || this.roughEstimation.signum() == 0 )
-		{
-			this.roughEstimation = roughEstimation;
 		}
 	}
 
