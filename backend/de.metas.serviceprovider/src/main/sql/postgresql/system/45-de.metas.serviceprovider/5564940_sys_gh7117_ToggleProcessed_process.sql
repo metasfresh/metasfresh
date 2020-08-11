@@ -63,3 +63,7 @@ UPDATE AD_Process_Trl SET Name='Process',Updated=TO_TIMESTAMP('2020-08-11 10:01:
 UPDATE AD_Process_Trl SET Name='Verarbeiten',Updated=TO_TIMESTAMP('2020-08-11 10:02:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584735
 ;
 
+-- 2020-08-11T11:40:32.703Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET RefreshAllAfterExecution='Y',Updated=TO_TIMESTAMP('2020-08-11 14:40:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584735
+;

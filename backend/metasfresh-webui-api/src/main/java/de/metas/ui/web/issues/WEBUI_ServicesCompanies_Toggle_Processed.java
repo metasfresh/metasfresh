@@ -27,23 +27,17 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.serviceprovider.issue.IssueId;
-import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.model.I_S_Issue;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-
-import java.util.List;
 
 public class WEBUI_ServicesCompanies_Toggle_Processed extends JavaProcess implements IProcessPrecondition
 {
-	private final IssueRepository issueRepository = SpringContextHolder.instance.getBean(IssueRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 
@@ -54,28 +48,23 @@ public class WEBUI_ServicesCompanies_Toggle_Processed extends JavaProcess implem
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IQueryBuilder<I_S_Issue> selectionQuery = queryBL.createQueryBuilder(I_S_Issue.class);
+		final IQueryBuilder<I_S_Issue> updateProcessedQuery = queryBL
+				.createQueryBuilder(I_S_Issue.class)
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, !processed);
 
 		final IQueryFilter<I_S_Issue> selectionFilter = getProcessInfo().getQueryFilterOrElse(null);
 		if (selectionFilter == null)
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
-		selectionQuery.filter(selectionFilter);
+		updateProcessedQuery.filter(selectionFilter);
 
-		final List<Integer> selectedIssueIds = selectionQuery.create().listIds();
+		final ICompositeQueryUpdater<I_S_Issue> processedUpdater = queryBL
+				.createCompositeQueryUpdater(I_S_Issue.class)
+				.addSetColumnValue(I_S_Issue.COLUMNNAME_Processed, processed);
 
-		if (Check.isEmpty(selectedIssueIds))
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
-
-		selectedIssueIds
-				.stream()
-				.map(IssueId::ofRepoId)
-				.map(issueRepository::getById)
-				.peek(issueEntity -> issueEntity.setProcessed(processed))
-				.forEach(issueRepository::save);
+		//AD_Process.RefreshAllAfterExecution will ensure the cache reset we need for the update directly operation.
+		updateProcessedQuery.create().updateDirectly(processedUpdater);
 
 		return MSG_OK;
 	}
