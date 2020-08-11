@@ -35,6 +35,7 @@ import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -98,7 +99,9 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			else if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 			{
 				// get nested items for included HU PI
-				final List<I_M_HU_PI_Item> nestedItems = Services.get(IHandlingUnitsDAO.class).retrievePIItems(itemDef.getIncluded_HU_PI(), null);
+				final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+				final I_M_HU_PI includedPI = handlingUnitsDAO.getIncludedPI(itemDef);
+				final List<I_M_HU_PI_Item> nestedItems = handlingUnitsDAO.retrievePIItems(includedPI, null);
 
 				// recursively get nested items
 				final List<I_M_HU_PI_Item> filteredAndNestedItems = getNestedMaterialPIItems(nestedItems);

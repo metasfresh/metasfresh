@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="240"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -18,13 +18,33 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root ( $P{RECORD_ID}, $P{ad_language});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root ( $P{RECORD_ID}, $P{ad_language}) r
+JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1;]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="countrycode" class="java.lang.String"/>
-	<field name="displayhu" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="countrycode"/>
+	</field>
+	<field name="c_currency_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_currency_id"/>
+	</field>
+	<field name="displayhu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="displayhu"/>
+	</field>
+	<field name="iscreditmemo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="iscreditmemo"/>
+	</field>
+	<field name="showqrbill" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="showqrbill"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="false">
@@ -281,7 +301,7 @@
 				<reportElement key="subreport-3" mode="Transparent" x="1" y="3" width="595" height="150" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode})) && ("Y").equals($F{showqrbill})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
@@ -291,6 +311,21 @@
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_qr.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" mode="Transparent" x="1" y="0" width="595" height="130" uuid="a94eb539-f031-4a02-863d-065b2f4347b6">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))  && ("N").equals($F{showqrbill})]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="REPORT_MAX_COUNT">
+					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="c_invoice_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_esr.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</summary>

@@ -11,7 +11,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.util.ISingletonService;
 
 public interface IHUCapacityBL extends ISingletonService
@@ -42,10 +41,10 @@ public interface IHUCapacityBL extends ISingletonService
 	 * @return
 	 * @see IHUPIItemProductDAO#retrievePIMaterialItemProduct(I_M_HU_Item, I_M_Product, Date) to learn which I_M_HU_PI_Item_Product's capacitiy is returned if there is more than one.
 	 */
-	CapacityInterface getCapacity(I_M_HU_Item huItem, ProductId productId, I_C_UOM uom, ZonedDateTime date);
+	Capacity getCapacity(I_M_HU_Item huItem, ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	@Deprecated
-	CapacityInterface getCapacity(I_M_HU_Item huItem, I_M_Product product, I_C_UOM uom, final ZonedDateTime date);
+	Capacity getCapacity(I_M_HU_Item huItem, I_M_Product product, I_C_UOM uom, final ZonedDateTime date);
 
 	boolean isInfiniteCapacity(I_M_HU_PI_Item_Product itemDefProduct);
 

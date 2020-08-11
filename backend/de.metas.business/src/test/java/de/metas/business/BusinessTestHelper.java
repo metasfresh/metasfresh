@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import de.metas.organization.OrgId;
-import de.metas.organization.StoreCreditCardNumberMode;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -35,6 +33,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxDAO;
@@ -77,7 +77,7 @@ public final class BusinessTestHelper
 	private static final int UOM_Precision_0 = 0;
 
 	/**
-	 * Standard in ADempiere
+	 * Standard in metasfresh
 	 */
 	private static final int UOM_Precision_3 = 3;
 

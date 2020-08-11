@@ -48,6 +48,7 @@ import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Quantity;
@@ -201,8 +202,8 @@ public class AggregateHUTrxListener implements IHUTrxListener
 				source.setStoreCUQtyBeforeProcessing(false); // don't try it, it will probably fail
 
 				// the destination is a new HU that shall be attached as a sibling of the aggregate VHU
-				@SuppressWarnings("ConstantConditions")
-				final HUProducerDestination destination = HUProducerDestination.of(splitHUPIItem.getIncluded_HU_PI());
+				final I_M_HU_PI includedPI = handlingUnitsDAO.getIncludedPI(splitHUPIItem);
+				final HUProducerDestination destination = HUProducerDestination.of(includedPI);
 
 				destination.setParent_HU_Item(splitHUParentItem);
 				final HULoader loader = HULoader.of(source, destination)

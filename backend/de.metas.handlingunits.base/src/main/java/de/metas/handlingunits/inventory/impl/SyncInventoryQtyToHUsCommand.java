@@ -1,17 +1,5 @@
 package de.metas.handlingunits.inventory.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.Env;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -27,6 +15,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -42,6 +31,7 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
@@ -57,6 +47,16 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -90,15 +90,18 @@ public class SyncInventoryQtyToHUsCommand
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final InventoryRepository inventoryRepository;
+	private final SourceHUsService sourceHUsService;
 
 	private final Inventory inventory;
 
 	@Builder
 	private SyncInventoryQtyToHUsCommand(
 			@NonNull final InventoryRepository inventoryRepository,
+			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final Inventory inventory)
 	{
 		this.inventoryRepository = inventoryRepository;
+		this.sourceHUsService = sourceHUsService;
 		this.inventory = inventory;
 	}
 
@@ -208,13 +211,17 @@ public class SyncInventoryQtyToHUsCommand
 
 			if (inventoryLine.getSingleLineHU().getHuId() == null)
 			{
+				final HuId createdHUId = extractSingleCreatedHUId(huDestination);
+
 				final InventoryLineHU resultInventoryLineHU = inventoryLine
 						.getSingleLineHU()
 						.toBuilder()
-						.huId(extractSingleCreatedHUId(huDestination))
+						.huId(createdHUId)
 						.build();
 				result.inventoryLineHU(resultInventoryLineHU);
 				needToSaveInventoryLine = true;
+
+				sourceHUsService.addSourceHUMarkerIfCarringComponents(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
 			}
 			else
 			{
@@ -229,12 +236,17 @@ public class SyncInventoryQtyToHUsCommand
 
 				if (inventoryLineHU.getHuId() == null)
 				{
+					final HuId createdHUId = extractSingleCreatedHUId(huDestination);
+
 					final InventoryLineHU resultInventoryLineHU = inventoryLine
 							.getSingleLineHU()
 							.toBuilder()
-							.huId(extractSingleCreatedHUId(huDestination))
+							.huId(createdHUId)
 							.build();
 					result.inventoryLineHU(resultInventoryLineHU);
+
+					sourceHUsService.addSourceHUMarkerIfCarringComponents(createdHUId, inventoryLine.getProductId(), inventoryLine.getLocatorId().getWarehouseId());
+
 					needToSaveInventoryLine = true;
 				}
 				else
@@ -272,8 +284,7 @@ public class SyncInventoryQtyToHUsCommand
 		}
 		else
 		{
-			final I_M_HU hu = handlingUnitsRepo.getById(inventoryLineHU.getHuId());
-			huDestination = HUListAllocationSourceDestination.of(hu);
+			huDestination = createHUListAllocationSourceDestination(inventoryLineHU.getHuId());
 		}
 
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
@@ -306,8 +317,7 @@ public class SyncInventoryQtyToHUsCommand
 
 			final Quantity qtyDiff = inventoryLine.getMovementQty().negate();
 
-			final I_M_HU singleHU = handlingUnitsRepo.getById(singleHuId);
-			final IAllocationSource source = HUListAllocationSourceDestination.of(singleHU);
+			final IAllocationSource source = createHUListAllocationSourceDestination(singleHuId);
 			final IAllocationDestination destination = createInventoryLineAllocationSourceOrDestination(inventoryLineRecord);
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
@@ -344,8 +354,7 @@ public class SyncInventoryQtyToHUsCommand
 		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
 		if (huId != null)
 		{
-			final I_M_HU hu = handlingUnitsRepo.getById(huId);
-			return HUListAllocationSourceDestination.of(hu);
+			return createHUListAllocationSourceDestination(huId);
 		}
 		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
 		else
@@ -356,6 +365,12 @@ public class SyncInventoryQtyToHUsCommand
 					.setHUStatus(X_M_HU.HUSTATUS_Active)
 					.setLocatorId(locatorId);
 		}
+	}
+
+	private HUListAllocationSourceDestination createHUListAllocationSourceDestination(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		return HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM);
 	}
 
 	private static HuId extractSingleCreatedHUId(@NonNull final IAllocationDestination huDestination)

@@ -90,6 +90,10 @@ export class RawWidget extends Component {
     }
   }
 
+  setRef = (ref) => {
+    this.rawWidget = ref;
+  };
+
   /**
    * @method focus
    * @summary Function used specifically for list widgets. It blocks outside clicks, which are
@@ -440,7 +444,7 @@ export class RawWidget extends Component {
     // TODO:  ^^^^^^^^^^^^^
 
     const widgetProperties = {
-      ref: (c) => (this.rawWidget = c),
+      ref: this.setRef,
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
@@ -575,7 +579,7 @@ export class RawWidget extends Component {
                 disabled: readonly,
                 tabIndex: tabIndex,
               }}
-              value={widgetValue}
+              value={this.generateMomentObj(widgetValue, TIME_FORMAT)}
               onChange={(date) => handleChange(widgetField, date)}
               patch={(date) =>
                 this.handlePatch(
@@ -845,11 +849,7 @@ export class RawWidget extends Component {
                 }
               )}
             >
-              <input
-                {...widgetProperties}
-                type="password"
-                ref={(c) => (this.rawWidget = c)}
-              />
+              <input {...widgetProperties} type="password" ref={this.setRef} />
               {icon && <i className="meta-icon-edit input-icon-right" />}
             </div>
             {allowShowPassword && (
@@ -883,6 +883,17 @@ export class RawWidget extends Component {
               precision={widgetField === 'CableLength' ? 2 : 1}
               step={subentity === 'quickInput' ? 0.1 : 1}
             />
+            {widgetData[0].devices && (
+              <div className="device-widget-wrapper">
+                <DevicesWidget
+                  devices={widgetData[0].devices}
+                  tabIndex={1}
+                  handleChange={(value) =>
+                    this.handlePatch && this.handlePatch(fields[0].field, value)
+                  }
+                />
+              </div>
+            )}
           </div>
         );
       case 'Number':
@@ -923,7 +934,7 @@ export class RawWidget extends Component {
               'input-table': rowId && !isModal,
             })}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
             onKeyDown={(e) => {
               e.key === ' ' &&
                 this.handlePatch(widgetField, !widgetData[0].value, id);
@@ -948,7 +959,7 @@ export class RawWidget extends Component {
               [`text-${gridAlign}`]: gridAlign,
             })}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {widgetData[0].value}
           </div>
@@ -963,7 +974,7 @@ export class RawWidget extends Component {
             }
             onClick={() => this.handlePatch(widgetField)}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {widgetData[0].value &&
               widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
@@ -979,7 +990,7 @@ export class RawWidget extends Component {
             }
             onClick={this.handleProcess}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {caption}
           </button>
@@ -996,7 +1007,7 @@ export class RawWidget extends Component {
             onChange={(option) => this.handlePatch(fields[1].field, option)}
             tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           />
         );
       case 'ProductAttributes':
@@ -1060,7 +1071,7 @@ export class RawWidget extends Component {
             }
             onClick={() => handleZoomInto(fields[0].field)}
             tabIndex={tabIndex}
-            ref={(c) => (this.rawWidget = c)}
+            ref={this.setRef}
           >
             {caption}
           </button>

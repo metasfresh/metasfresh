@@ -29,6 +29,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.view.ViewRowsOrderBy;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -225,7 +226,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 * Just returns {@code null}.
 	 */
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
+	public SqlViewRowsWhereClause getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
 		return null;
 	}
@@ -305,7 +306,9 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
-	public final void notifyRecordsChanged(@NonNull final TableRecordReferenceSet recordRefs)
+	public final void notifyRecordsChanged(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend)
 	{
 		if (recordRefs.isEmpty())
 		{

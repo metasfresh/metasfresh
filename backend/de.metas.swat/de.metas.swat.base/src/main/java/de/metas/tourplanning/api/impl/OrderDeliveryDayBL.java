@@ -10,10 +10,12 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
@@ -31,6 +33,15 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
+	{
+		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
+		{
+			return setPreparationDateAndTour0(order, fallbackToDatePromised);
+		}
+
+	}
+
+	private boolean setPreparationDateAndTour0(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
 	{
 		// Don't touch processed orders
 		if (order.isProcessed())
@@ -82,19 +93,20 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 				bpartnerLocationId);
 		final ZonedDateTime preparationDate = tourAndDate.getRight();
 
-		//
-		// Update order
-		// only set the date if it has not yet passed.
-		// if it has, leave the field empty and let the user pick a new preparation date
 		final ZonedDateTime systemTime = SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
 			order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
-			// never update an existing tour
-			if (order.getM_Tour_ID() == 0)
-			{
-				order.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
-			}
+
+			logger.debug("Setting Tour {} for C_Order {}. Old Tour was {} (fallbackToDatePromised={}, systemTime={})",
+					tourAndDate.getLeft().getRepoId(),
+					order,
+					order.getM_Tour_ID(),
+					isUseFallback,
+					systemTime);
+
+			order.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
+
 			logger.debug("Setting PreparationDate={}, for C_Order {} (fallbackToDatePromised={}, systemTime={})",
 					preparationDate, order, isUseFallback, systemTime);
 		}

@@ -29,15 +29,12 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.ui.web.pickingV2.productsToPick.rows.WebuiPickHUResult;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-
-import java.util.List;
 
 public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedProcess
 {
@@ -54,7 +51,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
 
-		if (!rowsService.anyRowsEligibleForPicking(getValidRowsForPickAndPack()))
+		if (!rowsService.anyRowsEligibleForPicking(getSelectedRows()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -77,24 +74,16 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 
 	private void pick()
 	{
-		final ImmutableList<WebuiPickHUResult> result = rowsService.pick(getValidRowsForPickAndPack());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.pick(getSelectedRows());
 
 		updateViewRowFromPickingCandidate(result);
 	}
 
 	private void pack()
 	{
-		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getValidRowsForPickAndPack(), getHuPackingInstructionsId());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
 
 		updateViewRowFromPickingCandidate(result);
-	}
-
-	private List<ProductsToPickRow> getValidRowsForPickAndPack()
-	{
-		return getSelectedRows()
-				.stream()
-				.filter(row -> !row.getQtyEffective().isZero())
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull

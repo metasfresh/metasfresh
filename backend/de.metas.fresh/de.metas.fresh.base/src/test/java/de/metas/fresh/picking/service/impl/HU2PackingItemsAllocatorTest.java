@@ -43,6 +43,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -66,7 +67,6 @@ import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import org.junit.jupiter.api.Test;
 
 public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 {
@@ -107,6 +107,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		// Handling Units Definition
 		huDefIFCO = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
 		huDefPalet = createHuDefPalet(helper, huDefIFCO);
+
 	}
 
 	private void setupContext(final int qtyToDeliver)

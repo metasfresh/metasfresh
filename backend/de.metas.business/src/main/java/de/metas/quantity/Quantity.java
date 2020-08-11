@@ -28,6 +28,7 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -40,7 +41,6 @@ import org.compiere.model.I_C_UOM;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.util.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -739,13 +739,29 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(qty.multiply(multiplicand), uom, sourceQty.multiply(multiplicand), sourceUom);
 	}
 
+	public Quantity multiply(@NonNull final Percent percent)
+	{
+		final UOMPrecision precision = getUOMPrecision();
+		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision.toInt(), precision.getRoundingMode());
+
+		return this.qty.compareTo(newQty) != 0
+				? new Quantity(newQty, uom)
+				: this;
+	}
+
 	public Quantity roundToUOMPrecision()
 	{
-		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
+		final UOMPrecision precision = getUOMPrecision();
 		final BigDecimal qtyRounted = precision.roundIfNeeded(qty);
 		return qty.equals(qtyRounted)
 				? this
 				: new Quantity(qtyRounted, uom, sourceQty, sourceUom);
+	}
+
+	private UOMPrecision getUOMPrecision()
+	{
+		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
+		return precision;
 	}
 
 	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)

@@ -71,11 +71,6 @@ public interface IHUPackingAwareBL extends ISingletonService
 	 */
 	void setQtyTU(IHUPackingAware record);
 
-	/**
-	 * Computes the number of TUs required for the given <code>huPackingWare</code>.
-	 */
-	BigDecimal calculateQtyTU(IHUPackingAware huPackingWare);
-
 	Capacity calculateCapacity(IHUPackingAware record);
 
 	/**

@@ -1,0 +1,267 @@
+{
+  "result": [
+    {
+      "windowId": "123",
+      "id": "2156453",
+      "tabId": "DataEntry_SubTab-100000",
+      "tabid": "DataEntry_SubTab-100000",
+      "rowId": "TC_BPartner-R2156453-SG100000",
+      "fieldsByName": {
+        "100000": {
+          "field": "100000",
+          "value": "",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "Mandatory field 100000 not filled",
+            "fieldName": "100000"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100001": {
+          "field": "100001",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "LongText",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100002": {
+          "field": "100002",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100003": {
+          "field": "100003",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100004": {
+          "field": "100004",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100005": {
+          "field": "100005",
+          "value": "",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Date",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "Mandatory field 100005 not filled",
+            "fieldName": "100005"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100006": {
+          "field": "100006",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "ID": {
+          "field": "ID",
+          "value": "TC_BPartner-R2156453-SG100000",
+          "widgetType": "Integer"
+        },
+        "DataEntry_SubTab_ID": {
+          "field": "DataEntry_SubTab_ID",
+          "value": "TC_BPartner-R2156453-SG100000",
+          "readonly": true,
+          "mandatory": false,
+          "displayed": false,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DataEntry_SubTab_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "C_BPartner_ID": {
+          "field": "C_BPartner_ID",
+          "value": 2156453,
+          "readonly": true,
+          "mandatory": true,
+          "displayed": false,
+          "widgetType": "Integer",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_BPartner_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "100000_Info": {
+          "field": "100000_Info",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100001_Info": {
+          "field": "100001_Info",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100002_Info": {
+          "field": "100002_Info",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100003_Info": {
+          "field": "100003_Info",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100004_Info": {
+          "field": "100004_Info",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100005_Info": {
+          "field": "100005_Info",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "100006_Info": {
+          "field": "100006_Info",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "not validated yet"
+          },
+          "viewEditorRenderMode": "always"
+        }
+      },
+      "validStatus": {
+        "valid": false,
+        "initialValue": true,
+        "reason": "Mandatory field 100000 not filled",
+        "fieldName": "100000"
+      },
+      "saveStatus": {
+        "deleted": false,
+        "saved": false,
+        "hasChanges": true,
+        "error": false,
+        "reason": "new"
+      },
+      "standardActions": [
+        "new",
+        "advancedEdit",
+        "email",
+        "letter",
+        "delete",
+        "comments"
+      ],
+      "websocketEndpoint": "/document/123/2156453"
+    }
+  ]
+}
