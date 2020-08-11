@@ -9,6 +9,10 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.147
+
+TBD
+
 # metasfresh 5.146
 ## Features
 * metasfresh
