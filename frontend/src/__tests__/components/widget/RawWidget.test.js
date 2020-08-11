@@ -506,6 +506,8 @@ describe('RawWidget component', () => {
     expect(html).not.toContain('border-danger');
   });
 
+
+
   it('Shows a red border when input exceeds the char limit', () => {
     const props = createDummyProps(
       {

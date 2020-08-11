@@ -4,12 +4,18 @@ import { getQueryString } from '../utils';
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 // @TODO: Everything should be moved to api
 
-export function createInstance(entity, windowId, docId, tabId, subentity) {
-  const url = `${config.API_URL}/${entity}/${windowId}/${docId}${
-    tabId ? `/${tabId}` : ''
-  }${subentity ? `/${subentity}` : ''}`;
-
-  return axios.post(url);
+export function createInstance(entity, docType, docId, tabId, subentity) {
+  return axios.post(
+    config.API_URL +
+      '/' +
+      entity +
+      '/' +
+      docType +
+      '/' +
+      docId +
+      (tabId ? '/' + tabId : '') +
+      (subentity ? '/' + subentity : '')
+  );
 }
 
 // TODO: This should be moved to the api
