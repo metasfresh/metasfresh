@@ -342,7 +342,7 @@ describe('MasterWindowContainer', () => {
         expect(wrapper.find('tbody tr').length).toBe(4);
         expect(wrapper.html()).toContain('288.86');
       });
-      // test 2
+      // test 3
 
       // wait for the DOM to be updated
       await waitFor(
