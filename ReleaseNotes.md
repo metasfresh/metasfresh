@@ -9,6 +9,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.147
+## Features
+* metasfresh
+  * [#6714](https://github.com/metasfresh/metasfresh/issues/6714) ESR_Import: introduce IsReconciled flag same as we have in PaySelection
+  * [#7036](https://github.com/metasfresh/metasfresh/issues/7036) Add more unit tests
+  * [#7058](https://github.com/metasfresh/metasfresh/issues/7058) Automatic DD Order Movement
+  * [#7064](https://github.com/metasfresh/metasfresh/issues/7064) Create a new structure for Allergen traces in the product as a new tab
+  * [#7089](https://github.com/metasfresh/metasfresh/issues/7089) Show in Main and Grid view that a Notice/Comment is available
+  * [#7093](https://github.com/metasfresh/metasfresh/issues/7093) New Column in contract that always shows the sales order that initiated the contract
+  * [#7101](https://github.com/metasfresh/metasfresh/issues/7101) Picking Terminal improvements
+
+## Fixes
+* metasfresh
+  * [#7097](https://github.com/metasfresh/metasfresh/issues/7097) Bank Statement not imported until the end
+
 # metasfresh 5.146
 ## Features
 * metasfresh

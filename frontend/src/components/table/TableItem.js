@@ -389,6 +389,7 @@ class TableItem extends PureComponent {
       updateHeight,
       rowIndex,
       fieldsByName: cells,
+      hasComments,
       /*
        * This function is called when cell's value changes and triggers re-fetching
        * quickactions in grids.
@@ -411,7 +412,7 @@ class TableItem extends PureComponent {
     } else {
       return (
         cols &&
-        cols.map((item) => {
+        cols.map((item, idx) => {
           if (shouldRenderColumn(item)) {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit =
@@ -461,6 +462,7 @@ class TableItem extends PureComponent {
                     }
                   }
                 }}
+                hasComments={!!(hasComments && idx === 0)}
                 tdValue={
                   widgetData[0].value
                     ? JSON.stringify(widgetData[0].value)
@@ -578,7 +580,7 @@ class TableItem extends PureComponent {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
-          className={classnames(dataKey, `row-${keyProperty}`, {
+          className={classnames(dataKey, `table-row row-${keyProperty}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
             'tr-even': !odd,
@@ -644,6 +646,7 @@ TableItem.propTypes = {
   activeSort: PropTypes.bool,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table
+  hasComments: PropTypes.bool,
 };
 
 export default TableItem;

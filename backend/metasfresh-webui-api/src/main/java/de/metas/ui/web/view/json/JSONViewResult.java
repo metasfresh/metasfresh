@@ -1,32 +1,8 @@
-package de.metas.ui.web.view.json;
-
-import java.util.List;
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
-import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
-import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowOverrides;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.util.GuavaCollectors;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,16 +20,46 @@ import de.metas.util.GuavaCollectors;
  * #L%
  */
 
+package de.metas.ui.web.view.json;
+
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewResult
 {
-	public static JSONViewResult of(final ViewResult viewResult, IViewRowOverrides rowOverrides, final JSONOptions jsonOpts)
+	public static JSONViewResult of(
+			final ViewResult viewResult, 
+			IViewRowOverrides rowOverrides, 
+			final JSONOptions jsonOpts, 
+			@NonNull final ViewRowCommentsSummary viewRowCommentsSummary)
 	{
 		List<? extends JSONViewRowBase> jsonRows;
 		if (viewResult.isPageLoaded())
 		{
 			final List<IViewRow> rows = viewResult.getPage();
-			jsonRows = JSONViewRow.ofViewRows(rows, rowOverrides, jsonOpts);
+			jsonRows = JSONViewRow.ofViewRows(rows, rowOverrides, jsonOpts, viewRowCommentsSummary);
 		}
 		else
 		{
