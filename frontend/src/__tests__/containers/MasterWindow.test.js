@@ -3,7 +3,6 @@ import { mount } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, combineReducers } from 'redux';
-import configureStore from 'redux-mock-store';
 import { routerReducer as routing } from 'react-router-redux';
 import { createMemoryHistory } from 'react-router';
 import merge from 'merge';
@@ -52,7 +51,6 @@ import topActionsFixtures from '../../../test_setup/fixtures/master_window/top_a
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
 
-const mockStore = configureStore(middleware);
 const middleware = [thunk, promiseMiddleware];
 const FIXTURES_PROPS = fixtures;
 const history = createMemoryHistory('/window/143/1000000');
@@ -90,111 +88,23 @@ const createInitialState = function(state = {}) {
 };
 
 describe('MasterWindowContainer', () => {
-  describe("'integration' tests:", () => {
-    it('renders without errors', async (done) => {
-      const initialState = createInitialState();
-      const store = createStore(
-        rootReducer,
-        initialState,
-        applyMiddleware(...middleware)
-      );
-      const windowType = FIXTURES_PROPS.props1.params.windowType;
-      const docId = FIXTURES_PROPS.props1.params.docId;
-      const tabId = layoutFixtures.layout1.tabs[0].tabId;
-      const auth = {
-        initNotificationClient: jest.fn(),
-        initSessionClient: jest.fn(),
-      };
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/`)
-        .reply(200, dataFixtures.data1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/layout`)
-        .reply(200, layoutFixtures.layout1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/userSession')
-        .reply(200, userSessionData);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/notifications/websocketEndpoint`)
-        .reply(200, `/notifications/${userSessionData.userProfileId}`);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/notifications/all?limit=20')
-        .reply(200, notificationsData.data1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}/`)
-        .reply(200, { result: rowFixtures.row_data1 });
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
-        .reply(200, { result: rowFixtures.row_data1 });
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}/topActions`)
-        .reply(200, topActionsFixtures.top_actions1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/field/DocAction/dropdown`)
-        .reply(200, docActionFixtures.data1);
-
-      // This request doesn't happen here but in the `websockets` test. But component
-      // created here still exists and thus tries to handle this XHR response.
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/?noTabs=true`)
-        .reply(200, dataFixtures.data1);
-
-      const wrapper = mount(
-        <Provider store={store}>
-          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-            <CustomRouter history={history} auth={auth} />
-          </ShortcutProvider>
-        </Provider>
-      );
-
-      await waitForExpect(() => {
-        wrapper.update();
-
-        const html = wrapper.html();
-        expect(html).toContain('<table');
-      }, 6000);
-
-      done();
-    }, 10000);
-  });
-
   describe('websocket tests', () => {
     let mockServer;
     let server;
 
-    beforeEach(() => {
+    beforeAll(() => {
       server = http.createServer();
 
       mockServer = new StompServer({
         server: server,
         path: '/ws',
-        heartbeat: [1000, 1000],
       });
 
       server.listen(8080);
     });
 
     // afterEach stop server
-    afterEach(() => {
+    afterAll(() => {
       server.close();
     });
 
@@ -274,7 +184,7 @@ describe('MasterWindowContainer', () => {
         .get(`/window/${windowType}/${docId}/?noTabs=true`)
         .reply(200, dataFixtures.data1);
 
-      const wrapper = mount(
+      const wrapper = await mount(
         <Provider store={store}>
           <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
             <CustomRouter history={history} auth={auth} />
@@ -299,7 +209,13 @@ describe('MasterWindowContainer', () => {
         }, 5000);
       });
 
-      createWaitForElement('tbody')(wrapper).then((component) => {
+      // createWaitForElement('tbody')(wrapper).then(() => {
+      //   expect(wrapper.find('tbody tr').length).toBe(7);
+      // });
+      // -- Commented the above code and replaced with below one that uses await waitForExpect because it seems that
+      // the `createWaitForElement` is introducing that flaky issue
+      await waitForExpect(() => {
+        wrapper.update();
         expect(wrapper.find('tbody tr').length).toBe(7);
       });
 
@@ -434,5 +350,94 @@ describe('MasterWindowContainer', () => {
 
       done();
     }, 20000);
+  });
+
+  describe("'integration' tests:", () => {
+    it('renders without errors', async (done) => {
+      const initialState = createInitialState();
+      const store = createStore(
+        rootReducer,
+        initialState,
+        applyMiddleware(...middleware)
+      );
+      const windowType = FIXTURES_PROPS.props1.params.windowType;
+      const docId = FIXTURES_PROPS.props1.params.docId;
+      const tabId = layoutFixtures.layout1.tabs[0].tabId;
+      const auth = {
+        initNotificationClient: jest.fn(),
+        initSessionClient: jest.fn(),
+      };
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/`)
+        .reply(200, dataFixtures.data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/layout`)
+        .reply(200, layoutFixtures.layout1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/userSession')
+        .reply(200, userSessionData);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/notifications/websocketEndpoint`)
+        .reply(200, `/notifications/${userSessionData.userProfileId}`);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/notifications/all?limit=20')
+        .reply(200, notificationsData.data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/`)
+        .reply(200, { result: rowFixtures.row_data1 });
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
+        .reply(200, { result: rowFixtures.row_data1 });
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/topActions`)
+        .reply(200, topActionsFixtures.top_actions1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/field/DocAction/dropdown`)
+        .reply(200, docActionFixtures.data1);
+
+      let wrapper;
+      try {
+        wrapper = mount(
+          <Provider store={store}>
+            <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+              <CustomRouter history={history} auth={auth} />
+            </ShortcutProvider>
+          </Provider>
+        );
+      } catch (e) {
+          console.log('e: ', e);
+      }
+
+      await waitForExpect(() => {
+        try {
+          wrapper.update();
+        } catch (e) {
+          console.log(e);
+        }
+
+        const html = wrapper.html();
+        expect(html).toContain('<table');
+      }, 6000);
+
+      done();
+    }, 10000);
   });
 });
