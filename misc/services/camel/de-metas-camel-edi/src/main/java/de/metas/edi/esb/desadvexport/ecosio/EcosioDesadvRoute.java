@@ -30,6 +30,7 @@ import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -44,6 +45,7 @@ import org.springframework.stereotype.Component;
 import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.util.Comparator;
 
 @Component
 @PropertySources(value = {
@@ -69,8 +71,6 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
-		//final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
-
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(EDIExpDesadvType.class.getPackage().getName());
 		dataFormat.setCamelContext(getContext());
 		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
@@ -109,6 +109,9 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValueAttr());
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
+
+					// also make sure that our lines are sorted by line number
+					xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
 				})
 
 				.log(LoggingLevel.INFO, "Marshalling XML Java Object -> XML...")

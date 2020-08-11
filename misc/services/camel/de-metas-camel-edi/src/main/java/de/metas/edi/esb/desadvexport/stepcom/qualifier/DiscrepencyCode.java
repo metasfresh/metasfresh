@@ -27,7 +27,7 @@ public enum DiscrepencyCode
 	/** Shipment partial - back order to follow */
 	BFOL,
 
-	/** shipment partial - considered complete, no backorder */
+	/** Shipment partial - considered complete, no backorder */
 	BCOM,
 
 	/** Over-shipped */

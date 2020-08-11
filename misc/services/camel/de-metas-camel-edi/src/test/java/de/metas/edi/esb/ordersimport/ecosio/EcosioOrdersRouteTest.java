@@ -23,14 +23,14 @@
 package de.metas.edi.esb.ordersimport.ecosio;
 
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -50,6 +50,8 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 			properties.load(EcosioOrdersRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			properties.setProperty(EcosioOrdersRoute.INPUT_ORDERS_LOCAL, "direct:edi.file.orders.ecosio");
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
+			properties.setProperty(AbstractEDIRoute.EDI_ORDER_ADClientValue, "AD_Client.Value");
+			properties.setProperty(AbstractEDIRoute.EDI_ORDER_ADUserEnteredByID, "199");
 			return properties;
 		}
 		catch (final IOException e)
@@ -68,7 +70,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 	void createXML() throws InterruptedException
 	{
 		// given
-		final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+		final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
 				+ "<EDI_Message>"
 				+ "   <EDI_Imp_C_OLCands>"
 				+ "      <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered></EDI_Imp_C_OLCand>"
@@ -79,14 +81,26 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 		metasfreshOutputEndpoint.expectedMessageCount(2);
 
 		// when
-		template.sendBody("direct:edi.file.orders.ecosio", input);
+		template.sendBodyAndHeader("direct:edi.file.orders.ecosio", input, Exchange.FILE_NAME, "filename");
 
 		// then
 		metasfreshOutputEndpoint.assertIsSatisfied(1000);
 		final var string1 = metasfreshOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
-		assertThat(string1).isEqualToIgnoringWhitespace("<EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered></EDI_Imp_C_OLCand>");
+		assertThat(string1).isEqualToIgnoringWhitespace(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"filename\">"
+						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
+						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
+						+ "    <QtyEntered>10</QtyEntered>"
+						+ "</EDI_Imp_C_OLCand>");
 
 		final var string2 = metasfreshOutputEndpoint.getExchanges().get(1).getIn().getBody(String.class);
-		assertThat(string2).isEqualToIgnoringWhitespace("<EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered></EDI_Imp_C_OLCand>");
+		assertThat(string2).isEqualToIgnoringWhitespace(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"filename\">"
+						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
+						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
+						+ "    <QtyEntered>20</QtyEntered>"
+						+ "</EDI_Imp_C_OLCand>");
 	}
 }

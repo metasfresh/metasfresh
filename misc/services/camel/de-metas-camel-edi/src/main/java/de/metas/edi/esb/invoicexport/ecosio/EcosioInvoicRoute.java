@@ -29,6 +29,7 @@ import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcesso
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
 import org.apache.camel.Exchange;
@@ -44,6 +45,7 @@ import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * This route is getting its stuff from {@link de.metas.edi.esb.commons.route.exports.EDIExportCommonRoute}
@@ -113,6 +115,8 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
+
+					xmlCctopInvoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
 				})
 
 				.log(LoggingLevel.INFO, "Marshalling EDI XML Java Object to XML...")

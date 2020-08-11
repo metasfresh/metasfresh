@@ -26,7 +26,6 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.InvoicSettings;
 import de.metas.edi.esb.commons.MeasurementUnit;
 import de.metas.edi.esb.commons.SystemTime;
-import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.invoicexport.stepcom.qualifier.AddressQual;
@@ -85,10 +84,10 @@ import org.apache.commons.lang.StringUtils;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 
-import static de.metas.edi.esb.commons.Util.extractDateOrdered;
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
 import static de.metas.edi.esb.commons.Util.normalize;
@@ -771,7 +770,7 @@ public class StepComXMLInvoicBean
 		final String poReference = validateString(invoice.getPOReference(), "@FillMandatory@ @POReference@");
 		buyerOrderRef.setREFERENCE(poReference);
 
-		buyerOrderRef.setREFERENCEDATE1(toFormattedStringDate(extractDateOrdered(invoice), dateFormat));
+		buyerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
 		headerXrech.getHREFE1().add(buyerOrderRef);
 
 		if (settings.isInvoicORSE())
@@ -780,7 +779,7 @@ public class StepComXMLInvoicBean
 			sellerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 			sellerOrderRef.setREFERENCEQUAL(ReferenceQual.ORSE.name());
 			sellerOrderRef.setREFERENCE(invoice.getEDICctop111V().getCOrderID().toString());
-			sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(extractDateOrdered(invoice), dateFormat));
+			sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
 			headerXrech.getHREFE1().add(sellerOrderRef);
 		}
 		if (!isEmpty(invoice.getShipmentDocumentno()))
@@ -789,7 +788,7 @@ public class StepComXMLInvoicBean
 			despatchAdvRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 			despatchAdvRef.setREFERENCEQUAL(ReferenceQual.DADV.name());
 			despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
-			despatchAdvRef.setREFERENCEDATE1(toFormattedStringDate(extractMovementDate(invoice), dateFormat));
+			despatchAdvRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getMovementDate()), dateFormat));
 			headerXrech.getHREFE1().add(despatchAdvRef);
 		}
 	}
@@ -817,28 +816,25 @@ public class StepComXMLInvoicBean
 		headerXrech.getHDATE1().add(valueDate);
 
 		// DELV
-		final Date movementDate = extractMovementDate(invoice);
+		final XMLGregorianCalendar movementDate;
+		if (DOC_CRNF_381.equals(invoice.getEancomDoctype()))
+		{
+			// may be null, if the invoice is a material return credit memo
+			// TODO DOC_CRNF_381 means EITHER CQ => "credit memo - Lieferdifferenz" OR CS => "credit memo - Retoure"; missing movement date is only OK for "Retoure"
+			movementDate = invoice.getMovementDate();
+		}
+		else
+		{
+			movementDate = ValidationHelper.validateObject(invoice.getMovementDate(),
+					"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @MovementDate@");
+		}
 		if (movementDate != null)
 		{
 			final HDATE1 deliveryDate = INVOIC_objectFactory.createHDATE1();
 			deliveryDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
 			deliveryDate.setDATEQUAL(DateQual.DELV.name());
-			deliveryDate.setDATEFROM(toFormattedStringDate(movementDate, dateFormat));
+			deliveryDate.setDATEFROM(toFormattedStringDate(toDate(movementDate), dateFormat));
 			headerXrech.getHDATE1().add(deliveryDate);
 		}
-	}
-
-	public static Date extractMovementDate(@NonNull final EDICctopInvoicVType invoice)
-	{
-		if (DOC_CRNF_381.equals(invoice.getEancomDoctype()))
-		{
-			// may be null, if the invoice is a material return credit memo
-			// TODO DOC_CRNF_381 means EITHER CQ => "credit memo - Lieferdifferenz" OR CS => "credit memo - Retoure"; missing movement date is only OK for "Retoure"
-			if (invoice.getMovementDate() == null)
-			{
-				return null;
-			}
-		}
-		return Util.extractMovementDate(invoice);
 	}
 }

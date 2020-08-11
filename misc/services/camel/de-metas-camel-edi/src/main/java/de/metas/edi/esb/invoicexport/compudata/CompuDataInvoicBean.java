@@ -22,8 +22,6 @@
 
 package de.metas.edi.esb.invoicexport.compudata;
 
-import static de.metas.edi.esb.commons.Util.extractDateOrdered;
-import static de.metas.edi.esb.commons.Util.extractMovementDate;
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
 import static de.metas.edi.esb.commons.Util.normalize;
@@ -103,12 +101,12 @@ public class CompuDataInvoicBean
 		}
 
 		invoice.setDateInvoiced(toDate(xmlCctopInvoice.getDateInvoiced()));
-		invoice.setDateOrdered(extractDateOrdered(xmlCctopInvoice));
+		invoice.setDateOrdered(toDate(xmlCctopInvoice.getDateOrdered()));
 
 		invoice.setGrandTotal(formatNumber(xmlCctopInvoice.getGrandTotal(), decimalFormat));
 		invoice.setInvoiceDocumentno(xmlCctopInvoice.getInvoiceDocumentno());
 		invoice.setIsoCode(xmlCctopInvoice.getISOCode());
-		invoice.setMovementDate(extractMovementDate(xmlCctopInvoice));
+		invoice.setMovementDate(toDate(xmlCctopInvoice.getMovementDate()));
 		// 05768
 		if (xmlCctopInvoice.getPOReference() != null && !xmlCctopInvoice.getPOReference().isEmpty())
 		{
@@ -139,24 +137,12 @@ public class CompuDataInvoicBean
 		invoice.setCctop140V(createCctop140VList(xmlCctopInvoice.getEDICctop140V(), decimalFormat));
 		invoice.setCctop901991V(createCctop901991VList(xmlCctopInvoice.getEDICctop901991V(), decimalFormat));
 
-		sortCctop500VLines(xmlCctopInvoice); // requirement, lines need to be sorted
+		xmlCctopInvoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine)); // requirement, lines need to be sorted
 		invoice.setCctopInvoice500V(createCctopInvoice500VList(xmlCctopInvoice.getEDICctopInvoic500V(), decimalFormat));
 
 		invoice.setCurrentDate(SystemTime.asDate());
 
 		return invoice;
-	}
-
-	private void sortCctop500VLines(final EDICctopInvoicVType xmlCctopInvoice)
-	{
-		final List<EDICctopInvoic500VType> cctop500VLines = xmlCctopInvoice.getEDICctopInvoic500V();
-		Collections.sort(
-				cctop500VLines,
-				(iol1, iol2) -> {
-					final BigInteger line1 = iol1.getLine();
-					final BigInteger line2 = iol2.getLine();
-					return line1.compareTo(line2);
-				});
 	}
 
 	private Cctop000V createCctop000V(final EDICctopInvoicVType xmlCctopInvoice, final DecimalFormat decimalFormat, final Exchange exchange)

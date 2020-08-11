@@ -672,32 +672,4 @@ public final class Util
 
 		return result;
 	}
-
-	public static Date extractDateOrdered(@NonNull final EDICctopInvoicVType invoice)
-	{
-		try
-		{
-			final EDICctopInvoicVType.DateOrdered dateOrderedXML = ValidationHelper.validateObject(invoice.getDateOrdered(),
-					"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @DateOrdered@");
-			return new SimpleDateFormat(invoice.getMovementDate().getDateFormat()).parse(dateOrderedXML.getValue());
-		}
-		catch (final ParseException e)
-		{
-			throw new RuntimeCamelException(e);
-		}
-	}
-
-	public static Date extractMovementDate(@NonNull final EDICctopInvoicVType invoice)
-	{
-		try
-		{
-			final EDICctopInvoicVType.MovementDate movementDateXML = ValidationHelper.validateObject(invoice.getMovementDate(),
-					"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @MovementDate@");
-			return new SimpleDateFormat(invoice.getMovementDate().getDateFormat()).parse(movementDateXML.getValue());
-		}
-		catch (final ParseException e)
-		{
-			throw new RuntimeCamelException(e);
-		}
-	}
 }

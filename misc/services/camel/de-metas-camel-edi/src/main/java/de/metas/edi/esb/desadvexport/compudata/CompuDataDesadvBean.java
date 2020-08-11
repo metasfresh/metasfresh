@@ -59,8 +59,6 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	 * <li>IN: {@link EDIExpDesadvType}</li>
 	 * <li>OUT: {@link H000}</li>
 	 * </ul>
-	 *
-	 * @param exchange
 	 */
 	@Override
 	public final void createEDIData(final Exchange exchange)
@@ -70,7 +68,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		validateString(exchange.getProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST, String.class), "exchange property " + CompuDataDesadvRoute.EDI_DESADV_IS_TEST + " cannot be null or empty");
 
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
-		sortLines(xmlDesadv);
+		xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
 
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 
@@ -78,22 +76,6 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		final JavaSource source = new JavaSource(desadvDocument);
 		exchange.getIn().setBody(source, H000.class);
-	}
-
-	private void sortLines(final EDIExpDesadvType desadv)
-	{
-		// sort M_InOutLines
-		final List<EDIExpDesadvLineType> desadvLines = desadv.getEDIExpDesadvLine();
-		Collections.sort(desadvLines, new Comparator<EDIExpDesadvLineType>()
-		{
-			@Override
-			public int compare(final EDIExpDesadvLineType iol1, final EDIExpDesadvLineType iol2)
-			{
-				final BigInteger line1 = iol1.getLine();
-				final BigInteger line2 = iol2.getLine();
-				return line1.compareTo(line2);
-			}
-		});
 	}
 
 	private H000 createEDIDesadvFromXMLBean(final EDIExpDesadvType xmlDesadv, final DecimalFormat decimalFormat, final String testFlag)
@@ -105,7 +87,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		h000.setReference(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		h000.setTestFlag(testFlag);
 
-		final List<H100> h100Lines = new ArrayList<H100>();
+		final List<H100> h100Lines = new ArrayList<>();
 		// for (final EDIExpMInOutType xmlInOut : xmlDesadv.getEDIExpMInOut())
 		// {
 		final List<H100> partialH100Lines = createH100LinesFromXmlDesadv(xmlDesadv, decimalFormat);
@@ -348,7 +330,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setDeliverUnit(xmlDesadvLine.getCUOMID().getX12DE355());
 
 		p102.setDeliverQual("12"); // TODO hardcoded
-		BigDecimal qtyDelivered = ZERO;
+		final BigDecimal qtyDelivered = ZERO;
 
 		p102.setDifferenceQTY(formatNumber(xmlDesadvLine.getQtyEntered().subtract(qtyDelivered), decimalFormat));
 
