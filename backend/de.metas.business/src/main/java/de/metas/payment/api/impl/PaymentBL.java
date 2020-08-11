@@ -106,6 +106,9 @@ public class PaymentBL implements IPaymentBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
+	private final String PAYPAL_INTERNAL_NAME = "SOURCE.webshop.paypal.prepaid_B2C";
+
+
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
@@ -427,10 +430,21 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public boolean isPaypalOrCreditCardPayment(I_C_Payment payment)
+	public String isPaypalOrCreditCardPayment(final I_C_Payment payment, final int paypalDataSourceId, final int creditCardDataSourceId)
 	{
+
 		final I_C_Order order = orderBL.getByExternalId(ExternalId.of(payment.getExternalOrderId()));
-		return order.getAD_InputDataSource_ID() == 540175 || order.getAD_InputDataSource_ID() == 1;
+		if (order.getAD_InputDataSource_ID() == paypalDataSourceId)
+		{
+			return "L";
+		}
+
+		if (order.getAD_InputDataSource_ID() == creditCardDataSourceId)
+		{
+			return "K";
+		}
+
+		return "P";
 	}
 
 	@Override
@@ -461,6 +475,7 @@ public class PaymentBL implements IPaymentBL
 		for (I_C_Payment payment : payments)
 		{
 			payment.setC_Order_ID(ids.get(ExternalId.of(payment.getExternalOrderId())).getRepoId());
+			save(payment);
 		}
 	}
 
@@ -470,6 +485,7 @@ public class PaymentBL implements IPaymentBL
 		for (I_C_Payment payment : payments)
 		{
 			payment.setC_Invoice_ID(ids.get(OrderId.ofRepoId(payment.getC_Order_ID())).getRepoId());
+			save(payment);
 		}
 	}
 
