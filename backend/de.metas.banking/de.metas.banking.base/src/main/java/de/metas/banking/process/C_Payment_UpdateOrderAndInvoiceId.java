@@ -108,10 +108,9 @@ public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IP
 
 	private List<I_C_Payment> getSelectedPayments()
 	{
-		final Set<PaymentId> paymentIds = getSelectedIncludedRecordIds(I_C_Payment.class).stream().map(PaymentId::ofRepoId)
-				.collect(Collectors.toSet());
-		final List<I_C_Payment> payments = paymentBL.getByIds(paymentIds);
-		return payments;
+		return retrieveSelectedRecordsQueryBuilder(I_C_Payment.class)
+				.create()
+				.list();
 	}
 
 }
