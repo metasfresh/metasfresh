@@ -336,7 +336,7 @@ describe('MasterWindowContainer', () => {
       // createWaitForElement('tbody')(wrapper).then((component) => {
       //   expect(wrapper.find('tbody tr').length).toBe(4);
       //   expect(wrapper.html()).toContain('288.86');
-      // }); // see above comments why I commented this
+      // }); // see above comments regarding createWaitForElement why I commented this
       await waitForExpect(() => {
         wrapper.update();
         expect(wrapper.find('tbody tr').length).toBe(4);
