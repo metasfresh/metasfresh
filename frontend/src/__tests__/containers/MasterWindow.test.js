@@ -333,10 +333,16 @@ describe('MasterWindowContainer', () => {
         }, 5000);
       });
 
-      createWaitForElement('tbody')(wrapper).then((component) => {
+      // createWaitForElement('tbody')(wrapper).then((component) => {
+      //   expect(wrapper.find('tbody tr').length).toBe(4);
+      //   expect(wrapper.html()).toContain('288.86');
+      // }); // see above comments why I commented this
+      await waitForExpect(() => {
+        wrapper.update();
         expect(wrapper.find('tbody tr').length).toBe(4);
         expect(wrapper.html()).toContain('288.86');
       });
+
 
       // wait for the DOM to be updated
       await waitFor(
