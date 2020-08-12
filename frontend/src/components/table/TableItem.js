@@ -74,7 +74,7 @@ class TableItem extends PureComponent {
     }
   }
 
-  initPropertyEditor = (fieldName) => {
+  initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
 
     if (cols && fieldsByName) {
@@ -84,7 +84,14 @@ class TableItem extends PureComponent {
           const widgetData = prepareWidgetData(item, fieldsByName);
 
           if (widgetData) {
-            this.handleEditProperty(null, property, true, widgetData[0]);
+            this.handleEditProperty(
+              null,
+              property,
+              true,
+              widgetData[0],
+              false,
+              mark
+            );
           }
         }
       });
@@ -173,9 +180,9 @@ class TableItem extends PureComponent {
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
    */
-  handleEditProperty = (e, property, focus, item, select) => {
+  handleEditProperty = (e, property, focus, item, select, mark) => {
     this._focusCell(property, () => {
-      this._editProperty(e, property, focus, item, select);
+      this._editProperty({ e, property, focus, item, select, mark });
     });
   };
 
@@ -190,7 +197,7 @@ class TableItem extends PureComponent {
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
    */
-  _editProperty = (e, property, focus, item, select) => {
+  _editProperty = ({ e, property, focus, item, select, mark }) => {
     if (item ? !item.readonly : true) {
       if (this.state.edited === property && e) e.stopPropagation();
 
@@ -210,6 +217,7 @@ class TableItem extends PureComponent {
             )[0];
 
             if (elem) {
+              mark && elem.select();
               elem.focus();
             }
 

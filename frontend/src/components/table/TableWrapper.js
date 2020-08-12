@@ -173,7 +173,10 @@ class TableWrapper extends PureComponent {
     const selectedId = selected[0];
 
     if (this.rowRefs && this.rowRefs[selectedId]) {
-      this.rowRefs[selectedId].initPropertyEditor(contextMenu.fieldName);
+      this.rowRefs[selectedId].initPropertyEditor({
+        fieldName: contextMenu.fieldName,
+        mark: true,
+      });
     }
     //}
   };
@@ -188,7 +191,10 @@ class TableWrapper extends PureComponent {
       this.closeContextMenu();
 
       if (this.rowRefs && this.rowRefs[selectedId]) {
-        this.rowRefs[selectedId].initPropertyEditor(contextMenu.fieldName);
+        this.rowRefs[selectedId].initPropertyEditor({
+          fieldName: contextMenu.fieldName,
+          mark: false,
+        });
       }
     }
   };
