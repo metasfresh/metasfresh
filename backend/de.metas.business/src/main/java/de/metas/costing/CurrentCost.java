@@ -191,12 +191,17 @@ public final class CurrentCost
 
 	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
-		currentQty = currentQty.add(qtyToAdd);
+		 currentQty = currentQty.add(qtyToAdd).toZeroIfNegative();
 	}
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
 		this.costPrice = costPrice;
+	}
+	
+	public void setOwnCostPrice(@NonNull final CostAmount ownCostPrice)
+	{
+		setCostPrice(getCostPrice().withOwnCostPrice(ownCostPrice));
 	}
 
 	public void addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)
