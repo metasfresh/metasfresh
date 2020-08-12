@@ -24,6 +24,7 @@ package de.metas.edi.esb.invoicexport.ecosio;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
@@ -101,12 +102,12 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 
 		from(EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 				.routeId(ROUTE_ID)
+				.streamCaching()
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOICE_SENDER_GLN).constant(senderGln)
 				.setProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
-				.log(LoggingLevel.INFO, "Setting EDI feedback headers...")
 				.process(exchange -> {
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
@@ -117,13 +118,16 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
 
 					xmlCctopInvoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
+
+					final String fileName = "INVOIC_" + xmlCctopInvoice.getInvoiceDocumentno() + "_" + SystemTime.millis() + ".xml";
+					exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 				})
 
 				.log(LoggingLevel.INFO, "Marshalling EDI XML Java Object to XML...")
 				.marshal(dataFormat)
 
 				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
-				.log(LoggingLevel.INFO, "Sending ecosio-XML to the endpoint(s):\r\n" + body())
+				.log(LoggingLevel.INFO, "Sending ecosio-XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
 				.multicast().stopOnException().parallelProcessing(false).to(endPointURIs)
 				.end()
 

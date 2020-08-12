@@ -22,13 +22,15 @@
 
 package de.metas.edi.esb.invoicexport.stepcom;
 
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.util.Arrays;
-
-import javax.xml.namespace.QName;
-
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
+import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
+import de.metas.edi.esb.jaxb.stepcom.invoice.ObjectFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
@@ -38,14 +40,10 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
-import de.metas.edi.esb.jaxb.stepcom.invoice.ObjectFactory;
-import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
-import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import javax.xml.namespace.QName;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 
 @Component
 @PropertySources(value = {
@@ -102,6 +100,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 
 		from(EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
+				.streamCaching()
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOICE_SENDER_GLN).constant(senderGln)

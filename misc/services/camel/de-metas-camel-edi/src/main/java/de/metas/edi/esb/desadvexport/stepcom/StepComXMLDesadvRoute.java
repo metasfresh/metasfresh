@@ -103,6 +103,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 		from(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
+				.streamCaching()
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID).constant(ownerId)
@@ -125,7 +126,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Marshalling STEPcom-XML Java Object -> XML...")
 				.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}")
+				.log(LoggingLevel.INFO, "Output file's name=${in.headers." + Exchange.FILE_NAME + "}")
 				.log(LoggingLevel.INFO, "Sending STEPcom-XML to the endpoint(s):\r\n" + body())
 				.multicast()
 				.stopOnException()

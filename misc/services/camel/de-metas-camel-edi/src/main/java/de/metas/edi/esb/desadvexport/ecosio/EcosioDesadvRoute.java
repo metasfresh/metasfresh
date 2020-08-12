@@ -24,6 +24,7 @@ package de.metas.edi.esb.desadvexport.ecosio;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
@@ -67,7 +68,6 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 
 	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.ecosio.remote";
 
-
 	@Override
 	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
@@ -96,32 +96,32 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 
 		from(EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
+				.streamCaching()
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(EcosioDesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
-				.log(LoggingLevel.INFO, "Setting EDI feedback headers...")
 				.process(exchange -> {
+					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
+					// make sure that our lines are sorted by line number
+					xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
+
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
-
-					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
-
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValueAttr());
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 
-					// also make sure that our lines are sorted by line number
-					xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
+					final String fileName = "DESADV_" + xmlDesadv.getDocumentNo() + "_" + SystemTime.millis() + ".xml";
+					exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 				})
 
 				.log(LoggingLevel.INFO, "Marshalling XML Java Object -> XML...")
 				.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}")
-				.log(LoggingLevel.INFO, "Sending XML to the endpoint(s):\r\n" + body())
+				.log(LoggingLevel.INFO, "Output file's name=${in.headers." + Exchange.FILE_NAME + "}")
+				//.log(LoggingLevel.INFO, "Sending this XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
 				.multicast()
-				.stopOnException()
-				.to(endPointURIs)
+				.stopOnException().parallelProcessing(false).to(endPointURIs)
 				.end()
 
 				.log(LoggingLevel.INFO, "Creating metasfresh success feedback XML Java Object...")
