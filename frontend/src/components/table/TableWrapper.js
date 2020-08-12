@@ -156,6 +156,8 @@ class TableWrapper extends PureComponent {
     }
   };
 
+  handleFocusAction = () => {}; // use `fieldName` as param to get the field focused
+
   handleFieldEdit = () => {
     const { selected } = this.props;
     const { contextMenu } = this.state;
@@ -357,6 +359,7 @@ class TableWrapper extends PureComponent {
           <Table
             {...this.props}
             handleSelect={this.handleSelect}
+            handleFocusAction={this.handleFocusAction}
             onRightClick={this.handleRightClick}
             rowRefs={this.rowRefs}
             ref={this.setTableRef}
@@ -420,6 +423,7 @@ class TableWrapper extends PureComponent {
                 ? this.handleDelete
                 : null
             }
+            onFastInlineEdit={this.handleFieldEdit}
             onGetAllLeaves={onGetAllLeaves}
             onIndent={this.handleShortcutIndent}
           />

@@ -395,6 +395,7 @@ class TableItem extends PureComponent {
        * quickactions in grids.
        */
       onItemChange,
+      handleFocusAction,
     } = this.props;
     const {
       edited,
@@ -474,6 +475,7 @@ class TableItem extends PureComponent {
                 isRowSelected={isSelected}
                 isEdited={isEdited}
                 handleDoubleClick={this.handleEditProperty}
+                handleFocusAction={handleFocusAction}
                 onClickOutside={this.handleClickOutside}
                 onCellChange={onItemChange}
                 updatedRow={updatedRow || newRow}
@@ -647,6 +649,7 @@ TableItem.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table
   hasComments: PropTypes.bool,
+  handleFocusAction: PropTypes.func,
 };
 
 export default TableItem;
