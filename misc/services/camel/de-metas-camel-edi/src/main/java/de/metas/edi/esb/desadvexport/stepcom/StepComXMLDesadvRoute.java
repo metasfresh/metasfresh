@@ -22,12 +22,16 @@
 
 package de.metas.edi.esb.desadvexport.stepcom;
 
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-
-import javax.xml.namespace.QName;
-
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
+import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
+import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.stepcom.desadv.ObjectFactory;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
@@ -37,15 +41,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
-import de.metas.edi.esb.jaxb.stepcom.desadv.ObjectFactory;
-import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
-import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
-import lombok.NonNull;
+import javax.xml.namespace.QName;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 
 @Component
 @PropertySources(value = {
@@ -73,7 +71,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 	private static final String JAXB_DESADV_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
 	@Override
-	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
+	protected void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
 		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 

@@ -43,7 +43,7 @@ public abstract class AbstractEDIDesadvCommonBean
 	 * <li>OUT: {@link H000}</li>
 	 * </ul>
 	 *
-	 * @param exchange
+	 * Note: invoked by camel via reflection
 	 */
 	public abstract void createEDIData(final Exchange exchange);
 }
