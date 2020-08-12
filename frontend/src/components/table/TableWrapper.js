@@ -156,7 +156,27 @@ class TableWrapper extends PureComponent {
     }
   };
 
-  handleFocusAction = () => {}; // use `fieldName` as param to get the field focused
+  handleFocusAction = (fieldName) => {
+    this.setState({
+      contextMenu: {
+        ...this.state.contextMenu,
+        fieldName,
+      },
+    });
+  };
+
+  handleFastInlineEdit = () => {
+    const { selected } = this.props;
+    const { contextMenu } = this.state;
+    // a routine needs to be added in here - to check if field is allowed to be edited
+    // if (contextMenu.supportFieldEdit && selected.length === 1) {
+    const selectedId = selected[0];
+
+    if (this.rowRefs && this.rowRefs[selectedId]) {
+      this.rowRefs[selectedId].initPropertyEditor(contextMenu.fieldName);
+    }
+    //}
+  };
 
   handleFieldEdit = () => {
     const { selected } = this.props;
@@ -423,7 +443,7 @@ class TableWrapper extends PureComponent {
                 ? this.handleDelete
                 : null
             }
-            onFastInlineEdit={this.handleFieldEdit}
+            onFastInlineEdit={this.handleFastInlineEdit}
             onGetAllLeaves={onGetAllLeaves}
             onIndent={this.handleShortcutIndent}
           />
