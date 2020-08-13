@@ -1,10 +1,6 @@
 /*
  * #%L
-<<<<<<< HEAD:misc/services/camel/de-metas-camel-edi/src/main/java/de/metas/edi/esb/desadvexport/stepcom/qualifier/PackagingCode.java
  * de-metas-edi-esb-camel
-=======
- * de.metas.handlingunits.base
->>>>>>> origin/intensive_care_uat:backend/de.metas.handlingunits.base/src/main/java/de/metas/handlingunits/impl/CreatePackagesRequest.java
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
