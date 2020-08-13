@@ -1,14 +1,24 @@
 package de.metas.costing.methods;
 
+import java.util.Objects;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailVoidRequest;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -94,5 +104,101 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		currentCosts.addToCurrentQtyAndCumulate(request.getQty().negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
 
 		utils.saveCurrentCost(currentCosts);
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull MoveCostsRequest request)
+	{
+		final CostElement costElement = request.getCostElement();
+		if (costElement == null)
+		{
+			throw new AdempiereException("No cost element: " + request);
+		}
+
+		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
+
+		//
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CostPrice outboundCurrentCostPrice = outboundCurrentCosts.getCostPrice();
+		final Quantity outboundQty = request.getQtyToMove().negate();
+		final CostAmount outboundAmt = outboundCurrentCostPrice.multiply(outboundQty).roundToPrecisionIfNeeded(outboundCurrentCosts.getPrecision());
+		final CostDetailCreateRequest outboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getOutboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getOutboundDocumentRef())
+				.costElement(costElement)
+				.amt(outboundAmt)
+				.qty(outboundQty)
+				.date(request.getDate())
+				.build();
+
+		//
+		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
+		final CurrentCost inboundCurrentCosts = Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement)
+				? outboundCurrentCosts
+				: utils.getCurrentCost(inboundSegmentAndElement);
+		final CostPrice inboundCurrentCostPrice = outboundCurrentCosts.getCostPrice();
+		final Quantity inboundQty = outboundQty.negate();
+		final CostAmount inboundAmt = inboundCurrentCostPrice.multiply(inboundQty).roundToPrecisionIfNeeded(inboundCurrentCosts.getPrecision());
+		final CostDetailCreateRequest inboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getInboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getInboundDocumentRef())
+				.costElement(costElement)
+				.amt(inboundAmt)
+				.qty(inboundQty)
+				.date(request.getDate())
+				.build();
+
+		//
+		// Moving costs inside costing segment
+		// => no changes, just record the cost details
+		final CostDetailCreateResult outboundResult;
+		final CostDetailCreateResult inboundResult;
+		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
+		{
+			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest);
+			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest);
+		}
+		//
+		// Moving costs between costing segments
+		// => change current costs, record the cost details
+		else
+		{
+			outboundResult = utils.createCostDetailRecordWithChangedCosts(
+					outboundCostDetailRequest,
+					outboundCurrentCosts);
+
+			outboundCurrentCosts.addToCurrentQtyAndCumulate(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(outboundCurrentCosts);
+
+			// Inbound cost
+			inboundResult = utils.createCostDetailRecordWithChangedCosts(
+					inboundCostDetailRequest,
+					inboundCurrentCosts);
+
+			inboundCurrentCosts.addWeightedAverage(
+					inboundCostDetailRequest.getAmt(),
+					inboundCostDetailRequest.getQty(),
+					utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(inboundCurrentCosts);
+		}
+
+		return MoveCostsResult.builder()
+				.outboundCosts(AggregatedCostAmount.builder()
+						.costSegment(outboundSegmentAndElement.toCostSegment())
+						.amount(costElement, outboundResult.getAmt())
+						.build())
+				.inboundCosts(AggregatedCostAmount.builder()
+						.costSegment(inboundSegmentAndElement.toCostSegment())
+						.amount(costElement, inboundResult.getAmt())
+						.build())
+				.build();
 	}
 }

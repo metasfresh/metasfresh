@@ -24,6 +24,8 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -249,6 +251,13 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 }

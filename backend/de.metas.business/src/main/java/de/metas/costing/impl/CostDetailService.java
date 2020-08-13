@@ -25,6 +25,7 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.MoveCostsRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -191,6 +192,44 @@ public class CostDetailService implements ICostDetailService
 				.productId(request.getProductId())
 				.clientId(request.getClientId())
 				.orgId(request.getOrgId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.costElementId(request.getCostElementId())
+				.build();
+	}
+
+	@Override
+	public CostSegmentAndElement extractOutboundCostSegmentAndElement(final MoveCostsRequest request)
+	{
+		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
+		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
+
+		return CostSegmentAndElement.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(request.getAcctSchemaId())
+				.costTypeId(costTypeId)
+				.productId(request.getProductId())
+				.clientId(request.getClientId())
+				.orgId(request.getOutboundOrgId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.costElementId(request.getCostElementId())
+				.build();
+	}
+
+	@Override
+	public CostSegmentAndElement extractInboundCostSegmentAndElement(final MoveCostsRequest request)
+	{
+		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
+		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
+
+		return CostSegmentAndElement.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(request.getAcctSchemaId())
+				.costTypeId(costTypeId)
+				.productId(request.getProductId())
+				.clientId(request.getClientId())
+				.orgId(request.getInboundOrgId())
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.costElementId(request.getCostElementId())
 				.build();

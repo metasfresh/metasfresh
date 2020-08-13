@@ -49,6 +49,10 @@ public interface ICostDetailService
 
 	CostSegmentAndElement extractCostSegmentAndElement(CostDetailCreateRequest request);
 
+	CostSegmentAndElement extractOutboundCostSegmentAndElement(MoveCostsRequest request);
+
+	CostSegmentAndElement extractInboundCostSegmentAndElement(MoveCostsRequest request);
+
 	CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull CostDetailCreateRequest request);
 
 	CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull CostDetailCreateRequest request, @NonNull CurrentCost previousCosts);
@@ -56,4 +60,5 @@ public interface ICostDetailService
 	CostDetail create(CostDetailBuilder costDetailBuilder);
 
 	void delete(CostDetail costDetail);
+
 }

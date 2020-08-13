@@ -25,6 +25,8 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
@@ -224,6 +226,13 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 }

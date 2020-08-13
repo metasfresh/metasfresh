@@ -19,6 +19,7 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.MoveCostsRequest;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
@@ -96,6 +97,16 @@ public class CostingMethodHandlerUtils
 	public CostSegmentAndElement extractCostSegmentAndElement(final CostDetailCreateRequest request)
 	{
 		return costDetailsService.extractCostSegmentAndElement(request);
+	}
+
+	public CostSegmentAndElement extractOutboundCostSegmentAndElement(@NonNull final MoveCostsRequest request)
+	{
+		return costDetailsService.extractOutboundCostSegmentAndElement(request);
+	}
+
+	public CostSegmentAndElement extractInboundCostSegmentAndElement(@NonNull final MoveCostsRequest request)
+	{
+		return costDetailsService.extractInboundCostSegmentAndElement(request);
 	}
 
 	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)

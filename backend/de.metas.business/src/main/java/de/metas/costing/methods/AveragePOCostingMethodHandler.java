@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
@@ -30,10 +32,14 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
@@ -146,8 +152,12 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final CostDetailCreateRequest requestEffective;
 
+		//
+		// Inbound transactions (qty >= 0)
+		// or Reversals
 		if (isInboundTrx || request.isReversal())
 		{
+			// Seed/initial costs import
 			if (request.getDocumentRef().isInventoryLine() && qty.signum() == 0)
 			{
 				requestEffective = request.withAmount(request.getAmt().toZero());
@@ -172,6 +182,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				currentCosts.addWeightedAverage(requestEffective.getAmt(), qty, utils.getQuantityUOMConverter());
 			}
 		}
+		//
+		// Outbound transactions (qty < 0)
 		else
 		{
 			final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
@@ -180,10 +192,102 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				requestEffective,
+				currentCosts);
+
 		utils.saveCurrentCost(currentCosts);
 
 		return result;
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		final CostElement costElement = request.getCostElement();
+		if (costElement == null)
+		{
+			throw new AdempiereException("No cost element: " + request);
+		}
+
+		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
+		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
+
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CostPrice currentCostPrice = outboundCurrentCosts.getCostPrice();
+		final Quantity outboundQty = request.getQtyToMove().negate();
+		final CostAmount outboundAmt = currentCostPrice.multiply(outboundQty).roundToPrecisionIfNeeded(outboundCurrentCosts.getPrecision());
+
+		final CostDetailCreateRequest outboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getOutboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getOutboundDocumentRef())
+				.costElement(costElement)
+				.amt(outboundAmt)
+				.qty(outboundQty)
+				.date(request.getDate())
+				.build();
+		final CostDetailCreateRequest inboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getInboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getInboundDocumentRef())
+				.costElement(costElement)
+				.amt(outboundAmt.negate())
+				.qty(outboundQty.negate())
+				.date(request.getDate())
+				.build();
+
+		//
+		// Moving costs inside costing segment
+		// => no changes, just record the cost details
+		final CostDetailCreateResult outboundResult;
+		final CostDetailCreateResult inboundResult;
+		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
+		{
+			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest);
+			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest);
+		}
+		//
+		// Moving costs between costing segments
+		// => change current costs, record the cost details
+		else
+		{
+			outboundResult = utils.createCostDetailRecordWithChangedCosts(
+					outboundCostDetailRequest,
+					outboundCurrentCosts);
+
+			outboundCurrentCosts.addToCurrentQtyAndCumulate(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(outboundCurrentCosts);
+
+			// Inbound cost
+			final CurrentCost inboundCurrentCosts = utils.getCurrentCost(inboundSegmentAndElement);
+			inboundResult = utils.createCostDetailRecordWithChangedCosts(
+					inboundCostDetailRequest,
+					inboundCurrentCosts);
+
+			inboundCurrentCosts.addWeightedAverage(
+					inboundCostDetailRequest.getAmt(),
+					inboundCostDetailRequest.getQty(),
+					utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(inboundCurrentCosts);
+		}
+
+		return MoveCostsResult.builder()
+				.outboundCosts(AggregatedCostAmount.builder()
+						.costSegment(outboundSegmentAndElement.toCostSegment())
+						.amount(costElement, outboundResult.getAmt())
+						.build())
+				.inboundCosts(AggregatedCostAmount.builder()
+						.costSegment(inboundSegmentAndElement.toCostSegment())
+						.amount(costElement, inboundResult.getAmt())
+						.build())
+				.build();
 	}
 
 	@Override
