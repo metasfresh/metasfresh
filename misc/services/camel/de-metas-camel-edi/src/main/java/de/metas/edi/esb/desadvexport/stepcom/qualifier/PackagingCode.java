@@ -24,7 +24,6 @@
  * #L%
  */
 
-<<<<<<< HEAD:misc/services/camel/de-metas-camel-edi/src/main/java/de/metas/edi/esb/desadvexport/stepcom/qualifier/PackagingCode.java
 package de.metas.edi.esb.desadvexport.stepcom.qualifier;
 
 public enum PackagingCode
@@ -48,31 +47,4 @@ public enum PackagingCode
 	CART,
 
 	BOXS
-=======
-package de.metas.handlingunits.impl;
-
-import de.metas.inout.InOutId;
-import de.metas.shipping.ShipperId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.List;
-
-@Value
-@Builder
-public class CreatePackagesRequest
-{
-	@NonNull
-	InOutId inOutId;
-
-	@NonNull
-	ShipperId shipperId;
-
-	boolean processed;
-
-	@Nullable
-	List<String> trackingCodes;
->>>>>>> origin/intensive_care_uat:backend/de.metas.handlingunits.base/src/main/java/de/metas/handlingunits/impl/CreatePackagesRequest.java
 }

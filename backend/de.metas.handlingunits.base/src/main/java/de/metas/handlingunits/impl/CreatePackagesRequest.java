@@ -23,32 +23,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-<<<<<<< HEAD:misc/services/camel/de-metas-camel-edi/src/main/java/de/metas/edi/esb/desadvexport/stepcom/qualifier/PackagingCode.java
-package de.metas.edi.esb.desadvexport.stepcom.qualifier;
-
-public enum PackagingCode
-{
-	/** Pallet ISO 1 - 1/1 EURO Pallet */
-	ISO1,
-
-	/** Pallet ISO 1 - 1/2 EURO Pallet */
-	ISO2,
-
-
-	ONEW,
-
-	RETR,
-
-	PACK,
-
-	SLPS,
-
-	/** Carton */
-	CART,
-
-	BOXS
-=======
 package de.metas.handlingunits.impl;
 
 import de.metas.inout.InOutId;
@@ -74,5 +48,4 @@ public class CreatePackagesRequest
 
 	@Nullable
 	List<String> trackingCodes;
->>>>>>> origin/intensive_care_uat:backend/de.metas.handlingunits.base/src/main/java/de/metas/handlingunits/impl/CreatePackagesRequest.java
 }
