@@ -22,20 +22,18 @@
 
 package de.metas.edi.esb.commons.route;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
 import org.apache.camel.CamelContext;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 
 public abstract class AbstractEDIRoute extends RouteBuilder
 {
@@ -49,7 +47,6 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 
 	protected static final String IS_CREATE_XML_FEEDBACK = "IsCreateXMLFeedback";
 
-	protected static final String EDI_COMPUDATA_CHARSET_NAME = "edi.compudata.charset.name";
 	public static final String EDI_STEPCOM_CHARSET_NAME = "edi.stepcom.charset.name";
 
 
@@ -63,16 +60,9 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	public static final String EDI_ORDER_DELIVERY_VIA_RULE = "edi.order.deliveryviarule";
 
 	/**
-	 * The local folder where the EDI file will be stored if the conversion is successful
-	 */
-	protected static final String EP_EDI_LOCAL_Processed = "{{edi.local.processed}}";
-
-	/**
 	 * Replaces Camel's {@link RouteBuilder#configure()} when extending this class.
-	 *
-	 * @param jaxb
 	 */
-	protected abstract void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat);
+	protected abstract void configureEDIRoute(DataFormat jaxb, DecimalFormat decimalFormat);
 
 	@Override
 	public final void configure()
@@ -92,7 +82,6 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	}
 
 	/**
-	 * @param propertiesConfigurationPath
 	 * @return {@link SmooksDataFormat} data format for properties configuration
 	 */
 	protected final SmooksDataFormat getSDFForConfiguration(final String propertiesConfigurationPath)
@@ -117,9 +106,9 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 		final DecimalFormat decimalFormat = (DecimalFormat)NumberFormat.getInstance();
 
 		final CamelContext context = getContext();
-		decimalFormat.setMaximumFractionDigits(Integer.valueOf(Util.resolveProperty(context, "edi.decimalformat.maximumFractionDigits")));
+		decimalFormat.setMaximumFractionDigits(Integer.parseInt(Util.resolveProperty(context, "edi.decimalformat.maximumFractionDigits")));
 
-		final boolean isGroupingUsed = Boolean.valueOf(Util.resolveProperty(context, "edi.decimalformat.isGroupingUsed"));
+		final boolean isGroupingUsed = Boolean.parseBoolean(Util.resolveProperty(context, "edi.decimalformat.isGroupingUsed"));
 		decimalFormat.setGroupingUsed(isGroupingUsed);
 
 		final DecimalFormatSymbols decimalFormatSymbols = decimalFormat.getDecimalFormatSymbols();

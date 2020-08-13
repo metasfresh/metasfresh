@@ -22,29 +22,26 @@
 
 package de.metas.edi.esb.excelimport;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.JAXBElement;
-
+import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import lombok.NonNull;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import javax.xml.bind.JAXBElement;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Camel Route for importing customer's Excel files to order candidates.
@@ -60,7 +57,7 @@ import de.metas.edi.esb.commons.route.AbstractEDIRoute;
  * </ul>
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 @Component
 public class ExcelOLCandRoute extends AbstractEDIRoute
@@ -74,7 +71,7 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 	public static final String INPUT_EXCEL_LOCAL = "{{excel.file.orders}}";
 
 	@Override
-	protected void configureEDIRoute(DataFormat jaxb, DecimalFormat decimalFormat)
+	protected void configureEDIRoute(@NonNull final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
 		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_EXCEL_REMOTE, "");
 		if (!Util.isEmpty(remoteEndpoint))
@@ -109,47 +106,41 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 				//
 				// NOTE: we process the whole excel file in one operation so everything is fine or everything will fail.
 				.log(LoggingLevel.INFO, "Excel: Importing $simple{in.header.CamelFilePath}")
-				.process(new Processor()
-				{
+				.process(exchange -> {
+					final ExcelConfigurationContext ctx = ExcelConfigurationContext.createFromExchange(exchange);
+					logger.info("Excel: Configuration: {}", ctx);
 
-					@Override
-					public void process(final Exchange exchange) throws Exception
+					final InputStream xlsInputStream = exchange.getIn().getBody(InputStream.class);
+					final List<Map<String, Object>> rows = xls2mapListConverter.convert(xlsInputStream);
+					logger.info("Excel: Parsed {} rows", rows.size());
+
+					final List<Object> output = new ArrayList<>(rows.size());
+					for (final Map<String, Object> row : rows)
 					{
-						final ExcelConfigurationContext ctx = ExcelConfigurationContext.createFromExchange(exchange);
-						logger.info("Excel: Configuration: {}", ctx);
+						final Excel_OLCand_Row xlsRow = Excel_OLCand_Row.ofMap(row);
 
-						final InputStream xlsInputStream = exchange.getIn().getBody(InputStream.class);
-						final List<Map<String, Object>> rows = xls2mapListConverter.convert(xlsInputStream);
-						logger.info("Excel: Parsed {} rows", rows.size());
-
-						final List<Object> output = new ArrayList<Object>(rows.size());
-						for (final Map<String, Object> row : rows)
+						// Discard rows on which user has ordered nothing.
+						if (xlsRow.getQtyInUOM() == null || xlsRow.getQtyInUOM().signum() <= 0)
 						{
-							final Excel_OLCand_Row xlsRow = Excel_OLCand_Row.ofMap(row);
-
-							// Discard rows on which user has ordered nothing.
-							if (xlsRow.getQtyInUOM() == null || xlsRow.getQtyInUOM().signum() <= 0)
-							{
-								logger.debug("Excel: Skip row because has no Qty to order: {}", xlsRow);
-								continue;
-							}
-
-							final XLSImpCOLCandType xmlOLCand = ExcelImpCOLCandTypeBuilder.newBuilder()
-									.setFromContext(ctx)
-									.setFromRow(xlsRow)
-									.build();
-
-							// NOTE: because our XML object is not annotated with @XmlRootElement the JAXB marshaler,
-							// we need to convert it to JAXBElement explicitelly,
-							// else, the marshaler will fail.
-							final JAXBElement<XLSImpCOLCandType> jaxbOLCand = Constants.JAXB_ObjectFactory.createXLSImpCOLCand(xmlOLCand);
-							output.add(jaxbOLCand);
+							logger.debug("Excel: Skip row because has no Qty to order: {}", xlsRow);
+							continue;
 						}
 
-						logger.info("Excel: We have {} of {} valid rows to be sent forward", output.size(), rows.size());
+						final XLSImpCOLCandType xmlOLCand = ExcelImpCOLCandTypeBuilder.newBuilder()
+								.setFromContext(ctx)
+								.setFromRow(xlsRow)
+								.build();
 
-						exchange.getOut().setBody(output);
+						// NOTE: because our XML object is not annotated with @XmlRootElement the JAXB marshaler,
+						// we need to convert it to JAXBElement explicitly,
+						// else, the marshaler will fail.
+						final JAXBElement<XLSImpCOLCandType> jaxbOLCand = Constants.JAXB_ObjectFactory.createXLSImpCOLCand(xmlOLCand);
+						output.add(jaxbOLCand);
 					}
+
+					logger.info("Excel: We have {} of {} valid rows to be sent forward", output.size(), rows.size());
+
+					exchange.getIn().setBody(output);
 				})
 				.split(body())
 				.marshal(jaxb)
