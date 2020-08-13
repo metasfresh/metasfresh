@@ -139,7 +139,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
 	{
 		final Quantity qty = request.getQty();
-		final boolean isInboundTrx = qty.signum() > 0;
+		final boolean isInboundTrx = qty.signum() >= 0;
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
@@ -148,14 +148,29 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		if (isInboundTrx || request.isReversal())
 		{
-			//in case the amount was not provided but there is a positive qty incoming
-			//use the current cost price to calculate the amount.
-			requestEffective = request.getAmt().isZero()
-					? request.withAmount(calculateAmountBasedOnExistingPrice(request, currentCosts))
-					: request;
+			if (request.getDocumentRef().isInventoryLine() && qty.signum() == 0)
+			{
+				requestEffective = request.withAmount(request.getAmt().toZero());
+				if (currentCosts.getCurrentQty().isZero())
+				{
+					currentCosts.setOwnCostPrice(request.getAmt());
+				}
+				else
+				{
+					// Do not change an existing positive cost price if there is also a positive qty
+				}
+			}
+			else
+			{
+				// in case the amount was not provided but there is a positive qty incoming
+				// use the current cost price to calculate the amount.
+				requestEffective = request.getAmt().isZero()
+						? request.withAmount(calculateAmountBasedOnExistingPrice(request, currentCosts))
+						: request;
 
-			currentCosts.addWeightedAverage(requestEffective.getAmt(), qty, utils.getQuantityUOMConverter());
-		}		
+				currentCosts.addWeightedAverage(requestEffective.getAmt(), qty, utils.getQuantityUOMConverter());
+			}
+		}
 		else
 		{
 			final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
@@ -381,11 +396,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.build();
 	}
 
-	private CostAmount calculateAmountBasedOnExistingPrice(final CostDetailCreateRequest request, final  CurrentCost currentCosts)
+	private CostAmount calculateAmountBasedOnExistingPrice(final CostDetailCreateRequest request, final CurrentCost currentCosts)
 	{
 		final CostPrice price = currentCosts.getCostPrice();
 
-		//make sure we are multiplying the cost price with the qty in the correct UOM, i.e the UOM of the cost price.
+		// make sure we are multiplying the cost price with the qty in the correct UOM, i.e the UOM of the cost price.
 		final Quantity qtyInCostUOM = utils.getQuantityUOMConverter().convertQuantityTo(request.getQty(), request.getProductId(), currentCosts.getUomId());
 
 		return price.multiply(qtyInCostUOM).roundToPrecisionIfNeeded(currentCosts.getPrecision());
