@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.model;
 
 
 /** Generated Interface for M_ReceiptSchedule_Alloc
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_ReceiptSchedule_Alloc 
@@ -14,17 +14,10 @@ public interface I_M_ReceiptSchedule_Alloc
     /** AD_Table_ID=540530 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -36,8 +29,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -46,8 +39,8 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,8 +52,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Catch Einheit.
-	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -69,8 +62,8 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
-	 * Get Catch Einheit.
-	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -82,8 +75,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -97,8 +90,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -110,8 +103,7 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -122,8 +114,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -139,8 +130,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -149,8 +140,8 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -164,7 +155,7 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lieferung/Wareneingang.
+	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
@@ -176,7 +167,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Lieferung/Wareneingang.
+	 * Get Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
@@ -199,8 +190,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Set Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -209,8 +200,8 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
-	 * Get Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Get Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -251,7 +242,7 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_M_ReceiptSchedule_Alloc_ID = "M_ReceiptSchedule_Alloc_ID";
 
 	/**
-	 * Set Wareneingangsdisposition.
+	 * Set Material Receipt Candidates.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -260,7 +251,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
 
 	/**
-	 * Get Wareneingangsdisposition.
+	 * Get Material Receipt Candidates.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -301,8 +292,7 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_QtyAllocated = "QtyAllocated";
 
 	/**
-	 * Set Zugeordnet Catch.
-	 * Tatsächlich zugeordnete Menge
+	 * Set Allocated catch.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -311,8 +301,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setQtyAllocatedInCatchUOM (java.math.BigDecimal QtyAllocatedInCatchUOM);
 
 	/**
-	 * Get Zugeordnet Catch.
-	 * Tatsächlich zugeordnete Menge
+	 * Get Allocated catch.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -351,7 +340,7 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_QtyWithIssues = "QtyWithIssues";
 
 	/**
-	 * Set Minderwertige Catch-Menge.
+	 * Set Catch quantity with issues.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -360,7 +349,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setQtyWithIssuesInCatchUOM (java.math.BigDecimal QtyWithIssuesInCatchUOM);
 
 	/**
-	 * Get Minderwertige Catch-Menge.
+	 * Get Catch quantity with issues.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -428,8 +417,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_QualityNote = "QualityNote";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -443,8 +432,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

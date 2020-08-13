@@ -24,7 +24,7 @@ export default class Table extends PureComponent {
 
   componentDidMount() {
     this._isMounted = true;
-
+    this.initialPaddingBottom = 100;
     if (this.props.autofocus && this.table) {
       this.table.focus();
     }
@@ -155,6 +155,7 @@ export default class Table extends PureComponent {
           ? item.includedView.windowType || item.includedView.windowId
           : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+        isModal,
       });
     }
   };
@@ -386,6 +387,7 @@ export default class Table extends PureComponent {
           }
         }}
         keyProperty={item[keyProperty]}
+        rowIndex={i}
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
@@ -399,6 +401,7 @@ export default class Table extends PureComponent {
           selected[0] === 'all' ||
           (!selected[0] && focusOnFieldName && i === 0)
         }
+        updateHeight={this.updateHeight}
         handleSelect={onSelect}
         contextType={item.type}
         caption={item.caption ? item.caption : ''}
@@ -432,6 +435,12 @@ export default class Table extends PureComponent {
     return false;
   };
 
+  updateHeight = (heightNew) => {
+    heightNew = heightNew ? heightNew : 0;
+    this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
+      heightNew}px`;
+  };
+
   render() {
     const {
       columns,
@@ -455,6 +464,7 @@ export default class Table extends PureComponent {
 
     return (
       <div
+        ref={(ref) => (this.tableContainer = ref)}
         className={classnames(
           'panel panel-primary panel-bordered',
           'panel-bordered-force table-flex-wrapper',

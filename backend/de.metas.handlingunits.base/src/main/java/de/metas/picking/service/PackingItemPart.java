@@ -10,7 +10,7 @@ import org.adempiere.warehouse.WarehouseId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.DeliveryRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

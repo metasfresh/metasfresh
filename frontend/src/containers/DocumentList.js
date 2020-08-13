@@ -23,14 +23,12 @@ import {
   resetView,
   deleteView,
   showIncludedView,
-  toggleIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
   updateTableSelection,
   updateGridTableData,
   deselectTableItems,
-  createGridTable,
 } from '../actions/TableActions';
 import { clearAllFilters } from '../actions/FiltersActions';
 import {
@@ -77,9 +75,9 @@ class DocumentListContainer extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    const { isModal, windowId, viewId } = this.props;
+    const { isModal, windowId, fetchLocationConfig } = this.props;
 
-    this.props.fetchLocationConfig(isModal ? viewId : windowId);
+    fetchLocationConfig(windowId, isModal);
   }
 
   componentDidMount = () => {
@@ -93,13 +91,12 @@ class DocumentListContainer extends Component {
     disconnectWS.call(this);
 
     deleteTable(getTableId({ windowId, viewId }));
-    deleteView(isModal ? viewId : windowId);
+    deleteView(windowId, isModal);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       viewId: nextViewId,
-      includedView: nextIncludedView,
       isIncluded: nextIsIncluded,
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
@@ -114,19 +111,15 @@ class DocumentListContainer extends Component {
       closeListIncludedView,
       viewId,
       resetView,
+      deleteView,
       clearAllFilters,
       deleteTable,
-      toggleIncludedView,
       isModal,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
     const included =
       includedView && includedView.windowType && includedView.viewId;
-    const nextIncluded =
-      nextIncludedView &&
-      nextIncludedView.windowType &&
-      nextIncludedView.viewId;
     const location = document.location;
 
     if (nextProps.filters.clearAll) {
@@ -155,8 +148,16 @@ class DocumentListContainer extends Component {
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
-      resetView(windowId);
       deleteTable(getTableId({ windowId, viewId }));
+
+      // if for instance we're replacing included view with a completely
+      // different view, we have no use of the old one and can safely
+      // remove it
+      if (nextWindowId === windowId) {
+        resetView(windowId, isModal);
+      } else {
+        deleteView(windowId, isModal);
+      }
 
       this.setState(
         {
@@ -177,11 +178,6 @@ class DocumentListContainer extends Component {
     }
 
     const stateChanges = {};
-
-    if (included && !nextIncluded) {
-      const identifier = isModal ? viewId : windowId;
-      toggleIncludedView(identifier, false);
-    }
 
     if (Object.keys(stateChanges).length) {
       this.setState({
@@ -286,20 +282,15 @@ class DocumentListContainer extends Component {
       updateRawModal,
       setModalDescription,
       isModal,
-      createGridTable,
     } = this.props;
 
-    fetchLayout(windowId, type, viewProfileId, isModal ? viewId : null)
+    fetchLayout(windowId, type, viewProfileId, isModal)
       .then((response) => {
         if (this.mounted) {
           const { allowedCloseActions } = response;
 
+          // TODO: Check if we still need to do this
           if (isModal) {
-            const tableId = getTableId({ windowId, viewId });
-            const tableData = { windowId, viewId, layout: response };
-
-            createGridTable(tableId, tableData);
-
             if (allowedCloseActions) {
               updateRawModal(windowId, { allowedCloseActions });
             }
@@ -372,12 +363,11 @@ class DocumentListContainer extends Component {
       createView,
       setModalDescription,
       isModal,
-      viewId,
     } = this.props;
     const { filtersActive } = this.state;
 
     createView({
-      windowType: windowId,
+      windowId,
       viewType: type,
       filters: filtersActive.toIndexedSeq().toArray(),
       referenceId: referenceId,
@@ -385,7 +375,7 @@ class DocumentListContainer extends Component {
       refDocumentId: refDocumentId,
       refTabId,
       refRowIds,
-      inModalId: isModal ? viewId : null,
+      isModal,
     })
       .then(({ viewId, data }) => {
         if (data && data.description && setModalDescription) {
@@ -418,6 +408,7 @@ class DocumentListContainer extends Component {
       setModalDescription,
       filterView,
       isModal,
+      updateRawModal,
     } = this.props;
     const { filtersActive } = this.state;
     // if we're applying filter, we should reset the page to the first one.
@@ -444,6 +435,10 @@ class DocumentListContainer extends Component {
           setListIncludedView({ windowType: windowId, viewId: newViewId });
         }
 
+        if (isModal) {
+          updateRawModal(windowId, { viewId: newViewId });
+        }
+
         this.mounted && this.getData(newViewId, page, sort, locationAreaSearch);
       })
       .catch((e) => {
@@ -464,7 +459,6 @@ class DocumentListContainer extends Component {
       fetchDocument,
       indicatorState,
       updateRawModal,
-      viewId,
       isModal,
       rawModalVisible,
     } = this.props;
@@ -477,21 +471,13 @@ class DocumentListContainer extends Component {
       sortingQuery && updateUri('sort', sortingQuery);
     }
 
-    // if we're filtering in a modal we don't want to create another entry in the state,
-    // but update the current (modal) view
-    let modalId = null;
-    if (isModal && id !== viewId) {
-      modalId = viewId;
-    }
-
     return fetchDocument({
-      windowType: windowId,
+      windowId,
       viewId: id,
       page,
       pageLength: this.pageLength,
       orderBy: sortingQuery,
-      useViewId: isModal,
-      modalId,
+      isModal,
     })
       .then((response) => {
         const result = response.result;
@@ -556,6 +542,7 @@ class DocumentListContainer extends Component {
       windowId,
       viewId,
       reduxData: { mapConfig },
+      isModal,
     } = this.props;
 
     locationSearchRequest({ windowId, viewId }).then(({ data }) => {
@@ -573,7 +560,7 @@ class DocumentListContainer extends Component {
       });
 
       if (locationData.length) {
-        addViewLocationData(windowId, locationData);
+        addViewLocationData(windowId, locationData, isModal);
       }
 
       if (mapConfig && mapConfig.provider && locationData.length) {
@@ -708,7 +695,7 @@ class DocumentListContainer extends Component {
   };
 
   /**
-   * @method showIncludedView
+   * @method showSelectedIncludedView
    * @summary ToDo: Describe the method.
    */
   showSelectedIncludedView = (selected) => {
@@ -733,6 +720,7 @@ class DocumentListContainer extends Component {
               ? item.includedView.windowType || item.includedView.windowId
               : null,
             viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+            isModal,
           });
         }
       });
@@ -805,7 +793,6 @@ export default connect(
     setListSorting,
     setListId,
     showIncludedView,
-    toggleIncludedView,
     push,
     updateRawModal,
     updateTableSelection,
@@ -813,7 +800,6 @@ export default connect(
     fetchLocationConfig,
     clearAllFilters,
     updateGridTableData,
-    createGridTable,
   },
   null,
   { forwardRef: true }
