@@ -14,6 +14,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
@@ -109,7 +110,9 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.extractInboundCostSegmentAndElement(request);
 	}
 
-	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts previousCosts)
 	{
 		return costDetailsService.createCostDetailRecordWithChangedCosts(request, previousCosts);
 	}

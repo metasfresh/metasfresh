@@ -9,6 +9,7 @@ import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
@@ -60,10 +61,12 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		utils.saveCurrentCost(currentCosts);
@@ -84,10 +87,12 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 
@@ -119,6 +124,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		//
 		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
 		final CostPrice outboundCurrentCostPrice = outboundCurrentCosts.getCostPrice();
 		final Quantity outboundQty = request.getQtyToMove().negate();
 		final CostAmount outboundAmt = outboundCurrentCostPrice.multiply(outboundQty).roundToPrecisionIfNeeded(outboundCurrentCosts.getPrecision());
@@ -140,6 +146,8 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CurrentCost inboundCurrentCosts = Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement)
 				? outboundCurrentCosts
 				: utils.getCurrentCost(inboundSegmentAndElement);
+		final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
+
 		final CostPrice inboundCurrentCostPrice = outboundCurrentCosts.getCostPrice();
 		final Quantity inboundQty = outboundQty.negate();
 		final CostAmount inboundAmt = inboundCurrentCostPrice.multiply(inboundQty).roundToPrecisionIfNeeded(inboundCurrentCosts.getPrecision());
@@ -173,7 +181,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			outboundResult = utils.createCostDetailRecordWithChangedCosts(
 					outboundCostDetailRequest,
-					outboundCurrentCosts);
+					outboundPreviousCosts);
 
 			outboundCurrentCosts.addToCurrentQtyAndCumulate(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
 			utils.saveCurrentCost(outboundCurrentCosts);
@@ -181,7 +189,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 			// Inbound cost
 			inboundResult = utils.createCostDetailRecordWithChangedCosts(
 					inboundCostDetailRequest,
-					inboundCurrentCosts);
+					inboundPreviousCosts);
 
 			inboundCurrentCosts.addWeightedAverage(
 					inboundCostDetailRequest.getAmt(),

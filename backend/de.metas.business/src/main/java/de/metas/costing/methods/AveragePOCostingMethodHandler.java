@@ -148,6 +148,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final boolean isInboundTrx = qty.signum() >= 0;
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
 		final CostDetailCreateRequest requestEffective;
@@ -194,7 +195,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
 				requestEffective,
-				currentCosts);
+				previousCosts);
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -258,18 +259,21 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		// => change current costs, record the cost details
 		else
 		{
+			final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
+			
 			outboundResult = utils.createCostDetailRecordWithChangedCosts(
 					outboundCostDetailRequest,
-					outboundCurrentCosts);
+					outboundPreviousCosts);
 
 			outboundCurrentCosts.addToCurrentQtyAndCumulate(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
 			utils.saveCurrentCost(outboundCurrentCosts);
 
 			// Inbound cost
 			final CurrentCost inboundCurrentCosts = utils.getCurrentCost(inboundSegmentAndElement);
+			final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
 			inboundResult = utils.createCostDetailRecordWithChangedCosts(
 					inboundCostDetailRequest,
-					inboundCurrentCosts);
+					inboundPreviousCosts);
 
 			inboundCurrentCosts.addWeightedAverage(
 					inboundCostDetailRequest.getAmt(),

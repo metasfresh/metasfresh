@@ -20,7 +20,6 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
-import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
@@ -74,11 +73,11 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CostDetailPreviousAmounts previousCosts)
 	{
 		final CostDetail costDetail = create(request.toCostDetailBuilder()
 				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
+				.previousAmounts(previousCosts));
 
 		return toCostDetailCreateResult(costDetail);
 	}

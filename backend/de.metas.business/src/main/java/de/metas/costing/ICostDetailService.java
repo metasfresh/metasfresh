@@ -55,7 +55,7 @@ public interface ICostDetailService
 
 	CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull CostDetailCreateRequest request);
 
-	CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull CostDetailCreateRequest request, @NonNull CurrentCost previousCosts);
+	CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull CostDetailCreateRequest request, @NonNull CostDetailPreviousAmounts previousCosts);
 
 	CostDetail create(CostDetailBuilder costDetailBuilder);
 

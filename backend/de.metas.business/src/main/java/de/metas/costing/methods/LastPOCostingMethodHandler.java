@@ -19,6 +19,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -75,7 +76,9 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		final CostAmount amt = request.getAmt();
 		final Quantity qty = request.getQty();
@@ -106,7 +109,9 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt(), utils.getQuantityUOMConverter());
 

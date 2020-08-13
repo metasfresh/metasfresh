@@ -20,6 +20,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -77,7 +78,9 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 
@@ -93,10 +96,12 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final boolean isReturnTrx = qty.signum() > 0;
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		
 		final CostDetailCreateResult result;
 		if (isReturnTrx)
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 			currentCosts.addWeightedAverage(request.getAmt(), qty, utils.getQuantityUOMConverter());
 		}
@@ -105,7 +110,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
