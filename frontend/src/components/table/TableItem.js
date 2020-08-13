@@ -124,9 +124,9 @@ class TableItem extends PureComponent {
     changeListenOnTrue();
   };
 
-  handleDoubleClick = () => {
+  handleDoubleClick = (e) => {
     const { rowId, onDoubleClick, supportOpenRecord } = this.props;
-
+    this.setState({ valueBeforeEditing: e.target.textContent });
     if (supportOpenRecord) {
       onDoubleClick && onDoubleClick(rowId);
     }
