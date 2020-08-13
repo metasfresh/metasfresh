@@ -162,9 +162,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			}
 			else
 			{
-				// in case the amount was not provided but there is a positive qty incoming
+				// In case the amount was not provided but there is a positive qty incoming
 				// use the current cost price to calculate the amount.
-				requestEffective = request.getAmt().isZero()
+				// In case of reversals, always consider the Amt.
+				requestEffective = request.getAmt().isZero() && !request.isReversal()
 						? request.withAmount(calculateAmountBasedOnExistingPrice(request, currentCosts))
 						: request;
 
