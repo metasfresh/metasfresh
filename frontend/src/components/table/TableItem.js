@@ -76,7 +76,7 @@ class TableItem extends PureComponent {
 
   initPropertyEditor = (fieldName) => {
     const { cols, fieldsByName } = this.props;
-
+    this.setState({ valueBeforeEditing: fieldsByName[fieldName].value });
     if (cols && fieldsByName) {
       cols.map((item) => {
         const property = item.fields[0].field;
@@ -133,8 +133,16 @@ class TableItem extends PureComponent {
   };
 
   handleKeyDown = (e, property, widgetData) => {
-    const { changeListenOnTrue } = this.props;
-    const { listenOnKeys, edited } = this.state;
+    const {
+      changeListenOnTrue,
+      rowId,
+      tabId,
+      entity,
+      modalVisible,
+      tableId,
+      updatePropertyValue,
+    } = this.props;
+    const { listenOnKeys, edited, valueBeforeEditing } = this.state;
 
     switch (e.key) {
       case 'Enter':
@@ -145,6 +153,15 @@ class TableItem extends PureComponent {
       case 'Tab':
       case 'Escape':
         if (edited === property) {
+          updatePropertyValue({
+            property,
+            value: valueBeforeEditing,
+            tabId,
+            rowId,
+            isModal: modalVisible,
+            entity,
+            tableId,
+          });
           e.stopPropagation();
           this.handleEditProperty(e);
           changeListenOnTrue();
@@ -647,6 +664,8 @@ TableItem.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table
   hasComments: PropTypes.bool,
+  tableId: PropTypes.string,
+  updatePropertyValue: PropTypes.func,
 };
 
 export default TableItem;
