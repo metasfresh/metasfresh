@@ -55,7 +55,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
     }
 
-    final def dockerInfo = readJSON file: 'de-metas-camel-shipping/target/jib-image.json'
+    final def dockerInfo = readJSON file: 'target/jib-image.json'
 
     currentBuild.description = """${currentBuild.description}<p/>
 		This build's main artifact (if not yet cleaned up) is
