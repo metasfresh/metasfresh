@@ -1,16 +1,13 @@
-/**
- * ADempiere module to schedule/dispose shipments (i.e. M_InOuts with IsSOTrx='Y') 
- * 
- * This package contains code that was mostly located in package <code>org.adempiere.inout.shipmentschedule</code>.
- * See <a href="http://dewiki908/mediawiki/index.php/De.metas.inoutcandidate-Overview">De.metas.inoutcandidate-Overview</a>
- */
-package de.metas.inoutcandidate;
+package de.metas.event;
+
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,11 +16,24 @@ package de.metas.inoutcandidate;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+@Value
+@Builder
+public class EventBusStats
+{
+	long eventsEnqueued;
+	long eventsDequeued;
+
+	public long getEventsToDequeue()
+	{
+		return getEventsEnqueued() - getEventsDequeued();
+	}
+}

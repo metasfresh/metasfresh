@@ -19,7 +19,7 @@ import org.springframework.stereotype.Repository;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Lock;
 import de.metas.logging.LogManager;
 import de.metas.tourplanning.model.I_M_ShipmentSchedule;

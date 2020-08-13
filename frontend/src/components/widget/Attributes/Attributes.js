@@ -9,6 +9,11 @@ import {
   formatDateWithZeros,
 } from '../../../utils/documentListHelper';
 import AttributesDropdown from './AttributesDropdown';
+import {
+  DROPUP_START,
+  DROPDOWN_OFFSET_BIG,
+  DROPDOWN_OFFSET_SMALL,
+} from '../../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -121,8 +126,17 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleToggle = (option) => {
-    const { handleBackdropLock } = this.props;
-    const { loading } = this.state;
+    const { handleBackdropLock, updateHeight, rowIndex, isModal } = this.props;
+    const { loading, dropdown } = this.state;
+
+    !dropdown &&
+      !isModal &&
+      rowIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_BIG);
+    dropdown &&
+      !isModal &&
+      rowIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_SMALL);
 
     if (!loading) {
       this.setState(
@@ -278,6 +292,7 @@ export default class Attributes extends Component {
       attributeType,
       tabIndex,
       readonly,
+      rowIndex,
     } = this.props;
 
     const { dropdown, data, layout } = this.state;
@@ -317,6 +332,7 @@ export default class Attributes extends Component {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             attrId={attrId}
+            rowIndex={rowIndex}
           />
         )}
       </div>
@@ -359,5 +375,7 @@ Attributes.propTypes = {
   viewId: PropTypes.any,
   fieldName: PropTypes.any,
   entity: PropTypes.any,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   widgetType: PropTypes.string,
 };

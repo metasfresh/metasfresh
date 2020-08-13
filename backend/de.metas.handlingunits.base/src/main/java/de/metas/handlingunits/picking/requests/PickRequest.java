@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;

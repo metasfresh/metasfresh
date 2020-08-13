@@ -44,6 +44,13 @@
             <version>${metasfresh.version}</version>
         </dependency>
 
+        <!-- needed for shipment schedules -->
+        <dependency>
+            <groupId>de.metas.swat</groupId>
+            <artifactId>de.metas.swat.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.util</groupId>
             <artifactId>de.metas.util.web</artifactId>
@@ -102,6 +109,12 @@
             <artifactId>de.metas.banking.base</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
