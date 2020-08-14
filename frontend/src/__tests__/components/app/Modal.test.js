@@ -51,6 +51,7 @@ describe('Modal test', () => {
   // TODO: For this to work it implies having the Modal component disconnected and
   // TODO: test all functionality of it before adding back (https://github.com/metasfresh/metasfresh/issues/7128) 
   // TODO: the startProcess test it is skipped for now for that reason
+  // TODO: will be added along with the refactoring issue (https://github.com/metasfresh/metasfresh/issues/7126)
   it.skip(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
     const dummyProps = fixtures;
     const startProcessMock = jest.fn().mockResolvedValue({});
