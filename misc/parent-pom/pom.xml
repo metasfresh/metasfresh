@@ -645,8 +645,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile
                                             javax.servlet:javax.servlet-api:jar:3.1.0:provided -->
                                         <ignoreClass>javax.servlet.*</ignoreClass>
-<!--                                        <ignoreClass>javax.persistence.*</ignoreClass>-->
-<!--                                        <ignoreClass>javassist</ignoreClass>-->
                                         <ignoreClass>org.milyn.*</ignoreClass>
                                         <ignoreClass>com.sun.xml.bind.*</ignoreClass>
                                     </ignoreClasses>
