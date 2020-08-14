@@ -47,6 +47,7 @@ class TableItem extends PureComponent {
       multilineText,
       multilineTextLines,
       cellsExtended: false,
+      valueBeforeEditing: null,
     };
   }
 
@@ -141,6 +142,7 @@ class TableItem extends PureComponent {
       modalVisible,
       tableId,
       updatePropertyValue,
+      fieldsByName,
     } = this.props;
     const { listenOnKeys, edited, valueBeforeEditing } = this.state;
 
@@ -165,9 +167,12 @@ class TableItem extends PureComponent {
           e.stopPropagation();
           this.handleEditProperty(e);
           changeListenOnTrue();
+          this.setState({ valueBeforeEditing: null });
         }
         break;
       default: {
+        valueBeforeEditing === null &&
+          this.setState({ valueBeforeEditing: fieldsByName[property].value });
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
           this.listenOnKeysTrue();
