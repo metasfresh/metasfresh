@@ -29,12 +29,15 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.ui.web.pickingV2.productsToPick.rows.WebuiPickHUResult;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+
+import java.util.List;
 
 public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedProcess
 {
