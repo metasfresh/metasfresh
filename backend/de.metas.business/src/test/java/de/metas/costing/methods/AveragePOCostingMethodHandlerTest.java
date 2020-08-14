@@ -43,7 +43,6 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
-import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
@@ -96,7 +95,6 @@ public class AveragePOCostingMethodHandlerTest
 	private AveragePOCostingMethodHandler handler;
 
 	private OrgId orgId1;
-	private OrgId orgId2;
 	private CurrencyId euroCurrencyId;
 	private I_C_UOM eachUOM;
 
@@ -112,7 +110,7 @@ public class AveragePOCostingMethodHandlerTest
 		AdempiereTestHelper.get().init();
 
 		orgId1 = BusinessTestHelper.createOrgWithTimeZone();
-		orgId2 = BusinessTestHelper.createOrgWithTimeZone();
+		// orgId2 = BusinessTestHelper.createOrgWithTimeZone();
 
 		final Properties ctx = Env.getCtx();
 		Env.setClientId(ctx, ClientId.METASFRESH);
@@ -251,18 +249,26 @@ public class AveragePOCostingMethodHandlerTest
 				.build();
 	}
 
-	private CurrentCost getOrCreateCurrentCost(final OrgId orgId)
+	@Test
+	public void inventoryWithQtyAndPrice()
 	{
-		return currentCostsRepo.getOrCreate(CostSegmentAndElement.builder()
-				.costingLevel(CostingLevel.Client)
-				.acctSchemaId(acctSchemaId)
-				.costTypeId(costTypeId)
-				.clientId(ClientId.METASFRESH)
-				.orgId(orgId)
-				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.costElementId(costElement.getId())
-				.build());
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+				costDetailCreateRequest()
+						.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+						.amt(CostAmount.of(100, euroCurrencyId))
+						.qty(Quantity.of(10, eachUOM))
+						.build())
+				.get();
+
+		assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 	}
 
 	@Test
@@ -304,6 +310,48 @@ public class AveragePOCostingMethodHandlerTest
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
+		}
+	}
+
+	@Test
+	public void initCostsAfterInitWithStock()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+					costDetailCreateRequest()
+							.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+							.amt(CostAmount.of(100, euroCurrencyId))
+							.qty(Quantity.of(10, eachUOM))
+							.build())
+					.get();
+
+			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+		}
+
+		// Initial inventory with Price=15 and Qty=0
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+					costDetailCreateRequest()
+							.documentRef(CostingDocumentRef.ofInventoryLineId(2))
+							.amt(CostAmount.of(15, euroCurrencyId))
+							.qty(Quantity.of(0, eachUOM))
+							.build())
+					.get();
+
+			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+
+			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
 	}
 
