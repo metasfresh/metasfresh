@@ -17,6 +17,7 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostSegmentAndElement.CostSegmentAndElementBuilder;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
@@ -199,24 +200,20 @@ public class CostDetailService implements ICostDetailService
 	@Override
 	public CostSegmentAndElement extractOutboundCostSegmentAndElement(final MoveCostsRequest request)
 	{
-		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
-		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
-
-		return CostSegmentAndElement.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(request.getAcctSchemaId())
-				.costTypeId(costTypeId)
-				.productId(request.getProductId())
-				.clientId(request.getClientId())
+		return extractCommonCostSegmentAndElement(request)
 				.orgId(request.getOutboundOrgId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.costElementId(request.getCostElementId())
 				.build();
 	}
 
 	@Override
 	public CostSegmentAndElement extractInboundCostSegmentAndElement(final MoveCostsRequest request)
+	{
+		return extractCommonCostSegmentAndElement(request)
+				.orgId(request.getInboundOrgId())
+				.build();
+	}
+
+	private CostSegmentAndElementBuilder extractCommonCostSegmentAndElement(final MoveCostsRequest request)
 	{
 		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
@@ -226,12 +223,11 @@ public class CostDetailService implements ICostDetailService
 				.costingLevel(costingLevel)
 				.acctSchemaId(request.getAcctSchemaId())
 				.costTypeId(costTypeId)
-				.productId(request.getProductId())
 				.clientId(request.getClientId())
-				.orgId(request.getInboundOrgId())
+				// .orgId(null) // to be set by caller
+				.productId(request.getProductId())
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.costElementId(request.getCostElementId())
-				.build();
+				.costElementId(request.getCostElementId());
 	}
 
 	@Override
