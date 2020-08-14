@@ -330,7 +330,12 @@ export default class Table extends PureComponent {
       collapsedParentRows,
       onRightClick,
       rowRefs,
+<<<<<<< HEAD
       handleFocusAction,
+=======
+      updatePropertyValue,
+      tableId,
+>>>>>>> master
     } = this.props;
 
     if (!rows.length || !columns.length) {
@@ -369,6 +374,8 @@ export default class Table extends PureComponent {
           modalVisible,
           isGerman,
           activeSort,
+          updatePropertyValue,
+          tableId,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}

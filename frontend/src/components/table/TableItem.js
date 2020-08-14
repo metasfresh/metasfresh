@@ -47,6 +47,7 @@ class TableItem extends PureComponent {
       multilineText,
       multilineTextLines,
       cellsExtended: false,
+      valueBeforeEditing: null,
     };
   }
 
@@ -76,7 +77,7 @@ class TableItem extends PureComponent {
 
   initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
-
+    this.setState({ valueBeforeEditing: fieldsByName[fieldName].value });
     if (cols && fieldsByName) {
       cols.map((item) => {
         const property = item.fields[0].field;
@@ -131,17 +132,26 @@ class TableItem extends PureComponent {
     changeListenOnTrue();
   };
 
-  handleDoubleClick = () => {
+  handleDoubleClick = (e) => {
     const { rowId, onDoubleClick, supportOpenRecord } = this.props;
-
+    this.setState({ valueBeforeEditing: e.target.textContent });
     if (supportOpenRecord) {
       onDoubleClick && onDoubleClick(rowId);
     }
   };
 
   handleKeyDown = (e, property, widgetData) => {
-    const { changeListenOnTrue } = this.props;
-    const { listenOnKeys, edited } = this.state;
+    const {
+      changeListenOnTrue,
+      rowId,
+      tabId,
+      entity,
+      modalVisible,
+      tableId,
+      updatePropertyValue,
+      fieldsByName,
+    } = this.props;
+    const { listenOnKeys, edited, valueBeforeEditing } = this.state;
 
     switch (e.key) {
       case 'Enter':
@@ -152,12 +162,24 @@ class TableItem extends PureComponent {
       case 'Tab':
       case 'Escape':
         if (edited === property) {
+          updatePropertyValue({
+            property,
+            value: valueBeforeEditing,
+            tabId,
+            rowId,
+            isModal: modalVisible,
+            entity,
+            tableId,
+          });
           e.stopPropagation();
           this.handleEditProperty(e);
           changeListenOnTrue();
+          this.setState({ valueBeforeEditing: null });
         }
         break;
       default: {
+        valueBeforeEditing === null &&
+          this.setState({ valueBeforeEditing: fieldsByName[property].value });
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
           this.listenOnKeysTrue();
@@ -657,7 +679,12 @@ TableItem.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table
   hasComments: PropTypes.bool,
+<<<<<<< HEAD
   handleFocusAction: PropTypes.func,
+=======
+  tableId: PropTypes.string,
+  updatePropertyValue: PropTypes.func,
+>>>>>>> master
 };
 
 export default TableItem;

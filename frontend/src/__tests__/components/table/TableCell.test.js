@@ -42,4 +42,23 @@ describe('TableCell', () => {
 
     expect(html).toContain(`LongText`);
   });
+
+  it('On escape input remains the same', done => {
+    tableCellProps.item.widgetType = 'Text';
+    const wrapperTableCell = shallow(<TableCell {...tableCellProps} />);
+    const input = wrapperTableCell.find('div[title="0141"]');
+    input.simulate('focus');
+    input.simulate('change', { target: { value: '1234' } });
+    input.simulate('keyDown', {
+      which: 27,
+      target: {
+        blur() {
+          input.simulate('blur');
+        },
+      },
+    });
+    const html = wrapperTableCell.html();
+    expect(html).toContain(`>0141<`);
+    done();
+  });
 });

@@ -1,7 +1,9 @@
 package org.adempiere.test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -25,9 +27,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
+import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
 
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -45,6 +50,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -167,7 +173,7 @@ public class AdempiereTestHelper
 		POJOLookupMap.resetAll();
 
 		// we also don't want any model interceptors to interfere, unless we explicitly test them up to do so
-		POJOLookupMap.get().clear();
+		Objects.requireNonNull(POJOLookupMap.get()).clear();
 
 		//
 		// POJOWrapper defaults
@@ -285,6 +291,20 @@ public class AdempiereTestHelper
 		InterfaceWrapperHelper.save(clientInfo);
 	}
 
+	public static OrgId createOrgWithTimeZone()
+	{
+		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
+		saveRecord(orgRecord);
+
+		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
+		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		orgInfoRecord.setTimeZone("Europe/Berlin");
+		saveRecord(orgInfoRecord);
+
+		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+	}
+
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
 	 *
@@ -299,7 +319,7 @@ public class AdempiereTestHelper
 			{
 				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
 			}
-			catch (JsonProcessingException e)
+			catch (final JsonProcessingException e)
 			{
 				throw AdempiereException.wrapIfNeeded(e);
 			}
