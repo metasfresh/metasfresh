@@ -95,10 +95,10 @@ class EcosioInvoicRouteTest extends CamelTestSupport
 		feedbackOutputEndpoint.assertIsSatisfied(1000);
 		final var feedBackBody = feedbackOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(feedBackBody).isEqualToIgnoringWhitespace(
-				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-						+ "<EDI_Invoice_Feedback AD_Client_Value=\"ADClientValueAttr\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\">\n"
-						+ "    <C_Invoice_ID>1001</C_Invoice_ID>\n"
-						+ "    <EDI_ExportStatus>S</EDI_ExportStatus>\n"
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+						+ "<EDI_Invoice_Feedback AD_Client_Value=\"ADClientValueAttr\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\">"
+						+ "    <C_Invoice_ID>1001</C_Invoice_ID>"
+						+ "    <EDI_ExportStatus>S</EDI_ExportStatus>"
 						+ "</EDI_Invoice_Feedback>");
 	}
 }
