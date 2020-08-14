@@ -78,9 +78,13 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
 		final Quantity qty = request.getQty();
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
-		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+		return utils.createCostDetailRecordNoCostsChanged(
+				request.withAmount(amt),
+				previousCosts);
 	}
 
 	@Override
@@ -171,8 +175,8 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostDetailCreateResult inboundResult;
 		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
 		{
-			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest);
-			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest);
+			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest, outboundPreviousCosts);
+			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest, inboundPreviousCosts);
 		}
 		//
 		// Moving costs between costing segments

@@ -53,9 +53,13 @@ public interface ICostDetailService
 
 	CostSegmentAndElement extractInboundCostSegmentAndElement(MoveCostsRequest request);
 
-	CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull CostDetailCreateRequest request);
+	CostDetailCreateResult createCostDetailRecordNoCostsChanged(
+			@NonNull CostDetailCreateRequest request,
+			@NonNull CostDetailPreviousAmounts previousCosts);
 
-	CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull CostDetailCreateRequest request, @NonNull CostDetailPreviousAmounts previousCosts);
+	CostDetailCreateResult createCostDetailRecordWithChangedCosts(
+			@NonNull CostDetailCreateRequest request,
+			@NonNull CostDetailPreviousAmounts previousCosts);
 
 	CostDetail create(CostDetailBuilder costDetailBuilder);
 
