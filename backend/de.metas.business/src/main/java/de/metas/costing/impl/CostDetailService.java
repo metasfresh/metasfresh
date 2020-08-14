@@ -74,7 +74,9 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CostDetailPreviousAmounts previousCosts)
+	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts previousCosts)
 	{
 		final CostDetail costDetail = create(request.toCostDetailBuilder()
 				.changingCosts(true)
@@ -84,10 +86,13 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
+	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts currentCosts)
 	{
 		final CostDetail costDetail = create(request.toCostDetailBuilder()
-				.changingCosts(false));
+				.changingCosts(false)
+				.previousAmounts(currentCosts));
 
 		return toCostDetailCreateResult(costDetail);
 	}
