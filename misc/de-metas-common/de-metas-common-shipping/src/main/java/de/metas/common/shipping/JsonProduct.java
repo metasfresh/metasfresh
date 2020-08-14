@@ -47,6 +47,9 @@ public class JsonProduct
 
 	BigDecimal weight;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String documentNote;
+
 	@JsonCreator
 	@Builder
 	private JsonProduct(
@@ -54,12 +57,14 @@ public class JsonProduct
 			@JsonProperty("name") @NonNull final String name,
 			@JsonProperty("description") @Nullable final String description,
 			@JsonProperty("packageSize") @Nullable final String packageSize,
-			@JsonProperty("weight") @Nullable final BigDecimal weight)
+			@JsonProperty("weight") @Nullable final BigDecimal weight,
+			@JsonProperty("documentNote") @Nullable final String documentNote)
 	{
 		this.productNo = productNo;
 		this.name = name;
 		this.description = description;
 		this.packageSize = packageSize;
 		this.weight = weight;
+		this.documentNote = documentNote;
 	}
 }
