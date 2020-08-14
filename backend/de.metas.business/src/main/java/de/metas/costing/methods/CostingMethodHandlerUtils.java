@@ -117,9 +117,11 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.createCostDetailRecordWithChangedCosts(request, previousCosts);
 	}
 
-	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
+	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts currentCosts)
 	{
-		return costDetailsService.createCostDetailRecordNoCostsChanged(request);
+		return costDetailsService.createCostDetailRecordNoCostsChanged(request, currentCosts);
 	}
 
 	public CostDetailCreateResult toCostDetailCreateResult(final CostDetail costDetail)
