@@ -38,6 +38,7 @@
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
@@ -252,7 +253,7 @@
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <image>openjdk:14.0.1@sha256:f43d68430b197ef5eb66a0d90e3844115d332a91e9d8d5f5a303c125f86ba52c</image>
+                        <image>openjdk:14.0.2</image>
                     </from>
                 </configuration>
                 <executions>
