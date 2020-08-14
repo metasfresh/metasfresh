@@ -139,6 +139,7 @@ class Modal extends Component {
    */
   init = async () => {
     const {
+      dispatch,
       windowId,
       dataId,
       tabId,
@@ -155,10 +156,6 @@ class Modal extends Component {
       childViewSelectedIds,
       parentViewId,
       viewDocumentIds,
-      createProcess,
-      createWindow,
-      fetchChangeLog,
-      callAPI,
     } = this.props;
     let request = null;
 
@@ -166,17 +163,19 @@ class Modal extends Component {
       case 'static':
         {
           if (staticModalType === 'about') {
-            request = fetchChangeLog(windowId, dataId, tabId, rowId);
+            request = dispatch(fetchChangeLog(windowId, dataId, tabId, rowId));
           }
           if (staticModalType === 'comments') {
-            request = callAPI({
-              windowId,
-              docId: dataId,
-              tabId,
-              rowId,
-              target: staticModalType,
-              verb: 'GET',
-            });
+            request = dispatch(
+              callAPI({
+                windowId,
+                docId: dataId,
+                tabId,
+                rowId,
+                target: staticModalType,
+                verb: 'GET',
+              })
+            );
           }
 
           try {
@@ -191,7 +190,9 @@ class Modal extends Component {
 
       case 'window':
         try {
-          await createWindow(windowId, dataId, tabId, rowId, true, isAdvanced);
+          await dispatch(
+            createWindow(windowId, dataId, tabId, rowId, true, isAdvanced)
+          );
         } catch (error) {
           this.handleClose();
 
@@ -238,7 +239,7 @@ class Modal extends Component {
             options.parentViewSelectedIds = parentSelection;
           }
 
-          await createProcess(options);
+          await dispatch(createProcess(options));
         } catch (error) {
           this.handleClose();
 
@@ -258,6 +259,7 @@ class Modal extends Component {
   closeModal = (saveStatus) => {
     // TODO: parentDataId (formerly relativeDataId) is not passed in as prop
     const {
+      dispatch,
       closeCallback,
       dataId,
       windowId,
@@ -266,21 +268,21 @@ class Modal extends Component {
       triggerField,
       rowId,
       tabId,
-      patch,
-      processNewRecord,
     } = this.props;
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
       processNewRecord('window', windowId, dataId).then((response) => {
-        patch(
-          'window',
-          parentWindowId,
-          parentDataId,
-          null,
-          null,
-          triggerField,
-          response.data // it's OK to patch using the newly created record ID (instead of key/caption value)
+        dispatch(
+          patch(
+            'window',
+            parentWindowId,
+            parentDataId,
+            null,
+            null,
+            triggerField,
+            response.data // it's OK to patch using the newly created record ID (instead of key/caption value)
+          )
         ).then(() => {
           this.removeModal();
         });
@@ -306,12 +308,12 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    */
   removeModal = () => {
-    const { closeModal, rawModalVisible } = this.props;
+    const { dispatch, rawModalVisible } = this.props;
 
-    closeModal();
+    dispatch(closeModal());
     // make sure that on closing the modal for comments `isOpen `flag is closed
     // if you don't do this you will have COLLAPSE_INDENT issue  (see: keymap.js)
-    updateCommentsPanelOpenFlag(false);
+    dispatch(updateCommentsPanelOpenFlag(false));
     if (!rawModalVisible) {
       document.body.style.overflow = 'auto';
     }
@@ -354,7 +356,7 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    */
   handleStart = () => {
-    const { layout, windowId, indicator, handleProcessResponse } = this.props;
+    const { dispatch, layout, windowId, indicator } = this.props;
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -377,7 +379,7 @@ class Modal extends Component {
             layout.pinstanceId
           );
 
-          await action;
+          await dispatch(action);
 
           this.removeModal();
         } catch (error) {
@@ -692,6 +694,7 @@ class Modal extends Component {
  * @prop {*} [childViewSelectedIds]
  * @prop {shape} [data]
  * @prop {string} [dataId]
+ * @prop {func} dispatch Dispatch function
  * @prop {string} [indicator]
  * @prop {shape} [layout]
  * @prop {bool} [isAdvanced]
@@ -713,6 +716,7 @@ class Modal extends Component {
  * @prop {string} [windowId]
  */
 Modal.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   isNewDoc: PropTypes.bool,
   staticModalType: PropTypes.string,
   activeTabId: PropTypes.any,
@@ -741,14 +745,6 @@ Modal.propTypes = {
   viewId: PropTypes.string,
   windowId: PropTypes.string,
   viewDocumentIds: PropTypes.array,
-  createProcess: PropTypes.func,
-  createWindow: PropTypes.func,
-  fetchChangeLog: PropTypes.func,
-  callAPI: PropTypes.func,
-  patch: PropTypes.func,
-  processNewRecord: PropTypes.func,
-  closeModal: PropTypes.func,
-  handleProcessResponse: PropTypes.func,
 };
 
 const mapStateToProps = (state, props) => {
@@ -775,19 +771,4 @@ const mapStateToProps = (state, props) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    closeModal,
-    createProcess,
-    createWindow,
-    handleProcessResponse,
-    fetchChangeLog,
-    callAPI,
-    patch,
-    updateCommentsPanelOpenFlag,
-    processNewRecord,
-  }
-)(Modal);
-
-export { Modal };
+export default connect(mapStateToProps)(Modal);

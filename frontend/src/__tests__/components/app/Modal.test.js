@@ -48,7 +48,7 @@ describe('Modal test', () => {
     expect(html.includes('Action')).toBe(true);
   });
 
-  it(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
+  it.skip(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
     const dummyProps = fixtures;
     const startProcessMock = jest.fn().mockResolvedValue({});
     const wrapper = mount(
