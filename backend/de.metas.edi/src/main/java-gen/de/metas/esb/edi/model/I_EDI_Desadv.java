@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_Desadv
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_Desadv 
@@ -14,17 +14,10 @@ public interface I_EDI_Desadv
     /** AD_Table_ID=540644 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -36,8 +29,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -46,8 +39,8 @@ public interface I_EDI_Desadv
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,8 +52,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rechnungsstandort.
-	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 * Set Bill Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -69,8 +61,7 @@ public interface I_EDI_Desadv
 	public void setBill_Location_ID (int Bill_Location_ID);
 
 	/**
-	 * Get Rechnungsstandort.
-	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 * Get Bill Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -82,8 +73,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -92,8 +82,7 @@ public interface I_EDI_Desadv
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -105,8 +94,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -115,8 +103,7 @@ public interface I_EDI_Desadv
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -128,8 +115,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -138,8 +125,8 @@ public interface I_EDI_Desadv
 	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -151,8 +138,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -166,8 +153,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -179,8 +166,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Auftragsdatum.
-	 * Datum des Auftrags
+	 * Set Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -189,8 +176,8 @@ public interface I_EDI_Desadv
 	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
-	 * Get Auftragsdatum.
-	 * Datum des Auftrags
+	 * Get Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -204,7 +191,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -214,7 +201,7 @@ public interface I_EDI_Desadv
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -227,6 +214,48 @@ public interface I_EDI_Desadv
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "DocumentNo", null);
     /** Column name DocumentNo */
     public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
+
+	/**
+	 * Get Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_BPartner_ID();
+
+    /** Column name DropShip_BPartner_ID */
+    public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+
+	/**
+	 * Set Ship Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_Location_ID (int DropShip_Location_ID);
+
+	/**
+	 * Get Ship Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_Location_ID();
+
+    /** Column name DropShip_Location_ID */
+    public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
 	 * Set DESADV.
@@ -365,8 +394,29 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Handover partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHandOver_Partner_ID (int HandOver_Partner_ID);
+
+	/**
+	 * Get Handover partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getHandOver_Partner_ID();
+
+    /** Column name HandOver_Partner_ID */
+    public static final String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -375,8 +425,8 @@ public interface I_EDI_Desadv
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -390,7 +440,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bewegungsdatum.
+	 * Set Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -400,7 +450,7 @@ public interface I_EDI_Desadv
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungsdatum.
+	 * Get Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -415,8 +465,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
-	 * Set Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -425,8 +475,8 @@ public interface I_EDI_Desadv
 	public void setPOReference (java.lang.String POReference);
 
 	/**
-	 * Get Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -440,8 +490,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -450,8 +499,7 @@ public interface I_EDI_Desadv
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -534,8 +582,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_SumOrderedInStockingUOM = "SumOrderedInStockingUOM";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -549,8 +597,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -562,7 +610,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set UserFlag.
+	 * Set Nutzer 1.
 	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
 	 *
 	 * <br>Type: String
@@ -572,7 +620,7 @@ public interface I_EDI_Desadv
 	public void setUserFlag (java.lang.String UserFlag);
 
 	/**
-	 * Get UserFlag.
+	 * Get Nutzer 1.
 	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
 	 *
 	 * <br>Type: String

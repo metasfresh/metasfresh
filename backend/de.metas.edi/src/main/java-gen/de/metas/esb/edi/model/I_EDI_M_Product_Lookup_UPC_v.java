@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_M_Product_Lookup_UPC_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_M_Product_Lookup_UPC_v 
@@ -14,13 +14,6 @@ public interface I_EDI_M_Product_Lookup_UPC_v
     /** AD_Table_ID=540547 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set GLN.
