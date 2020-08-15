@@ -116,7 +116,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.transform(CostAmount::ofProductPrice);
 		final CostAmount amt = costPrice.multiply(qty);
 
-		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		return utils.createCostDetailRecordNoCostsChanged(
+				request.withAmount(amt),
+				CostDetailPreviousAmounts.of(currentCost));
 	}
 
 	@Override
@@ -133,7 +137,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostAmount amt = costPrice.multiply(qty);
 		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
 
-		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amtConv));
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		return utils.createCostDetailRecordNoCostsChanged(
+				request.withAmount(amtConv),
+				CostDetailPreviousAmounts.of(currentCost));
 	}
 
 	@Override
@@ -215,6 +223,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
 
 		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
 		final CostPrice currentCostPrice = outboundCurrentCosts.getCostPrice();
 		final Quantity outboundQty = request.getQtyToMove().negate();
 		final CostAmount outboundAmt = currentCostPrice.multiply(outboundQty).roundToPrecisionIfNeeded(outboundCurrentCosts.getPrecision());
@@ -251,16 +260,16 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostDetailCreateResult inboundResult;
 		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
 		{
-			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest);
-			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest);
+			final CostDetailPreviousAmounts inboundPreviousCosts = outboundPreviousCosts;
+
+			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest, outboundPreviousCosts);
+			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest, inboundPreviousCosts);
 		}
 		//
 		// Moving costs between costing segments
 		// => change current costs, record the cost details
 		else
 		{
-			final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
-			
 			outboundResult = utils.createCostDetailRecordWithChangedCosts(
 					outboundCostDetailRequest,
 					outboundPreviousCosts);
