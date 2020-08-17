@@ -20,6 +20,7 @@ const DLpropTypes = {
   // from parent
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
+  queryViewId: PropTypes.string,
   updateParentSelectedIds: PropTypes.func,
   page: PropTypes.number,
   sort: PropTypes.string,
@@ -124,6 +125,7 @@ const DLmapStateToProps = (state, props) => {
     page,
     sort,
     viewId,
+    queryViewId,
     table,
     viewData: master,
     layout: master.layout,
