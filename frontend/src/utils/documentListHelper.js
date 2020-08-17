@@ -84,7 +84,7 @@ const DLmapStateToProps = (state, props) => {
   }
 
   const sort = master.sort ? master.sort : querySort;
-  const page = toInteger(queryPage) || master.page;
+  const page = master.page ? master.page : toInteger(queryPage);
   let viewId = master.viewId ? master.viewId : queryViewId;
 
   // used for modals
