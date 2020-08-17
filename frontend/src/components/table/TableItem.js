@@ -679,12 +679,9 @@ TableItem.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table
   hasComments: PropTypes.bool,
-<<<<<<< HEAD
   handleFocusAction: PropTypes.func,
-=======
   tableId: PropTypes.string,
   updatePropertyValue: PropTypes.func,
->>>>>>> master
 };
 
 export default TableItem;

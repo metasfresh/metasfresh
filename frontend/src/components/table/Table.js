@@ -330,12 +330,9 @@ export default class Table extends PureComponent {
       collapsedParentRows,
       onRightClick,
       rowRefs,
-<<<<<<< HEAD
       handleFocusAction,
-=======
       updatePropertyValue,
       tableId,
->>>>>>> master
     } = this.props;
 
     if (!rows.length || !columns.length) {
