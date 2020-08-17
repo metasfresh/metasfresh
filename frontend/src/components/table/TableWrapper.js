@@ -169,8 +169,7 @@ class TableWrapper extends PureComponent {
   handleFastInlineEdit = () => {
     const { selected } = this.props;
     const { contextMenu, supportFieldEdit } = this.state;
-    // a routine needs to be added in here - to check if field is allowed to be edited
-    // if (contextMenu.supportFieldEdit && selected.length === 1) {
+
     const selectedId = selected[0];
 
     if (this.rowRefs && this.rowRefs[selectedId] && supportFieldEdit) {
@@ -179,7 +178,6 @@ class TableWrapper extends PureComponent {
         mark: true,
       });
     }
-    //}
   };
 
   handleFieldEdit = () => {
