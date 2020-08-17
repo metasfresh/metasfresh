@@ -55,7 +55,7 @@
     "@babel/preset-env": "7.4.3",
     "@babel/preset-react": "7.7.4",
     "@babel/register": "7.8.3",
-    "@storybook/react": "5.0.11",
+    "@storybook/react": "5.3.19",
     "@testing-library/dom": "^7.0.4",
     "@testing-library/react": "^10.0.1",
     "@welldone-software/why-did-you-render": "^4.2.1",
@@ -112,9 +112,9 @@
     "style-loader": "1.1.3",
     "stylelint": "13.0.0",
     "wait-for-expect": "3.0.2",
-    "webpack": "4.2.0",
+    "webpack": "^4.44.1",
     "webpack-cli": "3.3.10",
-    "webpack-dev-server": "3.3.1",
+    "webpack-dev-server": "^3.11.0",
     "webpack-node-externals": "1.7.2"
   },
   "dependencies": {

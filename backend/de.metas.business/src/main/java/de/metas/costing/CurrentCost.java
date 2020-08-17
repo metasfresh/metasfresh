@@ -185,18 +185,20 @@ public final class CurrentCost
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		final Quantity qtyToAddConv = uomConverter.convertQuantityTo(qtyToAdd, costSegment.getProductId(), uomId);
-		addToCurrentQty(qtyToAddConv);
-		addCumulatedAmtAndQty(amt, qtyToAddConv);
-	}
 
-	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
-	{
-		currentQty = currentQty.add(qtyToAdd);
+		currentQty = currentQty.add(qtyToAddConv).toZeroIfNegative();
+
+		addCumulatedAmtAndQty(amt, qtyToAddConv);
 	}
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
 		this.costPrice = costPrice;
+	}
+
+	public void setOwnCostPrice(@NonNull final CostAmount ownCostPrice)
+	{
+		setCostPrice(getCostPrice().withOwnCostPrice(ownCostPrice));
 	}
 
 	public void addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)

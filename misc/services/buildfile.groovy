@@ -18,20 +18,19 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 
 		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
-					dir('camel')
+					dir('camel/de-metas-camel-shipping')
 							{
 								def camelBuildFile = load('buildfile.groovy')
 								camelBuildFile.build(mvnConf, scmVars, forceBuild)
 							}
-				}
-		withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
-				{
-					dir('edi') // todo: modernize and move to camel
+					dir('camel/de-metas-camel-edi') // todo: modernize and move to camel
 							{
 								def ediBuildFile = load('buildfile.groovy')
 								ediBuildFile.build(mvnConf, scmVars, forceBuild)
 							}
-
+				}
+		withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+				{
 					dir('procurement-webui')
 							{
 								def procurementWebuiBuildFile = load('buildfile.groovy')

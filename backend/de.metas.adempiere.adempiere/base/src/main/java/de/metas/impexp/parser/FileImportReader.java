@@ -1,29 +1,8 @@
-/**
- *
- */
-package de.metas.impexp.parser;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.google.common.base.CharMatcher;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Files;
-import com.google.common.io.LineProcessor;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.client
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,6 +19,26 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ *
+ */
+package de.metas.impexp.parser;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
+import com.google.common.io.LineProcessor;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
@@ -79,8 +78,9 @@ final class FileImportReader
 		@Override
 		public boolean processLine(final String line) throws IOException
 		{
-			// if previous line had a " which is not closed, then add all to the previous line, until we meet next "
-			if (CharMatcher.anyOf(line).matches(TEXT_DELIMITER))
+			// If previous line had a " which is not closed, then add all to the previous line, until we meet next ".
+			// Of course, account that there could be multiple quotes on the same line.
+			if (CharMatcher.is(TEXT_DELIMITER).countIn(line) % 2 == 1)
 			{
 				// if we already had a delimiter, the next one is closing delimiter
 				if (openQuote)
@@ -94,10 +94,10 @@ final class FileImportReader
 				}
 			}
 			//
-			// if open quote , add this line to the previous
-			if (openQuote && !quoteOpenRightNow && !loadedDataLines.isEmpty() && Check.isNotBlank(loadedDataLines.get(loadedDataLines.size() - 1)))
+			// if open quote, add this line to the previous
+			if (openQuote && !quoteOpenRightNow && !loadedDataLines.isEmpty() && checkLastLoadedDataLineIsNotBlank())
 			{
-				addLine(line);
+				appendToPreviousLine(line);
 			}
 			else
 			{
@@ -116,12 +116,15 @@ final class FileImportReader
 			return true;
 		}
 
+		private boolean checkLastLoadedDataLineIsNotBlank()
+		{
+			return Check.isNotBlank(loadedDataLines.get(loadedDataLines.size() - 1));
+		}
+
 		/**
 		 * add current line to the previous one
-		 *
-		 * @param line
 		 */
-		private void addLine(@NonNull final String line)
+		private void appendToPreviousLine(@NonNull final String line)
 		{
 			final StringBuilder previousLine = new StringBuilder();
 			final int index = loadedDataLines.size() - 1;
