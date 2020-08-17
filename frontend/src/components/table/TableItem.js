@@ -228,7 +228,7 @@ class TableItem extends PureComponent {
    */
   _editProperty = ({ e, property, focus, item, select, mark }) => {
     if (item ? !item.readonly : true) {
-      if (this.state.edited === property && e) e.persist(); // e.stopPropagation();
+      if (this.state.edited === property && e) e.persist();
 
       // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
