@@ -75,6 +75,11 @@ class TableItem extends PureComponent {
     }
   }
 
+  /**
+   * @method initPropertyEditor
+   * @summary Initialize the editor for an item
+   * @param {object} fieldName - the name of the field, mark - marks the text(like when you click and hold and select the text)
+   */
   initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
     this.setState({ valueBeforeEditing: fieldsByName[fieldName].value });
@@ -202,6 +207,7 @@ class TableItem extends PureComponent {
    * @param {boolean} [focus] - flag if cell should be focused
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
+   * @param {boolean} [mark] - marks the text(like when you click and hold and select the text)
    */
   handleEditProperty = (e, property, focus, item, select, mark) => {
     this._focusCell(property, () => {
