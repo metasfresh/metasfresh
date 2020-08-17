@@ -116,8 +116,8 @@ class TableCell extends PureComponent {
    * function to handleFocusAction
    */
   handleFocus = () => {
-    const { property, handleFocusAction } = this.props;
-    handleFocusAction(property);
+    const { property, handleFocusAction, supportFieldEdit } = this.props;
+    handleFocusAction({ fieldName: property, supportFieldEdit });
   };
 
   /**

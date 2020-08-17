@@ -156,23 +156,24 @@ class TableWrapper extends PureComponent {
     }
   };
 
-  handleFocusAction = (fieldName) => {
+  handleFocusAction = ({ fieldName, supportFieldEdit }) => {
     this.setState({
       contextMenu: {
         ...this.state.contextMenu,
         fieldName,
       },
+      supportFieldEdit,
     });
   };
 
   handleFastInlineEdit = () => {
     const { selected } = this.props;
-    const { contextMenu } = this.state;
+    const { contextMenu, supportFieldEdit } = this.state;
     // a routine needs to be added in here - to check if field is allowed to be edited
     // if (contextMenu.supportFieldEdit && selected.length === 1) {
     const selectedId = selected[0];
 
-    if (this.rowRefs && this.rowRefs[selectedId]) {
+    if (this.rowRefs && this.rowRefs[selectedId] && supportFieldEdit) {
       this.rowRefs[selectedId].initPropertyEditor({
         fieldName: contextMenu.fieldName,
         mark: true,
