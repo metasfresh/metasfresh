@@ -157,6 +157,7 @@ class TableItem extends PureComponent {
       case 'Enter':
         if (listenOnKeys) {
           this.handleEditProperty(e, property, true, widgetData);
+          this.setState({ valueBeforeEditing: e.target.textContent });
         }
         break;
       case 'Tab':
@@ -221,7 +222,7 @@ class TableItem extends PureComponent {
    */
   _editProperty = ({ e, property, focus, item, select, mark }) => {
     if (item ? !item.readonly : true) {
-      if (this.state.edited === property && e) e.stopPropagation();
+      if (this.state.edited === property && e) e.persist(); // e.stopPropagation();
 
       // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
