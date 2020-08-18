@@ -63,8 +63,7 @@ public class WEBUI_ServicesCompanies_Toggle_Processed extends JavaProcess implem
 				.createCompositeQueryUpdater(I_S_Issue.class)
 				.addSetColumnValue(I_S_Issue.COLUMNNAME_Processed, processed);
 
-		//AD_Process.RefreshAllAfterExecution will ensure the cache reset we need for the update directly operation.
-		updateProcessedQuery.create().updateDirectly(processedUpdater);
+		updateProcessedQuery.create().update(processedUpdater);
 
 		return MSG_OK;
 	}
