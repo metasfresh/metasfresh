@@ -17,7 +17,7 @@ where effortChild.s_issue_id = @S_Issue_ID@
 UPDATE AD_SQLColumn_SourceTableColumn SET SQL_GetTargetRecordIdBySourceRecordId='select effortChild.s_parent_issue_id
 from s_issue effortChild
     inner join s_issue parentBudget on effortChild.s_parent_issue_id = parentBudget.s_issue_id
-where effortChild.s_issue_id = @Record_ID@
+where effortChild.s_issue_id = @Record_ID/-1@
   and parentBudget.iseffortissue = ''N'';',Updated=TO_TIMESTAMP('2020-08-18 08:19:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540016
 ;
 
