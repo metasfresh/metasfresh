@@ -105,6 +105,7 @@ class MasterWidget extends PureComponent {
     // to be sure it's not called if not needed.
     widgetType !== 'Button' &&
       tableId &&
+      widgetType === 'ProductAttributes' &&
       updatePropertyValue({
         property,
         value,
