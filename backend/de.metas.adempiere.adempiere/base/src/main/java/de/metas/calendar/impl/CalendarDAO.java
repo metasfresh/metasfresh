@@ -41,7 +41,7 @@ import java.util.Properties;
 public class CalendarDAO extends AbstractCalendarDAO
 {
 
-	private IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public List<I_C_Period> retrievePeriods(
