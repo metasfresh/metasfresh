@@ -565,7 +565,7 @@ public final class DefaultView implements IEditableView
 		// Invalidate local rowsById cache
 		cache_rowsById.removeAll(rowIds);
 
-		checkHeaderPropertiesChanged(rowIds, watchedByFrontend);
+		checkCollectHeaderPropertiesChanged(rowIds, watchedByFrontend);
 
 		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
 		// TODO: introduce a SysConfig to be able to disable this feature
@@ -592,7 +592,7 @@ public final class DefaultView implements IEditableView
 		}
 	}
 
-	private void checkHeaderPropertiesChanged(
+	private void checkCollectHeaderPropertiesChanged(
 			@NonNull final Set<DocumentId> rowIds,
 			final boolean watchedByFrontend)
 	{
@@ -613,7 +613,7 @@ public final class DefaultView implements IEditableView
 					}
 					else
 					{
-						throw new AdempiereException("Unknow result type: " + newHeaderPropertiesResult);
+						throw new AdempiereException("Unknown result type: " + newHeaderPropertiesResult);
 					}
 				});
 
