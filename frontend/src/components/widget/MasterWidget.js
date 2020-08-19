@@ -104,7 +104,7 @@ class MasterWidget extends PureComponent {
     // Attributes component so that it won't need it anymore. Or add better guards
     // to be sure it's not called if not needed.
     widgetType !== 'Button' &&
-      tableId &&
+      !dataId &&
       widgetType === 'ProductAttributes' &&
       updatePropertyValue({
         property,
