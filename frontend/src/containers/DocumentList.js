@@ -102,6 +102,7 @@ class DocumentListContainer extends Component {
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
       windowId: nextWindowId,
+      queryViewId: nextQueryViewId,
     } = nextProps;
     const {
       includedView,
@@ -116,6 +117,9 @@ class DocumentListContainer extends Component {
       clearAllFilters,
       deleteTable,
       isModal,
+      updateUri,
+      page,
+      sort,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
@@ -128,6 +132,22 @@ class DocumentListContainer extends Component {
         clearAllFilters(false);
       });
     }
+
+    /*
+     * This is a fix for the case when user selects the link to the current
+     * view from the menu. Without this the `viewId` would disappear from the
+     * url, as react-router is not aware of it's existence.
+     */
+    if (viewId === nextViewId && !nextQueryViewId && updateUri) {
+      const updateQuery = {
+        viewId,
+        page,
+        sort,
+      };
+
+      updateUri(updateQuery);
+    }
+
     /*
      * If we browse list of docs, changing type of Document
      * does not re-construct component, so we need to
@@ -477,9 +497,13 @@ class DocumentListContainer extends Component {
     indicatorState('pending');
 
     if (updateUri) {
-      id && updateUri('viewId', id);
-      page && updateUri('page', page);
-      sortingQuery && updateUri('sort', sortingQuery);
+      const updateQuery = {
+        viewId: id,
+        page,
+        sort: sortingQuery,
+      };
+
+      updateUri(updateQuery);
     }
 
     return fetchDocument({

@@ -9,6 +9,19 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.148
+## Features
+* metasfresh
+  * [#6867](https://github.com/metasfresh/metasfresh/issues/6867) Import Cost Prices with 0 qty
+  * [#7036](https://github.com/metasfresh/metasfresh/issues/7036) Add more unit tests
+  * [#7085](https://github.com/metasfresh/metasfresh/issues/7085) Extend DESADV for DELV vs ULCO
+  * [#7106](https://github.com/metasfresh/metasfresh/issues/7106) Allow "Verdichtung" (consolidation) on a whole Picking Slot (not just TU)
+  * [#7117](https://github.com/metasfresh/metasfresh/issues/7117) Budget Issue tracking enhancements
+
+## Fixes
+* metasfresh
+  * [#7128](https://github.com/metasfresh/metasfresh/issues/7128) Modal overlay for creating bpartner on-the-fly does not close
+
 # metasfresh 5.147
 ## Features
 * metasfresh

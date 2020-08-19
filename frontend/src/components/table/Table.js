@@ -330,6 +330,7 @@ export default class Table extends PureComponent {
       collapsedParentRows,
       onRightClick,
       rowRefs,
+      handleFocusAction,
       updatePropertyValue,
       tableId,
     } = this.props;
@@ -397,6 +398,7 @@ export default class Table extends PureComponent {
         onDoubleClick={this.handleDoubleClick}
         onClick={this.handleClick}
         handleRightClick={onRightClick}
+        handleFocusAction={handleFocusAction}
         changeListenOnTrue={this.setListenTrue}
         changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}

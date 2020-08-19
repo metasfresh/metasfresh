@@ -452,14 +452,9 @@ export default function viewHandler(state = initialState, action) {
 
       if (id) {
         delete state[`${type}`][id];
-
-        return state;
-      } else {
-        return {
-          ...state,
-          [`${type}`]: {},
-        };
       }
+
+      return state;
     }
     case RESET_VIEW: {
       const { id, isModal } = action.payload;

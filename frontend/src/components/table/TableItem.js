@@ -75,7 +75,12 @@ class TableItem extends PureComponent {
     }
   }
 
-  initPropertyEditor = (fieldName) => {
+  /**
+   * @method initPropertyEditor
+   * @summary Initialize the editor for an item
+   * @param {object} fieldName - the name of the field, mark - marks the text(like when you click and hold and select the text)
+   */
+  initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
     this.setState({ valueBeforeEditing: fieldsByName[fieldName].value });
     if (cols && fieldsByName) {
@@ -85,7 +90,14 @@ class TableItem extends PureComponent {
           const widgetData = prepareWidgetData(item, fieldsByName);
 
           if (widgetData) {
-            this.handleEditProperty(null, property, true, widgetData[0]);
+            this.handleEditProperty(
+              null,
+              property,
+              true,
+              widgetData[0],
+              false,
+              mark
+            );
           }
         }
       });
@@ -150,6 +162,7 @@ class TableItem extends PureComponent {
       case 'Enter':
         if (listenOnKeys) {
           this.handleEditProperty(e, property, true, widgetData);
+          this.setState({ valueBeforeEditing: e.target.textContent });
         }
         break;
       case 'Tab':
@@ -194,10 +207,11 @@ class TableItem extends PureComponent {
    * @param {boolean} [focus] - flag if cell should be focused
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
+   * @param {boolean} [mark] - marks the text(like when you click and hold and select the text)
    */
-  handleEditProperty = (e, property, focus, item, select) => {
+  handleEditProperty = (e, property, focus, item, select, mark) => {
     this._focusCell(property, () => {
-      this._editProperty(e, property, focus, item, select);
+      this._editProperty({ e, property, focus, item, select, mark });
     });
   };
 
@@ -212,9 +226,9 @@ class TableItem extends PureComponent {
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
    */
-  _editProperty = (e, property, focus, item, select) => {
+  _editProperty = ({ e, property, focus, item, select, mark }) => {
     if (item ? !item.readonly : true) {
-      if (this.state.edited === property && e) e.stopPropagation();
+      if (this.state.edited === property && e) e.persist();
 
       // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
@@ -232,6 +246,7 @@ class TableItem extends PureComponent {
             )[0];
 
             if (elem) {
+              mark && elem.select();
               elem.focus();
             }
 
@@ -417,6 +432,7 @@ class TableItem extends PureComponent {
        * quickactions in grids.
        */
       onItemChange,
+      handleFocusAction,
     } = this.props;
     const {
       edited,
@@ -496,6 +512,7 @@ class TableItem extends PureComponent {
                 isRowSelected={isSelected}
                 isEdited={isEdited}
                 handleDoubleClick={this.handleEditProperty}
+                handleFocusAction={handleFocusAction}
                 onClickOutside={this.handleClickOutside}
                 onCellChange={onItemChange}
                 updatedRow={updatedRow || newRow}
@@ -669,6 +686,7 @@ TableItem.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table
   hasComments: PropTypes.bool,
+  handleFocusAction: PropTypes.func,
   tableId: PropTypes.string,
   updatePropertyValue: PropTypes.func,
 };
