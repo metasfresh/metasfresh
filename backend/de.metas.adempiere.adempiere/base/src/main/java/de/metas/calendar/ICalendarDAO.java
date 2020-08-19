@@ -22,8 +22,10 @@
 
 package de.metas.calendar;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
@@ -65,4 +67,12 @@ public interface ICalendarDAO extends ISingletonService
 	void validate(I_C_NonBusinessDay record);
 
 	@Nullable String getName(CalendarId calendarId);
+
+	/**
+	 * Get Calendar of current Org which has flag "default" to true.
+	 * Fallback to Org=Any.
+	 *
+	 * @throws AdempiereException if no default calendar is found
+	 */
+	@NonNull I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId);
 }

@@ -22,26 +22,19 @@
 
 package de.metas.calendar.impl;
 
-import de.metas.calendar.CalendarId;
 import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.Query;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 public class CalendarDAO extends AbstractCalendarDAO
 {
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public List<I_C_Period> retrievePeriods(
@@ -128,21 +121,4 @@ public class CalendarDAO extends AbstractCalendarDAO
 				.first(I_C_Period.class);
 	}
 
-	@Nullable
-	@Override
-	public String getName(final CalendarId calendarId)
-	{
-		final List<Map<String, Object>> calendarNames = queryBL.createQueryBuilder(I_C_Calendar.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Calendar.COLUMNNAME_C_Calendar_ID, calendarId)
-				.create()
-				.listColumns(I_C_Calendar.COLUMNNAME_Name);
-
-		if (calendarNames.isEmpty())
-		{
-			return null;
-		}
-
-		return (String)calendarNames.get(0).get(I_C_Calendar.COLUMNNAME_Name);
-	}
 }

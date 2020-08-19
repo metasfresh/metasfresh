@@ -22,12 +22,8 @@
 
 package de.metas.calendar.impl;
 
-import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.calendar.CalendarId;
+import de.metas.util.Check;
+import de.metas.util.TypedAccessor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,10 +34,10 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.Env;
 
-import de.metas.util.Check;
-import de.metas.util.TypedAccessor;
-
-import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 public class PlainCalendarDAO extends AbstractCalendarDAO
 {
@@ -222,18 +218,6 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	{
 		final List<I_C_Period> periods = getPeriodsOfYear(year);
 		return periods.get(periods.size() - 1);
-	}
-
-	@Nullable
-	@Override
-	public String getName(final CalendarId calendarId)
-	{
-		return db.getRecords(I_C_Calendar.class)
-				.stream()
-				.filter(c -> c.getC_Calendar_ID() == calendarId.getRepoId())
-				.map(I_C_Calendar::getName)
-				.findFirst()
-				.orElse(null);
 	}
 
 	private List<I_C_Period> getPeriodsOfYear(final I_C_Year year)

@@ -26,6 +26,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
@@ -78,5 +79,12 @@ public interface ICalendarBL extends ISingletonService
 
 	IBusinessDayMatcher createBusinessDayMatcherExcluding(Set<DayOfWeek> excludeWeekendDays);
 
+	/**
+	 * Get Calender from AD_OrgInfo.
+	 * Fallback to Calendar of current Org which has flag "default" to true.
+	 * Fallback to Org=Any.
+	 *
+	 * @throws AdempiereException if no calendar is found
+	 */
 	@NonNull CalendarId getOrgCalendarOrDefault(@NonNull final OrgId orgId);
 }

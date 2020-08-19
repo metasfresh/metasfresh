@@ -22,7 +22,6 @@
 
 package de.metas.calendar.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
@@ -37,7 +36,6 @@ import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
@@ -60,6 +58,7 @@ public class CalendarBL implements ICalendarBL
 
 	public static final AdMessageKey MSG_SET_DEFAULT_OR_ORG_CALENDAR = AdMessageKey.of("de.metas.calendar.impl.CalendarBL.SetDefaultCalendarOrOrgCalendar");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -238,17 +237,7 @@ public class CalendarBL implements ICalendarBL
 			return orgInfo.getCalendarId();
 		}
 
-		final I_C_Calendar calendar = queryBL.createQueryBuilder(I_C_Calendar.class)
-				.addEqualsFilter(I_C_Calendar.COLUMNNAME_IsDefault, true)
-				.addInArrayFilter(I_C_Calendar.COLUMNNAME_AD_Org_ID, ImmutableList.of(orgId, OrgId.ANY))
-				.orderByDescending(I_C_Calendar.COLUMNNAME_AD_Org_ID)
-				.create()
-				.first();
-
-		if (calendar == null)
-		{
-			throw new AdempiereException(MSG_SET_DEFAULT_OR_ORG_CALENDAR);
-		}
+		final I_C_Calendar calendar = calendarDAO.getDefaultCalendar(orgId);
 
 		return CalendarId.ofRepoId(calendar.getC_Calendar_ID());
 	}

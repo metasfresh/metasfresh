@@ -32,11 +32,13 @@ import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.NonBusinessDay;
 import de.metas.calendar.RecurrentNonBusinessDay;
 import de.metas.calendar.RecurrentNonBusinessDayFrequency;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_NonBusinessDay;
@@ -44,6 +46,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -51,6 +54,7 @@ import java.util.Properties;
 public abstract class AbstractCalendarDAO implements ICalendarDAO
 {
 	private final CCache<CalendarId, CalendarNonBusinessDays> nonBusinessDaysByCalendarId = CCache.newCache(I_C_NonBusinessDay.Table_Name, 10, CCache.EXPIREMINUTES_Never);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	protected abstract List<I_C_Period> retrievePeriods(
 			final Properties ctx,
@@ -106,7 +110,6 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 
 	private CalendarNonBusinessDays retrieveCalendarNonBusinessDays(final CalendarId calendarId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<NonBusinessDay> nonBusinessDaysList = queryBL.createQueryBuilderOutOfTrx(I_C_NonBusinessDay.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_NonBusinessDay.COLUMNNAME_C_Calendar_ID, calendarId)
@@ -121,7 +124,7 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 				.build();
 	}
 
-	private static final NonBusinessDay toNonBusinessDay(final I_C_NonBusinessDay record)
+	private static NonBusinessDay toNonBusinessDay(final I_C_NonBusinessDay record)
 	{
 		if (record.isRepeat())
 		{
@@ -156,5 +159,42 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 		}
 
 		toNonBusinessDay(record);
+	}
+
+
+	@Override
+	@NonNull
+	public I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId)
+	{
+		final I_C_Calendar calendar = queryBL.createQueryBuilder(I_C_Calendar.class)
+				.addEqualsFilter(I_C_Calendar.COLUMNNAME_IsDefault, true)
+				.addInArrayFilter(I_C_Calendar.COLUMNNAME_AD_Org_ID, ImmutableList.of(orgId, OrgId.ANY))
+				.orderByDescending(I_C_Calendar.COLUMNNAME_AD_Org_ID)
+				.create()
+				.first();
+
+		if (calendar == null)
+		{
+			throw new AdempiereException(CalendarBL.MSG_SET_DEFAULT_OR_ORG_CALENDAR);
+		}
+		return calendar;
+	}
+
+	@Nullable
+	@Override
+	public String getName(final CalendarId calendarId)
+	{
+		final List<String> calendarNames = queryBL.createQueryBuilder(I_C_Calendar.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Calendar.COLUMNNAME_C_Calendar_ID, calendarId)
+				.create()
+				.listDistinct(I_C_Calendar.COLUMNNAME_Name, String.class);
+
+		if (calendarNames.isEmpty())
+		{
+			return null;
+		}
+
+		return calendarNames.get(0);
 	}
 }
