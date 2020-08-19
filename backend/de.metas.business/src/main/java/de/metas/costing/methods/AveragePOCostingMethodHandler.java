@@ -115,11 +115,12 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request))
 				.transform(CostAmount::ofProductPrice);
 		final CostAmount amt = costPrice.multiply(qty);
-
+		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
+		
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amt),
+				request.withAmount(amtConv),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
