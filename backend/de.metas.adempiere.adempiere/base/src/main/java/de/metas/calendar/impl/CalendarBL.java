@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
@@ -57,6 +58,7 @@ import java.util.Set;
 public class CalendarBL implements ICalendarBL
 {
 
+	public static final AdMessageKey MSG_SET_DEFAULT_OR_ORG_CALENDAR = AdMessageKey.of("de.metas.calendar.impl.CalendarBL.SetDefaultCalendarOrOrgCalendar");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -245,7 +247,7 @@ public class CalendarBL implements ICalendarBL
 
 		if (calendar == null)
 		{
-			throw new AdempiereException("Please set a default Calendar or an Organisation Calendar");
+			throw new AdempiereException(MSG_SET_DEFAULT_OR_ORG_CALENDAR);
 		}
 
 		return CalendarId.ofRepoId(calendar.getC_Calendar_ID());

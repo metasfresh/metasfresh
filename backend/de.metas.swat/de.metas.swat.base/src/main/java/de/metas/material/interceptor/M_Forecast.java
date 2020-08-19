@@ -25,6 +25,7 @@ package de.metas.material.interceptor;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
@@ -62,6 +63,7 @@ public class M_Forecast
 	private final M_ForecastEventCreator forecastEventCreator;
 	private final PostMaterialEventService materialEventService;
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+	public static final AdMessageKey MSG_CALENDAR_DOES_NOT_CONTAIN_PROMISED_DATE = AdMessageKey.of("de.metas.material.interceptor.M_Forecast.CalendarDoesNotContainPromisedDate");
 
 	public M_Forecast(
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
@@ -121,7 +123,7 @@ public class M_Forecast
 		if (period == null)
 		{
 			final String calendarName = calendarDAO.getName(calendarId);
-			throw new AdempiereException("The Calendar " + calendarName + " does not contain the Promised Date.");
+			throw new AdempiereException(MSG_CALENDAR_DOES_NOT_CONTAIN_PROMISED_DATE, calendarName, datePromised);
 		}
 
 		forecast.setC_Calendar_ID(calendarId.getRepoId());
