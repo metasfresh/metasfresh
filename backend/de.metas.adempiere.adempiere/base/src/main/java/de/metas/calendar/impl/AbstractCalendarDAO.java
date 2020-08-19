@@ -1,40 +1,28 @@
-package de.metas.calendar.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_NonBusinessDay;
-import org.compiere.model.I_C_Period;
-import org.compiere.util.TimeUtil;
+package de.metas.calendar.impl;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.CalendarNonBusinessDays;
@@ -47,6 +35,18 @@ import de.metas.calendar.RecurrentNonBusinessDayFrequency;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_NonBusinessDay;
+import org.compiere.model.I_C_Period;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
 
 public abstract class AbstractCalendarDAO implements ICalendarDAO
 {
@@ -71,6 +71,14 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 		final int calendarId = cal.getC_Calendar_ID();
 		return retrievePeriods(ctx, calendarId, begin, end, trxName);
 
+	}
+
+	@Override
+	public I_C_Period findByCalendar(final Timestamp date, @NonNull final CalendarId calendarId)
+	{
+		final Properties ctx = Env.getCtx();
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		return findByCalendar(ctx, date, calendarId.getRepoId(),  trxName);
 	}
 
 	@Override
