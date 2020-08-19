@@ -100,7 +100,7 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 
 		public boolean isValueChanged()
 		{
-			return Objects.equals(oldValue, newValue);
+			return !Objects.equals(oldValue, newValue);
 		}
 	}
 
