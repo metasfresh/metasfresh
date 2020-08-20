@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(numeric, char(1));
+
 DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(numeric, char(1), numeric);
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate(p_M_Product_ID  numeric = NULL,
