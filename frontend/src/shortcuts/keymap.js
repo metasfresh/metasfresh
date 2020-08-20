@@ -29,7 +29,7 @@ const keymaps = {
   OPEN_SELECTED: `${mod}+B`, // Open document in new tab
   REMOVE_SELECTED: `${mod}+Y`,
   ADVANCED_EDIT: `${mod}+E`,
-  FAST_INLINE_EDIT: `${mod}+F`, // Starts editing on the field and selects the text following to be edited by default
+  FAST_INLINE_EDIT: `F2`, // Starts editing on the field and selects the text following to be edited by default
 
   /* POS context */
   SELECT_ALL_LEAVES: `${mod}+S`,

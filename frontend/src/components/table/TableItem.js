@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
-
+import { F2_KEY } from '../../constants/Constants';
 import {
   shouldRenderColumn,
   getIconClassName,
@@ -155,9 +155,9 @@ class TableItem extends PureComponent {
       tableId,
       updatePropertyValue,
       fieldsByName,
+      onFastInlineEdit,
     } = this.props;
     const { listenOnKeys, edited, valueBeforeEditing } = this.state;
-
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
@@ -188,6 +188,10 @@ class TableItem extends PureComponent {
           this.setState({ valueBeforeEditing: fieldsByName[property].value });
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
+          if (e.keyCode === F2_KEY) {
+            onFastInlineEdit();
+            return false;
+          }
           this.listenOnKeysTrue();
 
           this.handleEditProperty(e, property, true, widgetData, true);
@@ -689,6 +693,7 @@ TableItem.propTypes = {
   handleFocusAction: PropTypes.func,
   tableId: PropTypes.string,
   updatePropertyValue: PropTypes.func,
+  onFastInlineEdit: PropTypes.func,
 };
 
 export default TableItem;

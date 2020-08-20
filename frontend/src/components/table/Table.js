@@ -333,6 +333,7 @@ export default class Table extends PureComponent {
       handleFocusAction,
       updatePropertyValue,
       tableId,
+      onFastInlineEdit,
     } = this.props;
 
     if (!rows.length || !columns.length) {
@@ -396,6 +397,7 @@ export default class Table extends PureComponent {
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
+        onFastInlineEdit={onFastInlineEdit}
         onClick={this.handleClick}
         handleRightClick={onRightClick}
         handleFocusAction={handleFocusAction}
