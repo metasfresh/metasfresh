@@ -29,6 +29,8 @@ import de.metas.postgrest.config.PostgRESTConfigRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -38,6 +40,9 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,9 +68,9 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 		final PostgRESTConfig config = configRepository.getConfigFor(processInfo.getOrgId());
 
-
-		final IStringExpression pathExpression = expressionFactory.compile(processInfo.getJsonPath().get(), IStringExpression.class);
-		final String path = pathExpression.evaluate(getEvalContext(),  IExpressionEvaluator.OnVariableNotFound.Fail);
+		final String rawJSONPath = processInfo.getJsonPath().get();
+		final IStringExpression pathExpression = expressionFactory.compile(prepareJSONPath(rawJSONPath), IStringExpression.class);
+		final String path = pathExpression.evaluate(getEvalContext(), IExpressionEvaluator.OnVariableNotFound.Fail);
 
 		final GetRequest getRequest = GetRequest
 				.builder()
@@ -79,6 +84,20 @@ public class PostgRESTProcessExecutor extends JavaProcess
 		return MSG_OK;
 	}
 
+	private String prepareJSONPath(@NonNull final String rawJSONPath)
+	{
+		try
+		{
+			return StringUtils.prependIfNotStartingWith(
+					URLEncoder.encode(rawJSONPath, StandardCharsets.UTF_8.toString()),
+					"/");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e); // won't happen
+		}
+	}
+
 	private Evaluatee getEvalContext()
 	{
 		final List<Evaluatee> contexts = new ArrayList<>();
@@ -88,4 +107,5 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 		return Evaluatees.compose(contexts);
 	}
+
 }
