@@ -31,6 +31,8 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -68,8 +70,9 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 		final PostgRESTResponseFormat responseFormat = PostgRESTResponseFormat.ofCode(processDAO.getById(getProcessInfo().getAdProcessId()).getPostgrestResponseFormat());
 
-		final IStringExpression pathExpression = expressionFactory.compile(processInfo.getJsonPath().get(), IStringExpression.class);
-		final String path = pathExpression.evaluate(getEvalContext(),  IExpressionEvaluator.OnVariableNotFound.Fail);
+		final String rawJSONPath = processInfo.getJsonPath().get();
+		final IStringExpression pathExpression = expressionFactory.compile(prepareJSONPath(rawJSONPath), IStringExpression.class);
+		final String path = pathExpression.evaluate(getEvalContext(), IExpressionEvaluator.OnVariableNotFound.Fail);
 
 		final GetRequest getRequest = GetRequest
 				.builder()
@@ -84,6 +87,15 @@ public class PostgRESTProcessExecutor extends JavaProcess
 		return MSG_OK;
 	}
 
+	private String prepareJSONPath(@NonNull final String rawJSONPath)
+	{
+		return StringUtils.prependIfNotStartingWith(
+				rawJSONPath
+						.replace("\n", "")
+						.replace("\r", ""),
+				"/");
+	}
+
 	private Evaluatee getEvalContext()
 	{
 		final List<Evaluatee> contexts = new ArrayList<>();
@@ -93,4 +105,5 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 		return Evaluatees.compose(contexts);
 	}
+
 }
