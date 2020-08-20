@@ -386,6 +386,7 @@ class TableWrapper extends PureComponent {
             handleSelect={this.handleSelect}
             handleFocusAction={this.handleFocusAction}
             onRightClick={this.handleRightClick}
+            onFastInlineEdit={this.handleFastInlineEdit}
             rowRefs={this.rowRefs}
             ref={this.setTableRef}
           />
