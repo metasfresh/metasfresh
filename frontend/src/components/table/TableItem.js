@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
-
+import { F2_KEY } from '../../constants/Constants';
 import {
   shouldRenderColumn,
   getIconClassName,
@@ -188,7 +188,7 @@ class TableItem extends PureComponent {
           this.setState({ valueBeforeEditing: fieldsByName[property].value });
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
-          if (e.keyCode === 113) {
+          if (e.keyCode === F2_KEY) {
             onFastInlineEdit();
             return false;
           }

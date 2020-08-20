@@ -126,3 +126,9 @@ export const DROPDOWN_OFFSET_BIG = 250;
  */
 export const DROPUP_OFFSET_SMALL = 150;
 export const LOCAL_LANG = 'metasfreshLanguage';
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the code of the F2 key. Visualy is easier to see the constant name and reason about
+ */
+export const F2_KEY = 113;
