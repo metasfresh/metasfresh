@@ -23,6 +23,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -35,6 +36,7 @@ import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
@@ -128,5 +130,15 @@ public class InvoiceCandidateViewHeaderPropertiesProvider implements ViewHeaderP
 		}
 
 		return result.build();
+	}
+
+	@Override
+	public ViewHeaderPropertiesIncrementalResult computeIncrementallyOnRowsChanged(
+			@NonNull final ViewHeaderProperties currentHeaderProperties,
+			@NonNull final IView view,
+			@NonNull final Set<DocumentId> changedRowIds,
+			final boolean watchedByFrontend)
+	{
+		return ViewHeaderPropertiesIncrementalResult.fullRecomputeRequired();
 	}
 }
