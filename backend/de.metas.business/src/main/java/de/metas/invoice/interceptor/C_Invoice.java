@@ -22,23 +22,6 @@ package de.metas.invoice.interceptor;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
@@ -56,6 +39,8 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.PriceListId;
@@ -63,8 +48,26 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Objects;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -193,7 +196,7 @@ public class C_Invoice // 03771
 		// services
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
-		final boolean ignoreProcessed = true; // need to ignoreProcessed, because right now, PRocessed not yet set to true by the engine.
+		final boolean ignoreProcessed = true; // need to ignoreProcessed, because right now, Processed not yet set to true by the engine.
 		invoiceBL.testAllocation(invoice, ignoreProcessed);
 	}
 
@@ -282,9 +285,8 @@ public class C_Invoice // 03771
 	private void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (order != null
-				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
-				&& order.getC_Payment_ID() > 0)
+		if (canAllocateOrderPaymentToInvoice(order)
+		)
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
@@ -294,12 +296,28 @@ public class C_Invoice // 03771
 		}
 	}
 
+	private boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
+	{
+		if (order == null)
+		{
+			return false;
+		}
+		if (order.getC_Payment_ID() <= 0)
+		{
+			return false;
+		}
+
+		final boolean isPrepayOrder = Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+		final ExternalId paymentExternalId = Services.get(IPaymentDAO.class).getExternalId(PaymentId.ofRepoId(order.getC_Payment_ID()));
+		final ExternalId orderExternalId = ExternalId.ofOrNull(order.getExternalId());
+
+		return (isPrepayOrder || Objects.equals(orderExternalId, paymentExternalId));
+	}
+
 	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (order != null
-				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
-				&& order.getC_Payment_ID() > 0)
+		if (canAllocateOrderPaymentToInvoice(order))
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
