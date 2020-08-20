@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
@@ -30,10 +32,14 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
@@ -109,8 +115,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request))
 				.transform(CostAmount::ofProductPrice);
 		final CostAmount amt = costPrice.multiply(qty);
+		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
+		
+		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+		return utils.createCostDetailRecordNoCostsChanged(
+				request.withAmount(amtConv),
+				CostDetailPreviousAmounts.of(currentCost));
 	}
 
 	@Override
@@ -127,7 +138,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostAmount amt = costPrice.multiply(qty);
 		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
 
-		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amtConv));
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		return utils.createCostDetailRecordNoCostsChanged(
+				request.withAmount(amtConv),
+				CostDetailPreviousAmounts.of(currentCost));
 	}
 
 	@Override
@@ -139,29 +154,154 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
 	{
 		final Quantity qty = request.getQty();
-		final boolean isInboundTrx = qty.signum() > 0;
+		final boolean isInboundTrx = qty.signum() >= 0;
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result;
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
+
+		final CostDetailCreateRequest requestEffective;
+
+		//
+		// Inbound transactions (qty >= 0)
+		// or Reversals
 		if (isInboundTrx || request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+			// Seed/initial costs import
+			if (request.getDocumentRef().isInventoryLine() && qty.signum() == 0)
+			{
+				requestEffective = request.withAmount(request.getAmt().toZero());
+				if (currentCosts.getCurrentQty().isZero())
+				{
+					currentCosts.setOwnCostPrice(request.getAmt());
+				}
+				else
+				{
+					// Do not change an existing positive cost price if there is also a positive qty
+				}
+			}
+			else
+			{
+				// In case the amount was not provided but there is a positive qty incoming
+				// use the current cost price to calculate the amount.
+				// In case of reversals, always consider the Amt.
+				requestEffective = request.getAmt().isZero() && !request.isReversal()
+						? request.withAmount(calculateAmountBasedOnExistingPrice(request, currentCosts))
+						: request;
 
-			currentCosts.addWeightedAverage(request.getAmt(), qty, utils.getQuantityUOMConverter());
+				currentCosts.addWeightedAverage(requestEffective.getAmt(), qty, utils.getQuantityUOMConverter());
+			}
 		}
+		//
+		// Outbound transactions (qty < 0)
 		else
 		{
-			final CostPrice price = currentCosts.getCostPrice();
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+			final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			requestEffective = request.withAmount(amt);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				requestEffective,
+				previousCosts);
+
 		utils.saveCurrentCost(currentCosts);
 
 		return result;
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		final CostElement costElement = request.getCostElement();
+		if (costElement == null)
+		{
+			throw new AdempiereException("No cost element: " + request);
+		}
+
+		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
+		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
+
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
+		final CostPrice currentCostPrice = outboundCurrentCosts.getCostPrice();
+		final Quantity outboundQty = request.getQtyToMove().negate();
+		final CostAmount outboundAmt = currentCostPrice.multiply(outboundQty).roundToPrecisionIfNeeded(outboundCurrentCosts.getPrecision());
+
+		final CostDetailCreateRequest outboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getOutboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getOutboundDocumentRef())
+				.costElement(costElement)
+				.amt(outboundAmt)
+				.qty(outboundQty)
+				.date(request.getDate())
+				.build();
+		final CostDetailCreateRequest inboundCostDetailRequest = CostDetailCreateRequest.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.clientId(request.getClientId())
+				.orgId(request.getInboundOrgId())
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.documentRef(request.getInboundDocumentRef())
+				.costElement(costElement)
+				.amt(outboundAmt.negate())
+				.qty(outboundQty.negate())
+				.date(request.getDate())
+				.build();
+
+		//
+		// Moving costs inside costing segment
+		// => no changes, just record the cost details
+		final CostDetailCreateResult outboundResult;
+		final CostDetailCreateResult inboundResult;
+		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
+		{
+			final CostDetailPreviousAmounts inboundPreviousCosts = outboundPreviousCosts;
+
+			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest, outboundPreviousCosts);
+			inboundResult = utils.createCostDetailRecordNoCostsChanged(inboundCostDetailRequest, inboundPreviousCosts);
+		}
+		//
+		// Moving costs between costing segments
+		// => change current costs, record the cost details
+		else
+		{
+			outboundResult = utils.createCostDetailRecordWithChangedCosts(
+					outboundCostDetailRequest,
+					outboundPreviousCosts);
+
+			outboundCurrentCosts.addToCurrentQtyAndCumulate(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(outboundCurrentCosts);
+
+			// Inbound cost
+			final CurrentCost inboundCurrentCosts = utils.getCurrentCost(inboundSegmentAndElement);
+			final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
+			inboundResult = utils.createCostDetailRecordWithChangedCosts(
+					inboundCostDetailRequest,
+					inboundPreviousCosts);
+
+			inboundCurrentCosts.addWeightedAverage(
+					inboundCostDetailRequest.getAmt(),
+					inboundCostDetailRequest.getQty(),
+					utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(inboundCurrentCosts);
+		}
+
+		return MoveCostsResult.builder()
+				.outboundCosts(AggregatedCostAmount.builder()
+						.costSegment(outboundSegmentAndElement.toCostSegment())
+						.amount(costElement, outboundResult.getAmt())
+						.build())
+				.inboundCosts(AggregatedCostAmount.builder()
+						.costSegment(inboundSegmentAndElement.toCostSegment())
+						.amount(costElement, inboundResult.getAmt())
+						.build())
+				.build();
 	}
 
 	@Override
@@ -373,5 +513,15 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.qty(qty)
 				.previousAmounts(previousAmounts)
 				.build();
+	}
+
+	private CostAmount calculateAmountBasedOnExistingPrice(final CostDetailCreateRequest request, final CurrentCost currentCosts)
+	{
+		final CostPrice price = currentCosts.getCostPrice();
+
+		// make sure we are multiplying the cost price with the qty in the correct UOM, i.e the UOM of the cost price.
+		final Quantity qtyInCostUOM = utils.getQuantityUOMConverter().convertQuantityTo(request.getQty(), request.getProductId(), currentCosts.getUomId());
+
+		return price.multiply(qtyInCostUOM).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 	}
 }
