@@ -1,5 +1,6 @@
+drop view if exists rv_unposted;
 
-CREATE OR REPLACE VIEW public.rv_unposted AS 
+CREATE OR REPLACE VIEW rv_unposted AS 
  SELECT gl_journal.ad_client_id,
     gl_journal.ad_org_id,
     gl_journal.created,
@@ -14,6 +15,7 @@ CREATE OR REPLACE VIEW public.rv_unposted AS
     gl_journal.gl_journal_id AS record_id,
     'N'::text AS issotrx,
     gl_journal.posted,
+    gl_journal.PostingError_Issue_ID,
     gl_journal.processing,
     gl_journal.processed,
     gl_journal.docstatus
@@ -34,6 +36,7 @@ UNION
     pi.c_projectissue_id AS record_id,
     'N'::text AS issotrx,
     pi.posted,
+    pi.PostingError_Issue_ID,
     pi.processing,
     pi.processed,
     'CO'::bpchar AS docstatus
@@ -55,6 +58,7 @@ UNION
     c_invoice.c_invoice_id AS record_id,
     c_invoice.issotrx,
     c_invoice.posted,
+    c_invoice.PostingError_Issue_ID,
     c_invoice.processing,
     c_invoice.processed,
     c_invoice.docstatus
@@ -75,6 +79,7 @@ UNION
     m_inout.m_inout_id AS record_id,
     m_inout.issotrx,
     m_inout.posted,
+    m_inout.PostingError_Issue_ID,
     m_inout.processing,
     m_inout.processed,
     m_inout.docstatus
@@ -95,6 +100,7 @@ UNION
     m_inventory.m_inventory_id AS record_id,
     'N'::text AS issotrx,
     m_inventory.posted,
+    m_inventory.PostingError_Issue_ID,
     m_inventory.processing,
     m_inventory.processed,
     m_inventory.docstatus
@@ -115,6 +121,7 @@ UNION
     m_movement.m_movement_id AS record_id,
     'N'::text AS issotrx,
     m_movement.posted,
+    m_movement.PostingError_Issue_ID,
     m_movement.processing,
     m_movement.processed,
     m_movement.docstatus
@@ -135,6 +142,7 @@ UNION
     c_cash.c_cash_id AS record_id,
     'N'::text AS issotrx,
     c_cash.posted,
+    c_cash.PostingError_Issue_ID,
     c_cash.processing,
     c_cash.processed,
     c_cash.docstatus
@@ -155,6 +163,7 @@ UNION
     c_payment.c_payment_id AS record_id,
     'N'::text AS issotrx,
     c_payment.posted,
+    c_payment.PostingError_Issue_ID,
     c_payment.processing,
     c_payment.processed,
     c_payment.docstatus
@@ -175,6 +184,7 @@ UNION
     c_allocationhdr.c_allocationhdr_id AS record_id,
     'N'::text AS issotrx,
     c_allocationhdr.posted,
+    c_allocationhdr.PostingError_Issue_ID,
     c_allocationhdr.processing,
     c_allocationhdr.processed,
     c_allocationhdr.docstatus
@@ -195,6 +205,7 @@ UNION
     c_bankstatement.c_bankstatement_id AS record_id,
     'N'::text AS issotrx,
     c_bankstatement.posted,
+    c_bankstatement.PostingError_Issue_ID,
     c_bankstatement.processing,
     c_bankstatement.processed,
     c_bankstatement.docstatus
@@ -215,6 +226,7 @@ UNION
     m_matchinv.m_matchinv_id AS record_id,
     'N'::text AS issotrx,
     m_matchinv.posted,
+    m_matchinv.PostingError_Issue_ID,
     m_matchinv.processing,
     m_matchinv.processed,
     'CO'::bpchar AS docstatus
@@ -235,6 +247,7 @@ UNION
     m_matchpo.m_matchpo_id AS record_id,
     'N'::text AS issotrx,
     m_matchpo.posted,
+    m_matchpo.PostingError_Issue_ID,
     m_matchpo.processing,
     m_matchpo.processed,
     'CO'::bpchar AS docstatus
@@ -255,6 +268,7 @@ UNION
     c_order.c_order_id AS record_id,
     c_order.issotrx,
     c_order.posted,
+    c_order.PostingError_Issue_ID,
     c_order.processing,
     c_order.processed,
     c_order.docstatus
@@ -275,6 +289,7 @@ UNION
     m_requisition.m_requisition_id AS record_id,
     'N'::text AS issotrx,
     m_requisition.posted,
+    m_requisition.PostingError_Issue_ID,
     m_requisition.processing,
     m_requisition.processed,
     m_requisition.docstatus
