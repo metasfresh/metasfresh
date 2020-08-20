@@ -40,9 +40,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,16 +83,9 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 	private String prepareJSONPath(@NonNull final String rawJSONPath)
 	{
-		try
-		{
-			return StringUtils.prependIfNotStartingWith(
-					URLEncoder.encode(rawJSONPath, StandardCharsets.UTF_8.toString()),
-					"/");
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e); // won't happen
-		}
+		return StringUtils.prependIfNotStartingWith(
+				rawJSONPath.replace("\n", "").replace("\r", ""),
+				"/");
 	}
 
 	private Evaluatee getEvalContext()
