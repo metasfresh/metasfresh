@@ -55,7 +55,7 @@ class C_InvoiceInterceptorTest
 	}
 
 	@Test
-	void canAllocateOrderDoctypePrepay()
+	void canAllocate_OrderDoctypePrepay()
 	{
 		final I_C_Payment payment = createPayment(null);
 		final I_C_Order prepayOrder = createSalesOrder(null, prepayDocType, payment);
@@ -64,7 +64,7 @@ class C_InvoiceInterceptorTest
 	}
 
 	@Test
-	void canAllocateOrderDoctypeSalesOrder_WithPaymentAndExternalOrderId()
+	void canAllocate_OrderDoctypeSalesOrder_WithPaymentAndExternalOrderId()
 	{
 		final ExternalId externalId = ExternalId.of("extId1432");
 		final I_C_Payment payment = createPayment(externalId);
@@ -74,7 +74,7 @@ class C_InvoiceInterceptorTest
 	}
 
 	@Test
-	void canNotAllocateOrderDoctypeSalesOrder_MismatchExternalID()
+	void canNotAllocate_OrderDoctypeSalesOrder_MismatchExternalID()
 	{
 		// note: I think this case should not happen, but I've been wrong before.
 		final ExternalId externalIdSO = ExternalId.of("extId1432SO");
@@ -87,9 +87,7 @@ class C_InvoiceInterceptorTest
 
 	@SuppressWarnings("ConstantConditions")
 	@NonNull
-	private I_C_Payment createPayment(
-			@Nullable final ExternalId externalOrderId
-	)
+	private I_C_Payment createPayment(@Nullable final ExternalId externalOrderId)
 	{
 		final I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setExternalOrderId(ExternalId.toValue(externalOrderId));

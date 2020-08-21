@@ -96,7 +96,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.listDistinct(I_C_Payment.COLUMNNAME_ExternalOrderId, String.class);
 		if (externalIDs.isEmpty())
 		{
-			return ExternalId.ofOrNull(null);
+			return null;
 		}
 
 		return ExternalId.of(externalIDs.get(0));
