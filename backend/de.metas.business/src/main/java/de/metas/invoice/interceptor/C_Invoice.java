@@ -22,6 +22,7 @@ package de.metas.invoice.interceptor;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
@@ -296,7 +297,8 @@ public class C_Invoice // 03771
 		}
 	}
 
-	private boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
+	@VisibleForTesting
+	static boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
 	{
 		if (order == null)
 		{
@@ -308,10 +310,15 @@ public class C_Invoice // 03771
 		}
 
 		final boolean isPrepayOrder = Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+		if (isPrepayOrder)
+		{
+			return true;
+		}
+
 		final ExternalId paymentExternalId = Services.get(IPaymentDAO.class).getExternalId(PaymentId.ofRepoId(order.getC_Payment_ID()));
 		final ExternalId orderExternalId = ExternalId.ofOrNull(order.getExternalId());
 
-		return (isPrepayOrder || Objects.equals(orderExternalId, paymentExternalId));
+		return Objects.equals(orderExternalId, paymentExternalId);
 	}
 
 	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
