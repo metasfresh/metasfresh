@@ -19,7 +19,17 @@ const plugins = [
     template: './index.html',
   }),
   new WebpackGitHash(),
-  new CopyWebpackPlugin([{ from: './plugins/**', to: './', ignore: ['*.md'] }]),
+  new CopyWebpackPlugin({
+    patterns: [
+      {
+        from: './plugins/**',
+        to: './',
+        globOptions: {
+          ignore: ['*.md'],
+        },
+      },
+    ],
+  }),
 ];
 
 if (!fs.existsSync(path.join(__dirname, 'dist/plugins.js'))) {
