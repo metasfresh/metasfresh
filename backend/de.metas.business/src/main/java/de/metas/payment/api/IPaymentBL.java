@@ -107,6 +107,7 @@ public interface IPaymentBL extends ISingletonService
 
 	List<OrderId> getOrderIdsList(List<I_C_Payment> payments);
 
+	void setPaypalOrCreditCardPaymentRules(List<I_C_Payment> payments, int paypalDataSourceId, int creditCardDataSourceId);
 
 	void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids);
 

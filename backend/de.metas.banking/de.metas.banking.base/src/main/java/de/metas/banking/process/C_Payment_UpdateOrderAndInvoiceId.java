@@ -82,6 +82,7 @@ public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IP
 						&& !p.isAllocated())
 				.collect(Collectors.toList());
 
+		paymentBL.setPaypalOrCreditCardPaymentRules(filteredPayments, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId());
 		final List<ExternalId> externalIds = paymentBL.getExternalIdsList(filteredPayments);
 		final Map<ExternalId, OrderId> orderIdsForExternalIds = orderDAO.getOrderIdsForExternalIds(externalIds);
 		paymentBL.setPaymentOrderIds(filteredPayments, orderIdsForExternalIds);

@@ -480,6 +480,20 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+	public void setPaypalOrCreditCardPaymentRules(List<I_C_Payment> payments, int paypalDataSourceId, int creditCardDataSourceId)
+	{
+		for (final I_C_Payment payment : payments)
+		{
+			final String paymentRule = getPaymentRuleSymbol(payment, paypalDataSourceId, creditCardDataSourceId);
+			if (paymentRule.equals("L") || paymentRule.equals("K"))
+			{
+				payment.setPaymentRule(paymentRule);
+				save(payment);
+			}
+		}
+	}
+
+	@Override
 	public void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids)
 	{
 		for (final I_C_Payment payment : payments)
