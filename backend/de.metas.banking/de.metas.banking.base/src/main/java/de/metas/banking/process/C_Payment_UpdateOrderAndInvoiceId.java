@@ -22,17 +22,13 @@
 
 package de.metas.banking.process;
 
-import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -46,7 +42,6 @@ import org.compiere.model.I_C_Payment;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IProcessPrecondition
@@ -77,31 +72,22 @@ public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IP
 	protected String doIt() throws Exception
 	{
 		List<I_C_Payment> payments = getSelectedPayments();
-		final InputDataSourceId paypalDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(PAYPAL_INTERNAL_NAME);
-		final InputDataSourceId creditCardDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(CREDITCARD_INTERNAL_NAME);
-		for (I_C_Payment payment : payments)
-		{
-			if (paymentBL.isPaypalOrCreditCardPayment(payment, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("L")
-					|| paymentBL.isPaypalOrCreditCardPayment(payment, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("K"))
-			{
-				payments.remove(payment);
-			}
-		}
-		for (I_C_Payment payment : payments)
-		{
-			if (payment.isAllocated())
-			{
-				payments.remove(payment);
-			}
-		}
+		final InputDataSourceId paypalDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalNameOrNull(PAYPAL_INTERNAL_NAME);
+		final InputDataSourceId creditCardDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalNameOrNull(CREDITCARD_INTERNAL_NAME);
 
-		final List<ExternalId> externalIds = paymentBL.getExternalIdsList(payments);
-		final List<OrderId> orderIds = paymentBL.getOrderIdsList(payments);
+		List<I_C_Payment> filteredPayments = payments
+				.stream()
+				.filter(p -> !paymentBL.isPaypalOrCreditCardPayment(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("L")
+						&& !paymentBL.isPaypalOrCreditCardPayment(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("K")
+						&& !p.isAllocated())
+				.collect(Collectors.toList());
+
+		final List<ExternalId> externalIds = paymentBL.getExternalIdsList(filteredPayments);
 		final Map<ExternalId, OrderId> orderIdsForExternalIds = orderDAO.getOrderIdsForExternalIds(externalIds);
+		paymentBL.setPaymentOrderIds(filteredPayments, orderIdsForExternalIds);
+		final List<OrderId> orderIds = paymentBL.getOrderIdsList(filteredPayments);
 		final Map<OrderId, InvoiceId> orderIdInvoiceIdMap = invoiceDAO.getInvoiceIdsForOrderIds(orderIds);
-		paymentBL.setPaymentOrderIds(payments, orderIdsForExternalIds);
-		paymentBL.setPaymentInvoiceIds(payments, orderIdInvoiceIdMap);
-
+		paymentBL.setPaymentInvoiceIds(filteredPayments, orderIdInvoiceIdMap);
 
 		return MSG_OK;
 	}

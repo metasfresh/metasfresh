@@ -22,45 +22,9 @@
 
 package de.metas.payment.api.impl;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
-import de.metas.payment.PaymentRule;
-import de.metas.util.lang.ExternalId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -80,6 +44,8 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -91,7 +57,38 @@ import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import static java.math.BigDecimal.ZERO;
 
 public class PaymentBL implements IPaymentBL
 {
@@ -107,7 +104,6 @@ public class PaymentBL implements IPaymentBL
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final String PAYPAL_INTERNAL_NAME = "SOURCE.webshop.paypal.prepaid_B2C";
-
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -433,7 +429,18 @@ public class PaymentBL implements IPaymentBL
 	public String isPaypalOrCreditCardPayment(final I_C_Payment payment, final int paypalDataSourceId, final int creditCardDataSourceId)
 	{
 
+		if (payment.getExternalOrderId() == null)
+		{
+			return "";
+		}
+
 		final I_C_Order order = orderBL.getByExternalId(ExternalId.of(payment.getExternalOrderId()));
+
+		if (order == null)
+		{
+			return "";
+		}
+
 		if (order.getAD_InputDataSource_ID() == paypalDataSourceId)
 		{
 			return "L";
@@ -464,7 +471,10 @@ public class PaymentBL implements IPaymentBL
 		final List<OrderId> orderIds = new ArrayList<OrderId>();
 		for (final I_C_Payment payment : payments)
 		{
-			orderIds.add(OrderId.ofRepoId(payment.getC_Order_ID()));
+			if (payment.getC_Order_ID() > 0)
+			{
+				orderIds.add(OrderId.ofRepoId(payment.getC_Order_ID()));
+			}
 		}
 		return orderIds;
 	}
@@ -472,20 +482,28 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids)
 	{
-		for (I_C_Payment payment : payments)
+		for (final I_C_Payment payment : payments)
 		{
-			payment.setC_Order_ID(ids.get(ExternalId.of(payment.getExternalOrderId())).getRepoId());
-			save(payment);
+			final OrderId orderId = ids.getOrDefault(ExternalId.of(payment.getExternalOrderId()), OrderId.ofRepoIdOrNull(0));
+			if (orderId != null)
+			{
+				payment.setC_Order_ID(orderId.getRepoId());
+				save(payment);
+			}
 		}
 	}
 
 	@Override
 	public void setPaymentInvoiceIds(List<I_C_Payment> payments, Map<OrderId, InvoiceId> ids)
 	{
-		for (I_C_Payment payment : payments)
+		for (final I_C_Payment payment : payments)
 		{
-			payment.setC_Invoice_ID(ids.get(OrderId.ofRepoId(payment.getC_Order_ID())).getRepoId());
-			save(payment);
+			final InvoiceId invoiceId = ids.getOrDefault(OrderId.ofRepoIdOrNull(payment.getC_Order_ID()), InvoiceId.ofRepoIdOrNull(0));
+			if (invoiceId != null)
+			{
+				payment.setC_Invoice_ID(invoiceId.getRepoId());
+				save(payment);
+			}
 		}
 	}
 

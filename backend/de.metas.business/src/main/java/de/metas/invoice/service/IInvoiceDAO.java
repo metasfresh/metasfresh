@@ -32,7 +32,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
-import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_Org;
@@ -58,9 +57,9 @@ public interface IInvoiceDAO extends ISingletonService
 
 	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(final List<OrderId> orderIds);
+	Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(List<OrderId> orderIds);
 
-	I_C_Invoice getByOrderId(final OrderId orderId);
+	I_C_Invoice getByOrderId(OrderId orderId);
 
 	/**
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}

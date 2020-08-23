@@ -1,9 +1,30 @@
 package de.metas.impex.api.impl;
 
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.api.InputDataSourceCreateRequest;
+import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Properties;
+
 import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Optional;
 
 /*
  * #%L
@@ -27,28 +48,6 @@ import java.util.Optional;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.util.Env;
-
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.impex.InputDataSourceId;
-import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.impex.api.InputDataSourceCreateRequest;
-import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class InputDataSourceDAO implements IInputDataSourceDAO
 {
 
@@ -65,6 +64,20 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 				.getAD_InputDataSource_ID();
 
 		return InputDataSourceId.ofRepoId(inputDataSourceRecordId);
+	}
+
+	@Nullable
+	@Override
+	public InputDataSourceId retrieveInputDataSourceIdByInternalNameOrNull(final String internalName)
+	{
+		final I_AD_InputDataSource inputDataSource = retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */false, ITrx.TRXNAME_None);
+
+		if (inputDataSource != null)
+		{
+			return InputDataSourceId.ofRepoIdOrNull(inputDataSource.getAD_InputDataSource_ID());
+		}
+
+		return InputDataSourceId.ofRepoIdOrNull(1);
 	}
 
 	@Override
@@ -85,7 +98,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 	}
 
 	@Cached(cacheName = I_AD_InputDataSource.Table_Name)
-	/* package */ I_AD_InputDataSource retriveDataSource(
+		/* package */ I_AD_InputDataSource retriveDataSource(
 			final @CacheCtx Properties ctx,
 			final String internalName,
 			final @CacheTrx String trxName)

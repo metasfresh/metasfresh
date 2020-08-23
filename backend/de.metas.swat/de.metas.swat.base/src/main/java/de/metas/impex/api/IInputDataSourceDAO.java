@@ -1,6 +1,12 @@
 package de.metas.impex.api;
 
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.impl.InputDataSourceQuery;
+import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.util.ISingletonService;
+
 import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -24,13 +30,6 @@ import java.util.Optional;
  * #L%
  */
 
-import java.util.Properties;
-
-import de.metas.impex.InputDataSourceId;
-import de.metas.impex.api.impl.InputDataSourceQuery;
-import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.util.ISingletonService;
-
 public interface IInputDataSourceDAO extends ISingletonService
 {
 	I_AD_InputDataSource getById(final InputDataSourceId id);
@@ -38,6 +37,8 @@ public interface IInputDataSourceDAO extends ISingletonService
 	I_AD_InputDataSource retrieveInputDataSource(Properties ctx, String internalName, boolean throwEx, String trxName);
 
 	InputDataSourceId retrieveInputDataSourceIdByInternalName(String internalName);
+
+	InputDataSourceId retrieveInputDataSourceIdByInternalNameOrNull(String internalName);
 
 	void createIfMissing(InputDataSourceCreateRequest request);
 

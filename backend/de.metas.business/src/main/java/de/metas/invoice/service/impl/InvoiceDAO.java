@@ -24,14 +24,11 @@ package de.metas.invoice.service.impl;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
@@ -48,9 +45,7 @@ import org.slf4j.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
@@ -63,18 +58,6 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 	}
 
 	@Override
-	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(final List<OrderId> orderIds)
-	{
-		Map<OrderId, InvoiceId> orderIdInvoiceIdMap = new HashMap<OrderId, InvoiceId>();
-
-		for (OrderId orderId : orderIds)
-		{
-			orderIdInvoiceIdMap.put(orderId, InvoiceId.ofRepoId(getByOrderId(orderId).getC_Order_ID()));
-		}
-		return orderIdInvoiceIdMap;
-	}
-
-	@Override
 	public I_C_Invoice getByOrderId(@NonNull final OrderId orderId)
 	{
 		final I_C_Invoice invoice = Services.get(IQueryBL.class)
@@ -82,10 +65,6 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId.getRepoId())
 				.create()
 				.firstOnlyOrNull(I_C_Invoice.class);
-		if (invoice == null)
-		{
-			throw new AdempiereException("@NotFound@: " + orderId.getRepoId());
-		}
 		return invoice;
 	}
 
