@@ -426,7 +426,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public String isPaypalOrCreditCardPayment(final I_C_Payment payment, final int paypalDataSourceId, final int creditCardDataSourceId)
+	public String getPaymentRuleSymbol(final I_C_Payment payment, final int paypalDataSourceId, final int creditCardDataSourceId)
 	{
 
 		if (payment.getExternalOrderId() == null)

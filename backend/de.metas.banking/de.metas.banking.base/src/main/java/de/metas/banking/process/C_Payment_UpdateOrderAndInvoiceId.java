@@ -77,8 +77,8 @@ public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IP
 
 		List<I_C_Payment> filteredPayments = payments
 				.stream()
-				.filter(p -> !paymentBL.isPaypalOrCreditCardPayment(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("L")
-						&& !paymentBL.isPaypalOrCreditCardPayment(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("K")
+				.filter(p -> !paymentBL.getPaymentRuleSymbol(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("L")
+						&& !paymentBL.getPaymentRuleSymbol(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("K")
 						&& !p.isAllocated())
 				.collect(Collectors.toList());
 
