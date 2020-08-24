@@ -22,7 +22,8 @@ de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItemTest.serializeDe
         "url3Set": false,
         "groupSet": false,
         "globalIdset": false,
-        "syncAdviseSet": false
+        "syncAdviseSet": false,
+        "vatIdSet": false
       }
     }
   }
