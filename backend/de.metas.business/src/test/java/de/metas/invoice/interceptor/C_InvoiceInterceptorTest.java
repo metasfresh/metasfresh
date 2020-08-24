@@ -75,35 +75,52 @@ class C_InvoiceInterceptorTest
 	}
 
 	@Test
-	void canAllocate_OrderDoctypeSalesOrder_WithSameExternalId()
+	void canAllocate_OrderDoctypeSalesOrder_SameExternalId()
 	{
 		final ExternalId externalId = ExternalId.of("extId1432");
 		final I_C_Payment payment = createPayment(externalId);
-		final I_C_Order prepayOrder = createSalesOrder(externalId, salesOrderDocType, payment);
+		final I_C_Order salesOrder = createSalesOrder(externalId, salesOrderDocType, payment);
 
-		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(prepayOrder));
+		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(salesOrder));
 	}
 
 	@Test
-	void canAllocate_OrderDoctypeSalesOrder_WithDifferentExternalID()
+	void canAllocate_OrderDoctypeSalesOrder_DifferentExternalID()
 	{
 		final ExternalId externalIdSO = ExternalId.of("extId1432SO");
 		final ExternalId externalIdP = ExternalId.of("extId1432P");
 		final I_C_Payment payment = createPayment(externalIdP);
-		final I_C_Order prepayOrder = createSalesOrder(externalIdSO, salesOrderDocType, payment);
+		final I_C_Order salesOrder = createSalesOrder(externalIdSO, salesOrderDocType, payment);
 
-		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(prepayOrder));
+		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(salesOrder));
 	}
 
 	@Test
 	void canAllocate_OrderDoctypeSalesOrder_NoExternalID()
 	{
-		final ExternalId externalIdSO = ExternalId.of("extId1432SO");
-		final ExternalId externalIdP = ExternalId.of("extId1432P");
-		final I_C_Payment payment = createPayment(externalIdP);
-		final I_C_Order prepayOrder = createSalesOrder(externalIdSO, salesOrderDocType, payment);
+		final I_C_Payment payment = createPayment(null);
+		final I_C_Order salesOrder = createSalesOrder(null, salesOrderDocType, payment);
 
-		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(prepayOrder));
+		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(salesOrder));
+	}
+
+	@Test
+	void canNotAllocate_OrderDoctypeSalesOrder_DifferentPaymentOrderLinked()
+	{
+		final I_C_Order salesOrder = createSalesOrder(null, salesOrderDocType, null);
+
+		final I_C_Payment payment = createPayment(null);
+		salesOrder.setC_Payment_ID(payment.getC_Payment_ID());
+
+		Assertions.assertFalse(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(salesOrder));
+	}
+
+	@Test
+	void canNotAllocate_OrderDoctypeSalesOrder_NoPayment()
+	{
+		final I_C_Order salesOrder = createSalesOrder(null, salesOrderDocType, null);
+
+		Assertions.assertFalse(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(salesOrder));
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -122,18 +139,22 @@ class C_InvoiceInterceptorTest
 	private I_C_Order createSalesOrder(
 			@Nullable final ExternalId externalOrderId,
 			@NonNull final I_C_DocType prepayDocType,
-			@NonNull final I_C_Payment payment)
+			@Nullable final I_C_Payment payment)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setExternalId(ExternalId.toValue(externalOrderId));
 		order.setC_DocType_ID(prepayDocType.getC_DocType_ID());
 		order.setIsSOTrx(true);
-		order.setC_Payment_ID(payment.getC_Payment_ID());
-
 		saveRecord(order);
 
-		payment.setC_Order_ID(order.getC_Order_ID());
-		saveRecord(payment);
+		if (payment != null)
+		{
+			order.setC_Payment_ID(payment.getC_Payment_ID());
+			payment.setC_Order_ID(order.getC_Order_ID());
+
+			saveRecord(payment);
+			saveRecord(order);
+		}
 
 		return order;
 	}
