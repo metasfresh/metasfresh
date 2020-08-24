@@ -298,7 +298,7 @@ public class C_Invoice // 03771
 	}
 
 	@VisibleForTesting
-	static boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
+	boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
 	{
 		if (order == null)
 		{
@@ -309,16 +309,14 @@ public class C_Invoice // 03771
 			return false;
 		}
 
-		final boolean isPrepayOrder = Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+		final boolean isPrepayOrder = docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()));
 		if (isPrepayOrder)
 		{
 			return true;
 		}
 
-		final ExternalId paymentExternalId = Services.get(IPaymentDAO.class).getExternalId(PaymentId.ofRepoId(order.getC_Payment_ID()));
-		final ExternalId orderExternalId = ExternalId.ofOrNull(order.getExternalId());
-
-		return Objects.equals(orderExternalId, paymentExternalId);
+		final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
+		return payment.getC_Order_ID() == order.getC_Order_ID();
 	}
 
 	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)

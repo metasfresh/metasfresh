@@ -23,6 +23,10 @@
 package de.metas.invoice.interceptor;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.payment.processor.PaymentProcessorService;
+import de.metas.payment.reservation.PaymentReservationCaptureRepository;
+import de.metas.payment.reservation.PaymentReservationRepository;
+import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,6 +39,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -44,6 +49,7 @@ class C_InvoiceInterceptorTest
 {
 	private I_C_DocType prepayDocType;
 	private I_C_DocType salesOrderDocType;
+	private C_Invoice c_invoiceInterceptor;
 
 	@BeforeEach
 	void beforeEach()
@@ -52,6 +58,11 @@ class C_InvoiceInterceptorTest
 
 		prepayDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
 		salesOrderDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
+
+		final @NonNull PaymentReservationRepository reservationsRepo = new PaymentReservationRepository();
+		final @NonNull PaymentReservationCaptureRepository capturesRepo = new PaymentReservationCaptureRepository();
+		final @NonNull PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.empty());
+		c_invoiceInterceptor = new C_Invoice(new PaymentReservationService(reservationsRepo, capturesRepo, paymentProcessors));
 	}
 
 	@Test
@@ -60,29 +71,39 @@ class C_InvoiceInterceptorTest
 		final I_C_Payment payment = createPayment(null);
 		final I_C_Order prepayOrder = createSalesOrder(null, prepayDocType, payment);
 
-		Assertions.assertTrue(C_Invoice.canAllocateOrderPaymentToInvoice(prepayOrder));
+		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(prepayOrder));
 	}
 
 	@Test
-	void canAllocate_OrderDoctypeSalesOrder_WithPaymentAndExternalOrderId()
+	void canAllocate_OrderDoctypeSalesOrder_WithSameExternalId()
 	{
 		final ExternalId externalId = ExternalId.of("extId1432");
 		final I_C_Payment payment = createPayment(externalId);
 		final I_C_Order prepayOrder = createSalesOrder(externalId, salesOrderDocType, payment);
 
-		Assertions.assertTrue(C_Invoice.canAllocateOrderPaymentToInvoice(prepayOrder));
+		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(prepayOrder));
 	}
 
 	@Test
-	void canNotAllocate_OrderDoctypeSalesOrder_MismatchExternalID()
+	void canAllocate_OrderDoctypeSalesOrder_WithDifferentExternalID()
 	{
-		// note: I think this case should not happen, but I've been wrong before.
 		final ExternalId externalIdSO = ExternalId.of("extId1432SO");
 		final ExternalId externalIdP = ExternalId.of("extId1432P");
 		final I_C_Payment payment = createPayment(externalIdP);
 		final I_C_Order prepayOrder = createSalesOrder(externalIdSO, salesOrderDocType, payment);
 
-		Assertions.assertFalse(C_Invoice.canAllocateOrderPaymentToInvoice(prepayOrder));
+		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(prepayOrder));
+	}
+
+	@Test
+	void canAllocate_OrderDoctypeSalesOrder_NoExternalID()
+	{
+		final ExternalId externalIdSO = ExternalId.of("extId1432SO");
+		final ExternalId externalIdP = ExternalId.of("extId1432P");
+		final I_C_Payment payment = createPayment(externalIdP);
+		final I_C_Order prepayOrder = createSalesOrder(externalIdSO, salesOrderDocType, payment);
+
+		Assertions.assertTrue(c_invoiceInterceptor.canAllocateOrderPaymentToInvoice(prepayOrder));
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -110,6 +131,10 @@ class C_InvoiceInterceptorTest
 		order.setC_Payment_ID(payment.getC_Payment_ID());
 
 		saveRecord(order);
+
+		payment.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(payment);
+
 		return order;
 	}
 
