@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-shipmentschedule
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.shipment;
+package de.metas.common.receipt;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,23 +36,18 @@ import java.util.stream.Collectors;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonCreateShipmentRequest.JsonCreateShipmentRequestBuilder.class)
-public class JsonCreateShipmentRequest
+@JsonDeserialize(builder = JsonCreateReceiptsRequest.JsonCreateReceiptsRequestBuilder.class)
+public class JsonCreateReceiptsRequest
 {
-	@JsonProperty("shipperCode")
-	String shipperCode;
-
 	@NonNull
-	@JsonProperty("shipmentList")
-	List<JsonCreateShipmentInfo> createShipmentInfoList;
+	@JsonProperty("receiptList")
+	List<JsonCreateReceiptInfo> jsonCreateReceiptInfoList;
 
 	@Builder
-	public JsonCreateShipmentRequest(@JsonProperty("shipperCode") final String shipperCode,
-			@JsonProperty("shipmentList") final List<JsonCreateShipmentInfo> createShipmentInfoList)
+	public JsonCreateReceiptsRequest(@JsonProperty("receiptList") final List<JsonCreateReceiptInfo> jsonCreateReceiptInfoList)
 	{
-		this.shipperCode = shipperCode;
-		this.createShipmentInfoList = createShipmentInfoList != null
-				? createShipmentInfoList.stream().filter(Objects::nonNull).collect(Collectors.toList())
+		this.jsonCreateReceiptInfoList = jsonCreateReceiptInfoList != null
+				? jsonCreateReceiptInfoList.stream().filter(Objects::nonNull).collect(Collectors.toList())
 				: ImmutableList.of();
 	}
 }

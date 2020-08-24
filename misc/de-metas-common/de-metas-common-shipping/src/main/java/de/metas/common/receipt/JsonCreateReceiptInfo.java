@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-shipmentschedule
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,39 +20,47 @@
  * #L%
  */
 
-package de.metas.common.shipment;
+package de.metas.common.receipt;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Value
+@Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonCreateShipmentRequest.JsonCreateShipmentRequestBuilder.class)
-public class JsonCreateShipmentRequest
+@JsonDeserialize(builder = JsonCreateReceiptInfo.JsonCreateReceiptInfoBuilder.class)
+public class JsonCreateReceiptInfo
 {
-	@JsonProperty("shipperCode")
-	String shipperCode;
+	@JsonProperty("externalId")
+	String externalId;
 
+	@JsonProperty("receiptScheduleId")
 	@NonNull
-	@JsonProperty("shipmentList")
-	List<JsonCreateShipmentInfo> createShipmentInfoList;
+	JsonMetasfreshId receiptScheduleId;
 
-	@Builder
-	public JsonCreateShipmentRequest(@JsonProperty("shipperCode") final String shipperCode,
-			@JsonProperty("shipmentList") final List<JsonCreateShipmentInfo> createShipmentInfoList)
-	{
-		this.shipperCode = shipperCode;
-		this.createShipmentInfoList = createShipmentInfoList != null
-				? createShipmentInfoList.stream().filter(Objects::nonNull).collect(Collectors.toList())
-				: ImmutableList.of();
-	}
+	@JsonProperty("productSearchKey")
+	String productSearchKey;
+
+	@JsonProperty("movementQuantity")
+	BigDecimal movementQuantity;
+
+	@JsonProperty("dateReceived")
+	LocalDateTime dateReceived;
+
+	@JsonProperty("movementDate")
+	LocalDate movementDate;
+
+	@JsonProperty("attributes")
+	List<JsonAttributeInstance> attributes;
 }

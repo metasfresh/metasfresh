@@ -1,6 +1,8 @@
 package de.metas.camel.shipping.shipment;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import java.util.Set;
 
 public interface SiroShipmentConstants
 {
@@ -17,5 +19,5 @@ public interface SiroShipmentConstants
 
 	String TRACKING_NUMBERS_SEPARATOR = " ";
 
-	ImmutableList<String> EXPIRY_DATE_PATTERS = ImmutableList.of("yyyy/MM/dd", "yyyy.mm.dd");
+	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.mm.dd");
 }
