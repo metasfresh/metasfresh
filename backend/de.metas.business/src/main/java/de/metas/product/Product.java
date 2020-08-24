@@ -52,6 +52,9 @@ public class Product
 	ITranslatableString description;
 
 	@Nullable
+	ITranslatableString documentNote;
+
+	@Nullable
 	BPartnerId manufacturerId;
 
 	@Nullable

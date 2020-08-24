@@ -118,7 +118,7 @@ public class BPartnerLocation
 
 	/**
 	 * Used to track changes that were made since the instance's instantiation.
-	 * Goal: allow {@link BPartnerCompositeRepository} to avoid creating a new {@code C_Location} if nothing changed in there.
+	 * Goal: allow {@link de.metas.bpartner.composite.repository.BPartnerCompositeRepository} to avoid creating a new {@code C_Location} if nothing changed in there.
 	 */
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)

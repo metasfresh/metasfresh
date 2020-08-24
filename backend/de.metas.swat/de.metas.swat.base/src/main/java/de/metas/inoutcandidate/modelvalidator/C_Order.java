@@ -66,7 +66,8 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_VOID })
+			ModelValidator.TIMING_BEFORE_VOID,
+			ModelValidator.TIMING_BEFORE_CLOSE })
 	public void assertReActivationAllowed(final I_C_Order order)
 	{
 		if (!order.isSOTrx())
@@ -83,7 +84,8 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_VOID })
+			ModelValidator.TIMING_BEFORE_VOID,
+			ModelValidator.TIMING_BEFORE_CLOSE })
 	public void assertPOReActivationAllowed(final I_C_Order order)
 	{
 		if (order.isSOTrx())

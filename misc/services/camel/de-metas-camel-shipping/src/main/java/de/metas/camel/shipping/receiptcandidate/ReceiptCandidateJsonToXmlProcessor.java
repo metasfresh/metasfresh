@@ -23,7 +23,6 @@
 package de.metas.camel.shipping.receiptcandidate;
 
 import de.metas.camel.shipping.FeedbackProzessor;
-import de.metas.camel.shipping.JsonToXmlProcessorCommonUtil;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.FIELD;
@@ -39,10 +38,13 @@ import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.spi.PropertiesComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.time.format.DateTimeFormatter;
+
+import de.metas.camel.shipping.CommonUtil;
 
 public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {
@@ -77,17 +79,18 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		}
 
 		log.debug("process method called; scheduleList with " + items.size() + " items");
-		final FMPXMLRESULTBuilder builder = JsonToXmlProcessorCommonUtil
-				.createFmpxmlresultBuilder(exchange, items.size())
+		final FMPXMLRESULTBuilder builder = CommonUtil.createFmpxmlresultBuilder(exchange, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()
 				.transactionKey(scheduleList.getTransactionKey());
 
+		final var propertiesComponent = exchange.getContext().getPropertiesComponent();
+
 		final var resultSet = RESULTSET.builder().found(items.size());
 		for (final JsonResponseReceiptCandidate item : items)
 		{
-			final var row = createROW(item);
+			final var row = createROW(item, propertiesComponent);
 			resultSet.row(row);
 
 			resultsBuilder.item(JsonRequestCandidateResult.builder()
@@ -101,7 +104,9 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
 	}
 
-	private ROW createROW(@NonNull final JsonResponseReceiptCandidate item)
+	private ROW createROW(
+			@NonNull final JsonResponseReceiptCandidate item,
+			@NonNull final PropertiesComponent propertiesComponent)
 	{
 		final var row = ROW.builder();
 
@@ -116,7 +121,9 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(null)); // _anlieferung_mhd_ablauf_datum
 
 		final var product = item.getProduct();
-		row.col(COL.of(product.getProductNo())); // _artikel_nummer
+
+		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, item.getOrgCode());
+		row.col(COL.of(artikelNummerPrefix + product.getProductNo())); // _artikel_nummer
 		row.col(COL.of(product.getName())); // _artikel_bezeichnung
 		row.col(COL.of(item.getQuantities().get(0).getQty().toString())); // _artikel_menge
 		row.col(COL.of(product.getWeight().toString())); // _artikel_gewicht_1_stueck
