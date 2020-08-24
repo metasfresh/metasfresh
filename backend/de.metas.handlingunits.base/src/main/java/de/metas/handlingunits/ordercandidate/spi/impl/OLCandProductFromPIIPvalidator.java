@@ -59,7 +59,7 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 		{
 			if (productId == null)
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("Supplement missing C_OLCand.M_Product_ID = {} from M_HU_PI_Item_Product_ID=", huPIItemProduct.getM_Product_ID(), huPIItemProduct.getM_HU_PI_Item_Product_ID());
+				Loggables.withLogger(logger, Level.DEBUG).addLog("Supplement missing C_OLCand.M_Product_ID = {} from M_HU_PI_Item_Product_ID={}", huPIItemProduct.getM_Product_ID(), huPIItemProduct.getM_HU_PI_Item_Product_ID());
 				olCand.setM_Product_ID(huPIItemProduct.getM_Product_ID());
 			}
 			else if (productId.getRepoId() != huPIItemProduct.getM_Product_ID())
