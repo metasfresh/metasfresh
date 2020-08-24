@@ -319,6 +319,7 @@ class ShipmentCandidateAPIService
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
 				.productNo(product.getProductNo())
 				.name(product.getName().translate(adLanguage))
+				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight());
 		if (product.getDescription() != null)

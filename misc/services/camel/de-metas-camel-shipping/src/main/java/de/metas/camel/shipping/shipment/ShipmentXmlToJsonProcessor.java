@@ -1,6 +1,7 @@
 package de.metas.camel.shipping.shipment;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.FIELD;
@@ -54,7 +55,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 {
 	private final Log log = LogFactory.getLog(ShipmentXmlToJsonProcessor.class);
 
-	@Override public void process(Exchange exchange) throws Exception
+	@Override public void process(final Exchange exchange)
 	{
 		final FMPXMLRESULT fmpxmlresult = exchange.getIn().getBody(FMPXMLRESULT.class);
 
@@ -108,7 +109,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.trackingNumbers(getTrackingNumbers(row, fieldName2Index))
 				.movementQuantity(getQtyToDeliver(row, fieldName2Index))
 				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, DOCUMENT_NO)))
-				.productSearchKey(StringUtils.trimToNull(getValueByName(row, fieldName2Index, PRODUCT_VALUE)))
+				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, PRODUCT_VALUE))))
 				.build();
 	}
 
@@ -133,7 +134,10 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private JsonLocation getLocation(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull String shipmentScheduleId)
+	private JsonLocation getLocation(
+			@NonNull final ROW row,
+			@NonNull final Map<String, Integer> fieldName2Index,
+			@NonNull final String shipmentScheduleId)
 	{
 		final String countryCode = getValueByName(row, fieldName2Index, COUNTRY_CODE);
 
@@ -196,18 +200,13 @@ public class ShipmentXmlToJsonProcessor implements Processor
 
 		switch (attributeCode.getAttributeValueType())
 		{
-			case STRING:
-				builder.valueStr((String) value);
-				break;
-			case NUMBER:
-				builder.valueNumber((BigDecimal) value);
-				break;
-			case DATE:
-				builder.valueDate((LocalDate) value);
-				break;
-			default:
+			case STRING -> builder.valueStr((String)value);
+			case NUMBER -> builder.valueNumber((BigDecimal)value);
+			case DATE -> builder.valueDate((LocalDate)value);
+			default -> {
 				log.debug("The given attribute type is not supported! AttributeType: " + attributeCode.getAttributeValueType() + " -> returning null!");
 				return Optional.empty();
+			}
 		}
 
 		return Optional.of(builder.build());
