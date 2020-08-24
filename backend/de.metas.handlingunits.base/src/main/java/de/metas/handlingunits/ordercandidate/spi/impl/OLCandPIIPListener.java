@@ -31,7 +31,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandListener;
 
 /**
- * See {@link #onOrderLineCreated(I_C_OLCand, I_C_OrderLine)}.
+ * See {@link #onOrderLineCreated(OLCand, org.compiere.model.I_C_OrderLine)}.
  */
 @Component
 public class OLCandPIIPListener implements IOLCandListener
