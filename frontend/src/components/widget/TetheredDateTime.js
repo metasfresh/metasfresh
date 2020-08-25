@@ -10,10 +10,20 @@ class TetheredDateTime extends DateTime {
   constructor(props) {
     super(props);
 
-    this.updateSelectedDate = debounce(this.updateSelectedDate, 300, {
+    this.updateSelectedDate = debounce(this.updateSelectedDate, 500, {
       leading: true,
       trailing: false,
     });
+
+    this.superUpdateSelectedDate = debounce(super.updateSelectedDate, 500, {
+      leading: true,
+      trailing: false,
+    });
+
+    // this.handleClick = debounce(this.handleClick, 500, {
+    //   leading: true,
+    //   trailing: false,
+    // });
   }
 
   handleClick = () =>
@@ -38,7 +48,7 @@ class TetheredDateTime extends DateTime {
       this.props.onFocusInput();
     }
 
-    return super.updateSelectedDate(e, close);
+    return this.superUpdateSelectedDate(e, close);
   };
 
   render() {
@@ -65,6 +75,11 @@ class TetheredDateTime extends DateTime {
 
       children.push(<div key="i">{input}</div>);
     }
+    const viewProps = this.getComponentProps();
+
+    const showView = (e) => {
+      viewProps.showView(e);
+    };
 
     return (
       <div className={classNames}>
@@ -93,6 +108,7 @@ class TetheredDateTime extends DateTime {
               <CalendarContainer
                 view={currentView}
                 viewProps={this.getComponentProps()}
+                showView={showView}
               />
             </div>
           )}

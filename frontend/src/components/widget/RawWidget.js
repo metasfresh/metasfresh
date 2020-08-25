@@ -544,7 +544,9 @@ export class RawWidget extends Component {
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={(date) => handleChange(widgetField, date)}
+                onChange={(date) => {
+                  handleChange(widgetField, date);
+                }}
                 patch={(date) =>
                   this.handlePatch(
                     widgetField,
