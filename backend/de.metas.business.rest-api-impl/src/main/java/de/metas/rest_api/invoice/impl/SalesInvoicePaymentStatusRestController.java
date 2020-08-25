@@ -62,7 +62,7 @@ public class SalesInvoicePaymentStatusRestController
 	}
 
 	@ApiOperation(value = "Gets regular sales invoice(s) for the given org and document number prefix, together with their payment status.", notes = "Does *not* get sales credit memos and all kinds of purchase invoices.")
-	@GetMapping("{orgCode}/{invoiceDocumentNo}")
+	@GetMapping("{orgCode}/{invoiceDocumentNoPrefix}")
 	public ResponseEntity<SalesInvoicePaymentStatusResponse> retrievePaymentStatus(
 			@ApiParam(required = true, value = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
 			@PathVariable("orgCode") final String orgCode,
