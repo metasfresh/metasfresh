@@ -38,8 +38,6 @@ public interface IInputDataSourceDAO extends ISingletonService
 
 	InputDataSourceId retrieveInputDataSourceIdByInternalName(String internalName);
 
-	InputDataSourceId retrieveInputDataSourceIdByInternalNameOrNull(String internalName);
-
 	void createIfMissing(InputDataSourceCreateRequest request);
 
 	Optional<InputDataSourceId> retrieveInputDataSourceIdBy(InputDataSourceQuery query);

@@ -19,7 +19,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -64,20 +63,6 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 				.getAD_InputDataSource_ID();
 
 		return InputDataSourceId.ofRepoId(inputDataSourceRecordId);
-	}
-
-	@Nullable
-	@Override
-	public InputDataSourceId retrieveInputDataSourceIdByInternalNameOrNull(final String internalName)
-	{
-		final I_AD_InputDataSource inputDataSource = retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */false, ITrx.TRXNAME_None);
-
-		if (inputDataSource != null)
-		{
-			return InputDataSourceId.ofRepoIdOrNull(inputDataSource.getAD_InputDataSource_ID());
-		}
-
-		return InputDataSourceId.ofRepoIdOrNull(1);
 	}
 
 	@Override
