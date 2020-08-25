@@ -383,7 +383,7 @@ class Modal extends Component {
 
           this.removeModal();
         } catch (error) {
-          throw error;
+          console.error('Modal.handleStart error: ', error);
         } finally {
           if (this.mounted) {
             // prevent a memory leak
