@@ -103,27 +103,27 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
 				//.locator(locator)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// VHU 1
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu1)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(product).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
 					//
 					// VHU 2
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu2)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(product).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
@@ -226,28 +226,28 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
 
-				.newHUItemExpectation() // the real IFCO which contains the 15kg
+				.item() // the real IFCO which contains the 15kg
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
-					.newIncludedHUExpectation() // the "real" IFCO inside the LU
+					.includedHU() // the "real" IFCO inside the LU
 						.capture(splitHU_tu)
 						.huPI(piTU)
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
-							.newItemStorageExpectation()
+							.storage()
 								.product(product).qty("15").uom(productUOM)
 							.endExpectation()
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.capture(splitHU_vhu1)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(product).qty("10").uom(productUOM)
 									.endExpectation()
 								.endExpectation()
 							.endExpectation() // end of first VHU
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.capture(splitHU_vhu2)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(product).qty("5").uom(productUOM)
 									.endExpectation()
 								.endExpectation()
@@ -256,7 +256,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 					.endExpectation() // end of the "real" IFCO inside the LU
 				.endExpectation() // end of the real IFCO which contains the 15kg
 
-				.newHUItemExpectation() // the empty stub aggregate VHU
+				.item() // the empty stub aggregate VHU
 					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.noItemStorages()
 				.endExpectation()

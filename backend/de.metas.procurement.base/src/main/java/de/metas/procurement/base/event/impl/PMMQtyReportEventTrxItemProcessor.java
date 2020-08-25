@@ -31,7 +31,7 @@ import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L

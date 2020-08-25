@@ -38,6 +38,7 @@ import java.util.List;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.util.ILoggable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -74,7 +75,6 @@ import de.metas.util.Services;
 
 public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 {
-
 	private static final transient Logger logger = LogManager.getLogger(M_ReceiptSchedule_Generate_M_InOuts.class);
 
 	private static final String PARA_IS_CREATE_MOVEMENT = "IsCreateMovement";
@@ -125,7 +125,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 						counter.setValue(counter.getValue() + 1);
 						if (counter.getValue() % 100 == 0)
 						{
-							addLog("Processed {} M_ReceiptSchedules", counter.getValue());
+							Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} M_ReceiptSchedules", counter.getValue());
 						}
 					}
 				}).process(receiptScheds);
@@ -184,10 +184,12 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 
 	private void processReceiptSchedule0(final I_M_ReceiptSchedule receiptSchedule)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		if (isReceiptScheduleCanBeClosed(receiptSchedule))
 		{
 			receiptScheduleBL.close(receiptSchedule);
-			addLog("M_ReceiptSchedule_ID={} - just closing without creating a receipt, because QtyOrdered={} and QtyMoved={}",
+			loggable.addLog("M_ReceiptSchedule_ID={} - just closing without creating a receipt, because QtyOrdered={} and QtyMoved={}",
 					receiptSchedule.getM_ReceiptSchedule_ID(), receiptSchedule.getQtyOrdered(), receiptSchedule.getQtyMoved());
 			return;
 		}
@@ -214,7 +216,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 
 		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(parameters);
 
-		addLog("M_ReceiptSchedule_ID={} - created a receipt; result={}", receiptSchedule.getM_ReceiptSchedule_ID(), result);
+		loggable.addLog("M_ReceiptSchedule_ID={} - created a receipt; result={}", receiptSchedule.getM_ReceiptSchedule_ID(), result);
 
 		refresh(receiptSchedule);
 		final boolean rsCanBeClosedNow = isReceiptScheduleCanBeClosed(receiptSchedule);
@@ -241,16 +243,18 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 			return;
 		}
 
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
+
 		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
 		if (!allocsAll.isEmpty())
 		{
-			addLog("M_ReceiptSchedule_ID={} - already has HUs assinged to it; not creating HUs", receiptSchedule.getM_ReceiptSchedule_ID());
+			loggable.addLog("M_ReceiptSchedule_ID={} - already has HUs assinged to it; not creating HUs", receiptSchedule.getM_ReceiptSchedule_ID());
 		}
 
 		try
 		{
-			addLog("M_ReceiptSchedule_ID={} - creating HUs and allocating HUs on the fly", receiptSchedule.getM_ReceiptSchedule_ID());
+			loggable.addLog("M_ReceiptSchedule_ID={} - creating HUs and allocating HUs on the fly", receiptSchedule.getM_ReceiptSchedule_ID());
 
 			final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
 
@@ -274,7 +278,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		}
 		catch (final DBForeignKeyConstraintException e)
 		{
-			// task 09016: this case happens from time to time (aprox. 90 times in the first 6 months), if the M_ReceiptsScheulde is deleted due to an order reactivation
+			// task 09016: this case happens from time to time (aprox. 90 times in the first 6 months), if the M_ReceiptsSchedule is deleted due to an order reactivation
 			// don't rethrow the exception;
 			final String msg = "Detected a FK constraint vialoation; We assume that everything was rolled back, but we do not let the processing fail. Check the java comments for details";
 			Loggables.withLogger(logger, Level.WARN).addLog(msg);

@@ -13,7 +13,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.product.ProductId;
 
 /*

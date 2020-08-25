@@ -1,9 +1,27 @@
 package de.metas.ui.web.handlingunits;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -37,20 +55,6 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 /*
  * #%L
@@ -99,7 +103,10 @@ public final class HUEditorRow implements IViewRow
 	private final HUEditorRowType type;
 	private final boolean topLevel;
 	private final boolean processed;
+	@Getter
 	private final BPartnerId bpartnerId;
+	@Getter
+	private final LocatorId locatorId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
@@ -161,9 +168,9 @@ public final class HUEditorRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyCU, //
 			widgetType = DocumentFieldWidgetType.Quantity,//
 			widgetSize = WidgetSize.Small, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-	})
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+			})
 	private final BigDecimal qtyCU;
 
 	public static final String FIELDNAME_UOM = I_M_Product.COLUMNNAME_C_UOM_ID;
@@ -180,8 +187,8 @@ public final class HUEditorRow implements IViewRow
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			widgetSize = WidgetSize.Small,//
 			sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-	})
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
+			})
 	private final JSONLookupValue huStatusDisplay;
 
 	public static final String FIELDNAME_IsReserved = I_M_HU.COLUMNNAME_IsReserved;
@@ -195,6 +202,10 @@ public final class HUEditorRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 80, displayed = Displayed.FALSE)
 	})
 	private final LocalDate bestBeforeDate;
+
+	public static final String FIELDNAME_WeightGross = "WeightGross";
+	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = false)
+	private final BigDecimal weightGross;
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
@@ -229,8 +240,13 @@ public final class HUEditorRow implements IViewRow
 		isOwnPalette = builder.isOwnPalette;
 		uom = builder.uom;
 		qtyCU = builder.qtyCU;
+		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
-		locator = builder.getLocator();
+
+		this.locatorId = builder.locatorId;
+		this.locator = locatorId != null
+				? JSONLookupValue.of(locatorId, builder.locatorCaption)
+				: null;
 
 		includedRows = builder.buildIncludedRows();
 		includedOrderLineReservations = builder.prepareIncludedOrderLineReservations(this);
@@ -289,11 +305,6 @@ public final class HUEditorRow implements IViewRow
 	public boolean isProcessed()
 	{
 		return processed;
-	}
-
-	public BPartnerId getBPartnerId()
-	{
-		return bpartnerId;
 	}
 
 	@Override
@@ -560,7 +571,7 @@ public final class HUEditorRow implements IViewRow
 
 	/**
 	 * @param stringFilter
-	 * @param adLanguage   AD_Language (used to get the right row's string representation)
+	 * @param adLanguage AD_Language (used to get the right row's string representation)
 	 * @return true if the row is matching the string filter
 	 */
 	public boolean matchesStringFilter(final String stringFilter)
@@ -604,8 +615,10 @@ public final class HUEditorRow implements IViewRow
 		private Boolean isOwnPalette;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
+		private BigDecimal weightGross;
 		private LocalDate bestBeforeDate;
-		private JSONLookupValue locator;
+		private LocatorId locatorId;
+		private String locatorCaption;
 		private BPartnerId bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
@@ -739,6 +752,17 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
+		public Builder setWeightGross(final BigDecimal weightGross)
+		{
+			this.weightGross = weightGross;
+			return this;
+		}
+
+		private BigDecimal getWeightGross()
+		{
+			return weightGross;
+		}
+
 		public Builder setBestBeforeDate(final LocalDate bestBeforeDate)
 		{
 			this.bestBeforeDate = bestBeforeDate;
@@ -750,15 +774,11 @@ public final class HUEditorRow implements IViewRow
 			return bestBeforeDate;
 		}
 
-		public Builder setLocator(final JSONLookupValue locator)
+		public Builder setLocator(final LocatorId locatorId, final String locatorCaption)
 		{
-			this.locator = locator;
+			this.locatorId = locatorId;
+			this.locatorCaption = locatorCaption;
 			return this;
-		}
-
-		private JSONLookupValue getLocator()
-		{
-			return locator;
 		}
 
 		public Builder setBPartnerId(final BPartnerId bpartnerId)

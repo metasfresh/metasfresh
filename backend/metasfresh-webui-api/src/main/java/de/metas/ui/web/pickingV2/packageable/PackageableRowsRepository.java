@@ -1,22 +1,8 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-
-import org.adempiere.warehouse.WarehouseTypeId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -38,6 +24,18 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -162,12 +160,14 @@ final class PackageableRowsRepository
 
 		final OrderId salesOrderId = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderId).get();
 		final String salesOrderDocumentNo = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderDocumentNo).get();
+		final String poReference = Packageable.extractSingleValue(packageables, Packageable::getPoReference).orElse(null);
 
 		final UserId lockedByUserId = Packageable.extractSingleValue(packageables, Packageable::getLockedBy).orElse(null);
 		final LookupValue lockedByUser = userLookup.get().findById(lockedByUserId);
 
 		return PackageableRow.builder()
 				.orderId(salesOrderId)
+				.poReference(poReference)
 				.orderDocumentNo(salesOrderDocumentNo)
 				.customer(customer)
 				.warehouseTypeId(warehouseTypeId)

@@ -1,7 +1,7 @@
 package org.adempiere.server.rpl.imp;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
-import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;

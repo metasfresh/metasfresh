@@ -66,6 +66,11 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 		builder.isSimulation(isSimulation);
 	}
 
+	public void setIsCompleteDocument(final boolean isCompleteDocument)
+	{
+		builder.isCompleteDocument(isCompleteDocument);
+	}
+
 	@Override
 	public String doIt() throws Exception
 	{

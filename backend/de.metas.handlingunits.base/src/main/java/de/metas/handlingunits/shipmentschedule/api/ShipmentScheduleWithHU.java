@@ -37,6 +37,7 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
@@ -74,7 +75,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
@@ -87,7 +88,7 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -135,8 +136,6 @@ public class ShipmentScheduleWithHU
 
 	/**
 	 * Create an "empty" instance with no HUs inside. Used if a shipment without HU allocation has to be created.
-	 *
-	 * @param qtyPicked in this case qtyPicked can only be the quantity of an "unconfirmed" (i.e. drafted) shipment line.
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final IHUContext huContext,
@@ -269,15 +268,15 @@ public class ShipmentScheduleWithHU
 	{
 		logger.trace("Creating AttributesAggregationKey");
 
-		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
+		final ImmutableMap.Builder<AttributeCode, Object> keyBuilder = ImmutableMap.builder();
 
 		for (final IAttributeValue attributeValue : getAttributeValues())
 		{
-			final String name = attributeValue.getM_Attribute().getValue();
+			final AttributeCode name = attributeValue.getAttributeCode();
 			final Object value = attributeValue.getValue();
 			keyBuilder.put(name, Null.box(value));
 		}
-		final ImmutableMap<String, Object> attributesAggregationKey = keyBuilder.build();
+		final ImmutableMap<AttributeCode, Object> attributesAggregationKey = keyBuilder.build();
 
 		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
 		return attributesAggregationKey;

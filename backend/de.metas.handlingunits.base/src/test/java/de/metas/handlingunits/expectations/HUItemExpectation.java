@@ -25,38 +25,46 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.junit.Assert;
 
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUAndItemsDAO;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.quantity.QuantityTU;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
+	public static HUItemExpectation<Object> newExpectation()
+	{
+		return new HUItemExpectation<>(null);
+	}
 
-	private String _itemType;
+	private HUItemType itemType;
 	private I_M_HU_PI_Item _piItem;
-	private List<HUExpectation<HUItemExpectation<ParentExpectationType>>> includedHUExpectations = null;
+	private List<HUExpectation<?>> includedHUExpectations = null;
 	private List<HUItemStorageExpectation<HUItemExpectation<ParentExpectationType>>> itemStorageExpectations = null;
 
-	private BigDecimal _qty = null;
+	private QuantityTU qtyTUs = null;
 	private I_M_HU_PackingMaterial _packingMaterial = null;
 
-	public HUItemExpectation(final ParentExpectationType parentExpectation)
+	HUItemExpectation(final ParentExpectationType parentExpectation)
 	{
 		super(parentExpectation);
 	}
@@ -73,15 +81,15 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 			assertModelEquals(prefix + "PI Item", _piItem, Services.get(IHandlingUnitsBL.class).getPIItem(huItem));
 		}
 
-		if (_itemType != null)
+		if (itemType != null)
 		{
-			final String actual_ItemType = huItem.getItemType();
-			Assert.assertEquals(prefix + "ItemType", _itemType, actual_ItemType);
+			final HUItemType actual_ItemType = HUItemType.ofNullableCode(huItem.getItemType());
+			Assert.assertEquals(prefix + "ItemType", itemType, actual_ItemType);
 		}
 
-		if (_qty != null)
+		if (qtyTUs != null)
 		{
-			assertThat(prefix + "Qty", huItem.getQty(), comparesEqualTo(_qty));
+			assertThat(prefix + "Qty", huItem.getQty(), comparesEqualTo(qtyTUs.toBigDecimal()));
 		}
 
 		if (_packingMaterial != null)
@@ -150,7 +158,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 		if (includedHUExpectations != null)
 		{
-			for (final HUExpectation<HUItemExpectation<ParentExpectationType>> includedHUExpectation : includedHUExpectations)
+			for (final HUExpectation<?> includedHUExpectation : includedHUExpectations)
 			{
 				includedHUExpectation.createHU(huItem);
 			}
@@ -167,15 +175,15 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		return huItem;
 	}
 
-	public HUItemExpectation<ParentExpectationType> itemType(final String itemType)
+	public HUItemExpectation<ParentExpectationType> itemType(@Nullable final String itemType)
 	{
-		this._itemType = itemType;
-		return this;
+		return itemType(HUItemType.ofNullableCode(itemType));
 	}
 
-	public String getItemType()
+	public HUItemExpectation<ParentExpectationType> itemType(@Nullable final HUItemType itemType)
 	{
-		return this._itemType;
+		this.itemType = itemType;
+		return this;
 	}
 
 	public HUItemExpectation<ParentExpectationType> huPIItem(final I_M_HU_PI_Item piItem)
@@ -184,15 +192,19 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		return this;
 	}
 
-	/**
-	 * Assert that this item has the given qty set.
-	 * 
-	 * @param string
-	 * @return
-	 */
-	public HUItemExpectation<ParentExpectationType> qty(String qtyStr)
+	public HUItemExpectation<ParentExpectationType> qty(@NonNull final String qtyTUs)
 	{
-		this._qty = new BigDecimal(qtyStr);
+		return qtyTUs(QuantityTU.ofInt(Integer.parseInt(qtyTUs)));
+	}
+
+	public HUItemExpectation<ParentExpectationType> qtyTUs(final int qtyTUs)
+	{
+		return qtyTUs(QuantityTU.ofInt(qtyTUs));
+	}
+
+	public HUItemExpectation<ParentExpectationType> qtyTUs(QuantityTU qtyTUs)
+	{
+		this.qtyTUs = qtyTUs;
 		return this;
 	}
 
@@ -207,31 +219,39 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		return this._piItem;
 	}
 
-	public HUExpectation<HUItemExpectation<ParentExpectationType>> newIncludedHUExpectation()
+	public HUExpectation<HUItemExpectation<ParentExpectationType>> includedHU()
 	{
 		final HUExpectation<HUItemExpectation<ParentExpectationType>> expectation = new HUExpectation<>(this);
+		includedHU(expectation);
+		return expectation;
+	}
 
+	public HUItemExpectation<ParentExpectationType> includedHU(@NonNull final HUExpectation<?> includedHU)
+	{
 		if (includedHUExpectations == null)
 		{
 			includedHUExpectations = new ArrayList<>();
 		}
-		includedHUExpectations.add(expectation);
-		return expectation;
+		includedHUExpectations.add(includedHU);
+
+		return this;
 	}
 
 	/**
 	 * Convenience method that does
+	 * 
 	 * <pre>
 	 * newIncludedHUExpectation().huPI(virtualPI);
 	 * </pre>
+	 * 
 	 * i.e. creates an new included-HU-expectation and directly expects that HU to have the "virtual" packing instruction.
 	 * 
 	 * @return
 	 */
-	public HUExpectation<HUItemExpectation<ParentExpectationType>> newIncludedVirtualHU()
+	public HUExpectation<HUItemExpectation<ParentExpectationType>> includedVirtualHU()
 	{
 		final I_M_HU_PI virtualPI = handlingUnitsDAO.retrieveVirtualPI(Env.getCtx());
-		return newIncludedHUExpectation()
+		return includedHU()
 				.huPI(virtualPI);
 	}
 
@@ -241,7 +261,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		return this;
 	}
 
-	public HUItemStorageExpectation<HUItemExpectation<ParentExpectationType>> newItemStorageExpectation()
+	public HUItemStorageExpectation<HUItemExpectation<ParentExpectationType>> storage()
 	{
 		final HUItemStorageExpectation<HUItemExpectation<ParentExpectationType>> expectation = new HUItemStorageExpectation<>(this);
 		if (itemStorageExpectations == null)

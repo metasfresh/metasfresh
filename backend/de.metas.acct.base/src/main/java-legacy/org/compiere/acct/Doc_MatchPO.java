@@ -97,6 +97,18 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
+		// Skip posting if MatchPO does not have the receipt line set.
+		// It's enough to create no facts at all.
+		// Usually, system creates separate M_MatchPO records for each receipt.
+		if (docLine.getReceipt_InOutLine_ID() <= 0)
+		{
+			return ImmutableList.of();
+		}
+
+		//
+		// Mark sure inbound costs are created
+		docLine.createCostDetails(as);
+
 		// If configured to not create accounting facts for Match PO documents then don't do it (08555)
 		// IMPORTANT: we shall do absolutelly nothing if the sysconfig is enabled (gh6287)
 		if (noFactRecords)
@@ -104,26 +116,22 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 			return ImmutableList.of();
 		}
 
-		//
-		if (docLine.getReceipt_InOutLine_ID() <= 0)
+		final CostingMethod costingMethod = docLine.getProductCostingMethod(as);
+		if (!CostingMethod.StandardCosting.equals(costingMethod))
 		{
-			throw newPostingException()
-					// .setPreserveDocumentPostedStatus() // no need to repost. It will be re-enqueued when the receipt line is set
-					.setDetailMessage("Shall be posted again when receipt line is set");
+			return createFactsForStandardCosting(as);
 		}
 
-		//
-		// Mark sure inbound costs are created
-		docLine.createCostDetails(as);
-
-		if (docLine.getQty().signum() == 0)
+		else
 		{
 			return ImmutableList.of();
 		}
 
-		//
-		final CostingMethod costingMethod = docLine.getProductCostingMethod(as);
-		if (!CostingMethod.StandardCosting.equals(costingMethod))
+	}
+
+	private List<Fact> createFactsForStandardCosting(final AcctSchema as)
+	{
+		if (docLine.getQty().signum() == 0)
 		{
 			return ImmutableList.of();
 		}

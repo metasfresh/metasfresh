@@ -2,9 +2,9 @@ package de.metas.ui.web.picking.pickingslot;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
@@ -20,6 +20,7 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.collections.PagedIterator.Page;
@@ -137,7 +138,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public String buildSqlWhereClause(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
+	public SqlViewRowsWhereClause buildSqlWhereClause(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}

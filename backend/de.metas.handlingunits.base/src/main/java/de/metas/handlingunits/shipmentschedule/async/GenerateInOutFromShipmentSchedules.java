@@ -1,9 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -13,7 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -22,24 +20,17 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest.CreateCandidatesRequestBuilder;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
@@ -81,11 +72,15 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean isCreatPackingLines = !onlyUsePicked;
 
+		final CalculateShippingDateRule calculateShippingDateRule = isShipmentDateToday
+				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
+				: CalculateShippingDateRule.NONE;
+
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatPackingLines)
-				.computeShipmentDate(isShipmentDateToday)
+				.computeShipmentDate(calculateShippingDateRule)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
@@ -119,47 +114,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			return ImmutableList.of();
 		}
 
-		final IHUContext huContext = huContextFactory.createMutableHUContext();
-
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = getParameters()
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		final CreateCandidatesRequestBuilder requestBuilder = CreateCandidatesRequest.builder()
-				.huContext(huContext)
-				.quantityType(quantityTypeToUse);
-
-		final ArrayList<ShipmentScheduleWithHU> candidates = new ArrayList<>();
-
-		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-		{
-			final ImmutableList<ShipmentScheduleWithHU> scheduleCandidates = createCandidatesForSched(requestBuilder, shipmentSchedule);
-			candidates.addAll(scheduleCandidates);
-		}
-
-		// Sort our candidates
-		Collections.sort(candidates, new ShipmentScheduleWithHUComparator());
-		return candidates;
-	}
-
-	private ImmutableList<ShipmentScheduleWithHU> createCandidatesForSched(
-			@NonNull final CreateCandidatesRequestBuilder requestBuilder,
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		if (shipmentSchedule.isProcessed())
-		{
-			return ImmutableList.of();
-		}
-
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putShipmentScheduleId(shipmentScheduleId))
-		{
-			final CreateCandidatesRequest request = requestBuilder
-					.shipmentScheduleId(shipmentScheduleId)
-					.build();
-
-			return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
-		}
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse);
 	}
 
 	private List<I_M_ShipmentSchedule> retriveShipmentSchedules()

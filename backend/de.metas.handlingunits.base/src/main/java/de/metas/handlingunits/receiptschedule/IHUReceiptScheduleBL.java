@@ -60,7 +60,6 @@ import lombok.Value;
 public interface IHUReceiptScheduleBL extends ISingletonService
 {
 	/**
-	 * @param receiptSchedule
 	 * @return amount of TUs which were planned to be received (i.e. amount of TUs ordered) or <code>null</code> in case there is no order line
 	 */
 	BigDecimal getQtyOrderedTUOrNull(I_M_ReceiptSchedule receiptSchedule);
@@ -71,18 +70,9 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	BigDecimal getQtyOrderedTUOrZero(I_M_ReceiptSchedule receiptSchedule);
 
 	/**
-	 *
-	 * @param receiptSchedule
 	 * @return qty ordered minus qty moved (TU)
 	 */
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
-
-	default BigDecimal getQtyToMoveCU(I_M_ReceiptSchedule receiptSchedule)
-	{
-		return Services.get(IReceiptScheduleBL.class).getQtyMoved(receiptSchedule);
-	}
-
-	// IInOutProducer createInOutProducerFromReceiptScheduleHU(CreateReceiptsParameters parameters);
 
 	@Value
 	@Builder
@@ -92,7 +82,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		Properties ctx;
 
 		/**
-		 * <code>null</code> or a set of M_HU_IDs that shall be considered. If called with <code>null</code>, then all (planned?) HUs from the
+		 * <code>null</code> or a subset of M_HU_IDs that shall be considered. If called with <code>null</code>, then all (planned?) HUs from the
 		 * {@link de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc} will be assigned to the inOut.
 		 */
 		@Nullable
@@ -134,9 +124,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	 * "Planning".
 	 *
 	 * Also, the receipt schedule allocations of the destroyed HUs will be deactivated and saved.
-	 *
-	 * @param allocations
-	 * @param trxName
 	 */
 	void destroyHandlingUnits(List<I_M_ReceiptSchedule_Alloc> allocations, String trxName);
 
@@ -150,9 +137,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	/**
 	 * Destroy the handling units from allocations in a huContext
-	 *
-	 * @param huContext
-	 * @param allocs
 	 */
 	void destroyHandlingUnits(IHUContext huContext, List<I_M_ReceiptSchedule_Alloc> allocs);
 
@@ -168,7 +152,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	IAllocationRequest setInitialAttributeValueDefaults(IAllocationRequest request, Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules);
 
 	/**
-	 * @see #setInitialAttributeValueDefaults(IAllocationRequest, List)
+	 * @see #setInitialAttributeValueDefaults(IAllocationRequest, de.metas.inoutcandidate.model.I_M_ReceiptSchedule)
 	 */
 	IAllocationRequest setInitialAttributeValueDefaults(IAllocationRequest request, de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule);
 

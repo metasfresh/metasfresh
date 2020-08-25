@@ -1,17 +1,10 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
@@ -22,6 +15,11 @@ import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -137,5 +135,10 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	public PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
 	{
 		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());
+	}
+
+	public void invalidatePickingSlotViews()
+	{
+		pickingSlotsViewByRowId.values().forEach(PickingSlotView::invalidateAll);
 	}
 }

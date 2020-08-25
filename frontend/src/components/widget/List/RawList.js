@@ -68,27 +68,14 @@ export class RawList extends PureComponent {
     this.handleSelect = this.handleSelect.bind(this);
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleTab);
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleTab);
   }
 
-  /**
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method.
-   * @param {object} prevProps
-   */
   componentDidUpdate(prevProps) {
     const {
       list,
@@ -334,10 +321,7 @@ export class RawList extends PureComponent {
     this.props.onFocus();
   }
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  // TODO: Use functions for refs
   render() {
     const {
       rank,

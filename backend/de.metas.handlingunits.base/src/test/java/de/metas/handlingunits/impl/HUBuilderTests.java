@@ -120,12 +120,12 @@ public class HUBuilderTests
 		final HUsExpectation compressedHUExpectation = new HUsExpectation()
 				.newHUExpectation()
 					.huPI(piLU)
-					.newHUItemExpectation() // the virtual item that shall hold the "bag" VHU
+					.item() // the virtual item that shall hold the "bag" VHU
 						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 						.huPIItem(null)
 						.noIncludedHUs() // note that the HU builder does not really recurse, but only creates the HU for the given piVersion, plus the HU's items. not no included HUs
 					.endExpectation() // huItemExpectation
-					.newHUItemExpectation() // the packing material item for this LU
+					.item() // the packing material item for this LU
 						.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						.packingMaterial(helper.pmPalet)
@@ -179,17 +179,17 @@ public class HUBuilderTests
 				.newHUExpectation()
 					.huPI(piLU)
 
-					.newHUItemExpectation()
+					.item()
 						.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 						// the HU builder does not really recurse, but only creates the HU for the given piVersion, plus the HU's items
-						.newIncludedHUExpectation()
+						.includedHU()
 						.huPI(piTU)
-							.newHUItemExpectation()
+							.item()
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_Material)
 							.endExpectation() // HUItemExpectation()
 							
-							.newHUItemExpectation()
+							.item()
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 								.packingMaterial(helper.pmIFCO)
@@ -197,13 +197,13 @@ public class HUBuilderTests
 						.endExpectation() // includedHUExpectation
 					.endExpectation() // HU - huItemExpectation
 
-					.newHUItemExpectation()
+					.item()
 						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)	
 						.huPIItem(null)
 						.noIncludedHUs()
 					.endExpectation() // HA - HUItemExpectation()
 
-					.newHUItemExpectation()
+					.item()
 						.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						.packingMaterial(helper.pmPalet)
@@ -235,23 +235,23 @@ public class HUBuilderTests
 		final HUsExpectation compressedHUExpectation = new HUsExpectation()
 				.newHUExpectation()
 					.huPI(piLU)
-					.newHUItemExpectation() // the virtual item that shall hold the "bag" VHU
+					.item() // the virtual item that shall hold the "bag" VHU
 						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 						.huPIItem(null)
-						.newIncludedHUExpectation() // the "bag" VHU itself
+						.includedHU() // the "bag" VHU itself
 							.huPI(helper.huDefVirtual)
-							.newVirtualHUItemExpectation() // the product qty that is still "bagged"
+							.virtualPIItem() // the product qty that is still "bagged"
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_Material)
 							.endExpectation()
-							.newHUItemExpectation() // the remaining packaging (IFCO) that is still "bagged"
+							.item() // the remaining packaging (IFCO) that is still "bagged"
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 								.packingMaterial(helper.pmIFCO)
 							.endExpectation()
 						.endExpectation() // includedHUExpectation
 					.endExpectation() // huItemExpectation with itemType=HA
-					.newHUItemExpectation() // the packing material item for this LU
+					.item() // the packing material item for this LU
 						.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						.packingMaterial(helper.pmPalet)

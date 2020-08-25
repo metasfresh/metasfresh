@@ -57,12 +57,14 @@ public class InvoiceReferenceNosTest
 		AdempiereTestHelper.get().init();
 
 		bankRepo = new BankRepository();
+
 		final ESRBPBankAccountBL esrBankAccountBL = new ESRBPBankAccountBL(bankRepo);
 		SpringContextHolder.registerJUnitBean(IESRBPBankAccountBL.class, esrBankAccountBL);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
 		Services.registerService(IESRImportBL.class, esrImportBL);
+
 	}
 
 	@Test

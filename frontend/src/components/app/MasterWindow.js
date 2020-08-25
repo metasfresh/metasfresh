@@ -1,8 +1,9 @@
 import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
-import { discardNewRow, discardNewDocument, getTabRequest } from '../../api';
+import { discardNewRequest } from '../../api';
+import { getTableId } from '../../reducers/tables';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
@@ -13,9 +14,9 @@ import { introHints, introSteps } from '../intro/intro';
 /**
  * @file Class based component.
  * @module MasterWindow
- * @extends Component
+ * @extends PureComponent
  */
-export default class MasterWindow extends Component {
+export default class MasterWindow extends PureComponent {
   state = {
     newRow: false,
     modalTitle: null,
@@ -97,7 +98,7 @@ export default class MasterWindow extends Component {
     }
   }
 
-  // TODO: Everything apart of removing event listeners should be woved to the container
+  // TODO: Figure out if we can handle `not saved` via redux+middleware
   componentWillUnmount() {
     const {
       master,
@@ -115,7 +116,7 @@ export default class MasterWindow extends Component {
       const result = window.confirm('Do you really want to leave?');
 
       if (result) {
-        discardNewDocument({ windowType, documentId });
+        discardNewRequest({ windowType, documentId });
       } else {
         push(pathname);
       }
@@ -151,7 +152,7 @@ export default class MasterWindow extends Component {
 
   /**
    * @method closeModalCallback
-   * @summary ToDo: Describe the method.
+   * @summary handler for closing the modal window
    */
   closeModalCallback = ({
     isNew,
@@ -159,9 +160,29 @@ export default class MasterWindow extends Component {
     documentId,
     tabId,
     rowId,
+    saveStatus,
   } = {}) => {
     if (isNew) {
-      return discardNewRow({ windowType, documentId, tabId, rowId });
+      const { updateTabRowsData } = this.props;
+      const tableId = getTableId({
+        windowId: windowType,
+        docId: documentId,
+        tabId,
+      });
+
+      return discardNewRequest({
+        windowId: windowType,
+        documentId,
+        tabId,
+        rowId,
+      }).then(() => {
+        // if modal was not saved, discard the new row
+        if (!saveStatus) {
+          updateTabRowsData(tableId, {
+            removed: { [`${rowId}`]: true },
+          });
+        }
+      });
     }
   };
 
@@ -243,27 +264,6 @@ export default class MasterWindow extends Component {
   };
 
   /**
-   * TODO: Move this to the container
-   * @method sort
-   * @summary ToDo: Describe the method.
-   */
-  sort = (asc, field, startPage, page, tabId) => {
-    const {
-      addRowData,
-      sortTab,
-      master,
-      params: { windowType },
-    } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
-    const dataId = master.docId;
-
-    sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowType, dataId, orderBy).then((res) => {
-      addRowData({ [tabId]: res }, 'master');
-    });
-  };
-
-  /**
    * @method handleIntroExit
    * @summary ToDo: Describe the method.
    */
@@ -284,6 +284,8 @@ export default class MasterWindow extends Component {
       includedView,
       processStatus,
       enableTutorial,
+      onRefreshTab,
+      onSortTable,
     } = this.props;
     const {
       dropzoneFocused,
@@ -295,6 +297,8 @@ export default class MasterWindow extends Component {
       introHints,
     } = this.state;
     const { docActionElement, documentSummaryElement } = master.layout;
+
+    // TODO: Do we need to have docId and dataId ?
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
     let activeTab;
@@ -303,6 +307,7 @@ export default class MasterWindow extends Component {
       activeTab = master.layout.activeTab;
     }
 
+    // TODO: it'd be better to have flags instead of using fields for status
     const docStatusData = {
       status: master.data.DocStatus || -1,
       action: master.data.DocAction || -1,
@@ -347,8 +352,9 @@ export default class MasterWindow extends Component {
         windowId={params.windowType}
         docId={params.docId}
         showSidelist
-        showIndicator={!modal.visible}
+        modalHidden={!modal.visible}
         handleDeletedStatus={this.handleDeletedStatus}
+        hasComments={master.hasComments}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
@@ -359,9 +365,8 @@ export default class MasterWindow extends Component {
             key="window"
             data={master.data}
             layout={master.layout}
-            rowData={master.rowData}
             tabsInfo={master.includedTabsInfo}
-            sort={this.sort}
+            onSortTable={onSortTable}
             dataId={dataId}
             isModal={false}
             newRow={newRow}
@@ -369,6 +374,7 @@ export default class MasterWindow extends Component {
             handleDragStart={this.handleDragStart}
             handleDropFile={this.handleDropFile}
             handleRejectDropped={this.handleRejectDropped}
+            onRefreshTab={onRefreshTab}
           />
         )}
 
@@ -406,10 +412,13 @@ MasterWindow.propTypes = {
   includedView: PropTypes.any,
   processStatus: PropTypes.any,
   enableTutorial: PropTypes.any,
+  onRefreshTab: PropTypes.func,
   location: PropTypes.any,
   addNotification: PropTypes.func,
   addRowData: PropTypes.func,
   attachFileAction: PropTypes.func,
   sortTab: PropTypes.func,
+  onSortTable: PropTypes.func,
   push: PropTypes.func,
+  updateTabRowsData: PropTypes.func.isRequired,
 };

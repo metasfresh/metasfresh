@@ -21,11 +21,11 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.generichumodel.HU.HUBuilder;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
@@ -90,7 +90,6 @@ public class HURepository
 	{
 		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
-		private final transient IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
 
 		private final transient HUStack huStack = new HUStack();
 
@@ -120,7 +119,7 @@ public class HURepository
 		{
 			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 
-			final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+			final IWeightable weightable = Weightables.wrap(attributeStorage);
 			final BigDecimal weightNetOrNull = weightable.getWeightNetOrNull();
 			final Quantity weightNet;
 

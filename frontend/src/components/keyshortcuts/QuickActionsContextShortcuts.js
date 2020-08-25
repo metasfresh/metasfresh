@@ -11,9 +11,7 @@ import { Shortcut } from '../keyshortcuts';
 export default class QuickActionsContextShortcuts extends Component {
   handlers = {
     QUICK_ACTION_POS: (event) => {
-      event.preventDefault();
-
-      this.props.handleClick();
+      this.props.onAction(event);
 
       if (this.props.stopPropagation) {
         return true;
@@ -60,7 +58,7 @@ export default class QuickActionsContextShortcuts extends Component {
  * @prop {bool} [stopPropagation]
  */
 QuickActionsContextShortcuts.propTypes = {
-  handleClick: PropTypes.func.isRequired,
+  onAction: PropTypes.func.isRequired,
   onClick: PropTypes.func.isRequired,
   stopPropagation: PropTypes.bool,
 };

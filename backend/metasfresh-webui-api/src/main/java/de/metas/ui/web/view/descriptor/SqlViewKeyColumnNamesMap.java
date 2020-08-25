@@ -1,23 +1,5 @@
 package de.metas.ui.web.view.descriptor;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.descriptor.sql.PlainSqlEntityFieldBinding;
-import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
-import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.DB;
-
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,6 +11,27 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.descriptor.sql.PlainSqlEntityFieldBinding;
+import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
+import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -337,13 +340,27 @@ public final class SqlViewKeyColumnNamesMap
 			final boolean useKeyColumnName,
 			final boolean embedSqlParams)
 	{
-		final List<Object> sqlParams = new ArrayList<>();
+		final List<Object> sqlParams = embedSqlParams ? null : new ArrayList<>();
 		final StringBuilder sql = new StringBuilder();
 		extractComposedKey(rowId)
 				.forEach((keyColumnName, value) -> {
+					if (sql.length() > 0)
+					{
+						sql.append(" AND ");
+					}
+
 					final String selectionColumnName = useKeyColumnName ? keyColumnName : getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
-					sql.append(sqlColumnPrefix != null ? sqlColumnPrefix : "").append(selectionColumnName).append("=?");
-					sqlParams.add(value);
+					sql.append(sqlColumnPrefix != null ? sqlColumnPrefix : "").append(selectionColumnName);
+
+					if (sqlParams != null)
+					{
+						sql.append("=?");
+						sqlParams.add(value);
+					}
+					else
+					{
+						sql.append("=").append(DB.TO_SQL(value));
+					}
 				});
 
 		return SqlAndParams.of(sql.toString(), sqlParams);

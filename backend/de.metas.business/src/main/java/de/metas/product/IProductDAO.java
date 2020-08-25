@@ -2,7 +2,7 @@ package de.metas.product;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L

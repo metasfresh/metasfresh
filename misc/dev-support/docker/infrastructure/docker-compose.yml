@@ -21,6 +21,7 @@ rabbitmq:
   build: rabbitmq
   expose:
     - "5672"
+    - "15672"
   restart: always
   environment:
     RABBITMQ_DEFAULT_USER: "guest"
@@ -28,6 +29,7 @@ rabbitmq:
     RABBITMQ_DEFAULT_VHOST: "/"
   ports:
     - "5672:5672"
+    - "15672:15672"
 search:
   build: search
   ulimits:

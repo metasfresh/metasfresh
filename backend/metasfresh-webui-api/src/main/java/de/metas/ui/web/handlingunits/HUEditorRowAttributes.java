@@ -1,13 +1,36 @@
 package de.metas.ui.web.handlingunits;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
@@ -34,22 +57,6 @@ import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -85,11 +92,11 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	private final Supplier<ViewRowAttributesLayout> layoutSupplier;
 
-	private final ImmutableSet<String> readonlyAttributeNames;
-	private final ImmutableSet<String> hiddenAttributeNames;
+	private final ImmutableSet<AttributeCode> readonlyAttributeNames;
+	private final ImmutableSet<AttributeCode> hiddenAttributeNames;
 
 	@Getter
-	private final ImmutableSet<String> mandatoryAttributeNames;
+	private final ImmutableSet<AttributeCode> mandatoryAttributeNames;
 
 	/* package */ HUEditorRowAttributes(
 			@NonNull final DocumentPath documentPath,
@@ -106,26 +113,26 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
 		final boolean readonlyEffective = readonly || extractIsReadonly(attributesStorage);
 
-		final ImmutableSet.Builder<String> readonlyAttributeNames = ImmutableSet.builder();
-		final ImmutableSet.Builder<String> hiddenAttributeNames = ImmutableSet.builder();
-		final ImmutableSet.Builder<String> mandatoryAttributeNames = ImmutableSet.builder();
+		final ImmutableSet.Builder<AttributeCode> readonlyAttributeNames = ImmutableSet.builder();
+		final ImmutableSet.Builder<AttributeCode> hiddenAttributeNames = ImmutableSet.builder();
+		final ImmutableSet.Builder<AttributeCode> mandatoryAttributeNames = ImmutableSet.builder();
 
 		final Collection<I_M_Attribute> attributes = attributesStorage.getAttributes();
 		for (final I_M_Attribute attribute : attributes)
 		{
-			final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attribute);
+			final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
 
 			if (readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
 			{
-				readonlyAttributeNames.add(attributeName);
+				readonlyAttributeNames.add(attributeCode);
 			}
 			if (!attributesStorage.isDisplayedUI(productIDs, attribute))
 			{
-				hiddenAttributeNames.add(attributeName);
+				hiddenAttributeNames.add(attributeCode);
 			}
 			if (attributesStorage.isMandatory(attribute))
 			{
-				mandatoryAttributeNames.add(attributeName);
+				mandatoryAttributeNames.add(attributeCode);
 			}
 		}
 
@@ -198,29 +205,29 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	private JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue, final JSONOptions jsonOpts)
 	{
-		final String fieldName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
+		final AttributeCode attributeCode = attributeValue.getAttributeCode();
 		final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(attributesStorage, attributeValue, jsonOpts);
 		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
-		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
-				.setDisplayed(isDisplayed(fieldName))
-				.setMandatory(isMandatory(fieldName))
-				.setReadonly(isReadonly(fieldName))
+		return JSONDocumentField.ofNameAndValue(attributeCode.getCode(), jsonValue)
+				.setDisplayed(isDisplayed(attributeCode))
+				.setMandatory(isMandatory(attributeCode))
+				.setReadonly(isReadonly(attributeCode))
 				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType));
 	}
 
-	private boolean isMandatory(final String fieldName)
+	private boolean isMandatory(final AttributeCode attributeCode)
 	{
-		return mandatoryAttributeNames.contains(fieldName);
+		return mandatoryAttributeNames.contains(attributeCode);
 	}
 
-	private boolean isReadonly(final String attributeName)
+	private boolean isReadonly(final AttributeCode attributeCode)
 	{
-		return readonlyAttributeNames.contains(attributeName);
+		return readonlyAttributeNames.contains(attributeCode);
 	}
 
-	private boolean isDisplayed(final String attributeName)
+	private boolean isDisplayed(final AttributeCode attributeCode)
 	{
-		return !hiddenAttributeNames.contains(attributeName);
+		return !hiddenAttributeNames.contains(attributeCode);
 	}
 
 	@Override
@@ -238,13 +245,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	{
 		if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 		{
-			final String attributeName = event.getPath();
-			if (isReadonly(attributeName))
+			final AttributeCode attributeCode = AttributeCode.ofString(event.getPath());
+			if (isReadonly(attributeCode))
 			{
-				throw new DocumentFieldReadonlyException(attributeName, event.getValue());
+				throw new DocumentFieldReadonlyException(attributeCode.getCode(), event.getValue());
 			}
 
-			final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
+			final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeCode);
 
 			final Object value = convertFromJson(attribute, event.getValue());
 			attributesStorage.setValue(attribute, value);
@@ -340,19 +347,42 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return Optional.ofNullable(bestBeforeDate);
 	}
 
-	public Object getValue(@NonNull final String attributeName)
+	public Optional<BigDecimal> getWeightGross()
 	{
-		return attributesStorage.getValue(attributeName);
+		final IWeightable weightable = toWeightable().orElse(null);
+		if (weightable == null)
+		{
+			return Optional.empty();
+		}
+
+		if (!weightable.hasWeightGross())
+		{
+			return Optional.empty();
+		}
+
+		final BigDecimal weightGross = weightable.getWeightGross();
+		return Optional.ofNullable(weightGross);
 	}
 
-	public String getValueAsString(@NonNull final String attributeName)
+	public Optional<IWeightable> toWeightable()
 	{
-		return attributesStorage.getValueAsString(attributeName);
+		final IWeightable weightable = Weightables.wrap(attributesStorage);
+		return Optional.ofNullable(weightable);
 	}
 
-	public boolean hasAttribute(@NonNull final String attributeName)
+	public Object getValue(@NonNull final AttributeCode attributeCode)
 	{
-		return attributesStorage.hasAttribute(attributeName);
+		return attributesStorage.getValue(attributeCode);
+	}
+
+	public String getValueAsString(@NonNull final AttributeCode attributeCode)
+	{
+		return attributesStorage.getValueAsString(attributeCode);
+	}
+
+	public boolean hasAttribute(@NonNull final AttributeCode attributeCode)
+	{
+		return attributesStorage.hasAttribute(attributeCode);
 	}
 
 	/**
@@ -378,11 +408,11 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		{
 			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollector();
 
-			final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
+			final AttributeCode attributeCode = attributeValue.getAttributeCode();
 			final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(storage, attributeValue, JSONOptions.newInstance());
 			final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 
-			changesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)
+			changesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeCode.getCode(), widgetType)
 					.setValue(jsonValue));
 		}
 

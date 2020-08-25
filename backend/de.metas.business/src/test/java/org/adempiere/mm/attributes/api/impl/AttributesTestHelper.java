@@ -198,7 +198,8 @@ public class AttributesTestHelper
 				.firstOnly(I_M_Attribute.class);
 	}
 
-	public I_M_Attribute createM_Attribute(final String name,
+	public I_M_Attribute createM_Attribute(
+			final String name,
 			final String valueType,
 			final Class<?> javaClass,
 			final I_C_UOM uom,
@@ -256,7 +257,8 @@ public class AttributesTestHelper
 		return attr;
 	}
 
-	public I_M_Attribute createM_Attribute(final String name,
+	public I_M_Attribute createM_Attribute(
+			final String name,
 			final String valueType,
 			final Class<?> javaClass,
 			final boolean isInstanceAttribute)
@@ -265,7 +267,8 @@ public class AttributesTestHelper
 		return createM_Attribute(name, valueType, javaClass, uom, isInstanceAttribute);
 	}
 
-	public I_M_Attribute createM_Attribute(final String name,
+	public I_M_Attribute createM_Attribute(
+			final String name,
 			final String valueType,
 			final boolean isInstanceAttribute)
 	{

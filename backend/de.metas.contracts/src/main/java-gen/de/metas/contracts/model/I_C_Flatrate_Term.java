@@ -504,16 +504,15 @@ public interface I_C_Flatrate_Term
     /** Column name C_Order_TermChange_ID */
     String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
 
-	/**
+    /**
 	 * Set Vertrags-Auftrag.
 	 * Auftrag, mit der der Vertrag abgeschlossen wurde
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated void setC_Order_Term_ID (int C_Order_Term_ID);
+	public void setC_Order_Term_ID (int C_Order_Term_ID);
 
 	/**
 	 * Get Vertrags-Auftrag.
@@ -521,18 +520,14 @@ public interface I_C_Flatrate_Term
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
-	int getC_Order_Term_ID();
-
-	org.compiere.model.I_C_Order getC_Order_Term();
-
-	@Deprecated void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term);
+	public int getC_Order_Term_ID();
 
     /** Column definition for C_Order_Term_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
     /** Column name C_Order_Term_ID */
-    String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
+    public static final String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
 
 	/**
 	 * Get Erstellt.

@@ -6,7 +6,6 @@ import { Set } from 'immutable';
 import {
   createWindow,
   initWindow,
-  updateTabRowsData,
   fetchTab,
 } from '../../actions/WindowActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
@@ -16,17 +15,6 @@ import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
 import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
 import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
 import rowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
-
-describe('WindowActions synchronous', () => {
-  it('should return a UPDATE_TAB_ROWS_DATA action with correct payload', () => {
-    const payload = { 'AD_Tab-1': { changed: { id: 1 } }};
-    const action = updateTabRowsData('master', 'AD_Tab-1', payload);
-
-    expect(action.type).toEqual(ACTION_TYPES.UPDATE_TAB_ROWS_DATA)
-    expect(action.payload).toHaveProperty('data.AD_Tab-1');
-    expect(action.payload).toMatchSnapshot();
-  });
-});
 
 describe('WindowActions thunks', () => {
   const propsData = masterWindowProps.props1;
@@ -161,8 +149,6 @@ describe('WindowActions thunks', () => {
     });
 
     it.todo(`dispatches 'UPDATE_TABLE' action when tab is fetched`);
-
-    // @TODO: load tabs using `row_data.json` data
 
     // @TODO: tests for NEW windows, NEW rows
 

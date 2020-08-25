@@ -1,0 +1,162 @@
+{
+	"currencyCode": "EUR",
+	"presetDateInvoiced": "2019-11-21",
+	"dateOrdered": "2019-11-21",
+	"dateRequired": "2019-11-21",
+	"product": {
+		"code": "ProductCode",
+		"type": "ITEM",
+		"syncAdvise": {
+			"ifNotExists": "FAIL",
+			"ifExists": "DONT_UPDATE"
+		}
+	},
+	"bpartner": {
+		"bpartner": {
+			"externalId": "1-2",
+			"name": "Bill  First",
+			"companyName": "",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "UPDATE_MERGE"
+			}
+		},
+		"location": {
+			"externalId": "billToId-1-2",
+			"name": "bpartner.location.address1 28",
+			"address1": "bpartner.location.address1 28",
+			"city": "bpartner.location.city",
+			"postal": "bpartner.location.postal",
+			"countryCode": "DE",
+			"billTo": "true",
+			"billToDefault": "true",
+			"shipTo": "false",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"contact": {
+			"externalId": "billToId-1-2",
+			"name": "Bill  Last",
+			"firstName": "Bill ",
+			"lastName": "Last",
+			"phone": "",
+			"fax": "",
+			"email": "first_last@mail.org",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"syncAdvise": {
+			"ifNotExists": "CREATE",
+			"ifExists": "UPDATE_MERGE"
+		}
+	},
+	"billBPartner": {
+		"bpartner": {
+			"externalId": "1-2",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"location": {
+			"externalId": "billToId-1-2",
+			"name": "bpartner.location.address1 28",
+			"address1": "bpartner.location.address1 28",
+			"city": "bpartner.location.city",
+			"postal": "bpartner.location.postal",
+			"countryCode": "DE",
+			"billTo": "true",
+			"billToDefault": "true",
+			"shipTo": "false",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"contact": {
+			"externalId": "billToId-1-2",
+			"name": "Bill  Last",
+			"firstName": "Bill ",
+			"lastName": "Last",
+			"phone": "",
+			"fax": "",
+			"email": "first_last@mail.org",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"syncAdvise": {
+			"ifNotExists": "CREATE",
+			"ifExists": "DONT_UPDATE"
+		}
+	},
+	"dropShipBPartner": {
+		"bpartner": {
+			"externalId": "1-2",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"location": {
+			"externalId": "shipToId-1-2",
+			"name": "dropShipPartner.lcocation.address1 28",
+			"address1": "dropShipPartner.lcocation.address1 28",
+			"bpartnerName": "First  Last",
+			"city": "bpartner.location.city",
+			"postal": "bpartner.location.postal",
+			"countryCode": "DE",
+			"billTo": "false",
+			"shipTo": "true",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"contact": {
+			"externalId": "shipToId-1-2",
+			"name": "First  Last",
+			"firstName": "First ",
+			"lastName": "Last",
+			"phone": "",
+			"fax": "",
+			"email": "first_last@mail.org",
+			"syncAdvise": {
+				"ifNotExists": "CREATE",
+				"ifExists": "DONT_UPDATE"
+			}
+		},
+		"syncAdvise": {
+			"ifNotExists": "CREATE",
+			"ifExists": "DONT_UPDATE"
+		}
+	},
+	"externalHeaderId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2",
+	"poReference": "1000172362-1-2",
+	"externalLineId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2-1",
+	"price": 46.9,
+	"qty": 1,
+	"salesPartnerCode": "ABC-DEF-12345",
+	"paymentRule": "OnCredit",
+    "paymentTerm": "val-paymentTermValue",
+	"shipper": "val-Standard",
+	"dataSource": "int-SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C",
+	"dataDest": "int-DEST.de.metas.ordercandidate",
+	"orderDocType": "SalesOrder",
+	"invoiceDocType": {
+		"docBaseType": "ARI"
+	},
+	"org": {
+		"code": "001",
+		"syncAdvise": {
+			"ifNotExists": "FAIL",
+			"ifExists": "DONT_UPDATE"
+		}
+	},
+	"pricingSystemCode": "vk3"
+}

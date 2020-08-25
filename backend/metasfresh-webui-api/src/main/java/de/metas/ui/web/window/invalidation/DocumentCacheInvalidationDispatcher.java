@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.invalidation;
 
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -101,7 +102,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		}
 		else
 		{
-			new CacheInvalidateMultiRequestsCollector()
+			new CacheInvalidateMultiRequestsCollector("out-of-trx-" + UUID.randomUUID())
 					.collect(request)
 					.resetAsync();
 		}

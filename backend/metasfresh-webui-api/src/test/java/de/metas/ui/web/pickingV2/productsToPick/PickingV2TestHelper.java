@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -87,12 +88,12 @@ final class PickingV2TestHelper
 	}
 
 	public AttributeId createAttribute(
-			@NonNull final String code,
+			@NonNull final AttributeCode attributeCode,
 			@NonNull final String valueType)
 	{
-		I_M_Attribute attribute = newInstance(I_M_Attribute.class);
-		attribute.setValue(code);
-		attribute.setName(code);
+		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
+		attribute.setValue(attributeCode.getCode());
+		attribute.setName(attributeCode.getCode());
 		attribute.setAttributeValueType(valueType);
 		saveRecord(attribute);
 		return AttributeId.ofRepoId(attribute.getM_Attribute_ID());

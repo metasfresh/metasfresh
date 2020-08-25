@@ -1,6 +1,6 @@
 package de.metas.picking.service;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import lombok.NonNull;
 import lombok.Value;
 

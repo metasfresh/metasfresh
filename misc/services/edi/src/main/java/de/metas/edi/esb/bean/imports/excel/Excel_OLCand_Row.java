@@ -85,12 +85,15 @@ public class Excel_OLCand_Row
 	private final String productDescription;
 	private final String productAttributes;
 
-	private final String UOM_x12de355;
 	private final BigDecimal qtyCUsPerTU;
 	private final BigDecimal qtyTUs;
-	private final BigDecimal qtyUOM;
+
+	private final BigDecimal qtyInUOM;
+	private final String UOM_x12de355;
 
 	private final BigDecimal price;
+	private final String priceUOM_x12de355;
+
 	private final String currencyISOCode;
 
 	private final String POReference;
@@ -114,6 +117,7 @@ public class Excel_OLCand_Row
 		this.UOM_x12de355 = builder.UOM_x12de355;
 
 		this.price = builder.price;
+		this.priceUOM_x12de355 = builder.priceUOM_x12de355;
 		this.currencyISOCode = null; // TODO
 
 		this.POReference = builder.POReference;
@@ -121,7 +125,7 @@ public class Excel_OLCand_Row
 		this.dateCandidate = builder.dateCandidate;
 		this.datePromised = builder.datePromised;
 
-		this.qtyUOM = BigDecimal.valueOf(builder.qtyUOM);
+		this.qtyInUOM = BigDecimal.valueOf(builder.qtyUOM);
 		if ("TU".equals(UOM_x12de355))
 		{
 			this.qtyCUsPerTU = BigDecimal.ONE; // the customer's UOM is TU, so QtyCU is the number of TUs
@@ -130,12 +134,12 @@ public class Excel_OLCand_Row
 		{
 			this.qtyCUsPerTU = (builder.qtyCUsPerTU == null || builder.qtyCUsPerTU.signum() <= 0)
 					// there is no PIIP or the PIIP has unlimited capacity. As we can't deduct the QtyCU from QtyTU, we assume that QtyTU actually means QtyCU.
-					// Andempiere shall sort it out by supplying a default PIIP etc
+					// metasfresh shall sort it out by supplying a default PIIP etc
 					? BigDecimal.ONE
 					// default: use the supplied qtyCUsPerTU value
 					: builder.qtyCUsPerTU;
 		}
-		this.qtyTUs = qtyUOM
+		this.qtyTUs = qtyInUOM
 				.setScale(0, RoundingMode.CEILING) // this is probably not needed because the got this BD from an int
 				.divide(qtyCUsPerTU, RoundingMode.CEILING);
 
@@ -155,12 +159,14 @@ public class Excel_OLCand_Row
 				+ ", productDescription=" + productDescription
 				+ ", productAttributes=" + productAttributes
 				//
+				+ ", qtyInUOM=" + qtyInUOM
 				+ ", qtyCUsPerTU=" + qtyCUsPerTU
 				+ ", qtyTUs=" + qtyTUs
 				+ ", UOM_x12de355=" + UOM_x12de355
 				//
 				+ ", price=" + price
 				+ ", currencyISOCode=" + currencyISOCode
+				+ ", priceUOM_x12de355=" + priceUOM_x12de355
 				//
 				+ ", POReference=" + POReference
 				//
@@ -189,14 +195,19 @@ public class Excel_OLCand_Row
 		return qtyTUs;
 	}
 
-	public BigDecimal getQtyCUs()
+	public BigDecimal getQtyInUOM()
 	{
-		return qtyUOM;
+		return qtyInUOM;
 	}
 
 	public String getUOM_x12de355()
 	{
 		return UOM_x12de355;
+	}
+
+	public String getPriceUOM_x12de355()
+	{
+		return priceUOM_x12de355;
 	}
 
 	public BigDecimal getPrice()

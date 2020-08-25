@@ -297,7 +297,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 *
 	 * At this point we assume that we have a thread inherited transaction.
 	 */
-	private final InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
+	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds();
 		validateHuIds(selectedHuIds);
@@ -327,7 +327,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		return result;
 	}
 
-	private void validateHuIds(Set<HuId> huIds)
+	private void validateHuIds(@NonNull final Set<HuId> huIds)
 	{
 		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(SpringContextHolder.instance.getBeansOfType(IHUToReceiveValidator.class));
 

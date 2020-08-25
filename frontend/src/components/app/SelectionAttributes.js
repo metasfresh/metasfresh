@@ -1,5 +1,5 @@
 import counterpart from 'counterpart';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import {
@@ -8,8 +8,21 @@ import {
 } from '../../actions/ViewAttributesActions';
 import RawWidget from '../widget/RawWidget';
 
-class SelectionAttributes extends Component {
+/**
+ * @file Class based component.
+ * @module DocumentList
+ * @extends PureComponent
+ */
+class SelectionAttributes extends PureComponent {
+  componentDidMount = () => {
+    this.shouldFetchActions();
+  };
+
   componentDidUpdate = (prevProps) => {
+    this.shouldFetchActions(prevProps);
+  };
+
+  shouldFetchActions = (prevProps) => {
     const {
       selected,
       DLWrapperSetData,
@@ -22,13 +35,18 @@ class SelectionAttributes extends Component {
       return;
     }
 
-    if (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) {
+    if (
+      !prevProps ||
+      (prevProps &&
+        JSON.stringify(prevProps.selected) !== JSON.stringify(selected))
+    ) {
       DLWrapperSetData([], null, () => {
         DLWrapperSetLayout([], () => {
-          if (supportAttribute && selected && selected.length === 1) {
+          if (supportAttribute && selected.length === 1) {
             if (selected[0] == 0) {
               return;
             }
+
             this.fetchActions();
           }
         });
@@ -38,16 +56,16 @@ class SelectionAttributes extends Component {
 
   fetchActions = () => {
     const {
-      windowType,
+      windowId,
       viewId,
       selected,
       DLWrapperSetData,
       DLWrapperSetLayout,
     } = this.props;
-    getViewAttributesLayout(windowType, viewId, selected[0])
+    getViewAttributesLayout(windowId, viewId, selected[0])
       .then((response) => {
         DLWrapperSetLayout(response.data.elements);
-        return getViewAttributes(windowType, viewId, selected[0]);
+        return getViewAttributes(windowId, viewId, selected[0]);
       })
       .then((response) => {
         DLWrapperSetData(response.data.fieldsByName, response.data.id);
@@ -74,7 +92,7 @@ class SelectionAttributes extends Component {
 
   render() {
     const {
-      windowType,
+      windowId,
       viewId,
       DLWrapperLayout,
       DLWrapperData,
@@ -99,7 +117,7 @@ class SelectionAttributes extends Component {
                 widgetType={item.widgetType}
                 fields={item.fields}
                 dataId={DLWrapperDataId}
-                windowType={windowType}
+                windowType={windowId}
                 viewId={viewId}
                 widgetData={item.fields.map(
                   (elem) => DLWrapperData[elem.field] || -1
@@ -130,7 +148,7 @@ class SelectionAttributes extends Component {
 }
 
 SelectionAttributes.propTypes = {
-  windowType: PropTypes.string,
+  windowId: PropTypes.string,
   selected: PropTypes.any,
   viewId: PropTypes.string,
   DLWrapperSetLayout: PropTypes.func,
