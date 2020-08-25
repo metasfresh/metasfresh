@@ -452,7 +452,7 @@ public class PaymentBL implements IPaymentBL
 	{
 		for (final I_C_Payment payment : payments)
 		{
-			final OrderId orderId = ids.getOrDefault(ExternalId.of(payment.getExternalOrderId()), OrderId.ofRepoIdOrNull(0));
+			final OrderId orderId = ids.getOrDefault(ExternalId.ofOrNull(payment.getExternalOrderId()), OrderId.ofRepoIdOrNull(0));
 			if (orderId != null)
 			{
 				payment.setC_Order_ID(orderId.getRepoId());
