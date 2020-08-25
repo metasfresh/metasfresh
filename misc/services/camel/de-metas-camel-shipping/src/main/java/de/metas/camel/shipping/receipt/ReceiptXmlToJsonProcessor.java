@@ -23,6 +23,7 @@
 package de.metas.camel.shipping.receipt;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.XmlToJsonBaseProcessor;
 import de.metas.camel.shipping.shipment.AttributeCode;
@@ -91,7 +92,7 @@ public class ReceiptXmlToJsonProcessor extends XmlToJsonBaseProcessor implements
 				//
 				.externalId(StringUtils.trimToNull(FileMakerDataHelper.getValue(getValueRequest.fieldName(EXTERNAL_ID.getName()).build())))
 				//
-				.productSearchKey(StringUtils.trimToNull(FileMakerDataHelper.getValue(getValueRequest.fieldName(PRODUCT_SEARCH_KEY.getName()).build())))
+				.productSearchKey(getProductSearchKey(getValueRequest.fieldName(PRODUCT_SEARCH_KEY.getName()).build()))
 				//
 				.movementQuantity(FileMakerDataHelper.getBigDecimalValue(getValueRequest.fieldName(MOVEMENT_QUANTITY.getName()).build()))
 				//
@@ -176,5 +177,18 @@ public class ReceiptXmlToJsonProcessor extends XmlToJsonBaseProcessor implements
 		final ImmutableList<JsonAttributeInstance> result = jsonAttributeInstances.build();
 
 		return result.isEmpty() ? null : result;
+	}
+
+	@Nullable
+	private String getProductSearchKey(@NonNull final FileMakerDataHelper.GetValueRequest getValueRequest)
+	{
+		final String productSearchKey = FileMakerDataHelper.getValue(getValueRequest);
+
+		if (StringUtils.isBlank(productSearchKey))
+		{
+			return null;
+		}
+
+		return CommonUtil.removeOrgPrefix(productSearchKey);
 	}
 }

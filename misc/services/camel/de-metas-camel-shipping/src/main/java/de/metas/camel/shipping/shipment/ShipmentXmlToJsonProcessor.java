@@ -2,15 +2,10 @@ package de.metas.camel.shipping.shipment;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.XmlToJsonBaseProcessor;
 import de.metas.common.filemaker.FileMakerDataHelper;
-import de.metas.camel.shipping.CommonUtil;
-import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import de.metas.common.filemaker.COL;
-import de.metas.common.filemaker.FIELD;
-import de.metas.common.filemaker.FMPXMLRESULT;
-import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -26,7 +21,6 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +73,7 @@ public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implement
 				.trackingNumbers(getTrackingNumbers(row, fieldName2Index))
 				.movementQuantity(getQtyToDeliver(row, fieldName2Index))
 				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, DOCUMENT_NO)))
-				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, PRODUCT_VALUE))))//do the smae for receipts
+				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, PRODUCT_VALUE))))
 				.build();
 	}
 
@@ -185,12 +179,11 @@ public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implement
 	@Nullable
 	private BigDecimal getQtyToDeliver(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index)
 	{
-		final String qtyToDeliverStr = getValueByName(row, fieldName2Index, DELIVERED_QTY);
-
-		if (StringUtils.isBlank(qtyToDeliverStr))
-		{
-			return null;
-		}
+		final FileMakerDataHelper.GetValueRequest getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
+				.row(row)
+				.fieldName2Index(fieldName2Index)
+				.fieldName(DELIVERED_QTY.getName())
+				.build();
 
 		return FileMakerDataHelper.getBigDecimalValue(getValueRequest);
 	}
