@@ -57,6 +57,7 @@ import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -87,6 +88,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ZERO;
 
@@ -426,71 +428,23 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public String getPaymentRuleSymbol(final I_C_Payment payment, final int paypalDataSourceId, final int creditCardDataSourceId)
-	{
-
-		if (payment.getExternalOrderId() == null)
-		{
-			return "";
-		}
-
-		final I_C_Order order = orderBL.getByExternalId(ExternalId.of(payment.getExternalOrderId()));
-
-		if (order == null)
-		{
-			return "";
-		}
-
-		if (order.getAD_InputDataSource_ID() == paypalDataSourceId)
-		{
-			return "L";
-		}
-
-		if (order.getAD_InputDataSource_ID() == creditCardDataSourceId)
-		{
-			return "K";
-		}
-
-		return "P";
-	}
-
-	@Override
 	public List<ExternalId> getExternalIdsList(List<I_C_Payment> payments)
 	{
-		final List<ExternalId> externalIds = new ArrayList<ExternalId>();
-		for (final I_C_Payment payment : payments)
-		{
-			externalIds.add(ExternalId.of(payment.getExternalOrderId()));
-		}
-		return externalIds;
+		final List<I_C_Payment> paymentsWithExternalIds = payments
+				.stream()
+				.filter(p -> !(p.getExternalOrderId() == null))
+				.collect(Collectors.toList());
+		return CollectionUtils.extractDistinctElements(paymentsWithExternalIds, p -> ExternalId.ofOrNull(p.getExternalOrderId()));
 	}
 
 	@Override
 	public List<OrderId> getOrderIdsList(List<I_C_Payment> payments)
 	{
-		final List<OrderId> orderIds = new ArrayList<OrderId>();
-		for (final I_C_Payment payment : payments)
-		{
-			if (payment.getC_Order_ID() > 0)
-			{
-				orderIds.add(OrderId.ofRepoId(payment.getC_Order_ID()));
-			}
-		}
-		return orderIds;
-	}
-
-	@Override
-	public void setPaypalOrCreditCardPaymentRules(List<I_C_Payment> payments, int paypalDataSourceId, int creditCardDataSourceId)
-	{
-		for (final I_C_Payment payment : payments)
-		{
-			final String paymentRule = getPaymentRuleSymbol(payment, paypalDataSourceId, creditCardDataSourceId);
-			if (paymentRule.equals("L") || paymentRule.equals("K"))
-			{
-				payment.setPaymentRule(paymentRule);
-				save(payment);
-			}
-		}
+		final List<I_C_Payment> paymentsWithOrderIds = payments
+				.stream()
+				.filter(p -> !(p.getC_Order_ID() == 0))
+				.collect(Collectors.toList());
+		return CollectionUtils.extractDistinctElements(paymentsWithOrderIds, p -> OrderId.ofRepoId(p.getC_Order_ID()));
 	}
 
 	@Override

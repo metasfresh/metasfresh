@@ -62,8 +62,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
@@ -76,10 +74,9 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Nullable
-	@Override
-	public I_C_Order getByExternalId(@Nullable final ExternalId externalId)
+	private I_C_Order getByExternalId(@Nullable final ExternalId externalId)
 	{
-		final I_C_Order order = queryBL
+		final I_C_Order order = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
 				.create()

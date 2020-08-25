@@ -101,13 +101,9 @@ public interface IPaymentBL extends ISingletonService
 	 */
 	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
 
-	String getPaymentRuleSymbol(I_C_Payment payment, int paypalDataSourceId, int creditCardDataSourceId);
-
 	List<ExternalId> getExternalIdsList(List<I_C_Payment> payments);
 
 	List<OrderId> getOrderIdsList(List<I_C_Payment> payments);
-
-	void setPaypalOrCreditCardPaymentRules(List<I_C_Payment> payments, int paypalDataSourceId, int creditCardDataSourceId);
 
 	void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids);
 

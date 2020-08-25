@@ -50,8 +50,6 @@ public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
 
-	I_C_Order getByExternalId(final ExternalId externalId);
-
 	Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds);
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.

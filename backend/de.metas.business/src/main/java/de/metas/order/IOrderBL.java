@@ -49,8 +49,6 @@ public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
 
-	I_C_Order getByExternalId(ExternalId externalId);
-
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
 	 *

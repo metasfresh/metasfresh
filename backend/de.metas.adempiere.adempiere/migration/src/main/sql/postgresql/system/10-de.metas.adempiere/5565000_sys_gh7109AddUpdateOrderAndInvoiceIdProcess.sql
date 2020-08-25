@@ -113,3 +113,33 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=616260
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,616260,0,330,543263,570776,'F',TO_TIMESTAMP('2020-08-24 00:40:23','YYYY-MM-DD HH24:MI:SS'),100,'Wie die Rechnung bezahlt wird','Die Zahlungsweise zeigt die Art der Bezahlung der Rechnung an.','Y','N','N','Y','N','N','N',0,'Zahlungsweise',20,0,0,TO_TIMESTAMP('2020-08-24 00:40:23','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2020-08-25T07:33:00.291Z
+-- URL zum Konzept
+UPDATE AD_Process SET Name=' Bestellung und Rechnung festlegen',Updated=TO_TIMESTAMP('2020-08-25 10:32:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584736
+;
+
+-- 2020-08-25T07:33:14.116Z
+-- URL zum Konzept
+UPDATE AD_Process SET Name='Bestellung und Rechnung festlegen',Updated=TO_TIMESTAMP('2020-08-25 10:33:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584736
+;
+
+-- 2020-08-25T07:33:31.256Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Name='Bestellung und Rechnung festlegen',Updated=TO_TIMESTAMP('2020-08-25 10:33:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584736
+;
+
+-- 2020-08-25T07:33:49.222Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Name='Bestellung und Rechnung festlegen',Updated=TO_TIMESTAMP('2020-08-25 10:33:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584736
+;
+
+-- 2020-08-25T07:34:01.397Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Set Order and Invoice',Updated=TO_TIMESTAMP('2020-08-25 10:34:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584736
+;
+
+-- 2020-08-25T07:34:47.225Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Name='Bestellung und Rechnung festlegen',Updated=TO_TIMESTAMP('2020-08-25 10:34:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584736
+;
+

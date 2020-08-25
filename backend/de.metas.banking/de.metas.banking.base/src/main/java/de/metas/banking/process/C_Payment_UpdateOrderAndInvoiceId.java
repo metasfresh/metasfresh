@@ -22,6 +22,7 @@
 
 package de.metas.banking.process;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.invoice.InvoiceId;
@@ -29,33 +30,34 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.apache.commons.lang3.EnumUtils;
 import org.compiere.model.I_C_Payment;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static de.metas.payment.PaymentRule.CreditCard;
+import static de.metas.payment.PaymentRule.PayPal;
+
 public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IProcessPrecondition
 {
 
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-	private final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-
-	private final String PAYPAL_INTERNAL_NAME = "SOURCE.webshop.paypal.prepaid";
-	private final String CREDITCARD_INTERNAL_NAME = "SOURCE.webshop.other.paymenttypes";
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -72,17 +74,12 @@ public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IP
 	protected String doIt() throws Exception
 	{
 		List<I_C_Payment> payments = getSelectedPayments();
-		final InputDataSourceId paypalDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalNameOrNull(PAYPAL_INTERNAL_NAME);
-		final InputDataSourceId creditCardDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalNameOrNull(CREDITCARD_INTERNAL_NAME);
 
 		List<I_C_Payment> filteredPayments = payments
 				.stream()
-				.filter(p -> !paymentBL.getPaymentRuleSymbol(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("L")
-						&& !paymentBL.getPaymentRuleSymbol(p, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId()).equals("K")
-						&& !p.isAllocated())
+				.filter(p -> !p.isAllocated())
 				.collect(Collectors.toList());
 
-		paymentBL.setPaypalOrCreditCardPaymentRules(filteredPayments, paypalDataSourceId.getRepoId(), creditCardDataSourceId.getRepoId());
 		final List<ExternalId> externalIds = paymentBL.getExternalIdsList(filteredPayments);
 		final Map<ExternalId, OrderId> orderIdsForExternalIds = orderDAO.getOrderIdsForExternalIds(externalIds);
 		paymentBL.setPaymentOrderIds(filteredPayments, orderIdsForExternalIds);
