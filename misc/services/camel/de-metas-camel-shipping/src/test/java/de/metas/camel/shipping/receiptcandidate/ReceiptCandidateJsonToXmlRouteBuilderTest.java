@@ -215,50 +215,11 @@ class ReceiptCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 		@Override
 		public void process(final Exchange exchange)
 		{
-			called++;
+			final var jsonResponse = this.getClass().getResourceAsStream("/de/metas/camel/shipping/receiptcandidate/ReceiptCandicateApiResponse.json");
+			assertThat(jsonResponse).isNotNull();
+			exchange.getIn().setBody(jsonResponse);
 
-			exchange.getIn().setBody("{\n"
-					+ "    \"transactionKey\": \"92a88885-c4a8-4150-ba74-408a8428c62e\",\n"
-					+ "    \"items\": [\n"
-					+ "        {\n"
-					+ "            \"id\": 1000000,\n"
-					+ "            \"orgCode\": \"001\",\n"
-					+ "            \"orderDocumentNo\": \"820464\",\n"
-					+ "            \"dateOrdered\": \"2020-07-20T00:00:00\",\n"
-					+ "            \"product\": {\n"
-					+ "                \"productNo\": \"P002737\",\n"
-					+ "                \"name\": \"Convenience Salat 250g\",\n"
-					+ "                \"description\": \"\",\n"
-					+ "                \"weight\": 0.250000000000\n"
-					+ "            },\n"
-					+ "            \"quantities\": [\n"
-					+ "                {\n"
-					+ "                    \"qty\": 1,\n"
-					+ "                    \"uomCode\": \"Stk\"\n"
-					+ "                }\n"
-					+ "            ]\n"
-					+ "        },\n"
-					+ "        {\n"
-					+ "            \"id\": 1000001,\n"
-					+ "            \"orgCode\": \"001\",\n"
-					+ "            \"orderDocumentNo\": \"820465\",\n"
-					+ "            \"dateOrdered\": \"2020-07-21T00:00:00\",\n"
-					+ "            \"product\": {\n"
-					+ "                \"productNo\": \"P002737\",\n"
-					+ "                \"name\": \"Convenience Salat 250g\",\n"
-					+ "                \"description\": \"\",\n"
-					+ "                \"weight\": 0.250000000000\n"
-					+ "            },\n"
-					+ "            \"quantities\": [\n"
-					+ "                {\n"
-					+ "                    \"qty\": 2,\n"
-					+ "                    \"uomCode\": \"Stk\"\n"
-					+ "                }\n"
-					+ "            ]\n"
-					+ "        }\n"
-					+ "    ],\n"
-					+ "    \"hasMoreItems\": false\n"
-					+ "}");
+			called++;
 		}
 	}
 }

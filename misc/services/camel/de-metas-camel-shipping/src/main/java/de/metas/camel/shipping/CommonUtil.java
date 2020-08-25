@@ -29,9 +29,14 @@ import de.metas.common.filemaker.PRODUCT;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.spi.PropertiesComponent;
+
+import javax.annotation.Nullable;
+import java.util.regex.Pattern;
 
 @UtilityClass
-public class JsonToXmlProcessorCommonUtil
+public class CommonUtil
 {
 	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
 			final @NonNull Exchange exchange,
@@ -46,5 +51,36 @@ public class JsonToXmlProcessorCommonUtil
 						.name(databaseName)
 						.records(Integer.toString(numberOfItems))
 						.build());
+	}
+
+	@NonNull
+	public String extractOrgPrefix(
+			@NonNull final PropertiesComponent propertiesComponent,
+			@NonNull final String orgCode)
+	{
+		final var propertyKey = "_artikel_nummer.orgValue." + orgCode + ".prefix";
+
+		final var propertyValue = propertiesComponent
+				.resolveProperty(propertyKey)
+				.orElseThrow(() -> new RuntimeCamelException("Unexpected orgCode=" + orgCode + "; fix it in metasfresh or add '" + propertyKey + "' to the properties file"));
+
+		return propertyValue + "-";
+	}
+
+	@Nullable
+	public String removeOrgPrefix(@Nullable final String productValueWithOrgCode)
+	{
+		if (productValueWithOrgCode == null || productValueWithOrgCode.isBlank())
+		{
+			return productValueWithOrgCode;
+		}
+
+		final var prefix = Pattern.compile("([^-]*-)?(.*)");
+		final var matcher = prefix.matcher(productValueWithOrgCode);
+		if (!matcher.matches())
+		{
+			return productValueWithOrgCode;
+		}
+		return matcher.group(2);
 	}
 }
