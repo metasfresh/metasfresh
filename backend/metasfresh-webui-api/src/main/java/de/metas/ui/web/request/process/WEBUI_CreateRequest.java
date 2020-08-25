@@ -122,6 +122,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 		final I_R_Request request = requestDAO.createEmptyRequest();
 		request.setR_RequestType_ID(requestTypeDAO.retrieveDefaultRequestTypeIdOrFirstActive().getRepoId());
 		request.setDateTrx(SystemTime.asDayTimestamp());
+		request.setStartDate(SystemTime.asDayTimestamp());
 		return request;
 	}
 
