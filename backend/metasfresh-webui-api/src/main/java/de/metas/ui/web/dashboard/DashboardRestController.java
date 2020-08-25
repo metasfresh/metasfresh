@@ -34,6 +34,7 @@ import de.metas.ui.web.dashboard.json.JsonKPI;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
@@ -124,7 +125,7 @@ public class DashboardRestController
 			return;
 		}
 
-		final String websocketEndpoint = dashboard.getWebsocketEndpoint();
+		final WebsocketTopicName websocketEndpoint = dashboard.getWebsocketEndpoint();
 		websocketSender.convertAndSend(websocketEndpoint, events);
 		logger.trace("Notified WS {}: {}", websocketEndpoint, events);
 	}
@@ -146,7 +147,11 @@ public class DashboardRestController
 		userSession.assertLoggedIn();
 
 		final UserDashboard userDashboard = getUserDashboardForReading();
-		return JSONDashboard.of(userDashboard.getItems(widgetType), userDashboard.getWebsocketEndpoint(), newJSONLayoutOptions());
+		final WebsocketTopicName websocketEndpoint = userDashboard.getWebsocketEndpoint();
+		return JSONDashboard.of(
+				userDashboard.getItems(widgetType),
+				websocketEndpoint != null ? websocketEndpoint.getAsString() : null,
+				newJSONLayoutOptions());
 	}
 
 	@GetMapping("/kpis/available")

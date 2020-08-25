@@ -86,4 +86,6 @@ public interface IEventBus
 	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #postEvent(Event)} doesn't have to wait for the listeners to be invoked.
 	 */
 	boolean isAsync();
+
+	EventBusStats getStats();
 }

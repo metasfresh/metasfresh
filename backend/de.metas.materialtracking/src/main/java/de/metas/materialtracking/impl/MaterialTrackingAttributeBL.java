@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -35,7 +36,7 @@ import lombok.NonNull;
 
 public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 {
-	private static final String M_Attribute_Value_MaterialTracking = "M_Material_Tracking_ID";
+	private static final AttributeCode M_Attribute_Value_MaterialTracking = AttributeCode.ofString("M_Material_Tracking_ID");
 
 	@Override
 	public Optional<AttributeId> getMaterialTrackingAttributeId()

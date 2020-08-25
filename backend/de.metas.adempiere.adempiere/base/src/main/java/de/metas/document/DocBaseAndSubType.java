@@ -1,13 +1,14 @@
 package de.metas.document;
 
-import lombok.NonNull;
-import lombok.Value;
+import static de.metas.util.Check.assumeNotEmpty;
 
 import javax.annotation.Nullable;
 
-import static de.metas.util.Check.assumeNotEmpty;
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory;
-import static org.compiere.model.X_C_DocType.DOCSUBTYPE_VirtualInventory;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -34,23 +35,22 @@ import static org.compiere.model.X_C_DocType.DOCSUBTYPE_VirtualInventory;
 @Value
 public class DocBaseAndSubType
 {
-	public final static DocBaseAndSubType VIRTUAL_INVENTORY = of(DOCBASETYPE_MaterialPhysicalInventory, DOCSUBTYPE_VirtualInventory);
-
 	public static DocBaseAndSubType of(@NonNull final String docBaseType)
 	{
 		final String docSubType = null;
-		return new DocBaseAndSubType(docBaseType, docSubType);
+		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
 
 	public static DocBaseAndSubType of(
 			@NonNull final String docBaseType,
 			@Nullable final String docSubType)
 	{
-		return new DocBaseAndSubType(docBaseType, docSubType);
+		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
 
-	String docBaseType;
+	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();
 
+	String docBaseType;
 	String docSubType;
 
 	private DocBaseAndSubType(

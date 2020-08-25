@@ -1,24 +1,8 @@
 package de.metas.inoutcandidate.api;
 
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MOrderLine;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -27,12 +11,26 @@ import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.MOrderLine;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Implementers give database access to {@link I_M_ShipmentSchedule} instances (DAO).
  *
  * @author ts
- *
  */
 public interface IShipmentSchedulePA extends ISingletonService
 {
@@ -51,6 +49,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	@Nullable
 	ShipmentScheduleId getShipmentScheduleIdByOrderLineId(OrderLineId orderLineId);
+
+	boolean existsExportedShipmentScheduleForOrder(@NonNull final OrderId orderId);
 
 	Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(OrderId orderId);
 
@@ -95,6 +95,9 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * <li>The selection will be created out of transaction
 	 * </ul>
 	 */
+
+	void updateExportStatus(final String exportStatus, final PInstanceId pinstanceId);
+
 	IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(Properties ctx, IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter);
 
 	/**

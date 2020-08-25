@@ -31,7 +31,7 @@ const keymaps = {
   ADVANCED_EDIT: `${mod}+E`,
 
   /* POS context */
-  SELECT_ALL_LEAFS: `${mod}+S`,
+  SELECT_ALL_LEAVES: `${mod}+S`,
   EXPAND_INDENT: '+',
   COLLAPSE_INDENT: '-',
 

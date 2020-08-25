@@ -144,7 +144,7 @@ class InvoiceCandidateRecordServiceTest
 				.toUomId(UomId.ofRepoId(shipmentUomRecord.getC_UOM_ID()))
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.fromToMultiplier(TEN)
-				.toFromMultiplier(new BigDecimal("0.1"))
+				// .toFromMultiplier(new BigDecimal("0.1"))
 				.build());
 
 		final I_C_InvoiceCandidate_InOutLine icIol = newInstance(I_C_InvoiceCandidate_InOutLine.class);
@@ -264,7 +264,7 @@ class InvoiceCandidateRecordServiceTest
 				.toUomId(UomId.ofRepoId(shipmentUomRecord.getC_UOM_ID()))
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.fromToMultiplier(TEN)
-				.toFromMultiplier(new BigDecimal("0.1"))
+				// .toFromMultiplier(new BigDecimal("0.1"))
 				.build());
 
 		final I_C_InvoiceCandidate_InOutLine icIol = newInstance(I_C_InvoiceCandidate_InOutLine.class);

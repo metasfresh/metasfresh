@@ -147,22 +147,22 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Active)
 				.locator(warehouse1_locator1)
-				.newHUItemExpectation(piLU_item)
+				.item(piLU_item)
 					//
 					// TU
-					.newIncludedHUExpectation()
+					.includedHU()
 						.capture(tuRef)
 						.instanceName("TU")
 						.huPI(piTU)
 						.huStatus(X_M_HU.HUSTATUS_Active)
-						.newHUItemExpectation(piTU_item)
+						.item(piTU_item)
 							//
 							// VHU 1
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.instanceName("VHU1")
 								.capture(vhu1Ref)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(pTomato).qty("10").uom(uomKg)
 										.capture(vhu1_itemStorageRef)
 										.endExpectation()
@@ -170,11 +170,11 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 								.endExpectation()
 							//
 							// VHU 2
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.instanceName("VHU2")
 								.capture(vhu2Ref)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(pTomato).qty("5").uom(uomKg)
 										.capture(vhu2_itemStorageRef)
 										.endExpectation()

@@ -1,37 +1,8 @@
-package de.metas.ui.web.view.json;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowOverrides;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewRowOverridesHelper;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
-import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
-import de.metas.util.GuavaCollectors;
-import lombok.Value;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -49,22 +20,60 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.ui.web.view.json;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowOverridesHelper;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
+import lombok.Value;
+
 /**
  * View document (row).
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts)
+	public static List<JSONViewRow> ofViewRows(
+			final List<? extends IViewRow> rows,
+			final IViewRowOverrides rowOverrides,
+			final JSONOptions jsonOpts,
+			@NonNull final ViewRowCommentsSummary viewRowCommentsSummary)
 	{
 		return rows.stream()
-				.map(row -> ofRow(row, rowOverrides, jsonOpts))
+				.map(row -> ofRow(row, rowOverrides, jsonOpts, viewRowCommentsSummary))
 				.collect(Collectors.toList());
 	}
 
-	public static JSONViewRow ofRow(final IViewRow row, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts)
+	public static JSONViewRow ofRow(
+			@NonNull final IViewRow row,
+			final IViewRowOverrides rowOverrides,
+			final JSONOptions jsonOpts,
+			@NonNull final ViewRowCommentsSummary viewRowCommentsSummary)
 	{
 		//
 		// Document view record
@@ -108,7 +117,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			{
 				jsonRow.includedDocuments = includedDocuments
 						.stream()
-						.map(includedRow -> ofRow(includedRow, rowOverrides, jsonOpts))
+						.map(includedRow -> ofRow(includedRow, rowOverrides, jsonOpts, viewRowCommentsSummary))
 						.collect(GuavaCollectors.toImmutableList());
 			}
 		}
@@ -131,6 +140,12 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		}
 
 		//
+		// Has Comments
+		{
+			jsonRow.hasComments = viewRowCommentsSummary.hasComments(row.getId());
+		}
+
+		//
 		// Single column row
 		if (row.isSingleColumn())
 		{
@@ -141,7 +156,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		return jsonRow;
 	}
 
-	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final JSONOptions jsonOpts)
+	private static Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final JSONOptions jsonOpts)
 	{
 		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
 		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
@@ -156,7 +171,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 
 	/**
 	 * Record type.
-	 * 
+	 * <p>
 	 * NOTE: mainly used by frontend to decide which Icon to show for this line
 	 */
 	@JsonProperty("type")
@@ -166,6 +181,10 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 	@JsonProperty("processed")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean processed;
+
+	@JsonProperty("hasComments")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean hasComments;
 
 	@JsonProperty(value = JSONViewLayout.PROPERTY_supportAttributes)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -198,9 +217,9 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@Value
-	private static final class JSONIncludedViewId
+	private static class JSONIncludedViewId
 	{
-		private final WindowId windowId;
-		private final String viewId;
+		WindowId windowId;
+		String viewId;
 	}
 }

@@ -16,8 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.inventory.IHUInventoryBL;
-import de.metas.handlingunits.inventory.InventoryLineRecordService;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.tabcallout.M_InventoryLineTabCallout;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
@@ -53,9 +52,9 @@ import lombok.NonNull;
 @Component
 public class M_Inventory
 {
-	private final InventoryLineRecordService inventoryLineRecordService;
+	private final InventoryService inventoryLineRecordService;
 
-	public M_Inventory(@NonNull final InventoryLineRecordService inventoryRecordHUService)
+	public M_Inventory(@NonNull final InventoryService inventoryRecordHUService)
 	{
 		this.inventoryLineRecordService = inventoryRecordHUService;
 
@@ -76,9 +75,7 @@ public class M_Inventory
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void beforeComplete(final I_M_Inventory inventoryRecord)
 	{
-		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
-
-		if (huInventoryBL.isMaterialDisposal(inventoryRecord))
+		if (inventoryLineRecordService.isMaterialDisposal(inventoryRecord))
 		{
 			return; // nothing to do
 		}
@@ -89,10 +86,9 @@ public class M_Inventory
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseDisposal(final I_M_Inventory inventory)
 	{
-		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
 		final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
-		if (!(huInventoryBL.isMaterialDisposal(inventory)))
+		if (!inventoryLineRecordService.isMaterialDisposal(inventory))
 		{
 			return; // nothing to do
 		}

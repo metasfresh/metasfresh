@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import de.metas.mpackage.PackageId;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;

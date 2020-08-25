@@ -1,13 +1,18 @@
 package de.metas.ui.web.devices;
 
-import java.io.Serializable;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -22,11 +27,11 @@ import de.metas.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,13 +44,33 @@ import de.metas.util.Check;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JSONDeviceDescriptor implements Serializable
+@Value
+public class JSONDeviceDescriptor
 {
-	public static final Builder builder()
+	public static List<JSONDeviceDescriptor> ofList(
+			@NonNull final DeviceDescriptorsList list,
+			@NonNull final String adLanguage)
 	{
-		return new Builder();
+		if (list.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return list.stream()
+				.map(descriptor -> of(descriptor, adLanguage))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static JSONDeviceDescriptor of(
+			@NonNull final DeviceDescriptor descriptor,
+			@NonNull final String adLanguage)
+	{
+		return JSONDeviceDescriptor.builder()
+				.deviceId(descriptor.getDeviceId())
+				.caption(descriptor.getCaption().translate(adLanguage))
+				.websocketEndpoint(descriptor.getWebsocketEndpoint())
+				.build();
 	}
 
 	@JsonProperty("deviceId")
@@ -55,91 +80,17 @@ public class JSONDeviceDescriptor implements Serializable
 	@JsonProperty("websocketEndpoint")
 	private final String websocketEndpoint;
 
-	private JSONDeviceDescriptor(final Builder builder)
+	@Builder
+	private JSONDeviceDescriptor(
+			@JsonProperty("deviceId") @NonNull final String deviceId,
+			@JsonProperty("caption") @Nullable final String caption,
+			@JsonProperty("websocketEndpoint") @NonNull final String websocketEndpoint)
 	{
-		super();
-		deviceId = builder.getDeviceId();
-		caption = builder.getCaption();
-		websocketEndpoint = builder.getWebsocketEndpoint();
+		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
+		Check.assumeNotEmpty(websocketEndpoint, "websocketEndpoint is not empty");
+
+		this.deviceId = deviceId;
+		this.caption = caption;
+		this.websocketEndpoint = websocketEndpoint;
 	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("deviceId", deviceId)
-				.add("caption", caption)
-				.add("websocketEndpoint", websocketEndpoint)
-				.toString();
-	}
-
-	public String getId()
-	{
-		return deviceId;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getWebsocketEndpoint()
-	{
-		return websocketEndpoint;
-	}
-
-	public static final class Builder
-	{
-		private String _deviceId;
-		private String _caption;
-		private String _websocketEndpoint;
-
-		private Builder()
-		{
-			super();
-		}
-
-		public JSONDeviceDescriptor build()
-		{
-			return new JSONDeviceDescriptor(this);
-		}
-
-		public Builder setDeviceId(final String deviceId)
-		{
-			_deviceId = deviceId;
-			return this;
-		}
-
-		private String getDeviceId()
-		{
-			Check.assumeNotEmpty(_deviceId, "deviceId is not empty");
-			return _deviceId;
-		}
-
-		public Builder setCaption(final String caption)
-		{
-			_caption = caption;
-			return this;
-		}
-
-		private String getCaption()
-		{
-
-			return _caption;
-		}
-
-		public Builder setWebsocketEndpoint(final String websocketEndpoint)
-		{
-			_websocketEndpoint = websocketEndpoint;
-			return this;
-		}
-
-		private String getWebsocketEndpoint()
-		{
-			Check.assumeNotEmpty(_websocketEndpoint, "websocketEndpoint is not empty");
-			return _websocketEndpoint;
-		}
-	}
-
 }

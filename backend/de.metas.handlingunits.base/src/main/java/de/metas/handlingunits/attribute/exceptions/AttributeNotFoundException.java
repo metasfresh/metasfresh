@@ -1,5 +1,6 @@
 package de.metas.handlingunits.attribute.exceptions;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 
 /*
@@ -15,15 +16,14 @@ import org.adempiere.mm.attributes.AttributeId;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
@@ -36,21 +36,19 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
  * @author tsa
  *
  */
+@SuppressWarnings("serial")
 public class AttributeNotFoundException extends org.adempiere.mm.attributes.exceptions.AttributeNotFoundException
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 8545175229362657980L;
-
 	public AttributeNotFoundException(final I_M_Attribute attribute, final IAttributeStorage attributeStorage)
 	{
 		super(attribute, attributeStorage);
 	}
 
-	public AttributeNotFoundException(final String attributeValueKey, final IAttributeStorage attributeStorage)
+	public AttributeNotFoundException(final AttributeCode attributeCode, final IAttributeStorage attributeStorage)
 	{
-		super(attributeValueKey, attributeStorage);
+		super(
+				attributeCode != null ? attributeCode.getCode() : "?",
+				attributeStorage);
 	}
 
 	public AttributeNotFoundException(final AttributeId attributeId, final IAttributeStorage attributeStorage)

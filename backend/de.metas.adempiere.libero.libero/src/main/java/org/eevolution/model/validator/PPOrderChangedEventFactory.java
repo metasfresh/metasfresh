@@ -101,8 +101,6 @@ public class PPOrderChangedEventFactory
 
 		return PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
-				// .productDescriptor(oldPPOrder.getProductDescriptor())
-				// .ppOrderId(oldPPOrder.getPpOrderId())
 				.oldDatePromised(oldPPOrder.getDatePromised())
 				.oldDocStatus(oldPPOrder.getDocStatus())
 				.oldQtyRequired(oldPPOrder.getQtyRequired())

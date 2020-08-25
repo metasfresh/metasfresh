@@ -3,7 +3,7 @@
     "windowId": "143",
     "viewId": "143-F",
     "headerProperties": {
-      "entries": []
+      "groups": []
     },
     "size": 1,
     "orderBy": [
@@ -574,5 +574,180 @@
     "pageLength": 20,
     "queryLimit": 5000,
     "type": "143"
+  },
+  "data2_parent": {
+    "windowId": "540350",
+    "viewId": "540350-NP",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 3,
+    "result": [
+      {
+        "id": "1001023",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1001023",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1001175",
+              "caption": "1077"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "20"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "30"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005577",
+              "caption": "Convenience Salat 250g_P002737"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-06-26T20:00:00.000+02:00"
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-NP-1001023"
+        }
+      },
+      {
+        "id": "1001024",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1001024",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1001175",
+              "caption": "1077"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "38"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "50"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005577",
+              "caption": "Convenience Salat 250g_P002737"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-06-26T20:00:00.000+02:00"
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-NP-1001024"
+        }
+      },
+      {
+        "id": "1001025",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1001025",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1001175",
+              "caption": "1077"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "3.000"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "15.000"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005572",
+              "caption": "Frisée Industrie_P002732"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-06-26T20:00:00.000+02:00"
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-NP-1001025"
+        }
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540350"
   }
 }

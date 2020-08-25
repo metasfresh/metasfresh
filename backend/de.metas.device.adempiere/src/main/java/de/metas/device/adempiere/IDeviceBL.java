@@ -24,6 +24,8 @@ package de.metas.device.adempiere;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeCode;
+
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.IDeviceResponse;
@@ -52,6 +54,9 @@ public interface IDeviceBL extends ISingletonService
 	 * @param attributeCode attribute code
 	 * @param responseClazz optional, maybe be <code>null</code>. If set, then the result is filtered and only those requests are returned whose response is assignable from this parameter.
 	 */
-	<T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(DeviceConfig deviceConfig, String attributeCode, Class<T> responseClazz);
+	<T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(
+			DeviceConfig deviceConfig,
+			AttributeCode attributeCode,
+			Class<T> responseClazz);
 
 }

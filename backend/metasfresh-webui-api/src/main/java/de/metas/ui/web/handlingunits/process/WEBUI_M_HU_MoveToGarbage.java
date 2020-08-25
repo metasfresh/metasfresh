@@ -1,10 +1,11 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -12,7 +13,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.inventory.IHUInventoryBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.event.InventoryUserNotificationsProducer;
@@ -54,7 +55,7 @@ import de.metas.util.Services;
  */
 public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	private final transient IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
 	private Set<HuId> huIdsDestroyed;
 
@@ -89,8 +90,8 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		final Timestamp movementDate = Env.getDate(getCtx());
-		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(husToDestroy, movementDate, ActivityId.ofRepoIdOrNull(-1), null, true, true);
+		final ZonedDateTime movementDate = Env.getZonedDateTime(getCtx());
+		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(husToDestroy, movementDate, ActivityId.ofRepoIdOrNull(-1), null, true, true);
 
 		//
 		// Send notifications

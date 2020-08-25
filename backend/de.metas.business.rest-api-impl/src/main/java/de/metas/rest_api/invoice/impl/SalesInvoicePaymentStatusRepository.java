@@ -4,7 +4,7 @@ import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.Check.isNotBlank;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;

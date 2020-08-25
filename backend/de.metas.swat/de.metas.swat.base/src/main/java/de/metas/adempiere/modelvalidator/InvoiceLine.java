@@ -1,30 +1,5 @@
 package de.metas.adempiere.modelvalidator;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MClient;
@@ -32,11 +7,11 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoice.service.impl.InvoiceLineBL;
@@ -114,15 +89,23 @@ public class InvoiceLine implements ModelValidator
 		}
 		else if (type == TYPE_BEFORE_DELETE)
 		{
-			final IInvoiceDAO invoicePA = Services.get(IInvoiceDAO.class);
-
-			for (final MInvoiceLine il : invoicePA.retrieveReferringLines(po.getCtx(), po.get_ID(), po.get_TrxName()))
-			{
-				il.setRef_InvoiceLine_ID(0);
-				il.saveEx();
-			}
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
+			beforeDelete(il);
 		}
 		return null;
+	}
+
+	void beforeDelete(final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
+		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+
+		for (final I_C_InvoiceLine refInvoiceLine : invoiceDAO.retrieveReferringLines(invoiceLineId))
+		{
+			refInvoiceLine.setRef_InvoiceLine_ID(0);
+			invoiceDAO.save(refInvoiceLine);
+		}
 	}
 
 	public static void assertOrderInvoicePricesMatch(final I_C_InvoiceLine invoiceLine)

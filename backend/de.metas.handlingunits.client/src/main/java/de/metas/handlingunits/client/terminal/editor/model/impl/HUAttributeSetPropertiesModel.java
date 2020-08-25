@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.im.spi.InputMethod;
 import java.math.BigDecimal;
@@ -32,11 +31,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.net.NetUtils;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -57,22 +60,23 @@ import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.MinMaxNumericFieldConstraint;
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDeviceBL;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.IWeightableBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 {
@@ -228,11 +232,15 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * @see #getAdditionalInputMethods(int)
 	 *
 	 */
-	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute, final int warehouseId)
+	private static List<IInputMethod<?>> mkAdditionalInputMethods(
+			@NonNull final I_M_Attribute attribute,
+			@Nullable final WarehouseId warehouseId)
 	{
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+
 		return Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
-				.getAttributeDeviceAccessors(attribute.getValue())
+				.getAttributeDeviceAccessors(attributeCode)
 				.consumeWarningMessageIfAny(warningMessage -> Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, warningMessage))
 				.stream(warehouseId)
 				.map(DeviceAccessorAsInputMethod::new)
@@ -472,7 +480,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		final boolean weightableOnlyIfVHU = attributesEditableOnlyIfVHU;
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
-		calloutCtx.setParameter(IWeightableBL.PROPERTY_WeightableOnlyIfVHU, weightableOnlyIfVHU);
+		calloutCtx.setParameter(Weightables.PROPERTY_WeightableOnlyIfVHU, weightableOnlyIfVHU);
 		return calloutCtx;
 	}
 
@@ -521,7 +529,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		public static final IndexedAttributeStorage NULL = new IndexedAttributeStorage();
 
-		public static final IndexedAttributeStorage of(final IAttributeStorage attributeStorage)
+		public static IndexedAttributeStorage of(final IAttributeStorage attributeStorage)
 		{
 			if (attributeStorage == null)
 			{
@@ -555,14 +563,11 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 		private IndexedAttributeStorage(final IAttributeStorage attributeStorage)
 		{
-			super();
-
-			final int warehouseId = attributeStorage.getM_Warehouse_ID();
+			final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
 
 			final List<String> propertyNames = new ArrayList<>();
 			final Map<String, I_M_Attribute> propertyName2attribute = new HashMap<>();
 			final HashMap<String, List<IInputMethod<?>>> propertyName2AdditionalInputAction = new HashMap<>(); // task 04966
-
 
 			for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
 			{
@@ -597,12 +602,12 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		}
 
 		/** @return attribute storage */
-		public final IAttributeStorage getAttributeStorage()
+		public IAttributeStorage getAttributeStorage()
 		{
 			return attributeStorage;
 		}
 
-		public final boolean isDisposed()
+		public boolean isDisposed()
 		{
 			final HUKeyAttributeStorage huKeyAttributeStorage = HUKeyAttributeStorage.castOrNull(attributeStorage);
 			if (huKeyAttributeStorage != null)
@@ -612,13 +617,13 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return false; // not disposed
 		}
 
-		public final List<String> getPropertyNames()
+		public List<String> getPropertyNames()
 		{
 			return propertyNames;
 		}
 
 		/** @return attribute or null */
-		public final I_M_Attribute getM_Attribute(final String propertyName)
+		public I_M_Attribute getM_Attribute(final String propertyName)
 		{
 			return propertyName2attribute.get(propertyName);
 		}
@@ -628,23 +633,23 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return propertyName2AdditionalInputAction.get(propertyName);
 		}
 
-		private final IHUAttributesDAO getHUAttributesDAO()
+		private IHUAttributesDAO getHUAttributesDAO()
 		{
 			return attributeStorage.getAttributeStorageFactory().getHUAttributesDAO();
 		}
 
-		public final IAttributeValue getAttributeValue(final I_M_Attribute attribute)
+		public IAttributeValue getAttributeValue(final I_M_Attribute attribute)
 		{
 			return attributeStorage.getAttributeValue(attribute);
 		}
 
-		public final IAttributeValue getAttributeValue(final String propertyName)
+		public IAttributeValue getAttributeValue(final String propertyName)
 		{
 			final I_M_Attribute attribute = getM_Attribute(propertyName);
 			return attributeStorage.getAttributeValue(attribute);
 		}
 
-		public final Object getPropertyValue(final String propertyName)
+		public Object getPropertyValue(final String propertyName)
 		{
 			final I_M_Attribute attribute = getM_Attribute(propertyName);
 			if (attribute == null)
@@ -655,7 +660,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return getAttributeStorage().getValue(attribute);
 		}
 
-		public final void setPropertyValue(final String propertyName, final Object value)
+		public void setPropertyValue(final String propertyName, final Object value)
 		{
 			try (final IAutoCloseable autoflushDisabler = getHUAttributesDAO().temporaryDisableAutoflush())
 			{
@@ -664,12 +669,11 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			}
 		}
 
-		public final boolean isVirtualHU()
+		public boolean isVirtualHU()
 		{
 			return virtualHU;
 		}
 	}
-
 
 	private static final class DeviceAccessorAsInputMethod implements IInputMethod<Object>
 	{
@@ -691,7 +695,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		public AppsAction getAppsAction()
 		{
 			// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
-			final String buttonText = deviceAccessor.getDisplayName();
+			final String buttonText = deviceAccessor.getDisplayName().translate(Env.getADLanguageOrBaseLanguage());
 			return AppsAction.builder()
 					.setAction(buttonText)
 					.setRetrieveAppsActionMsg(false) // there is no AD_Message, just use the action's name as it is.

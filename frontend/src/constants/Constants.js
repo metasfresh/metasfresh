@@ -107,3 +107,22 @@ export const TIME_REGEX_TEST = /^\d\d:\d\d$/;
 export const PROCESS_NAME = 'process';
 
 export const LOCATION_SEARCH_NAME = 'location-area-search';
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the row position from where the dropup should be shown.
+ */
+export const DROPUP_START = 10;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset position for resizing the table container
+ */
+export const DROPDOWN_OFFSET_BIG = 250;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset position for resizing the table container
+ */
+export const DROPUP_OFFSET_SMALL = 150;
+export const LOCAL_LANG = 'metasfreshLanguage';

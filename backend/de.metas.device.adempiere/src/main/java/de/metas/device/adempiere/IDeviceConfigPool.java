@@ -3,6 +3,8 @@ package de.metas.device.adempiere;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeCode;
+
 /*
  * #%L
  * de.metas.device.adempiere
@@ -16,11 +18,11 @@ import java.util.Set;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,14 +37,9 @@ import java.util.Set;
  */
 public interface IDeviceConfigPool
 {
-	Set<String> getAllAttributeCodes();
-
-	List<DeviceConfig> getDeviceConfigsForAttributeCode(String attributeCode);
-
 	void addListener(IDeviceConfigPoolListener listener);
 
-	interface IDeviceConfigPoolListener
-	{
-		void onConfigurationChanged(IDeviceConfigPool deviceConfigPool);
-	}
+	Set<AttributeCode> getAllAttributeCodes();
+
+	List<DeviceConfig> getDeviceConfigsForAttributeCode(AttributeCode attributeCode);
 }

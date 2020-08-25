@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
 
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 

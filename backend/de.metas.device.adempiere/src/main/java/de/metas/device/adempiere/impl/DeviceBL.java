@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -83,7 +84,10 @@ public class DeviceBL implements IDeviceBL
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(final DeviceConfig deviceConfig, final String attributeCode, final Class<T> responseClazz)
+	public <T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(
+			final DeviceConfig deviceConfig, 
+			final AttributeCode attributeCode, 
+			final Class<T> responseClazz)
 	{
 		final Collection<String> requestClassnames = deviceConfig.getRequestClassnames(attributeCode);
 		if(requestClassnames.isEmpty())

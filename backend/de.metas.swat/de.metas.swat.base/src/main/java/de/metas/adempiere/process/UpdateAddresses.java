@@ -42,6 +42,7 @@ import org.compiere.model.Query;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
@@ -69,7 +70,7 @@ public class UpdateAddresses extends JavaProcess
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				;
+				
 			}
 			else if (name.equals("AD_Table_ID"))
 			{
@@ -201,7 +202,8 @@ public class UpdateAddresses extends JavaProcess
 				log.warn("Cannot calculate Address for " + bpLocation);
 			}
 
-			InterfaceWrapperHelper.save(bpLocation);
+			Services.get(IBPartnerDAO.class).save(bpLocation);
+			
 			return true;
 		}
 		//
@@ -252,9 +254,13 @@ public class UpdateAddresses extends JavaProcess
 		for (String columnName : addressColumnNames)
 		{
 			if (table.getColumn(columnName) == null)
+			{
 				continue;
+			}
 			if (whereAddresses.length() > 0)
+			{
 				whereAddresses.append(" OR ");
+			}
 			whereAddresses.append(columnName).append(" IS NULL");
 		}
 		if (whereAddresses.length() == 0)

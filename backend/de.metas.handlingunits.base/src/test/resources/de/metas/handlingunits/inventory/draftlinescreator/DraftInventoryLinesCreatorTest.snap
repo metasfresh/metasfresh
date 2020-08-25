@@ -1,71 +1,97 @@
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator=[
   {
-    "id": 100009,
+    "id": 100011,
+    "orgId": 100001,
     "docBaseAndSubType": {
       "docBaseType": "MMI",
       "docSubType": "ISH"
     },
     "inventoryType": "PHYSICAL",
+    "movementDate": {
+      "dateTime": {
+        "date": {
+          "year": 2020,
+          "month": 6,
+          "day": 15,
+          "leapYear": true
+        },
+        "time": {
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "nano": 0
+        }
+      },
+      "offset": {
+        "totalSeconds": -28800
+      },
+      "zone": {
+        "id": "UTC-08:00"
+      }
+    },
+    "docStatus": "Drafted",
     "lines": [
       {
-        "id": 100016,
+        "id": 100018,
         "orgId": 5,
-        "asiId": 100013,
+        "asiId": 100015,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
-        "locatorId": "100002_100003",
+        "locatorId": "100004_100005",
         "huAggregationType": "MULTI_HU",
         "inventoryType": "PHYSICAL",
+        "counted": false,
         "inventoryLineHUs": [
           {
-            "id": 100017,
+            "id": 100019,
             "huId": 100,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "10",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "10",
-              "uomId": 100001
+              "uomId": 100003
             }
           },
           {
-            "id": 100018,
+            "id": 100020,
             "huId": 200,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "1",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "1",
-              "uomId": 100001
+              "uomId": 100003
             }
           }
         ]
       },
       {
-        "id": 100023,
+        "id": 100025,
         "orgId": 5,
-        "asiId": 100019,
+        "asiId": 100021,
         "productId": 40,
         "storageAttributesKey": "10§&§11§&§12",
-        "locatorId": "100002_100003",
+        "locatorId": "100004_100005",
         "huAggregationType": "MULTI_HU",
         "inventoryType": "PHYSICAL",
+        "counted": false,
         "inventoryLineHUs": [
           {
-            "id": 100024,
+            "id": 100026,
             "huId": 300,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "2",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "2",
-              "uomId": 100001
+              "uomId": 100003
             }
           }
         ]
@@ -77,81 +103,108 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
 
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_SingleHUInventoryLineAggregator=[
   {
-    "id": 100009,
+    "id": 100011,
+    "orgId": 100001,
     "docBaseAndSubType": {
       "docBaseType": "MMI",
       "docSubType": "ISH"
     },
     "inventoryType": "PHYSICAL",
+    "movementDate": {
+      "dateTime": {
+        "date": {
+          "year": 2020,
+          "month": 6,
+          "day": 15,
+          "leapYear": true
+        },
+        "time": {
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "nano": 0
+        }
+      },
+      "offset": {
+        "totalSeconds": -28800
+      },
+      "zone": {
+        "id": "UTC-08:00"
+      }
+    },
+    "docStatus": "Drafted",
     "lines": [
       {
-        "id": 100016,
+        "id": 100018,
         "orgId": 5,
-        "asiId": 100013,
+        "asiId": 100015,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
-        "locatorId": "100002_100003",
+        "locatorId": "100004_100005",
         "huAggregationType": "SINGLE_HU",
         "inventoryType": "PHYSICAL",
+        "counted": false,
         "inventoryLineHUs": [
           {
             "huId": 100,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "10",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "10",
-              "uomId": 100001
+              "uomId": 100003
             }
           }
         ]
       },
       {
-        "id": 100020,
+        "id": 100022,
         "orgId": 5,
-        "asiId": 100017,
+        "asiId": 100019,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
-        "locatorId": "100002_100003",
+        "locatorId": "100004_100005",
         "huAggregationType": "SINGLE_HU",
         "inventoryType": "PHYSICAL",
+        "counted": false,
         "inventoryLineHUs": [
           {
             "huId": 200,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "1",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "1",
-              "uomId": 100001
+              "uomId": 100003
             }
           }
         ]
       },
       {
-        "id": 100025,
+        "id": 100027,
         "orgId": 5,
-        "asiId": 100021,
+        "asiId": 100023,
         "productId": 40,
         "storageAttributesKey": "10§&§11§&§12",
-        "locatorId": "100002_100003",
+        "locatorId": "100004_100005",
         "huAggregationType": "SINGLE_HU",
         "inventoryType": "PHYSICAL",
+        "counted": false,
         "inventoryLineHUs": [
           {
             "huId": 300,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "2",
-              "uomId": 100001
+              "uomId": 100003
             },
             "qtyCount": {
               "qty": "2",
-              "uomId": 100001
+              "uomId": 100003
             }
           }
         ]

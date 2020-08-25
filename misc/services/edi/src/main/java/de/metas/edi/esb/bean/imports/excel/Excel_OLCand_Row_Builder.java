@@ -43,7 +43,7 @@ import lombok.NonNull;
  * Builds {@link Excel_OLCand_Row}.
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 public class Excel_OLCand_Row_Builder
 {
@@ -70,6 +70,9 @@ public class Excel_OLCand_Row_Builder
 	//
 	private static final String MAPKEY_Price = "Preis";
 	BigDecimal price;
+	private static final String MAPKEY_PriceUOM_x12de355 = "price_uom_x12de355";
+	String priceUOM_x12de355;
+
 	//
 	private static final String MAPKEY_POReference = "Bestellung Nr";
 	String POReference;
@@ -111,46 +114,47 @@ public class Excel_OLCand_Row_Builder
 	public Excel_OLCand_Row_Builder setFromMap(@NonNull final Map<String, Object> map)
 	{
 		// NOTE: we need to create a new map, because we want to use case insensitive keys.
-		final TreeMap<String, Object> map2 = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
-		map2.putAll(map);
+		final TreeMap<String, Object> caseInsensitiveKeysMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		caseInsensitiveKeysMap.putAll(map);
 
 		try
 		{
-			this.lineNo = extractInteger(map2, MAPKEY_LineNo);
+			this.lineNo = extractInteger(caseInsensitiveKeysMap, MAPKEY_LineNo);
 
-			this.M_Product_ID = coalesce(extractInteger(map2, MAPKEY_M_Product_ID), -1);
-			this.productDescription = extractString(map2, MAPKEY_ProductDescription);
-			this.productAttributes = extractString(map2, MAPKEY_ProductAttributes);
+			this.M_Product_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_Product_ID), -1);
+			this.productDescription = extractString(caseInsensitiveKeysMap, MAPKEY_ProductDescription);
+			this.productAttributes = extractString(caseInsensitiveKeysMap, MAPKEY_ProductAttributes);
 			//
-			this.UOM_x12de355 = extractString(map2, MAPKEY_UOM_x12de355);
-			this.qtyUOM = coalesce(extractInteger(map2, MAPKEY_QtyUOM), 0);
-			this.qtyCUsPerTU = extractBigDecimal(map2, MAPKEY_QtyCUsPerTU);
-			this.M_HU_PI_Item_Product_ID = coalesce(extractInteger(map2, MAPKEY_M_HU_PI_Item_Product_ID), -1);
+			this.UOM_x12de355 = extractString(caseInsensitiveKeysMap, MAPKEY_UOM_x12de355);
+			this.qtyUOM = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_QtyUOM), 0);
+			this.qtyCUsPerTU = extractBigDecimal(caseInsensitiveKeysMap, MAPKEY_QtyCUsPerTU);
+			this.M_HU_PI_Item_Product_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_HU_PI_Item_Product_ID), -1);
 			//
-			this.price = extractBigDecimal(map2, MAPKEY_Price);
+			this.priceUOM_x12de355 = extractString(caseInsensitiveKeysMap, MAPKEY_PriceUOM_x12de355);
+			this.price = extractBigDecimal(caseInsensitiveKeysMap, MAPKEY_Price);
 			//
-			this.POReference = extractString(map2, MAPKEY_POReference);
+			this.POReference = extractString(caseInsensitiveKeysMap, MAPKEY_POReference);
 			//
-			this.datePromised = extractDate(map2, MAPKEY_DatePromised);
+			this.datePromised = extractDate(caseInsensitiveKeysMap, MAPKEY_DatePromised);
 			//
-			this.M_ProductPrice_ID = coalesce(extractInteger(map2, MAPKEY_M_ProductPrice_ID), -1);
-			this.M_ProductPrice_Attribute_ID = coalesce(extractInteger(map2, MAPKEY_M_ProductPrice_Attribute_ID), -1);
-			this.C_BPartner_ID = coalesce(extractInteger(map2, MAPKEY_C_BPartner_ID), -1);
-			this.C_BPartner_Location_ID = coalesce(extractInteger(map2, MAPKEY_C_BPartner_Location_ID), -1);
+			this.M_ProductPrice_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_ProductPrice_ID), -1);
+			this.M_ProductPrice_Attribute_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_ProductPrice_Attribute_ID), -1);
+			this.C_BPartner_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_C_BPartner_ID), -1);
+			this.C_BPartner_Location_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_C_BPartner_Location_ID), -1);
 			return this;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			throw new RuntimeException("Failed building " + Excel_OLCand_Row.class + " from " + map2, e);
+			throw new RuntimeException("Failed building " + Excel_OLCand_Row.class + " from " + caseInsensitiveKeysMap, e);
 		}
 	}
 
-	private static final Object getValue(final Map<String, Object> map, final String key)
+	private static Object getValue(final Map<String, Object> map, final String key)
 	{
 		return map.get(key);
 	}
 
-	private static final String extractString(Map<String, Object> map, final String key)
+	private static String extractString(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
 
@@ -169,7 +173,7 @@ public class Excel_OLCand_Row_Builder
 		}
 	}
 
-	private static final Integer extractInteger(Map<String, Object> map, final String key)
+	private static Integer extractInteger(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
 		if (value == null)
@@ -192,13 +196,13 @@ public class Excel_OLCand_Row_Builder
 			final int valueInt = Integer.parseInt(valueStr);
 			return valueInt;
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			throw new RuntimeException("Failed parsing attribute: " + key, e);
 		}
 	}
 
-	private static final BigDecimal extractBigDecimal(final Map<String, Object> map, final String key)
+	private static BigDecimal extractBigDecimal(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
 		if (value == null)
@@ -223,7 +227,7 @@ public class Excel_OLCand_Row_Builder
 				final Number parsed = numberFormat.parse(valueStr);
 				return new BigDecimal(parsed.toString());
 			}
-			catch (ParseException e)
+			catch (final ParseException e)
 			{
 				// ignore it
 			}
@@ -258,7 +262,7 @@ public class Excel_OLCand_Row_Builder
 			{
 				return dateFormat.parse(valueStr);
 			}
-			catch (ParseException e)
+			catch (final ParseException e)
 			{
 				// ignore it
 			}
@@ -267,7 +271,7 @@ public class Excel_OLCand_Row_Builder
 		return null;
 	}
 
-	private static final <T> T coalesce(T value, T defaultValue)
+	private static <T> T coalesce(final T value, final T defaultValue)
 	{
 		return value == null ? defaultValue : value;
 	}

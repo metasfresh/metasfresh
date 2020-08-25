@@ -382,13 +382,13 @@ public class PackingInfoProcessParams
 		configureLUTUConfigTU(lutuConfigNew, M_HU_PI_Item_Product_ID, qtyTU);
 
 		// LU
-		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID);
+		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID, getQtyLU());
 
 		lutuConfigurationFactory.save(lutuConfigNew);
 		return lutuConfigNew;
 	}
 
-	private void configureLUTUConfigTU(
+	private static void configureLUTUConfigTU(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfigNew,
 			final HUPIItemProductId M_HU_PI_Item_Product_ID,
 			@NonNull final BigDecimal qtyTU)
@@ -402,13 +402,13 @@ public class PackingInfoProcessParams
 		lutuConfigNew.setIsInfiniteQtyTU(false);
 	}
 
-	private void configureLUTUConfigLU(
+	private static void configureLUTUConfigLU(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfigNew,
-			final int lu_PI_Item_ID)
+			final int lu_PI_Item_ID,
+			final BigDecimal qtyLU)
 	{
 		if (lu_PI_Item_ID > 0)
 		{
-			final BigDecimal qtyLU = getQtyLU();
 			if (qtyLU == null || qtyLU.signum() <= 0)
 			{
 				throw new FillMandatoryException(PARAM_QtyLU);

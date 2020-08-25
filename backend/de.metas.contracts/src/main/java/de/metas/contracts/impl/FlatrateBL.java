@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
@@ -36,6 +58,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductDAO;
@@ -52,7 +75,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -98,31 +121,8 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class FlatrateBL implements IFlatrateBL
 {
-
 
 	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
@@ -139,7 +139,7 @@ public class FlatrateBL implements IFlatrateBL
 	private static final AdMessageKey MSG_TERM_NEW_UNCOMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Uncompleted_Term");
 	private static final AdMessageKey MSG_TERM_NEW_COMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Completed_Term");
 	private static final AdMessageKey MSG_TERM_NO_NEW_0P = AdMessageKey.of("FlatrateTerm_No_New_Term");
-	
+
 	private static final AdMessageKey MSG_ORG_WAREHOUSE_MISSING = AdMessageKey.of("de.metas.flatrate.Org.Warehouse_Missing");
 
 	/**
@@ -324,7 +324,7 @@ public class FlatrateBL implements IFlatrateBL
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
 		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions())
-						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
+				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
 				fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee
 						+ " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
 
@@ -605,7 +605,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Returns the price for one unit, given a flatrate term, qty (to consider discounts) and data entry.
-	 *
 	 */
 	BigDecimal getFlatFeePricePerUnit(
 			final I_C_Flatrate_Term flatrateTerm,
@@ -1267,10 +1266,14 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setStartDate(firstDayOfNewTerm);
 		nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
 
-		if (currentTerm.getC_OrderLine_Term_ID() > 0)
+		final OrderAndLineId orderAndLineTermId = OrderAndLineId.ofRepoIdsOrNull(currentTerm.getC_Order_Term_ID(), currentTerm.getC_OrderLine_Term_ID());
+
+		if (orderAndLineTermId != null)
 		{
-			nextTerm.setC_OrderLine_Term(currentTerm.getC_OrderLine_Term());
+			nextTerm.setC_OrderLine_Term_ID(orderAndLineTermId.getOrderLineRepoId());
+			nextTerm.setC_Order_Term_ID(orderAndLineTermId.getOrderRepoId());
 		}
+		
 		updateEndDate(nextTransition, nextTerm);
 		updateNoticeDate(nextTransition, nextTerm);
 
@@ -1444,7 +1447,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Update NoticeDate of the given term. Uses the given transition and the term's EndDate.
-	 *
 	 */
 	private void updateNoticeDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
@@ -1583,6 +1585,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_BPartner bPartner = request.getBPartner();
 		final I_C_Flatrate_Conditions conditions = request.getConditions();
 		final Timestamp startDate = request.getStartDate();
+		final Timestamp endDate = request.getEndDate();
 		final I_AD_User userInCharge = request.getUserInCharge();
 		final ProductAndCategoryId productAndCategoryId = request.getProductAndCategoryId();
 
@@ -1629,7 +1632,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (dontCreateTerm)
 		{
-			throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason);
+			throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason).markAsUserValidationError();
 		}
 
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
@@ -1638,7 +1641,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
-		newTerm.setEndDate(startDate); // will be updated by BL
+		newTerm.setEndDate(startDate); // will be updated later
 		newTerm.setDropShip_BPartner(bPartner);
 
 		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
@@ -1666,6 +1669,19 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			complete(newTerm);
 		}
+
+		// dev note: these steps must be done after completion
+		if (productAndCategoryId != null)
+		{
+			newTerm.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
+		}
+
+		if (endDate != null)
+		{
+			newTerm.setEndDate(endDate);
+		}
+
+		InterfaceWrapperHelper.save(newTerm);
 
 		return newTerm;
 	}
@@ -1750,7 +1766,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Check if 2 flatrate terms overlap in product or product category
-	 *
 	 */
 	private boolean productsOverlap(final I_C_Flatrate_Term newTerm, final I_C_Flatrate_Term term)
 	{
@@ -1872,7 +1887,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Check if the startDate and endDate of 2 terms overlap.
-	 *
 	 */
 	private boolean periodsOverlap(@NonNull final I_C_Flatrate_Term term1, @NonNull final I_C_Flatrate_Term term2)
 	{

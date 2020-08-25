@@ -22,24 +22,26 @@
 
 package de.metas.pricing.interceptor;
 
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.LocalDate;
+
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 @Callout(I_M_PriceList_Version.class)
 @Interceptor(I_M_PriceList_Version.class)
@@ -49,6 +51,7 @@ public class M_PriceList_Version
 	@Init
 	public void registerCallouts()
 	{
+		CopyRecordFactory.enableForTableName(I_M_PriceList_Version.Table_Name);
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 

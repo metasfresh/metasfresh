@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,6 +39,9 @@ public class PhonecallSchemaVersionLine
 {
 	@Nullable
 	PhonecallSchemaVersionLineId id;
+
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
 	PhonecallSchemaVersionId versionId;

@@ -11,6 +11,7 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.collections.PagedIterator.Page;
@@ -77,7 +78,7 @@ public interface HUEditorViewRepository
 
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
-	String buildSqlWhereClause(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
+	SqlViewRowsWhereClause buildSqlWhereClause(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
 	SqlViewRowIdsConverter getRowIdsConverter();
 

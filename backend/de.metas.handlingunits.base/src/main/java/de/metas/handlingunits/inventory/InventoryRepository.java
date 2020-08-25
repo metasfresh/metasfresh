@@ -1,10 +1,41 @@
 
 package de.metas.handlingunits.inventory;
 
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -24,6 +55,7 @@ import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -36,32 +68,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -88,13 +94,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class InventoryRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL convBL = Services.get(IUOMConversionBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IHUStorageFactory huStorageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
 	{
@@ -102,7 +111,7 @@ public class InventoryRepository
 	}
 
 	@Deprecated
-	final I_M_InventoryLine getInventoryLineRecordFor(@NonNull final InventoryLine inventoryLine)
+	public final I_M_InventoryLine getInventoryLineRecordFor(@NonNull final InventoryLine inventoryLine)
 	{
 		return getInventoryLineRecordById(inventoryLine.getId());
 	}
@@ -126,7 +135,7 @@ public class InventoryRepository
 
 	public Inventory getById(@NonNull final InventoryId inventoryId)
 	{
-		final I_M_Inventory inventoryRecord = Services.get(IInventoryDAO.class).getById(inventoryId);
+		final I_M_Inventory inventoryRecord = getRecordById(inventoryId);
 		return toInventory(inventoryRecord);
 	}
 
@@ -145,6 +154,9 @@ public class InventoryRepository
 			throw new AdempiereException("Failed extracting DocBaseType and DocSubType from " + inventoryRecord);
 		}
 
+		final OrgId orgId = OrgId.ofRepoId(inventoryRecord.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
 		final Collection<I_M_InventoryLine> inventoryLineRecords = retrieveLineRecords(inventoryId);
 		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(r -> extractInventoryLineId(r)).collect(ImmutableSet.toImmutableSet());
 
@@ -157,12 +169,18 @@ public class InventoryRepository
 
 		return Inventory.builder()
 				.id(inventoryId)
+				.orgId(OrgId.ofRepoId(inventoryRecord.getAD_Org_ID()))
 				.docBaseAndSubType(docBaseAndSubType)
+				.movementDate(TimeUtil.asZonedDateTime(inventoryRecord.getMovementDate(), timeZone))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(inventoryRecord.getM_Warehouse_ID()))
+				.description(inventoryRecord.getDescription())
+				.activityId(ActivityId.ofRepoIdOrNull(inventoryRecord.getC_Activity_ID()))
+				.docStatus(DocStatus.ofCode(inventoryRecord.getDocStatus()))
 				.lines(inventoryLines)
 				.build();
 	}
 
-	public static DocBaseAndSubType extractDocBaseAndSubTypeOrNull(@Nullable final I_M_Inventory inventoryRecord)
+	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(@Nullable final I_M_Inventory inventoryRecord)
 	{
 		if (inventoryRecord == null)
 		{
@@ -175,7 +193,7 @@ public class InventoryRepository
 			return null; // nothing to extract
 		}
 
-		return Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(docTypeId);
+		return docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 	}
 
 	public InventoryLine toInventoryLine(@NonNull final I_M_InventoryLine inventoryLineRecord)
@@ -219,6 +237,8 @@ public class InventoryRepository
 
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 		lineBuilder.huAggregationType(huAggregationType);
+
+		lineBuilder.counted(inventoryLineRecord.isCounted());
 
 		if (HUAggregationType.SINGLE_HU.equals(huAggregationType))
 		{
@@ -270,7 +290,7 @@ public class InventoryRepository
 
 			if (inventoryLineRecord.getM_HU_ID() > 0)
 			{
-				//refresh bookedQty from HU
+				// refresh bookedQty from HU
 				final ProductId productId = ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID());
 				final HuId huId = HuId.ofRepoId(inventoryLineRecord.getM_HU_ID());
 				final UomId uomId = UomId.ofRepoId(uom.getC_UOM_ID());
@@ -318,7 +338,7 @@ public class InventoryRepository
 			final Quantity qtyBook;
 			if (inventoryLineHURecord.getM_HU_ID() > 0)
 			{
-				//refresh bookedQty from HU
+				// refresh bookedQty from HU
 				final ProductId productId = uomConversionCtx.getProductId();
 				final HuId huId = HuId.ofRepoId(inventoryLineHURecord.getM_HU_ID());
 
@@ -345,12 +365,7 @@ public class InventoryRepository
 				.build();
 	}
 
-	public void save(@NonNull final Inventory inventory)
-	{
-		saveInventoryLines(inventory);
-	}
-
-	void saveInventoryLines(@NonNull final Inventory inventory)
+	public void saveInventoryLines(@NonNull final Inventory inventory)
 	{
 		final InventoryId inventoryId = inventory.getId();
 		saveInventoryLines(inventory.getLines(), inventoryId);
@@ -470,6 +485,7 @@ public class InventoryRepository
 		lineRecord.setQtyBook(qtyBookBD);
 		lineRecord.setQtyCount(qtyCountBD);
 		lineRecord.setC_UOM_ID(uomId.getRepoId());
+		lineRecord.setIsCounted(from.isCounted());
 	}
 
 	public void saveInventoryLineHURecords(@NonNull final InventoryLine inventoryLine)
@@ -518,7 +534,7 @@ public class InventoryRepository
 
 		final List<IHUProductStorage> huProductStorages = huStorageFactory.getHUProductStorages(ImmutableList.of(hu), productId);
 
-		if ( !huProductStorages.isEmpty() )
+		if (!huProductStorages.isEmpty())
 		{
 			final IHUProductStorage huStorage = huProductStorages.get(0);
 
@@ -600,8 +616,7 @@ public class InventoryRepository
 			return ImmutableListMultimap.of();
 		}
 
-		return Services
-				.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_InventoryLine_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, inventoryLineIds)
@@ -623,7 +638,7 @@ public class InventoryRepository
 
 	private List<I_M_InventoryLine> retrieveLineRecords(@NonNull final InventoryId inventoryId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)

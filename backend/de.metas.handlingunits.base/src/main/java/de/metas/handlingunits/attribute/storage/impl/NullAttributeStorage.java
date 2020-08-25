@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -48,6 +49,7 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.product.ProductId;
+import de.metas.uom.UOMType;
 import lombok.NonNull;
 
 /**
@@ -127,9 +129,9 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public IAttributeValue getAttributeValue(final String attributeKey)
+	public IAttributeValue getAttributeValue(final AttributeCode attributeCode)
 	{
-		throw new AttributeNotFoundException(attributeKey, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	@Override
@@ -139,7 +141,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public boolean hasAttribute(final String attributeKey)
+	public boolean hasAttribute(final AttributeCode attributeCode)
 	{
 		return false;
 	}
@@ -170,9 +172,9 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public I_M_Attribute getAttributeByValueKeyOrNull(final String attributeValueKey)
+	public I_M_Attribute getAttributeByValueKeyOrNull(final AttributeCode attributeCode)
 	{
-		// throw new AttributeNotFoundException(attributeValueKey, this);
+		// throw new AttributeNotFoundException(attributeCode, this);
 		return null;
 	}
 
@@ -207,15 +209,15 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public void setValueNoPropagate(final I_M_Attribute attribute, final Object value)
+	public void setValueNoPropagate(final AttributeCode attributeCode, final Object value)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	@Override
-	public void setValue(final String attributeKey, final Object value)
+	public void setValue(final AttributeCode attributeCode, final Object value)
 	{
-		throw new AttributeNotFoundException(attributeKey, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	@Override
@@ -234,45 +236,45 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public Object getValue(final String attributeKey)
+	public Object getValue(final AttributeCode attributeCode)
 	{
-		throw new AttributeNotFoundException(attributeKey, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public String getValueAsString(@NonNull final String attributeKey)
+	public String getValueAsString(@NonNull final AttributeCode attributeCode)
 	{
-		throw new AttributeNotFoundException(attributeKey, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public BigDecimal getValueAsBigDecimal(final String attributeKey)
+	public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
 	{
-		throw new AttributeNotFoundException(attributeKey, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public int getValueAsInt(final String attributeKey)
+	public int getValueAsInt(final AttributeCode attributeCode)
 	{
-		throw new AttributeNotFoundException(attributeKey, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public Date getValueAsDate(final String attributeKey)
+	public Date getValueAsDate(final AttributeCode attributeCode)
 	{
-		throw new AttributeNotFoundException(attributeKey, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	/**
@@ -297,9 +299,9 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public BigDecimal getValueInitialAsBigDecimal(final I_M_Attribute attribute)
+	public BigDecimal getValueInitialAsBigDecimal(final AttributeCode attributeCode)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
 	/**
@@ -377,9 +379,9 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public String getQtyUOMTypeOrNull()
+	public UOMType getQtyUOMTypeOrNull()
 	{
-		// no UOM available
+		// no UOMType available
 		return null;
 	}
 

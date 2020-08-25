@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.5000000000000024"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="intercheesdev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -58,7 +58,7 @@
 		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
 	</field>
 	<detail>
-		<band height="504">
+		<band height="494">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement mode="Transparent" x="16" y="30" width="141" height="14" uuid="315260ea-080f-45dc-a861-fca520a6a003">
@@ -125,11 +125,11 @@
 			</textField>
 		</band>
 	</detail>
-	<lastPageFooter>
+	<pageFooter>
 		<band height="319">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="12" y="77" width="141" height="10" uuid="f42c9a88-fb20-46fa-9eaa-28ca741e7975">
+				<reportElement mode="Transparent" x="12" y="77" width="141" height="10" uuid="b7d2b301-3057-45c9-b2f8-1bf97ee94ac3">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
@@ -139,7 +139,7 @@
 				<textFieldExpression><![CDATA[$F{cr_iban}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="193" y="88" width="127" height="127" uuid="e39b7440-397c-4342-a072-eebb899a3d06">
+				<reportElement x="193" y="88" width="127" height="127" uuid="2491ecb1-7b4b-4cd7-9874-907a022a5f50">
 					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
 				</reportElement>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" margin="0" errorCorrectionLevel="M">
@@ -147,7 +147,7 @@
 				</jr:QRCode>
 			</componentElement>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="12" y="87" width="141" height="10" uuid="4c02d070-c08a-4e50-a8b7-a8e5eef23f2a">
+				<reportElement mode="Transparent" x="12" y="87" width="141" height="10" uuid="b58459d8-4abc-43b9-8dad-1c0d951258b5">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
@@ -157,7 +157,7 @@
 				<textFieldExpression><![CDATA[$F{cr_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="12" y="142" width="141" height="10" uuid="8a9b35ac-ead8-409c-ad9f-65b52a787df5">
+				<reportElement positionType="Float" mode="Transparent" x="12" y="142" width="141" height="10" uuid="c03e81ad-082f-4ede-885a-08ab28766824">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -166,7 +166,7 @@
 				<textFieldExpression><![CDATA[$R{QR_PayableBy}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="12" y="153" width="141" height="10" uuid="72fc41bb-566c-45f4-96ce-eb8ccd6852e1">
+				<reportElement positionType="Float" mode="Transparent" x="12" y="153" width="141" height="10" uuid="480d81e7-3b65-4794-9827-aa54b4abaa41">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -175,21 +175,21 @@
 				<textFieldExpression><![CDATA[$F{dr_address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="12" y="49" width="141" height="18" uuid="5dc6c39a-85e9-4711-acd8-c45e66d1d625"/>
+				<reportElement mode="Transparent" x="12" y="49" width="141" height="18" uuid="1670afe4-fead-4382-94cd-ea343b14d009"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QR_ReceiptPart}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Transparent" x="192" y="52" width="141" height="18" uuid="259123aa-0da0-49a2-9986-3f7802504b98"/>
+				<reportElement mode="Transparent" x="192" y="52" width="141" height="18" uuid="5c9aed36-5b35-46ac-b359-04a0570de230"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QR_PaymentPart}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="174" y="33" width="1" height="285" uuid="277b698b-adfc-47db-86a1-5abea06b3364">
+				<reportElement x="174" y="33" width="1" height="285" uuid="6d017155-a399-4f1f-9d49-6feab0ea73e5">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<graphicElement>
@@ -197,7 +197,7 @@
 				</graphicElement>
 			</line>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="12" y="69" width="141" height="10" uuid="f62806ee-d59c-4fff-b43c-8cf31f881082">
+				<reportElement mode="Transparent" x="12" y="69" width="141" height="10" uuid="baebe474-0f56-4616-8930-5a753b1f1802">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -206,7 +206,7 @@
 				<textFieldExpression><![CDATA[$R{QR_PayableTo}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="334" y="52" width="141" height="12" uuid="b5566a6c-3002-459d-8c91-3ee93b934f95">
+				<reportElement mode="Transparent" x="334" y="52" width="236" height="12" uuid="05e25a61-e6e5-4d73-b81c-c09867a16ec3">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -215,7 +215,7 @@
 				<textFieldExpression><![CDATA[$R{QR_PayableTo}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="334" y="62" width="141" height="12" uuid="7d606d66-7fa9-4bd4-8e98-c49fc9fdc05f">
+				<reportElement mode="Transparent" x="334" y="62" width="236" height="12" uuid="a0621c6d-5b06-4adc-b795-5acb07a81645">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -225,7 +225,7 @@
 				<textFieldExpression><![CDATA[($F{cr_qr_iban}!=null && !$F{cr_qr_iban}.isEmpty()) ? $F{cr_qr_iban} : $F{cr_iban}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="334" y="73" width="141" height="12" uuid="a7e61e63-c24a-4e31-ac1e-0fa97d99653a">
+				<reportElement mode="Transparent" x="334" y="73" width="236" height="12" uuid="7ff81e78-1569-4d87-885d-343fd79b8c68">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -235,7 +235,7 @@
 				<textFieldExpression><![CDATA[$F{cr_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="335" y="112" width="199" height="12" uuid="43965a8b-abaa-420e-acec-2884bb0b625b">
+				<reportElement positionType="Float" mode="Transparent" x="335" y="112" width="235" height="12" uuid="a0586c94-afbe-44c3-bb57-669fa30023ec">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -245,7 +245,7 @@
 				<textFieldExpression><![CDATA[$F{referenceno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="335" y="129" width="141" height="11" uuid="e78b14a7-fb4c-4f32-afe1-4d7cecffd053">
+				<reportElement positionType="Float" mode="Transparent" x="335" y="129" width="236" height="11" uuid="9615c10e-cf61-444c-8ab4-6c1198f0c5a3">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -255,7 +255,7 @@
 				<textFieldExpression><![CDATA[$R{QR_PayableBy}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="335" y="139" width="141" height="12" uuid="2b776898-9286-4bb4-835b-611c61296787">
+				<reportElement positionType="Float" mode="Transparent" x="335" y="139" width="236" height="12" uuid="5644c4a9-5b3a-4fac-b0db-af45c559996b">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -265,7 +265,7 @@
 				<textFieldExpression><![CDATA[$F{dr_address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="334" y="84" width="141" height="12" uuid="116421c3-8b34-4d58-ac86-2d9469581886">
+				<reportElement mode="Transparent" x="334" y="84" width="236" height="12" uuid="0f3401cc-5694-47ee-90e2-d3bf9707c0d0">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -275,7 +275,7 @@
 				<textFieldExpression><![CDATA[$F{cr_addres}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="335" y="101" width="141" height="13" uuid="062045c4-5180-4c4d-a69e-d1f16f1889fe">
+				<reportElement positionType="Float" mode="Transparent" x="335" y="101" width="236" height="13" uuid="f2fb7486-111e-4c49-bcae-a2c4e751b889">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[$F{referenceno} != null && !$F{referenceno}.isEmpty()]]></printWhenExpression>
 				</reportElement>
@@ -286,7 +286,7 @@
 				<textFieldExpression><![CDATA[$R{QR_Reference}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="12" y="97" width="141" height="10" uuid="a2bc3dfd-8ef7-4352-9083-2a9c8f2da7e9">
+				<reportElement mode="Transparent" x="12" y="97" width="141" height="10" uuid="75dc8c78-c697-45c4-bf98-0765338cef3f">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
@@ -296,7 +296,7 @@
 				<textFieldExpression><![CDATA[$F{cr_addres}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="12" y="114" width="141" height="10" uuid="8de69408-1d19-4ce0-bddc-6885bcea4ffd">
+				<reportElement positionType="Float" mode="Transparent" x="12" y="114" width="141" height="10" uuid="2c6e58b1-2ea8-449c-b5f5-ea9341ed569a">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -305,7 +305,7 @@
 				<textFieldExpression><![CDATA[$R{QR_Reference}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" mode="Transparent" x="12" y="124" width="162" height="10" uuid="e56a51f8-5a02-400d-83f9-dde4e3a9ea50">
+				<reportElement positionType="Float" mode="Transparent" x="12" y="124" width="162" height="10" uuid="3aa3c9b5-9a37-48e0-bad6-4067940f2353">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -314,7 +314,7 @@
 				<textFieldExpression><![CDATA[$F{referenceno}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="RealSize" hAlign="Right">
-				<reportElement key="image-1" x="250" y="141" width="19" height="19" uuid="125a12ba-b518-4e19-b362-97524c9a8495">
+				<reportElement key="image-1" x="250" y="141" width="19" height="19" uuid="37bad3a8-0cde-410d-bc14-172126acbe87">
 					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.width" value="mm"/>
 				</reportElement>
@@ -327,7 +327,7 @@
 				<imageExpression><![CDATA["de/metas/generics/CH-cross.png"]]></imageExpression>
 			</image>
 			<line>
-				<reportElement x="-1" y="32" width="593" height="1" uuid="f0c096f4-dc22-4698-88d7-b3b8ad3b912f">
+				<reportElement x="-1" y="32" width="593" height="1" uuid="34f057d3-53eb-4c81-a743-30f9aa899736">
 					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.width" value="mm"/>
 				</reportElement>
@@ -336,7 +336,7 @@
 				</graphicElement>
 			</line>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="12" y="231" width="60" height="10" uuid="9fc46d54-8fd8-42ae-8e96-d1119bd35242">
+				<reportElement mode="Transparent" x="12" y="231" width="60" height="10" uuid="0e85df36-5e5e-4cbe-8df2-34a30a67c556">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -345,7 +345,7 @@
 				<textFieldExpression><![CDATA[$R{QR_Currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="72" y="231" width="80" height="10" uuid="370f91aa-ad7d-41ca-bf05-bbd87751bab4">
+				<reportElement mode="Transparent" x="72" y="231" width="80" height="10" uuid="1e2e4090-5228-4d34-ad73-674d909dc822">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -354,28 +354,28 @@
 				<textFieldExpression><![CDATA[$R{QR_Amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="12" y="242" width="60" height="14" uuid="89273fb4-5cf5-41d7-bcac-8f267bd52e5a"/>
+				<reportElement mode="Transparent" x="12" y="242" width="60" height="14" uuid="707c834e-211f-4347-9a08-0685daecbb59"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="72" y="242" width="80" height="14" uuid="687c6dbd-618a-405e-b114-dea2679723ef"/>
+				<reportElement mode="Transparent" x="72" y="242" width="80" height="14" uuid="4f58cf8d-7382-4cb9-83bd-dbedbdd499aa"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="42" y="271" width="122" height="14" uuid="eed37fa5-530b-434a-8ad6-e53715e9a31e"/>
+				<reportElement mode="Transparent" x="42" y="271" width="122" height="14" uuid="4f97ad10-770e-4204-9d86-93ea3e7c84a3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QR_Acceptance_point}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="193" y="244" width="60" height="12" uuid="ca2a2899-7141-41b2-8429-2a805b16cc4d">
+				<reportElement mode="Transparent" x="193" y="244" width="60" height="12" uuid="0a9dd076-1f73-4c07-b6f0-e03fbe532f5e">
 					<property name="com.jaspersoft.studio.unit.y" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -385,7 +385,7 @@
 				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="193" y="231" width="60" height="12" uuid="76cd0ded-94bc-4991-aa0f-bbe783483114">
+				<reportElement mode="Transparent" x="193" y="231" width="60" height="12" uuid="46911464-ce1e-4715-9e3f-453b92fa1742">
 					<property name="com.jaspersoft.studio.unit.y" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -395,7 +395,7 @@
 				<textFieldExpression><![CDATA[$R{QR_Currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="253" y="231" width="80" height="12" uuid="a1288898-7853-4e47-a585-cab8cf3f46ff">
+				<reportElement mode="Transparent" x="253" y="231" width="80" height="12" uuid="4227a2e9-827f-4d1c-ab9e-4b4fde64e37a">
 					<property name="com.jaspersoft.studio.unit.y" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -405,7 +405,7 @@
 				<textFieldExpression><![CDATA[$R{QR_Amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="253" y="244" width="80" height="12" uuid="7bc43309-93ee-468c-9b68-3038d18eb144">
+				<reportElement mode="Transparent" x="253" y="244" width="80" height="12" uuid="42a497f6-9344-41cd-bee3-3576d2f02dd1">
 					<property name="com.jaspersoft.studio.unit.y" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -415,7 +415,7 @@
 				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="16" y="0" width="154" height="14" uuid="530a77e1-a05d-48ad-acc6-673cbf82cc80">
+				<reportElement mode="Transparent" x="16" y="0" width="154" height="14" uuid="90aa7cf3-cd98-4085-9789-990e210ab652">
 					<printWhenExpression><![CDATA[$F{codeline}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
@@ -424,7 +424,7 @@
 				<textFieldExpression><![CDATA[$R{ESRLine}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Transparent" x="157" y="0" width="413" height="14" uuid="9fb31ea6-181f-4983-a7e6-8db507fd8a54">
+				<reportElement mode="Transparent" x="157" y="0" width="413" height="14" uuid="e6ab694d-84ac-478f-956d-1941690512cd">
 					<printWhenExpression><![CDATA[$F{codeline}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -433,5 +433,5 @@
 				<textFieldExpression><![CDATA[$F{codeline}]]></textFieldExpression>
 			</textField>
 		</band>
-	</lastPageFooter>
+	</pageFooter>
 </jasperReport>

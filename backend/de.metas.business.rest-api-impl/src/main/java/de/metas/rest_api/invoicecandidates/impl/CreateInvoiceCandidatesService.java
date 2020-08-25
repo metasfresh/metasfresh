@@ -75,7 +75,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 /*

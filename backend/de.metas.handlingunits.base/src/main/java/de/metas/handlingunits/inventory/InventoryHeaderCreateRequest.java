@@ -22,16 +22,18 @@
 
 package de.metas.handlingunits.inventory;
 
+import java.time.ZonedDateTime;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.warehouse.WarehouseId;
+
 import de.metas.document.DocTypeId;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 
 @Value
 @Builder

@@ -22,32 +22,8 @@
 
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.util.GuavaCollectors;
-import de.metas.organization.ClientAndOrgId;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -64,6 +40,9 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -79,14 +58,37 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Transaction;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -181,7 +183,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		//
 		// Try to destroy given HU (or some of it's children)
-		final IMutable<Boolean> destroyed = new Mutable<>(false);
+		final Mutable<Boolean> destroyed = new Mutable<>(false);
 		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContextInitial)
 				.run(huContext -> {
 					if (destroyIfEmptyStorage(huContext, huToDestroy))
@@ -476,7 +478,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final String parentItemType = getItemType(parentItem);
-		//noinspection RedundantIfStatement
+		// noinspection RedundantIfStatement
 		if (!X_M_HU_PI_Item.ITEMTYPE_Material.equals(parentItemType))
 		{
 			return false;
@@ -756,10 +758,32 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Nullable
 	@Override
-	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item huItem)
+	public I_M_HU_PI_Item getPIItem(@NonNull final I_M_HU_Item huItem)
 	{
-		final int piItemId = huItem.getM_HU_PI_Item_ID();
-		return piItemId > 0 ? loadOutOfTrx(piItemId, I_M_HU_PI_Item.class) : null;
+		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
+		return piItemId != null
+				? Services.get(IHandlingUnitsDAO.class).getPackingInstructionItemById(piItemId)
+				: null;
+	}
+
+	@NonNull
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
+	{
+		final I_M_HU_PI_Item piItem = getPIItem(huItem);
+		if (piItem == null)
+		{
+			throw new AdempiereException("No PI Item defined for " + huItem);
+		}
+
+		return getIncludedPI(piItem);
+	}
+
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsDAO.getIncludedPI(piItem);
 	}
 
 	@Override
@@ -813,7 +837,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
 		}
 
-		return parentPIItem.getIncluded_HU_PI();
+		return getIncludedPI(parentPIItem);
 	}
 
 	@Override
@@ -880,5 +904,27 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				}).iterate(hu);
 
 		return vhus;
+	}
+
+	@Override
+	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
+	{
+		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+
+		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+
+		final ImmutableAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
+
+		return AttributesKeys
+				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
+				.orElse(AttributesKey.NONE);
+	}
+
+	public boolean isEmptyStorage(@NonNull final I_M_HU hu)
+	{
+		return getStorageFactory()
+				.streamHUProductStorages(hu)
+				.allMatch(IProductStorage::isEmpty);
 	}
 }

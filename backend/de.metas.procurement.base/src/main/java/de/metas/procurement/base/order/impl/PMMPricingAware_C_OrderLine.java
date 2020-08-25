@@ -26,7 +26,7 @@ import de.metas.product.IProductDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.Setter;
 
