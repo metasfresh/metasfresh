@@ -1,7 +1,9 @@
 package de.metas.rest_api.invoice.impl;
 
 import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.Check.isNotBlank;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
@@ -11,6 +13,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -83,9 +87,9 @@ public class SalesInvoicePaymentStatusRepository
 
 		final IQueryBuilder<I_C_Invoice> queryBuilder = createCommonQueryBuilder(orgId);
 
-		if (!isEmpty(query.getInvoiceDocumentNo(), true))
+		if (isNotBlank(query.getInvoiceDocumentNoPrefix()))
 		{
-			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMN_DocumentNo, query.getInvoiceDocumentNo());
+			queryBuilder.addCompareFilter(I_C_Invoice.COLUMN_DocumentNo, Operator.STRING_LIKE, query.getInvoiceDocumentNoPrefix() + "%");
 		}
 		if (query.getDateInvoicedFrom() != null)
 		{
@@ -148,6 +152,7 @@ public class SalesInvoicePaymentStatusRepository
 
 		final ImmutableList.Builder<SalesInvoicePaymentStatus> result = ImmutableList.builder();
 
+		// TODO get distinct C_Invoice_ID and load all payments at once
 		for (final I_C_Invoice invoiceRecord : invoiceRecords)
 		{
 			if (invoiceBL.isCreditMemo(invoiceRecord))
@@ -161,12 +166,15 @@ public class SalesInvoicePaymentStatusRepository
 
 			final SalesInvoicePaymentStatusBuilder statusBuilder = SalesInvoicePaymentStatus
 					.builder()
+					.invoiceId(MetasfreshId.of(invoiceRecord.getC_Invoice_ID()))
 					.invoiceDocumentNumber(invoiceRecord.getDocumentNo())
 					.openAmt(openAmt)
+					.isPaid(openAmt.signum()<=0)
+					.docStatus(invoiceRecord.getDocStatus())
 					.currency(extractCurrencyCode(invoiceRecord).toThreeLetterCode());
-			final List<I_C_Payment> paymentrecords = allocationDAO.retrieveInvoicePayments(invoiceRecord);
+			final List<I_C_Payment> paymentRecords = allocationDAO.retrieveInvoicePayments(invoiceRecord);
 
-			for (final I_C_Payment paymentRecord : paymentrecords)
+			for (final I_C_Payment paymentRecord : paymentRecords)
 			{
 				statusBuilder.payment(SalesInvoicePayment
 						.builder()
@@ -202,27 +210,26 @@ public class SalesInvoicePaymentStatusRepository
 	public static class PaymentStatusQuery
 	{
 		String orgValue;
-		String invoiceDocumentNo;
+		String invoiceDocumentNoPrefix;
 		LocalDate dateInvoicedFrom;
 		LocalDate dateInvoicedTo;
 
 		@Builder
 		private PaymentStatusQuery(
 				@NonNull final String orgValue,
-				@Nullable final String invoiceDocumentNo,
+				@Nullable final String invoiceDocumentNoPrefix,
 				@Nullable final LocalDate dateInvoicedFrom,
 				@Nullable final LocalDate dateInvoicedTo)
 		{
 			this.orgValue = assumeNotEmpty(orgValue, "Parameter 'orgValue' may not be empty");
 
-			this.invoiceDocumentNo = invoiceDocumentNo;
+			this.invoiceDocumentNoPrefix = invoiceDocumentNoPrefix;
 			this.dateInvoicedFrom = dateInvoicedFrom;
 			this.dateInvoicedTo = dateInvoicedTo;
-
-			if (isEmpty(invoiceDocumentNo, true))
+			if (isBlank(invoiceDocumentNoPrefix))
 			{
-				Check.assumeNotNull(dateInvoicedFrom, "If parameter 'invoiceDocumentNo' is empty, then both dateInvoicedFrom and dateInvoicedTo need to be set, but dateInvoicedFrom is null");
-				Check.assumeNotNull(dateInvoicedTo, "If parameter 'invoiceDocumentNo' is empty, then both dateInvoicedFrom and dateInvoicedTo need to be set, but dateInvoicedTo is null");
+				Check.assumeNotNull(dateInvoicedFrom, "If parameter 'invoiceDocumentNoPrefix' is empty, then both dateInvoicedFrom and dateInvoicedTo need to be set, but dateInvoicedFrom is null");
+				Check.assumeNotNull(dateInvoicedTo, "If parameter 'invoiceDocumentNoPrefix' is empty, then both dateInvoicedFrom and dateInvoicedTo need to be set, but dateInvoicedTo is null");
 			}
 		}
 	}
