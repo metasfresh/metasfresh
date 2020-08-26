@@ -127,7 +127,7 @@ public class ProcessRestController
 
 	private MDCCloseable putMDC(@NonNull final ProcessId processId)
 	{
-		return ProcessMDC.putAdProcessId(processId.toAdProcessId());
+		return ProcessMDC.putAdProcessId(processId.toAdProcessIdOrNull());
 	}
 
 	private JSONOptions newJsonOptions()
