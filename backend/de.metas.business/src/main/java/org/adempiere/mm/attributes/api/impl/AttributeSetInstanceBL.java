@@ -1,17 +1,12 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -33,14 +28,16 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.function.Predicate;
 
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
@@ -404,5 +401,29 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 					attributeSet.getValue(attributeRecord));
 		}
 		asiAware.setM_AttributeSetInstance_ID(asiId.getRepoId());
+	}
+
+
+	@NonNull
+	public AttributeSetInstanceId addAttributes(@NonNull final AddAttributesRequest request)
+	{
+		final AttributeSetInstanceId asiId;
+
+		if (request.getExistingAttributeSetIdOrNone().isNone())
+		{
+			final I_M_AttributeSetInstance asiNew = createASI(request.getProductId());
+			asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
+		}
+		else
+		{
+			final I_M_AttributeSetInstance asiCopy = ASICopy.newInstance(request.getExistingAttributeSetIdOrNone()).copy();
+			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
+		}
+
+		request.getAttributeInstanceBasicInfos().forEach(attributeValue -> {
+			setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue() );
+		});
+
+		return asiId;
 	}
 }
