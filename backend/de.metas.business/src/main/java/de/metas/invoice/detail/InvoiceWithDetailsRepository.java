@@ -22,9 +22,12 @@
 
 package de.metas.invoice.detail;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -32,14 +35,15 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.xmlbeans.impl.xb.xmlconfig.Extensionconfig;
 import org.compiere.model.I_C_Invoice_Detail;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class InvoiceWithDetailsRepository
@@ -47,6 +51,8 @@ public class InvoiceWithDetailsRepository
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IInvoiceLineDAO invoiceLineDAO = Services.get(IInvoiceLineDAO.class);
 
 	/**
 	 * Assumes that the given invoice and its lines exist. only saves the respective {@link org.compiere.model.I_C_Invoice_Detail} records are persisted
@@ -71,7 +77,7 @@ public class InvoiceWithDetailsRepository
 		}
 	}
 
-	private ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> retrieveDetailRecords(@NonNull final InvoiceId invoiceId)
+	public ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> retrieveDetailRecords(@NonNull final InvoiceId invoiceId)
 	{
 		final List<I_C_Invoice_Detail> detailRecords = queryBL
 				.createQueryBuilder(I_C_Invoice_Detail.class)
@@ -120,6 +126,72 @@ public class InvoiceWithDetailsRepository
 		recordToSave.setC_Invoice_ID(invoiceLineId.getInvoiceId().getRepoId());
 		recordToSave.setC_InvoiceLine_ID(invoiceLineId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(recordToSave);
+	}
+
+	public void saveReversalDetails(@NonNull final InvoiceId originalInvoiceId, @NonNull final InvoiceId reversalInvoiceId)
+	{
+		final List<I_C_Invoice_Detail> detailRecords = queryBL
+				.createQueryBuilder(I_C_Invoice_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, originalInvoiceId)
+				.create()
+				.list();
+
+		for (final I_C_Invoice_Detail detail : detailRecords)
+		{
+			if (detail.getC_InvoiceLine_ID() > 0)
+			{
+				detail.setC_InvoiceLine_ID(invoiceDAO
+						.retrieveReversalLine(invoiceLineDAO
+										.retrieveById(InvoiceLineId.ofRepoId(detail.getC_Invoice_ID(),
+												detail.getC_InvoiceLine_ID())),
+								reversalInvoiceId.getRepoId()).getC_InvoiceLine_ID());
+			}
+			detail.setC_Invoice_ID(reversalInvoiceId.getRepoId());
+		}
+
+		final ImmutableMap.Builder<StagingRecordKey, I_C_Invoice_Detail> invoiceId2Record = ImmutableMap.builder();
+
+		for (final I_C_Invoice_Detail detailRecord : detailRecords)
+		{
+			final StagingRecordKey key = StagingRecordKey.forRecordOrNull(detailRecord);
+			if (key == null)
+			{
+				continue;
+			}
+			invoiceId2Record.put(key, detailRecord);
+		}
+		final ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> reversedInvoiceDetailRecords = invoiceId2Record.build();
+
+		for (final I_C_Invoice_Detail detailItem : detailRecords)
+		{
+			if (!(detailItem.getC_InvoiceLine_ID() > 0))
+			{
+				createOrUpdateDetailItem(OrgId.ofRepoId(detailItem.getAD_Org_ID()),
+						InvoiceId.ofRepoId(detailItem.getC_Invoice_ID()),
+						InvoiceDetailItem
+								.builder()
+								.seqNo(detailItem.getSeqNo())
+								.label(detailItem.getLabel())
+								.description(detailItem.getDescription())
+								.date(detailItem.getDate() != null ? detailItem.getDate().toLocalDateTime().toLocalDate() : null)
+								.build(),
+						reversedInvoiceDetailRecords);
+			}
+			else
+			{
+				createOrUpdateDetailItem(OrgId.ofRepoId(detailItem.getAD_Org_ID()),
+						InvoiceLineId.ofRepoId(detailItem.getC_Invoice_ID(), detailItem.getC_InvoiceLine_ID()),
+						InvoiceDetailItem
+								.builder()
+								.seqNo(detailItem.getSeqNo())
+								.label(detailItem.getLabel())
+								.description(detailItem.getDescription())
+								.date(detailItem.getDate() != null ? detailItem.getDate().toLocalDateTime().toLocalDate() : null)
+								.build(),
+						reversedInvoiceDetailRecords);
+			}
+		}
 	}
 
 	@NonNull

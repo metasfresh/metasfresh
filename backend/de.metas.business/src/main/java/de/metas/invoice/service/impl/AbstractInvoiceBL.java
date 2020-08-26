@@ -42,6 +42,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.invoice.InvoiceLineId;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
