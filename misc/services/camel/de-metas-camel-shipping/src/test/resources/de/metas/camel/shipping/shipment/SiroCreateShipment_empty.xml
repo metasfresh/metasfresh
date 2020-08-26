@@ -6,7 +6,7 @@
              VERSION="ProAdvanced 18.0.1"/>
     <DATABASE DATEFORMAT="D.m.yyyy"
               LAYOUT="xml"
-              NAME="bodymed_aussendungen.fmp12"
+              NAME="test_aussendungen.fmp12"
               RECORDS="6"
               TIMEFORMAT="k:mm:ss "/>
     <METADATA>

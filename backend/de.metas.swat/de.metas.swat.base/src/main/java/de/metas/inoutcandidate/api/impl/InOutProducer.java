@@ -112,10 +112,7 @@ public class InOutProducer implements IInOutProducer
 	private final Set<Integer> _currentOrderIds = new HashSet<>();
 
 	/**
-	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, ReceiptMovementDateRule, Map)} with <code> ReceiptMovementDateRule.NONE && externalInfoByScheduleId = null</code>.
-	 *
-	 * @param result
-	 * @param complete
+	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, ReceiptMovementDateRule, Map)} with <code> ReceiptMovementDateRule.CURRENT_DATE && externalInfoByScheduleId = null</code>.
 	 */
 	public InOutProducer(final InOutGenerateResult result, final boolean complete)
 	{
