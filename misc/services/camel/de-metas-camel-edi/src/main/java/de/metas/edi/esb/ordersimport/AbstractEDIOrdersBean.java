@@ -104,15 +104,14 @@ public abstract class AbstractEDIOrdersBean
 			@NonNull final EDIConfigurationContext ctx,
 			@NonNull final List<OrderEDI> ediDocuments)
 	{
-		final List<Message> olCandMessages = new ArrayList<Message>();
+		final List<Message> olCandMessages = new ArrayList<>();
 		for (final OrderEDI ediDocument : ediDocuments)
 		{
-			final H000 h000 = ediDocument.getH000();
 			for (final OrderHeader orderHeader : ediDocument.getOrderHeaders())
 			{
 				for (final OrderLine orderLine : orderHeader.getOrderLines())
 				{
-					final Message olCandMessage = createOLCandMessage(ctx, h000, orderHeader, orderLine);
+					final Message olCandMessage = createOLCandMessage(ctx, orderHeader, orderLine);
 					olCandMessages.add(olCandMessage);
 				}
 			}
@@ -123,7 +122,6 @@ public abstract class AbstractEDIOrdersBean
 
 	private Message createOLCandMessage(
 			final EDIConfigurationContext ctx,
-			final H000 h000,
 			final OrderHeader orderHeader,
 			final OrderLine orderLine)
 	{
