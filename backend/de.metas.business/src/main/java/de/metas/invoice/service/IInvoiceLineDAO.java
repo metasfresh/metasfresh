@@ -28,5 +28,5 @@ import de.metas.util.ISingletonService;
 
 public interface IInvoiceLineDAO extends ISingletonService
 {
-	I_C_InvoiceLine retrieveById (InvoiceLineId invoiceLineId);
+	I_C_InvoiceLine retrieveById(InvoiceLineId invoiceLineId);
 }

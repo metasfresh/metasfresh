@@ -22,7 +22,6 @@
 
 package de.metas.invoice.detail;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -41,9 +40,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class InvoiceWithDetailsRepository
@@ -79,12 +76,7 @@ public class InvoiceWithDetailsRepository
 
 	public ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> retrieveDetailRecords(@NonNull final InvoiceId invoiceId)
 	{
-		final List<I_C_Invoice_Detail> detailRecords = queryBL
-				.createQueryBuilder(I_C_Invoice_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.create()
-				.list();
+		final List<I_C_Invoice_Detail> detailRecords = getInvoiceDetailsListForInvoiceId(invoiceId);
 
 		final ImmutableMap.Builder<StagingRecordKey, I_C_Invoice_Detail> invoiceId2Record = ImmutableMap.builder();
 
@@ -130,12 +122,7 @@ public class InvoiceWithDetailsRepository
 
 	public void saveReversalDetails(@NonNull final InvoiceId originalInvoiceId, @NonNull final InvoiceId reversalInvoiceId)
 	{
-		final List<I_C_Invoice_Detail> detailRecords = queryBL
-				.createQueryBuilder(I_C_Invoice_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, originalInvoiceId)
-				.create()
-				.list();
+		final List<I_C_Invoice_Detail> detailRecords = getInvoiceDetailsListForInvoiceId(originalInvoiceId);
 
 		for (final I_C_Invoice_Detail detail : detailRecords)
 		{
@@ -252,5 +239,15 @@ public class InvoiceWithDetailsRepository
 		{
 			return new StagingRecordKey(null, invoiceLineId, detailItem.getLabel());
 		}
+	}
+
+	private List<I_C_Invoice_Detail> getInvoiceDetailsListForInvoiceId(final InvoiceId invoiceId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Invoice_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.create()
+				.list();
 	}
 }
