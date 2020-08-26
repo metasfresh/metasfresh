@@ -20,5 +20,5 @@ public interface SiroShipmentConstants
 
 	String TRACKING_NUMBERS_SEPARATOR = " ";
 
-	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.mm.dd");
+	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.MM.dd", "dd.MM.yyyy");
 }
