@@ -34,13 +34,14 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.CREATE_RECEIPT_MF_URL;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.LOCAL_STORAGE_URL;
+import static de.metas.camel.shipping.receipt.SiroReceiptConstants.RECEIPT_XML_TO_JSON_PROCESSOR;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.SIRO_RECEIPTS_FTP_PATH;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
 
 public class ReceiptXmlToJsonRouteBuilder extends EndpointRouteBuilder
 {
-	private static final String MF_RECEIPT_FILEMAKER_XML_TO_JSON = "MF-FM-To-Json-Receipt";
+	static final String MF_RECEIPT_FILEMAKER_XML_TO_JSON = "MF-FM-To-Json-Receipt";
 
 	@Override public void configure() throws Exception
 	{
@@ -57,7 +58,7 @@ public class ReceiptXmlToJsonRouteBuilder extends EndpointRouteBuilder
 				.to(LOCAL_STORAGE_URL)
 				.streamCaching()
 				.unmarshal(jacksonXMLDataFormat)
-				.process(new ReceiptXmlToJsonProcessor())
+				.process(new ReceiptXmlToJsonProcessor()).id(RECEIPT_XML_TO_JSON_PROCESSOR)
 				.choice()
 					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
 						.log(LoggingLevel.INFO, "Nothing to do! no receipts were found in file:" + header(Exchange.FILE_NAME))

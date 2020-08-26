@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -118,15 +119,14 @@ public class InOutProducer implements IInOutProducer
 	 */
 	public InOutProducer(final InOutGenerateResult result, final boolean complete)
 	{
-		// Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByScheduleId = null;
-		this(result, complete, ReceiptMovementDateRule.NONE, null);
+		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null);
 	}
 
 	/**
 	 *
 	 * @param result
 	 * @param complete
-	 * @param movementDateRule if {@code NONE} (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}.
+	 * @param movementDateRule if {@code ReceiptMovementDateRule#CURRENT_DATE} (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}.
 	 *                         else if {@code ReceiptMovementDateRule#EXTERNAL_DATE_IF_AVAIL} then the MovementDate will be taken from {@code externalInfoByReceiptScheduleId} if available
 	 *                         else if {@code ReceiptMovementDateRule#ORDER_DATE_PROMISED} then the date will be the DatePromised value of the receipt schedule's C_Order.
      */
@@ -139,9 +139,7 @@ public class InOutProducer implements IInOutProducer
 		this.complete = complete;
 		this.movementDateRule = movementDateRule;
 
-		this.externalInfoByReceiptScheduleId = externalInfoByReceiptScheduleId != null
-				? externalInfoByReceiptScheduleId
-				: ImmutableMap.of();
+		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesce(externalInfoByReceiptScheduleId, ImmutableMap.of());
 	}
 
 	@Override
@@ -664,7 +662,7 @@ public class InOutProducer implements IInOutProducer
 			case EXTERNAL_DATE_IF_AVAIL:
 				movementDate = getExternalMovementDate(receiptSchedule, context);
 				break;
-			case NONE:
+			case CURRENT_DATE:
 				// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
 				movementDate = Env.getDate(context);
 				break;

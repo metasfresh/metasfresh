@@ -1,0 +1,28 @@
+{
+  "receiptList": [
+    {
+      "externalId": "123",
+      "receiptScheduleId": 1,
+      "productSearchKey": "productSearchKey",
+      "movementQuantity": 10,
+      "dateReceived":"2020-05-27T15:20:03.000Z",
+      "movementDate":"2020-05-27",
+      "attributes": [
+        {
+          "attributeName": "Article_Flavor",
+          "attributeCode": "Article_Flavor",
+          "valueStr": "article_flavor",
+          "valueNumber": null,
+          "valueDate": null
+        },
+        {
+          "attributeName": "Lot-Nummer",
+          "attributeCode": "Lot-Nummer",
+          "valueStr": "test-lot-number",
+          "valueNumber": null,
+          "valueDate": null
+        }
+      ]
+    }
+  ]
+}

@@ -58,6 +58,9 @@ public class XmlToJsonBaseProcessor
 		if (fmpxmlresult == null || fmpxmlresult.isEmpty() )
 		{
 			log.debug("exchange.body is empty! -> nothing to do!");
+
+			exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, 0);
+
 			return; //nothing to do
 		}
 
@@ -77,10 +80,10 @@ public class XmlToJsonBaseProcessor
 				.map(row -> buildRequestItemFunction.apply(row, name2Index))
 				.collect(Collectors.toList());
 
-		final R requestItem = buildRequestFunction.apply(requestItems);
+		final R request = buildRequestFunction.apply(requestItems);
 
 		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, requestItems.size());
-		exchange.getIn().setBody(requestItem);
+		exchange.getIn().setBody(request);
 	}
 
 	protected Optional<LocalDate> asLocalDate(

@@ -524,7 +524,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				.builder()
 				.ctx(ctx)
 				.receiptSchedules(receiptSchedules)
-				.movementDateRule(ReceiptMovementDateRule.NONE)
+				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.selectedHuIds(selectedHuIds)
 				.build();
 

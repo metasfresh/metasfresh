@@ -30,6 +30,7 @@ public interface SiroReceiptConstants
 {
 	String SIRO_RECEIPTS_FTP_PATH = "{{siro.ftp.retrieve.receipts.endpoint}}";
 	String CREATE_RECEIPT_MF_URL = "{{metasfresh.api.baseurl}}/receipt";
+	String RECEIPT_XML_TO_JSON_PROCESSOR = "receipt-xml-to-json-id";
 
 	String LOCAL_STORAGE_URL = "{{siro.receipts.local.storage}}";
 

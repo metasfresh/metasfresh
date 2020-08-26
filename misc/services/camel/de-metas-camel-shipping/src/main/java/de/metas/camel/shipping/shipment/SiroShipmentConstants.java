@@ -11,6 +11,7 @@ public interface SiroShipmentConstants
 	String LOCAL_STORAGE_URL = "{{siro.shipments.local.storage}}";
 	String AUTHORIZATION = "Authorization";
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
+	String SHIPMENT_XML_TO_JSON_PROCESSOR = "shipment-xml-to-json-id";
 
 	String SIRO_SHIPPER_SEARCH_KEY = "Siro";
 	String DEFAULT_DELIVERY_RULE_FORCE = "F";

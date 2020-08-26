@@ -249,7 +249,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 
 		final CreateReceiptsParameters parameters = CreateReceiptsParameters.builder()
 				.commitEachReceiptIndividually(false)
-				.movementDateRule(ReceiptMovementDateRule.NONE)
+				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.ctx(ctx)
 				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.printReceiptLabels(true)

@@ -26,5 +26,5 @@ public enum ReceiptMovementDateRule
 {
 	ORDER_DATE_PROMISED,
 	EXTERNAL_DATE_IF_AVAIL,
-	NONE
+	CURRENT_DATE
 }
