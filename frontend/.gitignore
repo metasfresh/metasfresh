@@ -12,7 +12,7 @@ dist
 docs
 
 # Ingore output from jest reporter
-frontend/junit.xml
+junit.xml
 
 # Dynamic storybook configuration file
 .storybook/foundStories.js
