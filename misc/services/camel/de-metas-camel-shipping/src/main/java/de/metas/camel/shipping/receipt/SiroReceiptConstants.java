@@ -36,5 +36,5 @@ public interface SiroReceiptConstants
 
 	Set<String> DATE_RECEIVED_PATTERNS = ImmutableSet.of("dd.MM.yyyy HH.mm.ss");
 	Set<String> MOVEMENT_DATE_PATTERNS = ImmutableSet.of("dd.MM.yyyy");
-	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.mm.dd");
+	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.MM.dd", "dd.MM.yyyy");
 }
