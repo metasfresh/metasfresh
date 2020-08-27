@@ -1,17 +1,57 @@
+import { produce, original } from 'immer';
 import * as types from '../constants/FilterTypes';
 
-export const initialState = {
+export const initialFilterState = {
   clearAll: false,
+  activeFilter: null,
+  activeFiltersCaptions: null,
+  flatFiltersMap: null,
+  notValidFields: null,
+  widgetShown: false,
 };
 
-export default function filters(state = initialState, action) {
+/**
+ * @method getEntityRelatedId
+ * @summary Helper function to generate the filterId depending on the values passed
+ * this can be further customised to match future entities/areas of the site. Currently is using the
+ * same pattern for forming the tableId:
+ *   [ depending on the values (if viewId is provided,
+ *     we'll use only that for grids, and
+ *     if not - it's a tab table so document id and tab ids are expected ]
+ */
+export const getEntityRelatedId = ({ windowId, viewId, docId, tabId }) => {
+  return `${windowId}_${viewId ? viewId : `${docId}_${tabId}`}`;
+};
+
+// export default function filters(state = initialState, action) {
+//   switch (action.type) {
+//     case types.SET_CLEAR_ALL_FILTER: {
+//       return { ...state, clearAll: action.payload };
+//     }
+
+//     default: {
+//       return state;
+//     }
+//   }
+// }
+
+const reducer = produce((draftState, action) => {
   switch (action.type) {
-    case types.SET_CLEAR_ALL_FILTER: {
-      return { ...state, clearAll: action.payload };
+    // CRUD
+    case types.CREATE_FILTER: {
+      const { id, data } = action.payload;
+      const newLength = draftState.length + 1;
+
+      draftState[id] = {
+        ...initialFilterState,
+        ...data,
+      };
+      draftState.length = newLength;
+
+      return;
     }
 
-    default: {
-      return state;
-    }
   }
-}
+}, initialFilterState);
+
+export default reducer;
