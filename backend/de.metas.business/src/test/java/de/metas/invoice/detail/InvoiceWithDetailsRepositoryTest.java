@@ -54,7 +54,7 @@ public class InvoiceWithDetailsRepositoryTest
 	}
 
 	@Test
-	void copyDetailsToReversal()
+	void save()
 	{
 		final Timestamp expectedTimestamp = TimeUtil.parseTimestamp("2020-06-17");
 		final LocalDate localDate = TimeUtil.asLocalDate(expectedTimestamp);

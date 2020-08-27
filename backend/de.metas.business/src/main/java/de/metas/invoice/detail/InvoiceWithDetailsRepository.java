@@ -70,7 +70,7 @@ public class InvoiceWithDetailsRepository
 		}
 	}
 
-	public ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> retrieveDetailRecords(@NonNull final InvoiceId invoiceId)
+	private ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> retrieveDetailRecords(@NonNull final InvoiceId invoiceId)
 	{
 		final List<I_C_Invoice_Detail> detailRecords = getInvoiceDetailsListForInvoiceId(invoiceId);
 
@@ -176,7 +176,8 @@ public class InvoiceWithDetailsRepository
 		}
 	}
 
-	List<I_C_Invoice_Detail> getInvoiceDetailsListForInvoiceId(final InvoiceId invoiceId)
+	// also used by InvoiceWithDetailsService
+	List<I_C_Invoice_Detail> getInvoiceDetailsListForInvoiceId(@NonNull final InvoiceId invoiceId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_Invoice_Detail.class)

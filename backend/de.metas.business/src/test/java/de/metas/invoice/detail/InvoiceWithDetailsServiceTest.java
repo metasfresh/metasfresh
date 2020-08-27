@@ -25,9 +25,11 @@ package de.metas.invoice.detail;
 import de.metas.invoice.InvoiceId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Invoice_Detail;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -39,6 +41,12 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class InvoiceWithDetailsServiceTest
 {
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
 	@Test
 	void copyDetailsToReversal()
 	{

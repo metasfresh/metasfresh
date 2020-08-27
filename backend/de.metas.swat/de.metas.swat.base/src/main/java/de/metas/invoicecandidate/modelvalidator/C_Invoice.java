@@ -34,8 +34,10 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Invoice.class)
+@Component
 public class C_Invoice
 {
 	private final InvoiceWithDetailsService invoiceWithDetailsService;

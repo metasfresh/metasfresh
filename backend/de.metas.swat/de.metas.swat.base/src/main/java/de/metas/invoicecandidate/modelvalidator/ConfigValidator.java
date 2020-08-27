@@ -37,8 +37,6 @@ import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.invoice.detail.InvoiceWithDetailsRepository;
-import de.metas.invoice.detail.InvoiceWithDetailsService;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -115,7 +113,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Invoice_Candidate_Agg());
 		engine.addModelValidator(new C_Invoice_Line_Alloc());
 		engine.addModelValidator(new C_InvoiceSchedule());
-		engine.addModelValidator(new C_Invoice(new InvoiceWithDetailsService(new InvoiceWithDetailsRepository())));
+		// engine.addModelValidator(new C_Invoice()); is now a spring component
 		engine.addModelValidator(new AD_Note());
 		engine.addModelValidator(new C_OrderLine());
 		engine.addModelValidator(new C_Order());
