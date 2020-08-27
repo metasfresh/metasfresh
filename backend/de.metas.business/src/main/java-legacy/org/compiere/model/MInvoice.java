@@ -1626,7 +1626,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// After reverseCorrect
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
-		// ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 
 		return true;
 	}    // reverseCorrectIt
