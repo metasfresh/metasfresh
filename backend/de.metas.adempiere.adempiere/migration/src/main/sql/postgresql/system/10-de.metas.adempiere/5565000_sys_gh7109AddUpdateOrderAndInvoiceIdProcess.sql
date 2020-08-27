@@ -116,7 +116,7 @@ WHERE AD_Language = 'nl_NL'
 -- 2020-08-27T18:14:37.487Z
 -- URL zum Konzept
 UPDATE AD_Process
-SET Description='The process works on unallocated payments. It sets the order referenced by the payment''s externalorderid. Then, it also sets an invoice if one is found for the set order. Also, it''s allocating the payment to an invoice if the order is a prepayment or if the order''s c_payment_id is the same as the payment we''re running the process and an invoice has been found.',
+SET Description='The process works on unallocated payments. It sets the order referenced by the payment''s externalorderid. Then, it also sets an invoice if one is found for the set order. Also, it''s allocating the payment to an invoice if the order is a prepayment or if the order''s c_payment_id is the same as the payment we''re running the process and an invoice has been found. Also, the order must have a c_payment_id set.',
     Updated=TO_TIMESTAMP('2020-08-27 21:14:37', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Process_ID = 584736
 ;
