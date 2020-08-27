@@ -22,6 +22,7 @@ package de.metas.order.model;
  * #L%
  */
 
+
 import java.math.BigDecimal;
 
 public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
@@ -32,66 +33,42 @@ public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 	void setAD_InputDataSource_ID(int AD_InputDataSource_ID);
 
 	String COLUMNNAME_InvoiceStatus = "InvoiceStatus";
-
 	String getInvoiceStatus();
-
 	void setInvoiceStatus(String InvoiceStatus);
 
-	/**
-	 * Completely Invoiced = CI
-	 */
+	/** Completely Invoiced = CI */
 	String INVOICESTATUS_CompletelyInvoiced = "CI";
-	/**
-	 * Partly Invoiced = PI
-	 */
+	/** Partly Invoiced = PI */
 	String INVOICESTATUS_PartlyInvoiced = "PI";
-	/**
-	 * Open = O
-	 */
+	/** Open = O */
 	String INVOICESTATUS_Open = "O";
 
 	String COLUMNNAME_DeliveryStatus = "DeliveryStatus";
-
 	String getDeliveryStatus();
-
 	void setDeliveryStatus(String DeliveryStatus);
 
-	/**
-	 * Completely Delivered = CD
-	 */
+	/** Completely Delivered = CD */
 	String DELIVERYSTATUS_CompletelyDelivered = "CD";
-	/**
-	 * Partly Delivered = PD
-	 */
+	/** Partly Delivered = PD */
 	String DELIVERYSTATUS_PartlyDelivered = "PD";
-	/**
-	 * Open = O
-	 */
+	/** Open = O */
 	String DELIVERYSTATUS_Open = "O";
 
 	String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
-
 	BigDecimal getQtyInvoiced();
-
 	void setQtyInvoiced(BigDecimal QtyInvoiced);
 
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
-
 	BigDecimal getQtyOrdered();
-
 	void setQtyOrdered(BigDecimal QtyOrdered);
 
 	String COLUMNNAME_QtyMoved = "QtyMoved";
-
 	BigDecimal getQtyMoved();
-
 	void setQtyMoved(BigDecimal QtyMoved);
 
 	// #653
 	String COLUMNNAME_LotNumberDate = "LotNumberDate";
-
-	void setLotNumberDate(java.sql.Timestamp LotNumberDate);
-
+	void setLotNumberDate (java.sql.Timestamp LotNumberDate);
 	java.sql.Timestamp getLotNumberDate();
 
 	// @formatter:on
