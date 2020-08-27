@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
@@ -85,20 +86,28 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return order;
 	}
 
+	private List<I_C_Order> getOrdersByExternalIds(@NonNull List<ExternalId> externalIds)
+	{
+		List<String> externalIdsAsStrings = externalIds.stream().map(ExternalId::getValue).collect(Collectors.toList());
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_ExternalId, externalIdsAsStrings)
+				.create()
+				.list();
+	}
+
 	@Override
 	public Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds)
 	{
 		Map<ExternalId, OrderId> externalIdOrderIdMap = new HashMap<ExternalId, OrderId>();
-
-		for (final ExternalId externalId : externalIds)
+		final List<I_C_Order> ordersWithExternalIds = getOrdersByExternalIds(externalIds);
+		for (final I_C_Order order : ordersWithExternalIds)
 		{
-			final I_C_Order order = getByExternalId(externalId);
-
-			if (order != null)
+			if (order != null && order.getExternalId() != null)
 			{
-				externalIdOrderIdMap.put(externalId, OrderId.ofRepoId(order.getC_Order_ID()));
+				externalIdOrderIdMap.put(ExternalId.of(order.getExternalId()), OrderId.ofRepoId(order.getC_Order_ID()));
 			}
-
 		}
 		return externalIdOrderIdMap;
 	}

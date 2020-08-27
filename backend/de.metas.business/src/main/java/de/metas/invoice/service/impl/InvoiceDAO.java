@@ -46,6 +46,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
@@ -57,15 +58,27 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		return InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, trxName);
 	}
 
+	// @Override
+	// public I_C_Invoice getByOrderId(@NonNull final OrderId orderId)
+	// {
+	// 	final I_C_Invoice invoice = Services.get(IQueryBL.class)
+	// 			.createQueryBuilder(I_C_Invoice.class)
+	// 			.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+	// 			.create()
+	// 			.firstOnlyOrNull(I_C_Invoice.class);
+	// 	return invoice;
+	// }
+
 	@Override
-	public I_C_Invoice getByOrderId(@NonNull final OrderId orderId)
+	public List<I_C_Invoice> getInvoicesForOrderIds(@NonNull List<OrderId> orderIds)
 	{
-		final I_C_Invoice invoice = Services.get(IQueryBL.class)
+		List<Integer> orderIdsAsIntegers = orderIds.stream().map(OrderId::getRepoId).collect(Collectors.toList());
+
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIdsAsIntegers)
 				.create()
-				.firstOnlyOrNull(I_C_Invoice.class);
-		return invoice;
+				.list();
 	}
 
 	@Override

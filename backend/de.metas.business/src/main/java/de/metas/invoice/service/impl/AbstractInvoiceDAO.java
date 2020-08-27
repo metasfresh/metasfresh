@@ -83,14 +83,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(final List<OrderId> orderIds)
 	{
 		Map<OrderId, InvoiceId> orderIdInvoiceIdMap = new HashMap<OrderId, InvoiceId>();
-
-		for (OrderId orderId : orderIds)
+		final List<I_C_Invoice> invoices = getInvoicesForOrderIds(orderIds);
+		for (final I_C_Invoice invoice : invoices)
 		{
-			final I_C_Invoice invoice = getByOrderId(orderId);
-
-			if (invoice != null)
+			if (invoice != null && invoice.getC_Order_ID() > 0)
 			{
-				orderIdInvoiceIdMap.put(orderId, InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+				orderIdInvoiceIdMap.put(OrderId.ofRepoId(invoice.getC_Order_ID()), InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 			}
 		}
 		return orderIdInvoiceIdMap;

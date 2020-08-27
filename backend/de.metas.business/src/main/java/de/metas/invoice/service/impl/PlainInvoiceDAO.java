@@ -69,7 +69,7 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 	}
 
 	@Override
-	public I_C_Invoice getByOrderId(final OrderId orderId)
+	public List<I_C_Invoice> getInvoicesForOrderIds(final List<OrderId> orderIds)
 	{
 		throw new UnsupportedOperationException();
 	}

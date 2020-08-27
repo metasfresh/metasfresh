@@ -37,6 +37,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
@@ -45,6 +46,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -97,7 +99,9 @@ public class PaymentBL implements IPaymentBL
 	private static final Logger logger = LogManager.getLogger(PaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -428,7 +432,45 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public List<ExternalId> getExternalIdsList(List<I_C_Payment> payments)
+	public boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
+	{
+		if (order == null)
+		{
+			return false;
+		}
+		if (order.getC_Payment_ID() <= 0)
+		{
+			return false;
+		}
+
+		final boolean isPrepayOrder = docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+		if (isPrepayOrder)
+		{
+			return true;
+		}
+
+		final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
+		return payment.getC_Order_ID() == order.getC_Order_ID();
+	}
+
+	private void allocateInvoicesAgainstPaymentsIfNecessary(final List<I_C_Payment> payments)
+	{
+		for (final I_C_Payment payment : payments)
+		{
+			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(payment.getC_Order_ID()));
+			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(payment.getC_Invoice_ID()));
+
+			if (canAllocateOrderPaymentToInvoice(order))
+			{
+				if (invoice != null && DocStatus.ofCode(payment.getDocStatus()).equals(DocStatus.Completed))
+				{
+					allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+				}
+			}
+		}
+	}
+
+	private List<ExternalId> getExternalIdsList(final List<I_C_Payment> payments)
 	{
 		final List<I_C_Payment> paymentsWithExternalIds = payments
 				.stream()
@@ -437,8 +479,7 @@ public class PaymentBL implements IPaymentBL
 		return CollectionUtils.extractDistinctElements(paymentsWithExternalIds, p -> ExternalId.ofOrNull(p.getExternalOrderId()));
 	}
 
-	@Override
-	public List<OrderId> getOrderIdsList(List<I_C_Payment> payments)
+	private List<OrderId> getOrderIdsList(List<I_C_Payment> payments)
 	{
 		final List<I_C_Payment> paymentsWithOrderIds = payments
 				.stream()
@@ -447,12 +488,11 @@ public class PaymentBL implements IPaymentBL
 		return CollectionUtils.extractDistinctElements(paymentsWithOrderIds, p -> OrderId.ofRepoId(p.getC_Order_ID()));
 	}
 
-	@Override
-	public void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids)
+	private void setPaymentOrderIds(List<I_C_Payment> payments, Map<ExternalId, OrderId> ids)
 	{
 		for (final I_C_Payment payment : payments)
 		{
-			final OrderId orderId = ids.getOrDefault(ExternalId.ofOrNull(payment.getExternalOrderId()), OrderId.ofRepoIdOrNull(0));
+			final OrderId orderId = ids.get(ExternalId.ofOrNull(payment.getExternalOrderId()));
 			if (orderId != null)
 			{
 				payment.setC_Order_ID(orderId.getRepoId());
@@ -461,12 +501,28 @@ public class PaymentBL implements IPaymentBL
 		}
 	}
 
-	@Override
-	public void setPaymentInvoiceIds(List<I_C_Payment> payments, Map<OrderId, InvoiceId> ids)
+	public void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(List<I_C_Payment> payments)
+	{
+		List<ExternalId> externalIds = getExternalIdsList(payments);
+		Map<ExternalId, OrderId> orderIdsForExternalIds = orderDAO.getOrderIdsForExternalIds(externalIds);
+		setPaymentOrderIds(payments, orderIdsForExternalIds);
+		List<OrderId> orderIds = getOrderIdsList(payments);
+		Map<OrderId, InvoiceId> orderIdInvoiceIdMap = invoiceDAO.getInvoiceIdsForOrderIds(orderIds);
+		setPaymentInvoiceIds(payments, orderIdInvoiceIdMap);
+
+		List<I_C_Payment> paymentsWithOrderIdsAndInvoiceIds = payments
+				.stream()
+				.filter(p -> p.getC_Order_ID() > 0 && p.getC_Invoice_ID() > 0)
+				.collect(Collectors.toList());
+
+		allocateInvoicesAgainstPaymentsIfNecessary(paymentsWithOrderIdsAndInvoiceIds);
+	}
+
+	private void setPaymentInvoiceIds(List<I_C_Payment> payments, Map<OrderId, InvoiceId> ids)
 	{
 		for (final I_C_Payment payment : payments)
 		{
-			final InvoiceId invoiceId = ids.getOrDefault(OrderId.ofRepoIdOrNull(payment.getC_Order_ID()), InvoiceId.ofRepoIdOrNull(0));
+			final InvoiceId invoiceId = ids.get(OrderId.ofRepoIdOrNull(payment.getC_Order_ID()));
 			if (invoiceId != null)
 			{
 				payment.setC_Invoice_ID(invoiceId.getRepoId());
