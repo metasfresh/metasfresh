@@ -2,7 +2,7 @@ import React from 'react';
 import * as Immutable from 'immutable';
 import { mount, shallow, render } from 'enzyme';
 import nock from 'nock';
-import uuid from 'uuid/v4';
+// import uuid from 'uuid/v4';
 import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
 import configureStore from 'redux-mock-store';
