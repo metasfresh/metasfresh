@@ -22,15 +22,12 @@ package de.metas.invoice.interceptor;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
@@ -40,7 +37,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
@@ -74,10 +71,9 @@ public class C_Invoice // 03771
 {
 	private final PaymentReservationService paymentReservationService;
 
-
 	private final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -290,8 +286,7 @@ public class C_Invoice // 03771
 	private void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (canAllocateOrderPaymentToInvoice(order)
-		)
+		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
@@ -301,32 +296,10 @@ public class C_Invoice // 03771
 		}
 	}
 
-	@VisibleForTesting
-	boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
-	{
-		if (order == null)
-		{
-			return false;
-		}
-		if (order.getC_Payment_ID() <= 0)
-		{
-			return false;
-		}
-
-		final boolean isPrepayOrder = docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()));
-		if (isPrepayOrder)
-		{
-			return true;
-		}
-
-		final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
-		return payment.getC_Order_ID() == order.getC_Order_ID();
-	}
-
 	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (canAllocateOrderPaymentToInvoice(order))
+		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
