@@ -22,20 +22,7 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.bpartner.BPartnerContactId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -45,8 +32,19 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public interface IReceiptScheduleBL extends ISingletonService
 {
@@ -221,4 +219,6 @@ public interface IReceiptScheduleBL extends ISingletonService
 	 * @return true if receipt schedule is closed
 	 */
 	boolean isClosed(I_M_ReceiptSchedule receiptSchedule);
+
+	void applyReceiptScheduleChanges(ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest);
 }

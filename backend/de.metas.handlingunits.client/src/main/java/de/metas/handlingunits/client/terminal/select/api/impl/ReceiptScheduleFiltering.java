@@ -3,6 +3,39 @@
  */
 package de.metas.handlingunits.client.terminal.select.api.impl;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.client.terminal.receiptschedule.model.IReceiptScheduleTableRow;
+import de.metas.handlingunits.client.terminal.receiptschedule.model.ReceiptScheduleTableRow;
+import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_Product;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -26,39 +59,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_Product;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.client.terminal.receiptschedule.model.IReceiptScheduleTableRow;
-import de.metas.handlingunits.client.terminal.receiptschedule.model.ReceiptScheduleTableRow;
-import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /**
  * @author cg
@@ -249,7 +249,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 
 		final CreateReceiptsParameters parameters = CreateReceiptsParameters.builder()
 				.commitEachReceiptIndividually(false)
-				.createReceiptWithDatePromised(false)
+				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.ctx(ctx)
 				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.printReceiptLabels(true)

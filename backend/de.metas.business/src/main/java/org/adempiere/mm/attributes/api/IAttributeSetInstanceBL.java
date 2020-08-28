@@ -1,19 +1,18 @@
 package org.adempiere.mm.attributes.api;
 
-import java.util.function.Predicate;
-
+import com.google.common.base.Predicates;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import com.google.common.base.Predicates;
-
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
+import java.util.function.Predicate;
 
 /**
  * Service to create and update AttributeInstances and AttributeSetInstances.
@@ -126,4 +125,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * The given {@code asiAware} is <b>not</b> saved, but the the respective ASI and AIs are saved
 	 */
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
+
+	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
 }

@@ -14,12 +14,13 @@ import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATI
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.CREATE_SHIPMENT_MF_URL;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.LOCAL_STORAGE_URL;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPMENT_XML_TO_JSON_PROCESSOR;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_FTP_PATH;
 
 public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 {
 
-	private static final String MF_SHIPMENT_FILEMAKER_XML_TO_JSON = "MF-FM-To-Json-Shipment";
+	static final String MF_SHIPMENT_FILEMAKER_XML_TO_JSON = "MF-FM-To-Json-Shipment";
 
 	@Override public void configure() throws Exception
 	{
@@ -36,7 +37,7 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 				.to(LOCAL_STORAGE_URL)
 				.streamCaching()
 				.unmarshal(jacksonXMLDataFormat)
-				.process(new ShipmentXmlToJsonProcessor())
+				.process(new ShipmentXmlToJsonProcessor()).id(SHIPMENT_XML_TO_JSON_PROCESSOR)
 				.choice()
 				    .when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
 						.log(LoggingLevel.INFO, "Nothing to do! no shipments were found in file:" + header(Exchange.FILE_NAME))
