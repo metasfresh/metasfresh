@@ -22,20 +22,31 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.model.ModelValidator;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.detail.InvoiceWithDetailsService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Invoice.class)
+@Component
 public class C_Invoice
 {
+	private final InvoiceWithDetailsService invoiceWithDetailsService;
+
+	public C_Invoice(@NonNull InvoiceWithDetailsService invoiceWithDetailsService)
+	{
+		this.invoiceWithDetailsService = invoiceWithDetailsService;
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_CLOSE })
 	public void handleCompleteForInvoice(final I_C_Invoice invoice)
 	{
@@ -55,6 +66,10 @@ public class C_Invoice
 		{
 			Services.get(IInvoiceCandBL.class).handleReversalForInvoice(invoice);
 		}
+		if (invoice.getReversal_ID() > 0)
+		{
+			invoiceWithDetailsService.copyDetailsToReversal(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), InvoiceId.ofRepoId(invoice.getReversal_ID()));
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -73,5 +88,6 @@ public class C_Invoice
 		{
 			Services.get(IInvoiceCandBL.class).candidates_unProcess(invoice);
 		}
+
 	}
 }
