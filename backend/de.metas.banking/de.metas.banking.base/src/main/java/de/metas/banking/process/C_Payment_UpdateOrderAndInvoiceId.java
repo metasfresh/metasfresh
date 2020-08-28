@@ -58,7 +58,7 @@ public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IP
 
 		List<I_C_Payment> filteredPayments = payments
 				.stream()
-				.filter(p -> !p.isAllocated() && DocStatus.ofCode(p.getDocStatus()).equals(DocStatus.Completed))
+				.filter(p -> !p.isAllocated() && DocStatus.ofCode(p.getDocStatus()).isCompleted())
 				.collect(Collectors.toList());
 
 		paymentBL.setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(filteredPayments);

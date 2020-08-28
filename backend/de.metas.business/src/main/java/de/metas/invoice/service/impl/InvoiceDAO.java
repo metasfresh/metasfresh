@@ -25,15 +25,10 @@ package de.metas.invoice.service.impl;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.logging.LogManager;
-import de.metas.order.OrderId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
@@ -46,39 +41,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
-
 	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
 
 	public I_C_Invoice createInvoice(String trxName)
 	{
 		return InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, trxName);
-	}
-
-	// @Override
-	// public I_C_Invoice getByOrderId(@NonNull final OrderId orderId)
-	// {
-	// 	final I_C_Invoice invoice = Services.get(IQueryBL.class)
-	// 			.createQueryBuilder(I_C_Invoice.class)
-	// 			.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId.getRepoId())
-	// 			.create()
-	// 			.firstOnlyOrNull(I_C_Invoice.class);
-	// 	return invoice;
-	// }
-
-	@Override
-	public List<I_C_Invoice> getInvoicesForOrderIds(@NonNull List<OrderId> orderIds)
-	{
-		List<Integer> orderIdsAsIntegers = orderIds.stream().map(OrderId::getRepoId).collect(Collectors.toList());
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice.class)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIdsAsIntegers)
-				.create()
-				.list();
 	}
 
 	@Override
@@ -112,7 +82,6 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 
 		try
 		{
-
 			pstmt.setInt(1, invoiceLine.getC_InvoiceLine_ID());
 			rs = pstmt.executeQuery();
 			while (rs.next())

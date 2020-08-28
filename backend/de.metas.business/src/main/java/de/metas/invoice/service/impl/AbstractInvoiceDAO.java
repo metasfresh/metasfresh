@@ -33,6 +33,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -80,9 +81,19 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(final List<OrderId> orderIds)
+	public List<I_C_Invoice> getInvoicesForOrderIds(@NonNull final List<OrderId> orderIds)
 	{
-		Map<OrderId, InvoiceId> orderIdInvoiceIdMap = new HashMap<OrderId, InvoiceId>();
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(@NonNull final List<OrderId> orderIds)
+	{
+		final Map<OrderId, InvoiceId> orderIdInvoiceIdMap = new HashMap<OrderId, InvoiceId>();
 		final List<I_C_Invoice> invoices = getInvoicesForOrderIds(orderIds);
 		for (final I_C_Invoice invoice : invoices)
 		{

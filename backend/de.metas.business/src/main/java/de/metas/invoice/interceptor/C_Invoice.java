@@ -22,7 +22,6 @@ package de.metas.invoice.interceptor;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
@@ -287,8 +286,7 @@ public class C_Invoice // 03771
 	private void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (canAllocateOrderPaymentToInvoice(order)
-		)
+		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
@@ -298,16 +296,10 @@ public class C_Invoice // 03771
 		}
 	}
 
-	@VisibleForTesting
-	boolean canAllocateOrderPaymentToInvoice(final I_C_Order order)
-	{
-		return paymentBL.canAllocateOrderPaymentToInvoice(order);
-	}
-
 	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (canAllocateOrderPaymentToInvoice(order))
+		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
