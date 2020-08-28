@@ -1,6 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.document.engine.IDocument;
@@ -14,6 +16,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +35,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -327,6 +331,24 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				false /* updateOnlyIfNull */,
 				pinstanceId
 		);
+	}
+
+	@NonNull
+	public Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(@NonNull final ImmutableSet<ReceiptScheduleId> receiptScheduleIds)
+	{
+		final List<I_M_ReceiptSchedule> receiptSchedules = InterfaceWrapperHelper.loadByRepoIdAwares(receiptScheduleIds, I_M_ReceiptSchedule.class);
+
+		if (Check.isEmpty(receiptSchedules))
+		{
+			return ImmutableMap.of();
+		}
+
+		return Maps.uniqueIndex(receiptSchedules, (receiptSchedule) -> ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID()));
+	}
+
+	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId receiptScheduleId)
+	{
+		return InterfaceWrapperHelper.load(receiptScheduleId, I_M_ReceiptSchedule.class);
 	}
 
 	/**
