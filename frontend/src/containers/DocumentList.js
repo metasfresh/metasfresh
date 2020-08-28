@@ -31,7 +31,7 @@ import {
   updateGridTableData,
   deselectTableItems,
 } from '../actions/TableActions';
-import { clearAllFilters } from '../actions/FiltersActions';
+import { clearAllFilters, createFilter } from '../actions/FiltersActions';
 import {
   closeListIncludedView,
   setListIncludedView,
@@ -54,6 +54,7 @@ import {
 } from '../utils/documentListHelper';
 
 import DocumentList from '../components/app/DocumentList';
+import { getEntityRelatedId } from '../reducers/filters';
 
 class DocumentListContainer extends Component {
   constructor(props) {
@@ -313,12 +314,15 @@ class DocumentListContainer extends Component {
       updateRawModal,
       setModalDescription,
       isModal,
+      createFilter,
     } = this.props;
 
     fetchLayout(windowId, type, viewProfileId, isModal)
       .then((response) => {
         if (this.mounted) {
           const { allowedCloseActions } = response;
+          const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+          createFilter({ id: entityRelatedId, data: {} });
 
           // TODO: Check if we still need to do this
           if (isModal) {
@@ -836,6 +840,7 @@ export default connect(
     clearAllFilters,
     updateGridTableData,
     fetchHeaderProperties,
+    createFilter,
   },
   null,
   { forwardRef: true }
