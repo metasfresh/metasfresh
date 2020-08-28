@@ -22,6 +22,8 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -37,6 +39,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -94,4 +97,8 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	boolean existsExportedReceiptScheduleForOrder(@NonNull final OrderId orderId);
 
 	void updateExportStatus(final String exportStatus, final PInstanceId pinstanceId);
+
+	Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(ImmutableSet<ReceiptScheduleId> receiptScheduleIds);
+
+	I_M_ReceiptSchedule getById(ReceiptScheduleId receiptScheduleId);
 }

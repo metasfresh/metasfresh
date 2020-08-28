@@ -25,21 +25,21 @@
  */
 package de.metas.payment.api;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
 import de.metas.banking.BankAccountId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 public interface IPaymentBL extends ISingletonService
 {
@@ -96,6 +96,10 @@ public interface IPaymentBL extends ISingletonService
 	 * @return
 	 */
 	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
+
+	void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(List<I_C_Payment> payments);
+
+	boolean canAllocateOrderPaymentToInvoice(I_C_Order order);
 
 	/**
 	 * Test Allocation (and set allocated flag)

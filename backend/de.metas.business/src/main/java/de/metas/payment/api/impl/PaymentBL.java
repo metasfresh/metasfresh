@@ -22,39 +22,9 @@
 
 package de.metas.payment.api.impl;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -67,6 +37,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
@@ -74,6 +45,8 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -85,14 +58,49 @@ import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.math.BigDecimal.ZERO;
 
 public class PaymentBL implements IPaymentBL
 {
 	private static final Logger logger = LogManager.getLogger(PaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -417,6 +425,107 @@ public class PaymentBL implements IPaymentBL
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean canAllocateOrderPaymentToInvoice(@NonNull final I_C_Order order)
+	{
+		if (order == null)
+		{
+			return false;
+		}
+		if (order.getC_Payment_ID() <= 0)
+		{
+			return false;
+		}
+
+		final boolean isPrepayOrder = docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+		if (isPrepayOrder)
+		{
+			return true;
+		}
+
+		final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
+		return payment.getC_Order_ID() == order.getC_Order_ID();
+	}
+
+	private void allocateInvoicesAgainstPaymentsIfNecessary(@NonNull final List<I_C_Payment> payments)
+	{
+		for (final I_C_Payment payment : payments)
+		{
+			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(payment.getC_Order_ID()));
+			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(payment.getC_Invoice_ID()));
+
+			if (canAllocateOrderPaymentToInvoice(order))
+			{
+				if (invoice != null && DocStatus.ofCode(payment.getDocStatus()).isCompleted())
+				{
+					allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+				}
+			}
+		}
+	}
+
+	private List<ExternalId> getExternalIdsList(@NonNull final List<I_C_Payment> payments)
+	{
+		final List<I_C_Payment> paymentsWithExternalIds = payments
+				.stream()
+				.filter(p -> !(p.getExternalOrderId() == null))
+				.collect(Collectors.toList());
+		return CollectionUtils.extractDistinctElements(paymentsWithExternalIds, p -> ExternalId.ofOrNull(p.getExternalOrderId()));
+	}
+
+	private List<OrderId> getOrderIdsList(@NonNull final List<I_C_Payment> payments)
+	{
+		final List<I_C_Payment> paymentsWithOrderIds = payments
+				.stream()
+				.filter(p -> !(p.getC_Order_ID() == 0))
+				.collect(Collectors.toList());
+		return CollectionUtils.extractDistinctElements(paymentsWithOrderIds, p -> OrderId.ofRepoId(p.getC_Order_ID()));
+	}
+
+	private void setPaymentOrderIds(@NonNull final List<I_C_Payment> payments, @NonNull final Map<ExternalId, OrderId> ids)
+	{
+		for (final I_C_Payment payment : payments)
+		{
+			final OrderId orderId = ids.get(ExternalId.ofOrNull(payment.getExternalOrderId()));
+			if (orderId != null)
+			{
+				payment.setC_Order_ID(orderId.getRepoId());
+				save(payment);
+			}
+		}
+	}
+
+	public void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(@NonNull final List<I_C_Payment> payments)
+	{
+		final List<ExternalId> externalIds = getExternalIdsList(payments);
+		final Map<ExternalId, OrderId> orderIdsForExternalIds = orderDAO.getOrderIdsForExternalIds(externalIds);
+		setPaymentOrderIds(payments, orderIdsForExternalIds);
+
+		final List<OrderId> orderIds = getOrderIdsList(payments);
+		final Map<OrderId, InvoiceId> orderIdInvoiceIdMap = invoiceDAO.getInvoiceIdsForOrderIds(orderIds);
+		setPaymentInvoiceIds(payments, orderIdInvoiceIdMap);
+
+		final List<I_C_Payment> paymentsWithOrderIdsAndInvoiceIds = payments
+				.stream()
+				.filter(p -> p.getC_Order_ID() > 0 && p.getC_Invoice_ID() > 0)
+				.collect(Collectors.toList());
+
+		allocateInvoicesAgainstPaymentsIfNecessary(paymentsWithOrderIdsAndInvoiceIds);
+	}
+
+	private void setPaymentInvoiceIds(@NonNull final List<I_C_Payment> payments, @NonNull final Map<OrderId, InvoiceId> ids)
+	{
+		for (final I_C_Payment payment : payments)
+		{
+			final InvoiceId invoiceId = ids.get(OrderId.ofRepoIdOrNull(payment.getC_Order_ID()));
+			if (invoiceId != null)
+			{
+				payment.setC_Invoice_ID(invoiceId.getRepoId());
+				save(payment);
+			}
+		}
 	}
 
 	@Override

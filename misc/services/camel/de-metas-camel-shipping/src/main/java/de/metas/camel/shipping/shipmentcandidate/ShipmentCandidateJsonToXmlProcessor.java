@@ -23,30 +23,29 @@
 package de.metas.camel.shipping.shipmentcandidate;
 
 import de.metas.camel.shipping.FeedbackProzessor;
-import de.metas.camel.shipping.JsonToXmlProcessorCommonUtil;
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.COL;
-import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FIELD;
-import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
 import de.metas.common.filemaker.METADATA;
-import de.metas.common.filemaker.PRODUCT;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
-import de.metas.common.shipping.Outcome;
 import de.metas.common.shipping.JsonRequestCandidateResult;
 import de.metas.common.shipping.JsonRequestCandidateResults;
+import de.metas.common.shipping.Outcome;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.spi.PropertiesComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.Properties;
 
 public class ShipmentCandidateJsonToXmlProcessor implements Processor
 {
@@ -61,6 +60,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_artikel_gewicht_1_stueck").build())
 			.field(FIELD.builder().name("_artikel_geschmacksrichtung").build())
 			.field(FIELD.builder().name("_artikel_verpackungsgroesse").build())
+			.field(FIELD.builder().name("_artikel_hinweistext").build())
 			.field(FIELD.builder().name("_empfaenger_firma").build())
 			.field(FIELD.builder().name("_empfaenger_ansprechpartner").build())
 			.field(FIELD.builder().name("_empfaenger_strasse").build())
@@ -89,17 +89,19 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		}
 
 		log.debug("process method called; scheduleList with " + items.size() + " items");
-		final FMPXMLRESULTBuilder builder = JsonToXmlProcessorCommonUtil
+		final FMPXMLRESULTBuilder builder = CommonUtil
 				.createFmpxmlresultBuilder(exchange, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()
 				.transactionKey(scheduleList.getTransactionKey());
 
+		final var propertiesComponent = exchange.getContext().getPropertiesComponent();
+
 		final var resultSet = RESULTSET.builder().found(items.size());
 		for (final JsonResponseShipmentCandidate item : items)
 		{
-			final var row = createROW(item);
+			final var row = createROW(item, propertiesComponent);
 			resultSet.row(row);
 
 			resultsBuilder.item(JsonRequestCandidateResult.builder()
@@ -114,7 +116,9 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		exchange.getIn().setHeader(FeedbackProzessor.FEEDBACK_POJO, resultsBuilder.build());
 	}
 
-	private ROW createROW(@NonNull final JsonResponseShipmentCandidate item)
+	private ROW createROW(
+			@NonNull final JsonResponseShipmentCandidate item,
+			@NonNull final PropertiesComponent propertiesComponent)
 	{
 		final var row = ROW.builder();
 
@@ -126,7 +130,9 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(dateOrdered.format(DateTimeFormatter.ofPattern("d.M.yyyy k:mm:ss")))); // _bestellung_zeitstempel
 
 		final var product = item.getProduct();
-		row.col(COL.of(product.getProductNo())); // _artikel_nummer
+
+		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, item.getOrgCode());
+		row.col(COL.of(artikelNummerPrefix + product.getProductNo())); // _artikel_nummer
 		row.col(COL.of(product.getName())); // _artikel_bezeichnung
 		row.col(COL.of(item.getQuantities().get(0).getQty().toString())); // _artikel_menge
 		row.col(COL.of(product.getWeight().toString())); // _artikel_gewicht_1_stueck
@@ -139,6 +145,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			row.col(COL.of(null));
 		}
 		row.col(COL.of(product.getPackageSize())); // _artikel_verpackungsgroesse
+		row.col(COL.of(product.getDocumentNote())); // _artikel_hinweistext
 
 		final var customer = item.getCustomer();
 		if (Objects.equals(customer.getCompanyName(), customer.getContactName()))  // _empfaenger_firma

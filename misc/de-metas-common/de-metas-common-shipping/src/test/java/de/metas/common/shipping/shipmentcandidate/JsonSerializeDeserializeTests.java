@@ -24,6 +24,8 @@ package de.metas.common.shipping.shipmentcandidate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.receipt.JsonCreateReceiptInfo;
+import de.metas.common.receipt.JsonCreateReceiptsRequest;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonAttributeSetInstance;
 import de.metas.common.rest_api.JsonError;
@@ -48,7 +50,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static de.metas.common.shipping.JsonRequestCandidateResult.*;
+import static de.metas.common.shipping.JsonRequestCandidateResult.builder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests
@@ -72,14 +74,6 @@ class JsonSerializeDeserializeTests
 				.zipCode("151212")
 				.build();
 
-		final JsonAttributeInstance attributeInstance = JsonAttributeInstance.builder()
-				.attributeName("name")
-				.valueStr("valueStr")
-				.valueNumber(BigDecimal.ONE)
-				.valueDate(LocalDate.of(2020,7,24))
-				.attributeCode("atrCode")
-				.build(); // not a real case but it's fine for testing
-
 		final JsonCreateShipmentInfo jsonCreateShipmentInfo = JsonCreateShipmentInfo.builder()
 				.shipmentScheduleId(JsonMetasfreshId.of(1))
 				.businessPartnerSearchKey("bp_key")
@@ -89,7 +83,7 @@ class JsonSerializeDeserializeTests
 				.productSearchKey("p_key")
 				.trackingNumbers(ImmutableList.of("tr-no1"))
 				.movementDate(LocalDateTime.of(2020,7,24,18,13))
-				.attributes(ImmutableList.of(attributeInstance))
+				.attributes(ImmutableList.of(mockAttributeInstance()))
 				.shipToLocation(location)
 				.build();
 
@@ -176,7 +170,7 @@ class JsonSerializeDeserializeTests
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 1))
 						.poReference("poReference_1")
 						.orderDocumentNo("orderDocumentNo_1")
-						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").build())
+						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").documentNote("documentNote_1").build())
 						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").build())
 						.build())
 				.item(JsonResponseShipmentCandidate.builder()
@@ -530,5 +524,38 @@ class JsonSerializeDeserializeTests
 
 		// then
 		assertThat(result.getTransactionKey()).isEqualTo("d7c3f93d-6eab-4360-8bf4-f45d1a66cd4d");
+	}
+
+	@Test
+	void jsonCreateReceiptRequest() throws IOException
+	{
+
+		final JsonCreateReceiptInfo jsonCreateReceiptInfo = JsonCreateReceiptInfo.builder()
+				.receiptScheduleId(JsonMetasfreshId.of(1))
+				.productSearchKey("productSearchKey")
+				.externalId("externalId")
+				.movementQuantity(BigDecimal.ONE)
+				.movementDate(LocalDate.now())
+				.attributes(ImmutableList.of(mockAttributeInstance()))
+				.dateReceived(LocalDateTime.now())
+				.build();
+
+		final JsonCreateReceiptsRequest jsonCreateReceiptsRequest = JsonCreateReceiptsRequest
+				.builder()
+				.jsonCreateReceiptInfoList(ImmutableList.of(jsonCreateReceiptInfo))
+				.build();
+
+		assertOK(jsonCreateReceiptsRequest, JsonCreateReceiptsRequest.class);
+	}
+
+	public JsonAttributeInstance mockAttributeInstance()
+	{
+		return JsonAttributeInstance.builder()
+				.attributeName("name")
+				.valueStr("valueStr")
+				.valueNumber(BigDecimal.ONE)
+				.valueDate(LocalDate.of(2020,7,24))
+				.attributeCode("atrCode")
+				.build(); // not a real case but it's fine for testing
 	}
 }
