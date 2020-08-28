@@ -22,28 +22,8 @@
 
 package de.metas.handlingunits;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import com.google.common.collect.ImmutableSet;
-import de.metas.organization.ClientAndOrgId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
-
 import com.google.common.base.Predicates;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -60,12 +40,30 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Transaction;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
@@ -275,11 +273,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * @param hu
 	 * @return top level parent; never return null; more preciselly:
-	 * <ul>
-	 * <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
-	 * <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
-	 * <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
-	 * </ul>
+	 *         <ul>
+	 *         <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
+	 *         <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
+	 *         <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
+	 *         </ul>
 	 */
 	LUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
 
@@ -333,8 +331,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @param hu hu to check if it is picked on the fly
 	 * @return true if it is picked on the fly; false otherwise
 	 * @see the following 2 methods:
-	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
-	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
+	 *      - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
+	 *      - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
 	 */
 	@SuppressWarnings("JavadocReference")
 	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu);
@@ -346,14 +344,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * @return LU handling unit or null.
 	 */
-	@Nullable I_M_HU getLoadingUnitHU(I_M_HU hu);
+	@Nullable
+	I_M_HU getLoadingUnitHU(I_M_HU hu);
 
 	/**
 	 * Get the TU of the given (included) HU.
 	 *
 	 * @return TU handling unit or null.
 	 */
-	@Nullable I_M_HU getTransportUnitHU(I_M_HU hu);
+	@Nullable
+	I_M_HU getTransportUnitHU(I_M_HU hu);
 
 	/**
 	 * Returns the {@link I_M_HU_PI_Version#COLUMNNAME_HU_UnitType} value of the given <code>pi</code>'s version.
@@ -395,7 +395,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Marks all HUs as destroyed, but doesn't handle the storages.
 	 *
 	 * @param huContext
-	 * @param hus       HUs to mark as destroyed
+	 * @param hus HUs to mark as destroyed
 	 */
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
 
@@ -408,13 +408,22 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isAggregateHU(I_M_HU hu);
 
-	@Nullable I_M_HU_PI getPI(I_M_HU hu);
+	@Nullable
+	I_M_HU_PI getPI(I_M_HU hu);
 
 	I_M_HU_PI_Version getPIVersion(I_M_HU hu);
 
-	@Nullable I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+	@Nullable
+	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
 
-	@Nullable HuPackingInstructionsVersionId getEffectivePIVersionId(I_M_HU hu);
+	@NonNull
+	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
+
+	@NonNull
+	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
+
+	@Nullable
+	HuPackingInstructionsVersionId getEffectivePIVersionId(I_M_HU hu);
 
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
@@ -429,7 +438,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * If the given {@code hu} is a aggregate HU, return the PI of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI.
 	 */
-	@Nullable I_M_HU_PI getEffectivePI(I_M_HU hu);
+	@Nullable
+	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
@@ -533,4 +543,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 				? Services.get(IHUPIItemProductDAO.class).getById(piItemProductId)
 				: null;
 	}
+
+	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
+
+	boolean isEmptyStorage(I_M_HU hu);
 }

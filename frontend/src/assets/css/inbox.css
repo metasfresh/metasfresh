@@ -25,11 +25,11 @@
 }
 
 .inbox-header {
-    border-bottom: 1px solid #e1e8ee;
+    border-bottom: 1px solid $brand-border-color-2;
 }
 
 .inbox-footer {
-    border-top: 1px solid #e1e8ee;
+    border-top: 1px solid $brand-border-color-2;
     justify-content: flex-end;
 }
 
@@ -44,8 +44,8 @@
 }
 
 .inbox-body {
-    background-color: #F8FAFB;
-    border: 1px solid #e1e8ee;
+    background-color: $brand-bright-color;
+    border: 1px solid $brand-border-color-2;
     position: relative;
 }
 

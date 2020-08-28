@@ -1,30 +1,8 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.client
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +23,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -52,7 +31,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.BreadcrumbKeyLayout;
@@ -68,7 +46,7 @@ import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -80,7 +58,7 @@ import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HU
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.split.impl.HUSplitModel;
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.inventory.IHUInventoryBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -144,38 +122,33 @@ public class HUEditorModel implements IDisposable
 	 */
 	public static final String PROPERTY_HUKeySelectionChanged = "HUKeySelectionChanged";
 
-	public static final Predicate<IHUKey> HUKeyFilter_WeightableButNotWeighted = new Predicate<IHUKey>()
-	{
-		@Override
-		public boolean test(final IHUKey huKey)
+	public static final Predicate<IHUKey> HUKeyFilter_WeightableButNotWeighted = huKey -> {
+		// guard against null
+		if (huKey == null)
 		{
-			// guard against null
-			if (huKey == null)
-			{
-				return false;
-			}
-
-			final IWeightable weight = huKey.getWeightOrNull();
-
-			// if there is no weightable support, don't accept it
-			if (weight == null)
-			{
-				return false;
-			}
-			if (!weight.isWeightable())
-			{
-				return false;
-			}
-
-			// don't accept those which are already weighted
-			if (weight.isWeighted())
-			{
-				return false;
-			}
-
-			// Accept it: we deal with a weightable but not weight HU key
-			return true;
+			return false;
 		}
+
+		final IWeightable weight = huKey.getWeightOrNull();
+
+		// if there is no weightable support, don't accept it
+		if (weight == null)
+		{
+			return false;
+		}
+		if (!weight.isWeightable())
+		{
+			return false;
+		}
+
+		// don't accept those which are already weighted
+		if (weight.isWeighted())
+		{
+			return false;
+		}
+
+		// Accept it: we deal with a weightable but not weight HU key
+		return true;
 	};
 
 	//
@@ -227,15 +200,10 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Listener to clear breadcrumb key layout
-		breadcrumbKeyLayoutListener = new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(final PropertyChangeEvent evt)
+		breadcrumbKeyLayoutListener = evt -> {
+			if (IHUKey.ACTION_GroupingRemoved.equals(evt.getPropertyName()))
 			{
-				if (IHUKey.ACTION_GroupingRemoved.equals(evt.getPropertyName()))
-				{
-					cleanupBreadcrumbGroupingKeys();
-				}
+				cleanupBreadcrumbGroupingKeys();
 			}
 		};
 		breadcrumbKeyLayout.addListener(breadcrumbKeyLayoutListener);
@@ -244,14 +212,7 @@ public class HUEditorModel implements IDisposable
 		// HU Key Filters
 		if (Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_HUKeyFilterEnabled, DEFAULT_HUKeyFilterEnabled))
 		{
-			final Runnable callback = new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					setCurrentHUKey(rootHUKey);
-				}
-			};
+			final Runnable callback = () -> setCurrentHUKey(rootHUKey);
 			_huKeyFilterModel = new HUFilterPropertiesModel(terminalContext, callback);
 		}
 		else
@@ -1112,36 +1073,31 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Set the new models to our composite
-		propertiesPanelModel.setChildModels(new Supplier<Collection<IPropertiesPanelModel>>()
-		{
-			@Override
-			public Collection<IPropertiesPanelModel> get()
+		propertiesPanelModel.setChildModels(() -> {
+			final List<IPropertiesPanelModel> childPropertiesPanelModels = new ArrayList<>();
+
+			//
+			// Attribute Set Model
+			final HUAttributeSetPropertiesModel attributeSetModel = new HUAttributeSetPropertiesModel(getTerminalContext());
+			attributeSetModel.setReadonly(currentKey.isReadonly());
+			attributeSetModel.setAttributeStorage(currentKey.getAttributeSet());
+			attributeSetModel.setAttributesEditableOnlyIfVHU(attributesEditableOnlyIfVHU);
+			childPropertiesPanelModels.add(attributeSetModel);
+
+			//
+			// HU Properties if any (used to directly edit the HU properties like BPartner, BPartner Location etc)
+			final HUKey huKey = HUKey.castIfPossible(currentKey);
+			if (huKey != null)
 			{
-				final List<IPropertiesPanelModel> childPropertiesPanelModels = new ArrayList<>();
-
-				//
-				// Attribute Set Model
-				final HUAttributeSetPropertiesModel attributeSetModel = new HUAttributeSetPropertiesModel(getTerminalContext());
-				attributeSetModel.setReadonly(currentKey.isReadonly());
-				attributeSetModel.setAttributeStorage(currentKey.getAttributeSet());
-				attributeSetModel.setAttributesEditableOnlyIfVHU(attributesEditableOnlyIfVHU);
-				childPropertiesPanelModels.add(attributeSetModel);
-
-				//
-				// HU Properties if any (used to directly edit the HU properties like BPartner, BPartner Location etc)
-				final HUKey huKey = HUKey.castIfPossible(currentKey);
-				if (huKey != null)
+				final HUPropertiesModel huProperties = new HUPropertiesModel(getTerminalContext(), huKey.getM_HU());
+				if (huKey.isReadonly())
 				{
-					final HUPropertiesModel huProperties = new HUPropertiesModel(getTerminalContext(), huKey.getM_HU());
-					if (huKey.isReadonly())
-					{
-						huProperties.setEditable(false);
-					}
-					childPropertiesPanelModels.add(huProperties);
+					huProperties.setEditable(false);
 				}
-
-				return childPropertiesPanelModels;
+				childPropertiesPanelModels.add(huProperties);
 			}
+
+			return childPropertiesPanelModels;
 		});
 	}
 
@@ -1176,14 +1132,9 @@ public class HUEditorModel implements IDisposable
 		if (updateHUAllocationsOnSave)
 		{
 			final IHUKeyFactory keyFactory = rootHUKey.getKeyFactory();
-			trxManager.runInNewTrx(new TrxRunnable()
-			{
-				@Override
-				public void run(final String localTrxName)
-				{
-					final List<I_M_HU> originalTopLevelHUs = getOriginalTopLevelHUs();
-					keyFactory.createHUAllocations(rootHUKey, originalTopLevelHUs);
-				}
+			trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+				final List<I_M_HU> originalTopLevelHUs = getOriginalTopLevelHUs();
+				keyFactory.createHUAllocations(rootHUKey, originalTopLevelHUs);
 			});
 		}
 	}
@@ -1299,10 +1250,10 @@ public class HUEditorModel implements IDisposable
 	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
 	{
 		final Set<I_M_HU> selectedHUs = getSelectedHUs();
-		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
+		final ZonedDateTime movementDate = Env.getZonedDateTime(getTerminalContext().getCtx());
 
-		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
-		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(selectedHUs, movementDate, ActivityId.ofRepoIdOrNull(-1), null, true, true);
+		final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(selectedHUs, movementDate, ActivityId.ofRepoIdOrNull(-1), null, true, true);
 
 		//
 		// Refresh the HUKeys

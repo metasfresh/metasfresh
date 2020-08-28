@@ -37,6 +37,7 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
+import de.metas.uom.UOMType;
 
 @Ignore
 public class ListAttributeStorage extends AbstractAttributeStorage
@@ -135,7 +136,7 @@ public class ListAttributeStorage extends AbstractAttributeStorage
 	}
 
 	@Override
-	public String getQtyUOMTypeOrNull()
+	public UOMType getQtyUOMTypeOrNull()
 	{
 		throw new UnsupportedOperationException();
 	}

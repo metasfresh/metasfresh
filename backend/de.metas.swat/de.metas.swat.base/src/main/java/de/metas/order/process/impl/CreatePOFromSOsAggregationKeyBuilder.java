@@ -1,6 +1,6 @@
 package de.metas.order.process.impl;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import org.adempiere.exceptions.AdempiereException;

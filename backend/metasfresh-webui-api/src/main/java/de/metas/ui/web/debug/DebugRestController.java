@@ -1,95 +1,8 @@
-package de.metas.ui.web.debug;
-
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryStatisticsLogger;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.simp.SimpMessageType;
-import org.springframework.messaging.support.GenericMessage;
-import org.springframework.util.MimeType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import ch.qos.logback.classic.Level;
-import de.metas.cache.CacheMgt;
-import de.metas.event.Topic;
-import de.metas.event.Type;
-import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
-import de.metas.notification.UserNotificationTargetType;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.process.ProcessRestController;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.SqlViewFactory;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.view.ViewRowOverridesHelper;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
-import de.metas.ui.web.view.event.JSONViewChanges;
-import de.metas.ui.web.view.event.ViewChanges;
-import de.metas.ui.web.view.json.JSONViewResult;
-import de.metas.ui.web.websocket.WebSocketConfig;
-import de.metas.ui.web.websocket.WebsocketEventLogRecord;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -106,6 +19,84 @@ import io.swagger.annotations.ApiResponses;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.debug;
+
+import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CacheMgt;
+import de.metas.event.Topic;
+import de.metas.event.Type;
+import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
+import de.metas.notification.UserNotificationTargetType;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.comments.CommentsService;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.process.ProcessRestController;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.SqlViewFactory;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.ViewRowOverridesHelper;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 @ApiResponses(value = { @ApiResponse(code = 401, message = "Unauthorized") })
 @RestController
@@ -138,10 +129,6 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private IQueryStatisticsLogger statisticsLogger;
-
-	@Autowired
-	@Lazy
-	private WebsocketSender websocketSender;
 
 	@Autowired
 	@Lazy
@@ -277,7 +264,7 @@ public class DebugRestController
 		return viewsRepo.getViews()
 				.stream()
 				.map(ViewResult::ofView)
-				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, jsonOpts))
+				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, jsonOpts, ViewRowCommentsSummary.EMPTY))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -337,55 +324,6 @@ public class DebugRestController
 		}
 
 		Services.get(INotificationBL.class).send(request.build());
-	}
-
-	@PostMapping("/websocket/post")
-	public void postToWebsocket(
-			@RequestParam("endpoint") final String endpoint, @RequestBody final String messageStr)
-	{
-		userSession.assertLoggedIn();
-
-		final Charset charset = Charset.forName("UTF-8");
-		final Map<String, Object> headers = ImmutableMap.<String, Object> builder()
-				.put("simpMessageType", SimpMessageType.MESSAGE)
-				.put("contentType", new MimeType("application", "json", charset))
-				.build();
-		final Message<?> message = new GenericMessage<>(messageStr.getBytes(charset), headers);
-		websocketSender.sendMessage(endpoint, message);
-	}
-
-	@PostMapping("/websocket/view/fireRowChanges")
-	public void sendWebsocketViewChangedNotification(
-			@RequestParam("viewId") final String viewIdStr,
-			@RequestParam("changedIds") final String changedIdsStr)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
-		final DocumentIdsSelection changedRowIds = DocumentIdsSelection.ofCommaSeparatedString(changedIdsStr);
-		sendWebsocketViewChangedNotification(viewId, changedRowIds);
-	}
-
-	private void sendWebsocketViewChangedNotification(final ViewId viewId, final DocumentIdsSelection changedRowIds)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewChanges viewChanges = new ViewChanges(viewId);
-		viewChanges.addChangedRowIds(changedRowIds);
-		JSONViewChanges jsonViewChanges = JSONViewChanges.of(viewChanges);
-
-		final String endpoint = WebSocketConfig.buildViewNotificationsTopicName(jsonViewChanges.getViewId());
-		try
-		{
-			websocketSender.convertAndSend(endpoint, jsonViewChanges);
-		}
-		catch (final Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex)
-					.appendParametersToMessage()
-					.setParameter("json", jsonViewChanges);
-		}
-
 	}
 
 	@GetMapping("/logger/{loggerName}/_getUpToRoot")
@@ -532,25 +470,6 @@ public class DebugRestController
 		return ImmutableMap.of("value", useHttpAcceptLanguage, "valueOld", useHttpAcceptLanguageOld);
 	}
 
-	@GetMapping("websocketLogging")
-	public void setWebsocketLoggingConfig(
-			@RequestParam("enabled") final boolean enabled,
-			@RequestParam(value = "maxLoggedEvents", defaultValue = "500") final int maxLoggedEvents)
-	{
-		userSession.assertLoggedIn();
-
-		websocketSender.setLogEventsEnabled(enabled);
-		websocketSender.setLogEventsMaxSize(maxLoggedEvents);
-	}
-
-	@GetMapping("websocketEvents")
-	public List<WebsocketEventLogRecord> getWebsocketLoggedEvents(@RequestParam(value = "destinationFilter", required = false) final String destinationFilter)
-	{
-		userSession.assertLoggedIn();
-
-		return websocketSender.getLoggedEvents(destinationFilter);
-	}
-
 	@PostMapping("/view/{viewId}/deleteRows")
 	public String viewDeleteRowIds(
 			@PathVariable("viewId") final String viewIdStr,
@@ -575,7 +494,7 @@ public class DebugRestController
 
 		//
 		// Notify
-		sendWebsocketViewChangedNotification(viewId, rowIds);
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(view, rowIds);
 
 		return "Deleted " + countDeleted + " rows";
 	}

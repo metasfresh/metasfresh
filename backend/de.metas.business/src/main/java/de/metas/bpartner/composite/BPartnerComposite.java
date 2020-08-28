@@ -2,8 +2,8 @@ package de.metas.bpartner.composite;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 import java.util.ArrayList;
 import java.util.Comparator;

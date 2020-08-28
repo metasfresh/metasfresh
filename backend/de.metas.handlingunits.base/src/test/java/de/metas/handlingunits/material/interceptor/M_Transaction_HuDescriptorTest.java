@@ -14,8 +14,8 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -66,7 +66,7 @@ public class M_Transaction_HuDescriptorTest
 
 	private I_M_HU_PI huDefPalet;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		helper = new HUTestHelper();

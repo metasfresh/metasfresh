@@ -1,6 +1,8 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -18,10 +20,10 @@ import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
@@ -30,6 +32,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -71,6 +74,8 @@ public class AddQtyToHUCommand
 	private final IPackagingDAO packingDAO = Services.get(IPackagingDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -91,8 +96,6 @@ public class AddQtyToHUCommand
 			@NonNull final AddQtyToHURequest request)
 	{
 		this.sourceHUIds = request.getSourceHUIds();
-		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.packToHuId = request.getPackToHuId();
@@ -146,6 +149,11 @@ public class AddQtyToHUCommand
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
 
 		addQtyToCandidate(candidate, productId, qtyPicked);
+
+		final BPartnerLocationId bPartnerLocationId = shipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
+		final BPartnerId bPartnerId = bPartnerLocationId.getBpartnerId();
+
+		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bPartnerId, bPartnerLocationId);
 
 		return qtyPicked;
 	}
@@ -213,7 +221,7 @@ public class AddQtyToHUCommand
 		{
 			final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 			final Quantity qty = candidate.getQtyPicked();
-			final Quantity qtyToAddConv = uomConversionBL.convertQuantityTo(qty, conversionCtx, qty.getUOM());
+			final Quantity qtyToAddConv = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, UomId.ofRepoId(qty.getUOM().getC_UOM_ID()));
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
@@ -234,6 +242,7 @@ public class AddQtyToHUCommand
 		if (qtyToPack.compareTo(qtyToDeliver) > 0)
 		{
 			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
+					.appendParametersToMessage()
 					.setParameter("qtyToDeliverTarget", qtyToDeliverTarget)
 					.setParameter("qtyPickedPlanned", qtyPickedPlanned)
 					.setParameter("qtyToPack", qtyToPack);

@@ -157,7 +157,7 @@
         width: 100%;
         margin-bottom: 0;
 
-        .table-row {
+        .table-context {
             width: 100%;
             display: flex;
 
@@ -275,7 +275,7 @@
 
     .btn-fullscreen {
         position: absolute;
-        top: -7px;
+        top: 0px;
         right: 7px;
 
         @media (min-width: $breakpoint-sm){

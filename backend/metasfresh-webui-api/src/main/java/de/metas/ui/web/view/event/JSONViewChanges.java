@@ -1,16 +1,16 @@
 package de.metas.ui.web.view.event;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+
+import java.io.Serializable;
+import java.util.Set;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewChanges implements Serializable
 {
-	public static JSONViewChanges of(final ViewChanges changes)
+	public static JSONViewChanges of(@NonNull final ViewChanges changes)
 	{
 		return new JSONViewChanges(changes);
 	}
@@ -56,7 +56,11 @@ public final class JSONViewChanges implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> changedIds;
 
-	private JSONViewChanges(final ViewChanges changes)
+	@JsonProperty("headerPropertiesChanged")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean headerPropertiesChanged;
+
+	private JSONViewChanges(@NonNull final ViewChanges changes)
 	{
 		super();
 
@@ -80,6 +84,7 @@ public final class JSONViewChanges implements Serializable
 			fullyChanged = Boolean.FALSE;
 			this.changedIds = changedRowIds.toJsonSet();
 		}
+		headerPropertiesChanged = changes.isHeaderPropertiesChanged() ? true : null;
 	}
 
 	@Override
@@ -90,6 +95,7 @@ public final class JSONViewChanges implements Serializable
 				.add("viewId", viewId)
 				.add("windowId", windowId)
 				.add("fullyChanged", fullyChanged)
+				.add("headerPropertiesChanged", headerPropertiesChanged)
 				.add("changedIds", changedIds)
 				.toString();
 	}

@@ -100,7 +100,6 @@ public class CustomsInvoiceServiceTest
 	private UomId uom1;
 	private UomId uom2;
 	private final BigDecimal convertionMultiplier = new BigDecimal("2");
-	private final BigDecimal conversionDivisor = new BigDecimal("0.5");
 
 	@BeforeEach
 	public void init()
@@ -133,7 +132,6 @@ public class CustomsInvoiceServiceTest
 				.fromUomId(uom2)
 				.toUomId(uom1)
 				.fromToMultiplier(convertionMultiplier)
-				.toFromMultiplier(conversionDivisor)
 				.build());
 
 		final PlainCurrencyDAO currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);

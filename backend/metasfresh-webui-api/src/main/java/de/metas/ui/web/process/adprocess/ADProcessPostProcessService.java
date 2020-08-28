@@ -97,7 +97,7 @@ public class ADProcessPostProcessService
 	public ProcessInstanceResult postProcess(@NonNull final ADProcessPostProcessRequest request)
 	{
 		final ProcessInfo processInfo = request.getProcessInfo();
-		
+
 		final TableRecordReference currentSingleSelectedDocumentRef = processInfo.getRecordRefOrNull();
 		final ProcessExecutionResult processExecutionResult = request.getProcessExecutionResult();
 
@@ -132,18 +132,18 @@ public class ADProcessPostProcessService
 		//
 		// Refresh all
 		boolean viewInvalidateAllCalled = false;
-		
+
 		if (processExecutionResult.isRefreshAllAfterExecution())
 		{
 			final IView view = viewSupplier.get();
-			
+
 			if (view != null)
 			{ // multiple rows selected
 				view.invalidateAll();
 				ViewChangesCollector.getCurrentOrAutoflush()
 						.collectFullyChanged(view);
 				viewInvalidateAllCalled = true;
-				
+
 				documentsCollection.invalidateDocumentsByWindowId(view.getViewId().getWindowId());
 			}
 			else if (currentSingleSelectedDocumentRef != null)
@@ -164,7 +164,8 @@ public class ADProcessPostProcessService
 			final IView view = viewSupplier.get();
 			if (!viewInvalidateAllCalled && view != null)
 			{
-				view.notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh));
+				final boolean watchedByFrontend = viewsRepo.isWatchedByFrontend(view.getViewId());
+				view.notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh), watchedByFrontend);
 			}
 		}
 	}
@@ -317,7 +318,7 @@ public class ADProcessPostProcessService
 		final CreateViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
 				.setReferencingDocumentPaths(referencingDocumentPaths)
 				.setParentViewId(parentViewId)
-				.setUseAutoFilters(true)
+				.setUseAutoFilters(recordsToOpen.isUseAutoFilters())
 				.build();
 		return viewRequest;
 	}

@@ -13,7 +13,7 @@
  *****************************************************************************/
 package de.metas.impexp.excel;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.io.File;
 import java.io.FileOutputStream;

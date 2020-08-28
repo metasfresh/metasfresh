@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.organization.OrgId;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
 import de.metas.phonecall.PhonecallSchemaVersionId;
@@ -93,6 +94,7 @@ public class PhonecallScheduleRepository
 				record.getC_Phonecall_Schema_Version_ID());
 
 		return PhonecallSchedule.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
 				.contactId(UserId.ofRepoId(record.getC_BP_Contact_ID()))
 				.date(TimeUtil.asLocalDate(record.getPhonecallDate()))

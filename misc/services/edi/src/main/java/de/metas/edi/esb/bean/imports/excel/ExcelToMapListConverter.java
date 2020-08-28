@@ -208,7 +208,6 @@ public class ExcelToMapListConverter
 	/**
 	 * Read rows of type {@link RowType#TableHeader}.
 	 *
-	 * @param cellIt
 	 * @return column index to header name map
 	 */
 	private Map<Integer, String> readRow_TableHeader(final Iterator<Cell> cellIt)
@@ -271,7 +270,6 @@ public class ExcelToMapListConverter
 	/**
 	 * Read rows of type {@link RowType#NameValuePair}.
 	 *
-	 * @param cellIt
 	 * @return key name to value map
 	 */
 	private Map<String, Object> readRow_NameValuePair(final Iterator<Cell> cellIt)

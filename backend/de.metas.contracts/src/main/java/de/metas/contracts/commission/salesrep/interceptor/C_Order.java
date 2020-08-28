@@ -1,6 +1,6 @@
 package de.metas.contracts.commission.salesrep.interceptor;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.ad.callout.annotations.Callout;

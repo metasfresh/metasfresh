@@ -60,6 +60,7 @@ public class PaymentRow implements IViewRow
 	private final String documentNo;
 
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateTrx")
+	@Getter
 	private final LocalDate dateTrx;
 
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_ID")

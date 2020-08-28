@@ -6,7 +6,6 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -25,6 +24,7 @@ import de.metas.process.SelectionSize;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -212,8 +212,8 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	public <T> IQueryFilter<T> getQueryFilter(@NonNull final Class<T> recordClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(recordClass);
-		final String sqlWhereClause = view.getSqlWhereClause(getSelectedRowIds(), SqlOptions.usingTableName(tableName));
-		return TypedSqlQueryFilter.of(sqlWhereClause);
+		final SqlViewRowsWhereClause sqlWhereClause = view.getSqlWhereClause(getSelectedRowIds(), SqlOptions.usingTableName(tableName));
+		return sqlWhereClause.toQueryFilter();
 	}
 
 	private static final class SelectedModelsList

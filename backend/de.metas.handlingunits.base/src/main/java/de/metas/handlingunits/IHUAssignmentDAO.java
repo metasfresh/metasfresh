@@ -22,19 +22,6 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -42,6 +29,17 @@ import de.metas.util.ISingletonService;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public interface IHUAssignmentDAO extends ISingletonService
 {

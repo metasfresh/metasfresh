@@ -23,7 +23,6 @@ package de.metas.invoice.service.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,7 +34,6 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
-import org.compiere.model.MInvoiceLine;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -80,12 +78,6 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 
 	@Override
 	public I_C_InvoiceLine createInvoiceLine(String trxName)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Collection<MInvoiceLine> retrieveReferringLines(Properties ctx, int invoiceLineId, String trxName)
 	{
 		throw new UnsupportedOperationException();
 	}

@@ -1,11 +1,16 @@
 package de.metas.ui.web.view.event;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -17,17 +22,12 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.websocket.WebSocketConfig;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -53,7 +53,8 @@ import lombok.NonNull;
 
 public class ViewChangesCollector implements IAutoCloseable
 {
-	public static final ViewChangesCollector getCurrentOrNull()
+	@Nullable
+	public static ViewChangesCollector getCurrentOrNull()
 	{
 		//
 		// Try getting thread level collector
@@ -64,6 +65,7 @@ public class ViewChangesCollector implements IAutoCloseable
 			{
 				// shall not happen
 				THREADLOCAL.remove();
+				//noinspection UnusedAssignment
 				threadLocalCollector = null;
 			}
 			else
@@ -93,7 +95,7 @@ public class ViewChangesCollector implements IAutoCloseable
 		return null;
 	}
 
-	public static final ViewChangesCollector getCurrentOrAutoflush()
+	public static ViewChangesCollector getCurrentOrAutoflush()
 	{
 		final ViewChangesCollector collector = getCurrentOrNull();
 		if (collector != null)
@@ -174,7 +176,7 @@ public class ViewChangesCollector implements IAutoCloseable
 		return closed.get();
 	}
 
-	private final void assertNotClosed()
+	private void assertNotClosed()
 	{
 		if (closed.get())
 		{
@@ -209,8 +211,13 @@ public class ViewChangesCollector implements IAutoCloseable
 		autoflushIfEnabled();
 	}
 
-	public void collectRowsChanged(@NonNull final IView view, final Collection<DocumentId> rowIds)
+	public void collectRowsChanged(@NonNull final IView view, @NonNull final Collection<DocumentId> rowIds)
 	{
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
 		viewChanges(view).addChangedRowIds(rowIds);
 
 		autoflushIfEnabled();
@@ -223,13 +230,21 @@ public class ViewChangesCollector implements IAutoCloseable
 		autoflushIfEnabled();
 	}
 
-	private void collectFromChanges(final ViewChanges changes)
+	public void collectHeaderPropertiesChanged(@NonNull final IView view)
+	{
+		viewChanges(view).setHeaderPropertiesChanged();
+
+		autoflushIfEnabled();
+	}
+
+	private void collectFromChanges(@NonNull final ViewChanges changes)
 	{
 		viewChanges(changes.getViewId()).collectFrom(changes);
 
 		autoflushIfEnabled();
 	}
 
+ 	@Nullable
 	private ViewChangesCollector getParentOrNull()
 	{
 		final ViewChangesCollector threadLocalCollector = getCurrentOrNull();
@@ -293,7 +308,7 @@ public class ViewChangesCollector implements IAutoCloseable
 
 	private void sendToWebsocket(final JSONViewChanges jsonChangeEvent)
 	{
-		final String endpoint = WebSocketConfig.buildViewNotificationsTopicName(jsonChangeEvent.getViewId());
+		final WebsocketTopicName endpoint = WebsocketTopicNames.buildViewNotificationsTopicName(jsonChangeEvent.getViewId());
 		try
 		{
 			websocketSender.convertAndSend(endpoint, jsonChangeEvent);

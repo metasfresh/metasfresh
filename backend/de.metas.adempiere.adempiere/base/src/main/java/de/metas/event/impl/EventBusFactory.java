@@ -1,10 +1,13 @@
 package de.metas.event.impl;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -17,8 +20,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 
@@ -33,12 +36,9 @@ import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 @Service
 public class EventBusFactory implements IEventBusFactory
 {
-
 	private static final Logger logger = LogManager.getLogger(EventBusFactory.class);
 
 	/**
@@ -74,6 +74,8 @@ public class EventBusFactory implements IEventBusFactory
 		// Setup default user notification topics
 		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotifications);
 		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotificationsLocal);
+
+		remoteEndpoint.setEventBusFactory(this);
 	}
 
 	@Override
@@ -102,6 +104,12 @@ public class EventBusFactory implements IEventBusFactory
 	public IEventBus getEventBusIfExists(@NonNull final Topic topic)
 	{
 		return topic2eventBus.getIfPresent(topic);
+	}
+
+	@Override
+	public List<IEventBus> getAllEventBusInstances()
+	{
+		return ImmutableList.copyOf(topic2eventBus.asMap().values());
 	}
 
 	@Override
@@ -168,7 +176,10 @@ public class EventBusFactory implements IEventBusFactory
 					.setDaemon(true)
 					.build());
 		}
-		return null;
+		else
+		{
+			return null;
+		}
 	}
 
 	private void destroyEventBus(@NonNull final EventBus eventBus)

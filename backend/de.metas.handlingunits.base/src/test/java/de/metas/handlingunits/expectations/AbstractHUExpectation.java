@@ -24,7 +24,6 @@ public class AbstractHUExpectation<ParentExpectationType> extends AbstractExpect
 	/** No parent constructor */
 	protected AbstractHUExpectation()
 	{
-		super();
 	}
 
 }

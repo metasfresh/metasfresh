@@ -51,6 +51,9 @@ public class CreateFlatrateTermRequest
 	Timestamp startDate;
 
 	@Nullable
+	Timestamp endDate;
+
+	@Nullable
 	I_AD_User userInCharge;
 
 	@Nullable

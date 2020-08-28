@@ -24,6 +24,7 @@ package de.metas.handlingunits.expectations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -38,7 +39,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -46,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Used to specify expectations related to a single HU. Hint: use within the greater framework of {@link HUsExpectation}
@@ -61,52 +65,60 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		return new HUExpectation<>();
 	}
 
+	public static final HUExpectation<Object> newVirtualHU()
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU_PI virtualPI = handlingUnitsDAO.retrieveVirtualPI(Env.getCtx());
+		return new HUExpectation<>()
+				.huPI(virtualPI);
+	}
+
 	private I_M_HU_PI _huPI = null;
 	private String _instanceName;
-	private String _huStatus = null;
-	private boolean _huStatusSet = false;
-	private I_M_Locator _locator;
-	private boolean _locatorSet;
+	private Optional<String> huStatus = null;
+	private Optional<I_M_Locator> locator;
 
 	private I_C_BPartner _bpartner = null;
 	private I_C_BPartner_Location _bpartnerLocation = null;
 
-	private List<HUItemExpectation<HUExpectation<ParentExpectationType>>> huItemExpectations = null;
-
-	/** Capture: HU */
-	private IMutable<I_M_HU> _huToSetRef;
-
-	/** HU attributes expectations */
+	private List<HUStorageExpectation<Object>> huStorageExpectations = null;
+	private List<HUItemExpectation<?>> huItemExpectations = null;
 	private HUAttributeExpectations<HUExpectation<ParentExpectationType>> attributesExpectations = null;
 
-	public HUExpectation()
+	private IMutable<I_M_HU> huCaptor;
+
+	private HUExpectation()
 	{
 		this(null);
 		setContext(PlainContextAware.newOutOfTrx(Env.getCtx()));
 	}
 
-	public HUExpectation(final ParentExpectationType parentExpectation)
+	HUExpectation(final ParentExpectationType parentExpectation)
 	{
 		super(parentExpectation);
 	}
 
-	public HUExpectation<ParentExpectationType> assertExpected(final String message, final I_M_HU hu)
+	public HUExpectation<ParentExpectationType> assertExpected(final String message, @NonNull final HuId huId)
 	{
-		Assert.assertNotNull("hu not null", hu);
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		return assertExpected(message, hu);
+	}
 
+	public HUExpectation<ParentExpectationType> assertExpected(final String message, @NonNull final I_M_HU hu)
+	{
 		final String prefix = (message == null ? "" : message)
 				+ "\nHU: " + hu
 				+ "\n"
 				+ "\nInvalid ";
 
-		if (_huStatusSet)
+		if (huStatus != null)
 		{
-			Assert.assertEquals(prefix + "HUStatus", _huStatus, hu.getHUStatus());
+			Assert.assertEquals(prefix + "HUStatus", huStatus.orElse(null), hu.getHUStatus());
 		}
 
-		if (_locatorSet)
+		if (locator != null)
 		{
-			assertModelEquals(prefix + "M_Locator", _locator, IHandlingUnitsBL.extractLocatorOrNull(hu));
+			assertModelEquals(prefix + "M_Locator", locator.orElse(null), IHandlingUnitsBL.extractLocatorOrNull(hu));
 		}
 
 		if (_huPI != null)
@@ -132,9 +144,17 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		//
 		// Set capture
-		if (_huToSetRef != null)
+		if (huCaptor != null)
 		{
-			_huToSetRef.setValue(hu);
+			huCaptor.setValue(hu);
+		}
+
+		if (huStorageExpectations != null)
+		{
+			for (final HUStorageExpectation<Object> huStorageExpectation : huStorageExpectations)
+			{
+				huStorageExpectation.assertExpected(hu);
+			}
 		}
 
 		if (attributesExpectations != null)
@@ -193,9 +213,9 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		//
 		// Get HUStatus to set
 		final String huStatus;
-		if (isHUStatusSet())
+		if (this.huStatus != null)
 		{
-			huStatus = getHUStatus();
+			huStatus = this.huStatus.orElse(null);
 		}
 		else if (parentHUItem != null)
 		{
@@ -209,9 +229,9 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		//
 		// Get M_Locator to set
 		final I_M_Locator locator;
-		if (_locatorSet)
+		if (this.locator != null)
 		{
-			locator = _locator;
+			locator = this.locator.orElse(null);
 		}
 		else if (parentHUItem != null)
 		{
@@ -245,16 +265,16 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		// Create HU Items
 		if (huItemExpectations != null)
 		{
-			for (final HUItemExpectation<HUExpectation<ParentExpectationType>> huItemExpectation : huItemExpectations)
+			for (final HUItemExpectation<?> huItemExpectation : huItemExpectations)
 			{
 				huItemExpectation.createHUItem(hu);
 			}
 		}
 
 		// Capture the HU if required
-		if (_huToSetRef != null)
+		if (huCaptor != null)
 		{
-			_huToSetRef.setValue(hu);
+			huCaptor.setValue(hu);
 		}
 
 		return hu;
@@ -273,15 +293,13 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 	public HUExpectation<ParentExpectationType> huStatus(final String huStatus)
 	{
-		this._huStatus = huStatus;
-		this._huStatusSet = true;
+		this.huStatus = Optional.ofNullable(huStatus);
 		return this;
 	}
 
 	public HUExpectation<ParentExpectationType> locator(I_M_Locator locator)
 	{
-		this._locator = locator;
-		this._locatorSet = true;
+		this.locator = Optional.ofNullable(locator);
 		return this;
 	}
 
@@ -295,16 +313,6 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	{
 		this._bpartnerLocation = bpartnerLocation;
 		return this;
-	}
-
-	public String getHUStatus()
-	{
-		return _huStatus;
-	}
-
-	private final boolean isHUStatusSet()
-	{
-		return _huStatusSet;
 	}
 
 	/**
@@ -330,32 +338,38 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		return handlingUnitsDAO.retrievePICurrentVersion(pi);
 	}
 
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> newHUItemExpectation()
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> item()
 	{
 		final HUItemExpectation<HUExpectation<ParentExpectationType>> expectation = new HUItemExpectation<>(this);
+		item(expectation);
+		return expectation;
+	}
+
+	public HUExpectation<ParentExpectationType> item(@NonNull final HUItemExpectation<?> expectation)
+	{
 		if (huItemExpectations == null)
 		{
 			huItemExpectations = new ArrayList<>();
 		}
 		huItemExpectations.add(expectation);
-		return expectation;
+		return this;
 	}
 
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> newHUItemExpectation(final I_M_HU_PI_Item piItem)
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> item(final I_M_HU_PI_Item piItem)
 	{
-		return newHUItemExpectation()
+		return item()
 				.huPIItem(piItem);
 	}
 
 	/**
-	 * Create and return an expectation for a VHU item. This is usually within a {@link HUItemExpectation#newIncludedVirtualHU()}.
+	 * Create and return an expectation for a VHU item. This is usually within a {@link HUItemExpectation#includedVirtualHU()}.
 	 * 
 	 * @return
 	 */
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> newVirtualHUItemExpectation()
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> virtualPIItem()
 	{
 		final I_M_HU_PI_Item virtualPIItem = handlingUnitsDAO.retrieveVirtualPIItem(Env.getCtx());
-		return newHUItemExpectation(virtualPIItem);
+		return item(virtualPIItem);
 	}
 
 	/**
@@ -365,13 +379,12 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	 * @return
 	 * @return {@link HUItemExpectation}; never return null
 	 */
-	public HUItemExpectation<HUExpectation<ParentExpectationType>> huItemExpectation(final I_M_HU_PI_Item piItem)
+	public HUItemExpectation<HUExpectation<ParentExpectationType>> existingItem(@NonNull final I_M_HU_PI_Item piItem)
 	{
-		Check.assumeNotNull(piItem, "piItem not null");
 		Check.assumeNotNull(huItemExpectations, "huItemExpectations not null");
 
-		final List<HUItemExpectation<HUExpectation<ParentExpectationType>>> result = new ArrayList<>();
-		for (final HUItemExpectation<HUExpectation<ParentExpectationType>> huItemExpectation : huItemExpectations)
+		final List<HUItemExpectation<?>> matchingExpectations = new ArrayList<>();
+		for (final HUItemExpectation<?> huItemExpectation : huItemExpectations)
 		{
 			final I_M_HU_PI_Item current_piItem = huItemExpectation.getM_HU_PI_Item();
 			if (current_piItem == null)
@@ -384,20 +397,24 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 				continue;
 			}
 
-			result.add(huItemExpectation);
+			matchingExpectations.add(huItemExpectation);
 		}
 
-		if (result.isEmpty())
+		if (matchingExpectations.isEmpty())
 		{
 			throw new IllegalArgumentException("No HU Item Expectation found for " + piItem);
 		}
-		else if (result.size() > 1)
+		else if (matchingExpectations.size() > 1)
 		{
 			throw new IllegalArgumentException("More then one HU Item Expectation found for " + piItem
-					+ "\n\n" + result);
+					+ "\n\n" + matchingExpectations);
 		}
-
-		return result.get(0);
+		else
+		{
+			@SuppressWarnings("unchecked")
+			final HUItemExpectation<HUExpectation<ParentExpectationType>> expectation = (HUItemExpectation<HUExpectation<ParentExpectationType>>)matchingExpectations.get(0);
+			return expectation;
+		}
 	}
 
 	/**
@@ -406,20 +423,17 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	 * <li>creating the HU: invoke {@link #createHU(I_M_HU_Item)} to generate it
 	 * <li>testing: invoke {@link #assertExpected(String, I_M_HU)} to verify that the HU is as expected
 	 * </ul>
-	 *
-	 * @param huToSetRef
-	 * @return this
 	 */
-	public HUExpectation<ParentExpectationType> capture(final IMutable<I_M_HU> huToSetRef)
+	public HUExpectation<ParentExpectationType> capture(final IMutable<I_M_HU> huCaptor)
 	{
-		this._huToSetRef = huToSetRef;
+		this.huCaptor = huCaptor;
 		return this;
 	}
 
 	public I_M_HU getCapturedHU()
 	{
-		Check.assumeNotNull(_huToSetRef, "Expectation {} was not configured to capture HU", this);
-		return _huToSetRef.getValue();
+		Check.assumeNotNull(huCaptor, "Expectation {} was not configured to capture HU", this);
+		return huCaptor.getValue();
 	}
 
 	public HUAttributeExpectations<HUExpectation<ParentExpectationType>> attributesExpectations()
@@ -429,5 +443,17 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 			attributesExpectations = new HUAttributeExpectations<>(this);
 		}
 		return attributesExpectations;
+	}
+
+	public HUExpectation<ParentExpectationType> storage(@NonNull final HUStorageExpectation<Object> expectation)
+	{
+		if (huStorageExpectations == null)
+		{
+			huStorageExpectations = new ArrayList<>();
+		}
+
+		huStorageExpectations.add(expectation);
+
+		return this;
 	}
 }

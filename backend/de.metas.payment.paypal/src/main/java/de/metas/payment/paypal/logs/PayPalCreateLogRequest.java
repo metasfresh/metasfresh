@@ -15,7 +15,7 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.paypal.client.PayPalOrderId;
 import de.metas.payment.reservation.PaymentReservationCaptureId;
 import de.metas.payment.reservation.PaymentReservationId;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

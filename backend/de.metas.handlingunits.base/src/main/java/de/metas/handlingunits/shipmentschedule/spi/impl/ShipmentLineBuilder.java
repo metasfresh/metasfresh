@@ -1,60 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
-import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -94,6 +41,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityTU;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -103,6 +51,33 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -141,7 +116,7 @@ import lombok.NonNull;
 	private Quantity catchQty = null;
 
 	/* Used to collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs. */
-	private HashMap<HUPIItemProductId, BigDecimal> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
+	private HashMap<HUPIItemProductId, QuantityTU> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
 
 	/** Candidates which were added to this builder */
 	private final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
@@ -327,10 +302,10 @@ import lombok.NonNull;
 			final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
 			final boolean qtTuOverrideIsSet = !isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override);
-			final BigDecimal qtyTUtoUse;
+			final QuantityTU qtyTUtoUse;
 			if (qtTuOverrideIsSet)
 			{
-				qtyTUtoUse = shipmentSchedule.getQtyTU_Override();
+				qtyTUtoUse = QuantityTU.ofBigDecimal(shipmentSchedule.getQtyTU_Override());
 			}
 			else
 			{
@@ -348,17 +323,17 @@ import lombok.NonNull;
 						.create()
 						.list(I_M_InOutLine.class);
 
-				BigDecimal qtyTU = shipmentSchedule.getQtyTU_Calculated();
+				QuantityTU qtyTU = QuantityTU.ofBigDecimal(shipmentSchedule.getQtyTU_Calculated());
 				for (final I_M_InOutLine shipmentLine : shipmentLinesOfShipmentSchedule)
 				{
-					qtyTU = qtyTU.subtract(shipmentLine.getQtyEnteredTU());
+					qtyTU = qtyTU.subtract(QuantityTU.ofBigDecimal(shipmentLine.getQtyEnteredTU()));
 				}
 				qtyTUtoUse = qtyTU;
 			}
 			piipId2TuQtyFromShipmentSchedule.merge(
 					HUPIItemProductId.ofRepoId(piip.getM_HU_PI_Item_Product_ID()),
 					qtyTUtoUse,
-					BigDecimal::add);
+					QuantityTU::add);
 		}
 
 		// Add current candidate to the list of candidates that will compose the generated shipment line
@@ -494,25 +469,25 @@ import lombok.NonNull;
 
 			if (getQtyTypeToUse().isOnlyUseToDeliver())
 			{
-				final int qtyTUs = computeQtyTUs(piipForShipmentLine);
-				shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUs));
+				final QuantityTU qtyTUs = computeQtyTUs(piipForShipmentLine);
+				shipmentLine.setQtyTU_Override(qtyTUs.toBigDecimal());
 			}
 			else if (isManualPackingMaterial())
 			{
 				// there are no real HUs, so we need to calculate what the tu-qty would be
 				final HUPIItemProductId piipForShipmentLineId = HUPIItemProductId.ofRepoId(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
-				final BigDecimal qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLineId);
+				final QuantityTU qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLineId);
 
 				if (qtyTU != null && !getQtyTypeToUse().isUseBoth())
 				{
-					shipmentLine.setQtyTU_Override(qtyTU);
+					shipmentLine.setQtyTU_Override(qtyTU.toBigDecimal());
 				}
 				else
 				{
 					// there are no real HUs, *and* we don't have any infos from the shipment schedule;
 					// therefore, we make an educated guess, based on the packing instruction
-					final int qtyTUsCalculated = computeQtyTUs(piipForShipmentLine);
-					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUsCalculated));
+					final QuantityTU qtyTUsCalculated = computeQtyTUs(piipForShipmentLine);
+					shipmentLine.setQtyTU_Override(qtyTUsCalculated.toBigDecimal());
 				}
 			}
 		}
@@ -560,17 +535,12 @@ import lombok.NonNull;
 		}
 	}
 
-	@Nullable
-	private int computeQtyTUs(final I_M_HU_PI_Item_Product piipForShipmentLine)
+	private QuantityTU computeQtyTUs(final I_M_HU_PI_Item_Product piipForShipmentLine)
 	{
 		final I_C_UOM productUOM = productBL.getStockUOM(productId);
 		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
-		final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
-		if (qtyTUFromCapacity == null)
-		{
-			throw new AdempiereException("Invalid capacity: " + capacity);
-		}
-		return qtyTUFromCapacity;
+		return capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM, uomConversionBL)
+				.orElseThrow(() -> new AdempiereException("Invalid capacity: " + capacity));
 	}
 
 	/**

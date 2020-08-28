@@ -1146,17 +1146,21 @@ public final class Document
 	}
 
 	/**
-	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
-	 *
-	 * @param fieldName
-	 * @param value
-	 * @param reason
+	 * Similar with {@link #setValue(String, Object, ReasonSupplier)}
+	 * but this method is also
+	 * <li>checking if we are allowed to change that field (if <code>ignoreReadonlyFlag</code> is false)
+	 * <li>trigger document processing if <code>fieldName</code> is {@link WindowConstants#FIELDNAME_DocAction}.
 	 */
-	public void processValueChange(final String fieldName, final Object value, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	public void processValueChange(
+			@NonNull final String fieldName,
+			@Nullable final Object value,
+			@Nullable final ReasonSupplier reason,
+			final boolean ignoreReadonlyFlag)
+			throws DocumentFieldReadonlyException
 	{
 		final IDocumentField documentField = getField(fieldName);
 
-		if (documentField.isReadonly())
+		if (!ignoreReadonlyFlag && documentField.isReadonly())
 		{
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
@@ -1171,13 +1175,14 @@ public final class Document
 		}
 	}
 
-	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, @Nullable final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
 		{
 			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 			{
-				processValueChange(event.getPath(), event.getValue(), reason);
+				final boolean ignoreReadonlyFlag = false;
+				processValueChange(event.getPath(), event.getValue(), reason, ignoreReadonlyFlag);
 			}
 			else
 			{
@@ -1521,7 +1526,7 @@ public final class Document
 		return getField(fieldName).getLookupValuesForQuery(query);
 	}
 
-	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
+	public Optional<Document> getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);

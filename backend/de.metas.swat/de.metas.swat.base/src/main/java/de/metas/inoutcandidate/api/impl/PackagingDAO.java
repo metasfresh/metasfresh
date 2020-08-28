@@ -27,7 +27,7 @@ import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.api.PackageableQuery;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
@@ -196,6 +196,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()));
 		packageable.salesOrderDocumentNo(record.getOrderDocumentNo());
 		packageable.salesOrderDocSubType(record.getDocSubType());
+		packageable.poReference(record.getPOReference());
 
 		packageable.salesOrderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
 

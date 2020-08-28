@@ -1,4 +1,4 @@
-.table-row {
+.table-context {
     flex: 1;
     width: 100%;
     max-width: 100%;
@@ -7,7 +7,6 @@
 }
 
 .table-flex-wrapper {
-    overflow-y: auto;
     display: flex;
     flex-grow: 1;
     flex-direction: column;
@@ -247,6 +246,15 @@
     }
 }
 
+.table-row {}
+
+.table-cell {
+    .notification-number {
+        top: 3px;
+        left: 0;
+    }
+}
+
 .table-hide-property {
     display: none;
 }
@@ -384,6 +392,10 @@
     color: $brand-font-color;
     background-color: #fff;
     text-align: center;
+}
+
+.table-padding-top {
+    padding-top: 10px;
 }
 
 .row-bordered-bottom td {

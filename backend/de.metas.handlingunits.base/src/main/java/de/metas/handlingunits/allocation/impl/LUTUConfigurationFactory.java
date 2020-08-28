@@ -54,7 +54,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
-import de.metas.quantity.CapacityInterface;
+import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -190,7 +190,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		// TU Configuration
 		final I_C_UOM cuUOM = uomDAO.getById(cuUomId);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProductId, cuUOM);
+		final Capacity tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProductId, cuUOM);
 		//
 		lutuConfiguration.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
 		lutuConfiguration.setM_TU_HU_PI(tuPI);
@@ -580,7 +580,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 				lutuConfiguration.setQtyLU(BigDecimal.ONE);
 			}
 
-			// NOTE: we are returning here, because this is a corner case which we handled separatelly from other cases
+			// NOTE: we are returning here, because this is a corner case which we handled separately from other cases
 			return;
 		}
 
