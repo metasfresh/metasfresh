@@ -53,6 +53,10 @@ class TetheredDateTime extends DateTime {
       this.props.onFocusInput();
     }
 
+    // because event is debounced, currentTarget gets lost and `react-datetime`
+    // uses it to get the day value
+    e.currentTarget = e.target;
+
     super.updateSelectedDate(e, close);
   };
 
