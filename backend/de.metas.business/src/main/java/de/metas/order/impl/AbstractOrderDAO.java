@@ -86,9 +86,9 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return order;
 	}
 
-	private List<I_C_Order> getOrdersByExternalIds(@NonNull List<ExternalId> externalIds)
+	private List<I_C_Order> getOrdersByExternalIds(@NonNull final List<ExternalId> externalIds)
 	{
-		List<String> externalIdsAsStrings = externalIds.stream().map(ExternalId::getValue).collect(Collectors.toList());
+		final List<String> externalIdsAsStrings = externalIds.stream().map(ExternalId::getValue).collect(Collectors.toList());
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
