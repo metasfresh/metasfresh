@@ -121,3 +121,8 @@ SET Description='The process works on unallocated payments. It sets the order re
 WHERE AD_Process_ID = 584736
 ;
 
+-- 2020-08-28T13:34:01.789Z
+-- URL zum Konzept
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,584736,335,540847,TO_TIMESTAMP('2020-08-28 16:34:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2020-08-28 16:34:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
+
