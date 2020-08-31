@@ -163,7 +163,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
 		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
-		if (creditCtx.isCreditedInvoiceReinvoicable())
+		if (creditCtx.isReferenceInvoice())
 		{
 			Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
 
