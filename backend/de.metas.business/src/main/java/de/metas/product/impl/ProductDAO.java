@@ -460,6 +460,10 @@ public class ProductDAO implements IProductDAO
 		if (request.getIsBOM() != null)
 		{
 			product.setIsBOM(request.getIsBOM());
+			if (!request.getIsBOM())
+			{
+				product.setIsVerified(false);
+			}
 		}
 
 		saveRecord(product);
