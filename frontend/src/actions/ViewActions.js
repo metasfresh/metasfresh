@@ -293,8 +293,6 @@ export function fetchDocument({
     })
       .then((response) => {
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
-        console.log('WindowId:', windowId);
-        console.log('viewId:', viewId);
         const tableId = getTableId({ windowId, viewId });
         const tableData = { windowId, viewId, ...response.data };
 
