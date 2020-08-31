@@ -161,18 +161,23 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
-		Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
-
 		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		//
-		// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
-		final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-				false); // creditMemoAdjusted = false
+		if (creditCtx.isCreditedInvoiceReinvoicable())
+		{
+			Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
 
-		// 'invoice' is not paid, so the open amount won't be zero
-		Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {}", invoice);
+			//
+			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
+			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
+					false); // creditMemoAdjusted = false
+
+			// 'invoice' is not paid, so the open amount won't be zero
+			Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {}", invoice);
+
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
 		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
 		//
