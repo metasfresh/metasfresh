@@ -1,15 +1,5 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import org.compiere.model.I_C_UOM;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.picking.api.PickingConfigRepository;
@@ -22,6 +12,15 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 
 /*
  * #%L
@@ -87,7 +86,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
 		}
 
-		if (!checkSourceHuPrecondition())
+		if (noSourceHUAvailable())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
 		}
@@ -109,6 +108,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
 		pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
+				.sourceHUIds(getSourceHUIds())
 				.qtyToPack(getQtyToPack())
 				.packToHuId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())

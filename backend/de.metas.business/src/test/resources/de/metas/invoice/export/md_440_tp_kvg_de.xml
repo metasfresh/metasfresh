@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<invoice:request
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+	xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+	xmlns:invoice="http://www.forum-datenaustausch.ch/invoice"
+	xsi:schemaLocation="http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_440.xsd"
+	xmlns="http://www.forum-datenaustausch.ch/invoice" language="de"
+	modus="production" validation_status="0">
+	<invoice:processing print_at_intermediate="1">
+		<invoice:transport from="7601001302112"
+			to="7634567890000">
+			<invoice:via via="2099999999999" sequence_id="1" />
+		</invoice:transport>
+		<invoice:demand tc_demand_id="0" tc_token="69"
+			insurance_demand_date="2013-03-25T00:00:00" />
+	</invoice:processing>
+	<invoice:payload type="invoice" copy="0" storno="0">
+		<invoice:credit request_timestamp="1358435089"
+			request_date="2013-01-17T00:00:00" request_id="23_45.01" />
+		<invoice:invoice request_timestamp="1364223890"
+			request_date="2013-03-20T00:00:00" request_id="KV_2009_01:001" />
+		<invoice:body role="physician" place="practice">
+			<invoice:prolog>
+				<invoice:package name="GeneralInvoiceRequestTest"
+					copyright="suva 2000-13" version="100009" />
+				<invoice:generator
+					name="GeneralInvoiceRequestManager 4.40.001"
+					copyright="suva 2000-13" version="440">
+					<invoice:depends_on
+						name="tarmedValidator100 ATL Module" copyright="Suva"
+						version="100" id="1122120912" />
+					<invoice:depends_on
+						name="labValidator100 ATL Module" copyright="Suva" version="100"
+						id="1007121205" />
+					<invoice:depends_on
+						name="drugValidator100 ATL Module" copyright="Suva" version="100"
+						id="1003130228" />
+					<invoice:depends_on
+						name="phsioValidator ATL Module"
+						copyright="Suva &amp; santésuisse" version="100" id="1002090101" />
+				</invoice:generator>
+			</invoice:prolog>
+			<invoice:remark>Lorem ipsum per nostra mi fune torectum mi
+				konstradiloru si limus mer fin per od per nostra mi fune torectum mi
+				konstradiloru si limus mer fin itorectum mi konstradiloruko.</invoice:remark>
+			<invoice:balance currency="CHF" amount="2514.52"
+				amount_obligations="2514.52" amount_due="2514.50">
+				<invoice:vat vat="3.07" vat_number="CHE108791452">
+					<invoice:vat_rate vat="0.00" vat_rate="0"
+						amount="2466.32" />
+					<invoice:vat_rate vat="0.24" vat_rate="2.5"
+						amount="10.00" />
+					<invoice:vat_rate vat="2.83" vat_rate="8"
+						amount="38.20" />
+				</invoice:vat>
+			</invoice:balance>
+			<invoice:esr9 type="16or27"
+				participant_number="01-162-8"
+				reference_number="12 34562 00001 88888 88888 88885"
+				coding_line="0100002514506&gt;123456200001888888888888885+ 010001628&gt;">
+				<invoice:bank>
+					<invoice:company>
+						<invoice:companyname>Bank AG</invoice:companyname>
+						<invoice:department>Abteilung VESR</invoice:department>
+						<invoice:postal>
+							<invoice:pobox>Postfach</invoice:pobox>
+							<invoice:street>Bankstrasse 11</invoice:street>
+							<invoice:zip statecode="BS">4002</invoice:zip>
+							<invoice:city>Basel</invoice:city>
+						</invoice:postal>
+					</invoice:company>
+				</invoice:bank>
+			</invoice:esr9>
+			<invoice:tiers_payant payment_period="P35D">
+				<invoice:biller ean_party="2011234567890"
+					zsr="H121111" uid_number="CHE108791452">
+					<invoice:company>
+						<invoice:companyname>Biller AG</invoice:companyname>
+						<invoice:department>Abteilung Inkasso</invoice:department>
+						<invoice:postal>
+							<invoice:street>Billerweg 128</invoice:street>
+							<invoice:zip>4414</invoice:zip>
+							<invoice:city>Frenkendorf</invoice:city>
+						</invoice:postal>
+						<invoice:telecom>
+							<invoice:phone>061 956 99 00</invoice:phone>
+							<invoice:fax>061 956 99 10</invoice:fax>
+						</invoice:telecom>
+						<invoice:online>
+							<invoice:email>info@biller.ch</invoice:email>
+						</invoice:online>
+					</invoice:company>
+				</invoice:biller>
+				<invoice:provider ean_party="7634567890111"
+					zsr="P123456" specialty="FMH Innere Medizin">
+					<invoice:person salutation="Frau" title="Dr. med.">
+						<invoice:familyname>Ärztin</invoice:familyname>
+						<invoice:givenname>Patricia</invoice:givenname>
+						<invoice:postal>
+							<invoice:street>Arztgasse 17b5</invoice:street>
+							<invoice:zip statecode="BS">4000</invoice:zip>
+							<invoice:city>Basel</invoice:city>
+						</invoice:postal>
+						<invoice:telecom>
+							<invoice:phone>061 956 99 00</invoice:phone>
+							<invoice:fax>061 956 99 10</invoice:fax>
+						</invoice:telecom>
+					</invoice:person>
+				</invoice:provider>
+				<invoice:insurance ean_party="7634567890000">
+					<invoice:company>
+						<invoice:companyname>Krankenkasse AG</invoice:companyname>
+						<invoice:department>Sektion Basel</invoice:department>
+						<invoice:postal>
+							<invoice:street>Kassengraben 222</invoice:street>
+							<invoice:zip>4000</invoice:zip>
+							<invoice:city>Basel</invoice:city>
+						</invoice:postal>
+					</invoice:company>
+				</invoice:insurance>
+				<invoice:patient gender="male"
+					birthdate="1964-02-28T00:00:00" ssn="7561234567890">
+					<invoice:person salutation="Herr">
+						<invoice:familyname>Muster</invoice:familyname>
+						<invoice:givenname>Peter</invoice:givenname>
+						<invoice:subaddressing>c/o Mieter Karl</invoice:subaddressing>
+						<invoice:postal>
+							<invoice:street>Musterstrasse 5</invoice:street>
+							<invoice:zip>7304</invoice:zip>
+							<invoice:city>Maienfeld</invoice:city>
+						</invoice:postal>
+					</invoice:person>
+					<invoice:card card_id="12345678901234567890"
+						expiry_date="2013-06-28T00:00:00" />
+				</invoice:patient>
+				<invoice:guarantor>
+					<invoice:person salutation="Herr">
+						<invoice:familyname>Garant</invoice:familyname>
+						<invoice:givenname>Xaver</invoice:givenname>
+						<invoice:postal>
+							<invoice:street>Garantenallee 12</invoice:street>
+							<invoice:zip>7300</invoice:zip>
+							<invoice:city>Chur</invoice:city>
+						</invoice:postal>
+					</invoice:person>
+				</invoice:guarantor>
+				<invoice:referrer ean_party="2034567890333"
+					zsr="R234567" specialty="FMH Inner Medizin">
+					<invoice:person salutation="Herr" title="Dr. med.">
+						<invoice:familyname>Ueberweiser</invoice:familyname>
+						<invoice:givenname>Herbert</invoice:givenname>
+						<invoice:postal>
+							<invoice:street>Referrerstrasse 11</invoice:street>
+							<invoice:zip statecode="AG">5000</invoice:zip>
+							<invoice:city>Aarau</invoice:city>
+						</invoice:postal>
+						<invoice:telecom>
+							<invoice:phone>061 956 99 00</invoice:phone>
+							<invoice:fax>061 956 99 10</invoice:fax>
+						</invoice:telecom>
+					</invoice:person>
+				</invoice:referrer>
+				<invoice:employer ean_party="7600123456789"
+					reg_number="123-456.78">
+					<invoice:company>
+						<invoice:companyname>Arbeitgeber AG</invoice:companyname>
+						<invoice:department>R&amp;D</invoice:department>
+						<invoice:postal>
+							<invoice:street>Arbeitsplatz 3-5</invoice:street>
+							<invoice:zip statecode="BL">4410</invoice:zip>
+							<invoice:city>Liestal</invoice:city>
+						</invoice:postal>
+					</invoice:company>
+				</invoice:employer>
+			</invoice:tiers_payant>
+			<invoice:kvg case_id="123456-6789"
+				case_date="2013-03-20T00:00:00" insured_id="123.45.678-012"
+				contract_number="AZ-3.456" />
+			<invoice:treatment date_begin="2013-03-08T00:00:00"
+				date_end="2013-03-20T00:00:00" canton="BS" reason="disease"
+				apid="patID_1456" acid="case12.005-3">
+				<invoice:diagnosis type="by_contract" code="A1">A1 Text</invoice:diagnosis>
+				<invoice:diagnosis type="by_contract" code="B2" />
+			</invoice:treatment>
+			<invoice:services>
+				<invoice:record_tarmed record_id="1"
+					tariff_type="001" code="00.0010" session="1" quantity="1"
+					date_begin="2013-03-08T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" billing_role="both"
+					medical_role="self_employed" body_location="none" unit_mt="9.57"
+					unit_factor_mt="0.89" scale_factor_mt="1" amount_mt="8.52"
+					unit_tt="8.19" unit_factor_tt="0.89" scale_factor_tt="1"
+					amount_tt="7.29" amount="15.81" validate="1" service_attributes="0"
+					obligation="1" section_code="S01"
+					name="Konsultation, erste 5 Min. (Grundkonsultation)"
+					remark="An optional comment line per service record, that might be longer than 1 line" />
+				<invoice:record_tarmed record_id="2"
+					tariff_type="001" code="00.0020" ref_code="00.0010" session="1"
+					quantity="1" date_begin="2013-03-08T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="none" unit_mt="9.57" unit_factor_mt="0.89"
+					scale_factor_mt="1" amount_mt="8.52" unit_tt="8.19"
+					unit_factor_tt="0.89" scale_factor_tt="1" amount_tt="7.29"
+					amount="15.81" validate="1" service_attributes="0" obligation="1"
+					name="+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)" />
+				<invoice:record_tarmed record_id="3"
+					tariff_type="001" code="00.0030" ref_code="00.0010" session="1"
+					quantity="1" date_begin="2013-03-08T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="none" unit_mt="4.78" unit_factor_mt="0.89"
+					scale_factor_mt="1" amount_mt="4.25" unit_tt="4.1"
+					unit_factor_tt="0.89" scale_factor_tt="1" amount_tt="3.65"
+					amount="7.90" validate="1" service_attributes="0" obligation="1"
+					name="+ Konsultation, letzte 5 Min. (Konsultationszuschlag)" />
+				<invoice:record_tarmed record_id="4"
+					tariff_type="001" code="24.2680" session="1" quantity="1"
+					date_begin="2013-03-09T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" billing_role="both"
+					medical_role="self_employed" body_location="left" unit_mt="1977.15"
+					unit_factor_mt="0.89" scale_factor_mt="1" amount_mt="1759.66"
+					unit_tt="862.32" unit_factor_tt="0.89" scale_factor_tt="1"
+					amount_tt="767.46" amount="2527.12" validate="1"
+					service_attributes="0" obligation="1"
+					name="Arthroplastik Handgelenk mittels Revaskularisation eines Karpalknochens" />
+				<invoice:record_tarmed record_id="5"
+					tariff_type="001" code="35.0010" ref_code="24.2680" session="1"
+					quantity="1" date_begin="2013-03-09T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="left" unit_mt="0" unit_factor_mt="0.89"
+					scale_factor_mt="1" unit_tt="107.79" unit_factor_tt="0.89"
+					scale_factor_tt="1" amount_tt="95.93" amount="95.93" validate="1"
+					service_attributes="0" obligation="1"
+					name="Technische Grundleistung Praxis-OP anerkannt" />
+				<invoice:record_tarmed record_id="6"
+					tariff_type="001" code="35.0020" ref_code="24.2680" session="1"
+					quantity="1" date_begin="2013-03-09T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="left" unit_mt="1977.15" unit_factor_mt="0.89"
+					scale_factor_mt="0" unit_tt="862.32" unit_factor_tt="0.89"
+					scale_factor_tt="-0.4" amount_tt="-306.99" amount="-306.99"
+					validate="1" service_attributes="0" obligation="1"
+					name="(-) %-Reduktion der TL, wenn Praxis-OP statt OP I" />
+				<invoice:record_tarmed record_id="7"
+					tariff_type="001" code="00.0010" session="1" quantity="1"
+					date_begin="2013-03-14T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" billing_role="both"
+					medical_role="self_employed" body_location="none" unit_mt="9.57"
+					unit_factor_mt="0.89" scale_factor_mt="1" amount_mt="8.52"
+					unit_tt="8.19" unit_factor_tt="0.89" scale_factor_tt="1"
+					amount_tt="7.29" amount="15.81" validate="1" service_attributes="0"
+					obligation="1" section_code="S01"
+					name="Konsultation, erste 5 Min. (Grundkonsultation)" />
+				<invoice:record_tarmed record_id="8"
+					tariff_type="001" code="00.0020" ref_code="00.0010" session="1"
+					quantity="1" date_begin="2013-03-14T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="none" unit_mt="9.57" unit_factor_mt="0.89"
+					scale_factor_mt="1" amount_mt="8.52" unit_tt="8.19"
+					unit_factor_tt="0.89" scale_factor_tt="1" amount_tt="7.29"
+					amount="15.81" validate="1" service_attributes="0" obligation="1"
+					name="+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)" />
+				<invoice:record_tarmed record_id="9"
+					tariff_type="001" code="00.0030" ref_code="00.0010" session="1"
+					quantity="1" date_begin="2013-03-14T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="none" unit_mt="4.78" unit_factor_mt="0.89"
+					scale_factor_mt="1" amount_mt="4.25" unit_tt="4.1"
+					unit_factor_tt="0.89" scale_factor_tt="1" amount_tt="3.65"
+					amount="7.90" validate="1" service_attributes="0" obligation="1"
+					name="+ Konsultation, letzte 5 Min. (Konsultationszuschlag)" />
+				<invoice:record_tarmed record_id="10"
+					tariff_type="001" code="00.0010" session="1" quantity="1"
+					date_begin="2013-03-16T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" billing_role="both"
+					medical_role="self_employed" body_location="none" unit_mt="9.57"
+					unit_factor_mt="0.89" scale_factor_mt="1" amount_mt="8.52"
+					unit_tt="8.19" unit_factor_tt="0.89" scale_factor_tt="1"
+					amount_tt="7.29" amount="15.81" validate="1" service_attributes="0"
+					obligation="1" section_code="S01"
+					name="Konsultation, erste 5 Min. (Grundkonsultation)" />
+				<invoice:record_tarmed record_id="11"
+					tariff_type="001" code="00.0020" ref_code="00.0010" session="1"
+					quantity="1" date_begin="2013-03-16T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="none" unit_mt="9.57" unit_factor_mt="0.89"
+					scale_factor_mt="1" amount_mt="8.52" unit_tt="8.19"
+					unit_factor_tt="0.89" scale_factor_tt="1" amount_tt="7.29"
+					amount="15.81" validate="1" service_attributes="0" obligation="1"
+					name="+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)" />
+				<invoice:record_tarmed record_id="12"
+					tariff_type="001" code="00.0030" ref_code="00.0010" session="1"
+					quantity="1" date_begin="2013-03-16T00:00:00"
+					provider_id="7634567890111" responsible_id="7634567890333"
+					billing_role="both" medical_role="self_employed"
+					body_location="none" unit_mt="4.78" unit_factor_mt="0.89"
+					scale_factor_mt="1" amount_mt="4.25" unit_tt="4.1"
+					unit_factor_tt="0.89" scale_factor_tt="1" amount_tt="3.65"
+					amount="7.90" validate="1" service_attributes="0" obligation="1"
+					name="+ Konsultation, letzte 5 Min. (Konsultationszuschlag)" />
+				<invoice:record_lab record_id="13"
+					tariff_type="317" code="1020.00" session="1" quantity="1"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="2.5" unit_factor="1"
+					amount="2.50" validate="1" service_attributes="0" obligation="1"
+					name="Alanin-Aminotransferase (ALAT)" />
+				<invoice:record_lab record_id="14"
+					tariff_type="317" code="3094.00" session="1" quantity="1"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="20" unit_factor="1"
+					amount="20.00" validate="1" service_attributes="0" obligation="1"
+					name="HIV-1- und HIV-2-Antikörper und HIV-1-p24-Antigen, ql, Screening" />
+				<invoice:record_lab record_id="15"
+					tariff_type="317" code="4707.00" session="1" quantity="1"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="4" unit_factor="1"
+					amount="4.00" validate="1" service_attributes="0" obligation="1"
+					name="Präsenztaxe für das ärztliche Praxislaboratorium, pro Patient mit Konsultation inkl. Laboranalysen und pro Tag" />
+				<invoice:record_lab record_id="16"
+					tariff_type="317" code="4707.10" session="1" quantity="1"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="2" unit_factor="1"
+					amount="2.00" validate="1" service_attributes="0" obligation="1"
+					name="Zuschlag für jede Analyse, die das Suffix C aufweist" />
+				<invoice:record_lab record_id="17"
+					tariff_type="317" code="4707.20" session="1" quantity="1"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="1" unit_factor="1"
+					amount="1.00" validate="1" service_attributes="0" obligation="1"
+					name="Zuschlag für jede Analyse, die kein Suffix C aufweist" />
+				<invoice:record_lab record_id="18"
+					tariff_type="317" code="4708.00" session="1" quantity="2"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="1.1" unit_factor="1"
+					amount="2.20" validate="1" service_attributes="0" obligation="1"
+					name="Übergangszuschlag, pro Analyse" />
+				<invoice:record_drug record_id="19"
+					tariff_type="400" code="2734976" session="1" quantity="1"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="8.7" unit_factor="1"
+					amount="8.70" vat_rate="8" validate="1" service_attributes="1"
+					obligation="1" name="Aspégic Forte 20 Sach. 1000 mg" />
+				<invoice:record_drug record_id="20"
+					tariff_type="402" code="7680573380018" session="1" quantity="1"
+					date_begin="2013-03-10T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="29.5" unit_factor="1"
+					amount="29.50" vat_rate="8" validate="1" service_attributes="1"
+					obligation="1" name="Co Amoxi Mepha, Disp Tabl 625 mg, 10 Stk" />
+				<invoice:record_paramed record_id="21"
+					tariff_type="311" code="7320" session="1" quantity="1"
+					date_begin="2013-03-12T00:00:00" provider_id="7634567890111"
+					responsible_id="7634567890333" unit="10" unit_factor="1"
+					amount="10.00" vat_rate="2.5" validate="1" service_attributes="0"
+					obligation="1"
+					name="Sitzungspauschale für Elektro- und Thermotherapie / Instruktion bei Gerätevermietung" />
+			</invoice:services>
+		</invoice:body>
+	</invoice:payload>
+</invoice:request>

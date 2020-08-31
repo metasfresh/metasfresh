@@ -16,15 +16,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 
@@ -44,6 +43,8 @@ import de.metas.util.Services;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
+	private final IOrderDeliveryDayBL orderDeliveryDayBL = Services.get(IOrderDeliveryDayBL.class);
+
 	@Init
 	public void setupCallouts()
 	{
@@ -57,8 +58,7 @@ public class C_Order
 	 *
 	 * @param order
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised, I_C_Order.COLUMNNAME_PreparationDate })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised, I_C_Order.COLUMNNAME_PreparationDate })
 	public void setPreparationDate(final I_C_Order order)
 	{
 		//
@@ -74,17 +74,18 @@ public class C_Order
 		// However, if the order is created by the system (e.g. from EDI-olCands), we allow a fallback to DatePromised
 		final boolean fallbackToDatePromised = !isUIAction(order);
 
-		Services.get(IOrderDeliveryDayBL.class).setPreparationDateAndTour(order, fallbackToDatePromised);
+		orderDeliveryDayBL.setPreparationDateAndTour(order, fallbackToDatePromised);
 	}
 
 	/**
 	 * Make sure the PreparationDate is set
+	 * 
 	 * @param order
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
 	public void assertValidPreparationDate(final I_C_Order order)
 	{
-		if(!order.isSOTrx())
+		if (!order.isSOTrx())
 		{
 			return; // task 09000: nothing to do, the PreparationDate is only relevant for sales orders.
 		}

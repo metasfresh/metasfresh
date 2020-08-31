@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,7 +82,6 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipient = newInstance(I_AD_User.class);
 		save(printRecipient);
 
-
 		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 
 		itemUser.setC_Printing_Queue_Recipient(printRecipient);
@@ -96,7 +96,6 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipient = newInstance(I_AD_User.class);
 		save(printRecipient);
 
-
 		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 
 		itemUser.setC_Printing_Queue_Recipient(printRecipient);
@@ -104,9 +103,9 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		C_Printing_Queue_RecipientHandler.INSTANCE.afterEnqueueAfterSave(item, null);
 
-		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertEquals(result.size(),1);
-		assertEquals(result.get(0), printRecipient.getAD_User_ID());
+		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
+		assertEquals(result.size(), 1);
+		assertEquals(result.get(0).getRepoId(), printRecipient.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
@@ -120,7 +119,6 @@ public class C_Printing_Queue_RecipientHandlerTests
 		printRecipientMiddle.setC_Printing_Queue_Recipient(printRecipientEffective);
 		save(printRecipientMiddle);
 
-
 		final I_AD_User itemUser = loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
@@ -128,9 +126,9 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		C_Printing_Queue_RecipientHandler.INSTANCE.afterEnqueueAfterSave(item, null);
 
-		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
+		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0),printRecipientEffective.getAD_User_ID());
+		assertEquals(result.get(0).getRepoId(), printRecipientEffective.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
@@ -147,7 +145,6 @@ public class C_Printing_Queue_RecipientHandlerTests
 		printRecipientEffective.setC_Printing_Queue_Recipient(printRecipientMiddle);
 		save(printRecipientEffective);
 
-
 		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
@@ -155,15 +152,12 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		C_Printing_Queue_RecipientHandler.INSTANCE.afterEnqueueAfterSave(item, null);
 
-		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
+		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0), printRecipientEffective.getAD_User_ID());
+		assertEquals(result.get(0).getRepoId(), printRecipientEffective.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
-	/**
-	 *
-	 */
 	@Test
 	public void testAfterEnqueueAfterUpdateRecipients()
 	{
@@ -179,8 +173,6 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipientEffective = newInstance(I_AD_User.class);
 		save(printRecipientEffective);
 
-
-
 		final I_AD_User printRecipientIntermediate = newInstance(I_AD_User.class);
 		printRecipientIntermediate.setC_Printing_Queue_Recipient(printRecipientEffective);
 		save(printRecipientIntermediate);
@@ -193,9 +185,9 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		// expect the result to be printRecipientEffective, because that's what printRecipientIntermediate links to
 		// the result shall *not* be printRecipientWrong. We want the handler to update the existing record no to reset it
-		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertEquals(result.size(),1);
-		assertEquals(result.get(0), printRecipientEffective.getAD_User_ID());
+		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
+		assertEquals(result.size(), 1);
+		assertEquals(result.get(0).getRepoId(), printRecipientEffective.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 }

@@ -16,6 +16,7 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.impl.AbstractAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
+import de.metas.uom.UOMType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -138,7 +139,7 @@ public class ASIAttributeStorage extends AbstractAttributeStorage
 	}
 
 	@Override
-	public String getQtyUOMTypeOrNull()
+	public UOMType getQtyUOMTypeOrNull()
 	{
 		// ASI attribute storages does not support Qty Storage
 		return null;

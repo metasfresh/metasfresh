@@ -1,7 +1,7 @@
 package de.metas.organization;
 
 import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import javax.annotation.Nullable;
 

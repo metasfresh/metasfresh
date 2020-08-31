@@ -51,7 +51,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @param noLUForVirtualTU determines if the method shall attempt to configure the lutuConfig with an LU if the given {@code tuPIItemProduct} is the virtual one.<br>
 	 *            Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
 	 */
-	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, ProductId cuProductId, UomId cuUomId, BPartnerId bpartnerId, boolean noLUForVirtualTU);
+	I_M_HU_LUTU_Configuration createLUTUConfiguration(@NonNull I_M_HU_PI_Item_Product tuPIItemProduct, @NonNull ProductId cuProductId, @NonNull UomId cuUomId, BPartnerId bpartnerId, boolean noLUForVirtualTU);
 
 	/**
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record

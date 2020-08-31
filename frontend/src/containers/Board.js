@@ -5,9 +5,9 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
 
-import { getData, patchRequest } from '../api';
+import { getData, deleteRequest, patchRequest } from '../api';
 import { addCard } from '../actions/BoardActions';
-import { deleteRequest, getRequest } from '../actions/GenericActions';
+import { getRequest } from '../actions/GenericActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 
 import BlankPage from '../components/BlankPage';

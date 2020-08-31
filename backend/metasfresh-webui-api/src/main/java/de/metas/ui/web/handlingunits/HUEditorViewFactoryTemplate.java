@@ -30,9 +30,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.ui.web.view.SqlViewFactory;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -47,9 +44,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU;
@@ -348,6 +347,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 	}
 
+	/**
+	 * @apiNote This method is called only if NOT {@link #isAlwaysUseSameLayout()}.
+	 */
 	protected void customizeViewLayout(final ViewLayout.Builder viewLayoutBuilder, final JSONViewDataType viewDataType)
 	{
 		// nothing on this level
@@ -492,8 +494,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	@Value(staticConstructor = "of")
 	private static class ViewLayoutKey
 	{
-		@NonNull WindowId windowId;
+		@NonNull
+		WindowId windowId;
 
-		@NonNull JSONViewDataType viewDataType;
+		@NonNull
+		JSONViewDataType viewDataType;
 	}
 }

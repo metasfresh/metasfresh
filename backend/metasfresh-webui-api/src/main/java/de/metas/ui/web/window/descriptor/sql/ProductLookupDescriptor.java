@@ -73,7 +73,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;

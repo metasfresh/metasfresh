@@ -5,10 +5,12 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector.ServiceMod;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -44,6 +46,10 @@ public interface XmlService
 		}
 		return withModNonNull(serviceMod);
 	}
+
+	String getName();
+
+	XMLGregorianCalendar getDateBegin();
 
 	XmlService withModNonNull(ServiceMod serviceMod);
 
@@ -82,6 +88,5 @@ public interface XmlService
 				this.serviceMod = null;
 			}
 		}
-
 	}
 }

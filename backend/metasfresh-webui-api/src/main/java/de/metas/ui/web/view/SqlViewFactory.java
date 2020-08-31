@@ -148,7 +148,7 @@ public class SqlViewFactory implements IViewFactory
 		final JSONViewDataType viewType = request.getViewType();
 		final ViewProfileId profileId = !ViewProfileId.isNull(request.getProfileId()) ? request.getProfileId() : defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
 		final SqlViewBinding sqlViewBinding = viewLayouts.getViewBinding(windowId, viewType.getRequiredFieldCharacteristic(), profileId);
-		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
+		final SqlViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
 		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
 				.setViewId(request.getViewId())

@@ -81,7 +81,7 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 
 			final boolean supported = invoice.getInvoiceAttachments()
 					.stream()
-					.map(attachment -> attachment.getTags().get(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER)) // might be null
+					.map(attachment -> attachment.getTags().get(InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER)) // might be null
 					.anyMatch(providerId -> requiredAttachmentTag.equals(providerId));
 			if (!supported)
 			{

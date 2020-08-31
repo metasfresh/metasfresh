@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.function.Predicate;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -103,15 +104,14 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeId attributeId, Object value);
 
 	/**
-	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)}, but the {@link AttributeId} is loaded from the given {@code attributeValue}.
-	 *
-	 * @param attributeValue {@code M_Attribute.Value} of the attribute for which an attribute instance shall be created.
+	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)}, 
+	 * but the {@link AttributeId} is loaded from the given {@code attributeCode}.
 	 */
-	void setAttributeInstanceValue(AttributeSetInstanceId asiId, String attributeValue, Object value);
+	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeCode attributeCode, Object value);
 
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
 
-	void updateASIAttributeFromModel(String attributeCode, Object fromModel);
+	void updateASIAttributeFromModel(AttributeCode attributeCode, Object fromModel);
 
 	boolean isStorageRelevant(I_M_AttributeInstance ai);
 

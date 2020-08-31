@@ -28,8 +28,11 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.LogicalPrinterId;
+import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 
@@ -96,13 +99,12 @@ public interface IPrintingDAO extends ISingletonService
 	List<I_C_Print_Job_Detail> retrievePrintJobDetailsIfAny(I_C_Print_Job_Line jobLine);
 
 	/**
-	 *
-	 * @param matching The "parent record" of the tray matching that we are looking for
+	 * @param printerMatchingRecord The "parent record" of the tray printerMatchingRecord that we are looking for
 	 * @param routing the printer routing record that contains the logical printer and tray for which we search the hardware tray.
-	 * @param throwExIfNull if <code>true</code> and there is no tray matching, the method will throw an {@link AdempiereException}
-	 * @return the tray matching or <code>null</code> if there is none and <code>throwExIfNull</code> was <code>false</code>.
+	 * @param throwExIfNull if <code>true</code> and there is no tray printerMatchingRecord, the method will throw an {@link AdempiereException}
+	 * @return the tray printerMatchingRecord or <code>null</code> if there is none and <code>throwExIfNull</code> was <code>false</code>.
 	 */
-	I_AD_PrinterTray_Matching retrievePrinterTrayMatching(I_AD_Printer_Matching matching, I_AD_PrinterRouting routing, boolean throwExIfNull);
+	I_AD_PrinterTray_Matching retrievePrinterTrayMatching(I_AD_Printer_Matching printerMatchingRecord, I_AD_PrinterRouting routing, boolean throwExIfNull);
 
 	I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(I_AD_Printer_Matching matching, int AD_Printer_Tray_ID);
 
@@ -112,22 +114,16 @@ public interface IPrintingDAO extends ISingletonService
 	 * Retrieves a printer config by host key or user ID. One of both has to be set.
 	 * If no printer config exists, the method returns <code>null</code>.
 	 *
-	 * @param ctx ctx and trxName to use
 	 * @param hostKey the hostKey to retrieve the config for. May be <code>null</code> or empty string.
 	 * @param userToPrintId if the given <code>hostKey</code> is <code>null</code> or empty then this parameter must be <code>> 0</code>. Used to retrieve the config by its
 	 *            {@link I_AD_Printer_Config#COLUMNNAME_CreatedBy CreatedBy} value
 	 */
-	I_AD_Printer_Config retrievePrinterConfig(IContextAware ctx, String hostKey, int userToPrintId);
-
-	/**
-	 * @return {@link I_AD_Printer_Matching}; never returns null
-	 */
-	I_AD_Printer_Matching retrievePrinterMatching(String hostKey, I_AD_PrinterRouting routing);
+	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId);
 
 	/**
 	 * @return empty list if the given queue item has no recipients or if {@link I_C_Printing_Queue#COLUMN_IsPrintoutForOtherUser} <code>='N'</code>.
 	 */
-	List<Integer> retrievePrintingQueueRecipientIDs(I_C_Printing_Queue item);
+	List<UserId> retrievePrintingQueueRecipientIDs(I_C_Printing_Queue item);
 
 	/**
 	 * Delete all existing recipients of given item.
@@ -177,7 +173,9 @@ public interface IPrintingDAO extends ISingletonService
 
 	void removeCalibrations(List<I_AD_PrinterHW_Calibration> calibrations);
 
-	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(final I_AD_PrinterHW printerHW);
+	I_AD_PrinterHW retrieveHardwarePrinter(@NonNull HardwarePrinterId hardwarePrinterId);
+
+	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull HardwarePrinterId hardwarePrinterId);
 
 	void removeMediaTrays(List<I_AD_PrinterHW_MediaTray> trays);
 
@@ -197,9 +195,14 @@ public interface IPrintingDAO extends ISingletonService
 
 	List<I_AD_Printer_Matching> retrievePrinterMatchings(I_AD_PrinterHW printerHW);
 
-	List<I_AD_Printer_Tray> retrieveTrays(I_AD_Printer printer);
+	List<I_AD_Printer_Tray> retrieveTrays(LogicalPrinterId logicalPrinterId);
 
-	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, I_AD_Printer printer);
+	/**
+	 * @return {@link I_AD_Printer_Matching}; never returns null
+	 */
+	I_AD_Printer_Matching retrievePrinterMatching(String hostKey, UserId userToPrintId, I_AD_PrinterRouting routing);
+
+	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, UserId userToPrintId, de.metas.adempiere.model.I_AD_Printer printer);
 
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
 
@@ -222,6 +225,6 @@ public interface IPrintingDAO extends ISingletonService
 	 * retrieves a printer which has the output type PDF
 	 * <ul> virtual printer because is not a real hardware printer
 	 */
-	I_AD_PrinterHW retrieveVirtualPrinterOrNull(final Properties ctx, String hostkey, final String trxName);
+	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
 
 }

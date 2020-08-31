@@ -96,7 +96,7 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
@@ -155,7 +155,6 @@ public class OrderCandidatesRestControllerImplTest
 			LocalDate.parse("2020-03-16")
 					.atTime(LocalTime.parse("23:07:16.193"))
 					.atZone(ZoneId.of("Europe/Berlin")));
-
 
 	@Rule
 	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
@@ -1025,7 +1024,7 @@ public class OrderCandidatesRestControllerImplTest
 		testMasterdata.createSalesRep("ABC-DEF-12345");
 		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
 
-		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_1.json");
+		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_Create_DontUpdate_1.json");
 
 		// when
 		final ResponseEntity<JsonOLCandCreateBulkResponse> result = orderCandidatesRestControllerImpl.createOrderLineCandidate(request);
@@ -1042,6 +1041,7 @@ public class OrderCandidatesRestControllerImplTest
 						tuple("shipToId-1-2", true, false, false));
 	}
 
+	/** existing bpartner with location "billToId-1-2" that is updated*/
 	@Test
 	public void billToDefault_exitingBPartner()
 	{
@@ -1094,7 +1094,7 @@ public class OrderCandidatesRestControllerImplTest
 
 		SystemTime.setTimeSource(() -> 1584400036193L + 10000); // some later time, such that the bpartner's creation was in the past.
 
-		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_1.json");
+		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_Create_UpdateMerge_1.json");
 
 		// when
 		final ResponseEntity<JsonOLCandCreateBulkResponse> result = orderCandidatesRestControllerImpl.createOrderLineCandidate(request);
@@ -1120,14 +1120,14 @@ public class OrderCandidatesRestControllerImplTest
 
 		final JsonOLCand jsonOLCand = result.getBody().getResult().get(0);
 		assertThat(jsonOLCand.getBpartner().getLocation())
-				.extracting("billTo", "billToDefault", "shipTo")
-				.containsExactly(true, true, false);
+				.extracting("externalId.value", "billTo", "billToDefault", "shipTo")
+				.containsExactly("billToId-1-2", true, true, false);
 		assertThat(jsonOLCand.getBillBPartner().getLocation())
-				.extracting("billTo", "billToDefault", "shipTo")
-				.containsExactly(true, true, false);
+				.extracting("externalId.value", "billTo", "billToDefault", "shipTo")
+				.containsExactly("billToId-1-2", true, true, false);
 		assertThat(jsonOLCand.getDropShipBPartner().getLocation())
-				.extracting("billTo", "billToDefault", "shipTo")
-				.containsExactly(false, false, true);
+				.extracting("externalId.value", "billTo", "billToDefault", "shipTo")
+				.containsExactly("shipToId-1-2", false, false, true);
 
 		return jsonOLCand;
 	}

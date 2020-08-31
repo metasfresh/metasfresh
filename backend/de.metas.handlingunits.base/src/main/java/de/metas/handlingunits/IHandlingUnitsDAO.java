@@ -32,9 +32,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
-import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -88,12 +88,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> getByIdsOutOfTrx(Collection<HuId> huIds);
 
-	/**
-	 * Save the given {@code hu}
-	 *
-	 * @param hu
-	 */
 	void saveHU(I_M_HU hu);
+
+	void saveHUItem(I_M_HU_Item huItem);
 
 	void delete(I_M_HU hu);
 
@@ -101,10 +98,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI getPackingInstructionById(HuPackingInstructionsId id);
 
+	I_M_HU_PI_Item getPackingInstructionItemById(@NonNull HuPackingInstructionsItemId piItemId);
+
 	/**
 	 * Gets Virtual PI
 	 *
-	 * @param ctx
 	 * @return virtual PI; never return null
 	 */
 	I_M_HU_PI retrieveVirtualPI(Properties ctx);
@@ -113,9 +111,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
-	 *
-	 * @param huContext
-	 * @return
 	 */
 	IHUBuilder createHUBuilder(IHUContext huContext);
 
@@ -137,9 +132,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
 
@@ -148,8 +140,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Creates and saves a {@link I_M_HU_Item} for the given {@code hu}, using the given {@code piItem} as its template.
 	 *
-	 * @param hu
-	 * @param piItem
 	 * @return created HU item
 	 */
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -166,9 +156,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Retrieve items that reference the given {@code hu}, ordered by {@link #HU_ITEMS_COMPARATOR}.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
 
@@ -176,7 +163,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item);
 
-	List<I_M_HU> retrieveIncludedHUs(I_M_HU hu);
+	List<I_M_HU> retrieveIncludedHUs(@NonNull I_M_HU hu);
 
 	// Handling Unit PI Retrieval
 
@@ -185,23 +172,17 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
 	 *
-	 * @param version   mandatory. Only return items that reference this version.
+	 * @param version    mandatory. Only return items that reference this version.
 	 * @param bpartnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMNNAME_C_BPartner_ID}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve all {@link I_M_HU_PI_Item}s (active or inactive) for given M_HU_PI_Version.
-	 *
-	 * @param ctx
-	 * @param huPIVersionId M_HU_PI_Version_ID
-	 * @param trxName
-	 * @return
 	 */
 	List<I_M_HU_PI_Item> retrieveAllPIItems(I_M_HU_PI_Version piVersion);
 
 	/**
-	 * @param pi
 	 * @return current PI Version; never return null
 	 */
 	I_M_HU_PI_Version retrievePICurrentVersion(final I_M_HU_PI pi);
@@ -211,7 +192,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
 
 	/**
-	 * @param pi
 	 * @return current PI Version or null
 	 */
 	I_M_HU_PI_Version retrievePICurrentVersionOrNull(I_M_HU_PI pi);
@@ -222,16 +202,15 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU_PI_Item> retrievePIItemsForPackingMaterial(final I_M_HU_PackingMaterial pm);
 
+	@Nullable
+	I_M_HU_PI retrievePIDefaultForPicking();
+
 	/**
 	 * Retrieve ALL PI Versions (active, not-active, current, not-current).
-	 *
-	 * @param pi
-	 * @return
 	 */
 	List<I_M_HU_PI_Version> retrieveAllPIVersions(I_M_HU_PI pi);
 
 	/**
-	 * @param ctx
 	 * @return all available (i.e. active) HU PIs from system
 	 */
 	List<I_M_HU_PI> retrieveAvailablePIs(Properties ctx);
@@ -239,20 +218,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator);
 
 	/**
-	 * @param huPI
 	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
-	 * @param bpartner
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
 
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
-	 *
-	 * @param parentHU
-	 * @param piOfChildHU
-	 * @param ctx
-	 * @return
 	 */
 	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, IContextAware ctx);
 
@@ -264,8 +236,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieves the default LU.
 	 *
-	 * @param ctx
-	 * @param adOrgId
 	 * @return default LU or <code>null</code>.
 	 */
 	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
@@ -282,9 +252,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Retrieves packing material of given HU.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	// TODO: i think we shall drop this method because is no longer valid!!!
 	I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU hu);
@@ -316,7 +283,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * The special network distribution that is defined for empties (gebinde) It contains lines that link the non-empties warehouses with the empties ones that the packing materials shall be moved to
 	 * when empty
 	 *
-	 * @param ctx
 	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
 	 */
 	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
@@ -353,4 +319,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
 
 	void setReservedByHUIds(final Collection<HuId> huIds, boolean reserved);
+
+	@NonNull
+	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
+
+	void save(@NonNull I_M_HU_PI huPi);
 }

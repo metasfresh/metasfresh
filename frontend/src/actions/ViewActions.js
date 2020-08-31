@@ -6,6 +6,8 @@ import {
   locationConfigRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
+import { getView } from '../reducers/viewHandler';
+
 import {
   ADD_VIEW_LOCATION_DATA,
   FETCH_DOCUMENT_PENDING,
@@ -20,22 +22,28 @@ import {
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
-  UPDATE_VIEW_DATA,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
   DELETE_VIEW,
+  TOGGLE_INCLUDED_VIEW,
 } from '../constants/ActionTypes';
-import { createGridTable, updateGridTable } from './TableActions';
+
+import {
+  createGridTable,
+  updateGridTable,
+  clearTableData,
+} from './TableActions';
+import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
  * @method resetView
  * @summary
  */
-export function resetView(id) {
+export function resetView(id, isModal) {
   return {
     type: RESET_VIEW,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
@@ -43,10 +51,10 @@ export function resetView(id) {
  * @method deleteView
  * @summary
  */
-export function deleteView(id) {
+export function deleteView(id, isModal) {
   return {
     type: DELETE_VIEW,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
@@ -54,10 +62,10 @@ export function deleteView(id) {
  * @method fetchDocumentPending
  * @summary
  */
-function fetchDocumentPending(id) {
+function fetchDocumentPending(id, isModal) {
   return {
     type: FETCH_DOCUMENT_PENDING,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
@@ -65,10 +73,10 @@ function fetchDocumentPending(id) {
  * @method fetchDocumentSuccess
  * @summary
  */
-function fetchDocumentSuccess(id, data) {
+function fetchDocumentSuccess(id, data, isModal) {
   return {
     type: FETCH_DOCUMENT_SUCCESS,
-    payload: { id, data },
+    payload: { id, data, isModal },
   };
 }
 
@@ -76,10 +84,10 @@ function fetchDocumentSuccess(id, data) {
  * @method fetchDocumentError
  * @summary
  */
-function fetchDocumentError(id, error) {
+function fetchDocumentError(id, error, isModal) {
   return {
     type: FETCH_DOCUMENT_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
@@ -87,10 +95,10 @@ function fetchDocumentError(id, error) {
  * @method fetchLayoutPending
  * @summary
  */
-function fetchLayoutPending(id) {
+function fetchLayoutPending(id, isModal) {
   return {
     type: FETCH_LAYOUT_PENDING,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
@@ -98,10 +106,10 @@ function fetchLayoutPending(id) {
  * @method fetchLayoutSuccess
  * @summary
  */
-function fetchLayoutSuccess(id, layout) {
+function fetchLayoutSuccess(id, layout, isModal) {
   return {
     type: FETCH_LAYOUT_SUCCESS,
-    payload: { id, layout },
+    payload: { id, layout, isModal },
   };
 }
 
@@ -109,10 +117,10 @@ function fetchLayoutSuccess(id, layout) {
  * @method fetchLayoutError
  * @summary
  */
-function fetchLayoutError(id, error) {
+function fetchLayoutError(id, error, isModal) {
   return {
     type: FETCH_LAYOUT_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
@@ -120,10 +128,10 @@ function fetchLayoutError(id, error) {
  * @method createViewPending
  * @summary
  */
-function createViewPending(id) {
+function createViewPending(id, isModal) {
   return {
     type: CREATE_VIEW,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
@@ -131,10 +139,10 @@ function createViewPending(id) {
  * @method createViewSuccess
  * @summary
  */
-function createViewSuccess(id, data) {
+function createViewSuccess(id, data, isModal) {
   return {
     type: CREATE_VIEW_SUCCESS,
-    payload: { id, viewId: data.viewId },
+    payload: { id, viewId: data.viewId, isModal },
   };
 }
 
@@ -142,10 +150,10 @@ function createViewSuccess(id, data) {
  * @method createViewError
  * @summary
  */
-function createViewError(id, error) {
+function createViewError(id, error, isModal) {
   return {
     type: CREATE_VIEW_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
@@ -153,10 +161,10 @@ function createViewError(id, error) {
  * @method filterViewPending
  * @summary
  */
-function filterViewPending(id) {
+function filterViewPending(id, isModal) {
   return {
     type: FILTER_VIEW_PENDING,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
@@ -164,10 +172,10 @@ function filterViewPending(id) {
  * @method filterViewSuccess
  * @summary
  */
-function filterViewSuccess(id, data) {
+function filterViewSuccess(id, data, isModal) {
   return {
     type: FILTER_VIEW_SUCCESS,
-    payload: { id, data },
+    payload: { id, data, isModal },
   };
 }
 
@@ -175,25 +183,10 @@ function filterViewSuccess(id, data) {
  * @method filterViewError
  * @summary
  */
-function filterViewError(id, error) {
+function filterViewError(id, error, isModal) {
   return {
     type: FILTER_VIEW_ERROR,
-    payload: { id, error },
-  };
-}
-
-/**
- * @method updateViewData
- * @summary
- */
-export function updateViewData(id, rows, tabId) {
-  return {
-    type: UPDATE_VIEW_DATA,
-    payload: {
-      id,
-      rows,
-      tabId,
-    },
+    payload: { id, error, isModal },
   };
 }
 
@@ -201,32 +194,43 @@ export function updateViewData(id, rows, tabId) {
  * @method fetchLocationConfigSuccess
  * @summary
  */
-function fetchLocationConfigSuccess(id, data) {
+function fetchLocationConfigSuccess(id, data, isModal) {
   return {
     type: FETCH_LOCATION_CONFIG_SUCCESS,
-    payload: { id, data },
+    payload: { id, data, isModal },
   };
 }
 
 /**
  * @method fetchLocationConfigError
- * @summary
+ * @summary error when fetching geolocation config
  */
-function fetchLocationConfigError(id, error) {
+function fetchLocationConfigError(id, error, isModal) {
   return {
     type: FETCH_LOCATION_CONFIG_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
 /**
  * @method addLocationData
- * @summary
+ * @summary save geolocation data in the store
  */
-export function addLocationData(id, locationData) {
+export function addViewLocationData(id, locationData, isModal) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
-    payload: { id, locationData },
+    payload: { id, locationData, isModal },
+  };
+}
+
+/**
+ * @method toggleIncludedView
+ * @summary sets internal hasIncluded/isIncluded values
+ */
+export function toggleIncludedView(id, showIncludedView, isModal) {
+  return {
+    type: TOGGLE_INCLUDED_VIEW,
+    payload: { id, showIncludedView, isModal },
   };
 }
 
@@ -236,54 +240,78 @@ export function addLocationData(id, locationData) {
  * @method fetchDocument
  * @summary Get grid rows
  *
- * @param {*} windowType
+ * @param {*} windowId
  * @param {*} viewId
  * @param {number} page
  * @param {number} pageLength
  * @param {*} orderBy
- * @param {bool} useViewId - flag defining if we should be using the viewId, or not.
- * set to `true` for modals.
- * @param {*} modalId - used together with `useViewId`
+ * @param {bool} isModal - flag defining if the view is in modal or not.
+ * Set to `true` for modals because otherwise if using `windowId` we would have a collision
+ * with the underlaying window (as they both have the same `windowId`) so we store modal
+ * views in `modals` instead of regular `views`
  */
 export function fetchDocument({
-  windowType,
+  windowId,
   viewId,
   page,
   pageLength,
   orderBy,
-  // for modals
-  useViewId = false,
-  //for filtering in modals
-  modalId = null,
+  isModal = false,
 }) {
-  return (dispatch) => {
-    let identifier = useViewId ? viewId : windowType;
-
-    if (useViewId && modalId) {
-      identifier = modalId;
-    }
-
-    dispatch(fetchDocumentPending(identifier));
+  return (dispatch, getState) => {
+    dispatch(fetchDocumentPending(windowId, isModal));
 
     return browseViewRequest({
-      windowId: windowType,
+      windowId,
       viewId,
       page,
       pageLength,
       orderBy,
     })
       .then((response) => {
-        dispatch(fetchDocumentSuccess(identifier, response.data));
+        dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
 
-        const tableId = getTableId({ windowType, viewId });
-        const tableData = { windowType, viewId, ...response.data };
+        const tableId = getTableId({ windowId, viewId });
+        const tableData = { windowId, viewId, ...response.data };
+
+        // we use this in table ACs to differentiate between a table in modal and
+        // regular grid
+        if (isModal) {
+          tableData.modalId = windowId;
+        }
 
         dispatch(updateGridTable(tableId, tableData));
+
+        const view = getView(getState(), windowId, isModal);
+        const openIncludedViewOnSelect =
+          view.layout &&
+          view.layout.includedView &&
+          view.layout.includedView.openOnSelect;
+
+        if (
+          openIncludedViewOnSelect &&
+          response.data.result &&
+          response.data.result.length
+        ) {
+          const row = response.data.result[0];
+
+          dispatch(
+            showIncludedView({
+              id: windowId,
+              showIncludedView: row.supportIncludedViews,
+              windowId: row.supportIncludedViews
+                ? row.includedView.windowType || row.includedView.windowId
+                : null,
+              viewId: row.supportIncludedViews ? row.includedView.viewId : '',
+              isModal,
+            })
+          );
+        }
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(fetchDocumentError(identifier, error));
+        dispatch(fetchDocumentError(windowId, error, isModal));
 
         //show error message ?
         return Promise.resolve(error);
@@ -296,7 +324,7 @@ export function fetchDocument({
  * @summary create a new grid view
  */
 export function createView({
-  windowType,
+  windowId,
   viewType,
   filters,
   referenceId,
@@ -304,15 +332,13 @@ export function createView({
   refDocumentId,
   refTabId,
   refRowIds,
-  inModalId,
+  isModal,
 }) {
   return (dispatch) => {
-    const identifier = inModalId ? inModalId : windowType;
-
-    dispatch(createViewPending(identifier));
+    dispatch(createViewPending(windowId, isModal));
 
     return createViewRequest({
-      windowId: windowType,
+      windowId,
       viewType,
       filters,
       referenceId,
@@ -322,18 +348,22 @@ export function createView({
       refRowIds,
     })
       .then((response) => {
-        dispatch(createViewSuccess(identifier, response.data));
+        dispatch(createViewSuccess(windowId, response.data, isModal));
 
         const { viewId } = response.data;
-        const tableId = getTableId({ windowType, viewId });
-        const tableData = { windowType, viewId };
+        const tableId = getTableId({ windowId, viewId });
+        const tableData = { windowId, viewId };
+
+        if (isModal) {
+          tableData.modalId = windowId;
+        }
 
         dispatch(createGridTable(tableId, tableData));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(createViewError(identifier, error));
+        dispatch(createViewError(windowId, error, isModal));
 
         //show error message ?
         return Promise.resolve(error);
@@ -346,49 +376,48 @@ export function createView({
  * @summary fetch layout data for the grid view
  */
 export function fetchLayout(
-  windowType,
+  windowId,
   viewType,
   viewProfileId = null,
-  viewId = null
+  isModal = false
 ) {
   return (dispatch) => {
-    const identifier = viewId ? viewId : windowType;
+    dispatch(fetchLayoutPending(windowId, isModal));
 
-    dispatch(fetchLayoutPending(identifier));
-
-    return getViewLayout(windowType, viewType, viewProfileId)
+    return getViewLayout(windowId, viewType, viewProfileId)
       .then((response) => {
-        dispatch(fetchLayoutSuccess(identifier, response.data));
+        dispatch(fetchLayoutSuccess(windowId, response.data, isModal));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(fetchLayoutError(identifier, error));
+        dispatch(fetchLayoutError(windowId, error, isModal));
 
         return Promise.resolve(error);
       });
   };
 }
 
-// TODO: Update table on filtering
 /**
  * @method filterView
  * @summary filter grid view
  */
-export function filterView(windowId, viewId, filters, useViewId = false) {
+export function filterView(windowId, viewId, filters, isModal = false) {
   return (dispatch) => {
-    const identifier = useViewId ? viewId : windowId;
-
-    dispatch(filterViewPending(identifier));
+    dispatch(filterViewPending(windowId, isModal));
 
     return filterViewRequest(windowId, viewId, filters)
       .then((response) => {
-        dispatch(filterViewSuccess(identifier, response.data));
+        dispatch(filterViewSuccess(windowId, response.data, isModal));
+
+        // clear data, so that we won't add filtered rows to previous data
+        const tableId = getTableId({ windowId, viewId });
+        dispatch(clearTableData(tableId));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(filterViewError(identifier, error));
+        dispatch(filterViewError(windowId, error, isModal));
 
         return Promise.resolve(error);
       });
@@ -399,18 +428,47 @@ export function filterView(windowId, viewId, filters, useViewId = false) {
  * @method fetchLocationConfig
  * @summary Get the location search configuration from the API
  */
-export function fetchLocationConfig(windowId, viewId = null) {
+export function fetchLocationConfig(windowId, isModal = false) {
   return (dispatch) => {
-    const identifier = viewId ? viewId : windowId;
+    const windowId = windowId;
 
     return locationConfigRequest()
       .then((response) => {
-        dispatch(fetchLocationConfigSuccess(identifier, response.data));
+        dispatch(fetchLocationConfigSuccess(windowId, response.data, isModal));
       })
       .catch((error) => {
-        dispatch(fetchLocationConfigError(identifier, error));
+        dispatch(fetchLocationConfigError(windowId, error, isModal));
 
         return Promise.resolve(error);
       });
+  };
+}
+
+/**
+ * @method showIncludedView
+ * @summary ToDo: Describe the method.
+ */
+export function showIncludedView({
+  id,
+  showIncludedView,
+  windowId,
+  viewId,
+  forceClose,
+  isModal,
+} = {}) {
+  return (dispatch) => {
+    if (id) {
+      dispatch(toggleIncludedView(id, showIncludedView, isModal));
+    }
+
+    if (showIncludedView) {
+      dispatch(setListIncludedView({ windowType: windowId, viewId }));
+    }
+
+    if (!showIncludedView) {
+      dispatch(
+        closeListIncludedView({ windowType: windowId, viewId, forceClose })
+      );
+    }
   };
 }

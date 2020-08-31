@@ -17,7 +17,6 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.PMMContractBuilder;
 import lombok.Getter;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -63,7 +62,7 @@ public class ProcurementFlatrateHandlerTests
 
 	/**
 	 * Sets up an old flatrate term and a new one. the old one has three entries with different {@code FlatrateAmtPerUOM} values.
-	 * Then verifies that the {@link PMMContractBuilder} is called with the correct parameters. See the {@link Verifications} block of this method for details.
+	 * Then verifies that the {@link PMMContractBuilder} is called with the correct parameters. 
 	 */
 	@Test
 	public void testEntryWithNullValue()

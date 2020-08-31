@@ -29,7 +29,6 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Test;
 
 /**
  * 

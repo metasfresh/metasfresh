@@ -142,23 +142,29 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final boolean isInboundTrx = qty.signum() > 0;
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result;
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
+
+		final CostDetailCreateRequest requestEffective;
+
 		if (isInboundTrx || request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+			//in case the amount was not provided but there is a positive qty incoming
+			//use the current cost price to calculate the amount.
+			requestEffective = request.getAmt().isZero()
+					? request.withAmount(calculateAmountBasedOnExistingPrice(request, currentCosts))
+					: request;
 
-			currentCosts.addWeightedAverage(request.getAmt(), qty, utils.getQuantityUOMConverter());
-		}
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), qty, utils.getQuantityUOMConverter());
+		}		
 		else
 		{
-			final CostPrice price = currentCosts.getCostPrice();
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+			final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			requestEffective = request.withAmount(amt);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 		utils.saveCurrentCost(currentCosts);
 
 		return result;
@@ -373,5 +379,15 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.qty(qty)
 				.previousAmounts(previousAmounts)
 				.build();
+	}
+
+	private CostAmount calculateAmountBasedOnExistingPrice(final CostDetailCreateRequest request, final  CurrentCost currentCosts)
+	{
+		final CostPrice price = currentCosts.getCostPrice();
+
+		//make sure we are multiplying the cost price with the qty in the correct UOM, i.e the UOM of the cost price.
+		final Quantity qtyInCostUOM = utils.getQuantityUOMConverter().convertQuantityTo(request.getQty(), request.getProductId(), currentCosts.getUomId());
+
+		return price.multiply(qtyInCostUOM).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 	}
 }

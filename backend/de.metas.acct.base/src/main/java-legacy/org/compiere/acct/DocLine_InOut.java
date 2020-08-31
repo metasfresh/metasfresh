@@ -159,7 +159,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
 					.date(getDateAcct())
 					.build())
-					.getTotalAmountToPost(as);
+					.getTotalAmountToPost(as)
+					// Negate the amount coming from the costs because it must be negative in the accounting.
+					.negate();
 		}
 		else
 		{
@@ -175,7 +177,11 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.date(getDateAcct())
 							.build())
-					.getTotalAmountToPost(as);
+					.getTotalAmountToPost(as)
+					// The shipment is an outgoing document, so the costing amounts will be negative values.
+					// In the accounting they must be positive values. This is the reason why the amount
+					// coming from the product costs must be negated.
+					.negate();
 		}
 	}
 }

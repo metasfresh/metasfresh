@@ -1,6 +1,6 @@
 package de.metas.ordercandidate.spi.impl;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

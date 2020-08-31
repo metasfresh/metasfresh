@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
+import de.metas.printing.OutputType;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
@@ -127,6 +128,7 @@ public class PrinterHWRepo
 			printerRecord = newInstance(I_AD_PrinterHW.class);
 			printerRecord.setName(hwPrinter.getName());
 			printerRecord.setHostKey(hostKey);
+			printerRecord.setOutputType(OutputType.Queue.getCode());
 			save(printerRecord);
 
 			Services.get(IPrinterBL.class).createConfigAndDefaultPrinterMatching(printerRecord);

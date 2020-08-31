@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -179,7 +181,7 @@ public final class AllocationUtils
 			final ProductId productId,
 			final Quantity qty,
 			final ZonedDateTime date,
-			final Object referenceModel,
+			@Nullable final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
 		return createAllocationRequestBuilder()
@@ -295,26 +297,15 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Gets relative request qty.
-	 *
-	 * Relative qty is calculated as follows
-	 * <ul>
-	 * <li>if <code>outTrx</code> is true then qty negated
-	 * <li>if <code>outTrx</code> is false then qty
-	 * </ul>
-	 *
-	 * @param request
-	 * @param outTrx true if is an outbound transaction
-	 * @return relative qty
+	 * Gets relative request qty (negated if deallocation).
 	 */
-	public static Quantity getQuantity(final IAllocationRequest request, final boolean outTrx)
+	public static Quantity getQuantity(
+			@NonNull final IAllocationRequest request,
+			@NonNull final AllocationDirection direction)
 	{
-		Check.assumeNotNull(request, "request not null");
-
 		return request
 				.getQuantity() // => Quantity (absolute)
-				.negateIf(outTrx) // => Quantity (relative)
-		;
+				.negateIf(direction.isOutboundDeallocation()); // => Quantity (relative)
 	}
 
 	/**
@@ -323,7 +314,7 @@ public final class AllocationUtils
 	 * @param request
 	 * @return
 	 */
-	public static IAllocationRequestBuilder derive(final IAllocationRequest request)
+	public static IAllocationRequestBuilder derive(@NonNull final IAllocationRequest request)
 	{
 		Check.assumeNotNull(request, "request not null");
 		return createAllocationRequestBuilder()

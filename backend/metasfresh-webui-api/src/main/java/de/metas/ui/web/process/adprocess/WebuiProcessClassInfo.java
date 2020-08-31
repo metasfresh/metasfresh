@@ -12,9 +12,11 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.reflect.MethodReference;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -28,6 +30,9 @@ import de.metas.process.BarcodeScannerType;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessClassParamInfo;
+import de.metas.ui.web.devices.providers.DeviceDescriptorsProvider;
+import de.metas.ui.web.devices.providers.DeviceDescriptorsProviders;
+import de.metas.ui.web.process.descriptor.ProcessParamDevicesProvider;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
@@ -38,6 +43,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -113,8 +119,7 @@ public final class WebuiProcessClassInfo
 	private static final Logger logger = LogManager.getLogger(WebuiProcessClassInfo.class);
 
 	/** "Process class" to {@link WebuiProcessClassInfo} cache */
-	private static final LoadingCache<Class<?>, WebuiProcessClassInfo> cache = CacheBuilder.newBuilder()
-			.weakKeys() // to prevent ClassLoader memory leaks nightmare
+	private static final LoadingCache<Class<?>, WebuiProcessClassInfo> cache = CacheBuilder.newBuilder().weakKeys() // to prevent ClassLoader memory leaks nightmare
 			.build(new CacheLoader<Class<?>, WebuiProcessClassInfo>()
 			{
 				@Override
@@ -132,7 +137,8 @@ public final class WebuiProcessClassInfo
 				}
 			});
 
-	private static WebuiProcessClassInfo createWebuiProcessClassInfo(final Class<?> processClass) throws Exception
+	@VisibleForTesting
+	static WebuiProcessClassInfo createWebuiProcessClassInfo(final Class<?> processClass) throws Exception
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(processClass);
 
@@ -144,21 +150,33 @@ public final class WebuiProcessClassInfo
 				.map(method -> createParamLookupValuesProvider(method))
 				.collect(GuavaCollectors.toImmutableMap());
 
+		@SuppressWarnings("unchecked")
+		final Set<Method> deviceProviderMethods = ReflectionUtils.getAllMethods(processClass, ReflectionUtils.withAnnotation(ProcessParamDevicesProvider.class));
+		final ImmutableMap<String, DeviceDescriptorsProvider> paramDeviceProviders = deviceProviderMethods.stream()
+				.map(method -> createDeviceDescriptorsProvider(method))
+				.collect(GuavaCollectors.toImmutableMap());
+
 		//
 		// Check is there were no settings at all so we could return our NULL instance
 		if (ProcessClassInfo.isNull(processClassInfo)
-				&& paramLookupValuesProviders.isEmpty())
+				&& paramLookupValuesProviders.isEmpty()
+				&& paramDeviceProviders.isEmpty())
 		{
 			return NULL;
 		}
 
-		return new WebuiProcessClassInfo(processClassInfo, webuiProcessAnn, paramLookupValuesProviders);
+		return new WebuiProcessClassInfo(
+				processClassInfo,
+				webuiProcessAnn,
+				paramLookupValuesProviders,
+				paramDeviceProviders);
 	}
 
 	private static final WebuiProcessClassInfo NULL = new WebuiProcessClassInfo();
 
 	private final ProcessClassInfo processClassInfo;
 	private final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders;
+	private final ImmutableMap<String, DeviceDescriptorsProvider> paramDeviceProviders;
 	private final PanelLayoutType layoutType;
 
 	/** Null constructor */
@@ -166,13 +184,19 @@ public final class WebuiProcessClassInfo
 	{
 		processClassInfo = ProcessClassInfo.NULL;
 		paramLookupValuesProviders = ImmutableMap.of();
+		paramDeviceProviders = ImmutableMap.of();
 		this.layoutType = PanelLayoutType.Panel;
 	}
 
-	private WebuiProcessClassInfo(final ProcessClassInfo processClassInfo, final WebuiProcess webuiProcessAnn, final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders)
+	private WebuiProcessClassInfo(
+			@NonNull final ProcessClassInfo processClassInfo,
+			@Nullable final WebuiProcess webuiProcessAnn,
+			@NonNull final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders,
+			@NonNull final ImmutableMap<String, DeviceDescriptorsProvider> paramDeviceProviders)
 	{
 		this.processClassInfo = processClassInfo;
 		this.paramLookupValuesProviders = paramLookupValuesProviders;
+		this.paramDeviceProviders = paramDeviceProviders;
 		if (webuiProcessAnn != null)
 		{
 			this.layoutType = webuiProcessAnn.layoutType();
@@ -197,9 +221,15 @@ public final class WebuiProcessClassInfo
 		return layoutType;
 	}
 
-	public LookupDescriptorProvider getLookupDescriptorProviderOrNull(final String parameterName)
+	public LookupDescriptorProvider getLookupDescriptorProviderOrNull(@NonNull final String parameterName)
 	{
 		return paramLookupValuesProviders.get(parameterName);
+	}
+
+	public DeviceDescriptorsProvider getDeviceDescriptorsProvider(@NonNull final String parameterName)
+	{
+		final DeviceDescriptorsProvider provider = paramDeviceProviders.get(parameterName);
+		return provider != null ? provider : DeviceDescriptorsProviders.empty();
 	}
 
 	public boolean isForwardValueToJavaProcessInstance(final String parameterName)
@@ -260,7 +290,7 @@ public final class WebuiProcessClassInfo
 				})
 				.collect(ImmutableList.toImmutableList());
 
-		final Method methodToInvoke = method; // FIXME: holding a hard reference to method may introduce ClassLoader memory leaks
+		final MethodReference methodToInvoke = MethodReference.of(method);
 
 		final LookupDescriptor lookupDescriptor = ListLookupDescriptor.builder()
 				.setLookupTableName(ann.lookupTableName())
@@ -274,11 +304,12 @@ public final class WebuiProcessClassInfo
 	}
 
 	private static LookupValuesList retriveLookupValues(
-			final Method method,
-			final List<Function<LookupDataSourceContext, Object>> parameterValueProviders,
+			@NonNull final MethodReference methodRef,
+			@NonNull final List<Function<LookupDataSourceContext, Object>> parameterValueProviders,
 			final LookupDataSourceContext evalCtx)
 	{
-		Check.assumeNotNull(method, "Parameter method is not null");
+		final Method method = methodRef.getMethod();
+
 		final JavaProcess processClassInstance = JavaProcess.currentInstance();
 
 		final Object[] methodParams = parameterValueProviders.stream()
@@ -311,5 +342,20 @@ public final class WebuiProcessClassInfo
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
+	}
+
+	private static Map.Entry<String, DeviceDescriptorsProvider> createDeviceDescriptorsProvider(@NonNull final Method method)
+	{
+		final ProcessParamDevicesProvider ann = method.getAnnotation(ProcessParamDevicesProvider.class);
+		if (ann == null)
+		{
+			throw new AdempiereException("Method " + method + " shall be annotated with " + ProcessParamDevicesProvider.class.getSimpleName());
+		}
+
+		final DeviceDescriptorsProvider deviceDescriptorsProvider = DeviceDescriptorsProviders.ofMethod(
+				method,
+				JavaProcess::currentInstance);
+
+		return GuavaCollectors.entry(ann.parameterName(), deviceDescriptorsProvider);
 	}
 }

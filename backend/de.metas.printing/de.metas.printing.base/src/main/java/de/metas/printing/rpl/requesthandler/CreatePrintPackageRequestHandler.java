@@ -94,12 +94,11 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 
 		// create/update information for Druck-Clients
 		final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
-		final IPrintPackageBL printPackageBL = Services.get(IPrintPackageBL.class);
 
 		printClientsBL
 				.createPrintClientsEntry(
 						envCtxToUse,
-						printPackageBL.getHostKeyOrNull(envCtxToUse));
+						printClientsBL.getHostKeyOrNull(envCtxToUse));
 
 		boolean packageUpdated = false;
 		final I_C_Print_Package responsePrintPackage;

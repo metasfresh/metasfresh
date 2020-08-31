@@ -2,7 +2,7 @@ package de.metas.printing.model;
 
 
 /** Generated Interface for C_Printing_Queue_PrintInfo_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_Printing_Queue_PrintInfo_v 
@@ -14,13 +14,6 @@ public interface I_C_Printing_Queue_PrintInfo_v
     /** AD_Table_ID=541002 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Archiv.
@@ -52,8 +45,8 @@ public interface I_C_Printing_Queue_PrintInfo_v
     public static final String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -65,7 +58,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Org Print Job Instructions ID.
+	 * Set ad_org_print_job_instructions_id.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -74,7 +67,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
 	public void setAD_Org_Print_Job_Instructions_ID (int AD_Org_Print_Job_Instructions_ID);
 
 	/**
-	 * Get Org Print Job Instructions ID.
+	 * Get ad_org_print_job_instructions_id.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -184,10 +177,6 @@ public interface I_C_Printing_Queue_PrintInfo_v
 	 */
 	public int getC_Printing_Queue_ID();
 
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue();
-
-	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue);
-
     /** Column definition for C_Printing_Queue_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue_PrintInfo_v, de.metas.printing.model.I_C_Printing_Queue> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue_PrintInfo_v, de.metas.printing.model.I_C_Printing_Queue>(I_C_Printing_Queue_PrintInfo_v.class, "C_Printing_Queue_ID", de.metas.printing.model.I_C_Printing_Queue.class);
     /** Column name C_Printing_Queue_ID */
@@ -277,8 +266,8 @@ public interface I_C_Printing_Queue_PrintInfo_v
     public static final String COLUMNNAME_C_Print_PackageInfo_ID = "C_Print_PackageInfo_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -292,7 +281,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Set Createdby Print Job Instructions.
+	 * Set createdby_print_job_instructions.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -301,7 +290,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
 	public void setCreatedby_Print_Job_Instructions (int Createdby_Print_Job_Instructions);
 
 	/**
-	 * Get Createdby Print Job Instructions.
+	 * Get createdby_print_job_instructions.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -315,7 +304,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
     public static final String COLUMNNAME_Createdby_Print_Job_Instructions = "Createdby_Print_Job_Instructions";
 
 	/**
-	 * Set Created Print Job Instructions.
+	 * Set created_print_job_instructions.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -324,7 +313,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
 	public void setCreated_Print_Job_Instructions (java.sql.Timestamp Created_Print_Job_Instructions);
 
 	/**
-	 * Get Created Print Job Instructions.
+	 * Get created_print_job_instructions.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -430,7 +419,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
     public static final String COLUMNNAME_TrayNumber = "TrayNumber";
 
 	/**
-	 * Set Updatedby Print Job Instructions.
+	 * Set updatedby_print_job_instructions.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -439,7 +428,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
 	public void setUpdatedby_Print_Job_Instructions (int Updatedby_Print_Job_Instructions);
 
 	/**
-	 * Get Updatedby Print Job Instructions.
+	 * Get updatedby_print_job_instructions.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -453,7 +442,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
     public static final String COLUMNNAME_Updatedby_Print_Job_Instructions = "Updatedby_Print_Job_Instructions";
 
 	/**
-	 * Set Updated Print Job Instructions.
+	 * Set updated_print_job_instructions.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -462,7 +451,7 @@ public interface I_C_Printing_Queue_PrintInfo_v
 	public void setUpdated_Print_Job_Instructions (java.sql.Timestamp Updated_Print_Job_Instructions);
 
 	/**
-	 * Get Updated Print Job Instructions.
+	 * Get updated_print_job_instructions.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false

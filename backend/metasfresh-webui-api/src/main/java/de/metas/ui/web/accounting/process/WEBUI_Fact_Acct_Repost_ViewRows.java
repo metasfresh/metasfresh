@@ -3,6 +3,7 @@ package de.metas.ui.web.accounting.process;
 import java.util.Set;
 
 import de.metas.ui.web.accounting.filters.FactAcctFilterDescriptorsProviderFactory;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
@@ -87,11 +88,12 @@ public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate im
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private DocumentToRepost extractDocumentToRepost(final IViewRow row)
+	private DocumentToRepost extractDocumentToRepost(@NonNull final IViewRow row)
 	{
-		if (I_Fact_Acct.Table_Name.equals(getTableName())
-				|| FactAcctFilterDescriptorsProviderFactory.FACT_ACCT_TRANSACTIONS_VIEW.equals(getTableName())
-				|| TABLENAME_RV_UnPosted.equals(getTableName()))
+		final String tableName = getTableName();
+		if (I_Fact_Acct.Table_Name.equals(tableName)
+				|| FactAcctFilterDescriptorsProviderFactory.FACT_ACCT_TRANSACTIONS_VIEW.equals(tableName)
+				|| TABLENAME_RV_UnPosted.equals(tableName))
 		{
 			return extractDocumentToRepostFromTableAndRecordIdRow(row);
 		}

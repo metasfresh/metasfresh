@@ -4,6 +4,9 @@ import static de.metas.util.Check.assumeNotEmpty;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,18 +38,19 @@ public class DocBaseAndSubType
 	public static DocBaseAndSubType of(@NonNull final String docBaseType)
 	{
 		final String docSubType = null;
-		return new DocBaseAndSubType(docBaseType, docSubType);
+		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
 
 	public static DocBaseAndSubType of(
 			@NonNull final String docBaseType,
 			@Nullable final String docSubType)
 	{
-		return new DocBaseAndSubType(docBaseType, docSubType);
+		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
 
-	String docBaseType;
+	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();
 
+	String docBaseType;
 	String docSubType;
 
 	private DocBaseAndSubType(

@@ -39,9 +39,9 @@ import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableBL;
-import de.metas.handlingunits.attribute.IWeightableFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -60,7 +60,6 @@ import de.metas.util.Services;
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	// Services
-	private final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -140,7 +139,7 @@ import de.metas.util.Services;
 
 	private boolean isWeightableOnlyIfVHU(final IAttributeValueContext ctx)
 	{
-		final Boolean weightableOnlyIfVHU = ctx.getParameter(IWeightableBL.PROPERTY_WeightableOnlyIfVHU);
+		final Boolean weightableOnlyIfVHU = ctx.getParameter(Weightables.PROPERTY_WeightableOnlyIfVHU);
 		if (weightableOnlyIfVHU == null)
 		{
 			return false;
@@ -176,7 +175,15 @@ import de.metas.util.Services;
 		{
 			return null;
 		}
-		return weightableFactory.createWeightableOrNull(attributeSet);
+		else if (attributeSet instanceof IAttributeStorage)
+		{
+			final IAttributeStorage attributeStorage = (IAttributeStorage)attributeSet;
+			return Weightables.wrap(attributeStorage);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -211,30 +218,7 @@ import de.metas.util.Services;
 	protected final void recalculateWeightNet(final IAttributeSet attributeSet)
 	{
 		final IWeightable weightable = getWeightableOrNull(attributeSet);
-
-		// NOTE: we calculate WeightGross, no matter if our HU is allowed to be weighted by user
-		// final boolean weightUOMFriendly = weightable.isWeightable();
-
-		final BigDecimal weightTare = weightable.getWeightTareTotal();
-		final BigDecimal weightGross = weightable.getWeightGross();
-		final BigDecimal weightNet = weightGross.subtract(weightTare);
-		final BigDecimal weightNetActual;
-
-		//
-		// If Gross < Tare, we need to propagate the net value with the initial container's Tare value re-added (+) to preserve the real mathematical values
-		if (weightNet.signum() >= 0)
-		{
-			weightNetActual = weightNet; // propagate net value below normally
-
-			weightable.setWeightNet(weightNetActual);
-		}
-		else
-		{
-			weightNetActual = weightNet.add(weightable.getWeightTareInitial()); // only subtract seed value (the container's weight)
-
-			weightable.setWeightNet(weightNetActual);
-			weightable.setWeightNetNoPropagate(weightNet); // directly set the correct value we're expecting
-		}
+		Weightables.updateWeightNet(weightable);
 	}
 
 	protected boolean isLUorTUorTopLevelVHU(IAttributeSet attributeSet)

@@ -8,7 +8,7 @@ import de.metas.dimension.IDimensionspecDAO;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L

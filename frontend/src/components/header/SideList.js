@@ -5,7 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
-import DocumentList from '../app/DocumentList';
+import DocumentList from '../../containers/DocumentList';
 import Tooltips from '../tooltips/Tooltips';
 import Attachments from './Attachments';
 import DocumentReferences from '../documentReferences/DocumentReferences';
@@ -68,7 +68,7 @@ class SideList extends Component {
    */
   renderBody = () => {
     const {
-      windowType,
+      windowId,
       closeOverlays,
       closeSideList,
       isSideListShow,
@@ -77,7 +77,6 @@ class SideList extends Component {
       sorting,
       viewId,
     } = this.props;
-
     const { tab } = this.state;
 
     switch (tab) {
@@ -87,21 +86,19 @@ class SideList extends Component {
             type="list"
             readonly={true}
             defaultViewId={
-              viewId && viewId.windowType === windowType ? viewId.id : null
+              viewId && viewId.windowType === windowId ? viewId.id : null
             }
             defaultSort={
-              sorting && sorting.windowType === windowType ? sorting.sort : null
+              sorting && sorting.windowType === windowId ? sorting.sort : null
             }
             defaultPage={
-              pagination && pagination.windowType === windowType
+              pagination && pagination.windowType === windowId
                 ? pagination.page
                 : null
             }
-            selected={[docId]}
-            disconnectFromState={true}
             autofocus={true}
             {...{
-              windowType,
+              windowId,
               closeOverlays,
               closeSideList,
               isSideListShow,
@@ -109,9 +106,9 @@ class SideList extends Component {
           />
         );
       case 1:
-        return <DocumentReferences windowId={windowType} documentId={docId} />;
+        return <DocumentReferences windowId={windowId} documentId={docId} />;
       case 2:
-        return <Attachments {...{ windowType, docId }} />;
+        return <Attachments {...{ windowType: windowId, docId }} />;
     }
   };
 
@@ -210,7 +207,7 @@ SideList.propTypes = {
   pagination: PropTypes.any,
   sorting: PropTypes.any,
   viewId: PropTypes.any,
-  windowType: PropTypes.any,
+  windowId: PropTypes.any,
 };
 
 /**

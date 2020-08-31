@@ -23,7 +23,6 @@ package de.metas.handlingunits.client.terminal.mmovement.model.impl;
  */
 
 
-import org.junit.After;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
@@ -32,6 +31,7 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKeyFactory;
 import de.metas.handlingunits.client.terminal.mmovement.model.ILTCUModel;
 import de.metas.handlingunits.document.IHUDocumentLine;
+import org.junit.jupiter.api.AfterEach;
 
 /**
  * Abstract test class for HU Client tests
@@ -79,7 +79,7 @@ public abstract class AbstractLTCUModelTest extends AbstractHUTestWithSampling
 	/**
 	 * If multiple tests of an implementing class use this, then we should explicitly set it back after usage
 	 */
-	@After
+	@AfterEach
 	public final void resetDefaultLTCUModel()
 	{
 		setLTCUModel(defaultModel);

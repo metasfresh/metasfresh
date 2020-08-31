@@ -32,9 +32,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-/**
- * @author al
- */
 public class PaySelectionDAO implements IPaySelectionDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -159,7 +156,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 		return Optional.ofNullable(psl);
 	}
 
-	private final IQueryBuilder<I_C_PaySelectionLine> queryPaySelectionLines(@NonNull final I_C_PaySelection paySelection)
+	private IQueryBuilder<I_C_PaySelectionLine> queryPaySelectionLines(@NonNull final I_C_PaySelection paySelection)
 	{
 		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
@@ -167,7 +164,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				.addOnlyContextClient(InterfaceWrapperHelper.getCtx(paySelection));
 	}
 
-	private final IQueryBuilder<I_C_PaySelectionLine> queryPaySelectionLines(@NonNull final PaySelectionId paySelectionId)
+	private IQueryBuilder<I_C_PaySelectionLine> queryPaySelectionLines(@NonNull final PaySelectionId paySelectionId)
 	{
 		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionId)
@@ -254,6 +251,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				+ "WHERE ps.C_PaySelection_ID=psl.C_PaySelection_ID AND psl.IsActive='Y') "
 				+ "WHERE C_PaySelection_ID=?";
 		DB.executeUpdateEx(sql, new Object[] { paySelectionId }, ITrx.TRXNAME_ThreadInherited);
+		// note: no point in sending a cache-invalidation event just yet, because it wasn't committed
 	}
 
 }

@@ -25,6 +25,9 @@ package de.metas.printing.api.impl;
 
 import java.util.Properties;
 
+import lombok.NonNull;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
@@ -35,9 +38,10 @@ import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
+import javax.annotation.Nullable;
+
 public class PrintClientsBL implements IPrintClientsBL
 {
-
 	@Override
 	public I_AD_Print_Clients createPrintClientsEntry(final Properties ctx, final String hostkey)
 	{
@@ -59,4 +63,16 @@ public class PrintClientsBL implements IPrintClientsBL
 		return printClientsEntry;
 	}
 
+	@Override
+	@Nullable
+	public String getHostKeyOrNull(@NonNull final Properties ctx)
+	{
+		// Check session
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
+		if (session != null)
+		{
+			return session.getOrCreateHostKey(ctx);
+		}
+		return null;
+	}
 }

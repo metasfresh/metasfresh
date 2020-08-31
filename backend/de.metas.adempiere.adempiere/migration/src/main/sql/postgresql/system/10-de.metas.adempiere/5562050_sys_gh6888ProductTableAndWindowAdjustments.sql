@@ -1,0 +1,15 @@
+-- 2020-06-22T13:30:26.022Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2020-06-22 15:30:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=4708
+;
+
+-- 2020-06-22T13:30:58.713Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2020-06-22 15:30:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=4711
+;
+
+-- 2020-06-22T13:31:03.471Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2020-06-22 15:31:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3746
+;
+
