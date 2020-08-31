@@ -45,6 +45,8 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.currency.CurrencyConversionContext;
@@ -161,6 +163,13 @@ public class CostingService implements ICostingService
 						CostDetailCreateResult::getCostElement, // keyMapper
 						CostDetailCreateResult::getAmt, // valueMapper
 						CostAmount::add)); // mergeFunction
+
+		final Map<CostElement, Quantity> qtysByCostElement = costElementResults
+				.stream()
+				.collect(Collectors.toMap(
+						CostDetailCreateResult::getCostElement, // keyMapper
+						CostDetailCreateResult::getQty, // valueMapper
+						Quantity::add)); // mergeFunction
 
 		return AggregatedCostAmount.builder()
 				.costSegment(costSegment)
@@ -295,16 +304,22 @@ public class CostingService implements ICostingService
 
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
-		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
+		return request.isAllCostElements()
+				? getAllCostElements(request.getClientId())
+				: ImmutableList.of(request.getCostElement());
+	}
 
-		if (request.isAllCostElements())
-		{
-			return costElementsRepo.getMaterialCostingMethods(request.getClientId());
-		}
-		else
-		{
-			return ImmutableList.of(request.getCostElement());
-		}
+	private List<CostElement> extractCostElements(final MoveCostsRequest request)
+	{
+		return request.isAllCostElements()
+				? getAllCostElements(request.getClientId())
+				: ImmutableList.of(request.getCostElement());
+	}
+
+	private List<CostElement> getAllCostElements(@NonNull final ClientId clientId)
+	{
+		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
+		return costElementsRepo.getMaterialCostingMethods(clientId);
 	}
 
 	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod)
@@ -441,5 +456,38 @@ public class CostingService implements ICostingService
 	{
 		return currentCostsRepo.getAggregatedCostPriceByCostSegmentAndCostingMethod(costSegment, costingMethod)
 				.map(AggregatedCostPrice::getTotalPrice);
+	}
+
+	@Override
+	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
+	{
+		MoveCostsResult result = null;
+
+		final List<CostElement> costElements = extractCostElements(request);
+		if (costElements.isEmpty())
+		{
+			throw new AdempiereException("No active cost elements found for " + request);
+		}
+
+		for (final CostElement costElement : costElements)
+		{
+			final MoveCostsRequest requestEffective = request.withCostElement(costElement);
+
+			for (final CostingMethodHandler handler : getCostingMethodHandlers(costElement.getCostingMethod(), request.getOutboundDocumentRef()))
+			{
+				final MoveCostsResult partialResult = handler.createMovementCosts(requestEffective);
+
+				result = result != null
+						? result.add(partialResult)
+						: partialResult;
+			}
+		}
+
+		if (result == null)
+		{
+			throw new AdempiereException("No costs for " + request);
+		}
+
+		return result;
 	}
 }

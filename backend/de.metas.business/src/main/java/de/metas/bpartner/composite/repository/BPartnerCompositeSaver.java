@@ -81,6 +81,9 @@ import lombok.NonNull;
 
 final class BPartnerCompositeSaver
 {
+
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+
 	public void save(@NonNull final BPartnerComposite bpartnerComposite)
 	{
 		final ImmutableList<ITranslatableString> validateResult = bpartnerComposite.validate();
@@ -99,11 +102,11 @@ final class BPartnerCompositeSaver
 		}
 
 		final BPartner bpartner = bpartnerComposite.getBpartner();
-		try (final MDCCloseable bpartnerRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
 		{
 			saveBPartner(bpartner, bpartnerComposite.getOrgId());
 		}
-		try (final MDCCloseable bpartnerRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
 		{
 			saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations(), bpartnerComposite.getOrgId());
 
@@ -151,6 +154,9 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
+		
+		bpartnerRecord.setVATaxID(bpartner.getVatId());
+		
 		if (!Check.isEmpty(bpartner.getValue(), true))
 		{
 			bpartnerRecord.setValue(bpartner.getValue());
@@ -196,7 +202,7 @@ final class BPartnerCompositeSaver
 			@NonNull final BPartnerLocation bpartnerLocation,
 			@Nullable final OrgId orgId)
 	{
-		try (final MDCCloseable bpartnerLocationRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner_Location.Table_Name, bpartnerLocation.getId()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_Location.Table_Name, bpartnerLocation.getId()))
 		{
 			final I_C_BPartner_Location bpartnerLocationRecord = loadOrNew(bpartnerLocation.getId(), I_C_BPartner_Location.class);
 			if (orgId != null)
@@ -324,7 +330,7 @@ final class BPartnerCompositeSaver
 				bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 			}
 
-			Services.get(IBPartnerBL.class).setAddress(bpartnerLocationRecord);
+			bPartnerBL.setAddress(bpartnerLocationRecord);
 
 			assertCanCreateOrUpdate(bpartnerLocationRecord);
 			saveRecord(bpartnerLocationRecord);

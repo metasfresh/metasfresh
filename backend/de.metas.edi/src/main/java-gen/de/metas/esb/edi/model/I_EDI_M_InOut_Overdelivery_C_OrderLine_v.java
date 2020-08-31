@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_M_InOut_Overdelivery_C_OrderLine_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_M_InOut_Overdelivery_C_OrderLine_v 
@@ -14,17 +14,9 @@ public interface I_EDI_M_InOut_Overdelivery_C_OrderLine_v
     /** AD_Table_ID=53741 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -33,8 +25,7 @@ public interface I_EDI_M_InOut_Overdelivery_C_OrderLine_v
 	public void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -48,7 +39,7 @@ public interface I_EDI_M_InOut_Overdelivery_C_OrderLine_v
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Lieferung/Wareneingang.
+	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
@@ -58,7 +49,7 @@ public interface I_EDI_M_InOut_Overdelivery_C_OrderLine_v
 	public void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Lieferung/Wareneingang.
+	 * Get Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search

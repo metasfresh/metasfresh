@@ -1114,6 +1114,8 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.orderByDescending(typeFilterColumnName); // "Y" first
 		}
 
+		appendLocationChecks(query, queryBuilder);
+
 		getOrderByColumnNameForType(query.getType()) // order by e.g. "IsDefaultShipToLocation"
 				.ifPresent(queryBuilder::orderByDescending);
 
@@ -1153,6 +1155,33 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		// if no location was found based on relation, return own location, null or non-null
 		return createLocationIdOrNull(bpartnerId, ownToLocation);
+	}
+
+	private void appendLocationChecks(@NonNull final BPartnerLocationQuery query, @NonNull final IQueryBuilder<I_C_BPartner_Location> bpLocationQueryBuilder)
+	{
+		final boolean skipLocationChecks = !query.applyLocationChecks();
+
+		if (skipLocationChecks)
+		{
+			return;
+		}
+
+		final IQueryBuilder<I_C_Location> locationIQueryBuilder = queryBL.createQueryBuilder(I_C_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Location.COLUMNNAME_C_Country_ID, query.getCountryId());
+
+		if (Check.isNotBlank(query.getCity()))
+		{
+			locationIQueryBuilder.addEqualsFilter(I_C_Location.COLUMNNAME_City, query.getCity());
+		}
+
+		if (Check.isNotBlank(query.getPostalCode()))
+		{
+			locationIQueryBuilder.addEqualsFilter(I_C_Location.COLUMNNAME_Postal, query.getPostalCode());
+		}
+
+		bpLocationQueryBuilder.addInSubQueryFilter(I_C_BPartner_Location.COLUMN_C_Location_ID,
+				I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
 	private BPartnerLocationId createLocationIdOrNull(

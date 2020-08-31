@@ -31,11 +31,13 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
@@ -54,7 +56,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
@@ -69,18 +71,18 @@ import lombok.NonNull;
  * Shipment Schedule module: M_ShipmentSchedule
  *
  * @author tsa
- *
  */
 @Validator(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
-	 *
-	 * @param schedule
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_M_ShipmentSchedule schedule)
@@ -99,7 +101,7 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateHeaderAggregationKey(final I_M_ShipmentSchedule schedule)
 	{
-		 Services.get(IShipmentScheduleBL.class).updateHeaderAggregationKey(schedule);
+		shipmentScheduleBL.updateHeaderAggregationKey(schedule);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -110,9 +112,9 @@ public class M_ShipmentSchedule
 				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID)
 				|| Check.isEmpty(schedule.getBPartnerAddress_Override(), true))
 		{
-			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+			final IShipmentScheduleBL shipmentScheduleBL = this.shipmentScheduleBL;
 			schedule.setBPartnerAddress_Override(null);
-			shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(schedule);
+			shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(schedule);
 		}
 	}
 
@@ -208,8 +210,6 @@ public class M_ShipmentSchedule
 	/**
 	 * Note: it's important the the schedule is only invalidated on certain value changes.
 	 * For example, a change of lock status or valid status may not cause an invalidation
-	 *
-	 * @param schedule
 	 */
 	@ModelChange( //
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
@@ -263,8 +263,6 @@ public class M_ShipmentSchedule
 	 * Updates the given candidate's QtyOrdered.
 	 * <p>
 	 * IMPORTANT: we do not want to prohibit over-deliveries. That's why this method shall not be fired if e.g. QtyDelivered changed.
-	 *
-	 * @param shipmentSchedule
 	 */
 	@ModelChange( //
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -274,7 +272,7 @@ public class M_ShipmentSchedule
 			})
 	public void updateQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IShipmentScheduleBL shipmentScheduleBL = this.shipmentScheduleBL;
 		shipmentScheduleBL.updateQtyOrdered(shipmentSchedule);
 
 		final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
@@ -323,5 +321,12 @@ public class M_ShipmentSchedule
 		orderPO.reserveStock(MDocType.get(orderPO.getCtx(), order.getC_DocType_ID()), ImmutableList.of(orderLinePO));
 
 		InterfaceWrapperHelper.save(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_M_ReceiptSchedule.COLUMNNAME_ExportStatus)
+	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		shipmentScheduleBL.updateCanBeExportedAfter(sched);
 	}
 }

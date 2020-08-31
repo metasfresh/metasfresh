@@ -120,7 +120,8 @@ public class JsonRequestLocation
 	private boolean billToDefaultSet;
 
 	@ApiModelProperty(position = 20, // shall be last
-			value = "Sync advise about this location's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
+			value = "Sync advise about this location's individual properties.\n"
+					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 	private boolean syncAdviseSet;
 

@@ -1,25 +1,10 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -30,6 +15,11 @@ import de.metas.ui.web.pickingslotsClearing.PickingSlotsClearingView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -114,26 +104,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 
 		//
 		// Move the HU to an after picking locator
-		final I_M_Locator afterPickingLocator = huWarehouseDAO.suggestAfterPickingLocator(hu.getM_Locator_ID());
-		if(afterPickingLocator == null)
-		{
-			throw new AdempiereException("No after picking locator found for locatorId=" + hu.getM_Locator_ID());
-		}
-		if (afterPickingLocator.getM_Locator_ID() != hu.getM_Locator_ID())
-		{
-			huMovementBL.moveHUsToLocator(ImmutableList.of(hu), afterPickingLocator);
-
-			//
-			// FIXME: workaround to restore HU's HUStatus (i.e. which was changed from Picked to Active by the moveHUsToLocator() method, indirectly).
-			// See https://github.com/metasfresh/metasfresh-webui-api/issues/678#issuecomment-344876035, that's the stacktrace where the HU status was set to Active.
-			InterfaceWrapperHelper.refresh(hu, ITrx.TRXNAME_ThreadInherited);
-			if (!Objects.equal(huStatus, hu.getHUStatus()))
-			{
-				final IHUContext huContext = huContextFactory.createMutableHUContext();
-				huStatusBL.setHUStatus(huContext, hu, huStatus);
-				save(hu);
-			}
-		}
+		moveToAfterPickingLocator(hu);
 
 		//
 		// Inactive all those picking candidates

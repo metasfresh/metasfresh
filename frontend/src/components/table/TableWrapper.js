@@ -156,6 +156,30 @@ class TableWrapper extends PureComponent {
     }
   };
 
+  handleFocusAction = ({ fieldName, supportFieldEdit }) => {
+    this.setState({
+      contextMenu: {
+        ...this.state.contextMenu,
+        fieldName,
+      },
+      supportFieldEdit,
+    });
+  };
+
+  handleFastInlineEdit = () => {
+    const { selected } = this.props;
+    const { contextMenu, supportFieldEdit } = this.state;
+
+    const selectedId = selected[0];
+
+    if (this.rowRefs && this.rowRefs[selectedId] && supportFieldEdit) {
+      this.rowRefs[selectedId].initPropertyEditor({
+        fieldName: contextMenu.fieldName,
+        mark: true,
+      });
+    }
+  };
+
   handleFieldEdit = () => {
     const { selected } = this.props;
     const { contextMenu } = this.state;
@@ -166,7 +190,10 @@ class TableWrapper extends PureComponent {
       this.closeContextMenu();
 
       if (this.rowRefs && this.rowRefs[selectedId]) {
-        this.rowRefs[selectedId].initPropertyEditor(contextMenu.fieldName);
+        this.rowRefs[selectedId].initPropertyEditor({
+          fieldName: contextMenu.fieldName,
+          mark: false,
+        });
       }
     }
   };
@@ -222,6 +249,7 @@ class TableWrapper extends PureComponent {
         showIncludedView: false,
         windowId,
         viewId,
+        isModal,
       });
     }
   };
@@ -356,7 +384,9 @@ class TableWrapper extends PureComponent {
           <Table
             {...this.props}
             handleSelect={this.handleSelect}
+            handleFocusAction={this.handleFocusAction}
             onRightClick={this.handleRightClick}
+            onFastInlineEdit={this.handleFastInlineEdit}
             rowRefs={this.rowRefs}
             ref={this.setTableRef}
           />
@@ -419,6 +449,7 @@ class TableWrapper extends PureComponent {
                 ? this.handleDelete
                 : null
             }
+            onFastInlineEdit={this.handleFastInlineEdit}
             onGetAllLeaves={onGetAllLeaves}
             onIndent={this.handleShortcutIndent}
           />

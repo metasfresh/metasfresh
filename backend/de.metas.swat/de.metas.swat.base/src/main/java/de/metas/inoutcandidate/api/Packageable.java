@@ -29,6 +29,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;

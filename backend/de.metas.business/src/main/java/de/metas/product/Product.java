@@ -1,10 +1,14 @@
 package de.metas.product;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -38,5 +42,21 @@ public class Product
 	@NonNull
 	UomId uomId;
 
+	@NonNull
+	String productNo;
+
+	@NonNull
+	ITranslatableString name;
+
+	@Nullable
+	ITranslatableString description;
+
+	@Nullable
 	BPartnerId manufacturerId;
+
+	@Nullable
+	String packageSize;
+
+	@Nullable
+	BigDecimal weight;
 }

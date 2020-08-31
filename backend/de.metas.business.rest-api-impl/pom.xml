@@ -39,8 +39,15 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.common.shipmentschedule</groupId>
-            <artifactId>de-metas-common-shipmentschedule</artifactId>
+            <groupId>de.metas.common.shipping</groupId>
+            <artifactId>de-metas-common-shipping</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <!-- needed for shipment schedules -->
+        <dependency>
+            <groupId>de.metas.swat</groupId>
+            <artifactId>de.metas.swat.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 
@@ -102,6 +109,12 @@
             <artifactId>de.metas.banking.base</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

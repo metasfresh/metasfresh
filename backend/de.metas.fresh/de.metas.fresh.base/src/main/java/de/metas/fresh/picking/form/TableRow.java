@@ -25,7 +25,7 @@ package de.metas.fresh.picking.form;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Data;

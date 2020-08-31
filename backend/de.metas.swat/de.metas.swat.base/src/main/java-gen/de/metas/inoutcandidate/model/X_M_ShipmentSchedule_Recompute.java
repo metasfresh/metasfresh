@@ -5,24 +5,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_ShipmentSchedule_Recompute
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implements I_M_ShipmentSchedule_Recompute, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -68389426L;
+	private static final long serialVersionUID = -993554850L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_Recompute (Properties ctx, int M_ShipmentSchedule_Recompute_ID, String trxName)
     {
       super (ctx, M_ShipmentSchedule_Recompute_ID, trxName);
-      /** if (M_ShipmentSchedule_Recompute_ID == 0)
-        {
-        } */
     }
 
     /** Load Constructor */
@@ -32,13 +26,12 @@ public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implem
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_PInstance getAD_PInstance()
@@ -52,10 +45,6 @@ public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implem
 		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
 	}
 
-	/** Set Prozess-Instanz.
-		@param AD_PInstance_ID 
-		Instanz eines Prozesses
-	  */
 	@Override
 	public void setAD_PInstance_ID (int AD_PInstance_ID)
 	{
@@ -65,16 +54,10 @@ public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implem
 			set_Value (COLUMNNAME_AD_PInstance_ID, Integer.valueOf(AD_PInstance_ID));
 	}
 
-	/** Get Prozess-Instanz.
-		@return Instanz eines Prozesses
-	  */
 	@Override
-	public int getAD_PInstance_ID () 
+	public int getAD_PInstance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ID);
 	}
 
 	@Override
@@ -89,8 +72,6 @@ public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implem
 		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
 	}
 
-	/** Set Lieferdisposition.
-		@param M_ShipmentSchedule_ID Lieferdisposition	  */
 	@Override
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
 	{
@@ -100,14 +81,9 @@ public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implem
 			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
 	}
 
-	/** Get Lieferdisposition.
-		@return Lieferdisposition	  */
 	@Override
-	public int getM_ShipmentSchedule_ID () 
+	public int getM_ShipmentSchedule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 }

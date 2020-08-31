@@ -1,22 +1,23 @@
 package de.metas.ui.web.invoicecandidate.process;
 
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
-import org.springframework.context.annotation.Profile;
-
 import de.metas.Profiles;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.C_Invoice_Candidate_ProcessCaptionMapperHelper;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.springframework.context.annotation.Profile;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -42,7 +43,7 @@ import de.metas.util.Services;
 
 /**
  * Process used to approve (for invoicing) the selected billing candidates.
- *
+ * <p>
  * This process is the webui alternative for swing's side action: de.metas.invoicecandidate.callout.IC_ApproveForInvoicing_Action
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -53,6 +54,8 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends ViewBasedProcessTem
 {
 	private int countUpdated = 0;
 
+	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -62,14 +65,20 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends ViewBasedProcessTem
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		return ProcessPreconditionsResolution.accept();
+		return ProcessPreconditionsResolution.accept()
+				.withCaptionMapper(getCaptionMapper());
+	}
+
+	private ProcessPreconditionsResolution.ProcessCaptionMapper getCaptionMapper()
+	{
+		return processCaptionMapperHelper.getProcessCaptionMapperForNetAmountsFromQuery(retrieveInvoiceCandidatesToApproveQuery(false));
 	}
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final IQuery<I_C_Invoice_Candidate> query = retrieveInvoiceCandidatesToApproveQuery();
+		final IQuery<I_C_Invoice_Candidate> query = retrieveInvoiceCandidatesToApproveQuery(true);
 
 		//
 		// Fail if there is nothing to update
@@ -105,11 +114,19 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends ViewBasedProcessTem
 		}
 	}
 
-	private final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidatesToApproveQuery()
+	/**
+	 * Implementation detail: during `checkPreconditionsApplicable` `getProcessInfo` throws exception because it is not configured for the Process, so we ignore it.
+	 *
+	 */
+	private final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidatesToApproveQuery(final boolean includeProcessInfoFilters)
 	{
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.addOnlyActiveRecordsFilter()
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class);
+		if (includeProcessInfoFilters)
+		{
+			queryBuilder.filter(getProcessInfo().getQueryFilterOrElseFalse());
+		}
+
+		queryBuilder.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, true) // not processed
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, true) // not already approved
 		;

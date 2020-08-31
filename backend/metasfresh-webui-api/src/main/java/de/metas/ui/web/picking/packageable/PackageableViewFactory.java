@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;

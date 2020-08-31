@@ -1,22 +1,8 @@
-package de.metas.ui.web.window.descriptor.factory;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.ui.web.window.descriptor.DocumentDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +19,22 @@ import javax.annotation.Nullable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.window.descriptor.factory;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface DocumentDescriptorFactory
 {
@@ -90,20 +92,44 @@ public interface DocumentDescriptorFactory
 		}
 	}
 
-	default TableRecordReference getTableRecordReference(final DocumentPath documentPath)
+	default TableRecordReference getTableRecordReference(@NonNull final DocumentPath documentPath)
 	{
+		return getTableRecordReferenceIfPossible(documentPath)
+				.orElseThrow(() -> new AdempiereException("Cannot determine table/record from " + documentPath));
+	}
+
+	default Optional<TableRecordReference> getTableRecordReferenceIfPossible(@NonNull final DocumentPath documentPath)
+	{
+		if (documentPath.getWindowIdOrNull() == null || !documentPath.getWindowId().isInt())
+		{
+			return Optional.empty();
+		}
+
 		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getWindowId());
 
 		if (documentPath.isRootDocument())
 		{
-			final String tableName = rootEntityDescriptor.getTableName();
-			final int recordId = documentPath.getDocumentId().toInt();
-			return TableRecordReference.of(tableName, recordId);
-		}
+			final DocumentId rootDocumentId = documentPath.getDocumentId();
+			if (!rootDocumentId.isInt())
+			{
+				return Optional.empty();
+			}
 
-		final DocumentEntityDescriptor includedEntityDescriptor = rootEntityDescriptor.getIncludedEntityByDetailId(documentPath.getDetailId());
-		final String tableName = includedEntityDescriptor.getTableName();
-		final int recordId = documentPath.getSingleRowId().toInt();
-		return TableRecordReference.of(tableName, recordId);
+			final String tableName = rootEntityDescriptor.getTableName();
+			final int recordId = rootDocumentId.toInt();
+			return Optional.of(TableRecordReference.of(tableName, recordId));
+		}
+		else
+		{
+			final DocumentId includedRowId = documentPath.getSingleRowId();
+			if (!includedRowId.isInt())
+			{
+				return Optional.empty();
+			}
+			final DocumentEntityDescriptor includedEntityDescriptor = rootEntityDescriptor.getIncludedEntityByDetailId(documentPath.getDetailId());
+			final String tableName = includedEntityDescriptor.getTableName();
+			final int recordId = includedRowId.toInt();
+			return Optional.of(TableRecordReference.of(tableName, recordId));
+		}
 	}
 }

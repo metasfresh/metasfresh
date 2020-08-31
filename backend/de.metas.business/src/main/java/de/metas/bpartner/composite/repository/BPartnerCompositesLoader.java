@@ -235,6 +235,7 @@ final class BPartnerCompositesLoader
 				.invoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
+				.vatId(bpartnerRecord.getVATaxID())
 				//
 				.changeLog(recordChangeLog)
 				//
@@ -271,6 +272,7 @@ final class BPartnerCompositesLoader
 		final BPartnerLocationBuilder location = BPartnerLocation.builder()
 				.active(bPartnerLocationRecord.isActive())
 				.name(bPartnerLocationRecord.getName())
+				.bpartnerName(bPartnerLocationRecord.getBPartnerName())
 				.locationType(BPartnerLocationType.builder()
 						.billTo(bPartnerLocationRecord.isBillTo())
 						.billToDefault(bPartnerLocationRecord.isBillToDefault())
