@@ -3,6 +3,7 @@ package de.metas.ordercandidate.api;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -16,6 +17,8 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 /**
  * Use this service to get the "actual" values for a given order line candidate. If this service has no getter for a given field (like <code>DateCandidate</code>), it is save to get the value directly
@@ -146,13 +149,11 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>M_Product_ID</code></li>
 	 * </ul>
 	 */
-	ProductId getM_Product_Effective_ID(I_C_OLCand olCand);
+	@Nullable
+	ProductId getM_Product_Effective_ID(@NonNull I_C_OLCand olCand);
 
 	/**
 	 * Like {@link #getM_Product_Effective_ID(I_C_OLCand)}, but returns the actual product.
-	 *
-	 * @param olCand
-	 * @return
 	 */
 	I_M_Product getM_Product_Effective(I_C_OLCand olCand);
 
@@ -164,10 +165,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	UomId getRecordOrStockUOMId(I_C_OLCand olCandRecord);
 
 	/**
-	 * Like {@link #getC_UOM_Effective_ID(I_C_OLCand)}, but return the actual uom.
-	 *
-	 * @param olCand
-	 * @return
+	 * Like {@link #getEffectiveUomId(I_C_OLCand)} , but return the actual uom.
 	 */
 	I_C_UOM getC_UOM_Effective(I_C_OLCand olCand);
 
@@ -183,7 +181,6 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 *
 	 * #100 FRESH-435: even if the (effective) HandOver_Partner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0.
 	 *
-	 * @param olCand
 	 * @return id or {@code null}.
 	 */
 	BPartnerId getHandOverPartnerEffectiveId(I_C_OLCand olCand);

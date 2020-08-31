@@ -89,7 +89,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	/**
 	 * Dynamic attribute name used to pass on the pricing result obtained by this class to potential listeners like {@link OLCandPricingASIListener}.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
+	 * task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	private static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT = new ModelDynAttributeAccessor<>(DefaultOLCandValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
 
@@ -101,11 +101,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		this.olCandBL = olCandBL;
 	}
 
-	/** @return {@code 10}; this validator shall be executed first */
+	/** @return {@code 20}; this validator shall be executed after OLCandProductFromPIIPvalidator */
 	@Override
 	public int getSeqNo()
 	{
-		return 10;
+		return 20;
 	}
 
 	@Override

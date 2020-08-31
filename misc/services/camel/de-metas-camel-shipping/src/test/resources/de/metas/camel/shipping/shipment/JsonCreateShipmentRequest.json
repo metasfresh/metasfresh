@@ -1,0 +1,33 @@
+{
+  "shipperCode": "Siro",
+  "shipmentList": [
+    {
+      "shipmentScheduleId": 1,
+      "productSearchKey": "productSearchKey",
+      "businessPartnerSearchKey": null,
+      "movementQuantity": 12,
+      "movementDate": "2020-07-29T16:16:59.000Z",
+      "documentNo": "cp-document-no-1",
+      "deliveryRule": "F",
+      "attributes": [
+        {
+          "attributeName": "Lot-Nummer",
+          "attributeCode": "Lot-Nummer",
+          "valueStr": "cp-lot-no-1",
+          "valueNumber": null,
+          "valueDate": null
+        }
+      ],
+      "location": {
+        "street": "street",
+        "houseNo": "8",
+        "city": "city",
+        "countryCode": "countryCode",
+        "zipCode": "12"
+      },
+      "trackingNumbers": [
+        "cp-test-trk-no-c1"
+      ]
+    }
+  ]
+}

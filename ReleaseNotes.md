@@ -9,6 +9,22 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.149
+## Features
+* metasfresh
+  * [#3856](https://github.com/metasfresh/metasfresh/issues/3856) WebUI Forecast Window hide Calendar, Period, Year
+  * [#7124](https://github.com/metasfresh/metasfresh/pull/7124) Product Price Table editing, shortcut, marked text
+  * [#7142](https://github.com/metasfresh/metasfresh/issues/7142) OLCand/BPartner REST Endpoints: import C_BPartner.VATaxId
+  * [#7148](https://github.com/metasfresh/metasfresh/issues/7148) Produktionsbericht: Produkt Name
+  * [#7152](https://github.com/metasfresh/metasfresh/issues/7152) Flickering window after starting process on other machine
+  * [#7155](https://github.com/metasfresh/metasfresh/issues/7155) Window layout improvements: current costs
+
+## Fixes
+* metasfresh
+  * [#7083](https://github.com/metasfresh/metasfresh/issues/7083) When filtering and hiding/showing modals the redux state is not cleaned
+  * [#7105](https://github.com/metasfresh/metasfresh/issues/7105) Window goes blank when reloaded after clicking the navigation link
+  * [#9847](https://github.com/metasfresh/metasfresh/issues/9847) CU Label not working Error: Cannot convert HUReport_541195
+
 # metasfresh 5.148
 ## Features
 * metasfresh

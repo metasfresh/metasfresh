@@ -50,12 +50,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
@@ -798,26 +798,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	private void addAttributes(@NonNull final I_M_ShipmentSchedule shipmentSchedule,final List<CreateAttributeInstanceReq> attributeInstanceBasicInfos)
+	private void addAttributes(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final List<CreateAttributeInstanceReq> attributeInstanceBasicInfos)
 	{
-		final AttributeSetInstanceId oldAsiId = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
-		final AttributeSetInstanceId asiId;
+		final AttributeSetInstanceId existingAttributeSetOrNone = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
 
-		if (oldAsiId.isNone())
-		{
-			final I_M_AttributeSetInstance asiNew = attributeSetInstanceBL.createASI(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
-			asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
-		}
-		else
-		{
-			final I_M_AttributeSetInstance asiCopy = ASICopy.newInstance(oldAsiId).copy();
-			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
-		}
+		final AddAttributesRequest addAttributesRequest = AddAttributesRequest.builder()
+				.existingAttributeSetIdOrNone(existingAttributeSetOrNone)
+				.attributeInstanceBasicInfos(attributeInstanceBasicInfos)
+				.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
+				.build();
 
-		shipmentSchedule.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.addAttributes(addAttributesRequest);
 
-		attributeInstanceBasicInfos.forEach(attributeValue -> {
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue() );
-		});
+		shipmentSchedule.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 	}
 }
