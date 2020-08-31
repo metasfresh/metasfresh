@@ -5,9 +5,16 @@
       "receiptScheduleId": 1,
       "productSearchKey": "productSearchKey",
       "movementQuantity": 10,
-      "dateReceived":"2020-05-27T15:20:03.000Z",
-      "movementDate":"2020-05-27",
+      "dateReceived": "2020-05-27T15:20:03.000Z",
+      "movementDate": "2020-05-27",
       "attributes": [
+        {
+          "attributeName": "HU_ExpiryDate",
+          "attributeCode": "HU_ExpiryDate",
+          "valueStr": null,
+          "valueNumber": null,
+          "valueDate": "2024-05-27"
+        },
         {
           "attributeName": "Article_Flavor",
           "attributeCode": "Article_Flavor",
