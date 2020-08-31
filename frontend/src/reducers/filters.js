@@ -41,13 +41,21 @@ export const getEntityRelatedId = ({ windowId, viewId, docId, tabId }) => {
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
-    // CRUD
     case types.CREATE_FILTER: {
       const { id, data } = action.payload;
       draftState[id] = {
         ...initialFiltersLeafState,
         ...data,
       };
+      return;
+    }
+    case types.DELETE_FILTER: {
+      const { id } = action.payload;
+
+      if (draftState[id]) {
+        delete draftState[id];
+      }
+
       return;
     }
   }

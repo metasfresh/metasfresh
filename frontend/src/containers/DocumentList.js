@@ -322,7 +322,7 @@ class DocumentListContainer extends Component {
         if (this.mounted) {
           const { allowedCloseActions } = response;
           const entityRelatedId = getEntityRelatedId({ windowId, viewId });
-          createFilter({ id: entityRelatedId, data: {} });
+          viewId && createFilter({ id: entityRelatedId, data: {} });
 
           // TODO: Check if we still need to do this
           if (isModal) {

@@ -1,8 +1,8 @@
-import { SET_CLEAR_ALL_FILTER, CREATE_FILTER } from '../constants/FilterTypes';
+import * as types from '../constants/FilterTypes';
 
 export function clearAllFilters(data) {
   return {
-    type: SET_CLEAR_ALL_FILTER,
+    type: types.SET_CLEAR_ALL_FILTER,
     payload: data,
   };
 }
@@ -13,7 +13,18 @@ export function clearAllFilters(data) {
  */
 export function createFilter({ id, data }) {
   return {
-    type: CREATE_FILTER,
+    type: types.CREATE_FILTER,
     payload: { id, data },
+  };
+}
+
+/**
+ * @method deleteFilter
+ * @summary Remove the filter with specified `id` from the store
+ */
+export function deleteFilter(id) {
+  return {
+    type: types.DELETE_FILTER,
+    payload: { id },
   };
 }

@@ -7,6 +7,7 @@ import {
   headerPropertiesRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
+import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
 
 import {
@@ -33,6 +34,7 @@ import {
 } from '../constants/ActionTypes';
 
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import { createFilter, deleteFilter } from './FiltersActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
@@ -442,6 +444,17 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         const tableId = getTableId({ windowId, viewId });
 
         dispatch(deleteTable(tableId));
+
+        // remove the old filter from the store
+        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+        dispatch(deleteFilter(entityRelatedId));
+        // create a new branch for the new filter in the redux store
+        console.log(response);
+        const newFilterId = getEntityRelatedId({
+          windowId: response.data.windowId,
+          viewId: response.data.viewId,
+        });
+        dispatch(createFilter({ id: newFilterId, data: {} }));
 
         return Promise.resolve(response.data);
       })
