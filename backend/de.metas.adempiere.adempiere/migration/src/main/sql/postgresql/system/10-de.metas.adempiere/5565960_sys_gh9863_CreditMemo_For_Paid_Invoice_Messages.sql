@@ -15,7 +15,7 @@ UPDATE AD_Message SET MsgText='Wenn die gutgeschriebene Rechnung = {0} referenzi
 
 -- 2020-08-31T11:30:28.250Z
 -- URL zum Konzept
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='IIf the credit memo shall reference the credited invoice = {0}, then that invoice may not yet be paid.',Updated=TO_TIMESTAMP('2020-08-31 14:30:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544998
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='If the credit memo shall reference the credited invoice = {0}, then that invoice may not yet be paid.',Updated=TO_TIMESTAMP('2020-08-31 14:30:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544998
 ;
 
 -- 2020-08-31T11:31:01.624Z
@@ -37,4 +37,3 @@ UPDATE AD_Message SET MsgType='E',Updated=TO_TIMESTAMP('2020-08-31 14:31:13','YY
 -- URL zum Konzept
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgTip='If the credit memo shall reference the credited invoice, then that invoice= {0} may not have Open Amount = 0.',Updated=TO_TIMESTAMP('2020-08-31 14:31:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544999
 ;
-
