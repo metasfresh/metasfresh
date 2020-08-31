@@ -1,75 +1,6 @@
 package de.metas.invoice.service.impl;
 
-import static de.metas.util.Check.assumeNotNull;
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.comparator.ComparatorChain;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_RMA;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Tax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -83,6 +14,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -131,9 +63,74 @@ import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_RMA;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Tax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.util.Check.assumeNotNull;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  * Implements those methods that are DB decoupled
