@@ -34,7 +34,7 @@ import {
 } from '../constants/ActionTypes';
 
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
-import { createFilter, deleteFilter } from './FiltersActions';
+import { createFilter, deleteFilter, filtersToMap } from './FiltersActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
@@ -293,7 +293,8 @@ export function fetchDocument({
     })
       .then((response) => {
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
-
+        console.log('WindowId:', windowId);
+        console.log('viewId:', viewId);
         const tableId = getTableId({ windowId, viewId });
         const tableData = { windowId, viewId, ...response.data };
 
@@ -307,6 +308,19 @@ export function fetchDocument({
 
         const state = getState();
         const view = getView(state, windowId, isModal);
+
+        // create a new branch for the new filter in the redux store and set corresponfing filter data
+        const newFilterId = getEntityRelatedId({ windowId, viewId });
+        view &&
+          dispatch(
+            createFilter({
+              id: newFilterId,
+              data: {
+                filterData: filtersToMap(view.layout.filters),
+              },
+            })
+          );
+        // set the Layout for the view
         const openIncludedViewOnSelect =
           view.layout &&
           view.layout.includedView &&
@@ -448,13 +462,6 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         // remove the old filter from the store
         const entityRelatedId = getEntityRelatedId({ windowId, viewId });
         dispatch(deleteFilter(entityRelatedId));
-        // create a new branch for the new filter in the redux store
-        console.log(response);
-        const newFilterId = getEntityRelatedId({
-          windowId: response.data.windowId,
-          viewId: response.data.viewId,
-        });
-        dispatch(createFilter({ id: newFilterId, data: {} }));
 
         return Promise.resolve(response.data);
       })

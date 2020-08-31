@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import deepUnfreeze from 'deep-unfreeze';
@@ -152,17 +151,6 @@ if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
   GEO_PANEL_STATES.splice(1, 1);
 }
 
-const filtersToMap = function(filtersArray) {
-  let filtersMap = iMap();
-
-  if (filtersArray && filtersArray.length) {
-    filtersArray.forEach((filter) => {
-      filtersMap = filtersMap.set(filter.filterId, filter);
-    });
-  }
-  return filtersMap;
-};
-
 /**
  * Check if current selection still exists in the provided data (used when
  * updates happen)
@@ -205,7 +193,6 @@ export {
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
   getSortingQuery,
-  filtersToMap,
   doesSelectionExist,
 };
 

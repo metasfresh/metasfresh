@@ -8,10 +8,10 @@ import {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
-  filtersToMap,
   DLpropTypes,
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
+import { filtersToMap } from '../../actions/FiltersActions';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';

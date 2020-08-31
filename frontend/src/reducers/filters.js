@@ -1,17 +1,15 @@
 import { produce } from 'immer';
 import * as types from '../constants/FilterTypes';
 
-export const initialFiltersBranchState = {
-  clearAll: false,
-};
+export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
   clearAll: false,
-  activeFilter: null,
-  activeFiltersCaptions: null,
-  flatFiltersMap: null,
-  notValidFields: null,
-  widgetShown: false,
+  // activeFilter: null,
+  // activeFiltersCaptions: null,
+  // flatFiltersMap: null,
+  // notValidFields: null,
+  // widgetShown: false,
 };
 
 /**
@@ -43,9 +41,10 @@ const reducer = produce((draftState, action) => {
   switch (action.type) {
     case types.CREATE_FILTER: {
       const { id, data } = action.payload;
+      const { filterData } = data;
       draftState[id] = {
         ...initialFiltersLeafState,
-        ...data,
+        filterData: filterData,
       };
       return;
     }

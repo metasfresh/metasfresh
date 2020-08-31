@@ -1,4 +1,5 @@
 import * as types from '../constants/FilterTypes';
+import { Map as iMap } from 'immutable';
 
 export function clearAllFilters(data) {
   return {
@@ -27,4 +28,19 @@ export function deleteFilter(id) {
     type: types.DELETE_FILTER,
     payload: { id },
   };
+}
+
+/**
+ * @method filtersToMap
+ * @summary creates a map with the filters fetched from the layout request
+ */
+export function filtersToMap(filtersArray) {
+  let filtersMap = iMap();
+
+  if (filtersArray && filtersArray.length) {
+    filtersArray.forEach((filter) => {
+      filtersMap = filtersMap.set(filter.filterId, filter);
+    });
+  }
+  return filtersMap;
 }

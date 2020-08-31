@@ -8,7 +8,7 @@ import merge from 'merge';
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../reducers/windowHandler';
-import { filtersToMap } from '../../utils/documentListHelper';
+import { filtersToMap } from '../../actions/FiltersActions';
 
 import Filters from '../../components/filters/Filters';
 import filtersFixtures from '../../../test_setup/fixtures/filters.json';

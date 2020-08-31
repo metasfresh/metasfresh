@@ -31,7 +31,11 @@ import {
   updateGridTableData,
   deselectTableItems,
 } from '../actions/TableActions';
-import { clearAllFilters, createFilter } from '../actions/FiltersActions';
+import {
+  clearAllFilters,
+  createFilter,
+  filtersToMap,
+} from '../actions/FiltersActions';
 import {
   closeListIncludedView,
   setListIncludedView,
@@ -47,7 +51,6 @@ import {
   DLmapStateToProps,
   GEO_PANEL_STATES,
   getSortingQuery,
-  filtersToMap,
   mergeColumnInfosIntoViewRows,
   mergeRows,
   parseToDisplay,
@@ -320,9 +323,12 @@ class DocumentListContainer extends Component {
     fetchLayout(windowId, type, viewProfileId, isModal)
       .then((response) => {
         if (this.mounted) {
-          const { allowedCloseActions } = response;
+          const { allowedCloseActions, filters } = response;
           const entityRelatedId = getEntityRelatedId({ windowId, viewId });
-          viewId && createFilter({ id: entityRelatedId, data: {} });
+          const data = {
+            filterData: filtersToMap(filters),
+          };
+          viewId && createFilter({ id: entityRelatedId, data });
 
           // TODO: Check if we still need to do this
           if (isModal) {
