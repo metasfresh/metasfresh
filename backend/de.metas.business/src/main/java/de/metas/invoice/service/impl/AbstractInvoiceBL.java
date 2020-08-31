@@ -1,7 +1,7 @@
 package de.metas.invoice.service.impl;
 
-import static de.metas.util.Check.assumeNotNull;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.util.Check.assumeNotNull;
 
 /*
  * #%L
@@ -83,6 +83,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -93,7 +94,9 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
@@ -131,7 +134,6 @@ import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -157,22 +159,47 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
+	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
+
+	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
-		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
-		Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
 
+		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
 		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		//
-		// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
-		final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-				false); // creditMemoAdjusted = false
+		if (creditCtx.isReferenceInvoice())
+		{
 
-		// 'invoice' is not paid, so the open amount won't be zero
-		Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {}", invoice);
+			if (invoice.isPaid())
+			{
+				throw new AdempiereException(
+						MSG_InvoiceMayNotBePaid,
+						new Object[] {
+								invoice.getDocumentNo()
+						});
+			}
+
+			//
+			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
+			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
+					false); // creditMemoAdjusted = false
+
+			// 'invoice' is not paid, so the open amount won't be zero
+			if (openAmt.signum() == 0)
+			{
+				throw new AdempiereException(
+						MSG_InvoiceMayNotHaveOpenAmtZero,
+						new Object[] {
+								invoice.getDocumentNo()
+						});
+			}
+
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
 		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
 		//
