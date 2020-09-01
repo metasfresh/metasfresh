@@ -9,6 +9,28 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.150
+## Features
+* [#7137](https://github.com/metasfresh/metasfresh/pull/7137) Always capture previous costs
+* [#7140](https://github.com/metasfresh/metasfresh/issues/7140) Small changes for data Exchange with Logistics company
+* [#7142](https://github.com/metasfresh/metasfresh/issues/7142) OLCand/BPartner REST Endpoints: import C_BPartner.VATaxId
+* [#7159](https://github.com/metasfresh/metasfresh/issues/7159) Add prepayment check in sales order functions
+* [#7173](https://github.com/metasfresh/metasfresh/issues/7173) Add product weight in de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details
+* [#7182](https://github.com/metasfresh/metasfresh/pull/7182) Improve sales invoice status endpoint
+* [#7186](https://github.com/metasfresh/metasfresh/issues/7186) Receipt REST-Api: Create material receipts
+* [#7171](https://github.com/metasfresh/metasfresh/issues/7171) Order candidates processing: Paypal/ creditcard payments w/ reference and prepayment
+
+## Fixes
+* [#7073](https://github.com/metasfresh/metasfresh/issues/7073) Many 🙏 to [Peter Wyss (@KommunikativCh)](https://github.com/KommunikativCh)
+* [#7127](https://github.com/metasfresh/metasfresh/issues/7127) Problem: pressing esc after editing field shows typed value, instead of existing one (old one)
+* [#7158](https://github.com/metasfresh/metasfresh/issues/7158) Quick edit modal overlay not refreshed after attribute edit
+* [#7161](https://github.com/metasfresh/metasfresh/pull/7161) Fix NPE if an invoice candidate is in catch weight but none is given
+* [#7166](https://github.com/metasfresh/metasfresh/pull/7166) Rüstschein modal overlay not refreshed after attribute edit
+* [#7177](https://github.com/metasfresh/metasfresh/issues/7177) Dropdown behaves weird when two elements with the same key exist in the list
+* [#7183](https://github.com/metasfresh/metasfresh/issues/7183) Kontakte Mobil Start date not initially set
+* [#9839](https://github.com/metasfresh/metasfresh/pull/9839) Remove rabbitmq swing error
+* [#9840](https://github.com/metasfresh/metasfresh/issues/9840) Jenkins build is broken on the frontend part
+
 # metasfresh 5.149
 ## Features
 * metasfresh
