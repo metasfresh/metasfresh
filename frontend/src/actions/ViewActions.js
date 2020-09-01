@@ -308,11 +308,13 @@ export function fetchDocument({
         const view = getView(state, windowId, isModal);
 
         const filterId = getEntityRelatedId({ windowId, viewId });
-
         dispatch(
           createFilter({
             id: filterId,
-            data: { filterData: filtersToMap(view.layout.filters) }, // set the proper layout for the filters
+            data: {
+              filterData: filtersToMap(view.layout.filters), // set the proper layout for the filters
+              filtersActive: filtersToMap(response.data.filters),
+            },
           })
         );
 
@@ -458,16 +460,6 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         // remove the old filter from the store
         const entityRelatedId = getEntityRelatedId({ windowId, viewId });
         dispatch(deleteFilter(entityRelatedId));
-
-        // // create a new branch for the new filter in the redux store and set corresponding filter data
-        // const newFilterId = getEntityRelatedId({
-        //   windowId: response.data.windowId,
-        //   viewId: response.data.viewId,
-        // });
-        // // console.log('newFilterId:', newFilterId)
-        // // dispatch(
-        // //   updateActiveFilter({ id: newFilterId, data: response.data.filters })
-        // // );
 
         return Promise.resolve(response.data);
       })
