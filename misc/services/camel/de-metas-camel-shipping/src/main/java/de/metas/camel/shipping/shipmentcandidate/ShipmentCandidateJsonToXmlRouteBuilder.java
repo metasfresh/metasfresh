@@ -41,6 +41,8 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 	public static final String SHIPMENT_CANDIDATE_FEEDBACK_ROUTE = "receiptCandidate-feedback";
 	public static final String SHIPMENT_CANDIDATE_FEEDBACK_TO_MF = "ShipmentCandidate-Feedback-TO-MF";
 
+	private static final String SHIPMENT_CANDIDATE_UPLOAD_URI = "{{siro.ftp.upload.shipment-schedules.uri}}";
+
 	@Override
 	public void configure()
 	{
@@ -78,7 +80,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.end() // "NumberOfItems" - choice
 		;
 
-		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this);
+		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this, SHIPMENT_CANDIDATE_UPLOAD_URI);
 
 		from(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE))
 				.routeId(SHIPMENT_CANDIDATE_FEEDBACK_TO_MF)

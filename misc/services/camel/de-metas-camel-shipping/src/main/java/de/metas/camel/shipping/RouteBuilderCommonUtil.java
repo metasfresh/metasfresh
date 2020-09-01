@@ -73,7 +73,7 @@ public class RouteBuilderCommonUtil
 	/**
 	 * Retry uploads of FM-files to the remote server.
 	 */
-	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder)
+	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder, @NonNull final String uploadURI)
 	{
 		routeBuilder
 				.from(routeBuilder.direct(FILEMAKER_UPLOAD_ROUTE))
@@ -84,6 +84,6 @@ public class RouteBuilderCommonUtil
 						.logHandled(true)
 						.retryAttemptedLogLevel(LoggingLevel.INFO)
 				)
-				.to("{{upload.endpoint.uri}}");
+				.to(uploadURI);
 	}
 }
