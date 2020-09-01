@@ -1,4 +1,4 @@
-UPDATE AD_USER
+UPDATE AD_User
 SET IsDefaultContact='N', 
 	IsBillToContact_Default='N', 
 	IsSalesContact_Default='N', 
