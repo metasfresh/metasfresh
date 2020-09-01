@@ -31,6 +31,17 @@ export function deleteFilter(id) {
 }
 
 /**
+ * @method updateActiveFilter
+ * @summary Updates the activeFilter in the store for the corresponding entity id
+ */
+export function updateActiveFilter({ id, data }) {
+  return {
+    type: types.UPDATE_ACTIVE_FILTER,
+    payload: { id, data },
+  };
+}
+
+/**
  * @method filtersToMap
  * @summary creates a map with the filters fetched from the layout request
  */

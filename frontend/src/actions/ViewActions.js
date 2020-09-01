@@ -34,7 +34,12 @@ import {
 } from '../constants/ActionTypes';
 
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
-import { createFilter, deleteFilter, filtersToMap } from './FiltersActions';
+import {
+  createFilter,
+  deleteFilter,
+  filtersToMap,
+  updateActiveFilter,
+} from './FiltersActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
@@ -307,17 +312,6 @@ export function fetchDocument({
         const state = getState();
         const view = getView(state, windowId, isModal);
 
-        // create a new branch for the new filter in the redux store and set corresponfing filter data
-        const newFilterId = getEntityRelatedId({ windowId, viewId });
-        view &&
-          dispatch(
-            createFilter({
-              id: newFilterId,
-              data: {
-                filterData: filtersToMap(view.layout.filters),
-              },
-            })
-          );
         // set the Layout for the view
         const openIncludedViewOnSelect =
           view.layout &&
@@ -445,7 +439,7 @@ export function fetchLayout(
  * @summary filter grid view
  */
 export function filterView(windowId, viewId, filters, isModal = false) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(filterViewPending(windowId, isModal));
 
     return filterViewRequest(windowId, viewId, filters)
@@ -460,6 +454,27 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         // remove the old filter from the store
         const entityRelatedId = getEntityRelatedId({ windowId, viewId });
         dispatch(deleteFilter(entityRelatedId));
+
+        const state = getState();
+        const view = getView(state, response.data.windowId, isModal);
+
+        // create a new branch for the new filter in the redux store and set corresponding filter data
+        const newFilterId = getEntityRelatedId({
+          windowId: response.data.windowId,
+          viewId: response.data.viewId,
+        });
+        view &&
+          dispatch(
+            createFilter({
+              id: newFilterId,
+              data: {
+                filterData: filtersToMap(view.filters),
+              },
+            })
+          );
+        dispatch(
+          updateActiveFilter({ id: newFilterId, data: response.data.filters })
+        );
 
         return Promise.resolve(response.data);
       })
