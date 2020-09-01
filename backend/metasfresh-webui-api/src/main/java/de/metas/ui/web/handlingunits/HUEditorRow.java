@@ -272,13 +272,13 @@ public final class HUEditorRow implements IViewRow
 			attributesSupplier = Optional.empty();
 		}
 
-		if (hasAttributes() && attributesSupplier.get().get().hasAttribute(AttributeConstants.ATTR_SerialNo))
+		if (attributesSupplier.isPresent() && attributesSupplier.get().get().hasAttribute(AttributeConstants.ATTR_SerialNo))
 		{
 			serialNo = attributesSupplier.get().get().getValueAsString(AttributeConstants.ATTR_SerialNo);
 		}
 		else
 		{
-			serialNo = "A";
+			serialNo = null;
 		}
 	}
 
