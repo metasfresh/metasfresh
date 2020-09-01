@@ -455,6 +455,37 @@ export default function viewHandler(state = initialState, action) {
 
       return state;
     }
+    case SET_INCLUDED_VIEW: {
+      const { id, viewId, viewProfileId } = action.payload;
+
+      return {
+        ...state,
+        includedView: {
+          ...state.includedView,
+          viewId,
+          windowId: id,
+          viewProfileId,
+        },
+      };
+    }
+    case UNSET_INCLUDED_VIEW: {
+      const { windowId, viewId } = state.includedView;
+      const { id: newWindowId, viewId: newViewId, forceClose } = action.payload;
+
+      if (forceClose || (windowId === newWindowId && viewId === newViewId)) {
+        // only close includedView if it hasn't changed since
+        return {
+          ...state,
+          includedView: {
+            viewId: null,
+            windowId: null,
+            viewProfileId: null,
+          },
+        };
+      } else {
+        return state;
+      }
+    }
 
     case DELETE_VIEW: {
       const { id, isModal } = action.payload;
@@ -483,40 +514,6 @@ export default function viewHandler(state = initialState, action) {
         return state;
       }
     }
-
-    case SET_INCLUDED_VIEW: {
-      const { id, viewId, viewProfileId } = action.payload;
-
-      return {
-        ...state,
-        includedView: {
-          ...state.includedView,
-          viewId,
-          windowId: id,
-          viewProfileId,
-        },
-      };
-    }
-
-    case UNSET_INCLUDED_VIEW: {
-      const { windowId, viewId } = state.includedView;
-      const { id: newWindowId, viewId: newViewId, forceClose } = action.payload;
-
-      if (forceClose || (windowId === newWindowId && viewId === newViewId)) {
-        // only close includedView if it hasn't changed since
-        return {
-          ...state,
-          includedView: {
-            viewId: null,
-            windowId: null,
-            viewProfileId: null,
-          },
-        };
-      } else {
-        return state;
-      }
-    }
-
     default:
       return state;
   }
