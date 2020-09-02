@@ -715,11 +715,17 @@ import lombok.NonNull;
 				// .setReadonlyLogic(readonlyLogic)
 				// .setAlwaysUpdateable(alwaysUpdateable)
 				// .setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
-				// .setDisplayLogic(gridFieldVO.getDisplayLogic())
+				 				 
 				//
 				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
-
+		
+		final String labelDisplayLogic = labelsUIElement.getLabels_Selector_Field().getDisplayLogic();
+		if (!Check.isBlank(labelDisplayLogic))
+		{
+			fieldBuilder.setDisplayLogic(labelDisplayLogic);
+		}
+		
 		//
 		// Add Field builder to document entity
 		entityDescriptor.addField(fieldBuilder);
