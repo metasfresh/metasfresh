@@ -87,8 +87,8 @@ CREATE OR REPLACE FUNCTION report.M_Cost_CostPrice_Function(IN p_keydate timesta
                 p_name      character varying,
                 qty         numeric,
                 uomsymbol   character varying,
-                linesum     numeric,
-                costprice   numeric
+                costprice   numeric,
+                linesum     numeric
             )
 
 
@@ -104,8 +104,8 @@ SELECT vc.combination,
        COALESCE(pt.Name, p.Name)               AS P_Name,
        qty,
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
-       qty * CostPrice                         AS linesum,
-       CostPrice
+       CostPrice,
+       qty * CostPrice                         AS linesum
 FROM (
          SELECT pa.P_Asset_acct   AS C_ValidCombination_ID,
                 wh.C_Activity_ID,
