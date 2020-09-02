@@ -4,32 +4,17 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { Map as iMap } from 'immutable';
 import _ from 'lodash';
-
 import { DATE_FIELDS } from '../../constants/Constants';
 import {
   generateMomentObj,
   getFormatForDateField,
 } from '../widget/RawWidgetHelpers';
-import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
+
 import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 import deepUnfreeze from 'deep-unfreeze';
 import { getEntityRelatedId } from '../../reducers/filters';
-
-/**
- * @method parseDateToReadable
- * @summary ToDo: Describe the method
- * @param {*} widgetType
- * @param {*} value
- * @todo Write the documentation
- */
-export function parseDateToReadable(widgetType, value) {
-  if (DATE_FIELDS.indexOf(widgetType) > -1) {
-    return parseDateWithCurrentTimezone(value, widgetType);
-  }
-  return value;
-}
 
 /**
  * @file Class based component.
