@@ -14,8 +14,8 @@
 		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
-	<groupId>de.metas.adempiere.libero</groupId>
-	<artifactId>de.metas.adempiere.libero.libero</artifactId>
+	<groupId>de.metas.manufacturing</groupId>
+	<artifactId>de.metas.manufacturing</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencyManagement>

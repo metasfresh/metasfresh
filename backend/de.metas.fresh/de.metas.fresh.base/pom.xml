@@ -207,8 +207,8 @@
 		
 		<!-- Required by de.metas.handlingunits.base-tests -->
 		<dependency>
-			<groupId>de.metas.adempiere.libero</groupId>
-			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
