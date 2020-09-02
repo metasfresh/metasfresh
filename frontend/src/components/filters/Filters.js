@@ -2,9 +2,8 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-// -- using iMap from immutable
 import { Map as iMap } from 'immutable';
-import _, { drop } from 'lodash';
+import _ from 'lodash';
 
 import { DATE_FIELDS } from '../../constants/Constants';
 import {
