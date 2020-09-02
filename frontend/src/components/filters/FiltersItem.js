@@ -15,7 +15,7 @@ import RawWidget from '../widget/RawWidget';
 import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
-import { parseDateToReadable } from './Filters';
+import { convertDateToReadable } from '../../utils/dateHelpers';
 
 /**
  * @file Class based component.
@@ -271,8 +271,8 @@ class FiltersItem extends PureComponent {
         if (value !== null && value !== '') {
           parametersArray.push({
             ...param,
-            value: parseDateToReadable(param.widgetType, activeValue),
-            valueTo: parseDateToReadable(param.widgetType, activeValueTo),
+            value: convertDateToReadable(param.widgetType, activeValue),
+            valueTo: convertDateToReadable(param.widgetType, activeValueTo),
             defaultValue: null,
             defaultValueTo: null,
           });
@@ -315,8 +315,8 @@ class FiltersItem extends PureComponent {
           if (value !== null && value !== '') {
             return {
               ...param,
-              value: parseDateToReadable(param.widgetType, value),
-              valueTo: parseDateToReadable(param.widgetType, valueTo),
+              value: convertDateToReadable(param.widgetType, value),
+              valueTo: convertDateToReadable(param.widgetType, valueTo),
             };
           }
           return {

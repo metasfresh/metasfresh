@@ -5,7 +5,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RawWidget from '../widget/RawWidget';
 
-import { parseDateToReadable } from './Filters';
+import { convertDateToReadable } from '../../utils/dateHelpers';
 
 class InlineFilterItem extends Component {
   constructor(props) {
@@ -79,8 +79,8 @@ class InlineFilterItem extends Component {
         parameters: prevState.filter.parameters.map((param) => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
-              value: parseDateToReadable(param.widgetType, value),
-              valueTo: parseDateToReadable(param.widgetType, valueTo),
+              value: convertDateToReadable(param.widgetType, value),
+              valueTo: convertDateToReadable(param.widgetType, valueTo),
             });
           } else {
             return param;
