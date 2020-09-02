@@ -2,9 +2,9 @@
  * Date conversions/transforms used across the app should reside in this file
  */
 
-import { DATE_FIELDS } from '../../constants/Constants';
+import { DATE_FIELDS } from '../constants/Constants';
 
-import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
+import { parseDateWithCurrentTimezone } from './documentListHelper';
 
 /**
  * @method convertDateToReadable
