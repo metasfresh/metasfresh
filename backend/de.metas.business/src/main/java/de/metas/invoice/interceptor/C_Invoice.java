@@ -102,7 +102,7 @@ public class C_Invoice // 03771
 
 	private void autoAllocateAvailablePayments(final I_C_Invoice invoice)
 	{
-		Services.get(IAllocationBL.class).autoAllocateAvailablePayments(invoice);
+		allocationBL.autoAllocateAvailablePayments(invoice);
 		testAndMarkAsPaid(invoice);
 	}
 
