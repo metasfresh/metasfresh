@@ -73,11 +73,11 @@ public class RouteBuilderCommonUtil
 	/**
 	 * Retry uploads of FM-files to the remote server.
 	 */
-	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder, @NonNull final String uploadURI)
+	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder, @NonNull final String routeId, @NonNull final String uploadURI)
 	{
 		routeBuilder
-				.from(routeBuilder.direct(FILEMAKER_UPLOAD_ROUTE))
-				.routeId(FILEMAKER_UPLOAD_ROUTE)
+				.from(routeBuilder.direct(routeId))
+				.routeId(routeId)
 				.errorHandler(routeBuilder.defaultErrorHandler()
 						.maximumRedeliveries(0)
 						.redeliveryDelay(10000)
