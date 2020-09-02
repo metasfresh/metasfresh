@@ -4,6 +4,7 @@ export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
   clearAll: false,
+  filterData: {},
   initialValuesNulled: new Map(),
   // activeFilter: null,
   // activeFiltersCaptions: null,
@@ -45,7 +46,7 @@ const reducer = produce((draftState, action) => {
       draftState[id] = {
         ...initialFiltersLeafState,
         filterData,
-        filtersActive,
+        filtersActive: filtersActive ? filtersActive : [],
       };
       return;
     }

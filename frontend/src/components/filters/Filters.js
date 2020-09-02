@@ -15,6 +15,7 @@ import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 import deepUnfreeze from 'deep-unfreeze';
+import { getEntityRelatedId } from '../../reducers/filters';
 
 /**
  * @method parseDateToReadable
@@ -623,7 +624,6 @@ class Filters extends PureComponent {
                 return dropdownFilterItem;
               });
 
-
               // we render the FiltersNotFrequent for normal filters
               // and for those entries that do have includedFilters (we have subfilters)
               // we are rendering FiltersFrequent layout. Note: this is adaptation over previous
@@ -705,12 +705,15 @@ Filters.propTypes = {
   modalVisible: PropTypes.bool,
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, ownProps) => {
   const { allowOutsideClick, modal } = state.windowHandler;
+  const { viewId, windowType: windowId } = ownProps;
+  const filterId = getEntityRelatedId({ windowId, viewId });
 
   return {
     allowOutsideClick,
     modalVisible: modal.visible,
+    filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
   };
 };
 
