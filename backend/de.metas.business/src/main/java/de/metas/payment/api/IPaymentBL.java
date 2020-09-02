@@ -99,7 +99,7 @@ public interface IPaymentBL extends ISingletonService
 
 	void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(List<I_C_Payment> payments);
 
-	boolean canAllocateOrderPaymentToInvoice(I_C_Order order);
+	boolean canAllocateOrderPaymentToInvoice(@Nullable I_C_Order order);
 
 	/**
 	 * Test Allocation (and set allocated flag)
