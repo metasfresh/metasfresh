@@ -1,6 +1,5 @@
-import { produce } from 'immer';
 import * as types from '../constants/FilterTypes';
-
+import { produce } from 'immer';
 export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
