@@ -55,3 +55,14 @@ export function filtersToMap(filtersArray) {
   }
   return filtersMap;
 }
+
+export function filtersToNormalMap(filtersArray) {
+  let filtersMap = new Map();
+
+  if (filtersArray && filtersArray.length) {
+    filtersArray.forEach((filter) => {
+      filtersMap.set(filter.filterId, filter);
+    });
+  }
+  return filtersMap;
+}

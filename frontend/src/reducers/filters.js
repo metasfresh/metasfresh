@@ -1,13 +1,11 @@
 import { produce } from 'immer';
 import * as types from '../constants/FilterTypes';
-import { Map as iMap } from 'immutable';
 
 export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
   clearAll: false,
-  filtersActive: iMap(),
-  initialValuesNulled: iMap(),
+  initialValuesNulled: new Map(),
   // activeFilter: null,
   // activeFiltersCaptions: null,
   // flatFiltersMap: null,

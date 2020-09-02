@@ -34,7 +34,7 @@ import {
 } from '../constants/ActionTypes';
 
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
-import { createFilter, deleteFilter, filtersToMap } from './FiltersActions';
+import { createFilter, deleteFilter } from './FiltersActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
@@ -312,8 +312,8 @@ export function fetchDocument({
           createFilter({
             id: filterId,
             data: {
-              filterData: filtersToMap(view.layout.filters), // set the proper layout for the filters
-              filtersActive: filtersToMap(response.data.filters),
+              filterData: view.layout.filters, // set the proper layout for the filters
+              filtersActive: response.data.filters,
             },
           })
         );

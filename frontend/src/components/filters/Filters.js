@@ -4,7 +4,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 // -- using iMap from immutable
 import { Map as iMap } from 'immutable';
-import _ from 'lodash';
+import _, { drop } from 'lodash';
 
 import { DATE_FIELDS } from '../../constants/Constants';
 import {
@@ -15,6 +15,7 @@ import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
 import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
+import deepUnfreeze from 'deep-unfreeze';
 
 /**
  * @method parseDateToReadable
@@ -598,6 +599,7 @@ class Filters extends PureComponent {
     const allFilters = this.annotateFilters(
       filterData.toIndexedSeq().toArray()
     );
+
     const flatActiveFilterIds =
       activeFilter !== null ? activeFilter.map((item) => item.filterId) : [];
 
@@ -614,12 +616,14 @@ class Filters extends PureComponent {
             // iterate among the existing filters
             if (item.includedFilters) {
               let dropdownFilters = item.includedFilters;
+              dropdownFilters = deepUnfreeze(dropdownFilters);
               dropdownFilters.map((dropdownFilterItem) => {
                 dropdownFilterItem.isActive = flatActiveFilterIds.includes(
                   dropdownFilterItem.filterId
                 );
                 return dropdownFilterItem;
               });
+
 
               // we render the FiltersNotFrequent for normal filters
               // and for those entries that do have includedFilters (we have subfilters)
