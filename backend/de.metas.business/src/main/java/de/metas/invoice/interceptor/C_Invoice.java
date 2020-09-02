@@ -86,22 +86,24 @@ public class C_Invoice // 03771
 		this.paymentReservationService = paymentReservationService;
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void onBeforeComplete(final I_C_Invoice invoice)
-	{
-		allocateInvoiceAgainstCreditMemo(invoice);
-		linkInvoiceToPaymentIfNeeded(invoice);
-	}
-
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
 	{
-		markAsPaid(invoice);
+		testAndMarkAsPaid(invoice);
+		allocateInvoiceAgainstCreditMemo(invoice);
+		linkInvoiceToPaymentIfNeeded(invoice);
 		allocateInvoiceAgainstPaymentIfNeeded(invoice);
+		autoAllocateAvailablePayments(invoice);
 		captureMoneyIfNeeded(invoice);
 		ensureUOMsAreNotNull(invoice);
 
 		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
+	}
+
+	private void autoAllocateAvailablePayments(final I_C_Invoice invoice)
+	{
+		Services.get(IAllocationBL.class).autoAllocateAvailablePayments(invoice);
+		testAndMarkAsPaid(invoice);
 	}
 
 	private void ensureUOMsAreNotNull(@NonNull final I_C_Invoice invoice)
@@ -194,7 +196,7 @@ public class C_Invoice // 03771
 	/**
 	 * Mark invoice as paid if the grand total/open amount is 0
 	 */
-	private void markAsPaid(final I_C_Invoice invoice)
+	private void testAndMarkAsPaid(final I_C_Invoice invoice)
 	{
 		// services
 		final IInvoiceBL invoiceBL = this.invoiceBL;
@@ -236,6 +238,7 @@ public class C_Invoice // 03771
 			// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
 			invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
 		}
+		testAndMarkAsPaid(creditMemo);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -293,6 +296,7 @@ public class C_Invoice // 03771
 			paymentDAO.save(payment);
 
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+			testAndMarkAsPaid(invoice);
 		}
 	}
 
@@ -303,6 +307,7 @@ public class C_Invoice // 03771
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+			testAndMarkAsPaid(invoice);
 		}
 	}
 
