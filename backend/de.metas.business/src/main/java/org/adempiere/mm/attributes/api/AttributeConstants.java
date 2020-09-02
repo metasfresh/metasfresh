@@ -28,30 +28,30 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public final class AttributeConstants
+public class AttributeConstants
 {
 	/**
 	 * No ASI (record which actually exists in M_AttributeSetInstance table)
 	 */
-	public static final int M_AttributeSetInstance_ID_None = AttributeSetInstanceId.NONE.getRepoId();
+	public final int M_AttributeSetInstance_ID_None = AttributeSetInstanceId.NONE.getRepoId();
 
 	/**
 	 * No Attribute Set (record which actually exists in M_AttributeSet table)
 	 */
-	public static final int M_AttributeSet_ID_None = 0;
+	public final int M_AttributeSet_ID_None = 0;
 
-	public static final AttributeCode ATTR_TE = AttributeCode.ofString("HU_TE");
-	public static final AttributeCode ATTR_DateReceived = AttributeCode.ofString("HU_DateReceived");
-	public static final AttributeCode ATTR_SecurPharmScannedStatus = AttributeCode.ofString("HU_Scanned");
+	public final AttributeCode ATTR_TE = AttributeCode.ofString("HU_TE");
+	public final AttributeCode ATTR_DateReceived = AttributeCode.ofString("HU_DateReceived");
+	public final AttributeCode ATTR_SecurPharmScannedStatus = AttributeCode.ofString("HU_Scanned");
 
-	public static final String ATTR_BestBeforeDate_String = "HU_BestBeforeDate";
-	public static final AttributeCode ATTR_BestBeforeDate = AttributeCode.ofString(ATTR_BestBeforeDate_String);
-	public static final AttributeCode ATTR_MonthsUntilExpiry = AttributeCode.ofString("MonthsUntilExpiry");
+	public final String ATTR_BestBeforeDate_String = "HU_BestBeforeDate";
+	public final AttributeCode ATTR_BestBeforeDate = AttributeCode.ofString(ATTR_BestBeforeDate_String);
+	public final AttributeCode ATTR_MonthsUntilExpiry = AttributeCode.ofString("MonthsUntilExpiry");
 
 	//
-	public static final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
+	public final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
 
-	public static final AttributeCode ATTR_SerialNo = AttributeCode.ofString("SerialNo");
-	public static final AttributeCode ATTR_LotNr = AttributeCode.ofString("Lot-Nummer");
+	public final AttributeCode ATTR_SerialNo = AttributeCode.ofString("SerialNo");
+	public final AttributeCode ATTR_LotNr = AttributeCode.ofString("Lot-Nummer");
 
 }
