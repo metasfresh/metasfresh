@@ -210,7 +210,7 @@ public class C_Invoice // 03771
 	 * <p>
 	 * Note: ATM, there should only be one parent invoice for a credit memo, but it's possible to have more in the future.
 	 */
-	private void allocateInvoiceAgainstCreditMemo(final I_C_Invoice creditMemo)
+	private void allocateInvoiceAgainstCreditMemo(@NonNull final I_C_Invoice creditMemo)
 	{
 		// services
 		final IInvoiceBL invoiceBL = this.invoiceBL;
@@ -286,7 +286,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	private void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
+	private void linkInvoiceToPaymentIfNeeded(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
@@ -300,7 +300,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
+	private void allocateInvoiceAgainstPaymentIfNeeded(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
@@ -311,7 +311,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	private void captureMoneyIfNeeded(final I_C_Invoice salesInvoice)
+	private void captureMoneyIfNeeded(@NonNull final I_C_Invoice salesInvoice)
 	{
 		//
 		// We capture money only for sales invoices
