@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBuilderDAO;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.IQuery;
@@ -295,7 +296,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		private IQueryFilter<T> mainFilter;
 		//
 		private IQueryOrderBy queryOrderBy;
-		private int queryLimit;
+		private QueryLimit queryLimit;
 		//
 		private final boolean explodeORJoinsToUnions;
 
@@ -339,7 +340,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			final QueryBuildContext<T> subQueryCtx = new QueryBuildContext<>(this);
 			subQueryCtx.mainFilter = subFilter;
 			subQueryCtx.queryOrderBy = null;
-			subQueryCtx.queryLimit = IQuery.NO_LIMIT;
+			subQueryCtx.queryLimit = QueryLimit.NO_LIMIT;
 
 			return subQueryCtx;
 		}
@@ -399,12 +400,12 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			this.queryOrderBy = queryOrderBy;
 		}
 
-		public int getQueryLimit()
+		public QueryLimit getQueryLimit()
 		{
 			return queryLimit;
 		}
 
-		public void setQueryLimit(int queryLimit)
+		public void setQueryLimit(@NonNull QueryLimit queryLimit)
 		{
 			this.queryLimit = queryLimit;
 		}
