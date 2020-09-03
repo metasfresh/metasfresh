@@ -39,7 +39,7 @@ public class JsonQuantity
 	BigDecimal qty;
 
 	@ApiModelProperty(position = 20, required = true, //
-			value = "Unit of measurement; this translates to `C_UOM.UOMSymbol`.")
+			value = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
 	String uomCode;
 
 	@JsonCreator

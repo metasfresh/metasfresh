@@ -245,7 +245,10 @@ class ShipmentCandidateAPIService
 	@NonNull
 	private ImmutableList<JsonQuantity> createJsonQuantities(@NonNull final Quantity quantity)
 	{
-		return ImmutableList.of(JsonQuantity.builder().qty(quantity.toBigDecimal()).uomCode(quantity.getUOMSymbol()).build());
+		return ImmutableList.of(JsonQuantity.builder()
+				.qty(quantity.toBigDecimal())
+				.uomCode(quantity.getX12DE355().getCode())
+				.build());
 	}
 
 	private JsonCustomer createJsonCustomer(
