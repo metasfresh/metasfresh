@@ -73,6 +73,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -150,10 +151,8 @@ public final class ProductBL implements IProductBL
 	 */
 	public I_C_UOM getWeightUOM(final I_M_Product product)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
-		return uomsRepo.retrieveByX12DE355(ctx, IUOMDAO.X12DE355_Kilogram);
+		return uomsRepo.getByX12DE355(X12DE355.KILOGRAM);
 	}
 
 	@Override

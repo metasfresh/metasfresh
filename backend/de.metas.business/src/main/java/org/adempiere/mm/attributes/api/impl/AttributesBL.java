@@ -63,7 +63,7 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -251,7 +251,7 @@ public class AttributesBL implements IAttributesBL
 	@Override
 	public int getNumberDisplayType(@NonNull final I_M_Attribute attribute)
 	{
-		return attribute.getC_UOM_ID() == IUOMDAO.C_UOM_ID_Each
+		return attribute.getC_UOM_ID() == UomId.EACH.getRepoId()
 				? DisplayType.Integer
 				: DisplayType.Number;
 	}

@@ -29,9 +29,9 @@ import org.compiere.util.Ini;
 import de.metas.cache.CCache;
 import de.metas.security.permissions.Access;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 
 /**
@@ -70,7 +70,7 @@ public class MUOM extends X_C_UOM
 		}
 		// Server
 		String sql = "SELECT C_UOM_ID FROM C_UOM WHERE IsActive='Y' AND X12DE355=?";
-		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql, UOMConstants.X12_MINUTE);
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql, X12DE355.MINUTE.getCode());
 	}	// getMinute_UOM_ID
 
 	/**

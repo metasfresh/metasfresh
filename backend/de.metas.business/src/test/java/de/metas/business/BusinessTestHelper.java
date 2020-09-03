@@ -42,6 +42,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -128,17 +129,17 @@ public final class BusinessTestHelper
 
 	public static I_C_UOM createUOM(final String name)
 	{
-		final String x12de355 = name;
+		final X12DE355 x12de355 = X12DE355.ofCode(name);
 		return createUOM(name, x12de355);
 	}
 
-	public static I_C_UOM createUOM(final String name, final String x12de355)
+	public static I_C_UOM createUOM(final String name, final X12DE355 x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
 		POJOWrapper.setInstanceName(uom, name);
 		uom.setName(name);
 		uom.setUOMSymbol(name);
-		uom.setX12DE355(x12de355);
+		uom.setX12DE355(x12de355 != null ? x12de355.getCode() : null);
 
 		saveRecord(uom);
 
