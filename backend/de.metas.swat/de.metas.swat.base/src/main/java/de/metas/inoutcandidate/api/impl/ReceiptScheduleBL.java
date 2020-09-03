@@ -89,11 +89,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
 
-	/**
-	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
-	 */
-	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
-
 	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
 
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
