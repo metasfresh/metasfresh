@@ -22,7 +22,6 @@
 
 package de.metas.camel.shipping.shipmentcandidate;
 
-import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
@@ -32,8 +31,7 @@ import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
-
+import static de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder.SHIPMENT_CANDIDATE_UPLOAD_ROUTE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
@@ -66,7 +64,7 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 						.process(postEndpoint));
 
 		final var uploadEndpoint = new ResultUploadEndpoint();
-		AdviceWithRouteBuilder.adviceWith(context, RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE,
+		AdviceWithRouteBuilder.adviceWith(context, SHIPMENT_CANDIDATE_UPLOAD_ROUTE,
 				a -> a.interceptSendToEndpoint("log:upload-dummy")
 						.skipSendToOriginalEndpoint()
 						.process(uploadEndpoint));
@@ -150,7 +148,7 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 						.process(normalHttpResult));
 
 		final var uploadEndpoint = new ResultUploadEndpoint();
-		AdviceWithRouteBuilder.adviceWith(context, RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE,
+		AdviceWithRouteBuilder.adviceWith(context, SHIPMENT_CANDIDATE_UPLOAD_ROUTE,
 				a -> a.interceptSendToEndpoint("log:upload-dummy")
 						.skipSendToOriginalEndpoint()
 						.process(uploadEndpoint));
@@ -184,7 +182,7 @@ class ShipmentCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 						.process(normalHttpResult));
 
 		final var uploadWithExceptionEndpoint = new ResultUploadEndpointWithException();
-		AdviceWithRouteBuilder.adviceWith(context, RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE,
+		AdviceWithRouteBuilder.adviceWith(context, SHIPMENT_CANDIDATE_UPLOAD_ROUTE,
 				a -> a.interceptSendToEndpoint("log:upload-dummy")
 						.skipSendToOriginalEndpoint()
 						.process(uploadWithExceptionEndpoint));

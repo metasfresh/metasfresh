@@ -180,7 +180,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new M_Warehouse(), client); // 03084
 		engine.addModelValidator(new C_BPartner_Location(), client); // 02618
 
-		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Invoice(), client); // 04193
 		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Payment(), client); // 04193
 
 		engine.addModelValidator(new M_AttributeInstance(), client); // 05839
