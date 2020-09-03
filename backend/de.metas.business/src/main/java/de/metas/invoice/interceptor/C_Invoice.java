@@ -89,6 +89,14 @@ public class C_Invoice // 03771
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
 	{
+		// FIXME: This Kills performance. Please ask for extra budget next time you have to work around this area.
+		//		We're calling `testAndMarkAsPaid` multiple times, just to set the invoice.IsPaid flag.
+		//		That kills the performance as each time we have to read multiple allocations from db.
+		// 		- Please see the PR: https://github.com/metasfresh/metasfresh/pull/9876 and its comments and reviews
+		//
+		// The problem I'm trying to fix here is that during allocation of an Invoice, we have allocated the correct payment with amount, and also created an *extra* *wrong* allocation with amt=0 for a different payment.
+		// 		I could never reproduce this locally :(.
+		// Please contact teo on possible solutions to fix this in a performant way (hint testAndMarkAsPaid should be called once at the end)
 		testAndMarkAsPaid(invoice);
 		allocateInvoiceAgainstCreditMemo(invoice);
 		linkInvoiceToPaymentIfNeeded(invoice);
