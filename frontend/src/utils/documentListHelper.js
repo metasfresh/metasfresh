@@ -84,8 +84,8 @@ const DLmapStateToProps = (state, props) => {
     master = viewState;
   }
   let viewId = master.viewId ? master.viewId : queryViewId;
-  let sort = querySort;
-  let page = toInteger(queryPage);
+  let sort = querySort || master.sort;
+  let page = toInteger(queryPage) || master.page;
   // used for included views, so that we don't use sorting/pagination
   // of the parent view
   if (props.isIncluded) {
