@@ -28,7 +28,6 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
-import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -73,9 +72,6 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	/**
 	 * Retrieves completed receipts for given receipt schedule.
-	 *
-	 * @param receiptSchedule
-	 * @return
 	 */
 	List<I_M_InOut> retrieveCompletedReceipts(I_M_ReceiptSchedule receiptSchedule);
 
@@ -86,17 +82,12 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the receipt schedules that are linked with the given invoice candidate
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
 	IQueryBuilder<I_M_ReceiptSchedule> createQueryForShipmentScheduleSelection(Properties ctx, IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter);
 
-	boolean existsExportedReceiptScheduleForOrder(@NonNull final OrderId orderId);
-
-	void updateExportStatus(final String exportStatus, final PInstanceId pinstanceId);
+	boolean existsExportedReceiptScheduleForOrder(@NonNull OrderId orderId);
 
 	Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(ImmutableSet<ReceiptScheduleId> receiptScheduleIds);
 

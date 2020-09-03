@@ -25,13 +25,16 @@ package de.metas.inoutcandidate.api;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.modelvalidator.C_OrderLine_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.PInstanceId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
@@ -221,4 +224,8 @@ public interface IReceiptScheduleBL extends ISingletonService
 	boolean isClosed(I_M_ReceiptSchedule receiptSchedule);
 
 	void applyReceiptScheduleChanges(ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest);
+
+	void updateExportStatus(@NonNull APIExportStatus exportStatus, @NonNull PInstanceId pinstanceId);
+
+	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
 }
