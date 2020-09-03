@@ -42,6 +42,17 @@ export function updateActiveFilter({ id, data }) {
 }
 
 /**
+ * @method updateWidgetShown
+ * @summary Updates the widgetShown in the store for the corresponding entity id with a boolean value
+ */
+export function updateWidgetShown({ id, data }) {
+  return {
+    type: types.UPDATE_WIDGET_SHOWN,
+    payload: { id, data },
+  };
+}
+
+/**
  * @method filtersToMap
  * @summary creates a map with the filters fetched from the layout request
  */

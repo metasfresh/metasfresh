@@ -4,13 +4,12 @@ export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
   clearAll: false,
-  filterData: {},
   initialValuesNulled: new Map(),
   // activeFilter: null,
   // activeFiltersCaptions: null,
   // flatFiltersMap: null,
   // notValidFields: null,
-  // widgetShown: false,
+  widgetShown: false,
 };
 
 /**
@@ -45,7 +44,7 @@ const reducer = produce((draftState, action) => {
       const { filterData, filtersActive } = data;
       draftState[id] = {
         ...initialFiltersLeafState,
-        filterData,
+        filterData: filterData ? filterData : [],
         filtersActive: filtersActive ? filtersActive : [],
       };
       return;
@@ -62,6 +61,11 @@ const reducer = produce((draftState, action) => {
     case types.UPDATE_ACTIVE_FILTER: {
       const { id, data } = action.payload;
       draftState[id].filtersActive = data;
+      return;
+    }
+    case types.UPDATE_WIDGET_SHOWN: {
+      const { id, data } = action.payload;
+      draftState[id].widgetShown = data;
       return;
     }
   }

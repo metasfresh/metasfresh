@@ -9,7 +9,7 @@ import {
   generateMomentObj,
   getFormatForDateField,
 } from '../widget/RawWidgetHelpers';
-
+import { updateWidgetShown } from '../../actions/FiltersActions';
 import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
@@ -27,7 +27,6 @@ class Filters extends PureComponent {
     activeFiltersCaptions: null,
     flatFiltersMap: null,
     notValidFields: null,
-    widgetShown: false,
   };
 
   /**
@@ -469,9 +468,8 @@ class Filters extends PureComponent {
    * @param {*} value
    */
   handleShow = (value) => {
-    this.setState({
-      widgetShown: value,
-    });
+    const { filterId, updateWidgetShown } = this.props;
+    updateWidgetShown({ id: filterId, data: value });
   };
 
   /**
@@ -572,14 +570,10 @@ class Filters extends PureComponent {
       resetInitialValues,
       allowOutsideClick,
       modalVisible,
+      filters,
     } = this.props;
-
-    const {
-      notValidFields,
-      widgetShown,
-      activeFilter,
-      activeFiltersCaptions,
-    } = this.state;
+    const widgetShown = filters ? filters.widgetShown : false;
+    const { notValidFields, activeFilter, activeFiltersCaptions } = this.state;
 
     const allFilters = this.annotateFilters(
       filterData.toIndexedSeq().toArray()
@@ -688,6 +682,9 @@ Filters.propTypes = {
   initialValuesNulled: PropTypes.any,
   allowOutsideClick: PropTypes.bool,
   modalVisible: PropTypes.bool,
+  filterId: PropTypes.string,
+  updateWidgetShown: PropTypes.func,
+  filters: PropTypes.object,
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -699,7 +696,13 @@ const mapStateToProps = (state, ownProps) => {
     allowOutsideClick,
     modalVisible: modal.visible,
     filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
+    filterId,
   };
 };
 
-export default connect(mapStateToProps)(Filters);
+export default connect(
+  mapStateToProps,
+  {
+    updateWidgetShown,
+  }
+)(Filters);
