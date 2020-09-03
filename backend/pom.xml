@@ -75,7 +75,10 @@
 		<module>de.metas.monitoring</module>
 
 		<module>de.metas.adempiere.adempiere</module>
+		
 		<module>de.metas.manufacturing</module>
+		<module>de.metas.manufacturing.rest-api</module>
+
 		<module>de.metas.adempiere.libero.liberoHR</module>
 
 		<module>de.metas.acct.base</module>
