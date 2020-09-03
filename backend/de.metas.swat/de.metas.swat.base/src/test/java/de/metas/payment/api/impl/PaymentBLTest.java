@@ -577,6 +577,12 @@ public class PaymentBLTest
 			Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
 		}
 
+		@Test
+		void canNotAllocate_NullOrder()
+		{
+				Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(null));
+		}
+
 		@SuppressWarnings("ConstantConditions")
 		@NonNull
 		private I_C_Payment createPayment(@Nullable final ExternalId externalOrderId)
