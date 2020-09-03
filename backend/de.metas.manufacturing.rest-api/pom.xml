@@ -38,6 +38,12 @@
 		</dependency>
 		
 		<dependency>
+		    <groupId>de.metas.common.shipping</groupId>
+		    <artifactId>de-metas-common-shipping</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

@@ -1,9 +1,12 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 /*
  * #%L
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -39,10 +43,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
+import com.google.common.collect.HashMultimap;
+
 import de.metas.document.engine.DocStatus;
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
@@ -74,19 +82,69 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final WarehouseId warehouseId)
 	{
-		return queryBL.createQueryBuilderOutOfTrx(I_PP_Order.class)
-				// For Warehouse
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Warehouse_ID, warehouseId)
-				// Only Releases Manufacturing orders
-				.addEqualsFilter(I_PP_Order.COLUMN_Processed, true)
-				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocStatus.Completed)
-				// Only those which are active
-				.addOnlyActiveRecordsFilter()
-				//
+		final IQueryBuilder<I_PP_Order> queryBuilder = toSqlQueryBuilder(ManufacturingOrderQuery.builder()
+				.warehouseId(warehouseId)
+				.onlyCompleted(true)
+				.build());
+
+		return queryBuilder
 				.orderBy(I_PP_Order.COLUMN_DocumentNo)
-				//
 				.create()
 				.list(I_PP_Order.class);
+	}
+
+	@Override
+	public List<I_PP_Order> retrieveManufacturingOrders(@NonNull final ManufacturingOrderQuery query)
+	{
+		final IQueryBuilder<I_PP_Order> queryBuilder = toSqlQueryBuilder(query);
+
+		return queryBuilder.orderBy(I_PP_Order.COLUMN_DocumentNo)
+				.create()
+				.list(I_PP_Order.class);
+	}
+
+	private IQueryBuilder<I_PP_Order> toSqlQueryBuilder(final ManufacturingOrderQuery query)
+	{
+		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
+				.addOnlyActiveRecordsFilter();
+
+		// Plant
+		if (query.getPlantId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getPlantId());
+		}
+
+		// Warehouse
+		if (query.getWarehouseId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
+		}
+
+		// Only Releases Manufacturing orders
+		if (query.isOnlyCompleted())
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_Processed, true);
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocStatus.Completed);
+		}
+
+		// Export Status
+		if (query.getExportStatus() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_ExportStatus, query.getExportStatus().getCode());
+		}
+		if (query.getCanBeExportedFrom() != null)
+		{
+			queryBuilder.addCompareFilter(I_PP_Order.COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
+		}
+
+		// Limit
+		if (query.getLimit().isLimited())
+		{
+			queryBuilder.setLimit(query.getLimit());
+		}
+
+		//
+		return queryBuilder;
 	}
 
 	@Override
@@ -130,8 +188,43 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public void save(final I_PP_Order order)
+	public void save(@NonNull final I_PP_Order order)
 	{
 		saveRecord(order);
+	}
+
+	@Override
+	public void saveAll(@NonNull final Collection<I_PP_Order> orders)
+	{
+		orders.forEach(this::save);
+	}
+
+	@Override
+	public void exportStatusMassUpdate(
+			@NonNull final Map<PPOrderId, APIExportStatus> exportStatuses)
+	{
+		if (exportStatuses.isEmpty())
+		{
+			return;
+		}
+
+		final HashMultimap<APIExportStatus, PPOrderId> orderIdsByExportStatus = HashMultimap.create();
+		for (Map.Entry<PPOrderId, APIExportStatus> entry : exportStatuses.entrySet())
+		{
+			orderIdsByExportStatus.put(entry.getValue(), entry.getKey());
+		}
+
+		for (final APIExportStatus exportStatus : orderIdsByExportStatus.keySet())
+		{
+			final Set<PPOrderId> orderIds = orderIdsByExportStatus.get(exportStatus);
+
+			queryBL.createQueryBuilder(I_PP_Order.class)
+					.addInArrayFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, orderIds)
+					.create()
+					//
+					.updateDirectly()
+					.addSetColumnValue(I_PP_Order.COLUMNNAME_ExportStatus, exportStatus.getCode())
+					.execute();
+		}
 	}
 }
