@@ -82,9 +82,6 @@ public class PaymentDocument implements IPaymentDocument
 	private final ClientId clientId;
 
 	@Getter
-	private final LocalDate date;
-
-	@Getter
 	private final CurrencyConversionTypeId currencyConversionTypeId;
 
 	@Builder
@@ -99,7 +96,6 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final Money amountToAllocate,
 			@NonNull final LocalDate dateTrx,
 			@NonNull final ClientId clientId,
-			@Nullable final LocalDate date,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
 	)
 	{
@@ -122,7 +118,6 @@ public class PaymentDocument implements IPaymentDocument
 		this.allocatedAmt = amountToAllocate.toZero();
 		this.dateTrx = dateTrx;
 		this.clientId = clientId;
-		this.date = date;
 		this.currencyConversionTypeId = currencyConversionTypeId;
 	}
 
@@ -159,6 +154,12 @@ public class PaymentDocument implements IPaymentDocument
 	{
 		allocatedAmt = allocatedAmt.add(allocatedAmtToAdd);
 		amountToAllocate = amountToAllocate.subtract(allocatedAmtToAdd);
+	}
+
+	@Override
+	public LocalDate getDate()
+	{
+		return dateTrx;
 	}
 
 	@Override
