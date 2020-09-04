@@ -78,6 +78,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -428,7 +429,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public boolean canAllocateOrderPaymentToInvoice(@NonNull final I_C_Order order)
+	public boolean canAllocateOrderPaymentToInvoice(final @Nullable I_C_Order order)
 	{
 		if (order == null)
 		{

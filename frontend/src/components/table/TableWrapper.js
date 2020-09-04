@@ -317,7 +317,7 @@ class TableWrapper extends PureComponent {
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
-    let showPagination = page && pageLength;
+    let showPagination = !!(page && pageLength);
     if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
       showPagination = false;
     }
@@ -397,7 +397,7 @@ class TableWrapper extends PureComponent {
             this.props.children
           }
         </div>
-        {showPagination && (
+        {showPagination ? (
           <div onClick={this.handleClickOutside}>
             <TablePagination
               {...{
@@ -417,7 +417,7 @@ class TableWrapper extends PureComponent {
               onDeselectAll={onDeselectAll}
             />
           </div>
-        )}
+        ) : null}
         {promptOpen && (
           <Prompt
             title="Delete"
