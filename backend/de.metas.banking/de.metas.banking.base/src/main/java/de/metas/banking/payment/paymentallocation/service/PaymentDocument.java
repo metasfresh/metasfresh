@@ -1,6 +1,29 @@
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -13,6 +36,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 
@@ -54,6 +78,15 @@ public class PaymentDocument implements IPaymentDocument
 	@Getter
 	private final LocalDate dateTrx;
 
+	@Getter
+	private final ClientId clientId;
+
+	@Getter
+	private final LocalDate date;
+
+	@Getter
+	private final CurrencyConversionTypeId currencyConversionTypeId;
+
 	@Builder
 	private PaymentDocument(
 			@NonNull final OrgId orgId,
@@ -64,7 +97,10 @@ public class PaymentDocument implements IPaymentDocument
 			//
 			@NonNull final Money openAmt,
 			@NonNull final Money amountToAllocate,
-			@NonNull final LocalDate dateTrx
+			@NonNull final LocalDate dateTrx,
+			@NonNull final ClientId clientId,
+			@Nullable final LocalDate date,
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
 	)
 	{
 		if (!orgId.isRegular())
@@ -85,6 +121,9 @@ public class PaymentDocument implements IPaymentDocument
 		this.amountToAllocate = amountToAllocate;
 		this.allocatedAmt = amountToAllocate.toZero();
 		this.dateTrx = dateTrx;
+		this.clientId = clientId;
+		this.date = date;
+		this.currencyConversionTypeId = currencyConversionTypeId;
 	}
 
 	@Override

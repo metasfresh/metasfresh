@@ -1,5 +1,29 @@
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.banking.payment.paymentallocation.service;
 
+import de.metas.money.CurrencyConversionTypeId;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
@@ -11,6 +35,9 @@ import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /**
  * Wraps a given purchase invoice as an inbound payment document which we will try to allocate to some other sales invoice that we issued.
@@ -134,5 +161,24 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	public CurrencyId getCurrencyId()
 	{
 		return purchaseInvoicePayableDoc.getCurrencyId();
+	}
+
+	@Override
+	public ClientId getClientId()
+	{
+		return purchaseInvoicePayableDoc.getClientId();
+	}
+
+	@Override
+	public LocalDate getDate()
+	{
+		return purchaseInvoicePayableDoc.getDate();
+	}
+
+	@Nullable
+	@Override
+	public CurrencyConversionTypeId getCurrencyConversionTypeId()
+	{
+		return purchaseInvoicePayableDoc.getCurrencyConversionTypeId();
 	}
 }

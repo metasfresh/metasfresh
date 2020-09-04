@@ -1,8 +1,32 @@
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.banking.payment.paymentallocation.service;
 
 import javax.annotation.Nullable;
 
+import de.metas.money.CurrencyConversionTypeId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -22,6 +46,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.time.LocalDate;
 
 /**
  * Mutable invoice allocation candidate.
@@ -73,6 +99,15 @@ public class PayableDocument
 	@Getter
 	private InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
+	@Getter
+	private final ClientId clientId;
+
+	@Getter
+	private final LocalDate date;
+
+	@Getter
+	private final CurrencyConversionTypeId currencyConversionTypeId;
+
 	@Builder
 	private PayableDocument(
 			@NonNull final OrgId orgId,
@@ -85,7 +120,11 @@ public class PayableDocument
 			//
 			@NonNull final Money openAmt,
 			@NonNull AllocationAmounts amountsToAllocate,
-			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			@NonNull final ClientId clientId,
+			@NonNull final LocalDate date,
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
+	)
 	{
 		if (!orgId.isRegular())
 		{
@@ -132,6 +171,10 @@ public class PayableDocument
 		this.amountsAllocated = amountsToAllocate.toZero();
 
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
+
+		this.clientId = clientId;
+		this.date = date;
+		this.currencyConversionTypeId = currencyConversionTypeId;
 	}
 
 	public CurrencyId getCurrencyId()
