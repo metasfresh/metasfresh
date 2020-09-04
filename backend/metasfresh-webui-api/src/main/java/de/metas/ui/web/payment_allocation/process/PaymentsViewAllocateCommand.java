@@ -48,10 +48,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -210,6 +212,8 @@ public class PaymentsViewAllocateCommand
 						.build()
 						.negateIf(soTrx.isPurchase()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.date(LocalDate.of(2020, Month.SEPTEMBER, 4))
+				.clientId(ClientId.METASFRESH)
 				.build();
 	}
 
@@ -239,6 +243,8 @@ public class PaymentsViewAllocateCommand
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())
+				.clientId(row.getClientId())
+				.currencyConversionTypeId()
 				.build();
 	}
 

@@ -23,6 +23,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -147,6 +148,11 @@ public class PaymentRow implements IViewRow
 	public OrgId getOrgId()
 	{
 		return clientAndOrgId.getOrgId();
+	}
+
+	public ClientId getClientId()
+	{
+		return clientAndOrgId.getClientId();
 	}
 
 	@Override

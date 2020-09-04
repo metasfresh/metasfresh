@@ -250,6 +250,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 				.openAmt(Money.of(paymentRow.getOpenAmtConv_APAdjusted(), currencyId))
 				.amountToAllocate(Money.of(paymentRow.getAppliedAmt_APAdjusted(), currencyId))
 				.dateTrx(TimeUtil.asLocalDate(paymentRow.getDocumentDate()))
+				.currencyConversionTypeId()
 				.build();
 
 	}

@@ -309,7 +309,7 @@ public class PaymentAllocationBuilderTest
 				)
 				.dateTrx(LocalDate.of(2020, Month.JANUARY, 1))
 				.clientId(clientId)
-				.date(LocalDate.of(2020, Month.SEPTEMBER, 4))
+				.currencyConversionTypeId()
 				.build();
 	}
 
