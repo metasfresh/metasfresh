@@ -740,7 +740,7 @@ import lombok.NonNull;
 	{
 		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
 		
-		Check.assumeNotNull(labelField, "Label field shall not be null!");
+		Check.assumeNotNull(labelField, I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for UI Element {} !", labelsUIElement );
 		
 		return labelField.getDisplayLogic();
 	}
