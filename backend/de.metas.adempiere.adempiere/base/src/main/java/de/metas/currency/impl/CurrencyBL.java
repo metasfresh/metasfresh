@@ -1,10 +1,8 @@
-package de.metas.currency.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.currency.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.currency.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -167,7 +167,7 @@ public class CurrencyBL implements ICurrencyBL
 				.currencyId(currencyToId)
 				.conversionRateOrNull(conversionRateBD)
 				.build();
-	}	// convert
+	}    // convert
 
 	private CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
 	{
@@ -217,6 +217,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable final LocalDate conversionDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
@@ -237,6 +238,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull final LocalDate convDate,
 			@Nullable final ConversionTypeMethod conversionType,
