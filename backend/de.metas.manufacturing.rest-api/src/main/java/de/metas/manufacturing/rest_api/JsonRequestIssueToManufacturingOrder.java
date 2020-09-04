@@ -1,17 +1,20 @@
 package de.metas.manufacturing.rest_api;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import de.metas.common.rest_api.JsonQuantity;
+import de.metas.handlingunits.HuId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -46,14 +49,15 @@ public class JsonRequestIssueToManufacturingOrder
 	PPOrderId orderId;
 
 	@NonNull
-	String productCode;
-
-	@NonNull
 	JsonQuantity qtyToIssue;
 
 	@NonNull
 	@Default
 	ZonedDateTime date = SystemTime.asZonedDateTime();
+
+	@NonNull
+	@Singular
+	List<HuId> huIds;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonRequestIssueToManufacturingOrderBuilder
