@@ -71,8 +71,8 @@ public class M_InventoryLine
 	@CalloutMethod(columnNames = org.compiere.model.I_M_InventoryLine.COLUMNNAME_M_Product_ID)
 	public void setUOM(@NonNull final org.compiere.model.I_M_InventoryLine inventoryLine)
 	{
-		final UomId stockUOMId = inventoryLine.getM_Product_ID() > 0 ? productBL.getStockUOMId(ProductId.ofRepoId(inventoryLine.getM_Product_ID())) : UomId.ofRepoIdOrNull(0);
-		inventoryLine.setC_UOM_ID(stockUOMId != null ? stockUOMId.getRepoId() : 0);
+		final UomId stockUOMId = inventoryLine.getM_Product_ID() > 0 ? productBL.getStockUOMId(inventoryLine.getM_Product_ID()) : null;
+		inventoryLine.setC_UOM_ID(UomId.toRepoId(stockUOMId));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_QtyCount)
