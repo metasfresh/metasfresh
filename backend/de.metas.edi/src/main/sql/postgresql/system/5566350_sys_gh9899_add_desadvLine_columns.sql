@@ -143,16 +143,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=114,Updated=TO_TIMESTAMP('2020-09-04 10:11:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=571145
 ;
 
--- 2020-09-04T08:11:24.274Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
---/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN C_UOM_Invoicing_ID NUMERIC(10)')
---;
-
--- 2020-09-04T08:11:24.377Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
---ALTER TABLE EDI_DesadvLine ADD CONSTRAINT CUOMInvoicing_EDIDesadvLine FOREIGN KEY (C_UOM_Invoicing_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED
---;
-
 -- 2020-09-04T09:19:49.278Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Element SET ColumnName='C_UOM_Invoice_ID',Updated=TO_TIMESTAMP('2020-09-04 11:19:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578051
@@ -173,15 +163,6 @@ UPDATE AD_Process_Para SET ColumnName='C_UOM_Invoice_ID', Name='Rechnungs-Maßei
 UPDATE AD_Process_Para SET ColumnName='C_UOM_Invoice_ID', Name='Rechnungs-Maßeinheit', Description='Maßeinheit in der die betreffende Zeile abgerechnet wird', Help=NULL WHERE AD_Element_ID=578051 AND IsCentrallyMaintained='Y'
 ;
 
--- 2020-09-04T09:19:56.192Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN C_UOM_Invoice_ID NUMERIC(10)')
-;
-
--- 2020-09-04T09:19:56.296Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE EDI_DesadvLine ADD CONSTRAINT CUOMInvoice_EDIDesadvLine FOREIGN KEY (C_UOM_Invoice_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED
-;
 
 -- 2020-09-04T09:29:59.328Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -308,10 +289,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(578052) 
 ;
 
--- 2020-09-04T09:33:28.220Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN QtyDeliveredInInvoiceUOM NUMERIC')
-;
 
 -- 2020-09-04T09:34:45.076Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -363,10 +340,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET FieldLength=255,Updated=TO_TIMESTAMP('2020-09-04 12:01:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552627
 ;
 
--- 2020-09-04T10:01:53.181Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN OrderPOReference VARCHAR(255)')
-;
 
 -- 2020-09-04T10:02:08.151Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -434,10 +407,6 @@ INSERT INTO EXP_FormatLine (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedB
 UPDATE AD_Column SET FieldLength=128,Updated=TO_TIMESTAMP('2020-09-04 12:06:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=54523
 ;
 
--- 2020-09-04T10:06:46.177Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('exp_formatline','DateFormat','VARCHAR(128)',null,null)
-;
 
 -- 2020-09-04T10:07:12.138Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -474,10 +443,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET DefaultValue='', IsMandatory='N',Updated=TO_TIMESTAMP('2020-09-04 12:09:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=571150
 ;
 
--- 2020-09-04T10:09:21.947Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN OrderLine NUMERIC(10)')
-;
 
 -- 2020-09-04T10:12:24.827Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -508,11 +473,6 @@ UPDATE AD_Process_Para SET ColumnName='EdiDesadvRecipientGLN', Name='EDI-ID des 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET ColumnName='EdiDesadvRecipientGLN', Name='EDI-ID des DESADV-Empfängers', Description='', Help=NULL WHERE AD_Element_ID=542001 AND IsCentrallyMaintained='Y'
 ;
-
-DROP VIEW IF EXISTS edi_cctop_000_v;
-
-select db_alter_table('C_BPartner', 'ALTER TABLE C_BPartner RENAME COLUMN EdiRecipientGLN TO EdiDesadvRecipientGLN');
-
 
 -- 2020-09-04T11:14:18.120Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -579,25 +539,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(578054) 
 ;
 
--- 2020-09-04T11:16:09.156Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_BPartner','ALTER TABLE public.C_BPartner ADD COLUMN EdiInvoicRecipientGLN VARCHAR(255)')
-;
-
-CREATE OR REPLACE VIEW edi_cctop_000_v AS
-SELECT
-    l.c_bpartner_location_id AS edi_cctop_000_v_id,
-    l.c_bpartner_location_id,
-    bp.EdiInvoicRecipientGLN,
-    l.ad_client_id,
-    l.ad_org_id,
-    l.created,
-    l.createdby,
-    l.updated,
-    l.updatedby,
-    l.isactive
-FROM c_bpartner_location l
-         INNER JOIN C_BPartner bp ON bp.C_BPartner_ID=l.C_BPartner_ID;
 
 -- 2020-09-04T11:17:07.550Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
