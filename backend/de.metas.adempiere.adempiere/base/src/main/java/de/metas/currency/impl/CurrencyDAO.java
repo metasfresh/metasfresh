@@ -67,11 +67,11 @@ import lombok.NonNull;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
-	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap> builder()
+	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap>builder()
 			.tableName(I_C_Currency.Table_Name)
 			.build();
 
-	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap> builder()
+	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap>builder()
 			.tableName(I_C_ConversionType.Table_Name)
 			.tableName(I_C_ConversionType_Default.Table_Name)
 			.build();
@@ -190,6 +190,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
+	@NonNull
 	public CurrencyConversionTypeId getDefaultConversionTypeId(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
@@ -234,7 +235,7 @@ public class CurrencyDAO implements ICurrencyDAO
 				.endOrderBy()
 				//
 				.setLimit(1) // first only
-		;
+				;
 	}
 
 	@Override
