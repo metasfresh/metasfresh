@@ -49,10 +49,14 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import de.metas.currency.CurrencyRepository;
+import de.metas.money.MoneyService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -103,6 +107,7 @@ public class PaymentAllocationBuilderTest
 	private int nextInvoiceId = 1;
 	private int nextPaymentId = 1;
 	private final OrgId adOrgId = OrgId.ofRepoId(1000000); // just a dummy value
+	private final ClientId clientId = ClientId.ofRepoId(1000000); // just a dummy value
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
 	private CurrencyId euroCurrencyId;
 	private Map<InvoiceDocBaseType, I_C_DocType> invoiceDocTypes;
@@ -120,6 +125,9 @@ public class PaymentAllocationBuilderTest
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		invoiceDocTypes = new HashMap<>();
+
+		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
+
 	}
 
 	private Money euro(final String amount)
@@ -180,6 +188,8 @@ public class PaymentAllocationBuilderTest
 				.dateAcct(date);
 	}
 
+	// TODO tbp: Add my tests here!
+
 	private PaymentAllocationBuilder newPaymentAllocationBuilder(
 			final Collection<PayableDocument> invoices,
 			final Collection<PaymentDocument> payments)
@@ -211,6 +221,8 @@ public class PaymentAllocationBuilderTest
 				.invoiceProcessingFee(euro(invoiceProcessingFee))
 				.build();
 
+		final LocalDate acctDate = LocalDate.of(2020, Month.SEPTEMBER, 4);
+
 		//
 		// Create the invoice record (needed for the BL which calculates how much was allocated)
 		final I_C_Invoice invoice;
@@ -227,12 +239,13 @@ public class PaymentAllocationBuilderTest
 			invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
 			invoice.setC_DocType_ID(docType.getC_DocType_ID());
 			invoice.setIsSOTrx(docType.isSOTrx());
-			invoice.setDateInvoiced(TimeUtil.asTimestamp(date));
+			invoice.setDateInvoiced(TimeUtil.asTimestamp(acctDate));
 			invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 			invoice.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoice.setGrandTotal(invoiceGrandTotal.toBigDecimal());
 			invoice.setProcessed(true);
 			invoice.setDocStatus(IDocument.STATUS_Completed);
+			invoice.setDateAcct(TimeUtil.asTimestamp(acctDate));
 			InterfaceWrapperHelper.saveRecord(invoice);
 		}
 
@@ -246,6 +259,8 @@ public class PaymentAllocationBuilderTest
 				.openAmt(openAmt)
 				.amountsToAllocate(amountsToAllocate)
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.clientId(clientId)
+				.date(acctDate)
 				.build();
 	}
 
@@ -287,12 +302,14 @@ public class PaymentAllocationBuilderTest
 				.documentNo(payment.getDocumentNo())
 				.paymentDirection(direction)
 				.openAmt(euro(open)
-				// .negateIf(direction.isOutboundPayment())
+						// .negateIf(direction.isOutboundPayment())
 				)
 				.amountToAllocate(euro(amtToAllocate)
-				// .negateIf(direction.isOutboundPayment())
+						// .negateIf(direction.isOutboundPayment())
 				)
 				.dateTrx(LocalDate.of(2020, Month.JANUARY, 1))
+				.clientId(clientId)
+				.date(LocalDate.of(2020, Month.SEPTEMBER, 4))
 				.build();
 	}
 
@@ -420,7 +437,7 @@ public class PaymentAllocationBuilderTest
 				ImmutableList.of(
 						invoice1 = invoice().type(VendorInvoice).open("-8000").pay("0").discount("-100").writeOff("-200").build())
 				// Payments
-				, ImmutableList.<PaymentDocument> of());
+				, ImmutableList.<PaymentDocument>of());
 
 		//
 		// Define expected candidates
@@ -473,7 +490,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.<PayableDocument> asList()
+				Arrays.<PayableDocument>asList()
 				// Payments
 				, ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(),
@@ -501,7 +518,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2, payment3;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.<PayableDocument> asList()
+				Arrays.<PayableDocument>asList()
 				// Payments
 				, ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(), //
@@ -541,7 +558,7 @@ public class PaymentAllocationBuilderTest
 						invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
 						invoice2 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").build())
 				// Payments
-				, ImmutableList.<PaymentDocument> of());
+				, ImmutableList.<PaymentDocument>of());
 
 		//
 		// Define expected candidates
@@ -574,7 +591,7 @@ public class PaymentAllocationBuilderTest
 						invoice = invoice().type(VendorInvoice).open("-5000").pay("-1000").build(),
 						creditMemo = invoice().type(VendorCreditMemo).open("1000").pay("1000").build()),
 				// Payments
-				ImmutableList.<PaymentDocument> of());
+				ImmutableList.<PaymentDocument>of());
 
 		//
 		// Define expected candidates
@@ -613,7 +630,7 @@ public class PaymentAllocationBuilderTest
 							invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
 							invoice2 = invoice().type(VendorInvoice).open("-1000").pay("-1000").build())
 					// Payments
-					, ImmutableList.<PaymentDocument> of());
+					, ImmutableList.<PaymentDocument>of());
 		}
 
 		@Test
