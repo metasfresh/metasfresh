@@ -6,7 +6,7 @@ CREATE OR REPLACE VIEW edi_cctop_000_v AS
 SELECT 
   l.c_bpartner_location_id AS edi_cctop_000_v_id, 
   l.c_bpartner_location_id, 
-  bp.EdiRecipientGLN, 
+  bp.EdiInvoicRecipientGLN,
   l.ad_client_id, 
   l.ad_org_id, 
   l.created, 
