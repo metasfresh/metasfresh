@@ -21,6 +21,7 @@ import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
@@ -720,7 +721,7 @@ import lombok.NonNull;
 				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
 		
-		final String labelDisplayLogic = labelsUIElement.getLabels_Selector_Field().getDisplayLogic();
+		final String labelDisplayLogic = getLabelDisplayLogic(labelsUIElement);
 		if (!Check.isBlank(labelDisplayLogic))
 		{
 			fieldBuilder.setDisplayLogic(labelDisplayLogic);
@@ -733,6 +734,15 @@ import lombok.NonNull;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	private String getLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
+	{
+		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
+		
+		Check.assumeNotNull(labelField, "Label field shall not be null!");
+		
+		return labelField.getDisplayLogic();
 	}
 
 	private static final LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
