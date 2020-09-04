@@ -1,38 +1,8 @@
-package de.metas.money;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
-import de.metas.currency.Amount;
-import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.Currency;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.CurrencyRepository;
-import de.metas.currency.ICurrencyBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -50,9 +20,43 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.money;
+
+import de.metas.currency.Amount;
+import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
+
 @Service
 public class MoneyService
 {
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final CurrencyRepository currencyRepository;
 
 	public MoneyService(@NonNull final CurrencyRepository currencyRepository)
@@ -75,28 +79,52 @@ public class MoneyService
 		return currencyRepository.getStdPrecision(currencyCode);
 	}
 
+	@NonNull
+	public CurrencyConversionContext createConversionContext(
+			@Nullable final LocalDate convDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId, orgId);
+	}
+
+	/**
+	 * @deprecated Please use {@link #convertMoneyToCurrency(Money, CurrencyId, CurrencyConversionContext)} instead.
+	 */
+	@Deprecated
+	@NonNull
 	public Money convertMoneyToCurrency(
 			@NonNull final Money money,
 			@NonNull final CurrencyId targetCurrencyId)
 	{
-		if (Objects.equals(
-				money.getCurrencyId(),
-				targetCurrencyId))
+		if (Objects.equals(money.getCurrencyId(), targetCurrencyId))
 		{
 			return money;
 		}
 
-		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
+				SystemTime.asLocalDate(),
+				ConversionTypeMethod.Spot,
+				Env.getClientId(),
+				Env.getOrgId());
 
-		final CurrencyConversionContext currencyConversionContext = currencyBL
-				.createCurrencyConversionContext(
-						SystemTime.asLocalDate(),
-						ConversionTypeMethod.Spot,
-						Env.getClientId(),
-						Env.getOrgId());
+		return convertMoneyToCurrency(money, targetCurrencyId, currencyConversionContext);
+	}
+
+	@NonNull
+	public Money convertMoneyToCurrency(
+			@NonNull final Money money,
+			@NonNull final CurrencyId targetCurrencyId,
+			@NonNull final CurrencyConversionContext context)
+	{
+		if (Objects.equals(money.getCurrencyId(), targetCurrencyId))
+		{
+			return money;
+		}
 
 		final CurrencyConversionResult conversionResult = currencyBL.convert(
-				currencyConversionContext,
+				context,
 				money.toBigDecimal(),
 				money.getCurrencyId(),
 				targetCurrencyId);
@@ -104,7 +132,7 @@ public class MoneyService
 		final BigDecimal convertedAmount = Check.assumeNotNull(
 				conversionResult.getAmount(),
 				"CurrencyConversion from currencyId={} to currencyId={} needs to work; currencyConversionContext={}, currencyConversionResult={}",
-				money.getCurrencyId(), targetCurrencyId, currencyConversionContext, conversionResult);
+				money.getCurrencyId(), targetCurrencyId, context, conversionResult);
 
 		return Money.of(convertedAmount, targetCurrencyId);
 	}
