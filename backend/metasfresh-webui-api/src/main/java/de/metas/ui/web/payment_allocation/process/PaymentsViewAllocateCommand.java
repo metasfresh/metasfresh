@@ -159,7 +159,7 @@ public class PaymentsViewAllocateCommand
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 		final CurrencyCode currencyCode = moneyService.getCurrencyCodeByCurrencyId(currencyId);
-		if (row.getServiceFeeAmt() != null && !Amount.zero(currencyCode).equals(row.getServiceFeeAmt()))
+		if (haveServiceFeesToPay(row, currencyCode))
 		{
 			if (paymentDocuments.size() != 1)
 			{
@@ -211,6 +211,11 @@ public class PaymentsViewAllocateCommand
 						.negateIf(soTrx.isPurchase()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();
+	}
+
+	private static boolean haveServiceFeesToPay(final @NonNull InvoiceRow row, final CurrencyCode currencyCode)
+	{
+		return row.getServiceFeeAmt() != null && !Amount.zero(currencyCode).equals(row.getServiceFeeAmt());
 	}
 
 	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)
