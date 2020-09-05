@@ -9,6 +9,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.151 - WIP
+
+* https://github.com/metasfresh/metasfresh/issues/9878
+* [#7175](https://github.com/metasfresh/metasfresh/pull/7175/files) Improve usability of postgrest export processes
+* https://github.com/metasfresh/metasfresh/issues/9838
+* https://github.com/metasfresh/metasfresh/issues/9855
+* https://github.com/metasfresh/metasfresh/issues/9873
+* https://github.com/metasfresh/metasfresh/issues/9863
+* https://github.com/metasfresh/metasfresh/issues/9868
+* https://github.com/metasfresh/metasfresh/issues/9871
+* https://github.com/metasfresh/metasfresh/issues/9880
+* https://github.com/metasfresh/metasfresh/issues/9860
+* https://github.com/metasfresh/metasfresh/issues/9862
+* https://github.com/metasfresh/metasfresh/pull/7074
+
 # metasfresh 5.150
 ## Features
 * [#7137](https://github.com/metasfresh/metasfresh/pull/7137) Always capture previous costs
