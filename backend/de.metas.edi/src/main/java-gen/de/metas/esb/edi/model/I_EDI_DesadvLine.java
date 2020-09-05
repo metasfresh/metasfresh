@@ -600,6 +600,31 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
+	 * Set Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
+
+	/**
+	 * Get Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyItemCapacity();
+
+    /** Column definition for QtyItemCapacity */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyItemCapacity", null);
+    /** Column name QtyItemCapacity */
+    public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
+
+	/**
 	 * Set Qty Ordered.
 	 * Qty Ordered
 	 *

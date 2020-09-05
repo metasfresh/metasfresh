@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_DesadvLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1342666944L;
+	private static final long serialVersionUID = -182511967L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -324,6 +324,19 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.math.BigDecimal getQtyEntered() 
 	{
 		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
+	{
+		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
+	}
+
+	@Override
+	public java.math.BigDecimal getQtyItemCapacity() 
+	{
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
