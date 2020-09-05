@@ -86,22 +86,32 @@ public class C_Invoice // 03771
 		this.paymentReservationService = paymentReservationService;
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void onBeforeComplete(final I_C_Invoice invoice)
-	{
-		allocateInvoiceAgainstCreditMemo(invoice);
-		linkInvoiceToPaymentIfNeeded(invoice);
-	}
-
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
 	{
-		markAsPaid(invoice);
+		// FIXME: This Kills performance. Please ask for extra budget next time you have to work around this area.
+		//		We're calling `testAndMarkAsPaid` multiple times, just to set the invoice.IsPaid flag.
+		//		That kills the performance as each time we have to read multiple allocations from db.
+		// 		- Please see the PR: https://github.com/metasfresh/metasfresh/pull/9876 and its comments and reviews
+		//
+		// The problem I'm trying to fix here is that during allocation of an Invoice, we have allocated the correct payment with amount, and also created an *extra* *wrong* allocation with amt=0 for a different payment.
+		// 		I could never reproduce this locally :(.
+		// Please contact teo on possible solutions to fix this in a performant way (hint testAndMarkAsPaid should be called once at the end)
+		testAndMarkAsPaid(invoice);
+		allocateInvoiceAgainstCreditMemo(invoice);
+		linkInvoiceToPaymentIfNeeded(invoice);
 		allocateInvoiceAgainstPaymentIfNeeded(invoice);
+		autoAllocateAvailablePayments(invoice);
 		captureMoneyIfNeeded(invoice);
 		ensureUOMsAreNotNull(invoice);
 
 		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
+	}
+
+	private void autoAllocateAvailablePayments(final I_C_Invoice invoice)
+	{
+		allocationBL.autoAllocateAvailablePayments(invoice);
+		testAndMarkAsPaid(invoice);
 	}
 
 	private void ensureUOMsAreNotNull(@NonNull final I_C_Invoice invoice)
@@ -194,7 +204,7 @@ public class C_Invoice // 03771
 	/**
 	 * Mark invoice as paid if the grand total/open amount is 0
 	 */
-	private void markAsPaid(final I_C_Invoice invoice)
+	private void testAndMarkAsPaid(final I_C_Invoice invoice)
 	{
 		// services
 		final IInvoiceBL invoiceBL = this.invoiceBL;
@@ -208,7 +218,7 @@ public class C_Invoice // 03771
 	 * <p>
 	 * Note: ATM, there should only be one parent invoice for a credit memo, but it's possible to have more in the future.
 	 */
-	private void allocateInvoiceAgainstCreditMemo(final I_C_Invoice creditMemo)
+	private void allocateInvoiceAgainstCreditMemo(@NonNull final I_C_Invoice creditMemo)
 	{
 		// services
 		final IInvoiceBL invoiceBL = this.invoiceBL;
@@ -236,6 +246,7 @@ public class C_Invoice // 03771
 			// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
 			invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
 		}
+		testAndMarkAsPaid(creditMemo);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -283,7 +294,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	private void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
+	private void linkInvoiceToPaymentIfNeeded(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
@@ -293,20 +304,22 @@ public class C_Invoice // 03771
 			paymentDAO.save(payment);
 
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+			testAndMarkAsPaid(invoice);
 		}
 	}
 
-	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
+	private void allocateInvoiceAgainstPaymentIfNeeded(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+			testAndMarkAsPaid(invoice);
 		}
 	}
 
-	private void captureMoneyIfNeeded(final I_C_Invoice salesInvoice)
+	private void captureMoneyIfNeeded(@NonNull final I_C_Invoice salesInvoice)
 	{
 		//
 		// We capture money only for sales invoices
