@@ -118,8 +118,8 @@ class DesadvBLTest
 	/**
 	 * have 10PCE fitting into 1COLI and 1PCE weighing 2KGM
 	 * Create a desadvLine with 0PCE and 0COLI;
-	 * Then add 9PCE and 18KGM
-	 * => expect the deadvLine to have 9PCE, 1COLI and 18KGM
+	 * Then add 9PCE and 20KGM (not 18 bc catch-weight)
+	 * => expect the deadvLine to have 9PCE, 1COLI and 20KGM
 	 */
 	@Test
 	void addOrSubtractInOutLineQty_iolQtyWithKGM()
@@ -140,21 +140,21 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
 				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("18", kiloUomId)).build();
+				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
-				.contains(new BigDecimal("9"), new BigDecimal("1"), new BigDecimal("18"));
+				.contains(new BigDecimal("9"), new BigDecimal("1"), new BigDecimal("20"));
 	}
 
 	/**
 	 * have 1PCE weighing 2KGM
 	 * Create a desadvLine with 0PCE and 0KGM;
-	 * Then add 9PCE and 18KGM
-	 * => expect the deadvLine to have 9PCE, 18KGM and 18KGM
+	 * Then add 9PCE and 20KGM (not 18 bc catch-weight)
+	 * => expect the deadvLine to have 9PCE and 18KGM
 	 */
 	@Test
 	void addOrSubtractInOutLineQty_iolQtyWithPCE()
@@ -175,14 +175,14 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
 				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("18", kiloUomId)).build();
+				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
-				.contains(new BigDecimal("9"), new BigDecimal("9"), new BigDecimal("18"));
+				.contains(new BigDecimal("9"), new BigDecimal("9"), new BigDecimal("20"));
 	}
 
 }
