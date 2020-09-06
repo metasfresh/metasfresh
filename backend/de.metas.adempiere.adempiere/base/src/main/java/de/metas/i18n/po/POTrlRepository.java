@@ -156,7 +156,7 @@ public class POTrlRepository
 		}
 		else
 		{
-			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' AND l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='N')");
+			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y')");
 		}
 
 		sql.append(" AND t.")
@@ -254,9 +254,9 @@ public class POTrlRepository
 
 		//
 		final String trlWhereChecks =
-				" AND ( trl.isTranslated = 'N' "
-						+ " OR "
-						+ " exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )";
+				" AND ( trl.isTranslated = 'N' )";
+						// + " OR "
+						// + " exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )";
 		// Execute update
 		final StringBuilder sql = new StringBuilder()
 				.append("UPDATE ").append(tableName).append("_Trl trl SET ")
