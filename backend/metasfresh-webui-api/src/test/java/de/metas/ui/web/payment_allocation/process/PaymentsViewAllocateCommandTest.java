@@ -66,6 +66,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
@@ -121,6 +122,8 @@ public class PaymentsViewAllocateCommandTest
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		bpartnerId = createBPartnerId();
+
+		SpringContextHolder.registerJUnitBean(moneyService);
 	}
 
 	private BPartnerId createBPartnerId()

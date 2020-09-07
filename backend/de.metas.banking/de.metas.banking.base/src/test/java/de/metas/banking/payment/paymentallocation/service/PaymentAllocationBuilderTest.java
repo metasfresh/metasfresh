@@ -51,6 +51,7 @@ import javax.annotation.Nullable;
 
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -250,7 +251,6 @@ public class PaymentAllocationBuilderTest
 		}
 
 		return PayableDocument.builder()
-				.orgId(adOrgId)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.documentNo(invoice.getDocumentNo())
@@ -259,7 +259,7 @@ public class PaymentAllocationBuilderTest
 				.openAmt(openAmt)
 				.amountsToAllocate(amountsToAllocate)
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
-				.clientId(clientId)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(clientId, adOrgId))
 				.date(acctDate)
 				.build();
 	}
@@ -296,7 +296,6 @@ public class PaymentAllocationBuilderTest
 		InterfaceWrapperHelper.save(payment);
 
 		return PaymentDocument.builder()
-				.orgId(adOrgId)
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.documentNo(payment.getDocumentNo())
@@ -308,8 +307,7 @@ public class PaymentAllocationBuilderTest
 						// .negateIf(direction.isOutboundPayment())
 				)
 				.dateTrx(LocalDate.of(2020, Month.JANUARY, 1))
-				.clientId(clientId)
-				.currencyConversionTypeId()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(clientId, adOrgId))
 				.build();
 	}
 
