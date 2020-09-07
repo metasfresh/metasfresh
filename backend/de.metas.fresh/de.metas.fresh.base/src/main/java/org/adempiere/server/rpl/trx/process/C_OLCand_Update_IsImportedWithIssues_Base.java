@@ -22,14 +22,15 @@ package org.adempiere.server.rpl.trx.process;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.model.I_C_OLCand;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
@@ -43,56 +44,27 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.SpringContextHolder;
 
-import de.metas.ordercandidate.api.OLCandValidatorService;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Iterator;
 
 /**
  * Uses {@link OLCandValidatorService} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>
  * Then, if all prices are OK, uses {@link NoOpIssueSolver} to flag the {@link I_C_OLCand}s of that trx-ID as solved.
  * Finally, the process performs an update to set <code>C_OLCand.IsImportedWithIssues='N'</code> to all olcands.
  */
-public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
+public abstract class C_OLCand_Update_IsImportedWithIssues_Base extends JavaProcess
 {
-
-	private int p_EXP_ReplicationTrx_ID;
-	private final Map<String, Object> params = new HashMap<>();
-
 	//
 	// services
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	private final IReplicationIssueSolverBL replicationIssueSolverBL = Services.get(IReplicationIssueSolverBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	protected void prepare()
 	{
 		// Display process logs only if the process failed.
 		// NOTE: we do that because this process is called from window Gear and the user shall not see a popoup, only the status line.
-		setShowProcessLogs(ShowProcessLogs.OnError);
-
-		final ProcessInfoParameter[] para = getParametersAsArray();
-
-		for (ProcessInfoParameter element : para)
-		{
-			final String name = element.getParameterName();
-			if (element.getParameter() == null)
-			{
-				// do nothing
-			}
-			else if (I_C_OLCand.COLUMNNAME_EXP_ReplicationTrx_ID.equals(name))
-			{
-				p_EXP_ReplicationTrx_ID = element.getParameterAsInt();
-			}
-			else
-			{
-				final Object value = element.getParameter();
-				params.put(name, value);
-			}
-		}
+		setShowProcessLogs(ProcessExecutionResult.ShowProcessLogs.OnError);
 	}
 
 	@Override
@@ -101,8 +73,7 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 		final Class<? extends IReplicationIssueAware> issueAwareType = I_C_OLCand.class;
 		final IReplicationIssueSolver<? extends IReplicationIssueAware> issueSolver = new NoOpIssueSolver<I_C_OLCand>();
 
-		final I_EXP_ReplicationTrx rplTrx = InterfaceWrapperHelper.create(getCtx(), p_EXP_ReplicationTrx_ID, I_EXP_ReplicationTrx.class, ITrx.TRXNAME_None);
-		Check.assumeNotNull(rplTrx, "@EXP_ReplicationTrx_ID@ exists for ID={}", p_EXP_ReplicationTrx_ID);
+		final ImmutableList<I_EXP_ReplicationTrx> rplTrxRecords = extractRplTrxRecordsToSolve();
 
 		//
 		// task 08072: verify that all candidates have proper pricing
@@ -112,19 +83,22 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 			// In case one of the candidates with the given EXP_ReplicationTrx_ID, do not solve issues
 			return "@Invalid@ @Record@ - @Updated@ # " + candidatesUpdatedDuringValidation.getValue();
 		}
-
 		// the validation was OK
 
-		final IReplicationIssueSolverParams replicationIssueSolverParams = replicationIssueSolverBL.createParams(params);
-		final IReplicationTrxLinesProcessorResult result = replicationIssueSolverBL.solveReplicationIssues(rplTrx, issueAwareType, issueSolver, replicationIssueSolverParams);
-
+		final IReplicationIssueSolverParams replicationIssueSolverParams = replicationIssueSolverBL.createParams(ImmutableMap.of());
+		int updatedCounter = 0;
+		for (final I_EXP_ReplicationTrx rplTrx : rplTrxRecords)
+		{
+			final IReplicationTrxLinesProcessorResult result = replicationIssueSolverBL.solveReplicationIssues(rplTrx, issueAwareType, issueSolver, replicationIssueSolverParams);
+			updatedCounter += result.getReplicationIssueAwareCount();
+		}
 		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
 				.addSetColumnValue(I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
 
 		// task 08770: each individual line was solved. Now we can flag all OLCands as cleared, so they can all be processed at once.
 		createOLCandQueryBuilder().create().update(updater);
 
-		return "@Updated@ #" + result.getReplicationIssueAwareCount();
+		return "@Updated@ #" + updatedCounter;
 	}
 
 	private boolean validateReplicationTrx(final Mutable<Integer> candidatesUpdated)
@@ -167,13 +141,7 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 		}
 	}
 
-	private IQueryBuilder<I_C_OLCand> createOLCandQueryBuilder()
-	{
-		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_EXP_ReplicationTrx_ID, p_EXP_ReplicationTrx_ID);
+	protected abstract IQueryBuilder<I_C_OLCand> createOLCandQueryBuilder();
 
-		return queryBuilder;
-	}
+	protected abstract ImmutableList<I_EXP_ReplicationTrx> extractRplTrxRecordsToSolve();
 }
