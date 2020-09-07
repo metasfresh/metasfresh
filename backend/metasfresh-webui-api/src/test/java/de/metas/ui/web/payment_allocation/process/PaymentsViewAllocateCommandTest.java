@@ -28,6 +28,7 @@ import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidat
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument.PaymentDocumentType;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
@@ -702,6 +703,8 @@ public class PaymentsViewAllocateCommandTest
 									.build())
 							.paymentOverUnderAmt(Money.of("120", euroCurrencyId))
 							.build());
+
+			// check: PaymentAllocationBuilder.createAllocationLineCandidates()
 		}
 	}
 }

@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
@@ -343,7 +344,15 @@ public class PaymentAllocationBuilder
 				// Calculate the amounts to allocate:
 				final InvoiceAndPaymentAmountsToAllocate amountsToAllocate = calculateAmountToAllocate(payable, payment);
 				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
-				// final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency().getPayAmt());  // TODO tbp: @teo this doesnt work.
+				final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getPayAmtInPaymentCurrency());  // TODO tbp: @teo this doesnt work.
+
+				/*
+				problem: AllocationLineCandidate.paymentOverUnderAmt is saved on C_AllocationLine
+				@line 347 payment must receive an amount in Payment Currency
+				AllocationLineCandidate wants only 1 currency, therefore when we create the candidate, it fails for having 2 different currencies.
+				- a dumb solution would be to calculate paymentOverUnderAmt  in invoice currency @ line 347
+				see commented line 373
+				*/
 
 				// Create new Allocation Line
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
