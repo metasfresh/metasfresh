@@ -1,46 +1,8 @@
-package de.metas.banking.payment.paymentallocation;
-
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.apps.search.FindHelper;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.document.DocTypeId;
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.InvoiceId;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentDirection;
-import de.metas.payment.PaymentId;
-import de.metas.util.Check;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -57,6 +19,44 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.banking.payment.paymentallocation;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentId;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.apps.search.FindHelper;
+import org.compiere.model.I_C_ConversionType;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Repository
 public class PaymentAllocationRepository
@@ -272,7 +272,7 @@ public class PaymentAllocationRepository
 				.build();
 	}
 
-	private static final Amount retrieveAmount(
+	private static Amount retrieveAmount(
 			@NonNull final ResultSet rs,
 			@NonNull final String columnName,
 			@NonNull final CurrencyCode currencyCode) throws SQLException
@@ -378,6 +378,7 @@ public class PaymentAllocationRepository
 				.payAmt(payAmtConv)
 				.openAmt(openAmtConv)
 				.paymentDirection(PaymentDirection.ofInboundPaymentFlag(inboundPayment))
+				.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_ConversionType.COLUMNNAME_C_ConversionType_ID)))
 				.build();
 	}
 

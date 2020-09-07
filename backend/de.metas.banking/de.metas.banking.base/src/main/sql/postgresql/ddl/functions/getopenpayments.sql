@@ -28,7 +28,8 @@ SELECT
 	, NULL::numeric AS orig_total
 	, NULL::numeric AS conv_total
 	, NULL::numeric AS conv_open
-	, NULL::numeric AS multiplierap
+    , NULL::numeric AS multiplierap
+    , NULL::numeric AS C_ConversionType_ID
  ;
 COMMENT ON VIEW t_getopenpayments IS 'Used as return type in the SQL-function getopenpayments';
 
@@ -59,8 +60,9 @@ SELECT
 	convertToCurrency.ISO_Code AS ConvertTo_Currency_ISO_Code,
 	p.PayAmt AS Orig_Total, 
 	currencyConvert(p.PayAmt, p.C_Currency_ID, COALESCE($2, p.C_Currency_ID), $5, p.C_ConversionType_ID, p.AD_Client_ID, p.AD_Org_ID) AS Conv_Total, 
-	currencyConvert(paymentAvailable(C_Payment_ID), p.C_Currency_ID, COALESCE($2, p.C_Currency_ID), $5, p.C_ConversionType_ID, p.AD_Client_ID, p.AD_Org_ID) AS Conv_Open, 
-	p.MultiplierAP::numeric
+	currencyConvert(paymentAvailable(p.C_Payment_ID), p.C_Currency_ID, COALESCE($2, p.C_Currency_ID), $5, p.C_ConversionType_ID, p.AD_Client_ID, p.AD_Org_ID) AS Conv_Open,
+	p.MultiplierAP::numeric,
+    p.C_ConversionType_ID
 FROM 
 	C_Payment_v p 
 	INNER JOIN C_Currency c ON (p.C_Currency_ID = c.C_Currency_ID) 
@@ -71,7 +73,7 @@ WHERE
 	( 
 		($1 IS NULL AND $6 IS NULL) -- no C_BPartner_ID nor C_Payment_ID is set
 		OR p.C_BPartner_ID = $1 
-		OR p.C_BPartner_ID IN (SELECT C_BPartnerRelation_ID FROM C_BP_Relation WHERE C_BPartner_ID = $1 AND isPayFrom = 'Y' AND isActive = 'Y') 
+		OR p.C_BPartner_ID IN (SELECT C_BPartnerRelation_ID FROM C_BP_Relation WHERE C_BP_Relation.C_BPartner_ID = $1 AND isPayFrom = 'Y' AND isActive = 'Y')
 		OR p.C_Payment_ID = $6
 	) 
 	AND p.IsAllocated='N' 
