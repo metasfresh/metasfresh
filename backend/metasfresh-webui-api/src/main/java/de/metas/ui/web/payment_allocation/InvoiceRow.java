@@ -31,8 +31,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -109,6 +109,9 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final InvoiceDocBaseType docBaseType;
 
+	@Getter
+	private final CurrencyConversionTypeId currencyConversionTypeId;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> values;
 
 	@Builder(toBuilder = true)
@@ -124,7 +127,9 @@ public class InvoiceRow implements IViewRow
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt,
 			@Nullable final Amount bankFeeAmt,
-			@Nullable final Amount serviceFeeAmt)
+			@Nullable final Amount serviceFeeAmt,
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
+			)
 	{
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
@@ -144,6 +149,7 @@ public class InvoiceRow implements IViewRow
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
 		this.invoiceId = invoiceId;
 		this.clientAndOrgId = clientAndOrgId;
+		this.currencyConversionTypeId = currencyConversionTypeId;
 
 		this.values = buildViewRowFieldNameAndJsonValuesHolder(docBaseType.getSoTrx());
 	}

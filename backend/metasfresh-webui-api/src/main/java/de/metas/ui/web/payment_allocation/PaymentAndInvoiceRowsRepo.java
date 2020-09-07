@@ -237,6 +237,7 @@ public class PaymentAndInvoiceRowsRepo
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())
 				.serviceFeeAmt(serviceFeeAmount.orElse(null))
+				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.build();
 	}
 

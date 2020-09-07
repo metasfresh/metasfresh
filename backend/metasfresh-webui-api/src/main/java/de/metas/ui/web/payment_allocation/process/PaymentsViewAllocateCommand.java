@@ -211,7 +211,7 @@ public class PaymentsViewAllocateCommand
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(row.getDateInvoiced())
 				.clientAndOrgId(row.getClientAndOrgId())
-				// .currencyConversionTypeId(row.getCurrencyConversionTypeId) for Payables we don't need the Currency Conversion Type
+				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
 				.build();
 	}
 

@@ -42,6 +42,7 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.apps.search.FindHelper;
 import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
@@ -240,6 +241,8 @@ public class PaymentAllocationRepository
 		final BigDecimal multiplierCreditMemo = rs.getBigDecimal("multiplier"); // CreditMemo=-1, Regular Invoice=+1
 		final boolean isCreditMemo = multiplierCreditMemo.signum() < 0 || grandTotalConv.signum() < 0; // task 09429: also if grandTotal<0
 
+		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_Invoice.COLUMNNAME_C_ConversionType_ID));
+
 		if (!isPrePayOrder && grandTotal.signum() == 0)
 		{
 			// nothing - i.e. allow zero amount invoices to be visible for allocation
@@ -269,6 +272,7 @@ public class PaymentAllocationRepository
 				.docTypeId(docTypeId)
 				.docBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(soTrx, isCreditMemo))
 				.poReference(rs.getString("POReference"))
+				.currencyConversionTypeId(currencyConversionTypeId)
 				.build();
 	}
 

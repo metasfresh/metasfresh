@@ -31,7 +31,9 @@ SELECT NULL::numeric                     AS ad_org_id,
        NULL::numeric                     AS multiplierap,
        NULL::numeric                     AS multiplier,
        NULL::character varying           AS poreference,
-       NULL::timestamp without time zone AS dateacct;
+       NULL::timestamp without time zone AS dateacct,
+       NULL::numeric                     AS C_ConversionType_ID
+;
 
 comment on view t_getopeninvoices is 'Used as return type in the SQL-function getopeninvoices';
 
@@ -75,26 +77,27 @@ SELECT
 	i.multiplierAP,
 	i.multiplier,
 	i.POReference,
-	i.DateAcct  -- task 09643: separate transaction date form accounting date
+	i.DateAcct,  -- task 09643: separate transaction date form accounting date
+    i.c_conversiontype_id
 FROM
 	(
 		--
 		-- Invoices
 		(
 			SELECT
-				C_Invoice_ID
+				i.C_Invoice_ID
 				, DocumentNo as docno
 				, invoiceOpen(i.C_Invoice_ID,C_InvoicePaySchedule_ID) as open
 				, invoiceDiscount(i.C_Invoice_ID,$5,C_InvoicePaySchedule_ID) as discount
 				, GrandTotal as total
 				, DateInvoiced as date
-				, C_Currency_ID
+				, i.C_Currency_ID
 				, C_ConversionType_ID
 				, COALESCE($2, i.C_Currency_ID) as ConvertTo_Currency_ID
 				, i.AD_Client_ID
 				, i.AD_Org_ID
 				, multiplier, multiplierAP
-				, C_BPartner_ID
+				, i.C_BPartner_ID
 				, i.C_DocType_ID
 				, 'N'::character varying as IsPrePayOrder
 				, i.POReference
