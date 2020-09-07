@@ -35,6 +35,7 @@ import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -396,4 +397,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	OrgId getOrgId(@NonNull InvoiceCandidateId invoiceCandidateId);
 }
