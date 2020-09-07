@@ -22,26 +22,24 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.money.CurrencyConversionTypeId;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
  * Wraps a given purchase invoice as an inbound payment document which we will try to allocate to some other sales invoice that we issued.
- * 
+ * <p>
  * In other words, if we issued a sales invoice to one of our customers,
  * but the "customer" issued an purchase invoice to us, that purchase invoice can be used to compensate our customer invoice.
  */
@@ -82,9 +80,9 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	@Override
-	public OrgId getOrgId()
+	public ClientAndOrgId getClientAndOrgId()
 	{
-		return purchaseInvoicePayableDoc.getOrgId();
+		return purchaseInvoicePayableDoc.getClientAndOrgId();
 	}
 
 	@Override
@@ -118,7 +116,7 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	@Override
-	public void addAllocatedAmt(Money allocatedAmtToAdd)
+	public void addAllocatedAmt(final Money allocatedAmtToAdd)
 	{
 		purchaseInvoicePayableDoc.addAllocatedAmounts(AllocationAmounts.ofPayAmt(allocatedAmtToAdd.negate()));
 	}
@@ -130,7 +128,7 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	@Override
-	public Money calculateProjectedOverUnderAmt(Money amountToAllocate)
+	public Money calculateProjectedOverUnderAmt(final Money amountToAllocate)
 	{
 		return purchaseInvoicePayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
 	}
@@ -149,24 +147,13 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 		}
 
 		// if currency differs, do not allow payment
-		if (!CurrencyId.equals(payable.getCurrencyId(), purchaseInvoicePayableDoc.getCurrencyId()))
-		{
-			return false;
-		}
-
-		return true;
+		return CurrencyId.equals(payable.getCurrencyId(), purchaseInvoicePayableDoc.getCurrencyId());
 	}
 
 	@Override
 	public CurrencyId getCurrencyId()
 	{
 		return purchaseInvoicePayableDoc.getCurrencyId();
-	}
-
-	@Override
-	public ClientId getClientId()
-	{
-		return purchaseInvoicePayableDoc.getClientId();
 	}
 
 	@Override

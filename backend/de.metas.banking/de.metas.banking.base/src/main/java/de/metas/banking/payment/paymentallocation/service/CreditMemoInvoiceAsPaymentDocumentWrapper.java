@@ -22,19 +22,17 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.money.CurrencyConversionTypeId;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -74,9 +72,9 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	}
 
 	@Override
-	public OrgId getOrgId()
+	public ClientAndOrgId getClientAndOrgId()
 	{
-		return creditMemoPayableDoc.getOrgId();
+		return creditMemoPayableDoc.getClientAndOrgId();
 	}
 
 	@Override
@@ -122,7 +120,7 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	}
 
 	@Override
-	public Money calculateProjectedOverUnderAmt(Money payAmountToAllocate)
+	public Money calculateProjectedOverUnderAmt(@NonNull final Money payAmountToAllocate)
 	{
 		return creditMemoPayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(payAmountToAllocate.negate()));
 	}
@@ -146,12 +144,7 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		}
 
 		// if currency differs, do not allow payment
-		if (!CurrencyId.equals(payable.getCurrencyId(), creditMemoPayableDoc.getCurrencyId()))
-		{
-			return false;
-		}
-
-		return true;
+		return CurrencyId.equals(payable.getCurrencyId(), creditMemoPayableDoc.getCurrencyId());
 	}
 
 	@Override
@@ -164,12 +157,6 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	public CurrencyId getCurrencyId()
 	{
 		return creditMemoPayableDoc.getCurrencyId();
-	}
-
-	@Override
-	public ClientId getClientId()
-	{
-		return creditMemoPayableDoc.getClientId();
 	}
 
 	@Override

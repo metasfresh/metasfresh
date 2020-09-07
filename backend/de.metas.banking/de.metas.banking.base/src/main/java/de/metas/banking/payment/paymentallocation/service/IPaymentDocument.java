@@ -22,15 +22,13 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.money.CurrencyConversionTypeId;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -44,10 +42,6 @@ public interface IPaymentDocument
 	}
 
 	PaymentDocumentType getType();
-
-	OrgId getOrgId();
-
-	ClientId getClientId();
 
 	BPartnerId getBpartnerId();
 
@@ -66,6 +60,8 @@ public interface IPaymentDocument
 	void addAllocatedAmt(Money allocatedPayAmtToAdd);
 
 	LocalDate getDate();
+
+	ClientAndOrgId getClientAndOrgId();
 
 	@Nullable
 	CurrencyConversionTypeId getCurrencyConversionTypeId();

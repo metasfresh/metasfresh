@@ -22,31 +22,28 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import javax.annotation.Nullable;
-
-import de.metas.money.CurrencyConversionTypeId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
@@ -65,9 +62,6 @@ public class PayableDocument
 	{
 		Invoice, PrepaidOrder,
 	}
-
-	@Getter
-	private final OrgId orgId;
 
 	@Getter
 	private final InvoiceId invoiceId;
@@ -97,10 +91,10 @@ public class PayableDocument
 	private AllocationAmounts amountsAllocated;
 
 	@Getter
-	private InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+	private final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 	@Getter
-	private final ClientId clientId;
+	private final ClientAndOrgId clientAndOrgId;
 
 	@Getter
 	private final LocalDate date;
@@ -110,7 +104,6 @@ public class PayableDocument
 
 	@Builder
 	private PayableDocument(
-			@NonNull final OrgId orgId,
 			@Nullable final InvoiceId invoiceId,
 			@Nullable final OrderId prepayOrderId,
 			@Nullable final BPartnerId bpartnerId,
@@ -119,13 +112,14 @@ public class PayableDocument
 			final boolean creditMemo,
 			//
 			@NonNull final Money openAmt,
-			@NonNull AllocationAmounts amountsToAllocate,
+			@NonNull final AllocationAmounts amountsToAllocate,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
-			@NonNull final ClientId clientId,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate date,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
 	)
 	{
+		final OrgId orgId = clientAndOrgId.getOrgId();
 		if (!orgId.isRegular())
 		{
 			throw new AdempiereException("Transactional organization expected: " + orgId);
@@ -155,7 +149,6 @@ public class PayableDocument
 			throw new AdempiereException("Invoice or Prepay Order shall be set");
 		}
 
-		this.orgId = orgId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
 		this.soTrx = soTrx;
@@ -172,7 +165,7 @@ public class PayableDocument
 
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
 
-		this.clientId = clientId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.date = date;
 		this.currencyConversionTypeId = currencyConversionTypeId;
 	}

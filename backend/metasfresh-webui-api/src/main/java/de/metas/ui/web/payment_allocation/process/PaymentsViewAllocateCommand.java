@@ -31,6 +31,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -42,18 +43,15 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -174,7 +172,7 @@ public class PaymentsViewAllocateCommand
 
 			final Optional<InvoiceProcessingFeeCalculation> calculatedFeeOptional = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
-							.orgId(row.getOrgId())
+							.orgId(row.getClientAndOrgId().getOrgId())
 							.paymentDate(paymentDate)
 							.customerId(row.getBPartnerId())
 							.invoiceId(row.getInvoiceId())
@@ -198,7 +196,6 @@ public class PaymentsViewAllocateCommand
 		final SOTrx soTrx = row.getDocBaseType().getSoTrx();
 
 		return PayableDocument.builder()
-				.orgId(row.getOrgId())
 				.invoiceId(row.getInvoiceId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
@@ -235,7 +232,6 @@ public class PaymentsViewAllocateCommand
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 
 		return PaymentDocument.builder()
-				.orgId(row.getOrgId())
 				.paymentId(row.getPaymentId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
@@ -243,8 +239,8 @@ public class PaymentsViewAllocateCommand
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())
-				.clientId(row.getClientId())
-				.currencyConversionTypeId()
+				.clientAndOrgId(row.getClientAndOrgId())
+				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
 				.build();
 	}
 

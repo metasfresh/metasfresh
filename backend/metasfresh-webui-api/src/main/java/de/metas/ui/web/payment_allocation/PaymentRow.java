@@ -6,8 +6,8 @@ import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.IViewRow;
@@ -23,8 +23,8 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Set;
@@ -81,9 +81,13 @@ public class PaymentRow implements IViewRow
 	private final DocumentId rowId;
 	@Getter
 	private final PaymentId paymentId;
+	@Getter
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
 	private final PaymentDirection paymentDirection;
+
+	@Getter
+	private final CurrencyConversionTypeId currencyConversionTypeId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
@@ -111,7 +115,9 @@ public class PaymentRow implements IViewRow
 			@NonNull final LookupValue bpartner,
 			@NonNull final Amount payAmt,
 			@NonNull final Amount openAmt,
-			@NonNull final PaymentDirection paymentDirection)
+			@NonNull final PaymentDirection paymentDirection,
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
+	)
 	{
 		this.inboundPayment = paymentDirection.isInboundPayment();
 		this.documentNo = documentNo;
@@ -125,6 +131,8 @@ public class PaymentRow implements IViewRow
 		this.paymentId = paymentId;
 		this.clientAndOrgId = clientAndOrgId;
 		this.paymentDirection = paymentDirection;
+
+		this.currencyConversionTypeId = currencyConversionTypeId;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PaymentRow.class);
 	}
@@ -143,16 +151,6 @@ public class PaymentRow implements IViewRow
 	public DocumentId getId()
 	{
 		return rowId;
-	}
-
-	public OrgId getOrgId()
-	{
-		return clientAndOrgId.getOrgId();
-	}
-
-	public ClientId getClientId()
-	{
-		return clientAndOrgId.getClientId();
 	}
 
 	@Override

@@ -33,7 +33,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -43,7 +43,6 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -83,10 +82,9 @@ public class MoneyService
 	public CurrencyConversionContext createConversionContext(
 			@Nullable final LocalDate convDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId, orgId);
+		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
 	}
 
 	/**

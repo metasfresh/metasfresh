@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -36,7 +37,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 
@@ -54,9 +54,6 @@ import java.time.LocalDate;
 @ToString
 public class PaymentDocument implements IPaymentDocument
 {
-	@Getter
-	private final OrgId orgId;
-
 	@Getter
 	private final PaymentId paymentId;
 	@Getter
@@ -79,14 +76,13 @@ public class PaymentDocument implements IPaymentDocument
 	private final LocalDate dateTrx;
 
 	@Getter
-	private final ClientId clientId;
+	private final ClientAndOrgId clientAndOrgId;
 
 	@Getter
 	private final CurrencyConversionTypeId currencyConversionTypeId;
 
 	@Builder
 	private PaymentDocument(
-			@NonNull final OrgId orgId,
 			@NonNull final PaymentId paymentId,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String documentNo,
@@ -94,17 +90,17 @@ public class PaymentDocument implements IPaymentDocument
 			//
 			@NonNull final Money openAmt,
 			@NonNull final Money amountToAllocate,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate dateTrx,
-			@NonNull final ClientId clientId,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
 	)
 	{
+		final OrgId orgId = clientAndOrgId.getOrgId();
 		if (!orgId.isRegular())
 		{
 			throw new AdempiereException("Transactional organization expected: " + orgId);
 		}
 
-		this.orgId = orgId;
 		this.paymentId = paymentId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
@@ -117,7 +113,7 @@ public class PaymentDocument implements IPaymentDocument
 		this.amountToAllocate = amountToAllocate;
 		this.allocatedAmt = amountToAllocate.toZero();
 		this.dateTrx = dateTrx;
-		this.clientId = clientId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.currencyConversionTypeId = currencyConversionTypeId;
 	}
 
@@ -171,16 +167,13 @@ public class PaymentDocument implements IPaymentDocument
 	private Money getOpenAmtRemaining()
 	{
 		final Money totalAllocated = allocatedAmt;
-		final Money openAmtRemaining = openAmtInitial.subtract(totalAllocated);
-		return openAmtRemaining;
+		return openAmtInitial.subtract(totalAllocated);
 	}
 
 	@Override
 	public Money calculateProjectedOverUnderAmt(@NonNull final Money amountToAllocate)
 	{
-		final Money projectedOverUnderAmt = getOpenAmtRemaining()
-				.subtract(amountToAllocate);
-		return projectedOverUnderAmt;
+		return getOpenAmtRemaining().subtract(amountToAllocate);
 	}
 
 	@Override

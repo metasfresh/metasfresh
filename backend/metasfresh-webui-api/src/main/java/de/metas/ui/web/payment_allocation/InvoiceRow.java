@@ -64,6 +64,7 @@ public class InvoiceRow implements IViewRow
 	private final String documentNo;
 
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateInvoiced")
+	@Getter
 	private final LocalDate dateInvoiced;
 
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_ID")
@@ -194,9 +195,9 @@ public class InvoiceRow implements IViewRow
 		return rowId;
 	}
 
-	public OrgId getOrgId()
+	public ClientAndOrgId getClientAndOrgId()
 	{
-		return clientAndOrgId.getOrgId();
+		return clientAndOrgId;
 	}
 
 	@Override
