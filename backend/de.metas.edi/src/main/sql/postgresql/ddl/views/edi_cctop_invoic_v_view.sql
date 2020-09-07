@@ -42,7 +42,7 @@ SELECT
 	, CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(desadv.DocumentNo, s.DocumentNo) END AS Shipment_DocumentNo
 	, t.TotalVAT
 	, t.TotalTaxBaseAmt
-	, rl.GLN AS ReceiverGLN
+	, COALESCE(rbp.EdiInvoicRecipientGLN, rl.GLN) AS ReceiverGLN
 	, rl.C_BPartner_Location_ID
 	, (
 		SELECT DISTINCT ON (sl.GLN)
@@ -80,6 +80,7 @@ FROM C_Invoice i
 			ORDER BY io.Created
 			LIMIT 1
 		) s ON true -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
+    LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
 	LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID
 		LEFT JOIN C_Location l ON l.C_Location_ID = rl.C_Location_ID
 	LEFT JOIN C_Currency c ON c.C_Currency_ID = i.C_Currency_ID
