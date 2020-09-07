@@ -347,7 +347,7 @@ public class PaymentAllocationBuilder
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(type)
 						//
-						.orgId(payable.getOrgId())
+						.orgId(payable.getClientAndOrgId().getOrgId())
 						.bpartnerId(payable.getBpartnerId())
 						//
 						.payableDocumentRef(payable.getReference())
@@ -526,7 +526,7 @@ public class PaymentAllocationBuilder
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 						//
-						.orgId(paymentOut.getOrgId())
+						.orgId(paymentOut.getClientAndOrgId().getOrgId())
 						.bpartnerId(paymentOut.getBpartnerId())
 						//
 						.payableDocumentRef(paymentOut.getReference())
@@ -594,7 +594,7 @@ public class PaymentAllocationBuilder
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
 				//
-				.orgId(payable.getOrgId())
+				.orgId(payable.getClientAndOrgId().getOrgId())
 				.bpartnerId(payable.getBpartnerId())
 				//
 				.payableDocumentRef(payable.getReference())
@@ -649,7 +649,7 @@ public class PaymentAllocationBuilder
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceProcessingFee)
 				//
-				.orgId(payable.getOrgId())
+				.orgId(payable.getClientAndOrgId().getOrgId())
 				.bpartnerId(payable.getBpartnerId())
 				//
 				.payableDocumentRef(payable.getReference())
@@ -767,8 +767,7 @@ public class PaymentAllocationBuilder
 		final CurrencyConversionContext conversionContext = moneyService.createConversionContext(
 				payment.getDate(),
 				payment.getCurrencyConversionTypeId(),
-				payment.getClientId(),
-				payment.getOrgId()
+				payment.getClientAndOrgId()
 		);
 
 		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
