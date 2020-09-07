@@ -740,7 +740,7 @@ public class DesadvBL implements IDesadvBL
 			final BigDecimal cusPerTU = desadvLineRecord.getQtyItemCapacity();
 			if (cusPerTU.signum() <= 0)
 			{
-				throw new AdempiereException("desadvLineRecord with TU-UOM C_UOM_ID=" + desadvLineRecord.getC_UOM_ID() + " needs to have a QtyItemCapacity in order to convert the quantity")
+				throw new AdempiereException("desadvLineRecord with TU-UOM C_UOM_ID=" + desadvLineQtyToAugment.getUomId().getRepoId() + " needs to have a QtyItemCapacity in order to convert the quantity")
 						.appendParametersToMessage().setParameter("desadvLineRecord", desadvLineRecord);
 			}
 			augentQtyDeliveredInUOM = Quantitys.create(
@@ -749,12 +749,12 @@ public class DesadvBL implements IDesadvBL
 		}
 		else if (!desadvLineQtyIsUOMForTUS && inOutLineQtyIsUOMForTUS)
 		{
-			// we again need to take inOutLineStockQty and convert is to desadvLineQtyDelivered's UOM via uom-conversion
+			// we again need to take inOutLineStockQty and this time convert is to desadvLineQtyDelivered's UOM via uom-conversion
 			augentQtyDeliveredInUOM = inOutLineStockQty;
 		}
 		else
 		{
-			// if bot are coli or both are not, then uom-conversion will work just fine
+			// if bot are TU or both are not, then uom-conversion will work fine
 			augentQtyDeliveredInUOM = inOutLineLineQtyDelivered;
 		}
 
