@@ -760,6 +760,10 @@
             <xsd:element minOccurs="0" name="GTIN" type="xsd:string"/>
             <xsd:element minOccurs="0" name="UPC_TU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="PriceActual" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="EanCom_Invoice_UOM" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="OrderPOReference" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="QtyDeliveredInInvoiceUOM" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="OrderLine" type="xsd:integer"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_DesadvType">
