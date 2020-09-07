@@ -22,6 +22,8 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -341,7 +343,7 @@ public class PaymentAllocationBuilder
 				// Calculate the amounts to allocate:
 				final InvoiceAndPaymentAmountsToAllocate amountsToAllocate = calculateAmountToAllocate(payable, payment);
 				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
-				final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getPaymentAmountsToAllocateInPaymentCurrency().getPayAmt());
+				// final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency().getPayAmt());  // TODO tbp: @teo this doesnt work.
 
 				// Create new Allocation Line
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
@@ -357,16 +359,16 @@ public class PaymentAllocationBuilder
 						.dateAcct(getDateAcct())
 						//
 						// Amounts:
-						.amounts(amountsToAllocate.getPaymentAmountsToAllocateInPaymentCurrency())
+						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
 						.payableOverUnderAmt(payableOverUnderAmt)
-						.paymentOverUnderAmt(paymentOverUnderAmt)
+						// .paymentOverUnderAmt(paymentOverUnderAmt)  // TODO tbp: @teo fix this
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
 
 				// Update how much was allocated on current invoice and payment.
 				payable.addAllocatedAmounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
-				payment.addAllocatedAmt(amountsToAllocate.getPaymentAmountsToAllocateInPaymentCurrency().getPayAmt());
+				payment.addAllocatedAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
 			}    // loop through payments for current payable (aka invoice or prepay order)
 
 			if (!payable.isFullyAllocated())
@@ -753,12 +755,13 @@ public class PaymentAllocationBuilder
 		AllocationAmounts invoiceAmountsToAllocateInInvoiceCurrency; // Example: in invoice currency: 50 EUR
 
 		@NonNull
-		AllocationAmounts paymentAmountsToAllocateInPaymentCurrency; // Example: in payment currency: 49 CHF
+		Money payAmtInPaymentCurrency;
 	}
 
 	/**
 	 * @return how much we maximum allocate between given invoice and given payment.
 	 */
+	@NonNull
 	private InvoiceAndPaymentAmountsToAllocate calculateAmountToAllocate(@NonNull final PayableDocument invoice, @NonNull final IPaymentDocument payment)
 	{
 		final CurrencyId paymentCurrencyId = payment.getCurrencyId();
@@ -771,28 +774,25 @@ public class PaymentAllocationBuilder
 		);
 
 		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
-		final Money invoicePayAmtToAllocateInPaymentCurrency = moneyService.convertMoneyToCurrency(
-				invoiceAmountsToAllocate.getPayAmt(),
-				paymentCurrencyId,
-				conversionContext);
-		final Money paymentAmountToAllocate = payment.getAmountToAllocate();
+		final Money invoicePayAmtToAllocate = invoiceAmountsToAllocate.getPayAmt();
 
-		final AllocationAmounts paymentAmounts = getAllocationAmountsInPaymentCurrency(paymentCurrencyId, conversionContext, invoiceAmountsToAllocate);
+		final Money paymentAmountToAllocate = moneyService.convertMoneyToCurrency(
+				payment.getAmountToAllocate(),
+				invoiceCurrencyId,
+				conversionContext
+		);
 
-		if (invoicePayAmtToAllocateInPaymentCurrency.signum() >= 0)
+		if (invoicePayAmtToAllocate.signum() >= 0)
 		{
 			// Invoice(+), Payment(+)
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
-				final Money payAmtInPaymentCurrency = invoicePayAmtToAllocateInPaymentCurrency.min(paymentAmountToAllocate);
-				final Money payAmtInInvoiceCurrency = moneyService.convertMoneyToCurrency(  // TODO tbp: @teo: i cannot get rid of this, can I? because (irrelevant of their currency) i dont know if i chose the invoice amount (in which case nothing changes for the invoice), or i chose the payment amount (in which case PayAmt changes for the invoice)
-						payAmtInPaymentCurrency,
-						invoiceCurrencyId,
-						conversionContext);
+				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.min(paymentAmountToAllocate);
+				final Money payAmtInPaymentCurrency = calculatePayAmtInPaymentCurrency(invoicePayAmtToAllocate, payment.getAmountToAllocate(), paymentAmountToAllocate, payAmtInInvoiceCurrency);
 
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
-						.paymentAmountsToAllocateInPaymentCurrency(paymentAmounts.withPayAmt(payAmtInPaymentCurrency))
+						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
 						.build();
 			}
 			// Invoice(+), Payment(-)
@@ -800,7 +800,7 @@ public class PaymentAllocationBuilder
 			{
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
-						.paymentAmountsToAllocateInPaymentCurrency(AllocationAmounts.zero(paymentCurrencyId))
+						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
 						.build();
 			}
 		}
@@ -811,50 +811,59 @@ public class PaymentAllocationBuilder
 			{
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
-						.paymentAmountsToAllocateInPaymentCurrency(AllocationAmounts.zero(paymentCurrencyId))
+						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
 						.build();
 			}
 			// Invoice(-), Payment(-)
 			else
 			{
-				final Money payAmtInPaymentCurrency = invoicePayAmtToAllocateInPaymentCurrency.max(paymentAmountToAllocate);
-				final Money payAmtInInvoiceCurrency = moneyService.convertMoneyToCurrency(  // TODO tbp: @teo: (same comment as above) i cannot get rid of this, can I? because (irrelevant of their currency) i dont know if i chose the invoice amount (in which case nothing changes for the invoice), or i chose the payment amount (in which case PayAmt changes for the invoice)
-						payAmtInPaymentCurrency,
-						invoiceCurrencyId,
-						conversionContext);
+				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.max(paymentAmountToAllocate);
+				final Money payAmtInPaymentCurrency = calculatePayAmtInPaymentCurrency(invoicePayAmtToAllocate, payment.getAmountToAllocate(), paymentAmountToAllocate, payAmtInInvoiceCurrency);
 
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
-						.paymentAmountsToAllocateInPaymentCurrency(paymentAmounts.withPayAmt(payAmtInPaymentCurrency))
+						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
 						.build();
 			}
 		}
 	}
 
 	/**
-	 * In case we're working with a payable which is not C_Payment but, for example a Credit Memo, we need to carry over these numbers in the future Allocation.
+	 * Use Rule of Three to calculate the PayAmt in Payment Currency, from the PayAmt in Invoice Currency.
+	 * <p>
+	 * `invoiceToAllocateInInvoiceCurrency` is used to figure out if Rule of Three should be applied or not.
+	 * <p>
+	 * Example:
+	 * <pre><code>
+	 * 	invoiceToAllocateInInvoiceCurrency: 50 EUR
+	 * 	paymentToAllocateInPaymentCurrency: 60 CHF
+	 * 	paymentToAllocateInInvoiceCurrency: 55.55 EUR
+	 * 	payAmtInInvoiceCurrency = 50 EUR
+	 *
+	 * 60 CHF ...... 55.55 EUR
+	 *  x CHF ...... 50.00 EUR
+	 *
+	 * => payAmtInPaymentCurrency = (60 * 50) / 55.55
+	 * </code></pre>
 	 */
-	private AllocationAmounts getAllocationAmountsInPaymentCurrency(@NonNull final CurrencyId paymentCurrencyId, @NonNull final CurrencyConversionContext conversionContext, @NonNull final AllocationAmounts invoiceAmountsToAllocate)
+	@NonNull
+	private Money calculatePayAmtInPaymentCurrency(
+			@NonNull final Money invoiceToAllocateInInvoiceCurrency,
+			@NonNull final Money paymentToAllocateInPaymentCurrency,
+			@NonNull final Money paymentToAllocateInInvoiceCurrency,
+			@NonNull final Money payAmtInInvoiceCurrency)
 	{
-		final AllocationAmounts paymentAmounts;
-		final Money payAmt = moneyService.convertMoneyToCurrency(
-				invoiceAmountsToAllocate.getPayAmt(),
-				paymentCurrencyId,
-				conversionContext);
-		final Money discountAmt = moneyService.convertMoneyToCurrency(
-				invoiceAmountsToAllocate.getDiscountAmt(),
-				paymentCurrencyId,
-				conversionContext);
-		final Money writeOffAmt = moneyService.convertMoneyToCurrency(
-				invoiceAmountsToAllocate.getWriteOffAmt(),
-				paymentCurrencyId,
-				conversionContext);
-		paymentAmounts = AllocationAmounts.builder()
-				.payAmt(payAmt)
-				.discountAmt(discountAmt)
-				.writeOffAmt(writeOffAmt)
-				.build();
-		return paymentAmounts;
+		if (invoiceToAllocateInInvoiceCurrency.isLessThanOrEqualTo(paymentToAllocateInInvoiceCurrency))
+		{
+			final BigDecimal amt = paymentToAllocateInPaymentCurrency.toBigDecimal()
+					.multiply(payAmtInInvoiceCurrency.toBigDecimal())
+					.divide(paymentToAllocateInInvoiceCurrency.toBigDecimal(), RoundingMode.HALF_UP);
+			return Money.of(amt, paymentToAllocateInPaymentCurrency.getCurrencyId());
+		}
+		else
+		{
+			return paymentToAllocateInPaymentCurrency;
+		}
 	}
 
 	private void markAsBuilt()
