@@ -159,7 +159,7 @@ public class PaymentsViewAllocateCommand
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 		final CurrencyCode currencyCode = moneyService.getCurrencyCodeByCurrencyId(currencyId);
-		if (haveServiceFeesToPay(row, currencyCode))
+		if (hasServiceFeesToPay(row, currencyCode))
 		{
 			if (paymentDocuments.size() != 1)
 			{
@@ -215,7 +215,7 @@ public class PaymentsViewAllocateCommand
 				.build();
 	}
 
-	private static boolean haveServiceFeesToPay(final @NonNull InvoiceRow row, final CurrencyCode currencyCode)
+	private static boolean hasServiceFeesToPay(final @NonNull InvoiceRow row, final CurrencyCode currencyCode)
 	{
 		return row.getServiceFeeAmt() != null && !Amount.zero(currencyCode).equals(row.getServiceFeeAmt());
 	}

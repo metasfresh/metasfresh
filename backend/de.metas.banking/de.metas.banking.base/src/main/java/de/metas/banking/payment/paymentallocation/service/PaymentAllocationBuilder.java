@@ -62,13 +62,13 @@ import lombok.NonNull;
  */
 public class PaymentAllocationBuilder
 {
-
-	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-
 	public enum PayableRemainingOpenAmtPolicy
 	{
 		DO_NOTHING, WRITE_OFF, DISCOUNT
 	}
+
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	public static final PaymentAllocationBuilder newBuilder()
 	{
@@ -759,7 +759,7 @@ public class PaymentAllocationBuilder
 	private static class InvoiceAndPaymentAmountsToAllocate
 	{
 		@NonNull
-		AllocationAmounts invoiceAmountsToAllocateInInvoiceCurrency; // Example: in invoice currency: 50 EUR
+		AllocationAmounts invoiceAmountsToAllocateInInvoiceCurrency;
 
 		@NonNull
 		Money payAmtInPaymentCurrency;
@@ -785,7 +785,7 @@ public class PaymentAllocationBuilder
 				payment.getCurrencyConversionTypeId(),
 				payment.getClientAndOrgId()
 		);
-		final CurrencyRate currencyRate = Services.get(ICurrencyBL.class).getCurrencyRate(conversionContext, paymentCurrencyId, invoiceCurrencyId);
+		final CurrencyRate currencyRate = currencyBL.getCurrencyRate(conversionContext, paymentCurrencyId, invoiceCurrencyId);
 
 		final Money paymentAmountToAllocate = currencyRate.convertAmount(payment.getAmountToAllocate());
 

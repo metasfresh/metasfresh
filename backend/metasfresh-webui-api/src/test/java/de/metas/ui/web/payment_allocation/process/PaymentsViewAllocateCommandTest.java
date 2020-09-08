@@ -317,7 +317,6 @@ public class PaymentsViewAllocateCommandTest
 			}
 		}
 
-
 		@Test
 		public void paymentDateInValidFrom()
 		{
@@ -338,7 +337,6 @@ public class PaymentsViewAllocateCommandTest
 			// Check output
 			checkPayableDocument(payableDocument, invoiceRow.getInvoiceId(), paymentDate, feeCompanyBPid2);
 		}
-
 
 		@Test
 		public void paymentDateBeforeValidFrom()
@@ -703,8 +701,6 @@ public class PaymentsViewAllocateCommandTest
 									.build())
 							.paymentOverUnderAmt(Money.of("120", euroCurrencyId))
 							.build());
-
-			// check: PaymentAllocationBuilder.createAllocationLineCandidates()
 		}
 	}
 }

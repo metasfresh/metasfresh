@@ -202,8 +202,6 @@ public class PaymentAllocationBuilderTest
 				.dateAcct(date);
 	}
 
-	// TODO tbp: Add my tests here!
-
 	private PaymentAllocationBuilder newPaymentAllocationBuilder(
 			final Collection<PayableDocument> invoices,
 			final Collection<PaymentDocument> payments)
