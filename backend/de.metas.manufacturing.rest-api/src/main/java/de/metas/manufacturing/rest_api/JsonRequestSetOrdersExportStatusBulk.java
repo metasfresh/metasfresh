@@ -13,6 +13,7 @@ import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -47,6 +48,7 @@ public class JsonRequestSetOrdersExportStatusBulk
 	ExportTransactionId transactionKey;
 
 	@NonNull
+	@Singular
 	List<JsonRequestSetOrderExportStatus> items;
 
 	/** If not null, then this error applies to all included items */

@@ -1,0 +1,522 @@
+package de.metas.manufacturing.rest_api;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_S_Resource;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order_BOM;
+import org.eevolution.model.X_PP_Cost_Collector;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import de.metas.JsonObjectMapperHolder;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonQuantity;
+import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
+import de.metas.manufacturing.rest_api.JsonRequestSetOrderExportStatus.Outcome;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
+import de.metas.product.ResourceId;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.Builder;
+
+/*
+ * #%L
+ * de.metas.manufacturing.rest-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@ExtendWith(AdempiereTestWatcher.class)
+public class ManufacturingOrderAPIServiceTest
+{
+	// Services under test:
+	private ManufacturingOrderAuditRepository auditRepo;
+	private ManufacturingOrderAPIService apiService;
+
+	// Supporting services:
+	private IProductBL productBL;
+	private IWarehouseBL warehouseBL;
+	private IPPCostCollectorDAO costCollectorDAO;
+	private IHUPPCostCollectorBL costCollectorBL;
+	private IHandlingUnitsBL handlingUnitsBL;
+
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		productBL = Services.get(IProductBL.class);
+		warehouseBL = Services.get(IWarehouseBL.class);
+		costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
+		costCollectorBL = Services.get(IHUPPCostCollectorBL.class);
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		auditRepo = new ManufacturingOrderAuditRepository();
+		apiService = new ManufacturingOrderAPIService(
+				auditRepo,
+				new ProductRepository(),
+				JsonObjectMapperHolder.newJsonObjectMapper());
+	}
+
+	@Builder(builderMethodName = "manufacturingOrder", builderClassName = "ManufacturingOrderBuilder")
+	private PPOrderId createManufacturingOrder(
+			@Nullable final APIExportStatus exportStatus,
+			@Nullable final Instant canBeExportedFrom,
+			@Nullable ProductId productId,
+			@Nullable String qtyOrdered,
+			@Nullable LocatorId locatorId,
+			@Nullable ResourceId plantId,
+			@Nullable Instant dateOrdered)
+	{
+		final I_PP_Order order = newInstance(I_PP_Order.class);
+		{
+			order.setIsActive(true);
+			order.setProcessed(true);
+			order.setDocStatus(DocStatus.Completed.getCode());
+
+			if (exportStatus != null)
+			{
+				order.setExportStatus(exportStatus.getCode());
+			}
+			if (canBeExportedFrom != null)
+			{
+				order.setCanBeExportedFrom(TimeUtil.asTimestamp(canBeExportedFrom));
+			}
+
+			if (productId != null)
+			{
+				order.setM_Product_ID(productId.getRepoId());
+			}
+
+			if (qtyOrdered != null)
+			{
+				order.setQtyEntered(new BigDecimal(qtyOrdered));
+				order.setQtyOrdered(new BigDecimal(qtyOrdered));
+
+				if (productId != null)
+				{
+					final UomId stockUOMId = productBL.getStockUOMId(productId);
+					order.setC_UOM_ID(stockUOMId.getRepoId());
+				}
+			}
+
+			if (locatorId != null)
+			{
+				order.setM_Warehouse_ID(locatorId.getWarehouseId().getRepoId());
+				order.setM_Locator_ID(locatorId.getRepoId());
+			}
+
+			if (plantId != null)
+			{
+				order.setS_Resource_ID(plantId.getRepoId());
+			}
+
+			if (dateOrdered != null)
+			{
+				order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
+				order.setDateStartSchedule(TimeUtil.asTimestamp(dateOrdered));
+			}
+
+			saveRecord(order);
+
+			order.setDocumentNo(String.valueOf(order.getPP_Order_ID()));
+			saveRecord(order);
+		}
+
+		// Order BOM
+		{
+			final I_PP_Order_BOM orderBOM = newInstance(I_PP_Order_BOM.class);
+			orderBOM.setPP_Order_ID(order.getPP_Order_ID());
+			orderBOM.setM_Product_ID(order.getM_Product_ID());
+			saveRecord(orderBOM);
+		}
+
+		return PPOrderId.ofRepoId(order.getPP_Order_ID());
+	}
+
+	private I_PP_Order getOrderRecord(final PPOrderId orderId)
+	{
+		return load(orderId, I_PP_Order.class);
+	}
+
+	@Nested
+	public class exportOrders
+	{
+		private I_C_UOM uomEach;
+		private ProductId productId;
+
+		private PPOrderId orderId1;
+		private PPOrderId orderId2;
+		private PPOrderId orderId3;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			uomEach = BusinessTestHelper.createUomEach();
+			productId = BusinessTestHelper.createProductId("product", uomEach);
+
+			final ManufacturingOrderBuilder orderBuilder = manufacturingOrder()
+					.exportStatus(APIExportStatus.Pending)
+					.productId(productId)
+					.dateOrdered(SystemTime.asInstant()) // does not matter
+			;
+			orderId1 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-07T00:00:00.00Z")).qtyOrdered("10").build();
+			orderId2 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-08T00:00:00.00Z")).qtyOrdered("11").build();
+			orderId3 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-09T00:00:00.00Z")).qtyOrdered("12").build();
+		}
+
+		@Nested
+		public class exportWithLimit
+		{
+			@Test
+			public void export_1_of_3()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-10T00:00:00.00Z"),
+						QueryLimit.ofInt(1),
+						"en_US");
+
+				assertThat(result.getTransactionKey()).isNotNull();
+				assertThat(result.getItems()).hasSize(1);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.isHasMoreItems()).isTrue();
+			}
+
+			@Test
+			public void export_2_of_3()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-10T00:00:00.00Z"),
+						QueryLimit.ofInt(2),
+						"en_US");
+
+				assertThat(result.getTransactionKey()).isNotNull();
+				assertThat(result.getItems()).hasSize(2);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.isHasMoreItems()).isTrue();
+			}
+
+			@Test
+			public void export_3_of_3()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-10T00:00:00.00Z"),
+						QueryLimit.ofInt(3),
+						"en_US");
+
+				assertThat(result.getTransactionKey()).isNotNull();
+				assertThat(result.getItems()).hasSize(3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.isHasMoreItems()).isTrue();
+
+				final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(result.getTransactionKey());
+				assertAllOrdersWereExported(audit);
+			}
+
+			private void assertAllOrdersWereExported(final ManufacturingOrderExportAudit audit)
+			{
+				assertThat(audit.getItems()).hasSize(3);
+				assertThat(audit.getByOrderId(orderId1).getExportStatus()).isEqualTo(APIExportStatus.Exported);
+				assertThat(audit.getByOrderId(orderId2).getExportStatus()).isEqualTo(APIExportStatus.Exported);
+				assertThat(audit.getByOrderId(orderId3).getExportStatus()).isEqualTo(APIExportStatus.Exported);
+			}
+
+			@Test
+			public void export_4_of_3()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-10T00:00:00.00Z"),
+						QueryLimit.ofInt(4),
+						"en_US");
+
+				assertThat(result.getTransactionKey()).isNotNull();
+				assertThat(result.getItems()).hasSize(3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.isHasMoreItems()).isFalse();
+			}
+
+			@Test
+			public void export_INFINIT_of_3()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-10T00:00:00.00Z"),
+						QueryLimit.NO_LIMIT,
+						"en_US");
+
+				assertThat(result.getTransactionKey()).isNotNull();
+				assertThat(result.getItems()).hasSize(3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.isHasMoreItems()).isFalse();
+			}
+		}
+
+		@Nested
+		public class exportUntilDate
+		{
+			@Test
+			public void exportOn_2020_09_06()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-06T00:00:00.00Z"),
+						QueryLimit.NO_LIMIT,
+						"en_US");
+				assertThat(result.getItems()).hasSize(0);
+			}
+
+			@Test
+			public void exportOn_2020_09_07()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-07T00:00:00.00Z"),
+						QueryLimit.NO_LIMIT,
+						"en_US");
+				assertThat(result.getItems()).hasSize(1);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.isHasMoreItems()).isFalse();
+			}
+
+			@Test
+			public void exportOn_2020_09_08()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-08T00:00:00.00Z"),
+						QueryLimit.NO_LIMIT,
+						"en_US");
+				assertThat(result.getItems()).hasSize(2);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.isHasMoreItems()).isFalse();
+			}
+
+			@Test
+			public void exportOn_2020_09_09()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-09T00:00:00.00Z"),
+						QueryLimit.NO_LIMIT,
+						"en_US");
+				assertThat(result.getItems()).hasSize(3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.isHasMoreItems()).isFalse();
+			}
+
+			@Test
+			public void exportOn_2020_09_10()
+			{
+				final JsonResponseManufacturingOrdersBulk result = apiService.exportOrders(
+						Instant.parse("2020-09-10T00:00:00.00Z"),
+						QueryLimit.NO_LIMIT,
+						"en_US");
+				assertThat(result.getItems()).hasSize(3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.isHasMoreItems()).isFalse();
+			}
+
+		}
+	}
+
+	@Nested
+	public class setExportStatus
+	{
+		@Test
+		public void ok()
+		{
+			final PPOrderId orderId = manufacturingOrder().build();
+
+			apiService.setExportStatus(JsonRequestSetOrdersExportStatusBulk.builder()
+					.transactionKey(ExportTransactionId.ofString("trx1"))
+					.item(JsonRequestSetOrderExportStatus.builder()
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.outcome(Outcome.OK)
+							.build())
+					.build());
+
+			final I_PP_Order orderRecord = getOrderRecord(orderId);
+			assertThat(orderRecord.getExportStatus()).isEqualTo(APIExportStatus.ExportedAndForwarded.getCode());
+
+			final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(ExportTransactionId.ofString("trx1"));
+			assertThat(audit.getItems()).hasSize(1);
+			assertThat(audit.getItems().get(0).getExportStatus()).isEqualTo(APIExportStatus.ExportedAndForwarded);
+			assertThat(audit.getItems().get(0).getIssueId()).isNull();
+		}
+
+		@Test
+		public void error()
+		{
+			final PPOrderId orderId = manufacturingOrder().build();
+
+			apiService.setExportStatus(JsonRequestSetOrdersExportStatusBulk.builder()
+					.transactionKey(ExportTransactionId.ofString("trx1"))
+					.item(JsonRequestSetOrderExportStatus.builder()
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.outcome(Outcome.ERROR)
+							.error(JsonError.ofSingleItem(JsonErrorItem.builder()
+									.message("some error")
+									.build()))
+							.build())
+					.build());
+
+			final I_PP_Order orderRecord = getOrderRecord(orderId);
+			assertThat(orderRecord.getExportStatus()).isEqualTo(APIExportStatus.ExportedAndError.getCode());
+
+			final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(ExportTransactionId.ofString("trx1"));
+			assertThat(audit.getItems()).hasSize(1);
+			assertThat(audit.getItems().get(0).getExportStatus()).isEqualTo(APIExportStatus.ExportedAndError);
+			assertThat(audit.getItems().get(0).getIssueId()).isNotNull();
+		}
+	}
+
+	@Nested
+	public class report
+	{
+		private HUTestHelper huTestHelper;
+		private I_C_UOM uomEach;
+		private LocatorId locatorId;
+		private ResourceId plantId;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			huTestHelper = HUTestHelper.newInstanceOutOfTrx();
+			uomEach = huTestHelper.uomEach;
+
+			plantId = createPlant("plant");
+
+			huTestHelper.createDimensionSpec_PP_Order_ProductAttribute_To_Transfer();
+
+			createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
+			locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+		}
+
+		public ResourceId createPlant(final String name)
+		{
+			final I_S_Resource plant = newInstance(I_S_Resource.class);
+			plant.setIsManufacturingResource(true);
+			plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
+			plant.setValue(name);
+			plant.setName(name);
+			saveRecord(plant);
+			return ResourceId.ofRepoId(plant.getS_Resource_ID());
+		}
+
+		private void createDocType(final String docBaseType)
+		{
+			final I_C_DocType docType = newInstance(I_C_DocType.class);
+			docType.setName(docBaseType);
+			docType.setDocBaseType(docBaseType);
+			saveRecord(docType);
+		}
+
+		@Test
+		public void receive()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("product", uomEach);
+			final PPOrderId orderId = manufacturingOrder()
+					.productId(productId)
+					.qtyOrdered("100")
+					.locatorId(locatorId)
+					.plantId(plantId)
+					.build();
+
+			apiService.report(JsonRequestManufacturingOrdersReport.builder()
+					.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
+							.orderId(orderId)
+							.qtyToReceive(JsonQuantity.builder()
+									.qty(new BigDecimal("10"))
+									.uomCode(X12DE355.EACH.getCode())
+									.build())
+							.build())
+					.build());
+
+			final List<I_PP_Cost_Collector> costCollectors = costCollectorDAO.getByOrderId(orderId);
+			assertThat(costCollectors).hasSize(1);
+
+			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
+			assertThat(costCollector.getCostCollectorType()).isEqualTo(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt);
+			assertThat(costCollector.getMovementQty()).isEqualTo("10");
+			assertThat(costCollector.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+
+			final List<I_M_HU> hus = costCollectorBL.getTopLevelHUs(costCollector);
+			assertThat(hus).hasSize(1);
+
+			final I_M_HU hu = hus.get(0);
+			assertThat(handlingUnitsBL.getHU_UnitType(hu)).isEqualTo(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
+			assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(hu.getM_Locator_ID()).isEqualTo(locatorId.getRepoId());
+
+			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
+			assertThat(huStorage.getQty(productId, uomEach)).isEqualByComparingTo("10");
+		}
+	}
+}

@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
@@ -40,7 +44,9 @@ import lombok.ToString;
 @ToString
 public class ManufacturingOrderExportAudit
 {
+	@Getter
 	private final ExportTransactionId transactionId;
+
 	private final HashMap<PPOrderId, ManufacturingOrderExportAuditItem> items;
 
 	@Builder
@@ -51,6 +57,11 @@ public class ManufacturingOrderExportAudit
 		this.transactionId = transactionId;
 		this.items = items.stream()
 				.collect(GuavaCollectors.toHashMapByKeyFailOnDuplicates(ManufacturingOrderExportAuditItem::getOrderId));
+	}
+
+	public ImmutableList<ManufacturingOrderExportAuditItem> getItems()
+	{
+		return ImmutableList.copyOf(items.values());
 	}
 
 	public ImmutableMap<PPOrderId, APIExportStatus> getExportStatusesByOrderId()
@@ -67,5 +78,11 @@ public class ManufacturingOrderExportAudit
 			@NonNull final Function<PPOrderId, ManufacturingOrderExportAuditItem> mappingFunction)
 	{
 		return items.computeIfAbsent(orderId, mappingFunction);
+	}
+
+	@Nullable
+	public ManufacturingOrderExportAuditItem getByOrderId(@NonNull final PPOrderId orderId)
+	{
+		return items.get(orderId);
 	}
 }

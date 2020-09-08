@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.shipping.JsonProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.time.SystemTime;
@@ -54,6 +55,9 @@ public class JsonRequestIssueToManufacturingOrder
 	@NonNull
 	@Default
 	ZonedDateTime date = SystemTime.asZonedDateTime();
+	
+	@NonNull
+	JsonProduct product;
 
 	@NonNull
 	@Singular

@@ -41,6 +41,9 @@ public class ManufacturingOrderExportAuditItem
 	@NonNull
 	private final OrgId orgId;
 
+	@Nullable
+	private String jsonRequest;
+
 	@NonNull
 	private APIExportStatus exportStatus;
 

@@ -9,6 +9,8 @@ import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -56,16 +58,19 @@ final class ManufacturingOrdersSetExportStatusCommand
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ManufacturingOrderAuditRepository orderAuditRepo;
+	private final ObjectMapper jsonObjectMapper;
 
 	private @NonNull JsonRequestSetOrdersExportStatusBulk request;
 
 	@Builder
 	private ManufacturingOrdersSetExportStatusCommand(
 			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
+			@NonNull final ObjectMapper jsonObjectMapper,
 			//
 			@NonNull final JsonRequestSetOrdersExportStatusBulk request)
 	{
 		this.orderAuditRepo = orderAuditRepo;
+		this.jsonObjectMapper = jsonObjectMapper;
 
 		this.request = request;
 
@@ -113,19 +118,22 @@ final class ManufacturingOrdersSetExportStatusCommand
 							.orderId(orderId)
 							.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 							.exportStatus(APIExportStatus.Pending)
+							.jsonRequest(toJsonString(requestItem))
 							.build());
 
 			final APIExportStatus status;
+			AdIssueId issueIdEffective;
 			switch (requestItem.getOutcome())
 			{
 				case OK:
 					status = APIExportStatus.ExportedAndForwarded;
+					issueIdEffective = null;
 					break;
 				case ERROR:
 					status = APIExportStatus.ExportedAndError;
 
 					final AdIssueId specificAdIssueId = createADIssue(requestItem.getError());
-					auditItem.setIssueId(CoalesceUtil.coalesce(specificAdIssueId, generalAdIssueId));
+					issueIdEffective = CoalesceUtil.coalesce(specificAdIssueId, generalAdIssueId);
 					break;
 				default:
 					throw new AdempiereException("Item has unexpected outcome: " + requestItem.getOutcome())
@@ -133,7 +141,10 @@ final class ManufacturingOrdersSetExportStatusCommand
 							.setParameter("resultItem", requestItem);
 			}
 
+			auditItem.setJsonRequest(toJsonString(requestItem));
 			auditItem.setExportStatus(status);
+			auditItem.setIssueId(issueIdEffective);
+
 			order.setExportStatus(status.getCode());
 		}
 
@@ -157,4 +168,16 @@ final class ManufacturingOrdersSetExportStatusCommand
 				.build());
 	}
 
+	private String toJsonString(@NonNull final JsonRequestSetOrderExportStatus requestItem)
+	{
+		try
+		{
+			return jsonObjectMapper.writeValueAsString(requestItem);
+		}
+		catch (final JsonProcessingException ex)
+		{
+			logger.warn("Failed converting {} to JSON. Returning toString()", requestItem, ex);
+			return requestItem.toString();
+		}
+	}
 }

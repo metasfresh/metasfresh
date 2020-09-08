@@ -2,18 +2,24 @@ package de.metas.manufacturing.rest_api;
 
 import java.util.List;
 
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.MDC;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,11 +54,18 @@ class ManufacturingOrderReportProcessCommand
 
 	private final JsonRequestManufacturingOrdersReport request;
 
+	private ImmutableMap<PPOrderId, I_PP_Order> _orders; // lazy
+
 	@Builder
 	private ManufacturingOrderReportProcessCommand(
 			@NonNull final JsonRequestManufacturingOrdersReport request)
 	{
 		this.request = request;
+	}
+
+	private static PPOrderId extractPPOrderId(final I_PP_Order record)
+	{
+		return PPOrderId.ofRepoId(record.getPP_Order_ID());
 	}
 
 	public void execute()
@@ -88,9 +101,11 @@ class ManufacturingOrderReportProcessCommand
 	{
 		final PPOrderId orderId = receipt.getOrderId();
 		final Quantity qtyToReceive = toQuantity(receipt.getQtyToReceive());
+		final LocatorId locatorId = getReceiveToLocatorByOrderId(orderId);
 
 		huPPOrderBL.receivingMainProduct(orderId)
 				.movementDate(receipt.getDate())
+				.locatorId(locatorId)
 				.receiveVHU(qtyToReceive);
 	}
 
@@ -100,5 +115,26 @@ class ManufacturingOrderReportProcessCommand
 		final I_C_UOM uom = uomDAO.getByX12DE355(x12de355);
 
 		return Quantity.of(json.getQty(), uom);
+	}
+
+	private LocatorId getReceiveToLocatorByOrderId(final PPOrderId orderId)
+	{
+		final I_PP_Order order = getOrderById(orderId);
+		return LocatorId.ofRepoId(order.getM_Warehouse_ID(), order.getM_Locator_ID());
+	}
+
+	private I_PP_Order getOrderById(final PPOrderId orderId)
+	{
+		if (_orders == null)
+		{
+			_orders = Maps.uniqueIndex(
+					huPPOrderBL.getByIds(request.getOrderIds()),
+					order -> extractPPOrderId(order));
+		}
+
+		final I_PP_Order order = _orders.get(orderId);
+		Check.assumeNotNull(order, "{} exists in {}", orderId, _orders);
+
+		return order;
 	}
 }

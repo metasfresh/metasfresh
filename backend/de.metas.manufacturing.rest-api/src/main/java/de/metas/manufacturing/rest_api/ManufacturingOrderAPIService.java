@@ -5,6 +5,8 @@ import java.time.Instant;
 import org.adempiere.ad.dao.QueryLimit;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.metas.product.ProductRepository;
 import lombok.NonNull;
 
@@ -35,13 +37,16 @@ class ManufacturingOrderAPIService
 {
 	private final ManufacturingOrderAuditRepository orderAuditRepo;
 	private final ProductRepository productRepo;
+	private final ObjectMapper jsonObjectMapper;
 
-	private ManufacturingOrderAPIService(
+	public ManufacturingOrderAPIService(
 			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
-			@NonNull final ProductRepository productRepo)
+			@NonNull final ProductRepository productRepo,
+			@NonNull final ObjectMapper jsonObjectMapper)
 	{
 		this.orderAuditRepo = orderAuditRepo;
 		this.productRepo = productRepo;
+		this.jsonObjectMapper = jsonObjectMapper;
 	}
 
 	public JsonResponseManufacturingOrdersBulk exportOrders(
@@ -66,6 +71,7 @@ class ManufacturingOrderAPIService
 	{
 		final ManufacturingOrdersSetExportStatusCommand command = ManufacturingOrdersSetExportStatusCommand.builder()
 				.orderAuditRepo(orderAuditRepo)
+				.jsonObjectMapper(jsonObjectMapper)
 				//
 				.request(request)
 				//

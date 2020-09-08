@@ -1,5 +1,6 @@
 package de.metas.manufacturing.rest_api;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -49,7 +50,10 @@ public class JsonResponseManufacturingOrder
 	@NonNull
 	String documentNo;
 	
-	// TODO: some dates
+	@NonNull
+	ZonedDateTime dateOrdered;
+	@NonNull
+	ZonedDateTime dateStartSchedule;
 
 	@NonNull
 	JsonProduct finishGoodProduct;

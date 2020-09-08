@@ -1,12 +1,14 @@
 package de.metas.manufacturing.rest_api;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -34,6 +36,7 @@ import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditIte
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
@@ -70,6 +73,7 @@ final class ManufacturingOrdersExportCommand
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ManufacturingOrdersExportCommand.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
@@ -143,6 +147,7 @@ final class ManufacturingOrdersExportCommand
 			return JsonResponseManufacturingOrdersBulk.builder()
 					.transactionKey(transactionKey)
 					.items(jsonOrders)
+					.hasMoreItems(query.getLimit().isLimitHitOrExceeded(jsonOrders))
 					.build();
 		}
 	}
@@ -152,11 +157,15 @@ final class ManufacturingOrdersExportCommand
 		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
 		final Quantity qtyToProduce = ppOrderBL.getQtyOrdered(order);
 
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+
 		return JsonResponseManufacturingOrder.builder()
 				.orderId(orderId)
 				.documentNo(order.getDocumentNo())
 				.finishGoodProduct(toJsonProduct(ProductId.ofRepoId(order.getM_Product_ID())))
 				.qtyToProduce(toJsonQuantity(qtyToProduce))
+				.dateOrdered(TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone))
+				.dateStartSchedule(TimeUtil.asZonedDateTime(order.getDateStartSchedule(), timeZone))
 				.components(getBOMLinesByOrderId(orderId)
 						.stream()
 						.map(this::toJson)
