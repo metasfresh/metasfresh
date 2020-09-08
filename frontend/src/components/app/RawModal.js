@@ -19,6 +19,7 @@ import { deleteTable } from '../../actions/TableActions';
 
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
+import { renderHeaderProperties } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 
@@ -345,9 +346,13 @@ class RawModal extends Component {
         <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
-              className={classnames('panel-modal-header', {
-                'header-shadow': scrolled,
-              })}
+              className={classnames(
+                'panel-groups-header',
+                'panel-modal-header',
+                {
+                  'header-shadow': scrolled,
+                }
+              )}
             >
               <span className="panel-modal-header-title panel-modal-header-title-with-header-properties">
                 {modalTitle ? modalTitle : 'Modal'}
@@ -357,12 +362,7 @@ class RawModal extends Component {
               </span>
               {!!rawModal.headerProperties && (
                 <div className="optional">
-                  {rawModal.headerProperties.entries.map((entry, idx) => (
-                    <span key={idx} className="optional-name">
-                      <p className="caption">{entry.caption}:</p>{' '}
-                      <p className="value">{entry.value}</p>
-                    </span>
-                  ))}
+                  {renderHeaderProperties(rawModal.headerProperties.groups)}
                 </div>
               )}
               <div className="items-row-2">{this.renderButtons()}</div>

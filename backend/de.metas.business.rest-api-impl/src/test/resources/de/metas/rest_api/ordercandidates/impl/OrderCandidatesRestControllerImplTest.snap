@@ -1,6 +1,6 @@
 de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.billToDefault_exitingBPartner=[
   {
-    "id": 100040,
+    "id": 100039,
     "externalLineId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2-1",
     "externalHeaderId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2",
     "poReference": "1000172362-1-2",
@@ -17,7 +17,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "externalId": "1-2",
         "code": "bpValue",
         "active": true,
-        "name": "bpValue-name",
+        "name": "Bill  First",
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
@@ -74,7 +74,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "externalId": "1-2",
         "code": "bpValue",
         "active": true,
-        "name": "bpValue-name",
+        "name": "Bill  First",
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
@@ -131,7 +131,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "externalId": "1-2",
         "code": "bpValue",
         "active": true,
-        "name": "bpValue-name",
+        "name": "Bill  First",
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
@@ -143,11 +143,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
       "location": {
         "metasfreshId": 100030,
         "externalId": "shipToId-1-2",
-        "name": "dropShipPartner.lcocation.address1 28",
         "active": true,
-        "address1": "dropShipPartner.lcocation.address1 28",
-        "postal": "bpartner.location.postal",
-        "city": "bpartner.location.city",
         "countryCode": "DE",
         "shipTo": true,
         "shipToDefault": false,
@@ -159,7 +155,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         }
       },
       "contact": {
-        "metasfreshId": 100038,
+        "metasfreshId": 100037,
         "externalId": "shipToId-1-2",
         "metasfreshBPartnerId": 100026,
         "active": true,
@@ -351,6 +347,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "metasfreshId": 100031,
         "externalId": "shipToId-1-2",
         "name": "dropShipPartner.lcocation.address1 28",
+        "bpartnerName": "First  Last",
         "active": true,
         "address1": "dropShipPartner.lcocation.address1 28",
         "postal": "bpartner.location.postal",

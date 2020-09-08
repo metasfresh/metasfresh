@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItems;

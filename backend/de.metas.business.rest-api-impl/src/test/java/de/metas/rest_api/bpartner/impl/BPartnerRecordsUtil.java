@@ -83,6 +83,7 @@ public class BPartnerRecordsUtil
 			bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 			bpartnerRecord.setIsVendor(true);
 			bpartnerRecord.setIsCustomer(true);
+			bpartnerRecord.setVATaxID("VATaxID" + idOffSetStr);
 			setCreatedByAndWhen(bpartnerRecord, adUserId); // have to do it manually because we are setting the record ID too
 			saveRecord(bpartnerRecord);
 

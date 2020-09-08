@@ -39,7 +39,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;

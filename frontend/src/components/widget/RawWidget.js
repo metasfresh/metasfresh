@@ -146,9 +146,11 @@ export class RawWidget extends Component {
    * @param {*} e
    */
   handleFocus = () => {
-    const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
+    const { handleFocus, listenOnKeysFalse, dispatch, widgetType } = this.props;
 
-    dispatch(disableShortcut());
+    widgetType === 'LongText' && dispatch(disableShortcut()); // fix issue in Cypress with cut underscores - false positive failing tests
+    // - commented because if you focus on an item and you disable the shourtcuts you won't be able to use any shortcut
+    //   assigned to that specific item/widget - see issue https://github.com/metasfresh/metasfresh/issues/7119
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
@@ -444,6 +446,8 @@ export class RawWidget extends Component {
       timeZone,
       fieldName,
       maxLength,
+      updateHeight,
+      rowIndex,
     } = this.props;
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited, charsTyped } = this.state;
@@ -1057,6 +1061,8 @@ export class RawWidget extends Component {
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
+            rowIndex={rowIndex}
+            updateHeight={updateHeight}
           />
         );
       case 'Address':

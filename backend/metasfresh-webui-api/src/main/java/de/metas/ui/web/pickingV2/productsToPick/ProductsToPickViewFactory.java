@@ -43,6 +43,7 @@ import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewHeaderProperties;
+import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
 import de.metas.ui.web.view.ViewHeaderProperty;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -226,17 +227,19 @@ public class ProductsToPickViewFactory implements IViewFactory
 		final IMsgBL msgs = Services.get(IMsgBL.class);
 
 		return ViewHeaderProperties.builder()
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgs.translatable("OrderDocumentNo"))
-						.value(packageableRow.getOrderDocumentNo())
-						.build())
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgs.translatable("C_BPartner_ID"))
-						.value(packageableRow.getCustomer().getDisplayNameTrl())
-						.build())
-				.entry(ViewHeaderProperty.builder()
-						.caption(msgs.translatable("PreparationDate"))
-						.value(packageableRow.getPreparationDate())
+				.group(ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgs.translatable("OrderDocumentNo"))
+								.value(packageableRow.getOrderDocumentNo())
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgs.translatable("C_BPartner_ID"))
+								.value(packageableRow.getCustomer().getDisplayNameTrl())
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgs.translatable("PreparationDate"))
+								.value(packageableRow.getPreparationDate())
+								.build())
 						.build())
 				.build();
 	}

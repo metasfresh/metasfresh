@@ -2,6 +2,7 @@ import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
 import { replace } from 'react-router-redux';
+import queryString from 'query-string';
 
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
@@ -282,22 +283,19 @@ export function clearNotifications() {
   };
 }
 
-export function updateUri(pathname, query, prop, value) {
+/**
+ * @method updateUri
+ * @summary Prepends viewId/page/sorting to the url
+ */
+export function updateUri(pathname, query, updatedQuery) {
   return (dispatch) => {
-    let url = pathname + '?';
+    const queryObject = {
+      ...query,
+      ...updatedQuery,
+    };
 
-    // add new prop or overwrite existing
-    query[prop] = value;
-
-    const queryKeys = Object.keys(query);
-
-    for (let i = 0; i < queryKeys.length; i++) {
-      url +=
-        queryKeys[i] +
-        '=' +
-        query[queryKeys[i]] +
-        (queryKeys.length - 1 !== i ? '&' : '');
-    }
+    const queryUrl = queryString.stringify(queryObject);
+    const url = `${pathname}?${queryUrl}`;
 
     dispatch(replace(url));
   };

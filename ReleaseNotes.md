@@ -1,7 +1,6 @@
-
 # About this document
 
-This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first)
+This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first).
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
@@ -9,6 +8,67 @@ Additional notes:
  * You can also follow us on Twitter: [@metasfresh](https://twitter.com/metasfresh) (English), [@metasfreshDE](https://twitter.com/metasfreshde) (German D/A/CH)
 
 Here come the actual release notes:
+
+# metasfresh 5.149
+## Features
+* metasfresh
+  * [#3856](https://github.com/metasfresh/metasfresh/issues/3856) WebUI Forecast Window hide Calendar, Period, Year
+  * [#7124](https://github.com/metasfresh/metasfresh/pull/7124) Product Price Table editing, shortcut, marked text
+  * [#7142](https://github.com/metasfresh/metasfresh/issues/7142) OLCand/BPartner REST Endpoints: import C_BPartner.VATaxId
+  * [#7148](https://github.com/metasfresh/metasfresh/issues/7148) Produktionsbericht: Produkt Name
+  * [#7152](https://github.com/metasfresh/metasfresh/issues/7152) Flickering window after starting process on other machine
+  * [#7155](https://github.com/metasfresh/metasfresh/issues/7155) Window layout improvements: current costs
+
+## Fixes
+* metasfresh
+  * [#7083](https://github.com/metasfresh/metasfresh/issues/7083) When filtering and hiding/showing modals the redux state is not cleaned
+  * [#7105](https://github.com/metasfresh/metasfresh/issues/7105) Window goes blank when reloaded after clicking the navigation link
+  * [#9847](https://github.com/metasfresh/metasfresh/issues/9847) CU Label not working Error: Cannot convert HUReport_541195
+
+# metasfresh 5.148
+## Features
+* metasfresh
+  * [#6867](https://github.com/metasfresh/metasfresh/issues/6867) Import Cost Prices with 0 qty
+  * [#7036](https://github.com/metasfresh/metasfresh/issues/7036) Add more unit tests
+  * [#7085](https://github.com/metasfresh/metasfresh/issues/7085) Extend DESADV for DELV vs ULCO
+  * [#7106](https://github.com/metasfresh/metasfresh/issues/7106) Allow "Verdichtung" (consolidation) on a whole Picking Slot (not just TU)
+  * [#7117](https://github.com/metasfresh/metasfresh/issues/7117) Budget Issue tracking enhancements
+
+## Fixes
+* metasfresh
+  * [#7128](https://github.com/metasfresh/metasfresh/issues/7128) Modal overlay for creating bpartner on-the-fly does not close
+
+# metasfresh 5.147
+## Features
+* metasfresh
+  * [#6714](https://github.com/metasfresh/metasfresh/issues/6714) ESR_Import: introduce IsReconciled flag same as we have in PaySelection
+  * [#7036](https://github.com/metasfresh/metasfresh/issues/7036) Add more unit tests
+  * [#7058](https://github.com/metasfresh/metasfresh/issues/7058) Automatic DD Order Movement
+  * [#7064](https://github.com/metasfresh/metasfresh/issues/7064) Create a new structure for Allergen traces in the product as a new tab
+  * [#7089](https://github.com/metasfresh/metasfresh/issues/7089) Show in Main and Grid view that a Notice/Comment is available
+  * [#7093](https://github.com/metasfresh/metasfresh/issues/7093) New Column in contract that always shows the sales order that initiated the contract
+  * [#7101](https://github.com/metasfresh/metasfresh/issues/7101) Picking Terminal improvements
+
+## Fixes
+* metasfresh
+  * [#7097](https://github.com/metasfresh/metasfresh/issues/7097) Bank Statement not imported until the end
+
+# metasfresh 5.146
+## Features
+* metasfresh
+  * [#5493](https://github.com/metasfresh/metasfresh/issues/5493) Allow copy for M_Pricelist_Version
+  * [#7015](https://github.com/metasfresh/metasfresh/issues/7015) Exclude OnCredit from DirectDebit MatchRequirement
+  * [#7075](https://github.com/metasfresh/metasfresh/issues/7075) Force pick to existing HU
+
+## Fixes
+* metasfresh
+  * [#6420](https://github.com/metasfresh/metasfresh/issues/6420) Customer return not working bc HUs cannot be selected
+  * [#6526](https://github.com/metasfresh/metasfresh/issues/6526) Export SEPA Pain_001_001_03_CH_02 wrong xsi:schemaLocation 🙏 to [Peter Wyss (@KommunikativCh)](https://github.com/KommunikativCh)
+  * [#6967](https://github.com/metasfresh/metasfresh/issues/6967) Refreshing page looses pagination 🙏 to [Merry Space (@PureLandFlying)](https://github.com/PureLandFlying)
+  * [#7029](https://github.com/metasfresh/metasfresh/issues/7029) QR Code Implementation de_metas_endcustomer_fresh_reports.docs_sales_invoice_qr_code 🙏 to [Peter Wyss (@KommunikativCh)](https://github.com/KommunikativCh)
+  * [#7044](https://github.com/metasfresh/metasfresh/issues/7044) Fix Corner Case for Reference from Product to BOM Component
+  * [#7046](https://github.com/metasfresh/metasfresh/pull/7046) Fix regarding sync-advise "IfExists.DONT_UPDATE"
+  * [#7069](https://github.com/metasfresh/metasfresh/issues/7069) Product allergen tab is not linked properly to Product
 
 # metasfresh 5.145
 ## Features
@@ -23,6 +83,7 @@ Here come the actual release notes:
   * [#6446](https://github.com/metasfresh/metasfresh/issues/6446) Show Own Palette in HU Editor
   * [#6451](https://github.com/metasfresh/metasfresh/issues/6451) Tax Report adjustments
   * [#6466](https://github.com/metasfresh/metasfresh/issues/6466) Material Receipt Candidates: Adjustments
+  * [#6473](https://github.com/metasfresh/metasfresh/issues/6473) Tour version adjustments
   * [#6475](https://github.com/metasfresh/metasfresh/issues/6475) Pricelist export (Jasper & Excel) without HU_PI that are not on PL
   * [#6484](https://github.com/metasfresh/metasfresh/pull/6484) CompositeInterfaceWrapperHelper: getTrxName can throw exception
   * [#6485](https://github.com/metasfresh/metasfresh/issues/6485) PLV Name adjustment
@@ -53,6 +114,7 @@ Here come the actual release notes:
   * [#6743](https://github.com/metasfresh/metasfresh/issues/6743) Round up when converting UOMs
   * [#6747](https://github.com/metasfresh/metasfresh/issues/6747) 'Payment Allocation' action shall open also when Payments not available
   * [#6769](https://github.com/metasfresh/metasfresh/issues/6769) WebUI: payment allocation - book Bank Fee Amount
+  * [#6771](https://github.com/metasfresh/metasfresh/issues/6771) Allow weighing in Picking Terminal v1
   * [#6801](https://github.com/metasfresh/metasfresh/issues/6801) EDI - Allow getting excel-files from remote SFTP
   * [#6803](https://github.com/metasfresh/metasfresh/issues/6803) Generate deliverydays for selected tourversion
   * [#6812](https://github.com/metasfresh/metasfresh/issues/6812) Commission calculation without invoicing
@@ -72,6 +134,7 @@ Here come the actual release notes:
   * [#6887](https://github.com/metasfresh/metasfresh/issues/6887) Allow create Contracts in draft (docStatus: drafted)
   * [#6894](https://github.com/metasfresh/metasfresh/issues/6894) Add a default value of 10 for PP_ProductPlanning seqNo
   * [#6898](https://github.com/metasfresh/metasfresh/issues/6898) Avoid using C_UOM_Conversion.DivideRate
+  * [#6900](https://github.com/metasfresh/metasfresh/issues/6900) Allow force picking without existing HUs
   * [#6904](https://github.com/metasfresh/metasfresh/issues/6904) Servicefees per Provider Customer
   * [#6919](https://github.com/metasfresh/metasfresh/issues/6919) Excel-Sales-Order with CU-UOM and CU-per-TU multiplier
   * [#6923](https://github.com/metasfresh/metasfresh/issues/6923) Picking Terminal (V2) Changes
@@ -84,6 +147,10 @@ Here come the actual release notes:
   * [#6983](https://github.com/metasfresh/metasfresh/issues/6983) R_Request.SalesRep_ID repair default value
   * [#6985](https://github.com/metasfresh/metasfresh/issues/6985) Excel-Sales-Order Qty in Stock-UOM instead of Price-UOM
   * [#6987](https://github.com/metasfresh/metasfresh/issues/6987) Automatically mark all received HUs carrying BOM components as 'Source HUs'
+  * [#7003](https://github.com/metasfresh/metasfresh/issues/7003) Option: C_Invoice_OnlyAllow_BillToDefault_Contact
+  * [#7009](https://github.com/metasfresh/metasfresh/issues/7009) Copy w/ details for Manufacuring Order
+  * [#7011](https://github.com/metasfresh/metasfresh/issues/7011) Make Replication Transactions process parameter a search field
+  * [#7021](https://github.com/metasfresh/metasfresh/issues/7021) Picking Terminal V2: Pick&Pack: Skip rows with qty 0
 
 * metasfresh-webui-api-legacy
   * [#1253](https://github.com/metasfresh/metasfresh-webui-api-legacy/issues/1253) Clone Details
@@ -135,9 +202,11 @@ Here come the actual release notes:
   * [#6868](https://github.com/metasfresh/metasfresh/issues/6868) Packing Instruction selectable that does not fit to Businesspartner
   * [#6883](https://github.com/metasfresh/metasfresh/issues/6883) Make 'Stammdaten Mutationsprotokol' report display table name on multiple lines if it doesn't fit on one
   * [#6888](https://github.com/metasfresh/metasfresh/issues/6888) BOM verified already set after copy of Product
+  * [#6892](https://github.com/metasfresh/metasfresh/issues/6892) Jasper: Liefervertrag adjustments
   * [#6921](https://github.com/metasfresh/metasfresh/issues/6921) Set Parent and Seqno in C_ElementValue when importing accounts
   * [#6938](https://github.com/metasfresh/metasfresh/issues/6938) Jasper Pricelist & Pricelist comparison correct digits in prices
   * [#6965](https://github.com/metasfresh/metasfresh/issues/6965) WEBUI_Fact_Acct_Repost_ViewRows - DocumentToRepost seems to be ignored
+  * [#6975](https://github.com/metasfresh/metasfresh/issues/6975) Default LU and Qty not proposed
   * [#6979](https://github.com/metasfresh/metasfresh/issues/6979) Error in workpackage when trying to create invoices
 
 * metasfresh-webui-api-legacy

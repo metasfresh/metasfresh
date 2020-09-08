@@ -19,11 +19,14 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -73,7 +76,9 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		final CostAmount amt = request.getAmt();
 		final Quantity qty = request.getQty();
@@ -104,7 +109,9 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt(), utils.getQuantityUOMConverter());
 
@@ -249,6 +256,13 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 }

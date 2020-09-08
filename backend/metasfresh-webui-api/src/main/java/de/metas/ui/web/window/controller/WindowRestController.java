@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
@@ -31,6 +53,7 @@ import com.google.common.collect.Sets;
 
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
+import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
@@ -81,28 +104,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Api
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
@@ -130,6 +131,9 @@ public class WindowRestController
 
 	@Autowired
 	private DocumentWebsocketPublisher websocketPublisher;
+
+	@Autowired
+	private CommentsService commentsService;
 
 	private JSONOptionsBuilder newJSONOptions()
 	{
@@ -316,17 +320,13 @@ public class WindowRestController
 				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds()).toList();
 			}
 
-			return JSONDocument.ofDocumentsList(documents, jsonOpts);
+			final Boolean hasComments = documentPath.isRootDocument() ? commentsService.hasComments(documentPath) : null;
+			return JSONDocument.ofDocumentsList(documents, jsonOpts, hasComments);
 		});
 	}
 
 	/**
-	 *
-	 * @param windowIdStr
 	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
-	 * @param advanced
-	 * @param events
-	 * @return
 	 */
 	@PatchMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> patchRootDocument(
@@ -525,7 +525,9 @@ public class WindowRestController
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
 
-	/** Typeahead: unified implementation */
+	/**
+	 * Typeahead: unified implementation
+	 */
 	private JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
 	{
 		userSession.assertLoggedIn();
@@ -719,7 +721,7 @@ public class WindowRestController
 		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final DetailId selectedTabId = DetailId.fromJson(tabIdStr);
 		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
-		boolean returnDisabled = false;
+		final boolean returnDisabled = false;
 
 		return getDocumentActions(
 				rootDocumentPath,
@@ -802,7 +804,7 @@ public class WindowRestController
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/1090
+	 * task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
 	@GetMapping("/{windowId}/{documentId}/processNewRecord")
 	public int processRecord(
@@ -823,10 +825,9 @@ public class WindowRestController
 				throw new AdempiereException("Not saved");
 			}
 
-			final int newRecordId = newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
+			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
 					.processNewRecordDocument(document);
-			return newRecordId;
 		}));
 	}
 

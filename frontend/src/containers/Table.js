@@ -12,7 +12,7 @@ import {
   setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
-import { openModal } from '../actions/WindowActions';
+import { openModal, updatePropertyValue } from '../actions/WindowActions';
 
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
@@ -20,27 +20,6 @@ import { mapIncluded } from '../utils/documentListHelper';
 import Table from '../components/table/TableWrapper';
 
 class TableContainer extends PureComponent {
-  componentWillUnmount() {
-    const {
-      showIncludedView,
-      viewId,
-      windowId,
-      isIncluded,
-      isModal,
-    } = this.props;
-
-    if (!isIncluded) {
-      const identifier = isModal ? viewId : windowId;
-
-      showIncludedView({
-        id: identifier,
-        showIncludedView: false,
-        windowId,
-        viewId,
-      });
-    }
-  }
-
   /**
    * @method getAllLeaves
    * @summary select parent and all it's leaves
@@ -296,6 +275,7 @@ export default connect(
     deselectTableItems,
     openModal,
     updateTableSelection,
+    updatePropertyValue,
     showIncludedView,
     setActiveSort,
   },
