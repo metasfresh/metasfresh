@@ -184,7 +184,7 @@ public class ShipmentScheduleRepository
 	private void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule record = load(shipmentSchedule.getId(), I_M_ShipmentSchedule.class);
-		record.setExportStatus(shipmentSchedule.getExportStatus().getCode());
+		record.setExportStatus(shipmentSchedule.getExportStatus().getCode()); // right now this is the only mutable property
 		saveRecord(record);
 	}
 

@@ -35,6 +35,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
@@ -99,7 +100,7 @@ public interface IPaymentBL extends ISingletonService
 
 	void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(List<I_C_Payment> payments);
 
-	boolean canAllocateOrderPaymentToInvoice(I_C_Order order);
+	boolean canAllocateOrderPaymentToInvoice(@Nullable I_C_Order order);
 
 	/**
 	 * Test Allocation (and set allocated flag)
