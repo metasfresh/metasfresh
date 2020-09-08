@@ -40,7 +40,7 @@ public final class ExportTransactionId
 	}
 
 	@JsonCreator
-	public static ExportTransactionId ofString(final String value)
+	public static ExportTransactionId ofString(@NonNull final String value)
 	{
 		return new ExportTransactionId(value);
 	}

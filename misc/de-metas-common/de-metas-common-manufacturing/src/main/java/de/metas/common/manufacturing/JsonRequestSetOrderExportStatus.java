@@ -1,16 +1,14 @@
-package de.metas.manufacturing.rest_api;
-
-import java.util.List;
+package de.metas.common.manufacturing;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -37,26 +35,24 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@JsonDeserialize(builder = JsonResponseManufacturingOrdersBulk.JsonResponseManufacturingOrdersBulkBuilder.class)
-public class JsonResponseManufacturingOrdersBulk
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonDeserialize(builder = JsonRequestSetOrderExportStatus.JsonRequestSetOrderExportStatusBuilder.class)
+public class JsonRequestSetOrderExportStatus
 {
-	@NonNull
-	ExportTransactionId transactionKey;
+	JsonMetasfreshId orderId;
 
-	@NonNull
-	@Singular
-	List<JsonResponseManufacturingOrder> items;
-
-	boolean hasMoreItems;
-
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonResponseManufacturingOrdersBulkBuilder
+	public enum Outcome
 	{
+		OK, ERROR;
 	}
 
-	public static JsonResponseManufacturingOrdersBulk empty(@NonNull final ExportTransactionId transactionKey)
+	Outcome outcome;
+
+	@JsonInclude(Include.NON_NULL)
+	JsonError error;
+
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonRequestSetOrderExportStatusBuilder
 	{
-		return builder().transactionKey(transactionKey).hasMoreItems(false).build();
 	}
 }

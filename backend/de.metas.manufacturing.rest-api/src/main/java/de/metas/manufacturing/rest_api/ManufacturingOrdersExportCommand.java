@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
@@ -22,6 +21,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.common.manufacturing.JsonResponseManufacturingOrder;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrderBOMLine;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.error.AdIssueId;
@@ -121,7 +124,7 @@ final class ManufacturingOrdersExportCommand
 			final List<I_PP_Order> orders = getOrders();
 			if (orders.isEmpty())
 			{
-				return JsonResponseManufacturingOrdersBulk.empty(transactionKey);
+				return JsonResponseManufacturingOrdersBulk.empty(transactionKey.toJson());
 			}
 
 			final ManufacturingOrderExportAuditBuilder auditCollector = ManufacturingOrderExportAudit.builder().transactionId(transactionKey);
@@ -146,7 +149,7 @@ final class ManufacturingOrdersExportCommand
 			ppOrderDAO.exportStatusMassUpdate(audit.getExportStatusesByOrderId());
 
 			return JsonResponseManufacturingOrdersBulk.builder()
-					.transactionKey(transactionKey)
+					.transactionKey(transactionKey.toJson())
 					.items(jsonOrders)
 					.hasMoreItems(query.getLimit().isLimitHitOrExceeded(jsonOrders))
 					.build();
@@ -161,7 +164,7 @@ final class ManufacturingOrdersExportCommand
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		return JsonResponseManufacturingOrder.builder()
-				.orderId(orderId)
+				.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 				.documentNo(order.getDocumentNo())
 				.description(StringUtils.trimBlankToNull(order.getDescription()))
 				.finishGoodProduct(toJsonProduct(ProductId.ofRepoId(order.getM_Product_ID())))
@@ -179,7 +182,7 @@ final class ManufacturingOrdersExportCommand
 	{
 		final Quantity qtyRequiredToIssue = ppOrderBOMBL.getQtyRequiredToIssue(bomLine);
 		return JsonResponseManufacturingOrderBOMLine.builder()
-				.componentType(BOMComponentType.ofCode(bomLine.getComponentType()))
+				.componentType(bomLine.getComponentType())
 				.product(toJsonProduct(ProductId.ofRepoId(bomLine.getM_Product_ID())))
 				.qty(toJsonQuantity(qtyRequiredToIssue))
 				.build();

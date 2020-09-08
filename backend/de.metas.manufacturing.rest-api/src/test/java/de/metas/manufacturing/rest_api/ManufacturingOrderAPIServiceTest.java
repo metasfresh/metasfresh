@@ -37,6 +37,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.JsonObjectMapperHolder;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.manufacturing.JsonRequestHULookup;
+import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
+import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
+import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
+import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus;
+import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus.Outcome;
+import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -61,7 +69,6 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
-import de.metas.manufacturing.rest_api.JsonRequestSetOrderExportStatus.Outcome;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -262,6 +269,11 @@ public class ManufacturingOrderAPIServiceTest
 			orderId3 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-09T00:00:00.00Z")).qtyOrdered("12").build();
 		}
 
+		private JsonMetasfreshId toJsonMetasfreshId(final PPOrderId orderId)
+		{
+			return JsonMetasfreshId.of(orderId.getRepoId());
+		}
+
 		@Nested
 		public class exportWithLimit
 		{
@@ -275,7 +287,7 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(1);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.isHasMoreItems()).isTrue();
 			}
 
@@ -289,8 +301,8 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(2);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
-				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.isHasMoreItems()).isTrue();
 			}
 
@@ -302,14 +314,14 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.ofInt(3),
 						"en_US");
 
-				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
-				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
-				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isTrue();
 
-				final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(result.getTransactionKey());
+				final ExportTransactionId transactionKey = ExportTransactionId.ofString(result.getTransactionKey());
+				final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(transactionKey);
 				assertAllOrdersWereExported(audit);
 			}
 
@@ -331,9 +343,9 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
-				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
-				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
 
@@ -347,9 +359,9 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
-				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
-				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
 		}
@@ -375,7 +387,7 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(1);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
 
@@ -387,8 +399,8 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(2);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
-				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
 
@@ -400,9 +412,9 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
-				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
-				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
 
@@ -414,9 +426,9 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(orderId1);
-				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(orderId2);
-				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(orderId3);
+				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
+				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
 
@@ -432,7 +444,7 @@ public class ManufacturingOrderAPIServiceTest
 			final PPOrderId orderId = manufacturingOrder().build();
 
 			apiService.setExportStatus(JsonRequestSetOrdersExportStatusBulk.builder()
-					.transactionKey(ExportTransactionId.ofString("trx1"))
+					.transactionKey("trx1")
 					.item(JsonRequestSetOrderExportStatus.builder()
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.outcome(Outcome.OK)
@@ -454,7 +466,7 @@ public class ManufacturingOrderAPIServiceTest
 			final PPOrderId orderId = manufacturingOrder().build();
 
 			apiService.setExportStatus(JsonRequestSetOrdersExportStatusBulk.builder()
-					.transactionKey(ExportTransactionId.ofString("trx1"))
+					.transactionKey("trx1")
 					.item(JsonRequestSetOrderExportStatus.builder()
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.outcome(Outcome.ERROR)
@@ -565,7 +577,8 @@ public class ManufacturingOrderAPIServiceTest
 
 			apiService.report(JsonRequestManufacturingOrdersReport.builder()
 					.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
-							.orderId(orderId)
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
 							.qtyToReceive(JsonQuantity.builder()
 									.qty(new BigDecimal("10"))
 									.uomCode(X12DE355.EACH.getCode())
@@ -618,7 +631,8 @@ public class ManufacturingOrderAPIServiceTest
 
 			apiService.report(JsonRequestManufacturingOrdersReport.builder()
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
-							.orderId(orderId)
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
 							.qtyToIssue(JsonQuantity.builder()
 									.qty(new BigDecimal("2"))
 									.uomCode(X12DE355.EACH.getCode())

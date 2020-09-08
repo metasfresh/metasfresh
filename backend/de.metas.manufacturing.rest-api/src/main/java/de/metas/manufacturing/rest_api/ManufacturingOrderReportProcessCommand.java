@@ -3,6 +3,7 @@ package de.metas.manufacturing.rest_api;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -14,6 +15,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.common.manufacturing.JsonRequestHULookup;
+import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
+import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
+import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -95,7 +100,7 @@ class ManufacturingOrderReportProcessCommand
 
 	private void processIssue(final JsonRequestIssueToManufacturingOrder issue)
 	{
-		final PPOrderId orderId = issue.getOrderId();
+		final PPOrderId orderId = extractPPOrderId(issue);
 		final Quantity qtyToIssue = toQuantity(issue.getQtyToIssue());
 		if (issue.getHandlingUnits().isEmpty())
 		{
@@ -112,7 +117,7 @@ class ManufacturingOrderReportProcessCommand
 
 	private void processReceipt(final JsonRequestReceiveFromManufacturingOrder receipt)
 	{
-		final PPOrderId orderId = receipt.getOrderId();
+		final PPOrderId orderId = extractPPOrderId(receipt);
 		final Quantity qtyToReceive = toQuantity(receipt.getQtyToReceive());
 		final LocatorId locatorId = getReceiveToLocatorByOrderId(orderId);
 
@@ -141,7 +146,7 @@ class ManufacturingOrderReportProcessCommand
 		if (_orders == null)
 		{
 			_orders = Maps.uniqueIndex(
-					huPPOrderBL.getByIds(request.getOrderIds()),
+					huPPOrderBL.getByIds(getOrderIds()),
 					order -> extractPPOrderId(order));
 		}
 
@@ -149,6 +154,24 @@ class ManufacturingOrderReportProcessCommand
 		Check.assumeNotNull(order, "{} exists in {}", orderId, _orders);
 
 		return order;
+	}
+
+	private Set<PPOrderId> getOrderIds()
+	{
+		return Stream.concat(
+				request.getReceipts().stream().map(receipt -> extractPPOrderId(receipt)),
+				request.getIssues().stream().map(issue -> extractPPOrderId(issue)))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static PPOrderId extractPPOrderId(final JsonRequestReceiveFromManufacturingOrder receipt)
+	{
+		return PPOrderId.ofRepoId(receipt.getOrderId().getValue());
+	}
+
+	private static PPOrderId extractPPOrderId(final JsonRequestIssueToManufacturingOrder issue)
+	{
+		return PPOrderId.ofRepoId(issue.getOrderId().getValue());
 	}
 
 	private List<I_M_HU> resolveHUs(@NonNull final Collection<JsonRequestHULookup> requests)

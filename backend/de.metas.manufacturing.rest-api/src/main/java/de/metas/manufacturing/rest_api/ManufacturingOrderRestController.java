@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
+import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
+import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.util.time.SystemTime;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
@@ -79,7 +82,7 @@ public class ManufacturingOrderRestController
 	@PostMapping("/exportStatus")
 	public ResponseEntity<String> setExportStatus(@RequestBody @NonNull final JsonRequestSetOrdersExportStatusBulk request)
 	{
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", request.getTransactionKey().toJson()))
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", request.getTransactionKey()))
 		{
 			manufacturingOrderAPIService.setExportStatus(request);
 			return ResponseEntity.accepted().body("Manufacturing orders updated");

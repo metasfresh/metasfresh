@@ -1,13 +1,17 @@
-package de.metas.manufacturing.rest_api;
+package de.metas.common.manufacturing;
 
+import java.time.ZonedDateTime;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.ImmutableSet;
 
-import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.shipping.JsonProduct;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,32 +42,27 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonRequestManufacturingOrdersReport.JsonRequestManufacturingOrdersReportBuilder.class)
-public class JsonRequestManufacturingOrdersReport
+@JsonDeserialize(builder = JsonRequestIssueToManufacturingOrder.JsonRequestIssueToManufacturingOrderBuilder.class)
+public class JsonRequestIssueToManufacturingOrder
 {
 	@NonNull
-	@Singular
-	List<JsonRequestReceiveFromManufacturingOrder> receipts;
+	JsonMetasfreshId orderId;
+
+	@NonNull
+	JsonQuantity qtyToIssue;
+
+	@NonNull
+	ZonedDateTime date;
+
+	@Nullable
+	JsonProduct product;
 
 	@NonNull
 	@Singular
-	List<JsonRequestIssueToManufacturingOrder> issues;
+	List<JsonRequestHULookup> handlingUnits;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonRequestManufacturingOrdersReportBuilder
+	public static class JsonRequestIssueToManufacturingOrderBuilder
 	{
-	}
-
-	public ImmutableSet<PPOrderId> getOrderIds()
-	{
-		final ImmutableSet.Builder<PPOrderId> orderIds = ImmutableSet.builder();
-		receipts.stream()
-				.map(JsonRequestReceiveFromManufacturingOrder::getOrderId)
-				.forEach(orderIds::add);
-		issues.stream()
-				.map(JsonRequestIssueToManufacturingOrder::getOrderId)
-				.forEach(orderIds::add);
-
-		return orderIds.build();
 	}
 }

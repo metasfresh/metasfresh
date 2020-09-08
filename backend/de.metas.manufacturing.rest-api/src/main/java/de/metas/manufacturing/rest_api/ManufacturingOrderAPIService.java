@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
+import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.product.ProductRepository;
 import lombok.NonNull;
 

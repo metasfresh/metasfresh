@@ -1,16 +1,12 @@
-package de.metas.manufacturing.rest_api;
+package de.metas.common.manufacturing;
 
 import java.util.List;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.common.rest_api.JsonError;
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
-import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -45,7 +41,7 @@ import lombok.Value;
 public class JsonRequestSetOrdersExportStatusBulk
 {
 	@NonNull
-	ExportTransactionId transactionKey;
+	String transactionKey;
 
 	@NonNull
 	@Singular
@@ -57,13 +53,5 @@ public class JsonRequestSetOrdersExportStatusBulk
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonRequestSetOrdersExportStatusBulkBuilder
 	{
-	}
-
-	public Set<PPOrderId> getOrderIds()
-	{
-		return getItems()
-				.stream()
-				.map(JsonRequestSetOrderExportStatus::getOrderId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 }

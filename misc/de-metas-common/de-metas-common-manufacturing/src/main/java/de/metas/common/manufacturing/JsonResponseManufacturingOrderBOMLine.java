@@ -1,14 +1,12 @@
-package de.metas.manufacturing.rest_api;
+package de.metas.common.manufacturing;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.shipping.JsonProduct;
 import lombok.Builder;
 import lombok.Value;
 
@@ -36,29 +34,16 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonRequestSetOrderExportStatus.JsonRequestSetOrderExportStatusBuilder.class)
-public class JsonRequestSetOrderExportStatus
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonDeserialize(builder = JsonResponseManufacturingOrderBOMLine.JsonResponseManufacturingOrderBOMLineBuilder.class)
+public class JsonResponseManufacturingOrderBOMLine
 {
-	JsonMetasfreshId orderId;
-
-	public enum Outcome
-	{
-		OK, ERROR;
-	}
-
-	Outcome outcome;
-
-	@JsonInclude(Include.NON_NULL)
-	JsonError error;
+	String componentType;
+	JsonProduct product;
+	JsonQuantity qty;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonRequestSetOrderExportStatusBuilder
+	public static class JsonResponseManufacturingOrderBOMLineBuilder
 	{
-	}
-
-	public PPOrderId getOrderId()
-	{
-		return PPOrderId.ofRepoId(orderId.getValue());
 	}
 }

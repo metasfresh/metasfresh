@@ -12,8 +12,11 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus;
+import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.util.CoalesceUtil;
@@ -22,6 +25,7 @@ import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -90,21 +94,22 @@ final class ManufacturingOrdersSetExportStatusCommand
 			return;
 		}
 
-		final ManufacturingOrderExportAudit audit = orderAuditRepo.getByTransactionId(request.getTransactionKey());
+		final ExportTransactionId transactionKey = ExportTransactionId.ofString(request.getTransactionKey());
+		final ManufacturingOrderExportAudit audit = orderAuditRepo.getByTransactionId(transactionKey);
 		if (audit == null)
 		{
-			logger.debug("Given results.transactionKey={} does not match any audit records; -> return", request.getTransactionKey());
+			logger.debug("Given results.transactionKey={} does not match any audit records; -> return", transactionKey);
 			return;
 		}
 
-		final Set<PPOrderId> orderIds = request.getOrderIds();
+		final Set<PPOrderId> orderIds = getOrderIds();
 		final ImmutableMap<PPOrderId, I_PP_Order> ordersById = Maps.uniqueIndex(
 				ppOrderDAO.getByIds(orderIds),
 				order -> PPOrderId.ofRepoId(order.getPP_Order_ID()));
 
 		for (final JsonRequestSetOrderExportStatus requestItem : request.getItems())
 		{
-			final PPOrderId orderId = requestItem.getOrderId();
+			final PPOrderId orderId = extractPPOrderId(requestItem);
 			final I_PP_Order order = ordersById.get(orderId);
 			if (order == null)
 			{
@@ -137,7 +142,7 @@ final class ManufacturingOrdersSetExportStatusCommand
 					break;
 				default:
 					throw new AdempiereException("Item has unexpected outcome: " + requestItem.getOutcome())
-							.setParameter("TransactionIdAPI", request.getTransactionKey())
+							.setParameter("TransactionIdAPI", transactionKey)
 							.setParameter("resultItem", requestItem);
 			}
 
@@ -150,6 +155,19 @@ final class ManufacturingOrdersSetExportStatusCommand
 
 		ppOrderDAO.saveAll(ordersById.values());
 		orderAuditRepo.save(audit);
+	}
+
+	private ImmutableSet<PPOrderId> getOrderIds()
+	{
+		return request.getItems()
+				.stream()
+				.map(item -> extractPPOrderId(item))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static PPOrderId extractPPOrderId(final JsonRequestSetOrderExportStatus item)
+	{
+		return PPOrderId.ofRepoId(item.getOrderId().getValue());
 	}
 
 	@Nullable

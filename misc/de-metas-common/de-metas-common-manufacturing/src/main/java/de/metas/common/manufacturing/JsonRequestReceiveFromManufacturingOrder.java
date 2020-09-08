@@ -1,21 +1,15 @@
-package de.metas.manufacturing.rest_api;
+package de.metas.common.manufacturing;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
-import de.metas.common.shipping.JsonProduct;
-import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -42,35 +36,21 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@JsonDeserialize(builder = JsonResponseManufacturingOrder.JsonResponseManufacturingOrderBuilder.class)
-public class JsonResponseManufacturingOrder
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonDeserialize(builder = JsonRequestReceiveFromManufacturingOrder.JsonRequestReceiveFromManufacturingOrderBuilder.class)
+public class JsonRequestReceiveFromManufacturingOrder
 {
 	@NonNull
-	PPOrderId orderId;
+	JsonMetasfreshId orderId;
 
 	@NonNull
-	String documentNo;
-
-	@Nullable
-	String description;
+	JsonQuantity qtyToReceive;
 
 	@NonNull
-	ZonedDateTime dateOrdered;
-	@NonNull
-	ZonedDateTime dateStartSchedule;
-
-	@NonNull
-	JsonProduct finishGoodProduct;
-	@NonNull
-	JsonQuantity qtyToProduce;
-
-	@NonNull
-	@Singular
-	List<JsonResponseManufacturingOrderBOMLine> components;
+	ZonedDateTime date;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonResponseManufacturingOrderBuilder
+	public static class JsonRequestReceiveFromManufacturingOrderBuilder
 	{
 	}
 }

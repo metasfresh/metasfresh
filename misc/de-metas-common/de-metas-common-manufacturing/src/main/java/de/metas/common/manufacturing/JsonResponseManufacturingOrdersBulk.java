@@ -1,20 +1,13 @@
-package de.metas.manufacturing.rest_api;
+package de.metas.common.manufacturing;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import de.metas.common.rest_api.JsonQuantity;
-import de.metas.common.shipping.JsonProduct;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -43,29 +36,26 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonRequestIssueToManufacturingOrder.JsonRequestIssueToManufacturingOrderBuilder.class)
-public class JsonRequestIssueToManufacturingOrder
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonDeserialize(builder = JsonResponseManufacturingOrdersBulk.JsonResponseManufacturingOrdersBulkBuilder.class)
+public class JsonResponseManufacturingOrdersBulk
 {
 	@NonNull
-	PPOrderId orderId;
-
-	@NonNull
-	JsonQuantity qtyToIssue;
-
-	@NonNull
-	@Default
-	ZonedDateTime date = SystemTime.asZonedDateTime();
-
-	@Nullable
-	JsonProduct product;
+	String transactionKey;
 
 	@NonNull
 	@Singular
-	List<JsonRequestHULookup> handlingUnits;
+	List<JsonResponseManufacturingOrder> items;
+
+	boolean hasMoreItems;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonRequestIssueToManufacturingOrderBuilder
+	public static class JsonResponseManufacturingOrdersBulkBuilder
 	{
+	}
+
+	public static JsonResponseManufacturingOrdersBulk empty(@NonNull final String transactionKey)
+	{
+		return builder().transactionKey(transactionKey).hasMoreItems(false).build();
 	}
 }

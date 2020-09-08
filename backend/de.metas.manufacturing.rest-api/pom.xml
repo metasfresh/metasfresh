@@ -27,6 +27,12 @@
 		</dependency>
 		
 		<dependency>
+			<groupId>de.metas.common.manufacturing</groupId>
+			<artifactId>de-metas-common-manufacturing</artifactId>
+			<version>10.0.0</version>		
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util.web</artifactId>
 			<version>10.0.0</version>
