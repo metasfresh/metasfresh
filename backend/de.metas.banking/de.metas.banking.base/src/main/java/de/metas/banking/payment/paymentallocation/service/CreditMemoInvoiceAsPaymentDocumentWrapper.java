@@ -143,8 +143,7 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 			return false;
 		}
 
-		// if currency differs, do not allow payment
-		return CurrencyId.equals(payable.getCurrencyId(), creditMemoPayableDoc.getCurrencyId());
+		return true;
 	}
 
 	@Override
