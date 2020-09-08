@@ -82,6 +82,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU> getVHUs(I_M_HU hu);
 
+	IHUQueryBuilder createHUQueryBuilder();
+
 	/**
 	 * @return default storage factory
 	 */
