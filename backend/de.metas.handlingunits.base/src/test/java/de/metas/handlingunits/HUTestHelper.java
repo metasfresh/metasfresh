@@ -37,7 +37,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
@@ -322,6 +321,8 @@ public class HUTestHelper
 
 	// #653
 	public I_M_Attribute attr_LotNumber;
+
+	private I_M_Attribute attr_BestBeforeDate;
 
 	/**
 	 * Mandatory in receipts
@@ -619,8 +620,10 @@ public class HUTestHelper
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		
+		attr_BestBeforeDate = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
@@ -854,6 +857,20 @@ public class HUTestHelper
 			piAttr_LotNumber.setSeqNo(piAttrSeqNo);
 			piAttr_LotNumber.setUseInASI(true);
 			InterfaceWrapperHelper.save(piAttr_LotNumber);
+			piAttrSeqNo += 10;
+		}
+
+		{
+			final I_M_HU_PI_Attribute piAttr_BestBeforeDate = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_BestBeforeDate)
+					.setM_HU_PI(huDefNone)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
+					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
+					.setAggregationStrategyClass(NullAggregationStrategy.class)
+					.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class));
+			piAttr_BestBeforeDate.setIsReadOnly(false);
+			piAttr_BestBeforeDate.setSeqNo(piAttrSeqNo);
+			piAttr_BestBeforeDate.setUseInASI(true);
+			InterfaceWrapperHelper.save(piAttr_BestBeforeDate);
 			piAttrSeqNo += 10;
 		}
 
