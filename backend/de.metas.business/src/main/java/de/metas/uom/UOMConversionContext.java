@@ -1,6 +1,6 @@
 package de.metas.uom;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import javax.annotation.Nullable;
 

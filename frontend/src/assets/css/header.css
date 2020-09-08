@@ -44,6 +44,15 @@
     width:100%;
 }
 
+.header-super-faded {
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.header-shadow {
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
+}
+
 .header-breadcrumb {
     color: $brand-font-color-secondary;
     font-size: 0.875rem;
@@ -132,7 +141,7 @@
 
 .header-super-faded {
     background-color: #FFF;
-    border-bottom-color: #dee6ec;
+    border-bottom-color: $brand-border-color;
 }
 
 .header-input-sm {
@@ -212,14 +221,14 @@
     display: block;
     padding: .75rem 1.25rem;
     text-decoration: none !important;
+
+    i {
+        margin-right: 5px;
+    }
 }
 
 .subheader-item:not(.subheader-item-disabled) {
     color: inherit;
-}
-
-.subheader-item i {
-    margin-right: 5px;
 }
 
 .subheader-caption {
@@ -308,16 +317,21 @@
     width: calc(50% - 75px);
     padding-left: 55px;
     align-items: center;
+
+    > .tooltip-parent {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .notification-number {
+        left: -4px;
+        top: -6px;
+    }
 }
 
 .desktop .header-left-side {
     position: relative;
-}
-
-.header-left-side > .tooltip-parent {
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
 .header-right-side {
@@ -560,6 +574,11 @@
     overflow: hidden;
     width: 100%;
     text-align: center;
+
+    .notification-number {
+        top: -5px;
+        right: 10px;   
+    }
 }
 
 .header-item.icon-sm {
@@ -594,8 +613,8 @@
 }
 
 .header-item-open {
-    background-color: #F8FAFB;
-    border: 1px solid #e1e8ee;
+    background-color: $brand-bright-color;
+    border: 1px solid $brand-border-color-2;
     pointer-events: none;
     z-index: 2;
     border-bottom: 0 !important;

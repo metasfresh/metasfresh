@@ -90,7 +90,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.exceptions.ServiceConnectionException;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 

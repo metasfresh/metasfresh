@@ -113,7 +113,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
@@ -146,6 +146,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
 	 */
 	private static final String PAIN_001_001_03_CH_02 = "pain.001.001.03.ch.02";
+	private static final String PAIN_001_001_03_CH_02_SCHEMALOCATION = "http://www.six-interbank-clearing.com/de/";
 
 	/** Title: "ISR" */
 	private static final String PAYMENT_TYPE_1 = "PAYMENT_TYPE_1";
@@ -223,7 +224,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 			final Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty("jaxb.formatted.output", Boolean.TRUE);
-			marshaller.setProperty("jaxb.schemaLocation", "urn:sepade:xsd:" + PAIN_001_001_03_CH_02 + " " + PAIN_001_001_03_CH_02 + ".xsd");
+			marshaller.setProperty("jaxb.schemaLocation", PAIN_001_001_03_CH_02_SCHEMALOCATION + PAIN_001_001_03_CH_02 + ".xsd " + PAIN_001_001_03_CH_02 + ".xsd");
 			marshaller.marshal(jaxbDocument, xmlWriter);
 		}
 		catch (final JAXBException e)

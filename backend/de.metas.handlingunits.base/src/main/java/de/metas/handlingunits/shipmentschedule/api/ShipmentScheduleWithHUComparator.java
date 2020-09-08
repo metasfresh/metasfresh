@@ -22,7 +22,7 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.Comparator;
 

@@ -58,6 +58,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductDAO;
@@ -74,7 +75,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -323,7 +324,7 @@ public class FlatrateBL implements IFlatrateBL
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
 		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions())
-						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
+				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
 				fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee
 						+ " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
 
@@ -1265,10 +1266,14 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setStartDate(firstDayOfNewTerm);
 		nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
 
-		if (currentTerm.getC_OrderLine_Term_ID() > 0)
+		final OrderAndLineId orderAndLineTermId = OrderAndLineId.ofRepoIdsOrNull(currentTerm.getC_Order_Term_ID(), currentTerm.getC_OrderLine_Term_ID());
+
+		if (orderAndLineTermId != null)
 		{
-			nextTerm.setC_OrderLine_Term(currentTerm.getC_OrderLine_Term());
+			nextTerm.setC_OrderLine_Term_ID(orderAndLineTermId.getOrderLineRepoId());
+			nextTerm.setC_Order_Term_ID(orderAndLineTermId.getOrderRepoId());
 		}
+		
 		updateEndDate(nextTransition, nextTerm);
 		updateNoticeDate(nextTransition, nextTerm);
 

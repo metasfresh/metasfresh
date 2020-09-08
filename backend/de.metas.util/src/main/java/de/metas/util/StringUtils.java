@@ -22,6 +22,7 @@ package de.metas.util;
  * #L%
  */
 
+import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -50,7 +51,7 @@ public final class StringUtils
 
 	public static IPair<String, String> splitStreetAndHouseNumberOrNull(@Nullable final String streetAndNumber)
 	{
-		if (Check.isEmpty(streetAndNumber, true))
+		if (EmptyUtil.isBlank(streetAndNumber))
 		{
 			return null;
 		}
@@ -257,7 +258,7 @@ public final class StringUtils
 	}
 
 	/**
-	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
+	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, Boolean)}  but assumes default value is <code>false</code>.
 	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
 	 * @return <ul>

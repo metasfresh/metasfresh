@@ -1,6 +1,22 @@
 package org.adempiere.warehouse.api;
 
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehouseType;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -23,23 +39,6 @@ import java.util.Collection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehousePickingGroup;
-import org.adempiere.warehouse.WarehousePickingGroupId;
-import org.adempiere.warehouse.WarehouseType;
-import org.adempiere.warehouse.WarehouseTypeId;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
 
 public interface IWarehouseDAO extends ISingletonService
 {
@@ -76,6 +75,7 @@ public interface IWarehouseDAO extends ISingletonService
 	@Deprecated
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
+	@Nullable
 	LocatorId getLocatorIdByRepoIdOrNull(int locatorId);
 
 	I_M_Locator getLocatorById(final LocatorId locatorId);

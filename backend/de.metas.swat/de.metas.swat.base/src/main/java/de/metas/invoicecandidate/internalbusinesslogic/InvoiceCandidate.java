@@ -30,7 +30,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -227,17 +227,21 @@ public class InvoiceCandidate
 						qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
 
 				StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createZero(product.getId(), uomId);
-				BigDecimal remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12);
+				BigDecimal remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12, RoundingMode.UNNECESSARY);
 
 				if (deliveredData.getShipmentData() != null)
 				{
-					// there is shipment-data and qtyToInvoiceOverride <= qtyDelivered and catchWeight; -> get the appropriate fraction
+					// there is shipment-data and qtyToInvoiceOverride <= qtyDelivered and it's catchWeight; -> we need to get the appropriate fraction
 					final List<DeliveredQtyItem> deliveredQtyItems = deliveredData.getShipmentData().getDeliveredQtyItems();
 
 					for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
 					{
 						final Quantity itemQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
-						final Quantity itemUomQty = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyCatch());
+						final Quantity itemUomQty = coalesce(
+								deliveredQtyItem.getQtyOverride(),
+								deliveredQtyItem.getQtyCatch(),
+								deliveredQtyItem.getQtyNominal()/*can happen if the product is to be invoiced in catch weight, but no catch weight at all was entered by any means*/
+						);
 
 						final boolean allocateCompleteItem = remainingQtyOverride.compareTo(itemQtyInStockUom.toBigDecimal()) >= 0;
 						if (allocateCompleteItem)
@@ -369,10 +373,10 @@ public class InvoiceCandidate
 		final Quantity orderedInStockUom = orderedData.getQtyInStockUom();
 		final boolean negativeQtyOrdered = orderedInStockUom.signum() <= 0;
 
-		Quantity qtyToInvoiceInStockUomRaw;
-		Quantity qtyToInvoiceRaw;
-		Quantity qtyToInvoiceInStockUomCalc;
-		Quantity qtyToInvoiceCalc;
+		final Quantity qtyToInvoiceInStockUomRaw;
+		final Quantity qtyToInvoiceRaw;
+		final Quantity qtyToInvoiceInStockUomCalc;
+		final Quantity qtyToInvoiceCalc;
 
 		final ToInvoiceExclOverride invoicableQtyDelivered = computeInvoicableQtysDelivered();
 

@@ -270,14 +270,14 @@ export default class SelectionDropdown extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} option
    */
-  renderOption = (option) => {
+  renderOption = (option, idx) => {
     const { selected } = this.props;
     const { key, caption, description } = option;
 
     return (
       <div
         ref={(ref) => this.optionToRef.set(option, ref)}
-        key={`${key}${caption}`}
+        key={`${key}-${idx}-${caption}`}
         data-test-id={`${key}${caption}`}
         className={classnames(
           'input-dropdown-list-option ignore-react-onclickoutside',

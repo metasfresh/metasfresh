@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.SynchronizedMutable;
+import org.adempiere.util.lang.SynchronizedMutable.OldAndNewValues;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -25,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -83,7 +86,6 @@ import lombok.ToString;
 
 /**
  * Default {@link IView} implementation.
- *
  */
 public final class DefaultView implements IEditableView
 {
@@ -113,6 +115,10 @@ public final class DefaultView implements IEditableView
 	private final JSONViewDataType viewType;
 	@Getter
 	private final ViewProfileId profileId;
+
+	private ViewHeaderPropertiesProvider headerPropertiesProvider;
+	private SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder;
+
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 	private final DocumentReferenceId documentReferenceId;
@@ -124,10 +130,14 @@ public final class DefaultView implements IEditableView
 	//
 	// Filters
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	/** Sticky filters (i.e. active filters which cannot be changed) */
+	/**
+	 * Sticky filters (i.e. active filters which cannot be changed)
+	 */
 	@Getter
 	private final DocumentFilterList stickyFilters;
-	/** Regular filters */
+	/**
+	 * Regular filters
+	 */
 	@Getter
 	private final DocumentFilterList filters;
 	private transient DocumentFilterList _allFilters; // lazy
@@ -157,6 +167,8 @@ public final class DefaultView implements IEditableView
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		profileId = builder.getProfileId();
+		headerPropertiesProvider = CoalesceUtil.coalesce(builder.headerPropertiesProvider, NullViewHeaderPropertiesProvider.instance);
+		headerPropertiesHolder = SynchronizedMutable.of(null);
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
@@ -219,6 +231,12 @@ public final class DefaultView implements IEditableView
 	public ITranslatableString getDescription()
 	{
 		return TranslatableStrings.empty();
+	}
+
+	@Override
+	public ViewHeaderProperties getHeaderProperties()
+	{
+		return headerPropertiesHolder.computeIfNull(() -> headerPropertiesProvider.computeHeaderProperties(this));
 	}
 
 	/**
@@ -291,18 +309,21 @@ public final class DefaultView implements IEditableView
 	public void invalidateAll()
 	{
 		cache_rowsById.reset();
+		headerPropertiesHolder.setValue(null);
 	}
 
 	@Override
 	public void invalidateRowById(final DocumentId rowId)
 	{
 		cache_rowsById.remove(rowId);
+		headerPropertiesHolder.setValue(null);
 	}
 
 	@Override
 	public void invalidateSelection()
 	{
 		selectionsRef.forgetCurrentSelections();
+		headerPropertiesHolder.setValue(null);
 
 		invalidateAll();
 
@@ -360,6 +381,7 @@ public final class DefaultView implements IEditableView
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
 	private ViewResultColumn extractViewResultColumnOrNull(
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
@@ -543,6 +565,8 @@ public final class DefaultView implements IEditableView
 		// Invalidate local rowsById cache
 		cache_rowsById.removeAll(rowIds);
 
+		checkCollectHeaderPropertiesChanged(rowIds, watchedByFrontend);
+
 		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
 		// TODO: introduce a SysConfig to be able to disable this feature
 		if (watchedByFrontend)
@@ -565,6 +589,37 @@ public final class DefaultView implements IEditableView
 		else
 		{
 			ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
+		}
+	}
+
+	private void checkCollectHeaderPropertiesChanged(
+			@NonNull final Set<DocumentId> rowIds,
+			final boolean watchedByFrontend)
+	{
+		final OldAndNewValues<ViewHeaderProperties> oldAndNewHeaderProperties = headerPropertiesHolder
+				.computeIfNotNullReturningOldAndNew(currentHeaderProperties -> {
+					final ViewHeaderPropertiesIncrementalResult newHeaderPropertiesResult = headerPropertiesProvider.computeIncrementallyOnRowsChanged(
+							currentHeaderProperties,
+							this,
+							rowIds,
+							watchedByFrontend);
+					if (newHeaderPropertiesResult.isComputed())
+					{
+						return newHeaderPropertiesResult.getComputeHeaderProperties();
+					}
+					else if (newHeaderPropertiesResult.isFullRecomputeRequired())
+					{
+						return null; // reset
+					}
+					else
+					{
+						throw new AdempiereException("Unknown result type: " + newHeaderPropertiesResult);
+					}
+				});
+
+		if (oldAndNewHeaderProperties.isValueChanged())
+		{
+			ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(this);
 		}
 	}
 
@@ -691,6 +746,7 @@ public final class DefaultView implements IEditableView
 		private ViewId viewId;
 		private JSONViewDataType viewType;
 		private ViewProfileId profileId;
+		private ViewHeaderPropertiesProvider headerPropertiesProvider;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private DocumentReferenceId documentReferenceId;
 		private ViewId parentViewId;
@@ -764,6 +820,12 @@ public final class DefaultView implements IEditableView
 		public ViewProfileId getProfileId()
 		{
 			return profileId;
+		}
+
+		public Builder setHeaderPropertiesProvider(@NonNull final ViewHeaderPropertiesProvider headerPropertiesProvider)
+		{
+			this.headerPropertiesProvider = headerPropertiesProvider;
+			return this;
 		}
 
 		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)

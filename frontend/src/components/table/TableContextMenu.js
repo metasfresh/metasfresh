@@ -204,6 +204,7 @@ class TableContextMenu extends Component {
           <div className="context-menu-item" onClick={handleFieldEdit}>
             <i className="meta-icon-edit" />
             {` ${counterpart.translate('window.table.editField')}`}
+            <span className="tooltip-inline">{keymap.FAST_INLINE_EDIT}</span>
           </div>
         )}
 

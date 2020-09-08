@@ -1,6 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.List;
 

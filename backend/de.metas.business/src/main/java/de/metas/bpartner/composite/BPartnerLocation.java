@@ -1,7 +1,7 @@
 package de.metas.bpartner.composite;
 
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -118,7 +118,7 @@ public class BPartnerLocation
 
 	/**
 	 * Used to track changes that were made since the instance's instantiation.
-	 * Goal: allow {@link BPartnerCompositeRepository} to avoid creating a new {@code C_Location} if nothing changed in there.
+	 * Goal: allow {@link de.metas.bpartner.composite.repository.BPartnerCompositeRepository} to avoid creating a new {@code C_Location} if nothing changed in there.
 	 */
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)

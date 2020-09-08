@@ -73,7 +73,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static java.math.BigDecimal.ZERO;
 
 /*

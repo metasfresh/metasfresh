@@ -12,7 +12,7 @@ import {
   setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
-import { openModal } from '../actions/WindowActions';
+import { openModal, updatePropertyValue } from '../actions/WindowActions';
 
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
@@ -20,27 +20,6 @@ import { mapIncluded } from '../utils/documentListHelper';
 import Table from '../components/table/TableWrapper';
 
 class TableContainer extends PureComponent {
-  componentWillUnmount() {
-    const {
-      showIncludedView,
-      viewId,
-      windowId,
-      isIncluded,
-      isModal,
-    } = this.props;
-
-    if (!isIncluded) {
-      const identifier = isModal ? viewId : windowId;
-
-      showIncludedView({
-        id: identifier,
-        showIncludedView: false,
-        windowId,
-        viewId,
-      });
-    }
-  }
-
   /**
    * @method getAllLeaves
    * @summary select parent and all it's leaves
@@ -172,8 +151,13 @@ class TableContainer extends PureComponent {
       docId ? tabId : null,
       selected
     )
-      .then(() => {
+      .then((response) => {
         // TODO: In the future we probably shouldn't refresh the whole list
+        if (response.data[0] && response.data[0].includedTabsInfo) {
+          Object.keys(response.data[0].includedTabsInfo).includes(tabId) &&
+            updateDocList();
+        }
+
         // when something is removed.
         if (!docId) {
           updateDocList();
@@ -291,6 +275,7 @@ export default connect(
     deselectTableItems,
     openModal,
     updateTableSelection,
+    updatePropertyValue,
     showIncludedView,
     setActiveSort,
   },

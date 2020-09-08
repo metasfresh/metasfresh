@@ -42,6 +42,7 @@ import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.InvoiceMatchingMode;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.document.engine.DocStatus;
@@ -390,7 +391,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private String buildSelectSQL_MatchRequirement()
 	{
 		final String whereCreditTransferToVendor = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType ='ARI' AND i.PaymentRule IN ('" + PaymentRule.DirectDebit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
+		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType !='ARC' AND i.PaymentRule = '" + PaymentRule.DirectDebit.getCode() + "'";
 		final String whereCreditTransferToCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 
 		final InvoiceMatchingMode matchRequirement = getMatchRequirement().orElse(null);
@@ -610,8 +611,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private void cacheInvalidationForCurrentPaySelection()
 	{
+		final PaySelectionId paySelectionId = getPaySelectionId();
+
 		modelCacheInvalidationService.invalidate(
-				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getPaySelectionId().getRepoId()),
+				CacheInvalidateMultiRequest.of(
+						CacheInvalidateRequest.rootRecord(I_C_PaySelection.Table_Name, paySelectionId),
+						CacheInvalidateRequest.allChildRecords(I_C_PaySelection.Table_Name, paySelectionId, I_C_PaySelectionLine.Table_Name)),
 				ModelCacheInvalidationTiming.CHANGE);
 	}
 

@@ -3,8 +3,33 @@
  */
 package de.metas.handlingunits.receiptschedule;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleExternalInfo;
+import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
+
+import javax.annotation.Nullable;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -28,39 +53,12 @@ import java.math.BigDecimal;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.warehouse.LocatorId;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.util.ISingletonService;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /**
  * @author cg
  */
 public interface IHUReceiptScheduleBL extends ISingletonService
 {
 	/**
-	 * @param receiptSchedule
 	 * @return amount of TUs which were planned to be received (i.e. amount of TUs ordered) or <code>null</code> in case there is no order line
 	 */
 	BigDecimal getQtyOrderedTUOrNull(I_M_ReceiptSchedule receiptSchedule);
@@ -71,18 +69,9 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	BigDecimal getQtyOrderedTUOrZero(I_M_ReceiptSchedule receiptSchedule);
 
 	/**
-	 *
-	 * @param receiptSchedule
 	 * @return qty ordered minus qty moved (TU)
 	 */
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
-
-	default BigDecimal getQtyToMoveCU(I_M_ReceiptSchedule receiptSchedule)
-	{
-		return Services.get(IReceiptScheduleBL.class).getQtyMoved(receiptSchedule);
-	}
-
-	// IInOutProducer createInOutProducerFromReceiptScheduleHU(CreateReceiptsParameters parameters);
 
 	@Value
 	@Builder
@@ -92,17 +81,11 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		Properties ctx;
 
 		/**
-		 * <code>null</code> or a set of M_HU_IDs that shall be considered. If called with <code>null</code>, then all (planned?) HUs from the
+		 * <code>null</code> or a subset of M_HU_IDs that shall be considered. If called with <code>null</code>, then all (planned?) HUs from the
 		 * {@link de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc} will be assigned to the inOut.
 		 */
 		@Nullable
 		Set<HuId> selectedHuIds;
-
-		/**
-		 * if <code>false</code> (the default), then a new InOut is created with the current date from {@link org.compiere.util.Env#getDate(Properties)}. Otherwise it is created with
-		 * the DatePromised value of the receipt schedule's C_Order. To be used e.g. when doing migration work.
-		 */
-		boolean createReceiptWithDatePromised;
 
 		/**
 		 * If this is {@code true}, and if more than one receipt is created, then successfully created receipts won't be rolled back if other receipts fail.
@@ -122,6 +105,12 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		 */
 		@Nullable
 		LocatorId destinationLocatorIdOrNull;
+
+		@NonNull
+		ReceiptMovementDateRule movementDateRule;
+
+		@Nullable
+		Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 	}
 
 	/**
@@ -134,9 +123,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	 * "Planning".
 	 *
 	 * Also, the receipt schedule allocations of the destroyed HUs will be deactivated and saved.
-	 *
-	 * @param allocations
-	 * @param trxName
 	 */
 	void destroyHandlingUnits(List<I_M_ReceiptSchedule_Alloc> allocations, String trxName);
 
@@ -150,9 +136,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	/**
 	 * Destroy the handling units from allocations in a huContext
-	 *
-	 * @param huContext
-	 * @param allocs
 	 */
 	void destroyHandlingUnits(IHUContext huContext, List<I_M_ReceiptSchedule_Alloc> allocs);
 
@@ -168,9 +151,11 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	IAllocationRequest setInitialAttributeValueDefaults(IAllocationRequest request, Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules);
 
 	/**
-	 * @see #setInitialAttributeValueDefaults(IAllocationRequest, List)
+	 * @see #setInitialAttributeValueDefaults(IAllocationRequest, de.metas.inoutcandidate.model.I_M_ReceiptSchedule)
 	 */
 	IAllocationRequest setInitialAttributeValueDefaults(IAllocationRequest request, de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule);
 
 	void attachPhoto(I_M_ReceiptSchedule receiptSchedule, String filename, BufferedImage image);
+
+	void generateHUsIfNeeded(I_M_ReceiptSchedule receiptSchedule, Properties context);
 }

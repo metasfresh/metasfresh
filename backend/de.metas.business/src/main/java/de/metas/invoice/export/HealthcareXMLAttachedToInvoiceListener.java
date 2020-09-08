@@ -1,6 +1,6 @@
 package de.metas.invoice.export;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.io.ByteArrayInputStream;

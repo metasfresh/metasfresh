@@ -22,16 +22,8 @@
 
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.packageable.PackageableRow;
 import de.metas.ui.web.picking.packageable.PackageableView;
@@ -47,8 +39,13 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * {@link PickingSlotView}s index storage.
@@ -175,12 +172,21 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	@Override
-	public void invalidateView(ViewId pickingSlotViewId)
+	public void invalidateView(final ViewId pickingSlotViewId)
 	{
 		final PickingSlotView pickingSlotView = getOrCreatePickingSlotView(pickingSlotViewId, false/* create */);
 		if (pickingSlotView == null)
 		{
 			return;
+		}
+
+		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
+
+		if (packageableView != null)
+		{
+			//we have to invalidate all the related pickingSlotViews in order to make sure the
+			//changes available in UI when selecting different `packageableRows`
+			packageableView.invalidatePickingSlotViews();
 		}
 
 		pickingSlotView.invalidateAll();

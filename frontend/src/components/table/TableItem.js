@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
-
+import { F2_KEY } from '../../constants/Constants';
 import {
   shouldRenderColumn,
   getIconClassName,
@@ -47,6 +47,7 @@ class TableItem extends PureComponent {
       multilineText,
       multilineTextLines,
       cellsExtended: false,
+      valueBeforeEditing: null,
     };
   }
 
@@ -74,9 +75,14 @@ class TableItem extends PureComponent {
     }
   }
 
-  initPropertyEditor = (fieldName) => {
+  /**
+   * @method initPropertyEditor
+   * @summary Initialize the editor for an item
+   * @param {object} fieldName - the name of the field, mark - marks the text(like when you click and hold and select the text)
+   */
+  initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
-
+    this.setState({ valueBeforeEditing: fieldsByName[fieldName].value });
     if (cols && fieldsByName) {
       cols.map((item) => {
         const property = item.fields[0].field;
@@ -84,7 +90,14 @@ class TableItem extends PureComponent {
           const widgetData = prepareWidgetData(item, fieldsByName);
 
           if (widgetData) {
-            this.handleEditProperty(null, property, true, widgetData[0]);
+            this.handleEditProperty(
+              null,
+              property,
+              true,
+              widgetData[0],
+              false,
+              mark
+            );
           }
         }
       });
@@ -124,35 +137,61 @@ class TableItem extends PureComponent {
     changeListenOnTrue();
   };
 
-  handleDoubleClick = () => {
+  handleDoubleClick = (e) => {
     const { rowId, onDoubleClick, supportOpenRecord } = this.props;
-
+    this.setState({ valueBeforeEditing: e.target.textContent });
     if (supportOpenRecord) {
       onDoubleClick && onDoubleClick(rowId);
     }
   };
 
   handleKeyDown = (e, property, widgetData) => {
-    const { changeListenOnTrue } = this.props;
-    const { listenOnKeys, edited } = this.state;
-
+    const {
+      changeListenOnTrue,
+      rowId,
+      tabId,
+      entity,
+      modalVisible,
+      tableId,
+      updatePropertyValue,
+      fieldsByName,
+      onFastInlineEdit,
+    } = this.props;
+    const { listenOnKeys, edited, valueBeforeEditing } = this.state;
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
           this.handleEditProperty(e, property, true, widgetData);
+          this.setState({ valueBeforeEditing: e.target.textContent });
         }
         break;
       case 'Tab':
       case 'Escape':
         if (edited === property) {
+          updatePropertyValue({
+            property,
+            value: valueBeforeEditing,
+            tabId,
+            rowId,
+            isModal: modalVisible,
+            entity,
+            tableId,
+          });
           e.stopPropagation();
           this.handleEditProperty(e);
           changeListenOnTrue();
+          this.setState({ valueBeforeEditing: null });
         }
         break;
       default: {
+        valueBeforeEditing === null &&
+          this.setState({ valueBeforeEditing: fieldsByName[property].value });
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
+          if (e.keyCode === F2_KEY) {
+            onFastInlineEdit();
+            return false;
+          }
           this.listenOnKeysTrue();
 
           this.handleEditProperty(e, property, true, widgetData, true);
@@ -172,10 +211,11 @@ class TableItem extends PureComponent {
    * @param {boolean} [focus] - flag if cell should be focused
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
+   * @param {boolean} [mark] - marks the text(like when you click and hold and select the text)
    */
-  handleEditProperty = (e, property, focus, item, select) => {
+  handleEditProperty = (e, property, focus, item, select, mark) => {
     this._focusCell(property, () => {
-      this._editProperty(e, property, focus, item, select);
+      this._editProperty({ e, property, focus, item, select, mark });
     });
   };
 
@@ -190,9 +230,9 @@ class TableItem extends PureComponent {
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
    */
-  _editProperty = (e, property, focus, item, select) => {
+  _editProperty = ({ e, property, focus, item, select, mark }) => {
     if (item ? !item.readonly : true) {
-      if (this.state.edited === property && e) e.stopPropagation();
+      if (this.state.edited === property && e) e.persist();
 
       // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
@@ -210,6 +250,7 @@ class TableItem extends PureComponent {
             )[0];
 
             if (elem) {
+              mark && elem.select();
               elem.focus();
             }
 
@@ -386,12 +427,16 @@ class TableItem extends PureComponent {
       isGerman,
       isSelected,
       focusOnFieldName,
+      updateHeight,
+      rowIndex,
       fieldsByName: cells,
+      hasComments,
       /*
        * This function is called when cell's value changes and triggers re-fetching
        * quickactions in grids.
        */
       onItemChange,
+      handleFocusAction,
     } = this.props;
     const {
       edited,
@@ -409,7 +454,7 @@ class TableItem extends PureComponent {
     } else {
       return (
         cols &&
-        cols.map((item) => {
+        cols.map((item, idx) => {
           if (shouldRenderColumn(item)) {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit =
@@ -447,6 +492,7 @@ class TableItem extends PureComponent {
                   keyProperty,
                   modalVisible,
                   isGerman,
+                  rowIndex,
                 }}
                 ref={(c) => {
                   if (c && isSelected) {
@@ -458,6 +504,7 @@ class TableItem extends PureComponent {
                     }
                   }
                 }}
+                hasComments={!!(hasComments && idx === 0)}
                 tdValue={
                   widgetData[0].value
                     ? JSON.stringify(widgetData[0].value)
@@ -469,6 +516,7 @@ class TableItem extends PureComponent {
                 isRowSelected={isSelected}
                 isEdited={isEdited}
                 handleDoubleClick={this.handleEditProperty}
+                handleFocusAction={handleFocusAction}
                 onClickOutside={this.handleClickOutside}
                 onCellChange={onItemChange}
                 updatedRow={updatedRow || newRow}
@@ -477,6 +525,7 @@ class TableItem extends PureComponent {
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
                 closeTableField={this.closeTableField}
+                updateHeight={updateHeight}
               />
             );
           }
@@ -574,7 +623,7 @@ class TableItem extends PureComponent {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
-          className={classnames(dataKey, `row-${keyProperty}`, {
+          className={classnames(dataKey, `table-row row-${keyProperty}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
             'tr-even': !odd,
@@ -638,6 +687,13 @@ TableItem.propTypes = {
   keyProperty: PropTypes.string,
   page: PropTypes.number,
   activeSort: PropTypes.bool,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table
+  hasComments: PropTypes.bool,
+  handleFocusAction: PropTypes.func,
+  tableId: PropTypes.string,
+  updatePropertyValue: PropTypes.func,
+  onFastInlineEdit: PropTypes.func,
 };
 
 export default TableItem;

@@ -20,6 +20,8 @@ import {
   FILTER_VIEW_ERROR,
   RESET_VIEW,
   TOGGLE_INCLUDED_VIEW,
+  UPDATE_VIEW_DATA_ERROR,
+  UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
 export const viewState = {
@@ -55,14 +57,18 @@ export const viewState = {
   hasShowIncluded: false,
 };
 
-export const initialState = { views: {} };
+export const initialState = { views: {}, modals: {} };
 
-const selectView = (state, id) => {
-  return get(state, ['viewHandler', 'views', id], viewState);
+const selectView = (state, id, isModal) => {
+  return isModal
+    ? get(state, ['viewHandler', 'modals', id], viewState)
+    : get(state, ['viewHandler', 'views', id], viewState);
 };
 
-const selectLocalView = (state, id) => {
-  return get(state, ['views', id], viewState);
+const selectLocalView = (state, id, isModal) => {
+  return isModal
+    ? get(state, ['modals', id], viewState)
+    : get(state, ['views', id], viewState);
 };
 
 export const getView = createSelector(
@@ -75,6 +81,8 @@ const getLocalView = createSelector(
   (view) => view
 );
 
+const getViewType = (isModal) => (isModal ? 'modals' : 'views');
+
 export default function viewHandler(state = initialState, action) {
   if ((!action.payload || !action.payload.id) && action.type !== DELETE_VIEW) {
     return state;
@@ -83,13 +91,14 @@ export default function viewHandler(state = initialState, action) {
   switch (action.type) {
     // LAYOUT
     case FETCH_LAYOUT_PENDING: {
-      const { id } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             layoutPending: true,
@@ -99,13 +108,14 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case FETCH_LAYOUT_SUCCESS: {
-      const { id, layout } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, layout, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             layoutPending: false,
@@ -119,12 +129,13 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case FETCH_LAYOUT_ERROR: {
-      const { id, error } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, error, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
+        [`${type}`]: {
           ...state.views,
           [`${id}`]: {
             ...view,
@@ -137,13 +148,14 @@ export default function viewHandler(state = initialState, action) {
     }
 
     case FETCH_DOCUMENT_PENDING: {
-      const { id } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             notFound: false,
@@ -169,12 +181,14 @@ export default function viewHandler(state = initialState, action) {
           queryLimitHit,
           staticFilters,
         },
+        isModal,
       } = action.payload;
+      const viewType = getViewType(isModal);
 
       //WTF prettier?
       //eslint-disable-next-line
       const page = size > 1 ? (firstRow / pageLength) + 1 : 1;
-      const view = getLocalView(state, id);
+      const view = getLocalView(state, id, isModal);
       const viewState = {
         ...view,
         firstRow,
@@ -193,20 +207,22 @@ export default function viewHandler(state = initialState, action) {
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${viewType}`]: {
+          ...state[`${viewType}`],
           [`${id}`]: { ...viewState },
         },
       };
     }
+    case UPDATE_VIEW_DATA_ERROR:
     case FETCH_DOCUMENT_ERROR: {
-      const { id, error } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, error, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             pending: false,
@@ -219,13 +235,14 @@ export default function viewHandler(state = initialState, action) {
 
     // VIEW OPERATIONS
     case CREATE_VIEW: {
-      const { id } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             pending: true,
@@ -235,13 +252,14 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case CREATE_VIEW_SUCCESS: {
-      const { id, viewId } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, viewId, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             viewId,
@@ -252,13 +270,14 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case CREATE_VIEW_ERROR: {
-      const { id, error } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, error, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             pending: false,
@@ -268,14 +287,37 @@ export default function viewHandler(state = initialState, action) {
         },
       };
     }
-    case FILTER_VIEW_PENDING: {
-      const { id } = action.payload;
-      const view = getLocalView(state, id);
+
+    case UPDATE_VIEW_DATA_SUCCESS: {
+      const { id, data, isModal } = action.payload;
+      const viewType = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
+      const viewState = {
+        ...view,
+        ...data,
+        pending: false,
+        error: null,
+        notFound: false,
+      };
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${viewType}`]: {
+          ...state[`${viewType}`],
+          [`${id}`]: { ...viewState },
+        },
+      };
+    }
+
+    case FILTER_VIEW_PENDING: {
+      const { id, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
+
+      return {
+        ...state,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             notFound: false,
@@ -289,13 +331,15 @@ export default function viewHandler(state = initialState, action) {
       const {
         id,
         data: { filters, viewId, size },
+        isModal,
       } = action.payload;
-      const view = getLocalView(state, id);
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             filters,
@@ -309,13 +353,14 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case FILTER_VIEW_ERROR: {
-      const { id, error } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, error, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             pending: false,
@@ -326,13 +371,14 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case ADD_VIEW_LOCATION_DATA: {
-      const { id, locationData } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, locationData, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             locationData,
@@ -342,14 +388,15 @@ export default function viewHandler(state = initialState, action) {
     }
 
     case FETCH_LOCATION_CONFIG_SUCCESS: {
-      const { id, data } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, data, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       if (data.provider) {
         return {
           ...state,
-          views: {
-            ...state.views,
+          [`${type}`]: {
+            ...state[`${type}`],
             [`${id}`]: {
               ...view,
               mapConfig: data,
@@ -361,13 +408,14 @@ export default function viewHandler(state = initialState, action) {
       return state;
     }
     case FETCH_LOCATION_CONFIG_ERROR: {
-      const { id, error } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, error, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       return {
         ...state,
-        views: {
-          ...state.views,
+        [`${type}`]: {
+          ...state[`${type}`],
           [`${id}`]: {
             ...view,
             error,
@@ -377,45 +425,47 @@ export default function viewHandler(state = initialState, action) {
     }
 
     case TOGGLE_INCLUDED_VIEW: {
-      const { id, showIncludedView } = action.payload;
-      const view = getLocalView(state, id);
+      const { id, showIncludedView, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
-      return {
-        ...state,
-        views: {
-          ...state.views,
-          [`${id}`]: {
-            ...view,
-            isShowIncluded: !!showIncludedView,
-            hasShowIncluded: !!showIncludedView,
+      if (view.windowId) {
+        return {
+          ...state,
+          [`${type}`]: {
+            ...state[`${type}`],
+            [`${id}`]: {
+              ...view,
+              isShowIncluded: !!showIncludedView,
+              hasShowIncluded: !!showIncludedView,
+            },
           },
-        },
-      };
+        };
+      }
+
+      return state;
     }
 
     case DELETE_VIEW: {
-      const id = action.payload.id;
+      const { id, isModal } = action.payload;
+      const type = getViewType(isModal);
 
       if (id) {
-        delete state.views[id];
-
-        return state;
-      } else {
-        return {
-          ...state,
-          views: {},
-        };
+        delete state[`${type}`][id];
       }
+
+      return state;
     }
     case RESET_VIEW: {
-      const id = action.payload.id;
-      const view = getLocalView(state, id);
+      const { id, isModal } = action.payload;
+      const type = getViewType(isModal);
+      const view = getLocalView(state, id, isModal);
 
       if (view) {
         return {
           ...state,
-          views: {
-            ...state.views,
+          [`${type}`]: {
+            ...state[`${type}`],
             [`${id}`]: { ...viewState },
           },
         };

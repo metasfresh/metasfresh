@@ -24,7 +24,7 @@ export default class Table extends PureComponent {
 
   componentDidMount() {
     this._isMounted = true;
-
+    this.initialPaddingBottom = 100;
     if (this.props.autofocus && this.table) {
       this.table.focus();
     }
@@ -155,6 +155,7 @@ export default class Table extends PureComponent {
           ? item.includedView.windowType || item.includedView.windowId
           : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+        isModal,
       });
     }
   };
@@ -329,6 +330,10 @@ export default class Table extends PureComponent {
       collapsedParentRows,
       onRightClick,
       rowRefs,
+      handleFocusAction,
+      updatePropertyValue,
+      tableId,
+      onFastInlineEdit,
     } = this.props;
 
     if (!rows.length || !columns.length) {
@@ -367,6 +372,8 @@ export default class Table extends PureComponent {
           modalVisible,
           isGerman,
           activeSort,
+          updatePropertyValue,
+          tableId,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
@@ -386,11 +393,14 @@ export default class Table extends PureComponent {
           }
         }}
         keyProperty={item[keyProperty]}
+        rowIndex={i}
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
+        onFastInlineEdit={onFastInlineEdit}
         onClick={this.handleClick}
         handleRightClick={onRightClick}
+        handleFocusAction={handleFocusAction}
         changeListenOnTrue={this.setListenTrue}
         changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}
@@ -399,11 +409,13 @@ export default class Table extends PureComponent {
           selected[0] === 'all' ||
           (!selected[0] && focusOnFieldName && i === 0)
         }
+        updateHeight={this.updateHeight}
         handleSelect={onSelect}
         contextType={item.type}
         caption={item.caption ? item.caption : ''}
         colspan={item.colspan}
         notSaved={item.saveStatus && !item.saveStatus.saved}
+        hasComments={item.hasComments}
         onRowCollapse={onRowCollapse}
         onItemChange={onItemChange}
         onCopy={handleCopy}
@@ -432,6 +444,12 @@ export default class Table extends PureComponent {
     return false;
   };
 
+  updateHeight = (heightNew) => {
+    heightNew = heightNew ? heightNew : 0;
+    this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
+      heightNew}px`;
+  };
+
   render() {
     const {
       columns,
@@ -455,6 +473,7 @@ export default class Table extends PureComponent {
 
     return (
       <div
+        ref={(ref) => (this.tableContainer = ref)}
         className={classnames(
           'panel panel-primary panel-bordered',
           'panel-bordered-force table-flex-wrapper',

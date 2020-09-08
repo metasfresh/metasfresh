@@ -53,8 +53,6 @@ class MasterWidget extends PureComponent {
 
     if (!edited && hasNewData) {
       return { updated: true, data: next, widgetData: nextProps.widgetData };
-    } else if (edited) {
-      return { edited: false };
     }
     return null;
   }
@@ -88,17 +86,35 @@ class MasterWidget extends PureComponent {
       relativeDocId,
       isAdvanced = false,
       viewId,
+      updatePropertyValue,
     } = this.props;
     value = formatValueByWidgetType({ widgetType, value });
     let entity = viewId ? 'documentView' : this.props.entity;
     let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
     let ret = null;
     let isEdit = viewId ? true : false;
+    const tableId = getTableId({
+      windowId: windowType,
+      viewId,
+    });
 
     // TODO: Leaving this for now in case this is used in some edga cases
     // but seems like a duplication of what we have in `handleChange`.
-    // widgetType !== 'Button' &&
-    //   updatePropertyValue(property, value, tabId, currRowId, isModal, entity);
+    // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
+    // Attributes component so that it won't need it anymore. Or add better guards
+    // to be sure it's not called if not needed.
+    widgetType !== 'Button' &&
+      !dataId &&
+      widgetType === 'ProductAttributes' &&
+      updatePropertyValue({
+        property,
+        value,
+        tabId,
+        rowId: currRowId,
+        isModal,
+        entity,
+        tableId,
+      });
 
     ret = patch(
       entity,
@@ -113,7 +129,7 @@ class MasterWidget extends PureComponent {
       viewId,
       isEdit
     );
-
+    this.setState({ edited: false });
     onChange && onChange(rowId, property, value, ret); //callback
 
     return ret;
@@ -141,6 +157,7 @@ class MasterWidget extends PureComponent {
       windowType,
       widgetData,
     } = this.props;
+
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
     let fieldName = widgetData[0] ? widgetData[0].field : '';

@@ -8,6 +8,7 @@ import classnames from 'classnames';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
+import { setBreadcrumb } from '../../actions/MenuActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import keymap from '../../shortcuts/keymap';
 import Indicator from '../app/Indicator';
@@ -213,6 +214,7 @@ class Header extends PureComponent {
    */
   handleDashboardLink = () => {
     const { dispatch } = this.props;
+    dispatch(setBreadcrumb([]));
     dispatch(push('/'));
   };
 
@@ -559,6 +561,7 @@ class Header extends PureComponent {
       activeTab,
       plugins,
       indicator,
+      hasComments,
     } = this.props;
 
     const {
@@ -611,7 +614,14 @@ class Header extends PureComponent {
                     }
                   )}
                 >
-                  <i className="meta-icon-more" />
+                  <i className="position-relative meta-icon-more">
+                    {hasComments && (
+                      <span
+                        className="notification-number size-sm"
+                        title={counterpart.translate('window.comments.caption')}
+                      />
+                    )}
+                  </i>
 
                   {tooltipOpen === keymap.OPEN_ACTIONS_MENU && (
                     <Tooltips
@@ -697,7 +707,7 @@ class Header extends PureComponent {
                   <span className="header-item header-item-badge icon-lg">
                     <i className="meta-icon-notifications" />
                     {inbox.unreadCount > 0 && (
-                      <span className="notification-number">
+                      <span className="notification-number size-md">
                         {inbox.unreadCount}
                       </span>
                     )}
@@ -900,6 +910,7 @@ class Header extends PureComponent {
  * @prop {*} showIndicator
  * @prop {*} siteName
  * @prop {*} windowId
+ * @prop {bool} hasComments - used to indicate comments available for the details view
  */
 Header.propTypes = {
   activeTab: PropTypes.any,
@@ -927,6 +938,7 @@ Header.propTypes = {
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
+  hasComments: PropTypes.bool,
 };
 
 /**
