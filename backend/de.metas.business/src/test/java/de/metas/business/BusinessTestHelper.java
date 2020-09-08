@@ -94,14 +94,17 @@ public final class BusinessTestHelper
 	public static I_C_UOM createUomKg()
 	{
 		final I_C_UOM uomKg = createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_3);
-		uomKg.setX12DE355("KGM");
+		uomKg.setX12DE355(X12DE355.KILOGRAM.getCode());
 		saveRecord(uomKg);
 		return uomKg;
 	}
 
 	public static I_C_UOM createUomEach()
 	{
-		return createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
+		final I_C_UOM uom = createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
+		uom.setX12DE355(X12DE355.EACH.getCode());
+		saveRecord(uom);
+		return uom;
 	}
 
 	public static I_C_UOM createUomPCE()
