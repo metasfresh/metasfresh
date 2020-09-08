@@ -22,8 +22,6 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +29,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyRate;
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import lombok.Builder;
@@ -344,15 +343,7 @@ public class PaymentAllocationBuilder
 				// Calculate the amounts to allocate:
 				final InvoiceAndPaymentAmountsToAllocate amountsToAllocate = calculateAmountToAllocate(payable, payment);
 				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
-				final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getPayAmtInPaymentCurrency());  // TODO tbp: @teo this doesnt work.
-
-				/*
-				problem: AllocationLineCandidate.paymentOverUnderAmt is saved on C_AllocationLine
-				@line 347 payment must receive an amount in Payment Currency
-				AllocationLineCandidate wants only 1 currency, therefore when we create the candidate, it fails for having 2 different currencies.
-				- a dumb solution would be to calculate paymentOverUnderAmt  in invoice currency @ line 347
-				see commented line 373
-				*/
+				final Money paymentOverUnderAmt = computePaymentOverUnderAmtInInvoiceCurrency(payment, amountsToAllocate);
 
 				// Create new Allocation Line
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
@@ -370,7 +361,7 @@ public class PaymentAllocationBuilder
 						// Amounts:
 						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
 						.payableOverUnderAmt(payableOverUnderAmt)
-						// .paymentOverUnderAmt(paymentOverUnderAmt)  // TODO tbp: @teo fix this
+						.paymentOverUnderAmt(paymentOverUnderAmt)
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
@@ -391,6 +382,13 @@ public class PaymentAllocationBuilder
 		}   // payables loop (aka invoice or prepay order)
 
 		return allocationLineCandidates;
+	}
+
+	@NonNull
+	private Money computePaymentOverUnderAmtInInvoiceCurrency(@NonNull final IPaymentDocument payment, @NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
+	{
+		final Money paymentOverUnderAmtInPaymentCurrency = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
+		return amountsToAllocate.currencyRate.convertAmount(paymentOverUnderAmtInPaymentCurrency);
 	}
 
 	@Nullable
@@ -765,6 +763,9 @@ public class PaymentAllocationBuilder
 
 		@NonNull
 		Money payAmtInPaymentCurrency;
+
+		@NonNull
+		CurrencyRate currencyRate;
 	}
 
 	/**
@@ -776,20 +777,17 @@ public class PaymentAllocationBuilder
 		final CurrencyId paymentCurrencyId = payment.getCurrencyId();
 		final CurrencyId invoiceCurrencyId = invoice.getCurrencyId();
 
+		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
+		final Money invoicePayAmtToAllocate = invoiceAmountsToAllocate.getPayAmt();
+
 		final CurrencyConversionContext conversionContext = moneyService.createConversionContext(
 				payment.getDate(),
 				payment.getCurrencyConversionTypeId(),
 				payment.getClientAndOrgId()
 		);
+		final CurrencyRate currencyRate = Services.get(ICurrencyBL.class).getCurrencyRate(conversionContext, paymentCurrencyId, invoiceCurrencyId);
 
-		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
-		final Money invoicePayAmtToAllocate = invoiceAmountsToAllocate.getPayAmt();
-
-		final Money paymentAmountToAllocate = moneyService.convertMoneyToCurrency(
-				payment.getAmountToAllocate(),
-				invoiceCurrencyId,
-				conversionContext
-		);
+		final Money paymentAmountToAllocate = currencyRate.convertAmount(payment.getAmountToAllocate());
 
 		if (invoicePayAmtToAllocate.signum() >= 0)
 		{
@@ -797,11 +795,12 @@ public class PaymentAllocationBuilder
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
 				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.min(paymentAmountToAllocate);
-				final Money payAmtInPaymentCurrency = calculatePayAmtInPaymentCurrency(invoicePayAmtToAllocate, payment.getAmountToAllocate(), paymentAmountToAllocate, payAmtInInvoiceCurrency);
+				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
 
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
 						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
+						.currencyRate(currencyRate)
 						.build();
 			}
 			// Invoice(+), Payment(-)
@@ -810,6 +809,7 @@ public class PaymentAllocationBuilder
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
 						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
+						.currencyRate(currencyRate)
 						.build();
 			}
 		}
@@ -821,57 +821,21 @@ public class PaymentAllocationBuilder
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
 						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
+						.currencyRate(currencyRate)
 						.build();
 			}
 			// Invoice(-), Payment(-)
 			else
 			{
 				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.max(paymentAmountToAllocate);
-				final Money payAmtInPaymentCurrency = calculatePayAmtInPaymentCurrency(invoicePayAmtToAllocate, payment.getAmountToAllocate(), paymentAmountToAllocate, payAmtInInvoiceCurrency);
+				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
 
 				return InvoiceAndPaymentAmountsToAllocate.builder()
 						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
 						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
+						.currencyRate(currencyRate)
 						.build();
 			}
-		}
-	}
-
-	/**
-	 * Use Rule of Three to calculate the PayAmt in Payment Currency, from the PayAmt in Invoice Currency.
-	 * <p>
-	 * `invoiceToAllocateInInvoiceCurrency` is used to figure out if Rule of Three should be applied or not.
-	 * <p>
-	 * Example:
-	 * <pre><code>
-	 * 	invoiceToAllocateInInvoiceCurrency: 50 EUR
-	 * 	paymentToAllocateInPaymentCurrency: 60 CHF
-	 * 	paymentToAllocateInInvoiceCurrency: 55.55 EUR
-	 * 	payAmtInInvoiceCurrency = 50 EUR
-	 *
-	 * 60 CHF ...... 55.55 EUR
-	 *  x CHF ...... 50.00 EUR
-	 *
-	 * => payAmtInPaymentCurrency = (60 * 50) / 55.55
-	 * </code></pre>
-	 */
-	@NonNull
-	private Money calculatePayAmtInPaymentCurrency(
-			@NonNull final Money invoiceToAllocateInInvoiceCurrency,
-			@NonNull final Money paymentToAllocateInPaymentCurrency,
-			@NonNull final Money paymentToAllocateInInvoiceCurrency,
-			@NonNull final Money payAmtInInvoiceCurrency)
-	{
-		if (invoiceToAllocateInInvoiceCurrency.isLessThanOrEqualTo(paymentToAllocateInInvoiceCurrency))
-		{
-			final BigDecimal amt = paymentToAllocateInPaymentCurrency.toBigDecimal()
-					.multiply(payAmtInInvoiceCurrency.toBigDecimal())
-					.divide(paymentToAllocateInInvoiceCurrency.toBigDecimal(), RoundingMode.HALF_UP);
-			return Money.of(amt, paymentToAllocateInPaymentCurrency.getCurrencyId());
-		}
-		else
-		{
-			return paymentToAllocateInPaymentCurrency;
 		}
 	}
 
