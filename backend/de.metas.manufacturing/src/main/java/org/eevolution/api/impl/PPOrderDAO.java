@@ -74,9 +74,9 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public List<I_PP_Order> getByIds(final Set<PPOrderId> orderIds)
+	public <T extends I_PP_Order> List<T> getByIds(@NonNull final Set<PPOrderId> orderIds, @NonNull final Class<T> type)
 	{
-		return loadByRepoIdAwares(orderIds, I_PP_Order.class);
+		return loadByRepoIdAwares(orderIds, type);
 	}
 
 	@Override

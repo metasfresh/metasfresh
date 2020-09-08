@@ -47,7 +47,12 @@ public interface IPPOrderDAO extends ISingletonService
 
 	<T extends I_PP_Order> T getById(PPOrderId ppOrderId, Class<T> type);
 
-	List<I_PP_Order> getByIds(Set<PPOrderId> orderIds);
+	default List<I_PP_Order> getByIds(Set<PPOrderId> orderIds)
+	{
+		return getByIds(orderIds, I_PP_Order.class);
+	}
+
+	<T extends I_PP_Order> List<T> getByIds(Set<PPOrderId> orderIds, Class<T> type);
 
 	/**
 	 * Gets released manufacturing orders based on {@link I_M_Warehouse}s.
