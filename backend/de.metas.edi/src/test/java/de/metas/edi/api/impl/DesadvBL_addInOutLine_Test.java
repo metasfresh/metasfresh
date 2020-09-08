@@ -88,7 +88,7 @@ import de.metas.util.Services;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-class DesadvBLTest_addInOutLine
+class DesadvBL_addInOutLine_Test
 {
 	private int sscc18SerialNo = 0;
 	private I_M_HU_PI_Item_Product huPIItemProductRecord;
@@ -240,7 +240,7 @@ class DesadvBLTest_addInOutLine
 				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU, COLUMNNAME_C_UOM_ID)
 				.containsOnly(
 						tuple(true, "001111110000000015", 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */, orderUomId.getRepoId()),
-						tuple(true, "001111110000000022", 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.333")/* CUperLU */, orderUomId.getRepoId()) //
+						tuple(true, "001111110000000022", 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.334")/* CUperLU - rounded to ceiling */, orderUomId.getRepoId()) //
 				);
 	}
 
@@ -309,6 +309,7 @@ class DesadvBLTest_addInOutLine
 		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", IUOMDAO.X12DE355_COLI);
 
 		desadvLine.setC_UOM_ID(coliUomRecord.getC_UOM_ID());
+		desadvLine.setQtyItemCapacity(TEN);
 		saveRecord(desadvLine);
 	}
 
