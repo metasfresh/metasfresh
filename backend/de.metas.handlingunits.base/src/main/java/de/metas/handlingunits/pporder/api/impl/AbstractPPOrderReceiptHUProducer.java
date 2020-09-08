@@ -42,6 +42,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -78,7 +79,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -368,7 +368,8 @@ import lombok.Value;
 	{
 		if (receiveOneVHU)
 		{
-			return HUProducerDestination.ofVirtualPI();
+			return HUProducerDestination.ofVirtualPI()
+					.setLocatorId(getLocatorId());
 		}
 		else
 		{
