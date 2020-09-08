@@ -7,11 +7,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -22,7 +24,9 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Cost_Collector;
@@ -40,9 +44,16 @@ import de.metas.common.rest_api.JsonQuantity;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
@@ -61,6 +72,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -124,13 +136,17 @@ public class ManufacturingOrderAPIServiceTest
 			@Nullable String qtyOrdered,
 			@Nullable LocatorId locatorId,
 			@Nullable ResourceId plantId,
-			@Nullable Instant dateOrdered)
+			@Nullable Instant dateOrdered,
+			//
+			@Nullable ProductId bomLine_componentId,
+			@Nullable String bomLine_qtyRequired)
 	{
 		final I_PP_Order order = newInstance(I_PP_Order.class);
 		{
 			order.setIsActive(true);
 			order.setProcessed(true);
 			order.setDocStatus(DocStatus.Completed.getCode());
+			order.setPlanningStatus(PPOrderPlanningStatus.PLANNING.getCode());
 
 			if (exportStatus != null)
 			{
@@ -189,6 +205,21 @@ public class ManufacturingOrderAPIServiceTest
 			saveRecord(orderBOM);
 		}
 
+		// Order BOM Line
+		if (bomLine_componentId != null)
+		{
+			final UomId uomId = productBL.getStockUOMId(bomLine_componentId);
+
+			final I_PP_Order_BOMLine orderBOMLine = newInstance(I_PP_Order_BOMLine.class);
+			orderBOMLine.setPP_Order_ID(order.getPP_Order_ID());
+			orderBOMLine.setComponentType(BOMComponentType.Component.getCode());
+			orderBOMLine.setM_Product_ID(bomLine_componentId.getRepoId());
+			orderBOMLine.setQtyRequiered(new BigDecimal(bomLine_qtyRequired));
+			orderBOMLine.setC_UOM_ID(uomId.getRepoId());
+			orderBOMLine.setM_Locator_ID(locatorId.getRepoId());
+			saveRecord(orderBOMLine);
+		}
+
 		return PPOrderId.ofRepoId(order.getPP_Order_ID());
 	}
 
@@ -196,6 +227,14 @@ public class ManufacturingOrderAPIServiceTest
 	{
 		return load(orderId, I_PP_Order.class);
 	}
+
+	//
+	//
+	//
+	// -----------------------
+	//
+	//
+	//
 
 	@Nested
 	public class exportOrders
@@ -478,6 +517,41 @@ public class ManufacturingOrderAPIServiceTest
 			saveRecord(docType);
 		}
 
+		@Builder(builderMethodName = "vhu", builderClassName = "VHUBuilder")
+		private HuId createVHU(
+				@NonNull final ProductId productId,
+				@NonNull final String qty,
+				@Nullable final String lotNumber,
+				@Nullable final String bestBeforeDate)
+		{
+			final I_C_UOM uom = productBL.getStockUOM(productId);
+
+			final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+					.setHUStatus(X_M_HU.HUSTATUS_Active);
+			huTestHelper.load(TestHelperLoadRequest.builder()
+					.producer(producer)
+					.cuProductId(productId)
+					.loadCuQty(new BigDecimal(qty))
+					.loadCuUOM(uom)
+					.build());
+
+			final I_M_HU vhu = producer.getSingleCreatedHU().get();
+
+			if (lotNumber != null
+					|| bestBeforeDate != null)
+			{
+				final IMutableHUContext huContext = huTestHelper.getHUContext();
+				final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory()
+						.getAttributeStorage(vhu);
+				huAttributes.setSaveOnChange(true);
+
+				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, LocalDate.parse(bestBeforeDate));
+			}
+
+			return HuId.ofRepoId(vhu.getM_HU_ID());
+		}
+
 		@Test
 		public void receive()
 		{
@@ -517,6 +591,48 @@ public class ManufacturingOrderAPIServiceTest
 
 			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
 			assertThat(huStorage.getQty(productId, uomEach)).isEqualByComparingTo("10");
+		}
+
+		@Test
+		public void issue()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("product", uomEach);
+			final ProductId componentId = BusinessTestHelper.createProductId("component1", uomEach);
+
+			final PPOrderId orderId = manufacturingOrder()
+					.productId(productId)
+					.qtyOrdered("100")
+					.locatorId(locatorId)
+					.plantId(plantId)
+					//
+					.bomLine_componentId(componentId)
+					.bomLine_qtyRequired("10")
+					//
+					.build();
+
+			final HuId vhuId = vhu().productId(componentId)
+					.qty("40")
+					.lotNumber("lot1")
+					.bestBeforeDate("2022-02-02")
+					.build();
+
+			apiService.report(JsonRequestManufacturingOrdersReport.builder()
+					.issue(JsonRequestIssueToManufacturingOrder.builder()
+							.orderId(orderId)
+							.qtyToIssue(JsonQuantity.builder()
+									.qty(new BigDecimal("2"))
+									.uomCode(X12DE355.EACH.getCode())
+									.build())
+							.handlingUnit(JsonRequestHULookup.builder()
+									.lotNumber("lot1")
+									.bestBeforeDate(LocalDate.parse("2022-02-02"))
+									.build())
+							.build())
+					.build());
+
+			final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(vhu);
+			assertThat(huStorage.getQty(componentId, uomEach)).isEqualByComparingTo("38");
 		}
 	}
 }

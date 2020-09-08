@@ -3,6 +3,8 @@ package de.metas.manufacturing.rest_api;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -49,7 +51,10 @@ public class JsonResponseManufacturingOrder
 
 	@NonNull
 	String documentNo;
-	
+
+	@Nullable
+	String description;
+
 	@NonNull
 	ZonedDateTime dateOrdered;
 	@NonNull

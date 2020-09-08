@@ -44,6 +44,7 @@ import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -162,6 +163,7 @@ final class ManufacturingOrdersExportCommand
 		return JsonResponseManufacturingOrder.builder()
 				.orderId(orderId)
 				.documentNo(order.getDocumentNo())
+				.description(StringUtils.trimBlankToNull(order.getDescription()))
 				.finishGoodProduct(toJsonProduct(ProductId.ofRepoId(order.getM_Product_ID())))
 				.qtyToProduce(toJsonQuantity(qtyToProduce))
 				.dateOrdered(TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone))

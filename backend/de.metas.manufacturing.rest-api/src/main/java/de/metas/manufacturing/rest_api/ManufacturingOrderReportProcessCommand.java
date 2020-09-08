@@ -1,18 +1,25 @@
 package de.metas.manufacturing.rest_api;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.MDC;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.common.rest_api.JsonQuantity;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -90,10 +97,16 @@ class ManufacturingOrderReportProcessCommand
 	{
 		final PPOrderId orderId = issue.getOrderId();
 		final Quantity qtyToIssue = toQuantity(issue.getQtyToIssue());
-		final List<I_M_HU> hus = handlingUnitsBL.getByIds(issue.getHuIds());
+		if (issue.getHandlingUnits().isEmpty())
+		{
+			throw new AdempiereException("No HUs specified in " + issue);
+		}
+
+		final List<I_M_HU> hus = resolveHUs(issue.getHandlingUnits());
 
 		huPPOrderBL.createIssueProducer(orderId)
 				.fixedQtyToIssue(qtyToIssue)
+				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
 				.createIssues(hus);
 	}
 
@@ -136,5 +149,34 @@ class ManufacturingOrderReportProcessCommand
 		Check.assumeNotNull(order, "{} exists in {}", orderId, _orders);
 
 		return order;
+	}
+
+	private List<I_M_HU> resolveHUs(@NonNull final Collection<JsonRequestHULookup> requests)
+	{
+		final ImmutableSet<HuId> huIds = requests.stream()
+				.flatMap(request -> resolveHUId(request).stream())
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
+		if (hus.isEmpty())
+		{
+			throw new AdempiereException("No HUs found for " + requests);
+		}
+
+		return hus;
+	}
+
+	private Set<HuId> resolveHUId(@NonNull final JsonRequestHULookup request)
+	{
+		final Set<HuId> huIds = handlingUnitsBL.createHUQueryBuilder()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_LotNumber, request.getLotNumber())
+				.addOnlyWithAttribute(AttributeConstants.ATTR_BestBeforeDate, request.getBestBeforeDate())
+				.listIds();
+		if (huIds.isEmpty())
+		{
+			throw new AdempiereException("No HU found for " + request);
+		}
+
+		return huIds;
 	}
 }
