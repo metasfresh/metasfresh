@@ -360,7 +360,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true">
 				<reportElement mode="Transparent" x="72" y="242" width="80" height="14" uuid="4f58cf8d-7382-4cb9-83bd-dbedbdd499aa"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8"/>
@@ -404,7 +404,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QR_Amount}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true">
 				<reportElement mode="Transparent" x="253" y="244" width="80" height="12" uuid="42a497f6-9344-41cd-bee3-3576d2f02dd1">
 					<property name="com.jaspersoft.studio.unit.y" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
