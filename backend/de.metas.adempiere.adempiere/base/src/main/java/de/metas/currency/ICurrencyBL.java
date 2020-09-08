@@ -164,11 +164,8 @@ public interface ICurrencyBL extends ISingletonService
 			CurrencyId currencyToId);
 
 	/**
-	 * @param conversionCtx
-	 * @param currencyFromId
-	 * @param currencyToId
-	 * @return currency rate; never returns null
-	 * @throws NoCurrencyRateFoundException
+	 * @throws NoCurrencyRateFoundException if none found
 	 */
+	@NonNull
 	CurrencyRate getCurrencyRate(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

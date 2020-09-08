@@ -298,29 +298,30 @@ public class CurrencyBL implements ICurrencyBL
 			}
 		}
 
-		final CurrencyPrecision currencyPrecision = conversionCtx.getPrecision()
-				.orElseGet(() -> getStdPrecision(currencyToId));
+		final CurrencyPrecision toCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyToId));
+		final CurrencyPrecision fromCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyFromId));
 
 		return CurrencyRate.builder()
 				.conversionRate(conversionRate)
 				.fromCurrencyId(currencyFromId)
 				.toCurrencyId(currencyToId)
-				.currencyPrecision(currencyPrecision)
+				.toCurrencyPrecision(toCurrencyPrecision)
+				.fromCurrencyPrecision(fromCurrencyPrecision)
 				.conversionTypeId(conversionTypeId)
 				.conversionDate(conversionDate)
 				.build();
 	}
 
 	@Override
-	public CurrencyRate getCurrencyRate(
+	public @NonNull CurrencyRate getCurrencyRate(
 			@NonNull final CurrencyConversionContext conversionCtx,
-			@NonNull final CurrencyId currencyFromId,
-			@NonNull final CurrencyId currencyToId)
+			@NonNull final CurrencyId fromCurrencyId,
+			@NonNull final CurrencyId toCurrencyId)
 	{
-		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
+		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, fromCurrencyId, toCurrencyId);
 		if (currencyRate == null)
 		{
-			throw new NoCurrencyRateFoundException(conversionCtx, currencyFromId, currencyToId);
+			throw new NoCurrencyRateFoundException(conversionCtx, fromCurrencyId, toCurrencyId);
 		}
 		return currencyRate;
 	}
