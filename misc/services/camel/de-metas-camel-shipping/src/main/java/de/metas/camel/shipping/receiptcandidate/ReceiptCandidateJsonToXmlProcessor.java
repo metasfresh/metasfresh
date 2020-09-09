@@ -22,6 +22,15 @@
 
 package de.metas.camel.shipping.receiptcandidate;
 
+import java.time.format.DateTimeFormatter;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.PropertiesComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.FeedbackProzessor;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.COL;
@@ -36,15 +45,6 @@ import de.metas.common.shipping.Outcome;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import lombok.NonNull;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.spi.PropertiesComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.time.format.DateTimeFormatter;
-
-import de.metas.camel.shipping.CommonUtil;
 
 public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {
@@ -122,9 +122,9 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(null)); // _anlieferung_mhd_ablauf_datum
 
 		final var product = item.getProduct();
+		final String productNo = CommonUtil.extractProductNo(propertiesComponent, product, item.getOrgCode());
 
-		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, item.getOrgCode());
-		row.col(COL.of(artikelNummerPrefix + product.getProductNo())); // _artikel_nummer
+		row.col(COL.of(productNo)); // _artikel_nummer
 		row.col(COL.of(product.getName())); // _artikel_bezeichnung
 		row.col(COL.of(item.getQuantities().get(0).getQty().toString())); // _artikel_menge
 		row.col(COL.of(product.getWeight().toString())); // _artikel_gewicht_1_stueck

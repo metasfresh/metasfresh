@@ -22,18 +22,21 @@
 
 package de.metas.camel.shipping;
 
-import de.metas.common.filemaker.DATABASE;
-import de.metas.common.filemaker.FMPXMLRESULT;
-import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
-import de.metas.common.filemaker.PRODUCT;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.spi.PropertiesComponent;
 
-import javax.annotation.Nullable;
-import java.util.regex.Pattern;
+import de.metas.common.filemaker.DATABASE;
+import de.metas.common.filemaker.FMPXMLRESULT;
+import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
+import de.metas.common.filemaker.PRODUCT;
+import de.metas.common.shipping.JsonProduct;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class CommonUtil
@@ -43,7 +46,13 @@ public class CommonUtil
 			final int numberOfItems)
 	{
 		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receiptCandidate.FMPXMLRESULT.DATABASE.NAME}}");
+		return createFmpxmlresultBuilder(databaseName, numberOfItems);
+	}
 
+	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
+			final String databaseName,
+			final int numberOfItems)
+	{
 		return FMPXMLRESULT.builder()
 				.errorCode("0")
 				.product(new PRODUCT())
@@ -54,7 +63,17 @@ public class CommonUtil
 	}
 
 	@NonNull
-	public String extractOrgPrefix(
+	public String extractProductNo(
+			@NonNull final PropertiesComponent propertiesComponent,
+			@NonNull final JsonProduct product,
+			@NonNull final String orgCode)
+	{
+		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, orgCode);
+		return artikelNummerPrefix + product.getProductNo();
+	}
+
+	@NonNull
+	private String extractOrgPrefix(
 			@NonNull final PropertiesComponent propertiesComponent,
 			@NonNull final String orgCode)
 	{

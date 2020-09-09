@@ -34,7 +34,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonRequestSetOrderExportStatus.JsonRequestSetOrderExportStatusBuilder.class)
 public class JsonRequestSetOrderExportStatus
@@ -54,5 +54,12 @@ public class JsonRequestSetOrderExportStatus
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonRequestSetOrderExportStatusBuilder
 	{
+	}
+
+	public JsonRequestSetOrderExportStatus withError()
+	{
+		return outcome != Outcome.ERROR
+				? toBuilder().outcome(Outcome.ERROR).build()
+				: this;
 	}
 }

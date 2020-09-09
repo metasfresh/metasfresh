@@ -161,10 +161,13 @@ final class ManufacturingOrdersExportCommand
 		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
 		final Quantity qtyToProduce = ppOrderBL.getQtyOrdered(order);
 
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		final String orgCode = orgDAO.retrieveOrgValue(orgId);
 
 		return JsonResponseManufacturingOrder.builder()
 				.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+				.orgCode(orgCode)
 				.documentNo(order.getDocumentNo())
 				.description(StringUtils.trimBlankToNull(order.getDescription()))
 				.finishGoodProduct(toJsonProduct(ProductId.ofRepoId(order.getM_Product_ID())))

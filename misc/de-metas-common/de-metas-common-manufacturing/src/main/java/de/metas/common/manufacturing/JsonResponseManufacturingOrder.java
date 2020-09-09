@@ -48,6 +48,9 @@ public class JsonResponseManufacturingOrder
 {
 	@NonNull
 	JsonMetasfreshId orderId;
+	
+	@NonNull
+	String orgCode;
 
 	@NonNull
 	String documentNo;

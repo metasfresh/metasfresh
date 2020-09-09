@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.common.rest_api.JsonError;
 import lombok.Builder;
@@ -35,7 +36,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonRequestSetOrdersExportStatusBulk.JsonRequestSetOrdersExportStatusBulkBuilder.class)
 public class JsonRequestSetOrdersExportStatusBulk
@@ -54,4 +55,14 @@ public class JsonRequestSetOrdersExportStatusBulk
 	public static class JsonRequestSetOrdersExportStatusBulkBuilder
 	{
 	}
+
+	public JsonRequestSetOrdersExportStatusBulk withError(@NonNull final JsonError error)
+	{
+		return toBuilder()
+				.items(this.items.stream()
+						.map(JsonRequestSetOrderExportStatus::withError)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
 }
