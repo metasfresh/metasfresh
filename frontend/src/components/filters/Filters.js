@@ -575,8 +575,8 @@ class Filters extends PureComponent {
     const widgetShown = filters ? filters.widgetShown : false;
     const { notValidFields, activeFilter, activeFiltersCaptions } = this.state;
 
-    if (!filters) return false;
-    const allFilters = filters.filterData; // this.annotateFilters(filters.filterData);
+    if (!filters || !viewId) return false;
+    const allFilters = this.annotateFilters(filters.filterData);
 
     const flatActiveFilterIds =
       activeFilter !== null ? activeFilter.map((item) => item.filterId) : [];
