@@ -26,6 +26,8 @@ import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 
+import de.metas.organization.OrgId;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -45,7 +47,7 @@ public class InvoiceDetailItem
 	
 	String note;
 
-
+    OrgId orgId;
 	/**
 	 * @return true if label and description, date and price are blank/null, false otherwise.
 	 */

@@ -276,6 +276,7 @@ public class CreateInvoiceCandidatesService
 							.date(jsonDetail.getDate())
 							.price(jsonDetail.getPrice())
 							.note(jsonDetail.getNote())
+							.orgId(orgId)
 							.build())
 					.collect(Collectors.toList());
 

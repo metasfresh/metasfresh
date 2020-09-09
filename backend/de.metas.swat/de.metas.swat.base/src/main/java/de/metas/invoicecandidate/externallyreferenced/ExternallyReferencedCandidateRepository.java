@@ -321,21 +321,22 @@ public class ExternallyReferencedCandidateRepository
 		final I_C_Invoice_Detail invoiceDetailEntity = newInstance(I_C_Invoice_Detail.class);
 
 		invoiceDetailEntity.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+		invoiceDetailEntity.setAD_Org_ID(invoiceDetailItem.getOrgId());
 		invoiceDetailEntity.setSeqNo(NumberUtils.asInt(invoiceDetailItem.getSeqNo(), 0));
 		invoiceDetailEntity.setDescription(invoiceDetailItem.getDescription());
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
 		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
 		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
-		invoiceDetailEntity.setDate(getDate(invoiceCandidateId, invoiceDetailItem));
+		invoiceDetailEntity.setDate(getDate(invoiceDetailItem));
 
 		return invoiceDetailEntity;
 	}
 
-	private Timestamp getDate(final InvoiceCandidateId invoiceCandidateId, final InvoiceDetailItem invoiceDetailItem)
+	private Timestamp getDate(@NonNull final InvoiceDetailItem invoiceDetailItem)
 	{
 		if (invoiceDetailItem.getDate() != null)
 		{
-			final OrgId orgId = invoiceCandDAO.getOrgId(invoiceCandidateId);
+			final OrgId orgId = invoiceDetailItem.getOrgId();
 			final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 			return TimeUtil.asTimestamp(invoiceDetailItem.getDate(), timeZone);
 		}
