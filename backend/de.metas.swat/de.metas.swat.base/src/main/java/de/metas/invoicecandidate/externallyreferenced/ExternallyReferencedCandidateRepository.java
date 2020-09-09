@@ -321,7 +321,7 @@ public class ExternallyReferencedCandidateRepository
 		final I_C_Invoice_Detail invoiceDetailEntity = newInstance(I_C_Invoice_Detail.class);
 
 		invoiceDetailEntity.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
-		invoiceDetailEntity.setAD_Org_ID(invoiceDetailItem.getOrgId());
+		invoiceDetailEntity.setAD_Org_ID(invoiceDetailItem.getOrgId().getRepoId());
 		invoiceDetailEntity.setSeqNo(NumberUtils.asInt(invoiceDetailItem.getSeqNo(), 0));
 		invoiceDetailEntity.setDescription(invoiceDetailItem.getDescription());
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
