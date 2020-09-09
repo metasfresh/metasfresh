@@ -1,37 +1,5 @@
-/*
- * #%L
- * de-metas-camel-shipping
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.camel.shipping;
 
-import de.metas.common.filemaker.FIELD;
-import de.metas.common.filemaker.FMPXMLRESULT;
-import de.metas.common.filemaker.RESULTSET;
-import de.metas.common.filemaker.ROW;
-import lombok.NonNull;
-import org.apache.camel.Exchange;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,24 +12,60 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class XmlToJsonBaseProcessor
-{
-	private final static Log log = LogFactory.getLog(XmlToJsonBaseProcessor.class);
+import javax.annotation.Nullable;
 
-	protected  <T,R> void processExchange(
+import org.apache.camel.Exchange;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import de.metas.common.filemaker.FIELD;
+import de.metas.common.filemaker.FMPXMLRESULT;
+import de.metas.common.filemaker.RESULTSET;
+import de.metas.common.filemaker.ROW;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+/*
+ * #%L
+ * de-metas-camel-shipping
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@UtilityClass
+public class XmlToJsonProcessorUtil
+{
+	private final static Log log = LogFactory.getLog(XmlToJsonProcessorUtil.class);
+
+	public <T, R> void processExchange(
 			final Exchange exchange,
-			final BiFunction<ROW, Map<String,Integer>, T> buildRequestItemFunction,
+			final BiFunction<ROW, Map<String, Integer>, T> buildRequestItemFunction,
 			final Function<List<T>, R> buildRequestFunction)
 	{
 		final FMPXMLRESULT fmpxmlresult = exchange.getIn().getBody(FMPXMLRESULT.class);
 
-		if (fmpxmlresult == null || fmpxmlresult.isEmpty() )
+		if (fmpxmlresult == null || fmpxmlresult.isEmpty())
 		{
 			log.debug("exchange.body is empty! -> nothing to do!");
 
 			exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, 0);
 
-			return; //nothing to do
+			return; // nothing to do
 		}
 
 		final Map<String, Integer> name2Index = new HashMap<>();
@@ -86,7 +90,7 @@ public class XmlToJsonBaseProcessor
 		exchange.getIn().setBody(request);
 	}
 
-	protected Optional<LocalDate> asLocalDate(
+	public Optional<LocalDate> asLocalDate(
 			@Nullable final String value,
 			@NonNull final Set<String> localDatePatterns,
 			@NonNull final String fieldName)
@@ -98,7 +102,7 @@ public class XmlToJsonBaseProcessor
 
 		Optional<LocalDate> localDateValue = Optional.empty();
 
-		for (final String datePattern: localDatePatterns)
+		for (final String datePattern : localDatePatterns)
 		{
 			try
 			{
@@ -118,7 +122,7 @@ public class XmlToJsonBaseProcessor
 		return localDateValue;
 	}
 
-	protected Optional<LocalDateTime> asLocalDateTime(
+	public Optional<LocalDateTime> asLocalDateTime(
 			@Nullable final String value,
 			@NonNull final Set<String> localDateTimePatterns,
 			@NonNull final String fieldName)
@@ -130,7 +134,7 @@ public class XmlToJsonBaseProcessor
 
 		Optional<LocalDateTime> localDateTime = Optional.empty();
 
-		for (final String datePattern: localDateTimePatterns)
+		for (final String datePattern : localDateTimePatterns)
 		{
 			try
 			{
