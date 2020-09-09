@@ -20,7 +20,6 @@ import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
-import de.metas.common.rest_api.JsonQuantity;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -29,9 +28,9 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCan
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -63,7 +62,7 @@ class ManufacturingOrderReportProcessCommand
 {
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final JsonRequestManufacturingOrdersReport request;
 
@@ -103,7 +102,16 @@ class ManufacturingOrderReportProcessCommand
 	private void processIssue(final JsonRequestIssueToManufacturingOrder issue)
 	{
 		final PPOrderId orderId = extractPPOrderId(issue);
-		final Quantity qtyToIssue = toQuantity(issue.getQtyToIssue());
+
+		final String productNo = issue.getProductNo();
+		final ProductId productId = productBL.getProductIdByValue(productNo);
+		if (productId == null)
+		{
+			throw new RuntimeException("No product found for `" + productNo + "`");
+		}
+		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
+		final Quantity qtyToIssue = Quantity.of(issue.getQtyToIssueInStockUOM(), stockingUOM);
+
 		if (issue.getHandlingUnits().isEmpty())
 		{
 			throw new AdempiereException("No HUs specified in " + issue);
@@ -120,8 +128,11 @@ class ManufacturingOrderReportProcessCommand
 	private void processReceipt(final JsonRequestReceiveFromManufacturingOrder receipt)
 	{
 		final PPOrderId orderId = extractPPOrderId(receipt);
-		final Quantity qtyToReceive = toQuantity(receipt.getQtyToReceive());
 		final LocatorId locatorId = getReceiveToLocatorByOrderId(orderId);
+
+		final ProductId productId = getFinishedGoodProductId(orderId);
+		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
+		final Quantity qtyToReceive = Quantity.of(receipt.getQtyToReceiveInStockUOM(), stockingUOM);
 
 		// TODO: reserve the HU for the shipment schedule!
 		huPPOrderBL.receivingMainProduct(orderId)
@@ -130,12 +141,11 @@ class ManufacturingOrderReportProcessCommand
 				.receiveVHU(qtyToReceive);
 	}
 
-	private Quantity toQuantity(final JsonQuantity json)
+	private ProductId getFinishedGoodProductId(final PPOrderId orderId)
 	{
-		final X12DE355 x12de355 = X12DE355.ofCode(json.getUomCode());
-		final I_C_UOM uom = uomDAO.getByX12DE355(x12de355);
-
-		return Quantity.of(json.getQty(), uom);
+		final I_PP_Order order = getOrderById(orderId);
+		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+		return productId;
 	}
 
 	private LocatorId getReceiveToLocatorByOrderId(final PPOrderId orderId)

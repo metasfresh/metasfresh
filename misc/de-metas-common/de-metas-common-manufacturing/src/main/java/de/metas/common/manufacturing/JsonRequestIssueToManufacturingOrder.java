@@ -1,17 +1,14 @@
 package de.metas.common.manufacturing;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
-import de.metas.common.shipping.JsonProduct;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -49,13 +46,13 @@ public class JsonRequestIssueToManufacturingOrder
 	JsonMetasfreshId orderId;
 
 	@NonNull
-	JsonQuantity qtyToIssue;
+	BigDecimal qtyToIssueInStockUOM;
 
 	@NonNull
 	ZonedDateTime date;
 
-	@Nullable
-	JsonProduct product;
+	@NonNull
+	String productNo;
 
 	@NonNull
 	@Singular

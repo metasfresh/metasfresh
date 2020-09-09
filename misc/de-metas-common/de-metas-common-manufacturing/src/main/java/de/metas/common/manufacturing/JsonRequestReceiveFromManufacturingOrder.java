@@ -1,5 +1,6 @@
 package de.metas.common.manufacturing;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -7,7 +8,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,7 +44,7 @@ public class JsonRequestReceiveFromManufacturingOrder
 	JsonMetasfreshId orderId;
 
 	@NonNull
-	JsonQuantity qtyToReceive;
+	BigDecimal qtyToReceiveInStockUOM;
 
 	@NonNull
 	ZonedDateTime date;

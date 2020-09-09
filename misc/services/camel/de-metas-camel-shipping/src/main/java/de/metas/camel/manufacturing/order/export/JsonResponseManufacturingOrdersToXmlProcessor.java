@@ -158,7 +158,7 @@ class JsonResponseManufacturingOrdersToXmlProcessor implements Processor
 		valuesByName.put("_stueckliste_anmerkung", order.getDescription());
 		valuesByName.put("_stueckliste_artikelnummer", bomProductNo);
 		valuesByName.put("_stueckliste_id", String.valueOf(order.getOrderId().getValue()));
-		valuesByName.put("_stueckliste_mutter_oder_tochter", "Mutter");
+		valuesByName.put("_stueckliste_mutter_oder_tochter", MainProductOrComponent.MAIN_PRODUCT.getCode());
 
 		return METADATA.createROW(valuesByName);
 	}
@@ -182,7 +182,7 @@ class JsonResponseManufacturingOrdersToXmlProcessor implements Processor
 		valuesByName.put("_stueckliste_anmerkung", order.getDescription());
 		valuesByName.put("_stueckliste_artikelnummer", bomProductNo);
 		valuesByName.put("_stueckliste_id", String.valueOf(order.getOrderId().getValue()));
-		valuesByName.put("_stueckliste_mutter_oder_tochter", "Tochter");
+		valuesByName.put("_stueckliste_mutter_oder_tochter", MainProductOrComponent.COMPONENT.getCode());
 
 		return METADATA.createROW(valuesByName);
 	}

@@ -48,7 +48,6 @@ import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUTestHelper;
@@ -75,7 +74,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
 import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
@@ -579,10 +577,7 @@ public class ManufacturingOrderAPIServiceTest
 					.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.date(SystemTime.asZonedDateTime())
-							.qtyToReceive(JsonQuantity.builder()
-									.qty(new BigDecimal("10"))
-									.uomCode(X12DE355.EACH.getCode())
-									.build())
+							.qtyToReceiveInStockUOM(new BigDecimal("10"))
 							.build())
 					.build());
 
@@ -633,10 +628,8 @@ public class ManufacturingOrderAPIServiceTest
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.date(SystemTime.asZonedDateTime())
-							.qtyToIssue(JsonQuantity.builder()
-									.qty(new BigDecimal("2"))
-									.uomCode(X12DE355.EACH.getCode())
-									.build())
+							.qtyToIssueInStockUOM(new BigDecimal("2"))
+							.productNo("product")
 							.handlingUnit(JsonRequestHULookup.builder()
 									.lotNumber("lot1")
 									.bestBeforeDate(LocalDate.parse("2022-02-02"))
