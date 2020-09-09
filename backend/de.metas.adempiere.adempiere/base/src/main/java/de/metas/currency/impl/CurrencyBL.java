@@ -272,6 +272,7 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyRate == null ? null : currencyRate.getConversionRate();
 	}
 
+	@Nullable
 	private CurrencyRate getCurrencyRateOrNull(
 			@NonNull final CurrencyConversionContext conversionCtx,
 			@NonNull final CurrencyId currencyFromId,

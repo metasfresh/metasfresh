@@ -14,6 +14,8 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -63,5 +65,6 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 
+	@Nullable
 	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

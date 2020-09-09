@@ -38,6 +38,8 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -239,7 +241,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
-	public BigDecimal retrieveRateOrNull(
+	public @Nullable BigDecimal retrieveRateOrNull(
 			final CurrencyConversionContext conversionCtx,
 			final CurrencyId currencyFromId,
 			final CurrencyId currencyToId)
