@@ -41,6 +41,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
@@ -244,7 +245,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(paymentRow.getCurrencyISOCode()).getId();
 
 		return PaymentDocument.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, paymentRow.getOrgId()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), paymentRow.getOrgId()))
 				.paymentId(PaymentId.ofRepoId(paymentRow.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(paymentRow.getC_BPartner_ID()))
 				.paymentDirection(paymentRow.getPaymentDirection())

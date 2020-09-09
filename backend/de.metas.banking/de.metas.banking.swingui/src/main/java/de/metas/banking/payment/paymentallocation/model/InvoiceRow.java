@@ -47,6 +47,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.util.Env;
 
 /**
  * Invoice or Prepaid Order.
@@ -535,7 +536,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(invoiceRow.getCurrencyISOCode()).getId();
 
 		return PayableDocument.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, invoiceRow.getOrgId()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), invoiceRow.getOrgId()))
 				.invoiceId(invoiceId)
 				.prepayOrderId(prepayOrderId)
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(invoiceRow.getC_BPartner_ID()))
