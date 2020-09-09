@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.eevolution.model.I_PP_Order_ExportAudit;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,6 +51,7 @@ import lombok.Value;
  * #L%
  */
 
+@Repository
 public class ManufacturingOrderAuditRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
