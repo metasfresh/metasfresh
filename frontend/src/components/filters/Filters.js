@@ -434,6 +434,7 @@ class Filters extends PureComponent {
 
     if (flatFiltersMap) {
       activeFilters = activeFilters.map((filter, filterId) => {
+        filter = deepUnfreeze(filter);
         filter.parameters &&
           filter.parameters.forEach((parameter) => {
             const { value, valueTo, parameterName } = parameter;
@@ -564,7 +565,6 @@ class Filters extends PureComponent {
    */
   render() {
     const {
-      filterData,
       windowType,
       viewId,
       resetInitialValues,
@@ -575,9 +575,8 @@ class Filters extends PureComponent {
     const widgetShown = filters ? filters.widgetShown : false;
     const { notValidFields, activeFilter, activeFiltersCaptions } = this.state;
 
-    const allFilters = this.annotateFilters(
-      filterData.toIndexedSeq().toArray()
-    );
+    if (!filters) return false;
+    const allFilters = filters.filterData; // this.annotateFilters(filters.filterData);
 
     const flatActiveFilterIds =
       activeFilter !== null ? activeFilter.map((item) => item.filterId) : [];
