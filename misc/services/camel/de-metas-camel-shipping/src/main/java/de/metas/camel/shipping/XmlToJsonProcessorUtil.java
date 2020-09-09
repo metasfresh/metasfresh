@@ -27,6 +27,7 @@ import de.metas.common.filemaker.FIELD;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.RESULTSET;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,9 +43,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-public class XmlToJsonBaseProcessor
+@UtilityClass
+public class XmlToJsonProcessorUtil
 {
-	private final static Log log = LogFactory.getLog(XmlToJsonBaseProcessor.class);
+	private final static Log log = LogFactory.getLog(XmlToJsonProcessorUtil.class);
 
 	protected void processExchange(
 			final Exchange exchange,
@@ -52,13 +54,13 @@ public class XmlToJsonBaseProcessor
 	{
 		final FMPXMLRESULT fmpxmlresult = exchange.getIn().getBody(FMPXMLRESULT.class);
 
-		if (fmpxmlresult == null || fmpxmlresult.isEmpty() )
+		if (fmpxmlresult == null || fmpxmlresult.isEmpty())
 		{
 			log.debug("exchange.body is empty! -> nothing to do!");
 
 			exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, 0);
 
-			return; //nothing to do
+			return; // nothing to do
 		}
 
 		final Map<String, Integer> name2Index = new HashMap<>();
@@ -84,7 +86,7 @@ public class XmlToJsonBaseProcessor
 		exchange.getIn().setBody(request);
 	}
 
-	protected Optional<LocalDate> asLocalDate(
+	public Optional<LocalDate> asLocalDate(
 			@Nullable final String value,
 			@NonNull final Set<String> localDatePatterns,
 			@NonNull final String fieldName)
@@ -96,7 +98,7 @@ public class XmlToJsonBaseProcessor
 
 		Optional<LocalDate> localDateValue = Optional.empty();
 
-		for (final String datePattern: localDatePatterns)
+		for (final String datePattern : localDatePatterns)
 		{
 			try
 			{
@@ -116,7 +118,7 @@ public class XmlToJsonBaseProcessor
 		return localDateValue;
 	}
 
-	protected Optional<LocalDateTime> asLocalDateTime(
+	public Optional<LocalDateTime> asLocalDateTime(
 			@Nullable final String value,
 			@NonNull final Set<String> localDateTimePatterns,
 			@NonNull final String fieldName)
@@ -128,7 +130,7 @@ public class XmlToJsonBaseProcessor
 
 		Optional<LocalDateTime> localDateTime = Optional.empty();
 
-		for (final String datePattern: localDateTimePatterns)
+		for (final String datePattern : localDateTimePatterns)
 		{
 			try
 			{
