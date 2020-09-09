@@ -43,11 +43,13 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 	public static final String SHIPMENT_CANDIDATE_UPLOAD_ROUTE = "FM-upload-shipment-candidate";
 
-	private static final String SHIPMENT_CANDIDATE_UPLOAD_URI = "{{siro.ftp.upload.shipment-schedules.uri}}";
+	private static final String SHIPMENT_CANDIDATE_UPLOAD_URI = "{{siro.ftp.upload.shipment-candidate.uri}}";
 
 	@Override
 	public void configure()
 	{
+		final var timerPeriod = RouteBuilderCommonUtil.resolveProperty(getContext(), "metasfresh.shipment-candidate.pollIntervall", "5s");
+
 		errorHandler(defaultErrorHandler());
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
@@ -60,7 +62,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
 		from(timer("pollShipmentCandidateAPI")
-				.period(5 * 1000))
+				.period(timerPeriod))
 				.routeId(MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML)
 				.streamCaching()
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
@@ -72,7 +74,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 				.choice()
 				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
-				.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " + Exchange.FILE_NAME)
+				.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " + header(Exchange.FILE_NAME))
 				.marshal(jacksonXMLDataFormat)
 				.multicast() // store the file both locally and send it to the remote folder
 					.stopOnException()
