@@ -34,7 +34,11 @@ import {
 } from '../constants/ActionTypes';
 
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
-import { createFilter, deleteFilter } from './FiltersActions';
+import {
+  createFilter,
+  deleteFilter,
+  getFlatFiltersMap,
+} from './FiltersActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
@@ -308,12 +312,16 @@ export function fetchDocument({
         const view = getView(state, windowId, isModal);
 
         const filterId = getEntityRelatedId({ windowId, viewId });
+        const flatFiltersMap = getFlatFiltersMap({
+          filterData: view.layout.filters,
+        });
         dispatch(
           createFilter({
             id: filterId,
             data: {
               filterData: view.layout.filters, // set the proper layout for the filters
               filtersActive: response.data.filters,
+              flatFiltersMap,
             },
           })
         );

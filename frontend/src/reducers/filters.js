@@ -41,11 +41,12 @@ const reducer = produce((draftState, action) => {
   switch (action.type) {
     case types.CREATE_FILTER: {
       const { id, data } = action.payload;
-      const { filterData, filtersActive } = data;
+      const { filterData, filtersActive, flatFiltersMap } = data;
       draftState[id] = {
         ...initialFiltersLeafState,
         filterData: filterData ? filterData : [],
         filtersActive: filtersActive ? filtersActive : [],
+        flatFiltersMap,
       };
       return;
     }

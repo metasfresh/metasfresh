@@ -66,3 +66,32 @@ export function filtersToMap(filtersArray) {
   }
   return filtersMap;
 }
+
+/**
+ * @method getFlatFiltersMap
+ * @summary Creates a flatFilterMap out of passed filterData array
+ */
+export function getFlatFiltersMap({ filterData }) {
+  const flatFiltersMap = {};
+  filterData.forEach((filter) => {
+    if (filter.parameters) {
+      filter.parameters.forEach((parameter) => {
+        const { parameterName, widgetType } = parameter;
+        flatFiltersMap[`${filter.filterId}-${parameterName}`] = { widgetType };
+      });
+    } else if (filter.includedFilters) {
+      filter.includedFilters.forEach((includedFilter) => {
+        if (includedFilter.parameters) {
+          includedFilter.parameters.forEach((parameter) => {
+            const { parameterName, widgetType } = parameter;
+            flatFiltersMap[`${includedFilter.filterId}-${parameterName}`] = {
+              widgetType,
+            };
+          });
+        }
+      });
+    }
+  });
+
+  return flatFiltersMap;
+}
