@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -274,15 +273,6 @@ public class PickingCandidateService
 				.request(request)
 				.build()
 				.perform();
-	}
-
-	public ImmutableSet<ShipmentScheduleId> getScheduleIdsByHuId(@NonNull final HuId huId)
-	{
-		return pickingCandidateRepository.retrieveCandidatesByHUId(huId)
-				.stream()
-				.map(I_M_Picking_Candidate::getM_ShipmentSchedule_ID)
-				.map(ShipmentScheduleId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

@@ -1,15 +1,12 @@
 import React from 'react';
-import { mount, shallow, render } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import nock from 'nock';
-import { Provider } from 'react-redux';
-
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
-import { initialState } from '../../reducers/windowHandler';
-import { FETCHED_QUICK_ACTIONS } from '../../constants/ActionTypes';
-import ConnectedQuickActions, { QuickActions } from '../../components/app/QuickActions';
+import { QuickActions } from '../../components/app/QuickActions';
 import fixtures from '../../../test_setup/fixtures/quickactions.json';
 
-import { quickActionsRequest } from '../../api';
+import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
+import keymap from '../../../test_setup/fixtures/keymap.json';
 jest.mock('../../api');
 
 const createDummyProps = function(props) {
@@ -40,17 +37,17 @@ describe('QuickActions standalone component', () => {
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/documentView/540485/540485-a/quickActions')
-        .reply(200, { data: { actions: [] }} );
+        .reply(200, { data: { actions: [] } });
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/documentView/540485/540485-b/quickActions')
-        .reply(200, { data: fixtures.data1.actions } );
+        .reply(200, { data: fixtures.data1.actions });
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/documentView/540485/540485-a/quickActions')
-        .reply(200, { data: fixtures.data2.actions } );
+        .reply(200, { data: fixtures.data2.actions });
     });
 
     it('renders nothing when no actions', () => {
@@ -61,17 +58,20 @@ describe('QuickActions standalone component', () => {
     });
 
     it('renders actions', async function asyncTest() {
-      const props = createDummyProps({ viewId: '540485-b', actions: fixtures.data1.actions });
+      const props = createDummyProps({
+        viewId: '540485-b',
+        actions: fixtures.data1.actions,
+      });
 
       const wrapper = mount(
-        <ShortcutProvider hotkeys={{}} keymap={{}} >
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
           <QuickActions {...props} />,
         </ShortcutProvider>
       );
 
-        wrapper.update();
+      wrapper.update();
 
-        expect(wrapper.html()).toContain('quick-actions-wrapper');
+      expect(wrapper.html()).toContain('quick-actions-wrapper');
     });
   });
 });

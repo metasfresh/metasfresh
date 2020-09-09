@@ -1804,4 +1804,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		return filter;
 	}
+	
+	@Override
+	public OrgId getOrgId(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		return OrgId.ofRepoId(ic.getAD_Org_ID());
+	}
 }

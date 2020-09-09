@@ -47,6 +47,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
@@ -316,13 +317,29 @@ public class ExternallyReferencedCandidateRepository
 
 	private I_C_Invoice_Detail createI_C_InvoiceDetail(final InvoiceCandidateId invoiceCandidateId, final InvoiceDetailItem invoiceDetailItem)
 	{
+		
 		final I_C_Invoice_Detail invoiceDetailEntity = newInstance(I_C_Invoice_Detail.class);
 
 		invoiceDetailEntity.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
 		invoiceDetailEntity.setSeqNo(NumberUtils.asInt(invoiceDetailItem.getSeqNo(), 0));
 		invoiceDetailEntity.setDescription(invoiceDetailItem.getDescription());
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
+		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
+		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
+		invoiceDetailEntity.setDate(getDate(invoiceCandidateId, invoiceDetailItem));
 
 		return invoiceDetailEntity;
+	}
+
+	private Timestamp getDate(final InvoiceCandidateId invoiceCandidateId, final InvoiceDetailItem invoiceDetailItem)
+	{
+		if (invoiceDetailItem.getDate() != null)
+		{
+			final OrgId orgId = invoiceCandDAO.getOrgId(invoiceCandidateId);
+			final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+			return TimeUtil.asTimestamp(invoiceDetailItem.getDate(), timeZone);
+		}
+		
+		return null;
 	}
 }

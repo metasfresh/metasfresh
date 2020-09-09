@@ -8,6 +8,8 @@ import reducer, {
 
 // limited data sets as we don't need everything for those tests
 import fixtures from '../../../test_setup/fixtures/grid/reducers.json';
+import generalData from '../../../test_setup/fixtures/grid/data.json';
+
 
 const createState = function(state = {}) {
   return merge.recursive(
@@ -189,7 +191,6 @@ describe('Views reducer for `view` type', () => {
       }
     ];
     const state = actions.reduce(reducer, initialState);
-    const formattedData = formatData(documentData);
 
     expect(state.views).toEqual(
       expect.objectContaining({
@@ -219,7 +220,6 @@ describe('Views reducer for `view` type', () => {
       }
     ];
     const state = actions.reduce(reducer, initialState);
-    const formattedData = formatData(documentData);
 
     expect(state.views[id]).toBeFalsy();
   });
@@ -245,7 +245,6 @@ describe('Views reducer for `view` type', () => {
       }
     ];
     const state = actions.reduce(reducer, initialState);
-    const formattedData = formatData(documentData);
 
     expect(state.views).toEqual(
       expect.objectContaining({
@@ -309,7 +308,6 @@ describe('Views reducer for `modals` type', () => {
       }
     ];
     const state = actions.reduce(reducer, initialState);
-    const formattedData = formatData(documentData);
 
     expect(state.modals).toEqual(
       expect.objectContaining({
@@ -340,11 +338,33 @@ describe('Views reducer for `modals` type', () => {
       }
     ];
     const state = actions.reduce(reducer, initialState);
-    const formattedData = formatData(documentData);
 
     expect(state.modals).toEqual(
       expect.objectContaining({
         [id]: expect.objectContaining({ pending: false, notFound: false, viewId, filters }),
+      }),
+    );
+  });
+
+  it('Should handle UPDATE_VIEW_DATA_SUCCESS', () => {
+    const id = documentData.windowId;
+    const headersData = generalData.headerProperties1;
+    const actions = [
+      {
+        type: ACTION_TYPES.UPDATE_VIEW_DATA_SUCCESS,
+        payload: {
+          id,
+          data: { headerProperties: headersData },
+          isModal: false,
+        },
+      }
+    ];
+
+    const state = actions.reduce(reducer, initialState);
+
+    expect(state.views).toEqual(
+      expect.objectContaining({
+        [id]: expect.objectContaining({ headerProperties: headersData }),
       }),
     );
   });

@@ -38,6 +38,9 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
 	public static final String MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML = "MF-JSON-To-FM-XML-ReceiptCandidate";
 	public static final String RECEIPT_CANDIDATE_FEEDBACK_TO_MF = "ReceiptCandidate-Feedback-TO-MF";
+	public static final String RECEIPT_CANDIDATE_UPLOAD_ROUTE = "FM-upload-receipt-candidate";
+
+	private static final String RECEIPT_CANDIDATE_UPLOAD_URI = "{{siro.ftp.upload.receipt-schedules.uri}}";
 
 	@Override
 	public void configure()
@@ -70,13 +73,13 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 					.marshal(jacksonXMLDataFormat)
 					.multicast() // store the file both locally and send it to the remote folder
 					.stopOnException()
-					.to(file("{{local.file.output_path}}"), direct(RouteBuilderCommonUtil.FILEMAKER_UPLOAD_ROUTE))
+					.to(file("{{local.file.output_path}}"), direct(RECEIPT_CANDIDATE_UPLOAD_ROUTE))
 					.end()
 					.to(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF))
 				.end() // "NumberOfItems" - choice
 		;
 
-		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this);
+		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this, RECEIPT_CANDIDATE_UPLOAD_ROUTE, RECEIPT_CANDIDATE_UPLOAD_URI);
 
 		from(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF))
 				.routeId("ReceiptCandidate-Feedback-TO-MF")

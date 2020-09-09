@@ -1,38 +1,7 @@
 package de.metas.invoice.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -49,9 +18,42 @@ import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
@@ -76,6 +78,37 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public void save(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		saveRecord(invoiceLine);
+	}
+
+	@Override
+	public List<I_C_Invoice> getInvoicesForOrderIds(@NonNull final List<OrderId> orderIds)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(@NonNull final List<OrderId> orderIds)
+	{
+		final Map<OrderId, InvoiceId> orderIdInvoiceIdMap = new HashMap<OrderId, InvoiceId>();
+		final List<I_C_Invoice> invoices = getInvoicesForOrderIds(orderIds);
+		for (final I_C_Invoice invoice : invoices)
+		{
+			if (invoice != null && invoice.getC_Order_ID() > 0)
+			{
+				orderIdInvoiceIdMap.put(OrderId.ofRepoId(invoice.getC_Order_ID()), InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+			}
+		}
+		return orderIdInvoiceIdMap;
+	}
+
+	@Override
+	public I_C_InvoiceLine retrieveLineById(final InvoiceLineId invoiceLineId)
+	{
+		return load(invoiceLineId, I_C_InvoiceLine.class);
 	}
 
 	@Override
@@ -174,8 +207,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceLine.COLUMNNAME_Line)
 				.endOrderBy()
-		//
-		;
+				//
+				;
 	}
 
 	@Override

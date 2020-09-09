@@ -17,6 +17,7 @@ import { flattenRows } from '../../utils/documentListHelper';
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
 import fixtures from '../../../test_setup/fixtures/grid/reducers.json';
+import generalData from '../../../test_setup/fixtures/grid/data.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -372,6 +373,76 @@ describe('ViewActions thunks', () => {
 
     return store
       .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: true }))
+      .then(() => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      });
+  });
+
+  it(`dispatches 'UPDATE_VIEW_DATA' when fetching header properties for views`, () => {
+    const headersData = generalData.headerProperties1;
+    const viewData = _.omit(
+      limitedViewData,
+      ['result']
+    );
+    const { windowId, viewId, pageLength, columnsByFieldName } = viewData;
+    const tableId = getTableId({ windowId, viewId });
+    const page = 1;
+    const tableData = createTableData({
+      ..._.pick(limitedViewData, [
+        'windowId',
+        'viewId',
+        'size',
+        'headerProperties',
+        'result',
+        'firstRow'
+      ]),
+      headerElements: limitedViewData.columnsByFieldName,
+      keyProperty: 'id',
+    });
+    const state = createStore({
+      viewHandler: {
+        views: {
+          [windowId]: {
+            layout: { ...limitedViewLayout },
+            ...viewData,
+          },
+        },
+      },
+      tables: {
+        [tableId]: createTableData({
+          ...limitedViewData,
+          ...limitedViewLayout
+        })
+      },
+    });
+    const store = mockStore(state);
+    const payload1 = {
+      id: windowId,
+      isModal: false,
+    };
+    const payload2 = {
+      id: windowId,
+      data: {
+        headerProperties: headersData,
+      },
+      isModal: false,
+    };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_DOCUMENT_PENDING, payload: payload1 },
+      { type: ACTION_TYPES.UPDATE_VIEW_DATA_SUCCESS, payload: payload2 },
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/headerProperties`)
+      .reply(200, headersData);
+
+    // check if headerProperties are empty before running actions
+    expect(store.getState().viewHandler.views[windowId].headerProperties.groups.length).toEqual(0);
+
+    return store
+      .dispatch(viewActions.fetchHeaderProperties({ windowId, viewId, isModal: false }))
       .then(() => {
         expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
       });

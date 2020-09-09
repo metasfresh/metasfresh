@@ -49,10 +49,10 @@ class DocList extends PureComponent {
    * @method updateUriCallback
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
-  updateUriCallback = (prop, value) => {
+  updateUriCallback = (updatedQuery) => {
     const { updateUri, query, pathname } = this.props;
 
-    updateUri(pathname, query, prop, value);
+    updateUri(pathname, query, updatedQuery);
   };
 
   /**

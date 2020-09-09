@@ -1,76 +1,128 @@
 {
-  "id": "35",
-  "fieldsByName": {
-    "ID": {
-      "field": "ID",
-      "value": 35,
-      "widgetType": "Integer"
-    },
-    "M_Product_ID": {
-      "field": "M_Product_ID",
-      "value": null,
-      "readonly": false,
-      "mandatory": true,
-      "displayed": true,
-      "lookupValuesStale": true,
-      "widgetType": "Lookup",
-      "validStatus": {
-        "valid": false,
-        "initialValue": true,
-        "reason": "Mandatory field M_Product_ID not filled",
-        "fieldName": "M_Product_ID"
-      },
-      "viewEditorRenderMode": "always"
-    },
-    "M_HU_PI_Item_Product_ID": {
-      "field": "M_HU_PI_Item_Product_ID",
-      "value": null,
-      "readonly": false,
-      "mandatory": false,
-      "displayed": true,
-      "lookupValuesStale": true,
-      "widgetType": "Lookup",
-      "validStatus": {
-        "valid": false,
-        "initialValue": true,
-        "reason": "not validated yet"
-      },
-      "viewEditorRenderMode": "always"
-    },
-    "Qty": {
-      "field": "Qty",
-      "value": null,
-      "readonly": false,
-      "mandatory": true,
-      "displayed": true,
-      "widgetType": "Quantity",
-      "validStatus": {
-        "valid": false,
-        "initialValue": true,
-        "reason": "Mandatory field Qty not filled",
-        "fieldName": "Qty"
-      },
-      "viewEditorRenderMode": "always"
-    }
+  "basicProps": {
+    "docType": "143",
+    "docId": "1000023",
+    "tabId": "AD_Tab-187",
+    "forceHeight": 305
   },
-  "validStatus": {
-    "valid": false,
-    "initialValue": true,
-    "reason": "Mandatory field M_Product_ID not filled",
-    "fieldName": "M_Product_ID"
+  "data1": {
+    "id": "35",
+    "fieldsByName": {
+      "ID": {
+        "field": "ID",
+        "value": 35,
+        "widgetType": "Integer"
+      },
+      "M_Product_ID": {
+        "field": "M_Product_ID",
+        "value": null,
+        "readonly": false,
+        "mandatory": true,
+        "displayed": true,
+        "lookupValuesStale": true,
+        "widgetType": "Lookup",
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "Mandatory field M_Product_ID not filled",
+          "fieldName": "M_Product_ID"
+        },
+        "viewEditorRenderMode": "always"
+      },
+      "M_HU_PI_Item_Product_ID": {
+        "field": "M_HU_PI_Item_Product_ID",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "lookupValuesStale": true,
+        "widgetType": "Lookup",
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "not validated yet"
+        },
+        "viewEditorRenderMode": "always"
+      },
+      "Qty": {
+        "field": "Qty",
+        "value": null,
+        "readonly": false,
+        "mandatory": true,
+        "displayed": true,
+        "widgetType": "Quantity",
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "Mandatory field Qty not filled",
+          "fieldName": "Qty"
+        },
+        "viewEditorRenderMode": "always"
+      }
+    },
+    "validStatus": {
+      "valid": false,
+      "initialValue": true,
+      "reason": "Mandatory field M_Product_ID not filled",
+      "fieldName": "M_Product_ID"
+    },
+    "saveStatus": {
+      "deleted": false,
+      "saved": false,
+      "hasChanges": true,
+      "error": false,
+      "reason": "new"
+    },
+    "standardActions": [
+      "new",
+      "advancedEdit",
+      "email",
+      "letter",
+      "delete"
+    ]   
   },
-  "saveStatus": {
-    "deleted": false,
-    "saved": false,
-    "hasChanges": true,
-    "error": false,
-    "reason": "new"
-  },
-  "standardActions": [
-    "new",
-    "advancedEdit",
-    "email",
-    "letter",
-    "delete"
-  ]
+  "layout": {
+    "elements": [
+      {
+        "caption": "Product",
+        "description": "",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "M_Product_ID",
+            "caption": "Product",
+            "emptyText": "Product",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": 0,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          },
+          {
+            "field": "M_HU_PI_Item_Product_ID",
+            "caption": "Packing Instruction",
+            "emptyText": "Packing Instruction",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Quantity",
+        "description": "",
+        "widgetType": "Quantity",
+        "fields": [
+          {
+            "field": "Qty",
+            "caption": "Quantity",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ]
+  }
 }

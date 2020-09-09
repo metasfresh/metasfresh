@@ -3,6 +3,16 @@
 This camel component connects to metasfresh's shipment and receipt REST API, 
 converts this between JSON (metasfresh) to XML and reads/writes that XML to disk and a remote directory.
 
+## Terminology
+
+| Logistics-Provider (xml `DATABASE/NAME`)| metasfresh (DB `Tabelle`) | 
+| ---- | ---------------------- |
+| aussendung (`bodymed_aussendungen_v2.fmp12`) | Shipment/Lieferung (`M_InOut`) |
+| wareneingang (`bodymed_wareneingang_v2.fmp12`) | Receipt/Wareneingang (`M_InOut`) |
+| anlieferung (`bodymed_anlieferung_v2.fmp12`) | Wareneingangsdispo/Receipt Schedule (`M_ReceiptSchedule`) |
+| bestellung (`bodymed_bestellung_v2.fmp12`) | Lieferdispo/Shipment Schedule (`M_ShipmentSchedule`) |
+
+
 # How to deploy it
 
 ## docker-compose v1 fragment:

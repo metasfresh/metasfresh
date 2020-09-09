@@ -1175,7 +1175,7 @@ public final class Document
 		}
 	}
 
-	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, @Nullable final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
 		{

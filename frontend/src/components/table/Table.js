@@ -330,6 +330,10 @@ export default class Table extends PureComponent {
       collapsedParentRows,
       onRightClick,
       rowRefs,
+      handleFocusAction,
+      updatePropertyValue,
+      tableId,
+      onFastInlineEdit,
     } = this.props;
 
     if (!rows.length || !columns.length) {
@@ -368,6 +372,8 @@ export default class Table extends PureComponent {
           modalVisible,
           isGerman,
           activeSort,
+          updatePropertyValue,
+          tableId,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
@@ -391,8 +397,10 @@ export default class Table extends PureComponent {
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
+        onFastInlineEdit={onFastInlineEdit}
         onClick={this.handleClick}
         handleRightClick={onRightClick}
+        handleFocusAction={handleFocusAction}
         changeListenOnTrue={this.setListenTrue}
         changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}
@@ -407,6 +415,7 @@ export default class Table extends PureComponent {
         caption={item.caption ? item.caption : ''}
         colspan={item.colspan}
         notSaved={item.saveStatus && !item.saveStatus.saved}
+        hasComments={item.hasComments}
         onRowCollapse={onRowCollapse}
         onItemChange={onItemChange}
         onCopy={handleCopy}

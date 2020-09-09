@@ -383,7 +383,7 @@ class Modal extends Component {
 
           this.removeModal();
         } catch (error) {
-          throw error;
+          console.error('Modal.handleStart error: ', error);
         } finally {
           if (this.mounted) {
             // prevent a memory leak
@@ -481,7 +481,7 @@ class Modal extends Component {
       <div className="modal-content-wrapper">
         <div className="panel panel-modal panel-modal-primary">
           <div
-            className={classnames('panel-modal-header', {
+            className={classnames('panel-groups-header', 'panel-modal-header', {
               'header-shadow': scrolled,
             })}
           >

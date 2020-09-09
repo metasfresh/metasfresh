@@ -5,6 +5,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.freighcost.FreightCostRule;
@@ -49,12 +50,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
@@ -95,6 +96,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 
 /*
@@ -138,6 +161,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
@@ -187,11 +211,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
-		final I_C_BPartner_Location location = shipmentScheduleEffectiveValuesBL.getBPartnerLocation(sched);
-		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getBPartnerContact(sched);
+		final I_C_BPartner bpartner = scheduleEffectiveBL.getBPartner(sched);
+		final I_C_BPartner_Location location = scheduleEffectiveBL.getBPartnerLocation(sched);
+		final I_AD_User user = scheduleEffectiveBL.getBPartnerContact(sched);
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String address = bPartnerBL.mkFullAddress(
@@ -208,8 +230,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final BigDecimal oldQtyOrdered = shipmentSchedule.getQtyOrdered(); // going to return it in the end
 
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final BigDecimal newQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final BigDecimal newQtyOrdered = scheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 
 		shipmentSchedule.setQtyOrdered(newQtyOrdered);
 
@@ -235,9 +256,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
+		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(scheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
 		if (!bpAllowsConsolidate)
 		{
 			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");
@@ -331,13 +351,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			@NonNull final I_M_ShipmentSchedule sched,
 			final boolean considerAttributes)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		// Create storage query
-		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
+		final BPartnerId bpartnerId = scheduleEffectiveBL.getBPartnerId(sched);
 
-		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
+		final WarehouseId warehouseId = scheduleEffectiveBL.getWarehouseId(sched);
 		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
@@ -374,8 +393,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
+		final BigDecimal qtyToDeliverBD = scheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
 		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 		return Quantity.of(qtyToDeliverBD, uom);
 	}
@@ -498,22 +516,25 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
+		return scheduleEffectiveBL.getBPartnerId(schedule);
+	}
+
+	@Override
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		return scheduleEffectiveBL.getBPartnerLocationId(schedule);
 	}
 
 	@Override
 	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		return shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+		return scheduleEffectiveBL.getWarehouseId(schedule);
 	}
 
 	@Override
 	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		return shipmentScheduleEffectiveBL.getPreparationDate(schedule);
+		return scheduleEffectiveBL.getPreparationDate(schedule);
 	}
 
 	@Override
@@ -777,26 +798,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	private void addAttributes(@NonNull final I_M_ShipmentSchedule shipmentSchedule,final List<CreateAttributeInstanceReq> attributeInstanceBasicInfos)
+	private void addAttributes(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final List<CreateAttributeInstanceReq> attributeInstanceBasicInfos)
 	{
-		final AttributeSetInstanceId oldAsiId = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
-		final AttributeSetInstanceId asiId;
+		final AttributeSetInstanceId existingAttributeSetOrNone = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
 
-		if (oldAsiId.isNone())
-		{
-			final I_M_AttributeSetInstance asiNew = attributeSetInstanceBL.createASI(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
-			asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
-		}
-		else
-		{
-			final I_M_AttributeSetInstance asiCopy = ASICopy.newInstance(oldAsiId).copy();
-			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
-		}
+		final AddAttributesRequest addAttributesRequest = AddAttributesRequest.builder()
+				.existingAttributeSetIdOrNone(existingAttributeSetOrNone)
+				.attributeInstanceBasicInfos(attributeInstanceBasicInfos)
+				.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
+				.build();
 
-		shipmentSchedule.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.addAttributes(addAttributesRequest);
 
-		attributeInstanceBasicInfos.forEach(attributeValue -> {
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue() );
-		});
+		shipmentSchedule.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 	}
 }

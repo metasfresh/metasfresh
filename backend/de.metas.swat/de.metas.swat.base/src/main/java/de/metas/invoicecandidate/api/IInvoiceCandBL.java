@@ -1,13 +1,8 @@
-/**
- *
- */
-package de.metas.invoicecandidate.api;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,17 +20,7 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.time.LocalDate;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_Tax;
+package de.metas.invoicecandidate.api;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -43,6 +28,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -58,10 +44,23 @@ import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Tax;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IInvoiceCandBL extends ISingletonService
 {
-	public interface IInvoiceGenerateResult
+	interface IInvoiceGenerateResult
 	{
 		int getInvoiceCount();
 
@@ -110,9 +109,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Checks if given invoice candidate is eligible for invoicing.
-	 *
+	 * <p>
 	 * It checks: Processed, IsError, DateToInvoice (if not <code>ignoreInvoiceSchedule</code>).
-	 *
+	 * <p>
 	 * NOTE: This method is called both when invoice candidates are enqueued for invoicing and during the actual invoicing.
 	 *
 	 * @return true if the invoice candidate is NOT eligible and shall be skipped.
@@ -136,7 +135,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <li>C_Currency_ID</li>
 	 * <li>C_OrderLine.PriceEntered.</li>
 	 * </ul>
-	 *
+	 * <p>
 	 * If the given ic is manual, if it doesn't reference a C_OrderLine or if its {@code Discount} is equal to its {@code Discount_Override}, then the method does nothing.
 	 *
 	 * @param ic
@@ -174,12 +173,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * This method updates certain fields of the given invoice candidate. It's available for invocation from the outside for the case of 'manual' invoice candidates
 	 *
 	 * @param ctx
-	 * @param ic the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
+	 * @param ic  the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
 	 */
 	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
 
 	/**
-	 *
 	 * @param cand
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
 	 */
@@ -201,16 +199,16 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Determine if the candidate has been changed manually or by the background process.<br>
 	 * This information is currently used by {@link de.metas.invoicecandidate.process.C_Invoice_Candidate_Update}.
-	 *
+	 * <p>
 	 * Used inside the invalidate code within {@link IInvoiceCandDAO}, to avoid invalidating candidates while the process validates or creates them.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isUpdateProcessInProgress();
 
 	/**
 	 * Enables "update in progress" flag and returns an {@link IAutoCloseable} to put it back to off.
-	 *
+	 * <p>
 	 * It is important to call this method in any block where we are updating the invoice candidates and we want to avoid them to be invalidated after.
 	 *
 	 * @return auto closable
@@ -268,7 +266,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_AD_Note_ID}
 	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_ErrorMsg}
 	 * </ul>
-	 *
+	 * <p>
 	 * NOTE: this method is NOT saving the invoice candidate
 	 *
 	 * @param ic invoice candidate
@@ -277,12 +275,12 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Flags given invoice candidate as it has errors.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT saving the invoice candidate
 	 *
-	 * @param ic invoice candidate
+	 * @param ic       invoice candidate
 	 * @param errorMsg error message to be set
-	 * @param note error note (optional)
+	 * @param note     error note (optional)
 	 */
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note);
 
@@ -314,9 +312,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
-	 *
+	 * <p>
 	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
-	 *
+	 * <p>
 	 * Candidate will not be saved.
 	 *
 	 * @param candidate
@@ -343,7 +341,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema.<br>
 	 * If the value does not exist, leave the field on null.
-	 *
+	 * <p>
 	 * Note: ic not saved
 	 */
 	void setQualityDiscountPercent_Override(I_C_Invoice_Candidate ic, ImmutableAttributeSet attributes);
@@ -395,7 +393,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Note: This behavior is determined by the value of the sys config {@code C_Invoice_Candidate_Close_PartiallyInvoice}.
 	 * The candidates will be closed only if the sys config is set to 'Y'.
 	 *
-	 * @see IInvoiceCandBL#isCloseIfPartiallyInvoiced(OrgId) 
+	 * @see IInvoiceCandBL#isCloseIfPartiallyInvoiced(OrgId)
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 
@@ -411,8 +409,13 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
 
-	/** @return {@code true} if the given {@code invoiceRecord} is currently created via invoicing from invoice candidates. */
+	/**
+	 * @return {@code true} if the given {@code invoiceRecord} is currently created via invoicing from invoice candidates.
+	 */
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
 	I_C_Invoice voidAndRecreateInvoice(org.compiere.model.I_C_Invoice invoice);
+
+	@NonNull
+	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
 }
