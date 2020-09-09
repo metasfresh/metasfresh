@@ -429,7 +429,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public boolean canAllocateOrderPaymentToInvoice(final @Nullable I_C_Order order)
+	public boolean canAllocateOrderPaymentToInvoice(@Nullable final I_C_Order order)
 	{
 		if (order == null)
 		{
