@@ -244,7 +244,7 @@
                     <to>
                         <!-- we expect those environment variables to be set from the outside world -->
                         <!-- without specifying the tag in the image name, jib will push "latest", thx https://github.com/GoogleContainerTools/jib/issues/2237#issuecomment-575967019 -->
-                        <image>nexus.metasfresh.com:6001/metasfresh/de-metas-esb-shipmentschedule-camel:${env.MF_VERSION_DOCKERIZED}</image>
+                        <image>nexus.metasfresh.com:6001/metasfresh/de-metas-camel-shipping:${env.MF_VERSION_DOCKERIZED}</image>
                         <tags>
                             <tag>${env.BRANCH_NAME_DOCKERIZED}_LATEST</tag>
                         </tags>
@@ -252,7 +252,7 @@
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <image>openjdk:14.0.1@sha256:f43d68430b197ef5eb66a0d90e3844115d332a91e9d8d5f5a303c125f86ba52c</image>
+                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
                     </from>
                 </configuration>
                 <executions>
