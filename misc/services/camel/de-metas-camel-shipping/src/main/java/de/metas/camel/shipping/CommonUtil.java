@@ -45,7 +45,7 @@ public class CommonUtil
 			final @NonNull Exchange exchange,
 			final int numberOfItems)
 	{
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receiptCandidate.FMPXMLRESULT.DATABASE.NAME}}");
+		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receipt-candidate.FMPXMLRESULT.DATABASE.NAME}}");
 		return createFmpxmlresultBuilder(databaseName, numberOfItems);
 	}
 
