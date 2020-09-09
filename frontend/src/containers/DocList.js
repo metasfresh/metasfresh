@@ -51,8 +51,8 @@ class DocList extends PureComponent {
    */
   updateUriCallback = (updatedQuery) => {
     const { updateUri, query, pathname } = this.props;
-
-    updateUri(pathname, query, updatedQuery);
+    const { viewId } = updatedQuery;
+    viewId && updateUri(pathname, query, updatedQuery);
   };
 
   /**
