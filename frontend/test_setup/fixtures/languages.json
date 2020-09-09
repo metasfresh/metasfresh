@@ -1,0 +1,25 @@
+{
+  "values": [
+    {
+      "key": "de_CH",
+      "caption": "Deutsch (CH)"
+    },
+    {
+      "key": "de_DE",
+      "caption": "Deutsch (DE)"
+    },
+    {
+      "key": "nl_NL",
+      "caption": "Dutch (NL)"
+    },
+    {
+      "key": "en_US",
+      "caption": "English (US)"
+    },
+    {
+      "key": "fr_CH",
+      "caption": "French (CH)"
+    }
+  ],
+  "defaultValue": "de_DE"
+}
