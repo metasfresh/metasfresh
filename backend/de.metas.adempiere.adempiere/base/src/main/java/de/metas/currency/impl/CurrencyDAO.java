@@ -222,6 +222,7 @@ public class CurrencyDAO implements ICurrencyDAO
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID, currencyFromId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID_To, currencyToId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
