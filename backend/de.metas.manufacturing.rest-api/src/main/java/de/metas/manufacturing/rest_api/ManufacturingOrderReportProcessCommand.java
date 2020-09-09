@@ -121,6 +121,7 @@ class ManufacturingOrderReportProcessCommand
 		final Quantity qtyToReceive = toQuantity(receipt.getQtyToReceive());
 		final LocatorId locatorId = getReceiveToLocatorByOrderId(orderId);
 
+		// TODO: reserve the HU for the shipment schedule!
 		huPPOrderBL.receivingMainProduct(orderId)
 				.movementDate(receipt.getDate())
 				.locatorId(locatorId)
