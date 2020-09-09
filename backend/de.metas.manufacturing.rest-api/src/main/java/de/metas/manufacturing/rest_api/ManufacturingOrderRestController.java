@@ -20,6 +20,7 @@ import de.metas.Profiles;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.util.time.SystemTime;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
@@ -90,9 +91,9 @@ public class ManufacturingOrderRestController
 	}
 
 	@PostMapping("/report")
-	public ResponseEntity<String> report(@RequestBody @NonNull final JsonRequestManufacturingOrdersReport request)
+	public ResponseEntity<JsonResponseManufacturingOrdersReport> report(@RequestBody @NonNull final JsonRequestManufacturingOrdersReport request)
 	{
-		manufacturingOrderAPIService.report(request);
-		return ResponseEntity.accepted().body("Manufacturing order reports processed");
+		final JsonResponseManufacturingOrdersReport response = manufacturingOrderAPIService.report(request);
+		return ResponseEntity.ok(response);
 	}
 }

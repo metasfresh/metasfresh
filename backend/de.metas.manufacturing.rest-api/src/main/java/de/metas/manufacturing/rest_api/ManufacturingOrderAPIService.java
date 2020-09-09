@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.product.ProductRepository;
 import lombok.NonNull;
 
@@ -83,13 +84,13 @@ class ManufacturingOrderAPIService
 		command.execute();
 	}
 
-	public void report(@NonNull final JsonRequestManufacturingOrdersReport request)
+	public JsonResponseManufacturingOrdersReport report(@NonNull final JsonRequestManufacturingOrdersReport request)
 	{
 		final ManufacturingOrderReportProcessCommand command = ManufacturingOrderReportProcessCommand.builder()
 				.request(request)
 				.build();
 
-		command.execute();
+		return command.execute();
 	}
 
 }

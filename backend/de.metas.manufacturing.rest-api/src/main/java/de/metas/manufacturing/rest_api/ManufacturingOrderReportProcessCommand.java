@@ -19,6 +19,7 @@ import de.metas.common.manufacturing.JsonRequestHULookup;
 import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -80,7 +81,7 @@ class ManufacturingOrderReportProcessCommand
 		return PPOrderId.ofRepoId(record.getPP_Order_ID());
 	}
 
-	public void execute()
+	public JsonResponseManufacturingOrdersReport execute()
 	{
 		final ExportTransactionId transactionKey = ExportTransactionId.random();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey.toJson()))
@@ -96,6 +97,7 @@ class ManufacturingOrderReportProcessCommand
 			}
 		}
 
+		return JsonResponseManufacturingOrdersReport.builder().build();
 	}
 
 	private void processIssue(final JsonRequestIssueToManufacturingOrder issue)
