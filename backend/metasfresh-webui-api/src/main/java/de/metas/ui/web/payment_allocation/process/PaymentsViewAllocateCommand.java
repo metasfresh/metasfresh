@@ -217,7 +217,7 @@ public class PaymentsViewAllocateCommand
 
 	private static boolean hasServiceFeesToPay(final @NonNull InvoiceRow row, final CurrencyCode currencyCode)
 	{
-		return row.getServiceFeeAmt() != null && !Amount.zero(currencyCode).equals(row.getServiceFeeAmt());
+		return row.getServiceFeeAmt() != null && !row.getServiceFeeAmt().isZero();
 	}
 
 	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)

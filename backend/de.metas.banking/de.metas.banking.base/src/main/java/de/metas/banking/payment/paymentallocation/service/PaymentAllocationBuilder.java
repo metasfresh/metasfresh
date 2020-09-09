@@ -67,15 +67,14 @@ public class PaymentAllocationBuilder
 		DO_NOTHING, WRITE_OFF, DISCOUNT
 	}
 
-	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-
 	public static final PaymentAllocationBuilder newBuilder()
 	{
 		return new PaymentAllocationBuilder();
 	}
 
 	// services
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 
