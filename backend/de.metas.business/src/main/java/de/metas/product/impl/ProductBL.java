@@ -97,6 +97,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public ProductId getProductIdByValue(String productValue)
+	{
+		return productsRepo.retrieveProductIdByValue(productValue);
+	}
+
+	@Override
 	public UOMPrecision getUOMPrecision(final I_M_Product product)
 	{
 		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
