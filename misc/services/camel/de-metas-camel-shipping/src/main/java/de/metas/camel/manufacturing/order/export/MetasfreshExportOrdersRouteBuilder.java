@@ -38,7 +38,7 @@ import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 
 public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 {
-	private static final String ROUTE_ID = "metasfreshExportOrders";
+	private static final String ROUTE_ID = "manufacturingOrdersExport";
 
 	private static final String FEEDBACK_ROUTE_ID = "metasfreshExportOrders-feedback";
 	private static final String FEEDBACK_ROUTE = "metasfreshExportOrders-feedback";
