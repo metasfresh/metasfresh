@@ -41,6 +41,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class CommonUtil
 {
+	@Deprecated
 	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
 			final @NonNull Exchange exchange,
 			final int numberOfItems)

@@ -1,7 +1,5 @@
 package de.metas.camel.manufacturing.order.export;
 
-import java.time.Duration;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
@@ -49,11 +47,11 @@ public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 	private static final String METASFRESH_EP_GET_ORDERS = "http://{{metasfresh.api.baseurl}}/manufacturing/orders";
 	private static final String METASFRESH_EP_POST_EXPORT_STATUS = "{{metasfresh.api.baseurl}}/manufacturing/orders/exportStatus";
 
-	private static final Duration pollInterval = Duration.ofSeconds(5);
-
 	@Override
 	public void configure()
 	{
+		final String pollInterval = RouteBuilderCommonUtil.resolveProperty(getContext(), "metasfresh.manufacturing-orders.pollInterval", "5s");
+		
 		errorHandler(defaultErrorHandler());
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
@@ -69,8 +67,7 @@ public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
 		//@formatter:off
-		from(timer("pollManufacturingOrdersAPI")
-				.period(pollInterval.toMillis()))
+		from(timer("pollManufacturingOrdersAPI").period(pollInterval))
 				.routeId(ROUTE_ID)
 				.streamCaching()
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
