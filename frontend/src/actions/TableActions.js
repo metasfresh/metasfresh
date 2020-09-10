@@ -241,11 +241,18 @@ export function updateGridTable(tableId, tableResponse) {
     // this check is only for unit tests purposes
     if (state.tables) {
       const tableExists = state.tables[tableId];
+      const isModal = !!tableResponse.modalId;
+      const windowId = isModal
+        ? tableResponse.modalId
+        : tableResponse.windowType || tableResponse.windowId;
+
+      const tableLayout = getView(getState(), windowId, isModal).layout;
 
       if (tableExists) {
         const { indentSupported } = tableExists;
         const tableData = createTableData({
           ...tableResponse,
+          ...tableLayout,
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
@@ -273,12 +280,6 @@ export function updateGridTable(tableId, tableResponse) {
 
         return Promise.resolve(true);
       } else {
-        const isModal = !!tableResponse.modalId;
-        const windowId = isModal
-          ? tableResponse.modalId
-          : tableResponse.windowType || tableResponse.windowId;
-
-        const tableLayout = getView(getState(), windowId, isModal).layout;
         const tableData = createTableData({
           ...tableResponse,
           ...tableLayout,
