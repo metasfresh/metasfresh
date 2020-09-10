@@ -42,7 +42,7 @@ Map build(
 				return;
 			}
 
-			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.7' // make sure we know which plugin version we run
+			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.8.1' // make sure we know which plugin version we run
 
 			// set the root-pom's parent pom. Although the parent pom is available via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
@@ -54,7 +54,7 @@ Map build(
 			// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
-			final String metasfreshCommonUpdatePropertyParam="-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
+			final String metasfreshCommonUpdatePropertyParam="-Dproperty=metasfresh-common.version -DallowDowngrade=true"
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshCommonUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
 			// build and deploy
