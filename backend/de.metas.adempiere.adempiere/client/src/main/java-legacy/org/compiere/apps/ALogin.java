@@ -726,7 +726,9 @@ public final class ALogin extends CDialog
 		Ini.setProperty(Ini.P_CONNECTION, CConnection.get().toStringLong());
 
 		ValueNamePair selectedLanguage = languageCombo.getSelectedItem();
-		Ini.setProperty(Ini.P_LANGUAGE, selectedLanguage == null ? null : selectedLanguage.getValue());
+		final String ad_language = selectedLanguage == null ? null : selectedLanguage.getValue();
+		Ini.setProperty(Ini.P_LANGUAGE, ad_language);
+		Env.setContext(ctx, Env.CTXNAME_AD_Language, ad_language);
 
 		String error = m_login.validateLogin(org);
 		if (error != null && error.length() > 0)
