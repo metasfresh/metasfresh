@@ -68,18 +68,18 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.unmarshal(jacksonDataFormat)
 
 				.process(new ReceiptCandidateJsonToXmlProcessor())
-
+				// @formatter:off
 				.choice()
-					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
-					.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " +  header(Exchange.FILE_NAME))
+				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
+					.log(LoggingLevel.INFO, "Converting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} receipt candidates to file ${header." + Exchange.FILE_NAME + "}")
 					.marshal(jacksonXMLDataFormat)
 					.multicast() // store the file both locally and send it to the remote folder
-					.stopOnException()
-					.to(file("{{local.file.output_path}}"), direct(RECEIPT_CANDIDATE_UPLOAD_ROUTE))
+						.stopOnException()
+						.to(file("{{local.file.output_path}}"), direct(RECEIPT_CANDIDATE_UPLOAD_ROUTE))
 					.end()
 					.to(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF))
-				.end() // "NumberOfItems" - choice
-		;
+				.end();// "NumberOfItems" - choice
+				// @formatter:on
 
 		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this, RECEIPT_CANDIDATE_UPLOAD_ROUTE, RECEIPT_CANDIDATE_UPLOAD_URI);
 

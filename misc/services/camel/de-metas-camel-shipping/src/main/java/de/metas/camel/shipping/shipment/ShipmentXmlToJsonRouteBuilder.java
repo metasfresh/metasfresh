@@ -22,7 +22,8 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 
 	static final String MF_SHIPMENT_FILEMAKER_XML_TO_JSON = "MF-FM-To-Json-Shipment";
 
-	@Override public void configure() throws Exception
+	@Override
+	public void configure() throws Exception
 	{
 		errorHandler(defaultErrorHandler());
 
@@ -38,18 +39,20 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 				.streamCaching()
 				.unmarshal(jacksonXMLDataFormat)
 				.process(new ShipmentXmlToJsonProcessor()).id(SHIPMENT_XML_TO_JSON_PROCESSOR)
+
+				// @formatter:off
 				.choice()
-				    .when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
-						.log(LoggingLevel.INFO, "Nothing to do! no shipments were found in file:" + header(Exchange.FILE_NAME))
+					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
+						.log(LoggingLevel.INFO, "Nothing to do! no shipments were found in file: ${header." + Exchange.FILE_NAME + "}")
 					.otherwise()
-				   		.log(LoggingLevel.INFO, "Posting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipments to metasfresh.")
-				        .marshal(requestJacksonDataFormat)
+						.log(LoggingLevel.INFO, "Posting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} shipments to metasfresh.")
+						.marshal(requestJacksonDataFormat)
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				 		.to(http(CREATE_SHIPMENT_MF_URL))
-				        .unmarshal(responseJacksonDataFormat)
-				        .process(new ShipmentResponseProcessor())
-				.end()
-		;
+						.to(http(CREATE_SHIPMENT_MF_URL))
+						.unmarshal(responseJacksonDataFormat)
+						.process(new ShipmentResponseProcessor())
+				.end()		;
+				// @formatter:off
 	}
 }
