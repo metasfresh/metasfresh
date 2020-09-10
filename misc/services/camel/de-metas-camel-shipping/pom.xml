@@ -176,10 +176,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
-			<groupId>de.metas.common.manufacturing</groupId>
-			<artifactId>de-metas-common-manufacturing</artifactId>
+            <groupId>de.metas.common.manufacturing</groupId>
+            <artifactId>de-metas-common-manufacturing</artifactId>
             <version>${metasfresh-common.version}</version>
             <exclusions>
                 <exclusion>
@@ -265,6 +265,27 @@
         <defaultGoal>install</defaultGoal>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                    <source>14</source>
+                    <target>14</target>
+<!--                    <annotationProcessorPaths>-->
+<!--                        <annotationProcessorPath>-->
+<!--                            <groupId>org.projectlombok</groupId>-->
+<!--                            <artifactId>lombok</artifactId>-->
+<!--                            <version>1.18.8</version>-->
+<!--                        </annotationProcessorPath>-->
+<!--                    </annotationProcessorPaths>-->
+<!--                    <annotationProcessors>-->
+<!--                        <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</annotationProcessor>-->
+<!--                    </annotationProcessors>-->
+                </configuration>
+            </plugin>
+
             <!-- Allows the example to be run via 'mvn camel:run' -->
             <plugin>
                 <groupId>org.apache.camel</groupId>

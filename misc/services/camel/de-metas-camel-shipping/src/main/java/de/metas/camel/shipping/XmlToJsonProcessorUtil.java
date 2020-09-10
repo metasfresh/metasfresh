@@ -1,5 +1,16 @@
 package de.metas.camel.shipping;
 
+import de.metas.common.filemaker.FIELD;
+import de.metas.common.filemaker.FMPXMLRESULT;
+import de.metas.common.filemaker.RESULTSET;
+import de.metas.common.filemaker.ROW;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.apache.camel.Exchange;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,19 +22,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.camel.Exchange;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import de.metas.common.filemaker.FIELD;
-import de.metas.common.filemaker.FMPXMLRESULT;
-import de.metas.common.filemaker.RESULTSET;
-import de.metas.common.filemaker.ROW;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -52,7 +50,7 @@ public class XmlToJsonProcessorUtil
 {
 	private final static Log log = LogFactory.getLog(XmlToJsonProcessorUtil.class);
 
-	public <T, R> void processExchange(
+	public static <T, R> void processExchange(
 			final Exchange exchange,
 			final BiFunction<ROW, Map<String, Integer>, T> buildRequestItemFunction,
 			final Function<List<T>, R> buildRequestFunction)
@@ -90,7 +88,7 @@ public class XmlToJsonProcessorUtil
 		exchange.getIn().setBody(request);
 	}
 
-	public Optional<LocalDate> asLocalDate(
+	public static Optional<LocalDate> asLocalDate(
 			@Nullable final String value,
 			@NonNull final Set<String> localDatePatterns,
 			@NonNull final String fieldName)
@@ -122,7 +120,7 @@ public class XmlToJsonProcessorUtil
 		return localDateValue;
 	}
 
-	public Optional<LocalDateTime> asLocalDateTime(
+	public static Optional<LocalDateTime> asLocalDateTime(
 			@Nullable final String value,
 			@NonNull final Set<String> localDateTimePatterns,
 			@NonNull final String fieldName)
