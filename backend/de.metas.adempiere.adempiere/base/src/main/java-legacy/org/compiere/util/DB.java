@@ -103,28 +103,28 @@ import lombok.experimental.UtilityClass;
  *
  * @author Jorg Janke
  * @author Ashley Ramdass (Posterita)
- *         <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
- *         connections set rw/ro properties for the connection accordingly.
+ * <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
+ * connections set rw/ro properties for the connection accordingly.
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>BF [ 1647864 ] WAN: delete record error
- *         <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
- *         <li>FR [ 1904460 ] DB.executeUpdate should handle
- *         Boolean params
- *         <li>BF [ 1962568 ] DB.executeUpdate should handle null params
- *         <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
- *         <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
- *         Object[], String)
- *         <li>BF [ 2030233 ] Remove duplicate code from DB class
- *         <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
- *         <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
- *         <li>FR
- *         [ 2781053 ] Introduce DB.getValueNamePairs
- *         <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
- *         https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
+ * <li>BF [ 1647864 ] WAN: delete record error
+ * <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
+ * <li>FR [ 1904460 ] DB.executeUpdate should handle
+ * Boolean params
+ * <li>BF [ 1962568 ] DB.executeUpdate should handle null params
+ * <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
+ * <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
+ * Object[], String)
+ * <li>BF [ 2030233 ] Remove duplicate code from DB class
+ * <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
+ * <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
+ * <li>FR
+ * [ 2781053 ] Introduce DB.getValueNamePairs
+ * <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
+ * https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
  * @author Teo Sarca, teo.sarca@gmail.com
- *         <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
- *         <li>FR [
- *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
+ * <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
+ * <li>FR [
+ * 2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
  * @version $Id: DB.java,v 1.8 2006/10/09 00:22:29 jjanke Exp $ ---
  */
 @UtilityClass
@@ -420,7 +420,7 @@ public final class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
-	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
+	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 * @return Connection connection
 	 */
 	public static Connection createConnection(final boolean autoCommit, final int trxLevel)
@@ -468,7 +468,7 @@ public final class DB
 	 *
 	 * @param autoCommit auto commit
 	 * @param readOnly
-	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
+	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
 	public static Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
 	{
@@ -576,8 +576,8 @@ public final class DB
 	/**
 	 * Prepare Statement.
 	 *
-	 * @param sql sql statement
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param sql                  sql statement
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 * @deprecated
@@ -592,10 +592,10 @@ public final class DB
 	/**
 	 * Prepare Statement.
 	 *
-	 * @param sql sql statement
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param sql                  sql statement
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
-	 * @param trxName transaction name
+	 * @param trxName              transaction name
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public static CPreparedStatement prepareStatement(final String sql,
@@ -614,7 +614,7 @@ public final class DB
 	/**
 	 * @return a connection and prepared statement that will internally fetch only 1000 rows at a time, in order not to overuse local memory.
 	 * Please make sure to close them both!
-	 *
+	 * <p>
 	 * Also see https://jdbc.postgresql.org/documentation/head/query.html
 	 */
 	public static ImmutablePair<Connection, PreparedStatement> prepareConnectionAndStatementForDataExport(
@@ -658,9 +658,9 @@ public final class DB
 	/**
 	 * Create Statement.
 	 *
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
-	 * @param trxName transaction name
+	 * @param trxName              transaction name
 	 * @return Statement - either r/w ir r/o depending on concur
 	 */
 	public static Statement createStatement(final int resultSetType, final int resultSetConcurrency, final String trxName)
@@ -671,7 +671,7 @@ public final class DB
 	/**
 	 * Set parameters for given statement
 	 *
-	 * @param stmt statements
+	 * @param stmt   statements
 	 * @param params parameters array; if null or empty array, no parameters are set
 	 */
 	public static void setParameters(@NonNull final PreparedStatement stmt, @Nullable final Object... params) throws SQLException
@@ -690,7 +690,7 @@ public final class DB
 	/**
 	 * Set parameters for given statement
 	 *
-	 * @param stmt statements
+	 * @param stmt   statements
 	 * @param params parameters list; if null or empty list, no parameters are set
 	 */
 	public static void setParameters(@NonNull final PreparedStatement stmt, @Nullable final List<?> params)
@@ -793,7 +793,7 @@ public final class DB
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
-	 * @param trxName transaction
+	 * @param trxName     transaction
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -828,7 +828,7 @@ public final class DB
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
-	 * @param trxName optional transaction name
+	 * @param trxName     optional transaction name
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -844,7 +844,7 @@ public final class DB
 	/**
 	 * Execute SQL Update.
 	 *
-	 * @param onFail what to do if the update fails
+	 * @param onFail                what to do if the update fails
 	 * @param updateReturnProcessor
 	 * @return update count
 	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
@@ -994,7 +994,7 @@ public final class DB
 	 * Execute Update and throw exception.
 	 *
 	 * @param sql
-	 * @param params statement parameters
+	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 * @throws DBException
@@ -1009,7 +1009,7 @@ public final class DB
 	 * Execute Update and throw exception.
 	 *
 	 * @param sql
-	 * @param params statement parameters
+	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @param timeOut optional timeOut parameter
 	 * @return number of rows updated
@@ -1083,7 +1083,7 @@ public final class DB
 	 * Commit - commit on RW connection. Is not required as RW connection is AutoCommit (exception: with transaction)
 	 *
 	 * @param throwException if true, re-throws exception
-	 * @param trxName transaction name
+	 * @param trxName        transaction name
 	 * @return true if not needed or success
 	 * @throws SQLException
 	 */
@@ -1127,7 +1127,7 @@ public final class DB
 	 * Rollback - rollback on RW connection. Is has no effect as RW connection is AutoCommit (exception: with transaction)
 	 *
 	 * @param throwException if true, re-throws exception
-	 * @param trxName transaction name
+	 * @param trxName        transaction name
 	 * @return true if not needed or success
 	 * @throws SQLException
 	 */
@@ -1195,8 +1195,8 @@ public final class DB
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or -1 if not found
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1236,8 +1236,8 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or -1
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1250,8 +1250,8 @@ public final class DB
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or -1 if not found or error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -1274,8 +1274,8 @@ public final class DB
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -1289,8 +1289,8 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1330,8 +1330,8 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1344,8 +1344,8 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -1368,8 +1368,8 @@ public final class DB
 	 * Get String Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -1383,8 +1383,8 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null if not found
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1425,8 +1425,8 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null if not found
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1439,8 +1439,8 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -1462,8 +1462,8 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -1477,8 +1477,8 @@ public final class DB
 	 * Get Timestamp Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1518,8 +1518,8 @@ public final class DB
 	 * Get BigDecimal Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params collection of parameters
+	 * @param sql     sql
+	 * @param params  collection of parameters
 	 * @return first value or null if not found
 	 * @throws DBException if there is any SQLException
 	 */
@@ -1532,8 +1532,8 @@ public final class DB
 	 * Get Timestamp Value from sql
 	 *
 	 * @param trxName trx
-	 * @param sql sql
-	 * @param params array of parameters
+	 * @param sql     sql
+	 * @param params  array of parameters
 	 * @return first value or null
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
@@ -1607,7 +1607,7 @@ public final class DB
 	/**
 	 * Get Array of Key Name Pairs
 	 *
-	 * @param sql select with id / name as first / second column
+	 * @param sql      select with id / name as first / second column
 	 * @param optional if true (-1,"") is added
 	 * @return array of {@link KeyNamePair}
 	 * @see #getKeyNamePairs(String, boolean, Object...)
@@ -1620,9 +1620,9 @@ public final class DB
 	/**
 	 * Get Array of Key Name Pairs
 	 *
-	 * @param sql select with id / name as first / second column
+	 * @param sql      select with id / name as first / second column
 	 * @param optional if true (-1,"") is added
-	 * @param params query parameters
+	 * @param params   query parameters
 	 */
 	public static KeyNamePair[] getKeyNamePairs(final String sql, final boolean optional, final Object... params)
 	{
@@ -1632,9 +1632,9 @@ public final class DB
 	/**
 	 * Get Array of Key Name Pairs
 	 *
-	 * @param sql select with id as first column, name as second column and optionally description as third column
+	 * @param sql      select with id as first column, name as second column and optionally description as third column
 	 * @param optional if true (-1,"") is added
-	 * @param params query parameters
+	 * @param params   query parameters
 	 */
 	public static KeyNamePair[] getKeyNamePairs(
 			@Nullable final String trxName,
@@ -1692,7 +1692,7 @@ public final class DB
 	/**
 	 * Is Sales Order Trx. Assumes Sales Order. Queries IsSOTrx of table with where clause
 	 *
-	 * @param tableName table
+	 * @param tableName   table
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
@@ -1925,7 +1925,7 @@ public final class DB
 	/**
 	 * Create SQL TO Date String from Timestamp
 	 *
-	 * @param time Date to be converted
+	 * @param time    Date to be converted
 	 * @param dayOnly true if time set to 00:00:00
 	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ') or TO_DATE('2001-01-30',''YYYY-MM-DD')
 	 */
@@ -1948,8 +1948,8 @@ public final class DB
 	/**
 	 * Create SQL for formatted Date, Number
 	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
+	 * @param columnName          the column name in the SQL
+	 * @param displayType         Display Type
 	 * @param AD_Language_NOTUSED not used
 	 * @return TRIM(TO_CHAR ( columnName, ' 999G999G999G990D00 ', ' NLS_NUMERIC_CHARACTERS = ' ', . ' ' ')) or TRIM(TO_CHAR(columnName,'TM9')) depending on DisplayType and Language
 	 * @see org.compiere.util.DisplayType
@@ -1971,11 +1971,11 @@ public final class DB
 	/**
 	 * Create SQL for formatted Date, Number.
 	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
+	 * @param columnName          the column name in the SQL
+	 * @param displayType         Display Type
 	 * @param AD_Language_NOTUSED 6 character language setting (from Env.LANG_*)
-	 * @param formatPattern formatting pattern to be used ( {@link DecimalFormat} pattern, {@link SimpleDateFormat} pattern etc). In case the formatting pattern is not supported or is not valid, the
-	 *            implementation method can ignore it silently.
+	 * @param formatPattern       formatting pattern to be used ( {@link DecimalFormat} pattern, {@link SimpleDateFormat} pattern etc). In case the formatting pattern is not supported or is not valid, the
+	 *                            implementation method can ignore it silently.
 	 * @return SQL code
 	 * @see Database#TO_CHAR(String, int, String)
 	 */
@@ -1991,7 +1991,7 @@ public final class DB
 	/**
 	 * Return number as string for INSERT statements with correct precision
 	 *
-	 * @param number number
+	 * @param number      number
 	 * @param displayType display Type
 	 * @return number as string
 	 */
@@ -2019,14 +2019,14 @@ public final class DB
 	 * 	-	replace ' with ''
 	 * </pre>
 	 *
-	 * @param txt String with text
+	 * @param txt       String with text
 	 * @param maxLength Maximum Length of content or 0 to ignore
 	 * @return escaped string for insert statement (NULL if null)
 	 */
 	public static String TO_STRING(final String txt, final int maxLength)
 	{
 		if (txt == null
-		// || txt.length() == 0 gh #213: don't return null for the empty string, (e.g. we have X_MRP_ProductInfo_Detail.ASIKey='' which is different from NULL)
+			// || txt.length() == 0 gh #213: don't return null for the empty string, (e.g. we have X_MRP_ProductInfo_Detail.ASIKey='' which is different from NULL)
 		)
 		{
 			return "NULL";
@@ -2123,7 +2123,7 @@ public final class DB
 	/**
 	 * convenient method to close result set and statement
 	 *
-	 * @param rs result set
+	 * @param rs    result set
 	 * @param pstmt statement
 	 * @see #close(ResultSet)
 	 * @see #close(Statement)
@@ -2385,8 +2385,6 @@ public final class DB
 	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
-	 * @param columnName
-	 * @param paramsIn
 	 * @param paramsOut if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
@@ -2549,7 +2547,7 @@ public final class DB
 	 * Get SQL DataType
 	 *
 	 * @param displayType AD_Reference_ID
-	 * @param columnName name
+	 * @param columnName  name
 	 * @param fieldLength length
 	 * @return SQL Data Type in Oracle Notation
 	 */
@@ -2776,6 +2774,7 @@ public final class DB
 		T retrieveRowOrNull(ResultSet rs) throws SQLException;
 	}
 
+	@NonNull
 	public static <T> List<T> retrieveRowsOutOfTrx(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
@@ -2784,6 +2783,7 @@ public final class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
 	}
 
+	@NonNull
 	public static <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
@@ -2792,6 +2792,7 @@ public final class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
 	}
 
+	@NonNull
 	private static <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
@@ -2928,8 +2929,8 @@ public final class DB
 
 	/**
 	 * @param sqlStatement SQL statement to be executed
-	 * @param parameters Parameters to be used in the {@param sqlStatement}
-	 * @param trxName transaction name
+	 * @param parameters   Parameters to be used in the {@param sqlStatement}
+	 * @param trxName      transaction name
 	 * @return each resulted row as a {@link List<String>}
 	 */
 	public static ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
