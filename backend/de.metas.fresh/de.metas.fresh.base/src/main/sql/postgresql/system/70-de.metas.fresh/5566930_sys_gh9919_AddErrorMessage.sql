@@ -10,12 +10,12 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- 2020-09-10T09:04:36.732Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Es gibt keinen Standard-Locator für das Transitlager',Updated=TO_TIMESTAMP('2020-09-10 12:04:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545002
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Es gibt keinen Standard-Lagerort für das Transitlager',Updated=TO_TIMESTAMP('2020-09-10 12:04:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545002
 ;
 
 -- 2020-09-10T09:04:44.516Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message SET MsgText='Es gibt keinen Standard-Locator für das Transitlager',Updated=TO_TIMESTAMP('2020-09-10 12:04:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545002
+UPDATE AD_Message SET MsgText='Es gibt keinen Standard-Lagerort für das Transitlager',Updated=TO_TIMESTAMP('2020-09-10 12:04:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545002
 ;
 
 -- 2020-09-10T09:04:48.350Z
