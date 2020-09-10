@@ -147,9 +147,11 @@ class ManufacturingOrderReportProcessCommand
 		final I_M_HU vhu = huPPOrderBL.receivingMainProduct(orderId)
 				.movementDate(receipt.getDate())
 				.locatorId(locatorId)
+				.lotNumber(receipt.getLotNumber())
+				.bestBeforeDate(receipt.getBestBeforeDate())
 				.receiveVHU(qtyToReceive);
 
-		OrderLineId salesOrderLineId = getSalesOrderLineIdByOrderId(orderId).orElse(null);
+		final OrderLineId salesOrderLineId = getSalesOrderLineIdByOrderId(orderId).orElse(null);
 		if (salesOrderLineId != null)
 		{
 			huReservationService.makeReservation(ReserveHUsRequest.builder()

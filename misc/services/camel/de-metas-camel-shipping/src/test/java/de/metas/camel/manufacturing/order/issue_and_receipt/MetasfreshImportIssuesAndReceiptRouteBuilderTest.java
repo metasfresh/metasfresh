@@ -132,6 +132,8 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToReceiveInStockUOM(new BigDecimal(100))
 								.date(currentTime)
+								.lotNumber(null)
+								.bestBeforeDate(LocalDate.parse("2021-07-01"))
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
 								.orderId(JsonMetasfreshId.of(12345))

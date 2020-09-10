@@ -593,27 +593,39 @@ public class ManufacturingOrderAPIServiceTest
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.date(SystemTime.asZonedDateTime())
 							.qtyToReceiveInStockUOM(new BigDecimal("10"))
+							.lotNumber("lot123")
+							.bestBeforeDate(LocalDate.parse("2027-06-07"))
 							.build())
 					.build());
 
+			//
+			// Check cost collector
 			final List<I_PP_Cost_Collector> costCollectors = costCollectorDAO.getByOrderId(orderId);
 			assertThat(costCollectors).hasSize(1);
-
 			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
 			assertThat(costCollector.getCostCollectorType()).isEqualTo(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt);
 			assertThat(costCollector.getMovementQty()).isEqualTo("10");
 			assertThat(costCollector.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 
+			//
+			// Check HU
 			final List<I_M_HU> hus = costCollectorBL.getTopLevelHUs(costCollector);
 			assertThat(hus).hasSize(1);
-
 			final I_M_HU hu = hus.get(0);
 			assertThat(handlingUnitsBL.getHU_UnitType(hu)).isEqualTo(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
 			assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 			assertThat(hu.getM_Locator_ID()).isEqualTo(locatorId.getRepoId());
 
+			//
+			// Check HU storage
 			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
 			assertThat(huStorage.getQty(productId, uomEach)).isEqualByComparingTo("10");
+
+			//
+			// Check HU attributes
+			final IAttributeStorage huAttributes = huTestHelper.getHUContext().getHUAttributeStorageFactory().getAttributeStorage(hu);
+			assertThat(huAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber)).isEqualTo("lot123");
+			assertThat(huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate)).isEqualTo("2027-06-07");
 
 			//
 			// Check HU reservation
