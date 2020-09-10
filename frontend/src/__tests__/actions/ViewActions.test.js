@@ -226,6 +226,7 @@ describe('ViewActions thunks', () => {
         'result',
         'firstRow'
       ]),
+      ...limitedViewLayout,
       headerElements: limitedViewData.columnsByFieldName,
       keyProperty: 'id',
     })
