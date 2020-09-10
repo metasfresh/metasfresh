@@ -81,8 +81,6 @@ public class M_InOut
 	 * If the given <code>inOut</code> is OK to be send as EDI, then we add it to a {@link de.metas.esb.edi.model.I_EDI_Desadv}.
 	 * <p>
 	 * Note that if the EDI-status changes to something else later on, the inOut shall remain assigned. Its not this MV's problem.
-	 *
-	 * @param inOut
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void addToDesadv(final I_M_InOut inOut)
@@ -109,9 +107,6 @@ public class M_InOut
 	/**
 	 * Calls {@link IDesadvBL#removeInOutFromDesadv(I_M_InOut)} to detach the given inout from it's desadv (if any) when it is reversed, reactivated etc. Also see
 	 * {@link de.metas.handlingunits.model.validator.M_InOut#assertReActivationAllowed(org.compiere.model.I_M_InOut)}. Note that this method will also be fired if the inout's <code>C_Order</code> is reactivated.
-	 *
-	 * @param inOut
-	 *
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,

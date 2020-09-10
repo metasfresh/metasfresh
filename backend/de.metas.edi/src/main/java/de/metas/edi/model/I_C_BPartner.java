@@ -39,9 +39,15 @@ public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartn
 	// @formatter:on
 
 	// @formatter:off
-	String COLUMNNAME_EdiRecipientGLN = "EdiRecipientGLN";
-	String getEdiRecipientGLN();
-	void setEdiRecipientGLN(String EdiRecipientGLN);
+	String COLUMNNAME_EdiDesadvRecipientGLN = "EdiDesadvRecipientGLN";
+	String getEdiDesadvRecipientGLN();
+	void setEdiDesadvRecipientGLN(String EdiDesadvRecipientGLN);
+	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_EdiInvoicRecipientGLN = "EdiInvoicRecipientGLN";
+	String getEdiInvoicRecipientGLN();
+	void setEdiInvoicRecipientGLN(String EdiInvoicRecipientGLN);
 	// @formatter:on
 
 	// @formatter:off

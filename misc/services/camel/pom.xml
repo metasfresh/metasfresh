@@ -43,6 +43,7 @@
 
     <modules>
         <module>de-metas-camel-shipping</module>
+        <module>de-metas-camel-edi</module>
     </modules>
 
     <dependencies>

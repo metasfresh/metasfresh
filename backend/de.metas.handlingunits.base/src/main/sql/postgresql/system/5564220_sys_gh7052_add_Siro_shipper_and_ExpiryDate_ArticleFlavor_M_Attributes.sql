@@ -30,7 +30,7 @@ UPDATE M_Attribute SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2020-07-24 16:50:27','Y
 
 -- 2020-07-24T13:53:55.815Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,IsActive,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,'S',TO_TIMESTAMP('2020-07-24 16:53:55','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','N','N','N',540048,'Expiry Date',TO_TIMESTAMP('2020-07-24 16:53:55','YYYY-MM-DD HH24:MI:SS'),100,'1000006')
+INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,IsActive,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,'S',TO_TIMESTAMP('2020-07-24 16:53:55','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','N','N','N',540048,'Expiry Date',TO_TIMESTAMP('2020-07-24 16:53:55','YYYY-MM-DD HH24:MI:SS'),100,'HU_ExpiryDate')
 ;
 
 -- 2020-07-24T13:54:02.557Z

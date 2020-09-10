@@ -12,7 +12,7 @@ converts this between JSON (metasfresh) to XML and reads/writes that XML to disk
 | anlieferung (`bodymed_anlieferung_v4.fmp12`) | Wareneingangsdispo/Receipt Schedule (`M_ReceiptSchedule`) |
 | bestellung (`bodymed_bestellung_v4.fmp12`) | Lieferdispo/Shipment Schedule (`M_ShipmentSchedule`) |
 | lage(r)scan (`siro_lagescan_v1.fmp12`) | Inventory (`M_Inventory`)
-| stuecklisten (`bodymed_stuecklisten_v2.fmp12`) | production order mf => siro (`PP_Order`)
+| stuecklisten (`bodymed_stuecklisten_v3.fmp12`) | production order mf => siro (`PP_Order`)
 | vorkonfektioniert (`siro_vorkonfektioniertist_v2.fmp12`) |  production "report" siro => mf (`PP_Order`)
 
 
