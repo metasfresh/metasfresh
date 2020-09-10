@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Disabled;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.common.shipping.ConfiguredJsonMapper;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -35,11 +36,12 @@ import lombok.NonNull;
 @Disabled
 public class SingleResult implements Processor
 {
-	public static SingleResult ofJson(@NonNull final ObjectMapper jsonObjectMapper, @NonNull final Object responseBody)
+	public static SingleResult ofJson(@NonNull final Object responseBody)
 	{
 		final String responseBodyAsJsonString;
 		try
 		{
+			final ObjectMapper jsonObjectMapper = ConfiguredJsonMapper.get();
 			responseBodyAsJsonString = jsonObjectMapper.writeValueAsString(responseBody);
 		}
 		catch (final JsonProcessingException ex)

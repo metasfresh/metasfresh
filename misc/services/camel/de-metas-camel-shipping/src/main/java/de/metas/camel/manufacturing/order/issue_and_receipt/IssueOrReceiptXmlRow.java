@@ -11,6 +11,7 @@ import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.ROW;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -34,6 +35,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 class IssueOrReceiptXmlRow
 {
 	public static IssueOrReceiptXmlRow wrap(
@@ -64,6 +66,11 @@ class IssueOrReceiptXmlRow
 		return JsonMetasfreshId.ofOrNull(metadata.getCell(row, "_stueckliste_id").getValueAsInteger());
 	}
 
+	public String get_artikel_nummer()
+	{
+		return metadata.getCell(row, "_artikel_nummer").getValueAsString();
+	}
+
 	public BigDecimal get_artikel_menge()
 	{
 		return metadata.getCell(row, "_artikel_menge").getValueAsBigDecimal();
@@ -83,6 +90,11 @@ class IssueOrReceiptXmlRow
 	{
 		final String fieldName = "_vorkonfektioniertist_mhd_ablauf_datum";
 		final String valueStr = metadata.getCell(row, fieldName).getValueAsString();
+		if (valueStr == null || valueStr.trim().isEmpty())
+		{
+			return null;
+		}
+
 		return XmlToJsonProcessorUtil.asLocalDate(
 				valueStr,
 				ImmutableSet.of("dd.MM.yyyy"),

@@ -10,9 +10,12 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,12 +41,18 @@ import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 
 public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteBuilder
 {
-	private static final String ROUTE_ID = "manufacturingOrderIssueAndReceiptImport";
+	@VisibleForTesting
+	static final String ROUTE_ID = "manufacturingOrderIssueAndReceiptImport";
 	private static final String SIRO_FTP_PATH = "{{siro.ftp.retrieve.manufacturing-orders.endpoint}}";
 
-	private static final String METASFRESH_EP_REPORT = "{{metasfresh.api.baseurl}}/manufacturing/orders/report";
+	@VisibleForTesting
+	static final String METASFRESH_EP_REPORT = "http://{{metasfresh.api.baseurl}}/manufacturing/orders/report";
 
-	private static final String LOCAL_STORAGE_URL = "{{siro.manufacturing-orders.local.storage}}";
+	@VisibleForTesting
+	static final String LOCAL_STORAGE_URL = "{{siro.manufacturing-orders.local.storage}}";
+
+	@VisibleForTesting
+	static final String XML_TO_JSON_PROCESSOR_ID = "xml-to-json-id";
 
 	@Override
 	public void configure()
@@ -52,33 +61,35 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 
 		RouteBuilderCommonUtil.setupProperties(getContext());
 
-		final JacksonDataFormat requestJacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(
-				getContext(),
-				JsonRequestManufacturingOrdersReport.class);
-		final JacksonDataFormat responseJacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(
-				getContext(),
-				JsonResponseManufacturingOrdersReport.class);
-		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
-
 		//@formatter:off
 		from(SIRO_FTP_PATH)
 				.routeId(ROUTE_ID)
 				.to(LOCAL_STORAGE_URL)
 				.streamCaching()
-				.unmarshal(jacksonXMLDataFormat)
-				.process(new XmlToJsonRequestManufacturingOrdersReportProcessor()).id("xml-to-json-id")
+				.unmarshal(xmlDataFormat())
+				.process(new XmlToJsonRequestManufacturingOrdersReportProcessor()).id(XML_TO_JSON_PROCESSOR_ID)
 				.choice()
 					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
 						.log(LoggingLevel.INFO, "Nothing to do! no issues/receipts were found in file:" + header(Exchange.FILE_NAME))
 					.otherwise()
 						.log(LoggingLevel.INFO, "Posting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " manufacturing issues and receipts to metasfresh.")
-						.marshal(requestJacksonDataFormat)
+						.marshal(jsonDataFormat(JsonRequestManufacturingOrdersReport.class))
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-						.to(http(METASFRESH_EP_REPORT))
-						.unmarshal(responseJacksonDataFormat)
+						.to(METASFRESH_EP_REPORT)
+						.unmarshal(jsonDataFormat(JsonResponseManufacturingOrdersReport.class))
 						.process(new JsonResponseManufacturingOrdersReportProcessor())
 					.end();
 		//@formatter:on
+	}
+
+	private @NonNull JacksonDataFormat jsonDataFormat(@NonNull final Class<?> type)
+	{
+		return RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), type);
+	}
+
+	private @NonNull JacksonXMLDataFormat xmlDataFormat()
+	{
+		return RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 	}
 }

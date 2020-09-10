@@ -1,6 +1,5 @@
 package de.metas.camel.manufacturing.order.issue_and_receipt;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -22,6 +21,7 @@ import de.metas.common.manufacturing.JsonRequestHULookup;
 import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -83,6 +83,7 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 				.collect(ImmutableList.toImmutableList());
 
 		final R request = requestBuilder.apply(items);
+		System.out.println("REQUEST: " + request);
 
 		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, items.size());
 		exchange.getIn().setBody(request);
@@ -93,22 +94,30 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 			@NonNull final ROW rawRow,
 			@NonNull final METADATA metadata)
 	{
-		final IssueOrReceiptXmlRow row = IssueOrReceiptXmlRow.wrap(rawRow, metadata);
-		final MainProductOrComponent type = row.get_stueckliste_mutter_oder_tochter();
 
-		if (type == MainProductOrComponent.MAIN_PRODUCT)
+		try
 		{
-			final JsonRequestReceiveFromManufacturingOrder receipt = extractJsonReceipt(row);
-			return new IssueOrReceipt(receipt);
+			final IssueOrReceiptXmlRow row = IssueOrReceiptXmlRow.wrap(rawRow, metadata);
+			final MainProductOrComponent type = row.get_stueckliste_mutter_oder_tochter();
+
+			if (type == MainProductOrComponent.MAIN_PRODUCT)
+			{
+				final JsonRequestReceiveFromManufacturingOrder receipt = extractJsonReceipt(row);
+				return new IssueOrReceipt(receipt);
+			}
+			else if (type == MainProductOrComponent.COMPONENT)
+			{
+				final JsonRequestIssueToManufacturingOrder issue = extractJsonIssue(row);
+				return new IssueOrReceipt(issue);
+			}
+			else
+			{
+				throw new IllegalStateException("Unknown type: " + type);
+			}
 		}
-		else if (type == MainProductOrComponent.COMPONENT)
+		catch (final Exception ex)
 		{
-			final JsonRequestIssueToManufacturingOrder issue = extractJsonIssue(row);
-			return new IssueOrReceipt(issue);
-		}
-		else
-		{
-			throw new IllegalStateException("Unknown type: " + type);
+			throw new RuntimeException("Failed parsing " + rawRow);
 		}
 	}
 
@@ -118,7 +127,7 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 		return JsonRequestReceiveFromManufacturingOrder.builder()
 				.orderId(row.get_stueckliste_id())
 				.qtyToReceiveInStockUOM(row.get_artikel_menge())
-				.date(ZonedDateTime.now())
+				.date(SystemTime.asZonedDateTime())
 				.build();
 	}
 
@@ -128,8 +137,8 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 		return JsonRequestIssueToManufacturingOrder.builder()
 				.orderId(row.get_stueckliste_id())
 				.qtyToIssueInStockUOM(row.get_artikel_menge())
-				.date(ZonedDateTime.now())
-				.productNo(row.get_stueckliste_artikelnummer())
+				.date(SystemTime.asZonedDateTime())
+				.productNo(row.get_artikel_nummer())
 				.handlingUnit(JsonRequestHULookup.builder()
 						.lotNumber(row.get_vorkonfektioniertist_mhd_charge())
 						.bestBeforeDate(row.get_vorkonfektioniertist_mhd_ablauf_datum())

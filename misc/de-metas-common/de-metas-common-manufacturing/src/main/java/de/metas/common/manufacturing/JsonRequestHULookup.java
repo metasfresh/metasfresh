@@ -2,12 +2,13 @@ package de.metas.common.manufacturing;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -38,10 +39,10 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonRequestHULookup.JsonRequestHULookupBuilder.class)
 public class JsonRequestHULookup
 {
-	@NonNull
+	@Nullable
 	String lotNumber;
 
-	@NonNull
+	@Nullable
 	LocalDate bestBeforeDate;
 
 	@JsonPOJOBuilder(withPrefix = "")

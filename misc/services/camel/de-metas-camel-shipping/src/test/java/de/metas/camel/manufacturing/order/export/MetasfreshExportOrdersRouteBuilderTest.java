@@ -13,11 +13,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import de.metas.camel.test.endpoints.CaptureLastMessage;
 import de.metas.camel.test.endpoints.FailOnCall;
 import de.metas.camel.test.endpoints.SingleResult;
@@ -56,8 +51,6 @@ import lombok.NonNull;
 
 public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 {
-	private static final ObjectMapper jsonObjectMapper = newJsonObjectMapper();
-
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
@@ -68,15 +61,6 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 	public boolean isUseAdviceWith()
 	{
 		return true;
-	}
-
-	private static ObjectMapper newJsonObjectMapper()
-	{
-		return new ObjectMapper()
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
 	}
 
 	@Builder(builderMethodName = "adviceRoute", builderClassName = "$AdviceRouteBuilder")
@@ -105,7 +89,7 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 	@Test
 	void noManufacturingOrders() throws Exception
 	{
-		final var fromMetasfresh = SingleResult.ofJson(jsonObjectMapper, JsonResponseManufacturingOrdersBulk.builder()
+		final var fromMetasfresh = SingleResult.ofJson(JsonResponseManufacturingOrdersBulk.builder()
 				.transactionKey("74dcbcf6-265d-41b3-bb15-1cde4793684a")
 				.hasMoreItems(false)
 				.build());
@@ -133,7 +117,7 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 	@Test
 	void oneManufacturingOrder() throws Exception
 	{
-		final var fromMetasfresh = SingleResult.ofJson(jsonObjectMapper, JsonResponseManufacturingOrdersBulk.builder()
+		final var fromMetasfresh = SingleResult.ofJson(JsonResponseManufacturingOrdersBulk.builder()
 				.transactionKey("transactionKey1")
 				.hasMoreItems(false)
 				.item(JsonResponseManufacturingOrder.builder()
@@ -187,7 +171,7 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 		// name</valueAsString><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA>1</DATA><valueAsString>1</valueAsString><valueAsInteger>1</valueAsInteger><valueAsBigDecimal>1</valueAsBigDecimal></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA>6.66</DATA><valueAsString>6.66</valueAsString><valueAsInteger/><valueAsBigDecimal>6.66</valueAsBigDecimal></COL><COL><DATA>1-productNo1</DATA><valueAsString>1-productNo1</valueAsString><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA>description1</DATA><valueAsString>description1</valueAsString><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA>1-productNo1</DATA><valueAsString>1-productNo1</valueAsString><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA>1</DATA><valueAsString>1</valueAsString><valueAsInteger>1</valueAsInteger><valueAsBigDecimal>1</valueAsBigDecimal></COL><COL><DATA>Mutter</DATA><valueAsString>Mutter</valueAsString><valueAsInteger/><valueAsBigDecimal/></COL><COL><DATA/><valueAsString/><valueAsInteger/><valueAsBigDecimal/></COL></ROW></RESULTSET></FMPXMLRESULT>");
 
 		assertThat(feedbackToMetasfresh.getCalled()).as("postEndpoint shall be called once").isEqualTo(1);
-		assertThat(feedbackToMetasfresh.getLastMessageBody(jsonObjectMapper, JsonRequestSetOrdersExportStatusBulk.class))
+		assertThat(feedbackToMetasfresh.getLastMessageBody(JsonRequestSetOrdersExportStatusBulk.class))
 				.isEqualToComparingFieldByField(JsonRequestSetOrdersExportStatusBulk.builder()
 						.transactionKey("transactionKey1")
 						.item(JsonRequestSetOrderExportStatus.builder()
@@ -200,7 +184,7 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 	@Test
 	void test_uploadFail() throws Exception
 	{
-		final var fromMetasfresh = SingleResult.ofJson(jsonObjectMapper, JsonResponseManufacturingOrdersBulk.builder()
+		final var fromMetasfresh = SingleResult.ofJson(JsonResponseManufacturingOrdersBulk.builder()
 				.transactionKey("transactionKey1")
 				.hasMoreItems(false)
 				.item(JsonResponseManufacturingOrder.builder()
@@ -247,7 +231,7 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 		assertThat(uploadXml.getCalled()).isEqualTo(1);
 
 		assertThat(feedbackToMetasfresh.getCalled()).isEqualTo(1);
-		assertThat(feedbackToMetasfresh.getLastMessageBody(jsonObjectMapper, JsonRequestSetOrdersExportStatusBulk.class))
+		assertThat(feedbackToMetasfresh.getLastMessageBody(JsonRequestSetOrdersExportStatusBulk.class))
 				.isEqualToComparingFieldByField(JsonRequestSetOrdersExportStatusBulk.builder()
 						.transactionKey("transactionKey1")
 						.error(uploadXml.getJsonError())
