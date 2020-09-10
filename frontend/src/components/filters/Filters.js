@@ -25,7 +25,6 @@ class Filters extends PureComponent {
   state = {
     activeFilter: null,
     activeFiltersCaptions: null,
-    flatFiltersMap: null,
     notValidFields: null,
   };
 
@@ -105,7 +104,6 @@ class Filters extends PureComponent {
     let mappedFiltersData = this.arrangeFilters(filterData);
     // put the resulted combined map of filters into the iMap and preserve existing functionality
     let filtersData = iMap(mappedFiltersData);
-    const flatFiltersMap = {};
     const activeFiltersCaptions = {};
 
     // find any filters with default values first and extend
@@ -115,10 +113,6 @@ class Filters extends PureComponent {
         outerParameters: for (let parameter of filter.parameters) {
           const { defaultValue, parameterName, widgetType } = parameter;
           const nulledFilter = initialValuesNulled.get(filterId);
-
-          flatFiltersMap[`${filterId}-${parameterName}`] = {
-            widgetType,
-          };
 
           const isActive = filtersActive.has(filterId);
 
@@ -247,13 +241,11 @@ class Filters extends PureComponent {
       this.setState({
         activeFilter: cleanActiveFilter,
         activeFiltersCaptions,
-        flatFiltersMap,
       });
     } else {
       this.setState({
         activeFilter: null,
         activeFiltersCaptions: null,
-        flatFiltersMap,
       });
     }
   };
@@ -423,8 +415,8 @@ class Filters extends PureComponent {
    */
   setFilterActive = (filterToAdd) => {
     const { updateDocList } = this.props;
-    let { filtersActive } = this.props;
-    const { flatFiltersMap } = this.state;
+    let { filtersActive, filters } = this.props;
+    const { flatFiltersMap } = filters;
     let activeFilters = iMap(filtersActive);
 
     activeFilters = activeFilters.filter(
