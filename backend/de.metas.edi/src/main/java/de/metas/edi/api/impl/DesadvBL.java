@@ -284,9 +284,8 @@ public class DesadvBL implements IDesadvBL
 
 			desadv.setPOReference(order.getPOReference());
 
-			final BPartnerLocationId shipToBPLocationId = orderBL.getShipToLocationId(order);
-			desadv.setC_BPartner_ID(shipToBPLocationId.getBpartnerId().getRepoId());
-			desadv.setC_BPartner_Location_ID(shipToBPLocationId.getRepoId());
+			desadv.setC_BPartner_ID(order.getC_BPartner_ID());
+			desadv.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
 
 			desadv.setDateOrdered(order.getDateOrdered());
 			desadv.setMovementDate(order.getDatePromised());
