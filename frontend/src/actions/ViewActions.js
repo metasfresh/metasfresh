@@ -213,7 +213,7 @@ function fetchLocationConfigError(id, error, isModal) {
 }
 
 /**
- * @method addLocationData
+ * @method addViewLocationData
  * @summary save geolocation data in the store
  */
 export function addViewLocationData(id, locationData, isModal) {
@@ -224,10 +224,10 @@ export function addViewLocationData(id, locationData, isModal) {
 }
 
 /**
- * @method toggleIncludedView
+ * @method updateViewSuccess
  * @summary success when updating view's properties
  */
-export function updateViewSuccess(id, data, isModal) {
+export function updateViewSuccess({ id, data, isModal }) {
   return {
     type: UPDATE_VIEW_DATA_SUCCESS,
     payload: { id, data, isModal },
@@ -235,7 +235,7 @@ export function updateViewSuccess(id, data, isModal) {
 }
 
 /**
- * @method toggleIncludedView
+ * @method updateViewError
  * @summary failure when updating view's properties
  */
 export function updateViewError(id, error, isModal) {
@@ -542,7 +542,9 @@ export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
         const updatedData = {
           headerProperties: response.data,
         };
-        dispatch(updateViewSuccess(windowId, updatedData, isModal));
+        dispatch(
+          updateViewSuccess({ id: windowId, data: updatedData, isModal })
+        );
       })
       .catch((error) => {
         dispatch(updateViewError(windowId, error, isModal));

@@ -365,7 +365,7 @@ Actions.propTypes = {
 };
 
 const mapStateToProps = (state) => {
-  const includedView = state.viewHandler.includedView;
+  const { includedView } = state.viewHandler;
   const result = {
     plugins: state.pluginsHandler.files,
   };
