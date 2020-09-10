@@ -146,15 +146,12 @@ public class POTrlRepository
 						+ I_AD_Language.COLUMNNAME_IsActive
 						+ "='Y'");
 
-		// This will change in #4672
+		sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y'");
 		if (I_AD_Element.Table_Name.equals(tableName))
-		{
-			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y')");
+		{ // for AD_Element we need to make sure to have the BaseLanguage, no matter if that's also a system-language
+			sql.append(" OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y'");
 		}
-		else
-		{
-			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y')");
-		}
+		sql.append(")");
 
 		sql.append(" AND t.")
 				.append(keyColumn).append("=").append(recordId)
