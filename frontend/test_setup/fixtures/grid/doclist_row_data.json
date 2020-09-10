@@ -1,0 +1,2423 @@
+{
+  "rowData1": {
+    "windowId": "540371",
+    "viewId": "540371-3",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 22,
+    "result": [
+      {
+        "id": "1000125",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000125",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "000.0  "
+      },
+      {
+        "id": "1000126",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000126",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "000.1  "
+      },
+      {
+        "id": "1000127",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000127",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "000.2  "
+      },
+      {
+        "id": "1000128",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000128",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "000.3  "
+      },
+      {
+        "id": "1000104",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000104",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-2156423-2205173"
+        },
+        "colspan": true,
+        "caption": "101.0 G0002_Test Lieferant 1 Testadresse 1"
+      },
+      {
+        "id": "1000103",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000103",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-2156439-2205195"
+        },
+        "colspan": true,
+        "caption": "102.0 1000013_tbp book club shipper DE Stuttgart"
+      },
+      {
+        "id": "1000105",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000105",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-2156426-2205176"
+        },
+        "colspan": true,
+        "caption": "103.0 1000000_WebUI Firma GmbH Deutschland"
+      },
+      {
+        "id": "1000106",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000106",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-2156425-2205175"
+        },
+        "colspan": true,
+        "caption": "104.0 G0001Bu_Test Kunde 1 Testadresse 3"
+      },
+      {
+        "id": "1000107",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000107",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-2156425-2205175"
+        },
+        "colspan": true,
+        "caption": "105.0 G0001Bu_Test Kunde 1 Testadresse 3"
+      },
+      {
+        "id": "1000108",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000108",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "106.0  "
+      },
+      {
+        "id": "1000109",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000109",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "107.0  "
+      },
+      {
+        "id": "1000110",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000110",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "108.0  "
+      },
+      {
+        "id": "1000111",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000111",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "109.0  "
+      },
+      {
+        "id": "1000112",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000112",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "111.0  "
+      },
+      {
+        "id": "1000113",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000113",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "112.0  "
+      },
+      {
+        "id": "1000114",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000114",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "113.0  "
+      },
+      {
+        "id": "1000115",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000115",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "114.0  "
+      },
+      {
+        "id": "1000102",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000102",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "115.0  "
+      },
+      {
+        "id": "1000116",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000116",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "116.0  "
+      },
+      {
+        "id": "1000117",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000117",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "packingHUs",
+          "viewId": "packingHUs-3-0-0"
+        },
+        "colspan": true,
+        "caption": "117.0  "
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540371"
+  },
+  "includedViewData1": {
+    "windowId": "packingHUs",
+    "viewId": "packingHUs-3-0-0",
+    "parentWindowId": "540371",
+    "parentViewId": "540371-3",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 23,
+    "result": [
+      {
+        "id": "1000138",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000138",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000138"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000138
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000140",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000140",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000140"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000140
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000141",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000141",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000141"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000141
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000142",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000142",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000142"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000142
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000143",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000143",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000143"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000143
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000144",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000144",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000144"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000144
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000145",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000145",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000145"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000145
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000146",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000146",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000146"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000146
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000147",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000147",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000147"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000147
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000148",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000148",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000148"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000148
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000149",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000149",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000149"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000149
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000150",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000150",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000150"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000150
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000151",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000151",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000151"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000151
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000152",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000152",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000152"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000152
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000153",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000153",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000153"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000153
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000154",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000154",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000154"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000154
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000155",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000155",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000155"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000155
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000156",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000156",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000156"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000156
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000157",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000157",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": null
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000157"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "1"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000157
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "V",
+              "caption": "CU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": ""
+          }
+        },
+        "type": "CU",
+        "hasComments": false,
+        "supportAttributes": true
+      },
+      {
+        "id": "1000204",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000204",
+            "widgetType": "Integer"
+          },
+          "HUPlanningReceiptOwnerPM": {
+            "field": "HUPlanningReceiptOwnerPM",
+            "value": false
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            }
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Stk"
+            }
+          },
+          "Value": {
+            "field": "Value",
+            "value": "1000204"
+          },
+          "QtyCU": {
+            "field": "QtyCU",
+            "value": "10"
+          },
+          "HUStatus": {
+            "field": "HUStatus",
+            "value": {
+              "key": "S",
+              "caption": "Kommissioniert"
+            }
+          },
+          "WeightGross": {
+            "field": "WeightGross",
+            "value": null
+          },
+          "BestBeforeDate": {
+            "field": "BestBeforeDate",
+            "value": null
+          },
+          "M_HU_ID": {
+            "field": "M_HU_ID",
+            "value": 1000204
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540010",
+              "caption": "Hauptlager_Verdichtung_0_0_1"
+            }
+          },
+          "HU_UnitType": {
+            "field": "HU_UnitType",
+            "value": {
+              "key": "LU",
+              "caption": "LU"
+            }
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": "EUR-Tauschpalette Holz"
+          }
+        },
+        "type": "LU",
+        "hasComments": false,
+        "supportAttributes": true,
+        "includedDocuments": [
+          {
+            "id": "1000205_T1000204",
+            "fieldsByName": {
+              "ID": {
+                "field": "ID",
+                "value": "1000205_T1000204",
+                "widgetType": "Integer"
+              },
+              "HUPlanningReceiptOwnerPM": {
+                "field": "HUPlanningReceiptOwnerPM",
+                "value": null
+              },
+              "M_Product_ID": {
+                "field": "M_Product_ID",
+                "value": {
+                  "key": "2005577",
+                  "caption": "P002737_Convenience Salat 250g"
+                }
+              },
+              "C_UOM_ID": {
+                "field": "C_UOM_ID",
+                "value": {
+                  "key": "100",
+                  "caption": "Stk"
+                }
+              },
+              "Value": {
+                "field": "Value",
+                "value": "1000205"
+              },
+              "QtyCU": {
+                "field": "QtyCU",
+                "value": "10"
+              },
+              "HUStatus": {
+                "field": "HUStatus",
+                "value": {
+                  "key": "S",
+                  "caption": "Kommissioniert"
+                }
+              },
+              "WeightGross": {
+                "field": "WeightGross",
+                "value": null
+              },
+              "BestBeforeDate": {
+                "field": "BestBeforeDate",
+                "value": null
+              },
+              "M_HU_ID": {
+                "field": "M_HU_ID",
+                "value": 1000205
+              },
+              "M_Locator_ID": {
+                "field": "M_Locator_ID",
+                "value": {
+                  "key": "540010",
+                  "caption": "Hauptlager_Verdichtung_0_0_1"
+                }
+              },
+              "HU_UnitType": {
+                "field": "HU_UnitType",
+                "value": {
+                  "key": "V",
+                  "caption": "TU"
+                }
+              },
+              "M_HU_PI_Item_Product_ID": {
+                "field": "M_HU_PI_Item_Product_ID",
+                "value": "1 IFCO 6410 x 10 Stk"
+              }
+            },
+            "type": "TU",
+            "hasComments": false,
+            "supportAttributes": true,
+            "includedDocuments": [
+              {
+                "id": "1000205-2005577_T1000204",
+                "fieldsByName": {
+                  "ID": {
+                    "field": "ID",
+                    "value": "1000205-2005577_T1000204",
+                    "widgetType": "Integer"
+                  },
+                  "HUPlanningReceiptOwnerPM": {
+                    "field": "HUPlanningReceiptOwnerPM",
+                    "value": null
+                  },
+                  "M_Product_ID": {
+                    "field": "M_Product_ID",
+                    "value": {
+                      "key": "2005577",
+                      "caption": "P002737_Convenience Salat 250g"
+                    }
+                  },
+                  "C_UOM_ID": {
+                    "field": "C_UOM_ID",
+                    "value": {
+                      "key": "100",
+                      "caption": "Stk"
+                    }
+                  },
+                  "Value": {
+                    "field": "Value",
+                    "value": null
+                  },
+                  "QtyCU": {
+                    "field": "QtyCU",
+                    "value": "10"
+                  },
+                  "HUStatus": {
+                    "field": "HUStatus",
+                    "value": {
+                      "key": "S",
+                      "caption": "Kommissioniert"
+                    }
+                  },
+                  "WeightGross": {
+                    "field": "WeightGross",
+                    "value": null
+                  },
+                  "BestBeforeDate": {
+                    "field": "BestBeforeDate",
+                    "value": null
+                  },
+                  "M_HU_ID": {
+                    "field": "M_HU_ID",
+                    "value": 1000205
+                  },
+                  "M_Locator_ID": {
+                    "field": "M_Locator_ID",
+                    "value": null
+                  },
+                  "HU_UnitType": {
+                    "field": "HU_UnitType",
+                    "value": {
+                      "key": "V",
+                      "caption": "CU"
+                    }
+                  },
+                  "M_HU_PI_Item_Product_ID": {
+                    "field": "M_HU_PI_Item_Product_ID",
+                    "value": null
+                  }
+                },
+                "type": "CU",
+                "hasComments": false,
+                "supportAttributes": false
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "packingHUs"
+  }
+}

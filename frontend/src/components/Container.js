@@ -170,7 +170,7 @@ class Container extends PureComponent {
                   fetchQuickActionsOnInit={
                     !(
                       includedView &&
-                      includedView.windowType &&
+                      includedView.windowId &&
                       includedView.viewId
                     )
                   }
@@ -179,19 +179,17 @@ class Container extends PureComponent {
                   processStatus={processStatus}
                   includedView={includedView}
                   inBackground={
-                    includedView &&
-                    includedView.windowType &&
-                    includedView.viewId
+                    includedView && includedView.windowId && includedView.viewId
                   }
                   inModal={modal.visible}
                 />
 
                 {includedView &&
-                  includedView.windowType &&
+                  includedView.windowId &&
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowId={includedView.windowType}
+                      windowId={includedView.windowId}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}

@@ -151,9 +151,7 @@ export default class Table extends PureComponent {
         id: identifier,
         showIncludedView: item.supportIncludedViews,
         forceClose: false,
-        windowId: item.supportIncludedViews
-          ? item.includedView.windowType || item.includedView.windowId
-          : null,
+        windowId: item.supportIncludedViews ? item.includedView.windowId : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
         isModal,
       });

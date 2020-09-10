@@ -24,6 +24,8 @@ import {
   resetView,
   deleteView,
   showIncludedView,
+  setIncludedView,
+  unsetIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
@@ -33,8 +35,6 @@ import {
 } from '../actions/TableActions';
 import { clearAllFilters, filtersToMap } from '../actions/FiltersActions';
 import {
-  closeListIncludedView,
-  setListIncludedView,
   setListId,
   setPagination as setListPagination,
   setSorting as setListSorting,
@@ -109,7 +109,7 @@ class DocumentListContainer extends Component {
       windowId,
       refDocumentId,
       referenceId,
-      closeListIncludedView,
+      unsetIncludedView,
       viewId,
       resetView,
       deleteView,
@@ -123,7 +123,7 @@ class DocumentListContainer extends Component {
     const { staticFilterCleared } = this.state;
 
     const included =
-      includedView && includedView.windowType && includedView.viewId;
+      includedView && includedView.windowId && includedView.viewId;
     const location = document.location;
 
     if (nextProps.filters.clearAll) {
@@ -190,7 +190,7 @@ class DocumentListContainer extends Component {
           // TODO: Check if we can just call `showIncludedView` to hide
           // it in the resetView Action Creator
           if (included) {
-            closeListIncludedView(includedView);
+            unsetIncludedView(includedView);
           }
           this.fetchLayoutAndData();
         }
@@ -434,7 +434,7 @@ class DocumentListContainer extends Component {
       isIncluded,
       sort,
       viewId,
-      setListIncludedView,
+      setIncludedView,
       setModalDescription,
       filterView,
       isModal,
@@ -462,7 +462,7 @@ class DocumentListContainer extends Component {
         }
 
         if (isIncluded) {
-          setListIncludedView({ windowType: windowId, viewId: newViewId });
+          setIncludedView({ windowType: windowId, viewId: newViewId });
         }
 
         if (isModal) {
@@ -751,7 +751,7 @@ class DocumentListContainer extends Component {
             id: identifier,
             showIncludedView: item.supportIncludedViews,
             windowId: item.supportIncludedViews
-              ? item.includedView.windowType || item.includedView.windowId
+              ? item.includedView.windowId || item.includedView.windowId
               : null,
             viewId: item.supportIncludedViews ? item.includedView.viewId : '',
             isModal,
@@ -773,7 +773,7 @@ class DocumentListContainer extends Component {
       layout &&
       layout.includedView &&
       includedView &&
-      includedView.windowType &&
+      includedView.windowId &&
       includedView.viewId;
     const triggerSpinner = layout.supportAttributes
       ? layoutPending
@@ -821,8 +821,8 @@ export default connect(
     filterView,
     deleteTable,
     indicatorState,
-    closeListIncludedView,
-    setListIncludedView,
+    unsetIncludedView,
+    setIncludedView,
     setListPagination,
     setListSorting,
     setListId,

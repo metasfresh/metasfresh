@@ -47,7 +47,6 @@ const DLpropTypes = {
   filterView: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
   indicatorState: PropTypes.func.isRequired,
-  closeListIncludedView: PropTypes.func.isRequired,
   setListPagination: PropTypes.func.isRequired,
   setListSorting: PropTypes.func.isRequired,
   setListId: PropTypes.func.isRequired,
@@ -108,9 +107,9 @@ const DLmapStateToProps = (state, props) => {
   let childTableId = null;
   const childSelector = getSelection();
   const { includedView } = props;
-  if (includedView && includedView.windowType) {
+  if (includedView && includedView.windowId) {
     childTableId = getTableId({
-      windowId: includedView.windowType,
+      windowId: includedView.windowId,
       viewId: includedView.viewId,
     });
   }
