@@ -22,10 +22,12 @@
 
 package de.metas.common.shipment;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.MeasurableRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,7 +39,7 @@ import java.util.stream.Collectors;
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = JsonCreateShipmentRequest.JsonCreateShipmentRequestBuilder.class)
-public class JsonCreateShipmentRequest
+public class JsonCreateShipmentRequest extends MeasurableRequest
 {
 	@JsonProperty("shipperCode")
 	String shipperCode;
@@ -54,5 +56,12 @@ public class JsonCreateShipmentRequest
 		this.createShipmentInfoList = createShipmentInfoList != null
 				? createShipmentInfoList.stream().filter(Objects::nonNull).collect(Collectors.toList())
 				: ImmutableList.of();
+	}
+
+	@Override
+	@JsonIgnore
+	public int getSize()
+	{
+		return createShipmentInfoList.size();
 	}
 }

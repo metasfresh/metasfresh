@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-shipping
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,28 +20,49 @@
  * #L%
  */
 
-package de.metas.common.receipt;
+package de.metas.handlingunits.trace;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.inout.InOutId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Set;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize( builder = JsonCreateReceiptsResponse.JsonCreateReceiptsResponseBuilder.class)
-public class JsonCreateReceiptsResponse
+public class HUTraceForReturnedQtyRequest
 {
-	@JsonProperty("createdReceiptIdList")
-	List<JsonMetasfreshId> createdReceiptIdList;
+	@NonNull
+	I_M_HU returnedVirtualHU;
 
-	@JsonProperty("createdReturnIdList")
-	List<JsonMetasfreshId> createdReturnIdList;
+	@NonNull
+	HuId topLevelReturnedHUId;
+
+	@NonNull
+	Set<HuId> sourceShippedVHUIds;
+
+	@NonNull
+	String docStatus;
+
+	@NonNull
+	Instant eventTime;
+
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	InOutId customerReturnId;
+
+	@NonNull
+	ProductId productId;
+
+	@NonNull
+	BigDecimal qty;
 }

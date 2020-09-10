@@ -22,32 +22,8 @@
 
 package de.metas.handlingunits.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -91,24 +67,44 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Transaction;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
 	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
+	final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsRepo.getById(huId);
 	}
 
 	@Override
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds)
 	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsRepo.getByIds(huIds);
 	}
 
@@ -254,11 +250,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public void markDestroyed(final IHUContext huContext, final I_M_HU hu)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
-		handlingUnitsDAO.saveHU(hu);
+		handlingUnitsRepo.saveHU(hu);
 	}
 
 	@Override
@@ -425,7 +420,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public String getHU_UnitType(@NonNull final I_M_HU_PI pi)
 	{
-		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(pi);
+		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePICurrentVersion(pi);
 		if (piVersion == null)
 		{
 			return null;
@@ -472,8 +467,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(parentHU);
+		final I_M_HU_Item parentItem = handlingUnitsRepo.retrieveParentItem(parentHU);
 		if (parentItem == null || parentItem.getM_HU_Item_ID() <= 0)
 		{
 			return false;
@@ -499,7 +493,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final List<I_M_HU_Item> huItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(hu);
+		final List<I_M_HU_Item> huItems = handlingUnitsRepo.retrieveItems(hu);
 		if (huItems.size() == 0)
 		{
 			return false; // we don't care
@@ -536,8 +530,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		Check.assumeNotNull(hu, "hu not null");
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		return handlingUnitsDAO.retrieveParentItem(hu) == null;
+		return handlingUnitsRepo.retrieveParentItem(hu) == null;
 	}
 
 	@Override
@@ -583,8 +576,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU> getTopLevelHUs(@NonNull final TopLevelHusQuery request)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		final Set<Integer> seenM_HU_IDs = new HashSet<>();
 		final List<I_M_HU> husResult = new ArrayList<>();
 
@@ -600,7 +591,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					&& request.getFilter().test(parent) // our filter rejects the HU
 			)
 			{
-				final I_M_HU parentNew = handlingUnitsDAO.retrieveParent(parent);
+				final I_M_HU parentNew = handlingUnitsRepo.retrieveParent(parent);
 				final boolean parentIsTopLevel = parentNew == null;
 
 				if (request.isIncludeAll() || parentIsTopLevel)
@@ -645,8 +636,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		Check.assumeNotNull(hu, "hu not null");
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		I_M_HU lastLU = null;
 		I_M_HU currentHU = hu;
 		int iterationsCount = 0;
@@ -669,7 +658,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 			//
 			// Navigate one level up
-			currentHU = handlingUnitsDAO.retrieveParent(currentHU);
+			currentHU = handlingUnitsRepo.retrieveParent(currentHU);
 		}
 
 		// Make sure our LU does not have a parent
@@ -696,8 +685,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null;
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		I_M_HU lastTU = null;
 		I_M_HU currentHU = hu;
 		int iterationsCount = 0;
@@ -720,7 +707,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 			//
 			// Navigate one level up
-			currentHU = handlingUnitsDAO.retrieveParent(currentHU);
+			currentHU = handlingUnitsRepo.retrieveParent(currentHU);
 		}
 
 		return lastTU;
@@ -755,7 +742,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI_Version getPIVersion(final I_M_HU hu)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
-		return Services.get(IHandlingUnitsDAO.class).retrievePIVersionById(piVersionId);
+		return handlingUnitsRepo.retrievePIVersionById(piVersionId);
 	}
 
 	@Nullable
@@ -764,7 +751,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
 		return piItemId != null
-				? Services.get(IHandlingUnitsDAO.class).getPackingInstructionItemById(piItemId)
+				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
 				: null;
 	}
 
@@ -784,8 +771,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		return handlingUnitsDAO.getIncludedPI(piItem);
+		return handlingUnitsRepo.getIncludedPI(piItem);
 	}
 
 	@Override
@@ -809,8 +795,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		else
 		{
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 			// note: if hu is an aggregate HU, then there won't be an NPE here.
 			final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 			if (parentPIItem == null)
@@ -820,7 +804,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			}
 
 			final HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoId(parentPIItem.getIncluded_HU_PI_ID());
-			return handlingUnitsDAO.retrievePICurrentVersionOrNull(includedPIId);
+			return handlingUnitsRepo.retrievePICurrentVersionOrNull(includedPIId);
 		}
 	}
 
@@ -921,5 +905,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return AttributesKeys
 				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
 				.orElse(AttributesKey.NONE);
+	}
+
+	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider,@NonNull final String huStatus)
+	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final IHUContext huContext = createMutableHUContext(contextProvider);
+
+		huStatusBL.setHUStatus(huContext, hu, huStatus);
+
+		handlingUnitsRepo.saveHU(hu);
 	}
 }

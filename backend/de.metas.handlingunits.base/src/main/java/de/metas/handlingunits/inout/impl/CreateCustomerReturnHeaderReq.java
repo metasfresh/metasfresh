@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-shipping
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,28 +20,47 @@
  * #L%
  */
 
-package de.metas.common.receipt;
+package de.metas.handlingunits.inout.impl;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.model.I_C_Order;
+import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize( builder = JsonCreateReceiptsResponse.JsonCreateReceiptsResponseBuilder.class)
-public class JsonCreateReceiptsResponse
+public class CreateCustomerReturnHeaderReq
 {
-	@JsonProperty("createdReceiptIdList")
-	List<JsonMetasfreshId> createdReceiptIdList;
+	@NonNull OrgId orgId;
 
-	@JsonProperty("createdReturnIdList")
-	List<JsonMetasfreshId> createdReturnIdList;
+	@NonNull
+	ReturnsInOutHeaderFiller.IReturnsDocTypeIdProvider returnDocTypeIdProvider;
+
+	@NonNull
+	BPartnerLocationId bPartnerLocationId;
+
+	@NonNull
+	WarehouseId warehouseId;
+
+	@Nullable
+	I_C_Order order;
+
+	@Nullable
+	LocalDate movementDate;
+
+	@Nullable
+	ZonedDateTime dateReceived;
+
+	@Nullable
+	String externalId;
+
+	@Nullable
+	String externalResourceURL;
 }

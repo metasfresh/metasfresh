@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
+import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonBaseProcessor;
 import de.metas.common.filemaker.FileMakerDataHelper;
+import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -24,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.metas.camel.shipping.shipment.ShipmentField.ARTICLE_FLAVOR;
 import static de.metas.camel.shipping.shipment.ShipmentField.CITY;
@@ -51,7 +54,7 @@ public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implement
 
 	@Override public void process(final Exchange exchange)
 	{
-		processExchange(exchange, this::createShipmentInfo, this::buildCreateShipmentsRequest);
+		processExchange(exchange, this::buildCreateShipmentsRequest);
 	}
 
 	@NonNull
@@ -77,8 +80,16 @@ public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implement
 				.build();
 	}
 
-	private JsonCreateShipmentRequest buildCreateShipmentsRequest(@NonNull final List<JsonCreateShipmentInfo> createShipmentInfos)
+	private JsonCreateShipmentRequest buildCreateShipmentsRequest(@NonNull final ProcessXmlToJsonRequest xmlToJsonRequest)
 	{
+		final RESULTSET resultset = xmlToJsonRequest.getResultset();
+		final Map<String, Integer> name2Index = xmlToJsonRequest.getName2Index();
+
+		final List<JsonCreateShipmentInfo> createShipmentInfos = resultset.getRows()
+				.stream()
+				.map(row -> createShipmentInfo(row, name2Index))
+				.collect(Collectors.toList());
+
 		return JsonCreateShipmentRequest.builder()
 				.shipperCode(SIRO_SHIPPER_SEARCH_KEY)
 				.createShipmentInfoList(createShipmentInfos)

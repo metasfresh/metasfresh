@@ -38,6 +38,8 @@ import java.util.regex.Pattern;
 @UtilityClass
 public class CommonUtil
 {
+	private final static String PRODUCT_AND_ORG_PREFIX_PATTERN = "([^-]*-)?(.*)";
+
 	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
 			final @NonNull Exchange exchange,
 			final int numberOfItems)
@@ -75,12 +77,29 @@ public class CommonUtil
 			return productValueWithOrgCode;
 		}
 
-		final var prefix = Pattern.compile("([^-]*-)?(.*)");
+		final var prefix = Pattern.compile(PRODUCT_AND_ORG_PREFIX_PATTERN);
 		final var matcher = prefix.matcher(productValueWithOrgCode);
 		if (!matcher.matches())
 		{
 			return productValueWithOrgCode;
 		}
 		return matcher.group(2);
+	}
+
+	@Nullable
+	public String extractOrgPrefixFromProduct(@Nullable final String productValueWithOrgCode)
+	{
+		if (productValueWithOrgCode == null || productValueWithOrgCode.isBlank())
+		{
+			return null;
+		}
+
+		final var prefix = Pattern.compile(PRODUCT_AND_ORG_PREFIX_PATTERN);
+		final var matcher = prefix.matcher(productValueWithOrgCode);
+		if (!matcher.matches())
+		{
+			return null;
+		}
+		return matcher.group(1).replaceAll("-","");
 	}
 }

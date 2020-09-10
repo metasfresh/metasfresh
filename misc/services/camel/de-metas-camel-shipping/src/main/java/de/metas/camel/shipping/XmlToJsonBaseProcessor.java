@@ -22,10 +22,10 @@
 
 package de.metas.camel.shipping;
 
+import de.metas.common.MeasurableRequest;
 import de.metas.common.filemaker.FIELD;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.RESULTSET;
-import de.metas.common.filemaker.ROW;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.commons.logging.Log;
@@ -40,18 +40,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class XmlToJsonBaseProcessor
 {
 	private final static Log log = LogFactory.getLog(XmlToJsonBaseProcessor.class);
 
-	protected  <T,R> void processExchange(
+	protected void processExchange(
 			final Exchange exchange,
-			final BiFunction<ROW, Map<String,Integer>, T> buildRequestItemFunction,
-			final Function<List<T>, R> buildRequestFunction)
+			final Function<ProcessXmlToJsonRequest, ? extends MeasurableRequest> buildRequestFunction)
 	{
 		final FMPXMLRESULT fmpxmlresult = exchange.getIn().getBody(FMPXMLRESULT.class);
 
@@ -75,14 +72,15 @@ public class XmlToJsonBaseProcessor
 
 		final RESULTSET resultset = fmpxmlresult.getResultset();
 
-		final List<T> requestItems = resultset.getRows()
-				.stream()
-				.map(row -> buildRequestItemFunction.apply(row, name2Index))
-				.collect(Collectors.toList());
+		final ProcessXmlToJsonRequest xmlToJsonRequest = ProcessXmlToJsonRequest.builder()
+				.name2Index(name2Index)
+				.resultset(resultset)
+				.propertiesComponent(exchange.getContext().getPropertiesComponent())
+				.build();
 
-		final R request = buildRequestFunction.apply(requestItems);
+		final MeasurableRequest request = buildRequestFunction.apply(xmlToJsonRequest);
 
-		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, requestItems.size());
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, request.getSize());
 		exchange.getIn().setBody(request);
 	}
 

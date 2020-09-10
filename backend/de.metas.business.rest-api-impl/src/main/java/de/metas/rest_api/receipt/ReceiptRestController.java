@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.receipt;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.receipt.JsonCreateReceiptsRequest;
 import de.metas.common.receipt.JsonCreateReceiptsResponse;
@@ -57,10 +58,12 @@ public class ReceiptRestController
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReceiptService receiptService;
+	private final CustomerReturnService customerReturnService;
 
-	public ReceiptRestController(final ReceiptService receiptService)
+	public ReceiptRestController(final ReceiptService receiptService, final CustomerReturnService customerReturnService)
 	{
 		this.receiptService = receiptService;
+		this.customerReturnService = customerReturnService;
 	}
 
 	@PostMapping
@@ -68,9 +71,7 @@ public class ReceiptRestController
 	{
 		try
 		{
-			final List<InOutId> createdReceiptIds = trxManager.callInNewTrx(() -> receiptService.updateReceiptCandidatesAndGenerateReceipts(jsonCreateReceiptsRequest));
-
-			final JsonCreateReceiptsResponse receiptsResponse = toJsonCreateReceiptsResponse(createdReceiptIds);
+			final JsonCreateReceiptsResponse receiptsResponse = trxManager.callInNewTrx(() -> createReceipts_0(jsonCreateReceiptsRequest));
 
 			return ResponseEntity.ok(receiptsResponse);
 		}
@@ -84,17 +85,37 @@ public class ReceiptRestController
 		}
 	}
 
-	@NonNull
-	private JsonCreateReceiptsResponse toJsonCreateReceiptsResponse(@NonNull final List<InOutId> receiptIds)
+	private JsonCreateReceiptsResponse createReceipts_0(@NonNull final JsonCreateReceiptsRequest jsonCreateReceiptsRequest)
 	{
-		final List<JsonMetasfreshId> jsonIds = receiptIds
+		final List<InOutId> createdReceiptIds = jsonCreateReceiptsRequest.getJsonCreateReceiptInfoList().isEmpty()
+				? ImmutableList.of()
+				: receiptService.updateReceiptCandidatesAndGenerateReceipts(jsonCreateReceiptsRequest);
+
+		final List<InOutId> createdReturnIds = jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList().isEmpty()
+				? ImmutableList.of()
+				: customerReturnService.handleReturns(jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList());
+
+		return toJsonCreateReceiptsResponse(createdReceiptIds, createdReturnIds);
+	}
+
+	@NonNull
+	private JsonCreateReceiptsResponse toJsonCreateReceiptsResponse(@NonNull final List<InOutId> receiptIds, @NonNull final List<InOutId> returnIds)
+	{
+		final List<JsonMetasfreshId> jsonReceiptIds = receiptIds
+				.stream()
+				.map(InOutId::getRepoId)
+				.map(JsonMetasfreshId::of)
+				.collect(Collectors.toList());
+
+		final List<JsonMetasfreshId> jsonReturnIds = returnIds
 				.stream()
 				.map(InOutId::getRepoId)
 				.map(JsonMetasfreshId::of)
 				.collect(Collectors.toList());
 
 		return JsonCreateReceiptsResponse.builder()
-				.createdReceiptIdList(jsonIds)
+				.createdReceiptIdList(jsonReceiptIds)
+				.createdReturnIdList(jsonReturnIds)
 				.build();
 	}
 }

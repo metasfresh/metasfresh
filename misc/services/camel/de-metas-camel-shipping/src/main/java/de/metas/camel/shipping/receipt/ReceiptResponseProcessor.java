@@ -39,6 +39,15 @@ public class ReceiptResponseProcessor implements Processor
 		//to be extended when we will send feedback to mf
 		final JsonCreateReceiptsResponse createReceiptsResponse = exchange.getIn().getBody(JsonCreateReceiptsResponse.class);
 
-		log.info(" Successfully created the following receipts: " + StringUtils.join(createReceiptsResponse.getCreatedReceiptIdList(), ","));
+		final String createdReceiptIdList = createReceiptsResponse.getCreatedReceiptIdList() != null
+				? StringUtils.join(createReceiptsResponse.getCreatedReceiptIdList(), ",")
+				: "[]";
+
+		final String createdCustomerReturns = createReceiptsResponse.getCreatedReturnIdList() != null
+				? StringUtils.join(createReceiptsResponse.getCreatedReturnIdList(), ",")
+				: "[]";
+
+		log.info(" Successfully created the following receipts: " + createdReceiptIdList
+				+ "; and returns:" + createdCustomerReturns);
 	}
 }

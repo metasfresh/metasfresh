@@ -34,6 +34,12 @@ public interface SiroReceiptConstants
 
 	String LOCAL_STORAGE_URL = "{{siro.receipts.local.storage}}";
 
+	String RETURN_GOODS_IN_WAREHOUSE_TYPE = "{{siro.receipts.returns.warehouseType}}";
+	String ORG_PREFIX_TOKEN = "prefixToken";
+	String ORG_PREFIX_TO_ORG_CODE_PROPERTY_PATTERN = "_artikel_nummer.orgPrefix." + ORG_PREFIX_TOKEN + ".orgValue";
+
+	String IS_RETURN_VALUE_TRUE = "ja";
+
 	Set<String> DATE_RECEIVED_PATTERNS = ImmutableSet.of("dd.MM.yyyy HH.mm.ss");
 	Set<String> MOVEMENT_DATE_PATTERNS = ImmutableSet.of("dd.MM.yyyy");
 	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.MM.dd", "dd.MM.yyyy");

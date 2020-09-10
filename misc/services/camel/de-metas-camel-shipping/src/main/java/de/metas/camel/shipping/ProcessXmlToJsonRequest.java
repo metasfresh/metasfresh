@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-shipping
+ * de-metas-camel-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,28 +20,26 @@
  * #L%
  */
 
-package de.metas.common.receipt;
+package de.metas.camel.shipping;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.filemaker.RESULTSET;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import org.apache.camel.spi.PropertiesComponent;
 
-import java.util.List;
+import java.util.Map;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize( builder = JsonCreateReceiptsResponse.JsonCreateReceiptsResponseBuilder.class)
-public class JsonCreateReceiptsResponse
+public class ProcessXmlToJsonRequest
 {
-	@JsonProperty("createdReceiptIdList")
-	List<JsonMetasfreshId> createdReceiptIdList;
+	@NonNull
+	RESULTSET resultset;
 
-	@JsonProperty("createdReturnIdList")
-	List<JsonMetasfreshId> createdReturnIdList;
+	@NonNull
+	Map<String, Integer> name2Index;
+
+	@NonNull
+	PropertiesComponent propertiesComponent;
 }
