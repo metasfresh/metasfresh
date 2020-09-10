@@ -9,6 +9,8 @@ import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 
@@ -36,16 +38,20 @@ import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 
 public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 {
-	private static final String ROUTE_ID = "manufacturingOrdersExport";
-
-	private static final String FEEDBACK_ROUTE_ID = "metasfreshExportOrders-feedback";
-	private static final String FEEDBACK_ROUTE = "metasfreshExportOrders-feedback";
-
-	private static final String UPLOAD_ROUTE = "FM-upload-manufacturing-orders";
+	@VisibleForTesting
+	static final String ROUTE_ID = "manufacturingOrdersExport";
+	
+	@VisibleForTesting
+	static final String UPLOAD_ROUTE = "FM-upload-manufacturing-orders";
 	private static final String UPLOAD_URI = "{{siro.ftp.upload.manufacturing-orders.uri}}";
 
+	private static final String FEEDBACK_ROUTE_ID = "metasfreshExportOrders-feedback";
+	@VisibleForTesting
+	static final String FEEDBACK_ROUTE = "metasfreshExportOrders-feedback";
+
+
 	private static final String METASFRESH_EP_GET_ORDERS = "http://{{metasfresh.api.baseurl}}/manufacturing/orders";
-	private static final String METASFRESH_EP_POST_EXPORT_STATUS = "{{metasfresh.api.baseurl}}/manufacturing/orders/exportStatus";
+	private static final String METASFRESH_EP_POST_EXPORT_STATUS = "http://{{metasfresh.api.baseurl}}/manufacturing/orders/exportStatus";
 
 	@Override
 	public void configure()
@@ -98,6 +104,6 @@ public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 				.process(new ManufacturingOrdersExportFeedbackProcessor())
 				.marshal(jacksonDataFormat)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.to(http(METASFRESH_EP_POST_EXPORT_STATUS));
+				.to(METASFRESH_EP_POST_EXPORT_STATUS);
 	}
 }

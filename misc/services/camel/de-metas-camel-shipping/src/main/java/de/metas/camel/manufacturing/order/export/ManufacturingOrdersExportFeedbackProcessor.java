@@ -1,16 +1,13 @@
 package de.metas.camel.manufacturing.order.export;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
 import lombok.NonNull;
 
 /*
@@ -37,7 +34,7 @@ import lombok.NonNull;
 
 class ManufacturingOrdersExportFeedbackProcessor implements Processor
 {
-	public static final String FEEDBACK_POJO = "JsonRequestSetOrdersExportStatusBulk";
+	static final String FEEDBACK_POJO = "JsonRequestSetOrdersExportStatusBulk";
 
 	private final Log log = LogFactory.getLog(getClass());
 
@@ -54,7 +51,7 @@ class ManufacturingOrdersExportFeedbackProcessor implements Processor
 		if (throwable != null)
 		{
 			log.debug("Add throwable from exchange to the JSON-feedback to metasfresh:", throwable);
-			final JsonError error = createJsonError(throwable);
+			final JsonError error = CommonUtil.createJsonError(throwable);
 			exchange.getIn().setBody(results.withError(error));
 		}
 		else
@@ -62,20 +59,4 @@ class ManufacturingOrdersExportFeedbackProcessor implements Processor
 			exchange.getIn().setBody(results);
 		}
 	}
-
-	private JsonError createJsonError(final Throwable throwable)
-	{
-		final StringWriter sw = new StringWriter();
-		throwable.printStackTrace(new PrintWriter(sw));
-		final String stackTrace = sw.toString();
-
-		final JsonError error = JsonError.ofSingleItem(
-				JsonErrorItem.builder()
-						.message(throwable.getMessage())
-						.detail("Exception-Class=" + throwable.getClass().getName())
-						.stackTrace(stackTrace)
-						.build());
-		return error;
-	}
-
 }

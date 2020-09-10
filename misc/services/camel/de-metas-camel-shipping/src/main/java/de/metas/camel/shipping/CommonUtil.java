@@ -22,6 +22,8 @@
 
 package de.metas.camel.shipping;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
@@ -34,6 +36,8 @@ import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
 import de.metas.common.filemaker.PRODUCT;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.shipping.JsonProduct;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -103,4 +107,19 @@ public class CommonUtil
 		}
 		return matcher.group(2);
 	}
+
+	public JsonError createJsonError(@NonNull final Throwable throwable)
+	{
+		final StringWriter sw = new StringWriter();
+		throwable.printStackTrace(new PrintWriter(sw));
+		final String stackTrace = sw.toString();
+
+		return JsonError.ofSingleItem(
+				JsonErrorItem.builder()
+						.message(throwable.getMessage())
+						.detail("Exception-Class=" + throwable.getClass().getName())
+						.stackTrace(stackTrace)
+						.build());
+	}
+
 }

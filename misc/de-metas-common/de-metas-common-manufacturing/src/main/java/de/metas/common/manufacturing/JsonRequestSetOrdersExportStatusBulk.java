@@ -59,7 +59,8 @@ public class JsonRequestSetOrdersExportStatusBulk
 	public JsonRequestSetOrdersExportStatusBulk withError(@NonNull final JsonError error)
 	{
 		return toBuilder()
-				.items(this.items.stream()
+				.error(error)
+				.clearItems().items(this.items.stream()
 						.map(JsonRequestSetOrderExportStatus::withError)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
