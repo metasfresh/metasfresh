@@ -74,7 +74,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 				.choice()
 				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
-				.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " + header(Exchange.FILE_NAME))
+				.log(LoggingLevel.INFO, "Converting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} shipment candidates to file ${header." + Exchange.FILE_NAME + "}")
 				.marshal(jacksonXMLDataFormat)
 				.multicast() // store the file both locally and send it to the remote folder
 					.stopOnException()
