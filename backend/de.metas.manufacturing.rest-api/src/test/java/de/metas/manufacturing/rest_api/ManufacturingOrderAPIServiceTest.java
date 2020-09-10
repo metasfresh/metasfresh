@@ -42,9 +42,12 @@ import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus;
-import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus.Outcome;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
+import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
+import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
+import de.metas.common.manufacturing.Outcome;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -588,15 +591,24 @@ public class ManufacturingOrderAPIServiceTest
 					.salesOrderLineId(salesOrderLineId)
 					.build();
 
-			apiService.report(JsonRequestManufacturingOrdersReport.builder()
-					.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
-							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-							.date(SystemTime.asZonedDateTime())
-							.qtyToReceiveInStockUOM(new BigDecimal("10"))
-							.lotNumber("lot123")
-							.bestBeforeDate(LocalDate.parse("2027-06-07"))
-							.build())
-					.build());
+			final JsonResponseManufacturingOrdersReport result = apiService.report(
+					JsonRequestManufacturingOrdersReport.builder()
+							.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
+									.requestId("req1")
+									.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+									.date(SystemTime.asZonedDateTime())
+									.qtyToReceiveInStockUOM(new BigDecimal("10"))
+									.lotNumber("lot123")
+									.bestBeforeDate(LocalDate.parse("2027-06-07"))
+									.build())
+							.build());
+
+			//
+			// Check result
+			assertThat(result.getIssues()).isEmpty();
+			assertThat(result.getReceipts())
+					.containsExactly(
+							JsonResponseReceiveFromManufacturingOrder.builder().requestId("req1").outcome(Outcome.OK).build());
 
 			//
 			// Check cost collector
@@ -656,22 +668,81 @@ public class ManufacturingOrderAPIServiceTest
 					.bestBeforeDate("2022-02-02")
 					.build();
 
-			apiService.report(JsonRequestManufacturingOrdersReport.builder()
-					.issue(JsonRequestIssueToManufacturingOrder.builder()
-							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-							.date(SystemTime.asZonedDateTime())
-							.qtyToIssueInStockUOM(new BigDecimal("2"))
-							.productNo("product")
-							.handlingUnit(JsonRequestHULookup.builder()
-									.lotNumber("lot1")
-									.bestBeforeDate(LocalDate.parse("2022-02-02"))
+			final JsonResponseManufacturingOrdersReport result = apiService.report(
+					JsonRequestManufacturingOrdersReport.builder()
+							.issue(JsonRequestIssueToManufacturingOrder.builder()
+									.requestId("req1")
+									.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+									.date(SystemTime.asZonedDateTime())
+									.qtyToIssueInStockUOM(new BigDecimal("2"))
+									.productNo("product")
+									.handlingUnit(JsonRequestHULookup.builder()
+											.lotNumber("lot1")
+											.bestBeforeDate(LocalDate.parse("2022-02-02"))
+											.build())
 									.build())
-							.build())
-					.build());
+							.build());
 
-			final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
-			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(vhu);
-			assertThat(huStorage.getQty(componentId, uomEach)).isEqualByComparingTo("38");
+			//
+			// Check result
+			assertThat(result.getReceipts()).isEmpty();
+			assertThat(result.getIssues())
+					.containsExactly(
+							JsonResponseIssueToManufacturingOrder.builder().requestId("req1").outcome(Outcome.OK).build());
+
+			//
+			// Check HU
+			{
+				final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+				final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(vhu);
+				assertThat(huStorage.getQty(componentId, uomEach)).isEqualByComparingTo("38");
+			}
+		}
+
+		@Test
+		public void issueWithErrors()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("product", uomEach);
+			final ProductId componentId = BusinessTestHelper.createProductId("component1", uomEach);
+
+			final PPOrderId orderId = manufacturingOrder()
+					.productId(productId)
+					.qtyOrdered("100")
+					.locatorId(locatorId)
+					.plantId(plantId)
+					//
+					.bomLine_componentId(componentId)
+					.bomLine_qtyRequired("10")
+					//
+					.build();
+
+			final JsonResponseManufacturingOrdersReport result = apiService.report(
+					JsonRequestManufacturingOrdersReport.builder()
+							.issue(JsonRequestIssueToManufacturingOrder.builder()
+									.requestId("req1")
+									.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+									.date(SystemTime.asZonedDateTime())
+									.qtyToIssueInStockUOM(new BigDecimal("2"))
+									.productNo("product")
+									.handlingUnit(JsonRequestHULookup.builder()
+											.lotNumber("missing-lot")
+											.bestBeforeDate(LocalDate.parse("2022-02-02"))
+											.build())
+									.build())
+							.build());
+
+			//
+			// Check result
+			assertThat(result.getReceipts()).isEmpty();
+			assertThat(result.getIssues()).hasSize(1);
+
+			final JsonResponseIssueToManufacturingOrder issueResponse = result.getIssues().get(0);
+			assertThat(issueResponse.getRequestId()).isEqualTo("req1");
+			assertThat(issueResponse.getOutcome()).isEqualTo(Outcome.ERROR);
+
+			final JsonErrorItem jsonErrorItem = issueResponse.getError().getErrors().get(0);
+			assertThat(jsonErrorItem.getMessage()).startsWith("No HU found ");
+			assertThat(jsonErrorItem.getAdIssueId()).isNotNull();
 		}
 	}
 }

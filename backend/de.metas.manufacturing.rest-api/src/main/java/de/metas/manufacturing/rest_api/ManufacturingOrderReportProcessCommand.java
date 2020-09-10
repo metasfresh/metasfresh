@@ -10,6 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Trace;
 import org.slf4j.MDC;
 
 import com.google.common.collect.ImmutableMap;
@@ -20,7 +21,16 @@ import de.metas.common.manufacturing.JsonRequestHULookup;
 import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
+import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
+import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport.JsonResponseManufacturingOrdersReportBuilder;
+import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
+import de.metas.common.manufacturing.Outcome;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -69,6 +79,7 @@ class ManufacturingOrderReportProcessCommand
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final HUReservationService huReservationService;
 
 	private final JsonRequestManufacturingOrdersReport request;
@@ -93,23 +104,51 @@ class ManufacturingOrderReportProcessCommand
 	public JsonResponseManufacturingOrdersReport execute()
 	{
 		final ExportTransactionId transactionKey = ExportTransactionId.random();
+
+		final JsonResponseManufacturingOrdersReportBuilder result = JsonResponseManufacturingOrdersReport.builder()
+				.transactionKey(transactionKey.toJson());
+
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey.toJson()))
 		{
 			for (final JsonRequestIssueToManufacturingOrder issue : request.getIssues())
 			{
-				processIssue(issue);
+				try
+				{
+					final JsonResponseIssueToManufacturingOrder issueResult = processIssue(issue);
+					result.issue(issueResult);
+				}
+				catch (Exception ex)
+				{
+					result.issue(JsonResponseIssueToManufacturingOrder.builder()
+							.requestId(issue.getRequestId())
+							.outcome(Outcome.ERROR)
+							.error(createJsonError(ex))
+							.build());
+				}
 			}
 
 			for (final JsonRequestReceiveFromManufacturingOrder receipt : request.getReceipts())
 			{
-				processReceipt(receipt);
+				try
+				{
+					JsonResponseReceiveFromManufacturingOrder receiptResult = processReceipt(receipt);
+					result.receipt(receiptResult);
+				}
+				catch (Exception ex)
+				{
+					result.receipt(JsonResponseReceiveFromManufacturingOrder.builder()
+							.requestId(receipt.getRequestId())
+							.outcome(Outcome.ERROR)
+							.error(createJsonError(ex))
+							.build());
+				}
 			}
 		}
 
-		return JsonResponseManufacturingOrdersReport.builder().build();
+		return result.build();
 	}
 
-	private void processIssue(final JsonRequestIssueToManufacturingOrder issue)
+	private JsonResponseIssueToManufacturingOrder processIssue(final JsonRequestIssueToManufacturingOrder issue)
 	{
 		final PPOrderId orderId = extractPPOrderId(issue);
 
@@ -119,6 +158,7 @@ class ManufacturingOrderReportProcessCommand
 		{
 			throw new RuntimeException("No product found for `" + productNo + "`");
 		}
+
 		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
 		final Quantity qtyToIssue = Quantity.of(issue.getQtyToIssueInStockUOM(), stockingUOM);
 
@@ -133,9 +173,14 @@ class ManufacturingOrderReportProcessCommand
 				.fixedQtyToIssue(qtyToIssue)
 				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
 				.createIssues(hus);
+
+		return JsonResponseIssueToManufacturingOrder.builder()
+				.requestId(issue.getRequestId())
+				.outcome(Outcome.OK)
+				.build();
 	}
 
-	private void processReceipt(final JsonRequestReceiveFromManufacturingOrder receipt)
+	private JsonResponseReceiveFromManufacturingOrder processReceipt(final JsonRequestReceiveFromManufacturingOrder receipt)
 	{
 		final PPOrderId orderId = extractPPOrderId(receipt);
 		final LocatorId locatorId = getReceiveToLocatorByOrderId(orderId);
@@ -162,7 +207,10 @@ class ManufacturingOrderReportProcessCommand
 					.build());
 		}
 
-		// TODO: reserve the HU for the shipment schedule!
+		return JsonResponseReceiveFromManufacturingOrder.builder()
+				.requestId(receipt.getRequestId())
+				.outcome(Outcome.OK)
+				.build();
 	}
 
 	private ProductId getFinishedGoodProductId(final PPOrderId orderId)
@@ -259,4 +307,18 @@ class ManufacturingOrderReportProcessCommand
 
 		return huId;
 	}
+
+	private JsonError createJsonError(@NonNull final Exception ex)
+	{
+		final AdIssueId adIssueId = errorManager.createIssue(ex);
+
+		return JsonError.ofSingleItem(
+				JsonErrorItem.builder()
+						.message(ex.getLocalizedMessage())
+						.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
+						.adIssueId(JsonMetasfreshId.of(adIssueId.getRepoId()))
+						.throwable(ex)
+						.build());
+	}
+
 }

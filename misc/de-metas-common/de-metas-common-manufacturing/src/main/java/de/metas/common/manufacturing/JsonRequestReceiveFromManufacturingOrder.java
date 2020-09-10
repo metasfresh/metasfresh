@@ -43,6 +43,9 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonRequestReceiveFromManufacturingOrder.JsonRequestReceiveFromManufacturingOrderBuilder.class)
 public class JsonRequestReceiveFromManufacturingOrder
 {
+	@Nullable
+	String requestId;
+	
 	@NonNull
 	JsonMetasfreshId orderId;
 

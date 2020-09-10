@@ -41,11 +41,6 @@ public class JsonRequestSetOrderExportStatus
 {
 	JsonMetasfreshId orderId;
 
-	public enum Outcome
-	{
-		OK, ERROR;
-	}
-
 	Outcome outcome;
 
 	@JsonInclude(Include.NON_NULL)

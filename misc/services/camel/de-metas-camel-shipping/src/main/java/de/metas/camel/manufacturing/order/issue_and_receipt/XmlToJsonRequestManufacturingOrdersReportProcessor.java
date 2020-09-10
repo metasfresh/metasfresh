@@ -23,6 +23,7 @@ import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -54,8 +55,10 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange)
 	{
+		final RunningContext runningContext = new RunningContext();
+
 		processExchange(exchange,
-				this::extractJsonIssueOrReceipt,
+				(rawRow, metadata) -> extractJsonIssueOrReceipt(rawRow, metadata, runningContext),
 				this::toJsonRequestManufacturingOrdersReport);
 	}
 
@@ -92,9 +95,9 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 	@NonNull
 	private IssueOrReceipt extractJsonIssueOrReceipt(
 			@NonNull final ROW rawRow,
-			@NonNull final METADATA metadata)
+			@NonNull final METADATA metadata,
+			@NonNull final RunningContext runningContext)
 	{
-
 		try
 		{
 			final IssueOrReceiptXmlRow row = IssueOrReceiptXmlRow.wrap(rawRow, metadata);
@@ -102,12 +105,12 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 
 			if (type == MainProductOrComponent.MAIN_PRODUCT)
 			{
-				final JsonRequestReceiveFromManufacturingOrder receipt = extractJsonReceipt(row);
+				final JsonRequestReceiveFromManufacturingOrder receipt = extractJsonReceipt(row, runningContext);
 				return new IssueOrReceipt(receipt);
 			}
 			else if (type == MainProductOrComponent.COMPONENT)
 			{
-				final JsonRequestIssueToManufacturingOrder issue = extractJsonIssue(row);
+				final JsonRequestIssueToManufacturingOrder issue = extractJsonIssue(row, runningContext);
 				return new IssueOrReceipt(issue);
 			}
 			else
@@ -122,9 +125,12 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 	}
 
 	@NonNull
-	private static JsonRequestReceiveFromManufacturingOrder extractJsonReceipt(@NonNull final IssueOrReceiptXmlRow row)
+	private static JsonRequestReceiveFromManufacturingOrder extractJsonReceipt(
+			@NonNull final IssueOrReceiptXmlRow row,
+			@NonNull final RunningContext runningContext)
 	{
 		return JsonRequestReceiveFromManufacturingOrder.builder()
+				.requestId(runningContext.nextRequestId())
 				.orderId(row.get_stueckliste_id())
 				.qtyToReceiveInStockUOM(row.get_artikel_menge())
 				.date(SystemTime.asZonedDateTime())
@@ -134,9 +140,12 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 	}
 
 	@NonNull
-	private static JsonRequestIssueToManufacturingOrder extractJsonIssue(@NonNull final IssueOrReceiptXmlRow row)
+	private static JsonRequestIssueToManufacturingOrder extractJsonIssue(
+			@NonNull final IssueOrReceiptXmlRow row,
+			@NonNull final RunningContext runningContext)
 	{
 		return JsonRequestIssueToManufacturingOrder.builder()
+				.requestId(runningContext.nextRequestId())
 				.orderId(row.get_stueckliste_id())
 				.qtyToIssueInStockUOM(row.get_artikel_menge())
 				.date(SystemTime.asZonedDateTime())
@@ -164,6 +173,20 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 				.issues(issues)
 				.receipts(receipts)
 				.build();
+	}
+
+	@ToString
+	private static class RunningContext
+	{
+		private int nextRequestId = 1;
+		private int nextIssueId = 1;
+
+		public String nextRequestId()
+		{
+			final String requestId = String.valueOf(nextRequestId);
+			nextRequestId++;
+			return requestId;
+		}
 	}
 
 	@Value

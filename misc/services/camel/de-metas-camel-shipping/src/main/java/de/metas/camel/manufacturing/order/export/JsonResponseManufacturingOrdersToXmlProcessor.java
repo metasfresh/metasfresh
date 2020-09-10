@@ -21,11 +21,11 @@ import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
 import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus;
-import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus.Outcome;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
+import de.metas.common.manufacturing.Outcome;
 import lombok.NonNull;
 
 /*

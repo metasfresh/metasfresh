@@ -22,7 +22,10 @@ import de.metas.common.manufacturing.JsonRequestHULookup;
 import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
+import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
+import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
+import de.metas.common.manufacturing.Outcome;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
 import lombok.Builder;
@@ -111,6 +114,15 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 		final var localStorage = new DoNothing();
 		final var toMetasfresh = new CaptureLastMessage()
 				.andThen(SingleResult.ofJson(JsonResponseManufacturingOrdersReport.builder()
+						.transactionKey("trx1")
+						.receipt(JsonResponseReceiveFromManufacturingOrder.builder().requestId("1").outcome(Outcome.OK).build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("2").outcome(Outcome.OK).build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("3").outcome(Outcome.OK).build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("4").outcome(Outcome.OK).build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("5").outcome(Outcome.OK).build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("6").outcome(Outcome.OK).build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("7").outcome(Outcome.OK).build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("8").outcome(Outcome.OK).build())
 						.build()));
 
 		adviceRoute()
@@ -129,6 +141,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 		assertThat(toMetasfresh.getLastMessageBody(JsonRequestManufacturingOrdersReport.class))
 				.isEqualToComparingFieldByField(JsonRequestManufacturingOrdersReport.builder()
 						.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
+								.requestId("1")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToReceiveInStockUOM(new BigDecimal(100))
 								.date(currentTime)
@@ -136,6 +149,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 								.bestBeforeDate(LocalDate.parse("2021-07-01"))
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
+								.requestId("2")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToIssueInStockUOM(new BigDecimal("100"))
 								.date(currentTime)
@@ -146,6 +160,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 										.build())
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
+								.requestId("3")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToIssueInStockUOM(new BigDecimal("100"))
 								.date(currentTime)
@@ -156,6 +171,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 										.build())
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
+								.requestId("4")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToIssueInStockUOM(new BigDecimal("100"))
 								.date(currentTime)
@@ -166,6 +182,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 										.build())
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
+								.requestId("5")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToIssueInStockUOM(new BigDecimal("100"))
 								.date(currentTime)
@@ -176,6 +193,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 										.build())
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
+								.requestId("6")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToIssueInStockUOM(new BigDecimal("100"))
 								.date(currentTime)
@@ -186,6 +204,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 										.build())
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
+								.requestId("7")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToIssueInStockUOM(new BigDecimal("100"))
 								.date(currentTime)
@@ -196,6 +215,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 										.build())
 								.build())
 						.issue(JsonRequestIssueToManufacturingOrder.builder()
+								.requestId("8")
 								.orderId(JsonMetasfreshId.of(12345))
 								.qtyToIssueInStockUOM(new BigDecimal("100"))
 								.date(currentTime)

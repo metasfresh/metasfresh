@@ -1,10 +1,14 @@
 package de.metas.common.manufacturing;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,7 +39,17 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonResponseManufacturingOrdersReport.JsonResponseManufacturingOrdersReportBuilder.class)
 public class JsonResponseManufacturingOrdersReport
 {
-	
+	@NonNull
+	String transactionKey;
+
+	@NonNull
+	@Singular
+	List<JsonResponseReceiveFromManufacturingOrder> receipts;
+
+	@NonNull
+	@Singular
+	List<JsonResponseIssueToManufacturingOrder> issues;
+
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonResponseManufacturingOrdersReportBuilder
 	{
