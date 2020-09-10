@@ -1,7 +1,8 @@
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
 import de.metas.jenkins.DockerConf
-import de.metas.jenkins.Misc
+@Library('misc')
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.MvnConf
 
 Map build(
@@ -52,6 +53,9 @@ Map build(
 			// Set the metasfresh.version property from [1,10.0.0] to our current build version
 			// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
+
+			final String metasfreshCommonUpdatePropertyParam="-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshCommonUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
 			// build and deploy
 			// GOAL: don't deploy - but we are not there yet

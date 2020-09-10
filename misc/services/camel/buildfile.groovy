@@ -42,6 +42,9 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // set the artifact version of everything below de.metas.esb/pom.xml
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set"
 
+    final String metasfreshCommonUpdatePropertyParam="-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
+    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshCommonUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
+
     // Set the metasfresh.version property from 10.0.0 to our current build version
     // From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is too much in the eye of the beholder
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
