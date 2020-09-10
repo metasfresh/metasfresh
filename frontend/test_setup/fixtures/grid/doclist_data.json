@@ -1,0 +1,28 @@
+{
+  "data1": {
+    "windowId": "540371",
+    "viewId": "540371-3",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 22,
+    "type": "540371"
+  },
+  "breadcrumbs1": {
+    "nodeId": "1000019",
+    "caption": "Lieferung",
+    "captionBreadcrumb": "Lieferung",
+    "type": "group",
+    "children": [
+      {
+        "nodeId": "540971",
+        "caption": "Kommissionierung Abschluss (Prototyp)",
+        "captionBreadcrumb": "Kommissionierung Abschluss (Prototyp)",
+        "type": "window",
+        "elementId": "540371",
+        "favorite": false
+      }
+    ],
+    "favorite": false
+  }
+}
