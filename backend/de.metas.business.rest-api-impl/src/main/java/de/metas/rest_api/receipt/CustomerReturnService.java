@@ -77,7 +77,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerReturnService
@@ -124,10 +123,10 @@ public class CustomerReturnService
 		createCustomerReturnInfoList.forEach(customerReturnInfo -> validateRequestItem(customerReturnInfo, returnProductInfoProvider));
 
 		//2. create CustomerReturnLineCandidate
-		final List<CustomerReturnLineCandidate> customerReturnLineCandidates = createCustomerReturnInfoList
+		final ImmutableList<CustomerReturnLineCandidate> customerReturnLineCandidates = createCustomerReturnInfoList
 				.stream()
 				.map(createReturnInfo -> buildCustomerReturnLineCandidate(createReturnInfo, returnProductInfoProvider))
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 
 		//3. generate returns
 		return customerReturnsWithoutHUsProducer.create(customerReturnLineCandidates);

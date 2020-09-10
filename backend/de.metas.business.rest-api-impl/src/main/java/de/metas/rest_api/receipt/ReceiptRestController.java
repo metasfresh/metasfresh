@@ -44,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequestMapping(ReceiptRestController.ENDPOINT)
 @RestController
@@ -105,13 +104,13 @@ public class ReceiptRestController
 				.stream()
 				.map(InOutId::getRepoId)
 				.map(JsonMetasfreshId::of)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 
 		final List<JsonMetasfreshId> jsonReturnIds = returnIds
 				.stream()
 				.map(InOutId::getRepoId)
 				.map(JsonMetasfreshId::of)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 
 		return JsonCreateReceiptsResponse.builder()
 				.createdReceiptIdList(jsonReceiptIds)

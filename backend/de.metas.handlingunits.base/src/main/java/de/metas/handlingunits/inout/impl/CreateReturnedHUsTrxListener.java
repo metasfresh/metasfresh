@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inout.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -72,7 +73,7 @@ public final class CreateReturnedHUsTrxListener implements IHUTrxListener
 		// If not, it means its not the subject of this listener
 		final List<I_M_HU_Trx_Line> customerReturnTrxList = trxLines.stream()
 				.filter(this::isRelatedToCreatedReturnHUs)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 
 		if (customerReturnTrxList.isEmpty())
 		{
