@@ -128,6 +128,8 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 				.orderId(row.get_stueckliste_id())
 				.qtyToReceiveInStockUOM(row.get_artikel_menge())
 				.date(SystemTime.asZonedDateTime())
+				.lotNumber(row.get_vorkonfektioniertist_mhd_charge())
+				.bestBeforeDate(row.get_vorkonfektioniertist_mhd_ablauf_datum())
 				.build();
 	}
 

@@ -64,11 +64,14 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -114,6 +117,7 @@ public class ManufacturingOrderAPIServiceTest
 	private IPPCostCollectorDAO costCollectorDAO;
 	private IHUPPCostCollectorBL costCollectorBL;
 	private IHandlingUnitsBL handlingUnitsBL;
+	private HUReservationService huReservationService;
 
 	@BeforeEach
 	public void beforeEach()
@@ -125,12 +129,15 @@ public class ManufacturingOrderAPIServiceTest
 		costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 		costCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		huReservationService = new HUReservationService(new HUReservationRepository());
 
 		auditRepo = new ManufacturingOrderAuditRepository();
-		apiService = new ManufacturingOrderAPIService(
-				auditRepo,
-				new ProductRepository(),
-				JsonObjectMapperHolder.newJsonObjectMapper());
+		apiService = ManufacturingOrderAPIService.builder()
+				.orderAuditRepo(auditRepo)
+				.productRepo(new ProductRepository())
+				.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
+				.huReservationService(huReservationService)
+				.build();
 	}
 
 	@Builder(builderMethodName = "manufacturingOrder", builderClassName = "ManufacturingOrderBuilder")
@@ -142,6 +149,7 @@ public class ManufacturingOrderAPIServiceTest
 			@Nullable LocatorId locatorId,
 			@Nullable ResourceId plantId,
 			@Nullable Instant dateOrdered,
+			@Nullable OrderLineId salesOrderLineId,
 			//
 			@Nullable ProductId bomLine_componentId,
 			@Nullable String bomLine_qtyRequired)
@@ -194,6 +202,11 @@ public class ManufacturingOrderAPIServiceTest
 			{
 				order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
 				order.setDateStartSchedule(TimeUtil.asTimestamp(dateOrdered));
+			}
+
+			if (salesOrderLineId != null)
+			{
+				order.setC_OrderLine_ID(salesOrderLineId.getRepoId());
 			}
 
 			saveRecord(order);
@@ -566,11 +579,13 @@ public class ManufacturingOrderAPIServiceTest
 		public void receive()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("product", uomEach);
+			final OrderLineId salesOrderLineId = OrderLineId.ofRepoId(111);
 			final PPOrderId orderId = manufacturingOrder()
 					.productId(productId)
 					.qtyOrdered("100")
 					.locatorId(locatorId)
 					.plantId(plantId)
+					.salesOrderLineId(salesOrderLineId)
 					.build();
 
 			apiService.report(JsonRequestManufacturingOrdersReport.builder()
@@ -578,27 +593,44 @@ public class ManufacturingOrderAPIServiceTest
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.date(SystemTime.asZonedDateTime())
 							.qtyToReceiveInStockUOM(new BigDecimal("10"))
+							.lotNumber("lot123")
+							.bestBeforeDate(LocalDate.parse("2027-06-07"))
 							.build())
 					.build());
 
+			//
+			// Check cost collector
 			final List<I_PP_Cost_Collector> costCollectors = costCollectorDAO.getByOrderId(orderId);
 			assertThat(costCollectors).hasSize(1);
-
 			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
 			assertThat(costCollector.getCostCollectorType()).isEqualTo(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt);
 			assertThat(costCollector.getMovementQty()).isEqualTo("10");
 			assertThat(costCollector.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 
+			//
+			// Check HU
 			final List<I_M_HU> hus = costCollectorBL.getTopLevelHUs(costCollector);
 			assertThat(hus).hasSize(1);
-
 			final I_M_HU hu = hus.get(0);
 			assertThat(handlingUnitsBL.getHU_UnitType(hu)).isEqualTo(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
 			assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 			assertThat(hu.getM_Locator_ID()).isEqualTo(locatorId.getRepoId());
 
+			//
+			// Check HU storage
 			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
 			assertThat(huStorage.getQty(productId, uomEach)).isEqualByComparingTo("10");
+
+			//
+			// Check HU attributes
+			final IAttributeStorage huAttributes = huTestHelper.getHUContext().getHUAttributeStorageFactory().getAttributeStorage(hu);
+			assertThat(huAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber)).isEqualTo("lot123");
+			assertThat(huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate)).isEqualTo("2027-06-07");
+
+			//
+			// Check HU reservation
+			assertThat(huReservationService.isVhuIdReservedToSalesOrderLineId(HuId.ofRepoId(hu.getM_HU_ID()), salesOrderLineId))
+					.isTrue();
 		}
 
 		@Test

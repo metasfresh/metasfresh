@@ -11,7 +11,9 @@ import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.product.ProductRepository;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -42,15 +44,19 @@ class ManufacturingOrderAPIService
 	private final ManufacturingOrderAuditRepository orderAuditRepo;
 	private final ProductRepository productRepo;
 	private final ObjectMapper jsonObjectMapper;
+	private final HUReservationService huReservationService;
 
+	@Builder
 	public ManufacturingOrderAPIService(
 			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
 			@NonNull final ProductRepository productRepo,
-			@NonNull final ObjectMapper jsonObjectMapper)
+			@NonNull final ObjectMapper jsonObjectMapper,
+			@NonNull final HUReservationService huReservationService)
 	{
 		this.orderAuditRepo = orderAuditRepo;
 		this.productRepo = productRepo;
 		this.jsonObjectMapper = jsonObjectMapper;
+		this.huReservationService = huReservationService;
 	}
 
 	public JsonResponseManufacturingOrdersBulk exportOrders(
@@ -87,7 +93,10 @@ class ManufacturingOrderAPIService
 	public JsonResponseManufacturingOrdersReport report(@NonNull final JsonRequestManufacturingOrdersReport request)
 	{
 		final ManufacturingOrderReportProcessCommand command = ManufacturingOrderReportProcessCommand.builder()
+				.huReservationService(huReservationService)
+				//
 				.request(request)
+				//
 				.build();
 
 		return command.execute();

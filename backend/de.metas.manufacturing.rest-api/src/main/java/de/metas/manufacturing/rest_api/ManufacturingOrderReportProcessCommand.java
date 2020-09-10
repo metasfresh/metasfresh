@@ -2,6 +2,7 @@ package de.metas.manufacturing.rest_api;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -21,13 +22,18 @@ import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -63,6 +69,7 @@ class ManufacturingOrderReportProcessCommand
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final HUReservationService huReservationService;
 
 	private final JsonRequestManufacturingOrdersReport request;
 
@@ -70,8 +77,11 @@ class ManufacturingOrderReportProcessCommand
 
 	@Builder
 	private ManufacturingOrderReportProcessCommand(
+			@NonNull final HUReservationService huReservationService,
 			@NonNull final JsonRequestManufacturingOrdersReport request)
 	{
+		this.huReservationService = huReservationService;
+
 		this.request = request;
 	}
 
@@ -134,11 +144,25 @@ class ManufacturingOrderReportProcessCommand
 		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
 		final Quantity qtyToReceive = Quantity.of(receipt.getQtyToReceiveInStockUOM(), stockingUOM);
 
-		// TODO: reserve the HU for the shipment schedule!
-		huPPOrderBL.receivingMainProduct(orderId)
+		final I_M_HU vhu = huPPOrderBL.receivingMainProduct(orderId)
 				.movementDate(receipt.getDate())
 				.locatorId(locatorId)
+				.lotNumber(receipt.getLotNumber())
+				.bestBeforeDate(receipt.getBestBeforeDate())
 				.receiveVHU(qtyToReceive);
+
+		final OrderLineId salesOrderLineId = getSalesOrderLineIdByOrderId(orderId).orElse(null);
+		if (salesOrderLineId != null)
+		{
+			huReservationService.makeReservation(ReserveHUsRequest.builder()
+					.qtyToReserve(qtyToReceive)
+					.salesOrderLineId(salesOrderLineId)
+					.productId(productId)
+					.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
+					.build());
+		}
+
+		// TODO: reserve the HU for the shipment schedule!
 	}
 
 	private ProductId getFinishedGoodProductId(final PPOrderId orderId)
@@ -152,6 +176,12 @@ class ManufacturingOrderReportProcessCommand
 	{
 		final I_PP_Order order = getOrderById(orderId);
 		return LocatorId.ofRepoId(order.getM_Warehouse_ID(), order.getM_Locator_ID());
+	}
+
+	private Optional<OrderLineId> getSalesOrderLineIdByOrderId(final PPOrderId orderId)
+	{
+		final I_PP_Order order = getOrderById(orderId);
+		return OrderLineId.optionalOfRepoId(order.getC_OrderLine_ID());
 	}
 
 	private I_PP_Order getOrderById(final PPOrderId orderId)
@@ -190,7 +220,7 @@ class ManufacturingOrderReportProcessCommand
 	private List<I_M_HU> resolveHUs(@NonNull final Collection<JsonRequestHULookup> requests)
 	{
 		final ImmutableSet<HuId> huIds = requests.stream()
-				.flatMap(request -> resolveHUId(request).stream())
+				.map(this::resolveHUId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
@@ -202,17 +232,31 @@ class ManufacturingOrderReportProcessCommand
 		return hus;
 	}
 
-	private Set<HuId> resolveHUId(@NonNull final JsonRequestHULookup request)
+	@NonNull
+	private HuId resolveHUId(@NonNull final JsonRequestHULookup request)
 	{
-		final Set<HuId> huIds = handlingUnitsBL.createHUQueryBuilder()
-				.addOnlyWithAttribute(AttributeConstants.ATTR_LotNumber, request.getLotNumber())
-				.addOnlyWithAttribute(AttributeConstants.ATTR_BestBeforeDate, request.getBestBeforeDate())
-				.listIds();
-		if (huIds.isEmpty())
+		final IHUQueryBuilder queryBuilder = handlingUnitsBL.createHUQueryBuilder()
+				.setHUStatus(X_M_HU.HUSTATUS_Active);
+
+		if (!Check.isBlank(request.getLotNumber()))
+		{
+			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_LotNumber, request.getLotNumber());
+		}
+		if (request.getBestBeforeDate() != null)
+		{
+			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_BestBeforeDate, request.getBestBeforeDate());
+		}
+
+		final HuId huId = queryBuilder.createQueryBuilder()
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
+				.create()
+				.firstId(HuId::ofRepoIdOrNull);
+
+		if (huId == null)
 		{
 			throw new AdempiereException("No HU found for " + request);
 		}
 
-		return huIds;
+		return huId;
 	}
 }
