@@ -1,7 +1,6 @@
 -- 2020-09-10T09:04:31.461Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545002,0,TO_TIMESTAMP('2020-09-10 12:04:26','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','There is not default locator for the transit warehouse {}','E',TO_TIMESTAMP('2020-09-10 12:04:26','YYYY-MM-DD HH24:MI:SS'),100,'org.eevolution.api.impl.DD_Order_MovementBuilder.DD_Order_DD_Order_No
-                                                                                                                                                    Locator')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545002,0,TO_TIMESTAMP('2020-09-10 12:04:26','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','There is not default locator for the transit warehouse {}','E',TO_TIMESTAMP('2020-09-10 12:04:26','YYYY-MM-DD HH24:MI:SS'),100,'org.eevolution.api.impl.DD_Order_MovementBuilder.DD_Order_DD_Order_NoTransitLocator')
 ;
 
 -- 2020-09-10T09:04:31.479Z
