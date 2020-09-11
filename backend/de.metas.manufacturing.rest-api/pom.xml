@@ -12,6 +12,8 @@
 
 	<properties>
 		<migration-sql-basedir></migration-sql-basedir>
+		<metasfresh-common.version>10.0.0</metasfresh-common.version>
+		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 
 	<groupId>de.metas.manufacturing</groupId>
@@ -23,37 +25,37 @@
 		<dependency>
 			<groupId>de.metas.manufacturing</groupId>
 			<artifactId>de.metas.manufacturing</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.common.manufacturing</groupId>
 			<artifactId>de-metas-common-manufacturing</artifactId>
-			<version>${metasfresh.version}</version>
+			<version>${metasfresh-common.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util.web</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.common.rest_api</groupId>
 			<artifactId>de-metas-common-rest_api</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh-common.version}</version>
 		</dependency>
 		
 		<dependency>
 		    <groupId>de.metas.common.shipping</groupId>
 		    <artifactId>de-metas-common-shipping</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh-common.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		
 		<dependency>
@@ -65,28 +67,28 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.manufacturing</groupId>
 			<artifactId>de.metas.manufacturing</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
