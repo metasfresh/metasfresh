@@ -9,20 +9,23 @@ import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
-import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+
 import keymap from '../../shortcuts/keymap';
+import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
+
+import Widget from '../../containers/WidgetWrapper';
 import Indicator from '../app/Indicator';
 import Prompt from '../app/Prompt';
 import NewEmail from '../email/NewEmail';
 import Inbox from '../inbox/Inbox';
 import NewLetter from '../letter/NewLetter';
-import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips';
-import MasterWidget from '../widget/MasterWidget';
 import Breadcrumb from './Breadcrumb';
 import SideList from './SideList';
 import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
+
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -542,7 +545,6 @@ class Header extends PureComponent {
       siteName,
       docNoData,
       docStatus,
-      docStatusData,
       dataId,
       breadcrumb,
       showSidelist,
@@ -661,15 +663,17 @@ class Header extends PureComponent {
                     onClick={() => this.toggleTooltip('')}
                     onMouseEnter={() => this.toggleTooltip(keymap.DOC_STATUS)}
                   >
-                    <MasterWidget
+                    <Widget
+                      renderMaster={true}
+                      dataSource="doc-status"
+
+                      type="primary"
                       entity="window"
                       windowType={windowId}
                       dataId={dataId}
                       docId={docId}
                       activeTab={activeTab}
-                      widgetData={[docStatusData]}
                       noLabel
-                      type="primary"
                       dropdownOpenCallback={() =>
                         this.closeOverlays('dropdown')
                       }
