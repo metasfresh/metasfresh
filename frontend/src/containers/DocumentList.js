@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, { Component, createRef } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
@@ -33,7 +34,10 @@ import {
   updateGridTableData,
   deselectTableItems,
 } from '../actions/TableActions';
-import { clearAllFilters, filtersToMap } from '../actions/FiltersActions';
+import {
+  filtersToMap,
+  filtersActiveContains,
+} from '../actions/FiltersActions';
 import {
   setListId,
   setPagination as setListPagination,
@@ -53,6 +57,7 @@ import {
 } from '../utils/documentListHelper';
 
 import DocumentList from '../components/app/DocumentList';
+import deepUnfreeze from 'deep-unfreeze';
 
 class DocumentListContainer extends Component {
   constructor(props) {
@@ -113,7 +118,7 @@ class DocumentListContainer extends Component {
       viewId,
       resetView,
       deleteView,
-      clearAllFilters,
+      //clearAllFilters,
       deleteTable,
       isModal,
       updateUri,
@@ -126,11 +131,11 @@ class DocumentListContainer extends Component {
       includedView && includedView.windowId && includedView.viewId;
     const location = document.location;
 
-    if (nextProps.filters.clearAll) {
-      this.setState({ filtersActive: iMap() }, () => {
-        clearAllFilters(false);
-      });
-    }
+    // if (nextProps.filters.clearAll) {
+    //   this.setState({ filtersActive: iMap() }, () => {
+    //     clearAllFilters(false);
+    //   });
+    // }
 
     /*
      * This is a fix for the case when user selects the link to the current
@@ -393,13 +398,14 @@ class DocumentListContainer extends Component {
       createView,
       setModalDescription,
       isModal,
+      filters,
     } = this.props;
-    const { filtersActive } = this.state;
+    const { filtersActive } = filters;
 
     createView({
       windowId,
       viewType: type,
-      filters: filtersActive.toIndexedSeq().toArray(),
+      filters: filtersActive,
       referenceId: referenceId,
       refDocType: refType,
       refDocumentId: refDocumentId,
@@ -439,19 +445,18 @@ class DocumentListContainer extends Component {
       filterView,
       isModal,
       updateRawModal,
+      filters,
     } = this.props;
-    const { filtersActive } = this.state;
+
+    let { filtersActive } = filters;
+    filtersActive = deepUnfreeze(filtersActive);
+
     // if we're applying filter, we should reset the page to the first one.
     // Otherwise we might get no results as there are not enough to fill more
     // than a single page.
     const page = 1;
 
-    filterView(
-      windowId,
-      viewId,
-      filtersActive.toIndexedSeq().toArray(),
-      isModal
-    )
+    filterView(windowId, viewId, filtersActive, isModal)
       .then((response) => {
         const newViewId = response.viewId;
 
@@ -641,18 +646,13 @@ class DocumentListContainer extends Component {
    * @method handleFilterChange
    * @summary ToDo: Describe the method.
    */
-  handleFilterChange = (activeFilters) => {
-    const locationSearchFilter = activeFilters.has(LOCATION_SEARCH_NAME);
+  handleFilterChange = (filtersActive) => {
+    const locationSearchFilter = filtersActiveContains({
+      filtersActive,
+      key: LOCATION_SEARCH_NAME,
+    });
 
-    // TODO: filters should be kept in the redux state
-    this.setState(
-      {
-        filtersActive: activeFilters,
-      },
-      () => {
-        this.fetchLayoutAndData(true, locationSearchFilter);
-      }
-    );
+    this.fetchLayoutAndData(true, locationSearchFilter);
   };
 
   /**
@@ -832,7 +832,6 @@ export default connect(
     updateTableSelection,
     deselectTableItems,
     fetchLocationConfig,
-    clearAllFilters,
     updateGridTableData,
     fetchHeaderProperties,
   },

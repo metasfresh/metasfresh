@@ -1,5 +1,6 @@
 import * as types from '../constants/FilterTypes';
 import { Map as iMap } from 'immutable';
+import deepUnfreeze from 'deep-unfreeze';
 
 export function clearAllFilters(data) {
   return {
@@ -94,4 +95,32 @@ export function getFlatFiltersMap({ filterData }) {
   });
 
   return flatFiltersMap;
+}
+
+/**
+ * @method filtersActiveContains
+ * @summary returns a boolean value depending on the presence of the key withing the activeFilters passed array
+ */
+export function filtersActiveContains({ filtersActive, key }) {
+  if (filtersActive.lenght === 0) return false;
+  const isPresent = filtersActive.filter((item) => item.filterId === key);
+  return isPresent.length ? true : false;
+}
+
+/**
+ * @method setNewFiltersActive
+ * @summary returns a new array with filters that are going to be the active ones
+ */
+export function setNewFiltersActive({ storeActiveFilters, filterToAdd }) {
+  storeActiveFilters = deepUnfreeze(storeActiveFilters);
+  if (!storeActiveFilters.length) {
+    storeActiveFilters.push(filterToAdd);
+  } else {
+    storeActiveFilters.forEach((activeFilter, index) => {
+      if (activeFilter.filterId === filterToAdd.filterId) {
+        storeActiveFilters[index] = filterToAdd;
+      }
+    });
+  }
+  return storeActiveFilters;
 }

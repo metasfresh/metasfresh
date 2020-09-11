@@ -8,6 +8,7 @@ import { toInteger } from 'lodash';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId, getSelection } from '../reducers/tables';
+import { getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -55,7 +56,6 @@ const DLpropTypes = {
   updateTableSelection: PropTypes.func.isRequired,
   deselectTableItems: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
-  clearAllFilters: PropTypes.func.isRequired,
 };
 
 /**
@@ -123,7 +123,7 @@ const DLmapStateToProps = (state, props) => {
       viewId: parentDefaultViewId,
     });
   }
-
+  const filterId = getEntityRelatedId({ windowId, viewId });
   return {
     page,
     sort,
@@ -141,7 +141,7 @@ const DLmapStateToProps = (state, props) => {
     parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
-    filters: state.filters,
+    filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
   };
 };
 

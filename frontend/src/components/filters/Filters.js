@@ -9,7 +9,11 @@ import {
   generateMomentObj,
   getFormatForDateField,
 } from '../widget/RawWidgetHelpers';
-import { updateWidgetShown } from '../../actions/FiltersActions';
+import {
+  updateWidgetShown,
+  setNewFiltersActive,
+  updateActiveFilter,
+} from '../../actions/FiltersActions';
 import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
@@ -111,7 +115,7 @@ class Filters extends PureComponent {
     filtersData.forEach((filter, filterId) => {
       if (filter.parameters) {
         outerParameters: for (let parameter of filter.parameters) {
-          const { defaultValue, parameterName, widgetType } = parameter;
+          const { defaultValue, parameterName } = parameter;
           const nulledFilter = initialValuesNulled.get(filterId);
 
           const isActive = filtersActive.has(filterId);
@@ -414,11 +418,20 @@ class Filters extends PureComponent {
    * @param {object} filterToAdd
    */
   setFilterActive = (filterToAdd) => {
-    const { updateDocList } = this.props;
+    const { updateDocList, filterId, updateActiveFilter } = this.props;
     let { filtersActive, filters } = this.props;
     const { flatFiltersMap } = filters;
-    let activeFilters = iMap(filtersActive);
 
+    // here we are going to update the active filters from the redux store with the filter passed as param
+    const { filtersActive: storeActiveFilters } = this.props.filters;
+
+    const newFiltersActive = setNewFiltersActive({
+      storeActiveFilters,
+      filterToAdd,
+    });
+    // end logic
+
+    let activeFilters = iMap(filtersActive);
     activeFilters = activeFilters.filter(
       (item, id) => id !== filterToAdd.filterId
     );
@@ -451,7 +464,14 @@ class Filters extends PureComponent {
       });
     }
 
-    updateDocList(activeFilters);
+    console.log('Old activeFilters(state)', activeFilters);
+    // updateDocList(activeFilters);
+
+    // update in the store the filters
+    updateActiveFilter({ id: filterId, data: newFiltersActive });
+
+    // move on to the logic from the DocList
+    updateDocList(newFiltersActive);
   };
 
   /**
@@ -675,6 +695,7 @@ Filters.propTypes = {
   modalVisible: PropTypes.bool,
   filterId: PropTypes.string,
   updateWidgetShown: PropTypes.func,
+  updateActiveFilter: PropTypes.func,
   filters: PropTypes.object,
 };
 
@@ -695,5 +716,6 @@ export default connect(
   mapStateToProps,
   {
     updateWidgetShown,
+    updateActiveFilter,
   }
 )(Filters);
