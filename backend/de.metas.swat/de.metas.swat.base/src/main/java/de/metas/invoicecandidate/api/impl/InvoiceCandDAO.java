@@ -676,8 +676,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	/**
 	 * Adds a record to {@link I_C_Invoice_Candidate_Recompute} to mark the given invoice candidate as invalid. This insertion doesn't interfere with other transactions. It's no problem if two of more
 	 * concurrent transactions insert a record for the same invoice candidate.
-	 *
-	 * @param ic
 	 */
 	@Override
 	public final void invalidateCand(final I_C_Invoice_Candidate ic)
@@ -722,10 +720,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final void invalidateCandsFor(@NonNull final IQuery<I_C_Invoice_Candidate> icQuery)
 	{
-		final int count = icQuery.insertDirectlyInto(I_C_Invoice_Candidate_Recompute.class)
+		final int count = icQuery
+				.insertDirectlyInto(I_C_Invoice_Candidate_Recompute.class)
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				// NOTE: not setting the AD_PInstance_ID to null, because:
-				// 1. that's the default
+				// 1. null is the default
 				// 2. there is an issue with the SQL INSERT that is rendered for NULL parameters, i.e. it cannot detect the database type for NULL
 				// .mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.execute()
@@ -853,7 +852,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addNotInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, alreadyInvalidatedICsQuery);
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.info("Invalidated {} records", count);
 	}
 
 	protected final void invalidateCandsForSelection(final PInstanceId pinstanceId, final String trxName)
@@ -918,7 +916,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				// Execute query:
 				// NOTE (task 03968): performance tweak that is necessary when updating around 70.000 candidates at once:
 				// don't use a 'guaranteed' iterator; *we don't need it* and selecting/ordering joining between
-				// C_Invoice_Candidate and T_Query_Selection is a performance-killer (at least on our 32bit instance)
+				// C_Invoice_Candidate and T_Query_Selection is a performance-killer
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
@@ -968,7 +966,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			if (invoiceCandidateIds == null || invoiceCandidateIds.isEmpty())
 			{
 				// i.e. tag none
-				queryBuilder.filter(ConstantQueryFilter.<I_C_Invoice_Candidate_Recompute> of(false));
+				queryBuilder.filter(ConstantQueryFilter.of(false));
 			}
 			else
 			{
@@ -1007,7 +1005,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	/**
-	 * @param tagRequest
 	 * @return how many {@link I_C_Invoice_Candidate_Recompute} records will be tagged by given {@link InvoiceCandRecomputeTagger}.
 	 */
 	protected final int countToBeTagged(final InvoiceCandRecomputeTagger tagRequest)
