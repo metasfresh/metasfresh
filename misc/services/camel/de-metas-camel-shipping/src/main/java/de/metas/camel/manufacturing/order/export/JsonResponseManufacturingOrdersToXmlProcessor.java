@@ -116,7 +116,7 @@ class JsonResponseManufacturingOrdersToXmlProcessor implements Processor
 			final @NonNull List<JsonResponseManufacturingOrder> ordersList)
 	{
 		final var propertiesComponent = context.getPropertiesComponent();
-		final String databaseName = context.resolvePropertyPlaceholders("{{manufacturingOrder.FMPXMLRESULT.DATABASE.NAME}}");
+		final String databaseName = context.resolvePropertyPlaceholders("{{manufacturing-orders.FMPXMLRESULT.DATABASE.NAME}}");
 
 		return CommonUtil.createFmpxmlresultBuilder(databaseName, ordersList.size())
 				.metadata(METADATA)
