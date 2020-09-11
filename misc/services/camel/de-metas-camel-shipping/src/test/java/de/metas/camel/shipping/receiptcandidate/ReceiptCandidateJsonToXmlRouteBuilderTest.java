@@ -59,7 +59,7 @@ class ReceiptCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 
 		final var uploadEndpoint = new ResultUploadEndpoint();
 		AdviceWithRouteBuilder.adviceWith(context, RECEIPT_CANDIDATE_UPLOAD_ROUTE,
-				a -> a.interceptSendToEndpoint("log:upload-dummy")
+				a -> a.interceptSendToEndpoint("log:receipt-candidate-upload-dummy")
 						.skipSendToOriginalEndpoint()
 						.process(uploadEndpoint));
 
@@ -149,7 +149,7 @@ class ReceiptCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 
 		final var uploadEndpoint = new ResultUploadEndpoint();
 		AdviceWithRouteBuilder.adviceWith(context, RECEIPT_CANDIDATE_UPLOAD_ROUTE,
-				a -> a.interceptSendToEndpoint("log:upload-dummy")
+				a -> a.interceptSendToEndpoint("log:receipt-candidate-upload-dummy")
 						.skipSendToOriginalEndpoint()
 						.process(uploadEndpoint));
 
@@ -183,7 +183,7 @@ class ReceiptCandidateJsonToXmlRouteBuilderTest extends CamelTestSupport
 
 		final var uploadWithExceptionEndpoint = new ResultUploadEndpointWithException();
 		AdviceWithRouteBuilder.adviceWith(context, RECEIPT_CANDIDATE_UPLOAD_ROUTE,
-				a -> a.interceptSendToEndpoint("log:upload-dummy")
+				a -> a.interceptSendToEndpoint("log:receipt-candidate-upload-dummy")
 						.skipSendToOriginalEndpoint()
 						.process(uploadWithExceptionEndpoint));
 

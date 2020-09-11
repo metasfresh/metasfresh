@@ -43,7 +43,8 @@ public class ReceiptXmlToJsonRouteBuilder extends EndpointRouteBuilder
 {
 	static final String MF_RECEIPT_FILEMAKER_XML_TO_JSON = "MF-FM-To-Json-Receipt";
 
-	@Override public void configure() throws Exception
+	@Override
+	public void configure() throws Exception
 	{
 		errorHandler(defaultErrorHandler());
 
@@ -53,6 +54,7 @@ public class ReceiptXmlToJsonRouteBuilder extends EndpointRouteBuilder
 		final JacksonDataFormat responseJacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonCreateReceiptsResponse.class);
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
+		// @formatter:off
 		from(SIRO_RECEIPTS_FTP_PATH)
 				.routeId(MF_RECEIPT_FILEMAKER_XML_TO_JSON)
 				.to(LOCAL_STORAGE_URL)
@@ -61,16 +63,16 @@ public class ReceiptXmlToJsonRouteBuilder extends EndpointRouteBuilder
 				.process(new ReceiptXmlToJsonProcessor()).id(RECEIPT_XML_TO_JSON_PROCESSOR)
 				.choice()
 					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
-						.log(LoggingLevel.INFO, "Nothing to do! no receipts were found in file:" + header(Exchange.FILE_NAME))
+						.log(LoggingLevel.INFO, "Nothing to do! no receipts were found in file: ${header." + Exchange.FILE_NAME + "}")
 					.otherwise()
-						.log(LoggingLevel.INFO, "Posting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " receipts to metasfresh.")
+						.log(LoggingLevel.INFO, "Posting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} receipts to metasfresh.")
 						.marshal(requestJacksonDataFormat)
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.to(http(CREATE_RECEIPT_MF_URL))
 						.unmarshal(responseJacksonDataFormat)
 						.process(new ReceiptResponseProcessor())
-				.end()
-		;
+				.end();
+		// @formatter:on
 	}
 }

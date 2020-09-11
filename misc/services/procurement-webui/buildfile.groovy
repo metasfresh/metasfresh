@@ -1,12 +1,11 @@
-#!/usr/bin/env groovy
+#!/usr/bin/env groovy @Library('misc') @Library('misc')
+import de.metas.jenkins.MvnConf
+@Library('misc')
+import de.metas.jenkins.MvnConf
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc')
-import de.metas.jenkins.MvnConf
-import de.metas.jenkins.Misc
-
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
 {
@@ -42,9 +41,8 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 	// set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
 
-		final String mavenUpdatePropertyParam='-Dproperty=metasfresh.version'
-		
 		// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
+		final String mavenUpdatePropertyParam='-Dproperty=metasfresh.version -DallowDowngrade=true'
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
 		// set the artifact version of everything below the webui's pom.xml

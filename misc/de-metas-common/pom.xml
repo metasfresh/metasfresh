@@ -48,5 +48,6 @@
         <module>de-metas-common-filemaker</module>
         <module>de-metas-common-shipping</module>
         <module>de-metas-common-util</module>
+        <module>de-metas-common-manufacturing</module>
     </modules>
 </project>

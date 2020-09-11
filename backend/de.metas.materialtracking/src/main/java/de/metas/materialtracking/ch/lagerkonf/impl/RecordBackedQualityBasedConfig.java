@@ -36,7 +36,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -55,6 +54,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 import de.metas.money.CurrencyId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -68,7 +68,6 @@ import de.metas.util.Services;
 	public RecordBackedQualityBasedConfig(final I_M_QualityInsp_LagerKonf_Version qualityInspLagerKonfVersion)
 	{
 		super(InterfaceWrapperHelper.getContextAware(qualityInspLagerKonfVersion));
-		final IContextAware ctxAware = getContext();
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(qualityInspLagerKonfVersion.getC_Currency_ID());
 		currency = Services.get(ICurrencyDAO.class).getById(currencyId);
@@ -155,7 +154,7 @@ import de.metas.util.Services;
 			additionaFeeProducts.add(qualityBasedInvoicingBL.createPlainInvoicingItem(
 					additionalFee.getM_Product(),
 					BigDecimal.ONE,
-					uomDAO.retrieveByX12DE355(ctxAware.getCtx(), C_UOM_FEE_X12DE355)));
+					uomDAO.getByX12DE355(C_UOM_FEE_X12DE355)));
 		}
 
 		numberOfInspections = qualityInspLagerKonfVersion.getNumberOfQualityInspections();
@@ -163,13 +162,13 @@ import de.metas.util.Services;
 		witholdingProduct = qualityBasedInvoicingBL.createPlainInvoicingItem(
 				qualityInspLagerKonfVersion.getM_Product_Witholding(),
 				BigDecimal.ONE,
-				uomDAO.retrieveByX12DE355(ctxAware.getCtx(), C_UOM_FEE_X12DE355));
+				uomDAO.getByX12DE355(C_UOM_FEE_X12DE355));
 
 		validToDate = qualityInspLagerKonfVersion.getValidTo();
 	}
 
 	// Constants
-	private final static String C_UOM_FEE_X12DE355 = "PCE";
+	private final static X12DE355 C_UOM_FEE_X12DE355 = X12DE355.EACH;
 
 	// Services
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);

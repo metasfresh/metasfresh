@@ -86,7 +86,7 @@ public class SecurPharmHUAttributesScanner
 
 		final IAttributeStorage attributeStorage = getHUAttributes(hu);
 		if (!attributeStorage.hasAttribute(AttributeConstants.ATTR_SecurPharmScannedStatus)
-				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNr)
+				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNumber)
 				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
 		// !attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo)
 		)
@@ -235,7 +235,7 @@ public class SecurPharmHUAttributesScanner
 
 		if (!from.isSkipUpdatingLotNo())
 		{
-			huAttributes.setValue(AttributeConstants.ATTR_LotNr, from.getLotNo());
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, from.getLotNo());
 		}
 
 		if (!from.isSkipUpdatingSerialNo())

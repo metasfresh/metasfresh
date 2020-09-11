@@ -40,11 +40,13 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 	public static final String RECEIPT_CANDIDATE_FEEDBACK_TO_MF = "ReceiptCandidate-Feedback-TO-MF";
 	public static final String RECEIPT_CANDIDATE_UPLOAD_ROUTE = "FM-upload-receipt-candidate";
 
-	private static final String RECEIPT_CANDIDATE_UPLOAD_URI = "{{siro.ftp.upload.receipt-schedules.uri}}";
+	private static final String RECEIPT_CANDIDATE_UPLOAD_URI = "{{siro.ftp.upload.receipt-candidate.uri}}";
 
 	@Override
 	public void configure()
 	{
+		final var timerPeriod = RouteBuilderCommonUtil.resolveProperty(getContext(), "metasfresh.receipt-candidate.pollIntervall", "5s");
+
 		errorHandler(defaultErrorHandler());
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
@@ -57,7 +59,7 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
 		from(timer("pollReceiptCandidateAPI")
-				.period(5 * 1000))
+				.period(timerPeriod))
 				.routeId(MF_RECEIPT_CANDIDATE_JSON_TO_FILEMAKER_XML)
 				.streamCaching()
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
@@ -66,18 +68,18 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.unmarshal(jacksonDataFormat)
 
 				.process(new ReceiptCandidateJsonToXmlProcessor())
-
+				// @formatter:off
 				.choice()
-					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
-					.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " shipment candidates to file " +  header(Exchange.FILE_NAME))
+				.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
+					.log(LoggingLevel.INFO, "Converting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} receipt candidates to file ${header." + Exchange.FILE_NAME + "}")
 					.marshal(jacksonXMLDataFormat)
 					.multicast() // store the file both locally and send it to the remote folder
-					.stopOnException()
-					.to(file("{{local.file.output_path}}"), direct(RECEIPT_CANDIDATE_UPLOAD_ROUTE))
+						.stopOnException()
+						.to(file("{{local.file.output_path}}"), direct(RECEIPT_CANDIDATE_UPLOAD_ROUTE))
 					.end()
 					.to(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF))
-				.end() // "NumberOfItems" - choice
-		;
+				.end();// "NumberOfItems" - choice
+				// @formatter:on
 
 		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this, RECEIPT_CANDIDATE_UPLOAD_ROUTE, RECEIPT_CANDIDATE_UPLOAD_URI);
 

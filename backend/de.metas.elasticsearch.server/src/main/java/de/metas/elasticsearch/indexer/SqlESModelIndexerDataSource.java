@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.compiere.model.IQuery;
 
@@ -48,7 +49,7 @@ public class SqlESModelIndexerDataSource implements ESModelIndexerDataSource
 	private final List<IESModelIndexerTrigger> triggers;
 	private final String sqlWhereClause;
 	private final String sqlOrderByClause;
-	private final int limit;
+	private final QueryLimit limit;
 
 	@Builder
 	private SqlESModelIndexerDataSource(
@@ -64,7 +65,7 @@ public class SqlESModelIndexerDataSource implements ESModelIndexerDataSource
 		this.triggers = triggers;
 		this.sqlWhereClause = sqlWhereClause;
 		this.sqlOrderByClause = sqlOrderByClause;
-		this.limit = limit;
+		this.limit = QueryLimit.ofInt(limit);
 	}
 
 	@Override
@@ -93,7 +94,7 @@ public class SqlESModelIndexerDataSource implements ESModelIndexerDataSource
 			queryBuilder.filter(TypedSqlQueryFilter.of(sqlWhereClause));
 		}
 
-		if (limit > 0)
+		if (limit.isLimited())
 		{
 			queryBuilder.setLimit(limit);
 		}

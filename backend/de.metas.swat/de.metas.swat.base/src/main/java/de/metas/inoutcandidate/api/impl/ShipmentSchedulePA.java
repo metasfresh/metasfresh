@@ -453,7 +453,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				exportStatus,
 				false /* updateOnlyIfNull */,
 				pinstanceId,
-				false /* invalidate */
+				true /* invalidate, because we might need metasfresh to update the CanBeExportedFrom value */
 		);
 	}
 

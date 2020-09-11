@@ -22,10 +22,38 @@
 
 package de.metas.inoutcandidate;
 
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_ExportStatus;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_CanBeExportedFrom;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_QtyToDeliver;
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER;
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.TimeUtil.asTimestamp;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.compiere.model.IQuery;
+import org.springframework.stereotype.Repository;
+
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -41,31 +69,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.compiere.model.IQuery;
-import org.springframework.stereotype.Repository;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-import java.util.Set;
-
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_ExportStatus;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_CanBeExportedFrom;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_QtyToDeliver;
-import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER;
-import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.TimeUtil.asTimestamp;
 
 @Repository
 public class ShipmentScheduleRepository
@@ -107,7 +110,7 @@ public class ShipmentScheduleRepository
 		{
 			queryBuilder.addCompareFilter(COLUMN_QtyToDeliver, GREATER, BigDecimal.ZERO);
 		}
-		if (query.getLimit() > 0)
+		if (query.getLimit().isLimited())
 		{
 			queryBuilder.setLimit(query.getLimit());
 		}
@@ -181,7 +184,7 @@ public class ShipmentScheduleRepository
 	private void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule record = load(shipmentSchedule.getId(), I_M_ShipmentSchedule.class);
-		record.setExportStatus(shipmentSchedule.getExportStatus().getCode());
+		record.setExportStatus(shipmentSchedule.getExportStatus().getCode()); // right now this is the only mutable property
 		saveRecord(record);
 	}
 
@@ -200,7 +203,9 @@ public class ShipmentScheduleRepository
 	@Builder
 	public static class ShipmentScheduleQuery
 	{
-		int limit;
+		@NonNull
+		@Builder.Default
+		QueryLimit limit = QueryLimit.NO_LIMIT;
 
 		Instant canBeExportedFrom;
 

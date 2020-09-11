@@ -61,8 +61,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 
 /*
@@ -306,7 +306,7 @@ class DesadvBL_addInOutLine_Test
 
 	private void changeDesadvLineToCOLIasUOM()
 	{
-		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", IUOMDAO.X12DE355_COLI);
+		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", X12DE355.COLI);
 
 		desadvLine.setC_UOM_ID(coliUomRecord.getC_UOM_ID());
 		desadvLine.setQtyItemCapacity(TEN);

@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
@@ -162,15 +163,15 @@ import lombok.NonNull;
 	{
 		final TypedSqlQuery<T> queryToUse;
 
-		query.setLimit(bufferSize);
+		query.setLimit(QueryLimit.ofInt(bufferSize));
 		if (Check.isEmpty(rowNumberColumn, true))
 		{
-			query.setLimit(bufferSize, offset);
+			query.setLimit(QueryLimit.ofInt(bufferSize), offset);
 			queryToUse = query;
 		}
 		else
 		{
-			query.setLimit(bufferSize);
+			query.setLimit(QueryLimit.ofInt(bufferSize));
 			queryToUse = query.addWhereClause(true, rowNumberColumn + " > " + offset);
 		}
 		final List<ET> buffer = queryToUse.list(clazz);

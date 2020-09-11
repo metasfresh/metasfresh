@@ -1,13 +1,17 @@
 package de.metas.i18n.po;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.IModelTranslation;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.impl.ModelTranslation;
+import de.metas.i18n.impl.NullModelTranslation;
+import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,19 +23,13 @@ import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.i18n.IModelTranslation;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.impl.ModelTranslation;
-import de.metas.i18n.impl.NullModelTranslation;
-import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -59,7 +57,6 @@ import lombok.NonNull;
  * Creates/Updates/Deletes PO translations.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class POTrlRepository
 {
@@ -149,21 +146,18 @@ public class POTrlRepository
 						+ I_AD_Language.COLUMNNAME_IsActive
 						+ "='Y'");
 
-		// This will change in #4672
+		sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y'");
 		if (I_AD_Element.Table_Name.equals(tableName))
-		{
-			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y')");
+		{ // for AD_Element we need to make sure to have the BaseLanguage, no matter if that's also a system-language
+			sql.append(" OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y'");
 		}
-		else
-		{
-			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' AND l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='N')");
-		}
+		sql.append(")");
 
 		sql.append(" AND t.")
 				.append(keyColumn).append("=").append(recordId)
 				.append(" AND NOT EXISTS (SELECT 1 FROM ").append(tableName).append("_Trl tt WHERE tt.AD_Language=l."
-						+ I_AD_Language.COLUMNNAME_AD_Language
-						+ " AND tt.")
+				+ I_AD_Language.COLUMNNAME_AD_Language
+				+ " AND tt.")
 				.append(keyColumn).append("=t.").append(keyColumn).append(")");
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Inserted {} translation records for {}", no, this);
@@ -174,11 +168,10 @@ public class POTrlRepository
 	 * Update PO's translations if any.
 	 *
 	 * @param po
-	 * @return
-	 *         <ul>
-	 *         <li>true if no translation or success
-	 *         <li>false if error
-	 *         </ul>
+	 * @return <ul>
+	 * <li>true if no translation or success
+	 * <li>false if error
+	 * </ul>
 	 */
 	public boolean updateTranslations(@NonNull final PO po)
 	{
@@ -486,11 +479,10 @@ public class POTrlRepository
 	 * @param keyColumnName
 	 * @param columnNames
 	 * @param byLanguageToo if <code>true</code> the returned SQL shall also filter by "AD_Language"
-	 * @return
-	 *         <ul>
-	 *         <li>SQL select
-	 *         <li>or {@link Optional#absent()} if table is not translatable or there are no translation columns
-	 *         </ul>
+	 * @return <ul>
+	 * <li>SQL select
+	 * <li>or {@link Optional#absent()} if table is not translatable or there are no translation columns
+	 * </ul>
 	 */
 	private Optional<String> buildSqlSelectTrl(final String tableName, final String keyColumnName, final List<String> columnNames, final boolean byLanguageToo)
 	{
