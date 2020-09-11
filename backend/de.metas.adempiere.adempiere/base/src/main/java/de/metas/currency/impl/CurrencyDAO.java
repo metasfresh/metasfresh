@@ -39,6 +39,8 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -68,11 +70,11 @@ import lombok.NonNull;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
-	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap> builder()
+	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap>builder()
 			.tableName(I_C_Currency.Table_Name)
 			.build();
 
-	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap> builder()
+	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap>builder()
 			.tableName(I_C_ConversionType.Table_Name)
 			.tableName(I_C_ConversionType_Default.Table_Name)
 			.build();
@@ -191,6 +193,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
+	@NonNull
 	public CurrencyConversionTypeId getDefaultConversionTypeId(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
@@ -220,6 +223,7 @@ public class CurrencyDAO implements ICurrencyDAO
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID, currencyFromId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID_To, currencyToId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
@@ -235,11 +239,11 @@ public class CurrencyDAO implements ICurrencyDAO
 				.endOrderBy()
 				//
 				.setLimit(QueryLimit.ONE) // first only
-		;
+				;
 	}
 
 	@Override
-	public BigDecimal retrieveRateOrNull(
+	public @Nullable BigDecimal retrieveRateOrNull(
 			final CurrencyConversionContext conversionCtx,
 			final CurrencyId currencyFromId,
 			final CurrencyId currencyToId)
