@@ -25,24 +25,16 @@ package de.metas.uom;
 import java.time.temporal.TemporalUnit;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
-import java.util.Properties;
-
-import de.metas.i18n.ITranslatableString;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IUOMDAO extends ISingletonService
 {
-	String X12DE355_Each = "PCE";
-	int C_UOM_ID_Each = 100;
-
-	String X12DE355_Kilogram = "KGM";
-	String X12DE355_TU = "TU";
-	String X12DE355_COLI = "COLI";
-
 	I_C_UOM getById(int uomId);
 
 	I_C_UOM getByIdOrNull(int uomId);
@@ -53,25 +45,19 @@ public interface IUOMDAO extends ISingletonService
 
 	List<I_C_UOM> getByIds(Collection<UomId> uomIds);
 
-	UomId getUomIdByX12DE355(String x12de355);
+	UomId getUomIdByX12DE355(X12DE355 x12de355);
 
-	String getX12DE355ById(UomId uomId);
+	X12DE355 getX12DE355ById(UomId uomId);
 
-	/**
-	 * @return uom; never return null
-	 */
-	I_C_UOM retrieveByX12DE355(Properties ctx, String x12de355);
+	@NonNull
+	I_C_UOM getByX12DE355(X12DE355 x12de355);
 
-	/**
-	 * @param throwExIfNull if <code>false</code> and there is no UOM with the given <code>x12de355</code>, then we return <code>null</code>.
-	 * @return uom; never return null
-	 */
-	I_C_UOM retrieveByX12DE355(Properties ctx, String x12de355, boolean throwExIfNull);
+	Optional<I_C_UOM> getByX12DE355IfExists(X12DE355 x12de355);
 
 	/**
 	 * Gets UOM for Each/Stuck.
 	 */
-	I_C_UOM retrieveEachUOM(Properties ctx);
+	I_C_UOM getEachUOM();
 
 	TemporalUnit getTemporalUnitByUomId(UomId uomId);
 

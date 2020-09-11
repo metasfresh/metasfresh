@@ -1,6 +1,8 @@
 package de.metas.handlingunits.pporder.api.impl;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,10 +38,23 @@ import lombok.NonNull;
 
 public class HUPPOrderBL implements IHUPPOrderBL
 {
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
 	{
-		return Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
+		return ppOrderDAO.getById(ppOrderId, I_PP_Order.class);
+	}
+
+	@Override
+	public List<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ppOrderIds)
+	{
+		return ppOrderDAO.getByIds(ppOrderIds, I_PP_Order.class);
 	}
 
 	@Override
@@ -83,7 +98,6 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public IPPOrderReceiptHUProducer receivingByOrCoProduct(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 		final I_PP_Order_BOMLine orderBOMLine = ppOrderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
 		return new CostCollectorCandidateCoProductHUProducer(orderBOMLine);
 	}
@@ -91,7 +105,6 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public IHUQueryBuilder createHUsAvailableToIssueQuery(@NonNull final I_PP_Order_BOMLine ppOrderBomLine)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
@@ -119,9 +132,9 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public void processPlanning(@NonNull final PPOrderPlanningStatus targetPlanningStatus, @NonNull final PPOrderId ppOrderId)
 	{
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		trxManager.assertThreadInheritedTrxExists();
 
-		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
+		final I_PP_Order ppOrder = getById(ppOrderId);
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
 		if (Objects.equal(planningStatus, targetPlanningStatus))
 		{
@@ -160,22 +173,19 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public void setAssignedHandlingUnits(@NonNull final I_PP_Order ppOrder, @NonNull final Collection<I_M_HU> hus)
 	{
-		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.setAssignedHandlingUnits(ppOrder, hus);
 	}
 
 	@Override
 	public void setAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
 	{
-		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.setAssignedHandlingUnits(ppOrderBOMLine, hus);
 	}
 
 	@Override
 	public void closeOrder(@NonNull final PPOrderId ppOrderId)
 	{
-		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);
-		ppOrdersService.closeOrder(ppOrderId);
+		ppOrderBL.closeOrder(ppOrderId);
 	}
 
 }

@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -187,8 +187,8 @@ public abstract class ReceiptScheduleTestBase
 				.thenReturn(activityId);
 
 		// #653
-		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
-		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumberDate = createM_Attribute(AttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		setup();
 	}

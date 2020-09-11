@@ -23,20 +23,23 @@
 package de.metas.common.shipment;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.MeasurableRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = JsonCreateShipmentRequest.JsonCreateShipmentRequestBuilder.class)
 public class JsonCreateShipmentRequest extends MeasurableRequest
@@ -49,7 +52,8 @@ public class JsonCreateShipmentRequest extends MeasurableRequest
 	List<JsonCreateShipmentInfo> createShipmentInfoList;
 
 	@Builder
-	public JsonCreateShipmentRequest(@JsonProperty("shipperCode") final String shipperCode,
+	public JsonCreateShipmentRequest(
+			@JsonProperty("shipperCode") final String shipperCode,
 			@JsonProperty("shipmentList") final List<JsonCreateShipmentInfo> createShipmentInfoList)
 	{
 		this.shipperCode = shipperCode;
@@ -63,5 +67,11 @@ public class JsonCreateShipmentRequest extends MeasurableRequest
 	public int getSize()
 	{
 		return createShipmentInfoList.size();
+	}
+
+
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonCreateShipmentRequestBuilder
+	{
 	}
 }
