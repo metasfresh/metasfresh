@@ -89,8 +89,9 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		}
 
 		log.debug("process method called; scheduleList with " + items.size() + " items");
+		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{shipment-candidate.FMPXMLRESULT.DATABASE.NAME}}");
 		final FMPXMLRESULTBuilder builder = CommonUtil
-				.createFmpxmlresultBuilder(exchange, items.size())
+				.createFmpxmlresultBuilder(databaseName, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()

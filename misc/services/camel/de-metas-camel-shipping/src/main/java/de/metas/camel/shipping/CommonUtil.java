@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.spi.PropertiesComponent;
 
@@ -45,15 +44,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class CommonUtil
 {
-	@Deprecated
-	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
-			final @NonNull Exchange exchange,
-			final int numberOfItems)
-	{
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receipt-candidate.FMPXMLRESULT.DATABASE.NAME}}");
-		return createFmpxmlresultBuilder(databaseName, numberOfItems);
-	}
-
 	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
 			final String databaseName,
 			final int numberOfItems)
