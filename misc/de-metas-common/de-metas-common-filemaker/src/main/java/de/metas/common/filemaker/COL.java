@@ -25,6 +25,7 @@ package de.metas.common.filemaker;
 import java.math.BigDecimal;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class COL
 {
 	public static COL of(final String data)
