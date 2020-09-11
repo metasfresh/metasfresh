@@ -48,7 +48,7 @@ public class XmlToJsonProcessorUtil
 {
 	private final static Log log = LogFactory.getLog(XmlToJsonProcessorUtil.class);
 
-	protected void processExchange(
+	public void processExchange(
 			final Exchange exchange,
 			final Function<ProcessXmlToJsonRequest, ? extends MeasurableRequest> buildRequestFunction)
 	{

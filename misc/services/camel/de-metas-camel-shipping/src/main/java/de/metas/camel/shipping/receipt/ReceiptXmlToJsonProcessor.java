@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
-import de.metas.camel.shipping.XmlToJsonBaseProcessor;
+import de.metas.camel.shipping.XmlToJsonProcessorUtil;
 import de.metas.camel.shipping.shipment.AttributeCode;
 import de.metas.common.customerreturns.JsonCreateCustomerReturnInfo;
 import de.metas.common.filemaker.FileMakerDataHelper;
@@ -71,12 +71,12 @@ import static de.metas.camel.shipping.receipt.SiroReceiptConstants.ORG_PREFIX_TO
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.ORG_PREFIX_TO_ORG_CODE_PROPERTY_PATTERN;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.RETURN_GOODS_IN_WAREHOUSE_TYPE;
 
-public class ReceiptXmlToJsonProcessor extends XmlToJsonBaseProcessor implements Processor
+public class ReceiptXmlToJsonProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
-		processExchange(exchange, this::buildCreateReceiptsRequest);
+		XmlToJsonProcessorUtil.processExchange(exchange, this::buildCreateReceiptsRequest);
 	}
 
 	@NonNull
@@ -202,7 +202,7 @@ public class ReceiptXmlToJsonProcessor extends XmlToJsonBaseProcessor implements
 
 		final String value = FileMakerDataHelper.getValue(request);
 
-		return asLocalDate(value, MOVEMENT_DATE_PATTERNS, MOVEMENT_DATE.getName()).orElse(null);
+		return XmlToJsonProcessorUtil.asLocalDate(value, MOVEMENT_DATE_PATTERNS, MOVEMENT_DATE.getName()).orElse(null);
 
 	}
 
@@ -218,7 +218,7 @@ public class ReceiptXmlToJsonProcessor extends XmlToJsonBaseProcessor implements
 
 		final String dateReceived = FileMakerDataHelper.getValue(request);
 
-		return asLocalDateTime(dateReceived, DATE_RECEIVED_PATTERNS, DATE_RECEIVED.getName()).orElse(null);
+		return XmlToJsonProcessorUtil.asLocalDateTime(dateReceived, DATE_RECEIVED_PATTERNS, DATE_RECEIVED.getName()).orElse(null);
 	}
 
 	@Nullable
@@ -234,7 +234,7 @@ public class ReceiptXmlToJsonProcessor extends XmlToJsonBaseProcessor implements
 
 		final String expiryDateStr = FileMakerDataHelper.getValue(getExpiryDateReq);
 
-		asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, EXPIRY_DATE.getName())
+		XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, EXPIRY_DATE.getName())
 				.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.EXPIRY_DATE, expiryDate))
 				.map(jsonAttributeInstances::add);
 

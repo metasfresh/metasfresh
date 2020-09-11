@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
-import de.metas.camel.shipping.XmlToJsonBaseProcessor;
+import de.metas.camel.shipping.XmlToJsonProcessorUtil;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
@@ -48,13 +48,13 @@ import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EXPIRY_DATE
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_SHIPPER_SEARCH_KEY;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.TRACKING_NUMBERS_SEPARATOR;
 
-public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implements Processor
+public class ShipmentXmlToJsonProcessor implements Processor
 {
 	private final static Log log = LogFactory.getLog(ShipmentXmlToJsonProcessor.class);
 
 	@Override public void process(final Exchange exchange)
 	{
-		processExchange(exchange, this::buildCreateShipmentsRequest);
+		XmlToJsonProcessorUtil.processExchange(exchange, this::buildCreateShipmentsRequest);
 	}
 
 	@NonNull
@@ -140,7 +140,7 @@ public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implement
 
 		if (StringUtils.isNotBlank(expiryDateStr))
 		{
-			asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, EXPIRY_DATE.getName())
+			XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, EXPIRY_DATE.getName())
 					.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.EXPIRY_DATE, expiryDate))
 					.map(jsonAttributeInstances::add);
 		}
@@ -171,7 +171,7 @@ public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implement
 	{
 		final String deliveryDateStr = getValueByName(row, fieldName2Index, DELIVERY_DATE);
 
-		return asLocalDateTime(deliveryDateStr, ImmutableSet.of(DELIVERY_DATE_PATTERN), DELIVERY_DATE.getName()).orElse(null);
+		return XmlToJsonProcessorUtil.asLocalDateTime(deliveryDateStr, ImmutableSet.of(DELIVERY_DATE_PATTERN), DELIVERY_DATE.getName()).orElse(null);
 	}
 
 	@Nullable
