@@ -440,7 +440,7 @@ public class WEBUI_M_HU_Transform
 				showWarehouse = false;
 		}
 
-		if (showWarehouse)
+		if (!showWarehouse)
 		{
 			moveToWarehouse = null;
 		}
