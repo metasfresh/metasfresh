@@ -4,11 +4,6 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { Map as iMap } from 'immutable';
 import _ from 'lodash';
-import { DATE_FIELDS } from '../../constants/Constants';
-import {
-  generateMomentObj,
-  getFormatForDateField,
-} from '../widget/RawWidgetHelpers';
 import {
   updateWidgetShown,
   setNewFiltersActive,
@@ -412,60 +407,18 @@ class Filters extends PureComponent {
 
   /**
    * @method setFilterActive
-   * @summary This function merges new filters that are to be activated with the existing
-   *  active filters. Additionally we format date fields accordingly so that the backend
-   *  accepts them.
+   * @summary This function updates the active filters we set and then triggers the pre-existing logic from DocList that will fetch the filtered data
    * @param {object} filterToAdd
    */
   setFilterActive = (filterToAdd) => {
     const { updateDocList, filterId, updateActiveFilter } = this.props;
-    let { filtersActive, filters } = this.props;
-    const { flatFiltersMap } = filters;
-
-    // here we are going to update the active filters from the redux store with the filter passed as param
     const { filtersActive: storeActiveFilters } = this.props.filters;
 
+    // we are going to update the active filters from the redux store with the filter passed as param
     const newFiltersActive = setNewFiltersActive({
       storeActiveFilters,
       filterToAdd,
     });
-    // end logic
-
-    let activeFilters = iMap(filtersActive);
-    activeFilters = activeFilters.filter(
-      (item, id) => id !== filterToAdd.filterId
-    );
-    activeFilters = activeFilters.set(filterToAdd.filterId, filterToAdd);
-
-    if (flatFiltersMap) {
-      activeFilters = activeFilters.map((filter, filterId) => {
-        filter = deepUnfreeze(filter);
-        filter.parameters &&
-          filter.parameters.forEach((parameter) => {
-            const { value, valueTo, parameterName } = parameter;
-            const singleFilter = flatFiltersMap[`${filterId}-${parameterName}`];
-
-            if (
-              singleFilter &&
-              DATE_FIELDS.indexOf(singleFilter.widgetType) > -1
-            ) {
-              const format = getFormatForDateField(singleFilter.widgetType);
-
-              if (value) {
-                parameter.value = generateMomentObj(value, format);
-              }
-              if (valueTo) {
-                parameter.valueTo = generateMomentObj(valueTo, format);
-              }
-            }
-          });
-
-        return filter;
-      });
-    }
-
-    console.log('Old activeFilters(state)', activeFilters);
-    // updateDocList(activeFilters);
 
     // update in the store the filters
     updateActiveFilter({ id: filterId, data: newFiltersActive });
