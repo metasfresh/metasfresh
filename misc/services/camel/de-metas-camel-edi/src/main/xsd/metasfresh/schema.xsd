@@ -763,6 +763,7 @@
             <xsd:element minOccurs="0" name="EanCom_Invoice_UOM" type="xsd:string"/>
             <xsd:element minOccurs="0" name="OrderPOReference" type="xsd:string"/>
             <xsd:element minOccurs="0" name="QtyDeliveredInInvoiceUOM" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyDeliveredInUOM" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="OrderLine" type="xsd:integer"/>
         </xsd:sequence>
     </xsd:complexType>
