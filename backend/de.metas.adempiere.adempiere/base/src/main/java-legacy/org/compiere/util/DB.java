@@ -969,11 +969,9 @@ public class DB
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @param sql
 	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @return number of rows updated
-	 * @throws DBException
 	 */
 	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
 	{
@@ -984,12 +982,10 @@ public class DB
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @param sql
 	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @param timeOut optional timeOut parameter
 	 * @return number of rows updated
-	 * @throws DBException
 	 */
 	public int executeUpdateEx(final String sql, final Object[] params, final String trxName, final int timeOut) throws DBException
 	{
