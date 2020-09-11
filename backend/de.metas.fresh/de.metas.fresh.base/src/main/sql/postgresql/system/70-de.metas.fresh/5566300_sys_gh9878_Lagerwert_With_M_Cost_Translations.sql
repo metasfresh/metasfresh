@@ -1,3 +1,4 @@
+
 DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(IN p_keydate timestamp with time zone,
     IN p_M_Product_ID numeric(10, 0),
     IN p_M_Warehouse_ID numeric(10, 0),
@@ -21,16 +22,16 @@ CREATE OR REPLACE FUNCTION report.M_Cost_CostPrice_Function(IN p_keydate timesta
 
     RETURNS TABLE
             (
-                combination   character varying,
-                description   character varying,
-                activity      character varying,
-                WarehouseName character varying,
-                ProductValue  character varying,
-                ProductName   character varying,
-                qty           numeric,
-                uomsymbol     character varying,
-                costprice     numeric,
-                TotalAmt      numeric
+                combination character varying,
+                description character varying,
+                activity    character varying,
+                WarehouseName     character varying,
+                ProductValue     character varying,
+                ProductName      character varying,
+                qty         numeric,
+                uomsymbol   character varying,
+                costprice   numeric,
+                TotalAmt     numeric
             )
 
 
@@ -49,22 +50,24 @@ SELECT vc.combination,
        CostPrice,
        qty * CostPrice                         AS TotalAmt
 FROM (
-         SELECT pa.P_Asset_acct                                                          AS C_ValidCombination_ID,
+         SELECT pa.P_Asset_acct   AS C_ValidCombination_ID,
                 wh.C_Activity_ID,
                 wh.M_Warehouse_ID,
                 hus.M_Product_ID,
                 hus.C_UOM_ID,
-                SUM(uomconvert(hus.m_product_id, hutl.c_uom_id, hus.c_uom_id, hutl.qty)) as qty,
+                SUM(hutl.qty)     AS qty,
                 COALESCE(
                         getCurrentCost(hus.M_Product_ID, p_keydate::date, p_AcctSchema_ID, p_M_CostElement_ID,
                                        p_AD_Client_ID, p_AD_org_ID)
-                    , 0::numeric)                                                        AS CostPrice
+                    , 0::numeric) AS CostPrice
          FROM M_Warehouse wh
                   LEFT OUTER JOIN M_Locator l ON wh.M_Warehouse_ID = l.M_Warehouse_ID AND l.isActive = 'Y'
                   LEFT OUTER JOIN M_HU_Trx_line hutl ON l.M_Locator_ID = hutl.M_locator_ID AND hutl.isActive = 'Y'
                   LEFT OUTER JOIN M_HU_Item item ON hutl.VHU_Item_ID = item.M_HU_Item_ID AND item.isActive = 'Y'
                   LEFT OUTER JOIN M_HU hu ON item.M_HU_ID = hu.M_HU_ID AND hu.isActive = 'Y'
                   LEFT OUTER JOIN M_HU_Storage hus ON hu.M_HU_ID = hus.M_HU_ID AND hus.isActive = 'Y'
+             --LEFT OUTER JOIN M_HU_Attribute hua ON hu.M_HU_ID = hua.M_HU_ID
+             --AND hua.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE Value='HU_CostPrice' AND isActive = 'Y')) AND hua.isActive = 'Y'
                   LEFT OUTER JOIN M_Product_acct pa ON hus.M_Product_ID = pa.M_Product_ID AND pa.isActive = 'Y'
          WHERE hutl.DateTrx::date <= $1
            AND hutl.huStatus IN ('A', 'S') -- qonly display transactions if status is stocked, A = Active, S = Picked
@@ -126,4 +129,3 @@ ORDER BY vc.combination,
 $$
     LANGUAGE sql STABLE
 ;
-
