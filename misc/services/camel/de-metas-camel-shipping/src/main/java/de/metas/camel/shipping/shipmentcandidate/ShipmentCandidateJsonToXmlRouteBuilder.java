@@ -22,9 +22,6 @@
 
 package de.metas.camel.shipping.shipmentcandidate;
 
-import de.metas.camel.shipping.FeedbackProzessor;
-import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
@@ -33,6 +30,10 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory.HttpMeth
 import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
+
+import de.metas.camel.shipping.FeedbackProzessor;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 
 public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 {
@@ -61,6 +62,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 		final JacksonDataFormat jacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonResponseShipmentCandidates.class);
 		final JacksonXMLDataFormat jacksonXMLDataFormat = RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 
+		//@formatter:off
 		from(timer("pollShipmentCandidateAPI")
 				.period(timerPeriod))
 				.routeId(MF_SHIPMENT_CANDIDATE_JSON_TO_FILEMAKER_XML)
@@ -83,6 +85,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.to(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE))
 				.end() // "NumberOfItems" - choice
 		;
+		//@formatter:on
 
 		RouteBuilderCommonUtil.setupFileMakerUploadRoute(this, SHIPMENT_CANDIDATE_UPLOAD_ROUTE, SHIPMENT_CANDIDATE_UPLOAD_URI);
 

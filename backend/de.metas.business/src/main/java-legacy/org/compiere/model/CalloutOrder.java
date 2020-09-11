@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,6 +36,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -44,6 +44,7 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -75,7 +76,6 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -937,7 +937,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		orderLine.setM_AttributeSetInstance(null);
 		orderLine.setS_ResourceAssignment_ID(-1);
-		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
+		orderLine.setC_UOM_ID(UomId.EACH.getRepoId()); // EA
 
 		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		final Object[] sqlParams = new Object[] { C_Charge_ID };
