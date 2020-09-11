@@ -23,7 +23,6 @@ class Container extends PureComponent {
   render() {
     const {
       docActionElem,
-      docStatusData,
       docNoData,
       docId,
       processStatus,
@@ -91,7 +90,6 @@ class Container extends PureComponent {
             showIndicator={modalHidden}
             {...{
               entity,
-              docStatusData,
               docNoData,
               docSummaryData,
               handleDeletedStatus,

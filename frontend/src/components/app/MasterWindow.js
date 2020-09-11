@@ -307,12 +307,6 @@ export default class MasterWindow extends PureComponent {
       activeTab = master.layout.activeTab;
     }
 
-    // TODO: it'd be better to have flags instead of using fields for status
-    const docStatusData = {
-      status: master.data.DocStatus || -1,
-      action: master.data.DocAction || -1,
-      displayed: true,
-    };
     const docSummaryData =
       documentSummaryElement &&
       master.data[documentSummaryElement.fields[0].field];
@@ -333,7 +327,6 @@ export default class MasterWindow extends PureComponent {
       <Container
         entity="window"
         dropzoneFocused={dropzoneFocused}
-        docStatusData={docStatusData}
         docSummaryData={docSummaryData}
         modal={modal}
         dataId={dataId}
