@@ -45,11 +45,16 @@ import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public interface IPaymentDAO extends ISingletonService
 {
 	I_C_Payment getById(PaymentId paymentId);
 
 	Optional<I_C_Payment> getByExternalOrderId(@NonNull ExternalId externalId, @NonNull OrgId orgId);
+
+	@Nullable
+	ExternalId getExternalId(@NonNull PaymentId paymentId);
 
 	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
 

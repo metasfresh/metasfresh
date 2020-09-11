@@ -226,7 +226,8 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		contractOrder.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
 		InterfaceWrapperHelper.save(contractOrder);
 
-		contract.setC_OrderLine_Term(orderLine);
+		contract.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
+		contract.setC_Order_Term_ID(orderLine.getC_Order_ID());
 		InterfaceWrapperHelper.save(contract);
 
 		return orderLine;

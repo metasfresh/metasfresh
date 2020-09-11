@@ -122,12 +122,12 @@ public class ProcessRestController
 			@NonNull final DocumentId pinstanceDocId)
 	{
 		final PInstanceId pinstanceId = PInstanceId.ofRepoIdOrNull(pinstanceDocId.toIntOr(-1));
-		return ProcessMDC.putProcessAndInstanceId(processId.toAdProcessId(), pinstanceId);
+		return ProcessMDC.putProcessAndInstanceId(processId.toAdProcessIdOrNull(), pinstanceId);
 	}
 
 	private MDCCloseable putMDC(@NonNull final ProcessId processId)
 	{
-		return ProcessMDC.putAdProcessId(processId.toAdProcessId());
+		return ProcessMDC.putAdProcessId(processId.toAdProcessIdOrNull());
 	}
 
 	private JSONOptions newJsonOptions()

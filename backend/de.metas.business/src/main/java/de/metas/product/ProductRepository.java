@@ -76,6 +76,7 @@ public class ProductRepository
 				.productNo(productRecord.getValue())
 				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
 				.description(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()))
+				.documentNote(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_DocumentNote, productRecord.getDocumentNote()))
 				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
 				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
 				.packageSize(productRecord.getPackageSize())

@@ -42,3 +42,4 @@ private
 #
 # Intellij Idea
 *.iml
+/.metadata/

@@ -272,11 +272,11 @@ public class IssueImporterService
 				.status(status)
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
+				.roughEstimation(importIssueInfo.getRoughEstimation())
 				.build();
 
 		mergedIssueEntity.setBudgetedEffortIfNotSet(importIssueInfo.getBudget());
 		mergedIssueEntity.setEstimatedEffortIfNotSet(importIssueInfo.getEstimation());
-		mergedIssueEntity.setRoughEstimationIfNotSet(importIssueInfo.getRoughEstimation());
 
 		return mergedIssueEntity;
 	}

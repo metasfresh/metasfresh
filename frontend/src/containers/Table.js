@@ -12,7 +12,7 @@ import {
   setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
-import { openModal } from '../actions/WindowActions';
+import { openModal, updatePropertyValue } from '../actions/WindowActions';
 
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
@@ -275,6 +275,7 @@ export default connect(
     deselectTableItems,
     openModal,
     updateTableSelection,
+    updatePropertyValue,
     showIncludedView,
     setActiveSort,
   },

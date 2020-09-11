@@ -67,7 +67,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { setListIncludedView } from './ListActions';
+import { setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -425,7 +425,7 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       })
       .catch((error) => {
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -1223,7 +1223,7 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openIncludedView':
             await dispatch(
-              setListIncludedView({
+              setIncludedView({
                 windowType: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
@@ -1233,7 +1233,7 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'closeIncludedView':
             await dispatch(
-              setListIncludedView({
+              setIncludedView({
                 windowType: action.windowId,
                 viewId: action.viewId,
               })

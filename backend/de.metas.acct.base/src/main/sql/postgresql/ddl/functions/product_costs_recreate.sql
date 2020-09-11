@@ -1,28 +1,40 @@
-DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(p_M_Product_ID numeric, p_ReorderDocs char(1));
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(numeric, char(1), numeric);
 
-CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate(p_M_Product_ID numeric,
-                                                                  p_ReorderDocs  char(1) = 'Y')
+CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate(p_M_Product_ID  numeric = NULL,
+                                                                  p_ReorderDocs   char(1) = 'Y',
+                                                                  p_M_Product_IDs numeric[] = NULL)
     RETURNS text
 AS
 $BODY$
 DECLARE
-    rowcount integer;
-    v_result text := '';
+    v_productIds numeric[];
+    rowcount     integer;
+    v_result     text := '';
 BEGIN
-    IF (p_M_Product_ID IS NULL OR p_M_Product_ID <= 0) THEN
-        RAISE EXCEPTION 'Product shall be > 0 but it was %', p_M_Product_ID;
+    IF (p_M_Product_ID IS NOT NULL AND p_M_Product_ID > 0) THEN
+        v_productIds := ARRAY [p_M_Product_ID];
+        -- RAISE EXCEPTION 'Product shall be > 0 but it was %', p_M_Product_ID;
+    ELSE
+        v_productIds := p_M_Product_IDs;
     END IF;
+
+    IF (v_productIds IS NULL OR array_length(v_productIds, 1) <= 0) THEN
+        RAISE EXCEPTION
+            'No products provided. p_M_Product_ID(=%) or p_M_Product_IDs(=%) shall be set',
+            p_M_Product_ID, p_M_Product_IDs;
+    END IF;
+
+    v_result := v_result || array_length(v_productIds, 1) || ' products; ';
 
     UPDATE m_cost
     SET currentcostprice=0, currentqty=0, cumulatedamt=0, cumulatedqty=0
-    WHERE m_product_id = p_M_Product_ID;
+    WHERE m_product_id = ANY (v_productIds);
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     v_result := v_result || rowcount || ' M_Cost(s) set to ZERO; ';
 
-
     DELETE
     FROM m_costdetail
-    WHERE m_product_id = p_M_Product_ID;
+    WHERE m_product_id = ANY (v_productIds);
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     v_result := v_result || rowcount || ' M_CostDetail(s) deleted; ';
 
@@ -39,7 +51,7 @@ BEGIN
                                       tablename_prio,
                                       least(record_id, reversal_id)
                       FROM "de_metas_acct".accountable_docs_and_lines_v
-                      WHERE m_product_id = p_M_Product_ID
+                      WHERE m_product_id = ANY (v_productIds)
                       ORDER BY m_product_id,
                                dateacct,
                                tablename_prio,

@@ -6,24 +6,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for EDI_cctop_invoic_500_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I_EDI_cctop_invoic_500_v, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1276739754L;
+	private static final long serialVersionUID = 228915322L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_500_v (Properties ctx, int EDI_cctop_invoic_500_v_ID, String trxName)
     {
       super (ctx, EDI_cctop_invoic_500_v_ID, trxName);
-      /** if (EDI_cctop_invoic_500_v_ID == 0)
-        {
-        } */
     }
 
     /** Load Constructor */
@@ -33,13 +27,12 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
@@ -53,10 +46,6 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
-	/** Set Invoice.
-		@param C_Invoice_ID 
-		Invoice Identifier
-	  */
 	@Override
 	public void setC_Invoice_ID (int C_Invoice_ID)
 	{
@@ -66,16 +55,10 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
 	}
 
-	/** Get Invoice.
-		@return Invoice Identifier
-	  */
 	@Override
-	public int getC_Invoice_ID () 
+	public int getC_Invoice_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
 	}
 
 	/** 
@@ -83,8 +66,6 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	 * Reference name: C_UOM_Default_First
 	 */
 	public static final int EANCOM_ORDERED_UOM_AD_Reference_ID=114;
-	/** Set Auftrags-Maßeinheit.
-		@param EanCom_Ordered_UOM Auftrags-Maßeinheit	  */
 	@Override
 	public void setEanCom_Ordered_UOM (java.lang.String EanCom_Ordered_UOM)
 	{
@@ -92,80 +73,60 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		set_ValueNoCheck (COLUMNNAME_EanCom_Ordered_UOM, EanCom_Ordered_UOM);
 	}
 
-	/** Get Auftrags-Maßeinheit.
-		@return Auftrags-Maßeinheit	  */
 	@Override
-	public java.lang.String getEanCom_Ordered_UOM () 
+	public java.lang.String getEanCom_Ordered_UOM() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EanCom_Ordered_UOM);
 	}
 
-	/** Set EanCom_Price_UOM.
-		@param EanCom_Price_UOM EanCom_Price_UOM	  */
 	@Override
 	public void setEanCom_Price_UOM (java.lang.String EanCom_Price_UOM)
 	{
 		set_ValueNoCheck (COLUMNNAME_EanCom_Price_UOM, EanCom_Price_UOM);
 	}
 
-	/** Get EanCom_Price_UOM.
-		@return EanCom_Price_UOM	  */
 	@Override
-	public java.lang.String getEanCom_Price_UOM () 
+	public java.lang.String getEanCom_Price_UOM() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EanCom_Price_UOM);
 	}
 
-	/** Set eancom_uom.
-		@param EanCom_UOM eancom_uom	  */
 	@Override
 	public void setEanCom_UOM (java.lang.String EanCom_UOM)
 	{
 		set_Value (COLUMNNAME_EanCom_UOM, EanCom_UOM);
 	}
 
-	/** Get eancom_uom.
-		@return eancom_uom	  */
 	@Override
-	public java.lang.String getEanCom_UOM () 
+	public java.lang.String getEanCom_UOM() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EanCom_UOM);
 	}
 
-	/** Set CU-EAN.
-		@param EAN_CU CU-EAN	  */
 	@Override
 	public void setEAN_CU (java.lang.String EAN_CU)
 	{
 		set_ValueNoCheck (COLUMNNAME_EAN_CU, EAN_CU);
 	}
 
-	/** Get CU-EAN.
-		@return CU-EAN	  */
 	@Override
-	public java.lang.String getEAN_CU () 
+	public java.lang.String getEAN_CU() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
 	}
 
-	/** Set TU-EAN.
-		@param EAN_TU TU-EAN	  */
 	@Override
 	public void setEAN_TU (java.lang.String EAN_TU)
 	{
 		set_ValueNoCheck (COLUMNNAME_EAN_TU, EAN_TU);
 	}
 
-	/** Get TU-EAN.
-		@return TU-EAN	  */
 	@Override
-	public java.lang.String getEAN_TU () 
+	public java.lang.String getEAN_TU() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
 	}
 
-	/** Set EDI_cctop_invoic_500_v.
-		@param EDI_cctop_invoic_500_v_ID EDI_cctop_invoic_500_v	  */
 	@Override
 	public void setEDI_cctop_invoic_500_v_ID (int EDI_cctop_invoic_500_v_ID)
 	{
@@ -175,15 +136,10 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 			set_ValueNoCheck (COLUMNNAME_EDI_cctop_invoic_500_v_ID, Integer.valueOf(EDI_cctop_invoic_500_v_ID));
 	}
 
-	/** Get EDI_cctop_invoic_500_v.
-		@return EDI_cctop_invoic_500_v	  */
 	@Override
-	public int getEDI_cctop_invoic_500_v_ID () 
+	public int getEDI_cctop_invoic_500_v_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_EDI_cctop_invoic_500_v_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_EDI_cctop_invoic_500_v_ID);
 	}
 
 	@Override
@@ -198,8 +154,6 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		set_ValueFromPO(COLUMNNAME_EDI_cctop_invoic_v_ID, de.metas.esb.edi.model.I_EDI_cctop_invoic_v.class, EDI_cctop_invoic_v);
 	}
 
-	/** Set EDI_cctop_invoic_v.
-		@param EDI_cctop_invoic_v_ID EDI_cctop_invoic_v	  */
 	@Override
 	public void setEDI_cctop_invoic_v_ID (int EDI_cctop_invoic_v_ID)
 	{
@@ -209,419 +163,267 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 			set_Value (COLUMNNAME_EDI_cctop_invoic_v_ID, Integer.valueOf(EDI_cctop_invoic_v_ID));
 	}
 
-	/** Get EDI_cctop_invoic_v.
-		@return EDI_cctop_invoic_v	  */
 	@Override
-	public int getEDI_cctop_invoic_v_ID () 
+	public int getEDI_cctop_invoic_v_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_EDI_cctop_invoic_v_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_EDI_cctop_invoic_v_ID);
 	}
 
-	/** Set GTIN.
-		@param GTIN GTIN	  */
 	@Override
 	public void setGTIN (java.lang.String GTIN)
 	{
 		set_ValueNoCheck (COLUMNNAME_GTIN, GTIN);
 	}
 
-	/** Get GTIN.
-		@return GTIN	  */
 	@Override
-	public java.lang.String getGTIN () 
+	public java.lang.String getGTIN() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
-	/** Set ISO Währungscode.
-		@param ISO_Code 
-		Dreibuchstabiger ISO 4217 Code für die Währung
-	  */
 	@Override
 	public void setISO_Code (java.lang.String ISO_Code)
 	{
 		set_Value (COLUMNNAME_ISO_Code, ISO_Code);
 	}
 
-	/** Get ISO Währungscode.
-		@return Dreibuchstabiger ISO 4217 Code für die Währung
-	  */
 	@Override
-	public java.lang.String getISO_Code () 
+	public java.lang.String getISO_Code() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ISO_Code);
 	}
 
-	/** Set Leergut.
-		@param Leergut Leergut	  */
 	@Override
 	public void setLeergut (java.lang.String Leergut)
 	{
 		set_Value (COLUMNNAME_Leergut, Leergut);
 	}
 
-	/** Get Leergut.
-		@return Leergut	  */
 	@Override
-	public java.lang.String getLeergut () 
+	public java.lang.String getLeergut() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Leergut);
 	}
 
-	/** Set Zeile Nr..
-		@param Line 
-		Einzelne Zeile in dem Dokument
-	  */
 	@Override
 	public void setLine (int Line)
 	{
 		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
 	}
 
-	/** Get Zeile Nr..
-		@return Einzelne Zeile in dem Dokument
-	  */
 	@Override
-	public int getLine () 
+	public int getLine() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Line);
 	}
 
-	/** Set Zeilennetto.
-		@param LineNetAmt 
-		Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
-	  */
 	@Override
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt)
 	{
 		set_Value (COLUMNNAME_LineNetAmt, LineNetAmt);
 	}
 
-	/** Get Zeilennetto.
-		@return Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
-	  */
 	@Override
-	public java.math.BigDecimal getLineNetAmt () 
+	public java.math.BigDecimal getLineNetAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Name Zusatz.
-		@param Name2 
-		Zusätzliche Bezeichnung
-	  */
 	@Override
 	public void setName2 (java.lang.String Name2)
 	{
 		set_Value (COLUMNNAME_Name2, Name2);
 	}
 
-	/** Get Name Zusatz.
-		@return Zusätzliche Bezeichnung
-	  */
 	@Override
-	public java.lang.String getName2 () 
+	public java.lang.String getName2() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
 	}
 
-	/** Set Auftragszeile.
-		@param OrderLine Auftragszeile	  */
 	@Override
 	public void setOrderLine (int OrderLine)
 	{
 		set_Value (COLUMNNAME_OrderLine, Integer.valueOf(OrderLine));
 	}
 
-	/** Get Auftragszeile.
-		@return Auftragszeile	  */
 	@Override
-	public int getOrderLine () 
+	public int getOrderLine() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_OrderLine);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_OrderLine);
 	}
 
-	/** Set Auftragsreferenz.
-		@param OrderPOReference Auftragsreferenz	  */
 	@Override
 	public void setOrderPOReference (java.lang.String OrderPOReference)
 	{
 		set_ValueNoCheck (COLUMNNAME_OrderPOReference, OrderPOReference);
 	}
 
-	/** Get Auftragsreferenz.
-		@return Auftragsreferenz	  */
 	@Override
-	public java.lang.String getOrderPOReference () 
+	public java.lang.String getOrderPOReference() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_OrderPOReference);
 	}
 
-	/** Set Einzelpreis.
-		@param PriceActual 
-		Effektiver Preis
-	  */
 	@Override
 	public void setPriceActual (java.math.BigDecimal PriceActual)
 	{
 		set_Value (COLUMNNAME_PriceActual, PriceActual);
 	}
 
-	/** Get Einzelpreis.
-		@return Effektiver Preis
-	  */
 	@Override
-	public java.math.BigDecimal getPriceActual () 
+	public java.math.BigDecimal getPriceActual() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Auszeichnungspreis.
-		@param PriceList 
-		Auszeichnungspreis
-	  */
 	@Override
 	public void setPriceList (java.math.BigDecimal PriceList)
 	{
 		set_Value (COLUMNNAME_PriceList, PriceList);
 	}
 
-	/** Get Auszeichnungspreis.
-		@return Auszeichnungspreis
-	  */
 	@Override
-	public java.math.BigDecimal getPriceList () 
+	public java.math.BigDecimal getPriceList() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceList);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceList);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Produktbeschreibung.
-		@param ProductDescription 
-		Produktbeschreibung
-	  */
 	@Override
 	public void setProductDescription (java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
 
-	/** Get Produktbeschreibung.
-		@return Produktbeschreibung
-	  */
 	@Override
-	public java.lang.String getProductDescription () 
+	public java.lang.String getProductDescription() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
 	}
 
-	/** Set Berechn. Menge.
-		@param QtyInvoiced 
-		Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
-	  */
 	@Override
 	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
 	{
 		set_Value (COLUMNNAME_QtyInvoiced, QtyInvoiced);
 	}
 
-	/** Get Berechn. Menge.
-		@return Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
-	  */
 	@Override
-	public java.math.BigDecimal getQtyInvoiced () 
+	public java.math.BigDecimal getQtyInvoiced() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInvoiced);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Fakturierte Menge in Auftrags-Maßeinheit.
-		@param QtyInvoicedInOrderedUOM Fakturierte Menge in Auftrags-Maßeinheit	  */
 	@Override
 	public void setQtyInvoicedInOrderedUOM (java.math.BigDecimal QtyInvoicedInOrderedUOM)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyInvoicedInOrderedUOM, QtyInvoicedInOrderedUOM);
 	}
 
-	/** Get Fakturierte Menge in Auftrags-Maßeinheit.
-		@return Fakturierte Menge in Auftrags-Maßeinheit	  */
 	@Override
-	public java.math.BigDecimal getQtyInvoicedInOrderedUOM () 
+	public java.math.BigDecimal getQtyInvoicedInOrderedUOM() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoicedInOrderedUOM);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInvoicedInOrderedUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Satz.
-		@param Rate 
-		Rate or Tax or Exchange
-	  */
 	@Override
 	public void setRate (java.math.BigDecimal Rate)
 	{
 		set_Value (COLUMNNAME_Rate, Rate);
 	}
 
-	/** Get Satz.
-		@return Rate or Tax or Exchange
-	  */
 	@Override
-	public java.math.BigDecimal getRate () 
+	public java.math.BigDecimal getRate() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Rate);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Rate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Positions-Steuer.
-		@param TaxAmtInfo 
-		Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
-	  */
 	@Override
 	public void setTaxAmtInfo (java.math.BigDecimal TaxAmtInfo)
 	{
 		set_Value (COLUMNNAME_TaxAmtInfo, TaxAmtInfo);
 	}
 
-	/** Get Positions-Steuer.
-		@return Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
-	  */
 	@Override
-	public java.math.BigDecimal getTaxAmtInfo () 
+	public java.math.BigDecimal getTaxAmtInfo() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TaxAmtInfo);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtInfo);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set taxfree.
-		@param taxfree taxfree	  */
 	@Override
 	public void settaxfree (boolean taxfree)
 	{
 		set_Value (COLUMNNAME_taxfree, Boolean.valueOf(taxfree));
 	}
 
-	/** Get taxfree.
-		@return taxfree	  */
 	@Override
-	public boolean istaxfree () 
+	public boolean istaxfree() 
 	{
-		Object oo = get_Value(COLUMNNAME_taxfree);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_taxfree);
 	}
 
-	/** Set CU-UPC.
-		@param UPC_CU CU-UPC	  */
 	@Override
 	public void setUPC_CU (java.lang.String UPC_CU)
 	{
 		set_ValueNoCheck (COLUMNNAME_UPC_CU, UPC_CU);
 	}
 
-	/** Get CU-UPC.
-		@return CU-UPC	  */
 	@Override
-	public java.lang.String getUPC_CU () 
+	public java.lang.String getUPC_CU() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UPC_CU);
 	}
 
-	/** Set TU-UPC.
-		@param UPC_TU TU-UPC	  */
 	@Override
 	public void setUPC_TU (java.lang.String UPC_TU)
 	{
 		set_ValueNoCheck (COLUMNNAME_UPC_TU, UPC_TU);
 	}
 
-	/** Get TU-UPC.
-		@return TU-UPC	  */
 	@Override
-	public java.lang.String getUPC_TU () 
+	public java.lang.String getUPC_TU() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
 	@Override
 	public void setValue (java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Suchschlüssel.
-		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getValue() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 
-	/** Set Produkt-Nr. Geschäftspartner.
-		@param VendorProductNo 
-		Produkt-Nr. beim Geschäftspartner
-	  */
 	@Override
 	public void setVendorProductNo (java.lang.String VendorProductNo)
 	{
 		set_Value (COLUMNNAME_VendorProductNo, VendorProductNo);
 	}
 
-	/** Get Produkt-Nr. Geschäftspartner.
-		@return Produkt-Nr. beim Geschäftspartner
-	  */
 	@Override
-	public java.lang.String getVendorProductNo () 
+	public java.lang.String getVendorProductNo() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_VendorProductNo);
 	}

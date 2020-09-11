@@ -9,6 +9,87 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.151 - WIP
+
+* https://github.com/metasfresh/metasfresh/issues/9878
+* [#7175](https://github.com/metasfresh/metasfresh/pull/7175/files) Improve usability of postgrest export processes
+* https://github.com/metasfresh/metasfresh/issues/9838
+* https://github.com/metasfresh/metasfresh/issues/9855
+* https://github.com/metasfresh/metasfresh/issues/9873
+* https://github.com/metasfresh/metasfresh/issues/9863
+* https://github.com/metasfresh/metasfresh/issues/9868
+* https://github.com/metasfresh/metasfresh/issues/9871
+* https://github.com/metasfresh/metasfresh/issues/9880
+* https://github.com/metasfresh/metasfresh/issues/9860
+* https://github.com/metasfresh/metasfresh/issues/9862
+* https://github.com/metasfresh/metasfresh/pull/7074
+
+# metasfresh 5.150
+## Features
+* [#7137](https://github.com/metasfresh/metasfresh/pull/7137) Always capture previous costs
+* [#7140](https://github.com/metasfresh/metasfresh/issues/7140) Small changes for data Exchange with Logistics company
+* [#7142](https://github.com/metasfresh/metasfresh/issues/7142) OLCand/BPartner REST Endpoints: import C_BPartner.VATaxId
+* [#7159](https://github.com/metasfresh/metasfresh/issues/7159) Add prepayment check in sales order functions
+* [#7173](https://github.com/metasfresh/metasfresh/issues/7173) Add product weight in de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details
+* [#7182](https://github.com/metasfresh/metasfresh/pull/7182) Improve sales invoice status endpoint
+* [#7186](https://github.com/metasfresh/metasfresh/issues/7186) Receipt REST-Api: Create material receipts
+* [#7171](https://github.com/metasfresh/metasfresh/issues/7171) Order candidates processing: Paypal/ creditcard payments w/ reference and prepayment
+
+## Fixes
+* [#7073](https://github.com/metasfresh/metasfresh/issues/7073) Many 🙏 to [Peter Wyss (@KommunikativCh)](https://github.com/KommunikativCh)
+* [#7127](https://github.com/metasfresh/metasfresh/issues/7127) Problem: pressing esc after editing field shows typed value, instead of existing one (old one)
+* [#7158](https://github.com/metasfresh/metasfresh/issues/7158) Quick edit modal overlay not refreshed after attribute edit
+* [#7161](https://github.com/metasfresh/metasfresh/pull/7161) Fix NPE if an invoice candidate is in catch weight but none is given
+* [#7166](https://github.com/metasfresh/metasfresh/pull/7166) Rüstschein modal overlay not refreshed after attribute edit
+* [#7177](https://github.com/metasfresh/metasfresh/issues/7177) Dropdown behaves weird when two elements with the same key exist in the list
+* [#7183](https://github.com/metasfresh/metasfresh/issues/7183) Kontakte Mobil Start date not initially set
+* [#9839](https://github.com/metasfresh/metasfresh/pull/9839) Remove rabbitmq swing error
+* [#9840](https://github.com/metasfresh/metasfresh/issues/9840) Jenkins build is broken on the frontend part
+
+# metasfresh 5.149
+## Features
+* metasfresh
+  * [#3856](https://github.com/metasfresh/metasfresh/issues/3856) WebUI Forecast Window hide Calendar, Period, Year
+  * [#7124](https://github.com/metasfresh/metasfresh/pull/7124) Product Price Table editing, shortcut, marked text
+  * [#7142](https://github.com/metasfresh/metasfresh/issues/7142) OLCand/BPartner REST Endpoints: import C_BPartner.VATaxId
+  * [#7148](https://github.com/metasfresh/metasfresh/issues/7148) Produktionsbericht: Produkt Name
+  * [#7152](https://github.com/metasfresh/metasfresh/issues/7152) Flickering window after starting process on other machine
+  * [#7155](https://github.com/metasfresh/metasfresh/issues/7155) Window layout improvements: current costs
+
+## Fixes
+* metasfresh
+  * [#7083](https://github.com/metasfresh/metasfresh/issues/7083) When filtering and hiding/showing modals the redux state is not cleaned
+  * [#7105](https://github.com/metasfresh/metasfresh/issues/7105) Window goes blank when reloaded after clicking the navigation link
+  * [#9847](https://github.com/metasfresh/metasfresh/issues/9847) CU Label not working Error: Cannot convert HUReport_541195
+
+# metasfresh 5.148
+## Features
+* metasfresh
+  * [#6867](https://github.com/metasfresh/metasfresh/issues/6867) Import Cost Prices with 0 qty
+  * [#7036](https://github.com/metasfresh/metasfresh/issues/7036) Add more unit tests
+  * [#7085](https://github.com/metasfresh/metasfresh/issues/7085) Extend DESADV for DELV vs ULCO
+  * [#7106](https://github.com/metasfresh/metasfresh/issues/7106) Allow "Verdichtung" (consolidation) on a whole Picking Slot (not just TU)
+  * [#7117](https://github.com/metasfresh/metasfresh/issues/7117) Budget Issue tracking enhancements
+
+## Fixes
+* metasfresh
+  * [#7128](https://github.com/metasfresh/metasfresh/issues/7128) Modal overlay for creating bpartner on-the-fly does not close
+
+# metasfresh 5.147
+## Features
+* metasfresh
+  * [#6714](https://github.com/metasfresh/metasfresh/issues/6714) ESR_Import: introduce IsReconciled flag same as we have in PaySelection
+  * [#7036](https://github.com/metasfresh/metasfresh/issues/7036) Add more unit tests
+  * [#7058](https://github.com/metasfresh/metasfresh/issues/7058) Automatic DD Order Movement
+  * [#7064](https://github.com/metasfresh/metasfresh/issues/7064) Create a new structure for Allergen traces in the product as a new tab
+  * [#7089](https://github.com/metasfresh/metasfresh/issues/7089) Show in Main and Grid view that a Notice/Comment is available
+  * [#7093](https://github.com/metasfresh/metasfresh/issues/7093) New Column in contract that always shows the sales order that initiated the contract
+  * [#7101](https://github.com/metasfresh/metasfresh/issues/7101) Picking Terminal improvements
+
+## Fixes
+* metasfresh
+  * [#7097](https://github.com/metasfresh/metasfresh/issues/7097) Bank Statement not imported until the end
+
 # metasfresh 5.146
 ## Features
 * metasfresh

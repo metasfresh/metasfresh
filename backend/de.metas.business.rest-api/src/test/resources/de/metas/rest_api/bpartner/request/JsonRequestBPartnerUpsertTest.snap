@@ -32,7 +32,9 @@ de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertTest.deserialize_1=[
             "group": "bpGroupRecord.name",
             "groupSet": true,
             "globalIdset": false,
-            "syncAdviseSet": false
+            "syncAdviseSet": false,
+            "vatId": "bPartner.vatId",
+            "vatIdSet": true
           },
           "locations": {
             "requestItems": [

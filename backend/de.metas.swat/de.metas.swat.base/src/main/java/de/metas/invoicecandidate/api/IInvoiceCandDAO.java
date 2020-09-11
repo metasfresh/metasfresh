@@ -1,5 +1,27 @@
 package de.metas.invoicecandidate.api;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -39,26 +61,6 @@ import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {

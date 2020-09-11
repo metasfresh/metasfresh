@@ -1,7 +1,5 @@
 package de.metas.invoice.service.impl;
 
-import static de.metas.util.Check.assumeNotNull;
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -24,6 +22,9 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.util.Check.assumeNotNull;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -83,6 +84,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -93,6 +95,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.BPartnerInvoicingInfo;
@@ -131,9 +134,30 @@ import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  * Implements those methods that are DB decoupled
@@ -157,22 +181,47 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
+	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
+
+	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
-		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
-		Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
 
+		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
 		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		//
-		// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
-		final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-				false); // creditMemoAdjusted = false
+		if (creditCtx.isReferenceInvoice())
+		{
 
-		// 'invoice' is not paid, so the open amount won't be zero
-		Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {}", invoice);
+			if (invoice.isPaid())
+			{
+				throw new AdempiereException(
+						MSG_InvoiceMayNotBePaid,
+						new Object[] {
+								invoice.getDocumentNo()
+						});
+			}
+
+			//
+			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
+			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
+					false); // creditMemoAdjusted = false
+
+			// 'invoice' is not paid, so the open amount won't be zero
+			if (openAmt.signum() == 0)
+			{
+				throw new AdempiereException(
+						MSG_InvoiceMayNotHaveOpenAmtZero,
+						new Object[] {
+								invoice.getDocumentNo()
+						});
+			}
+
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
 		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
 		//
