@@ -87,7 +87,7 @@ public class WEBUI_M_HU_Transform
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-	private static final String SYS_CONFIG_ENABLE_MOVEMENT = "sysConfig.transform.enableMovement";
+	private static final String SYS_CONFIG_ENABLE_MOVEMENT = "WEBUI_M_HU_Transform.enableMovement";
 
 	//
 	// Parameters
