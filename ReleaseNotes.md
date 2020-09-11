@@ -9,20 +9,24 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.151 - WIP
+# metasfresh 5.151
+## Features
+* metasfresh
+  * [#7175](https://github.com/metasfresh/metasfresh/pull/7175) Improve usability of PostgREST export processes
+  * [#9838](https://github.com/metasfresh/metasfresh/issues/9838) Add SeqNo on AD_language
+  * [#9855](https://github.com/metasfresh/metasfresh/issues/9855) Inventory - Automatically destroy HUs with stock 0
+  * [#9860](https://github.com/metasfresh/metasfresh/issues/9860) BOM verified in product window show main grid + filter
+  * [#9862](https://github.com/metasfresh/metasfresh/issues/9862) Show serial number in production HU selection window
+  * [#9863](https://github.com/metasfresh/metasfresh/issues/9863) Allow creation of credit memo for invoices already flagged as paid
+  * [#9868](https://github.com/metasfresh/metasfresh/issues/9868) Enhance upload receipt and shipment candidates URI flexibility
+  * [#9878](https://github.com/metasfresh/metasfresh/issues/9878) Provide stock value as download according to specific date
+  * [#9880](https://github.com/metasfresh/metasfresh/issues/9880) Customer returns window adjustment
 
-* https://github.com/metasfresh/metasfresh/issues/9878
-* [#7175](https://github.com/metasfresh/metasfresh/pull/7175/files) Improve usability of postgrest export processes
-* https://github.com/metasfresh/metasfresh/issues/9838
-* https://github.com/metasfresh/metasfresh/issues/9855
-* https://github.com/metasfresh/metasfresh/issues/9873
-* https://github.com/metasfresh/metasfresh/issues/9863
-* https://github.com/metasfresh/metasfresh/issues/9868
-* https://github.com/metasfresh/metasfresh/issues/9871
-* https://github.com/metasfresh/metasfresh/issues/9880
-* https://github.com/metasfresh/metasfresh/issues/9860
-* https://github.com/metasfresh/metasfresh/issues/9862
-* https://github.com/metasfresh/metasfresh/pull/7074
+## Fixes
+* metasfresh
+  * [#7073](https://github.com/metasfresh/metasfresh/issues/7073) GL Journal Lines with TAX Amount 0 can't be booked, many 🙏 to [Peter Wyss (@KommunikativCh)](https://github.com/KommunikativCh)
+  * [#9871](https://github.com/metasfresh/metasfresh/issues/9871) Inactive contacts can't be set to active again
+  * [#9873](https://github.com/metasfresh/metasfresh/issues/9873) Extend business partner import to care about Org
 
 # metasfresh 5.150
 ## Features
