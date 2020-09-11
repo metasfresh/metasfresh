@@ -1,23 +1,5 @@
 package de.metas.edi.api.impl;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
-import de.metas.handlingunits.generichumodel.HURepository;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantitys;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_Product;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
 import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInInvoiceUOM;
 import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM;
 import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM;
@@ -31,18 +13,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.uom.IUOMDAO;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 
 /*
  * #%L
