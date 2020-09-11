@@ -11,6 +11,7 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPPOrderBL extends ISingletonService
 {
@@ -103,4 +104,6 @@ public interface IPPOrderBL extends ISingletonService
 	void voidOrderRouting(PPOrderId orderId);
 
 	Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(PPOrderId pickingOrderId);
+
+	void updateCanBeExportedAfter(@NonNull I_PP_Order order);
 }

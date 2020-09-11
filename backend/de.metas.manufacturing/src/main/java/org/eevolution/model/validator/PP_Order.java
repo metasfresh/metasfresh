@@ -171,6 +171,11 @@ public class PP_Order
 				ppOrder.setOrderType(null);
 			}
 		}
+		
+		if(changeType.isNew() || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_CanBeExportedFrom))
+		{
+			ppOrderBL.updateCanBeExportedAfter(ppOrder);
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
