@@ -22,8 +22,9 @@
 
 package de.metas.shipper.gateway.dpd;
 
-import de.metas.uom.UOMConstants;
 import org.compiere.model.X_M_Shipper;
+
+import de.metas.uom.X12DE355;
 
 public class DpdConstants
 {
@@ -35,5 +36,5 @@ public class DpdConstants
 
 	public static final String TRACKING_URL = "https://tracking.dpd.de/status/en_US/parcel/";
 
-	public static final String DEFAULT_PACKAGE_DIMENSIONS_UOM = UOMConstants.X12_CENTIMETRE;
+	public static final X12DE355 DEFAULT_PACKAGE_DIMENSIONS_UOM = X12DE355.CENTIMETRE;
 }

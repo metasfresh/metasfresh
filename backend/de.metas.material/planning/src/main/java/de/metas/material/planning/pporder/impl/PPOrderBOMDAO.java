@@ -3,17 +3,18 @@ package de.metas.material.planning.pporder.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -45,17 +46,11 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public List<I_PP_Order_BOMLine> retrieveOrderBOMLines(final I_PP_Order order)
 	{
-		return retrieveOrderBOMLines(order, I_PP_Order_BOMLine.class);
-	}
-
-	@Override
-	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(@NonNull final I_PP_Order order, @NonNull final Class<T> orderBOMLineClass)
-	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
-		final List<T> orderBOMLines = retrieveOrderBOMLines(orderId, orderBOMLineClass);
+		final List<I_PP_Order_BOMLine> orderBOMLines = retrieveOrderBOMLines(ImmutableList.of(orderId), I_PP_Order_BOMLine.class);
 
 		// Optimization: set parent link
-		for (final T orderBOMLine : orderBOMLines)
+		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
 			orderBOMLine.setPP_Order(order);
 		}
@@ -66,22 +61,35 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public List<I_PP_Order_BOMLine> retrieveOrderBOMLines(@NonNull final PPOrderId orderId)
 	{
-		return retrieveOrderBOMLines(orderId, I_PP_Order_BOMLine.class);
+		return retrieveOrderBOMLines(ImmutableList.of(orderId), I_PP_Order_BOMLine.class);
 	}
 
 	@Override
-	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(@NonNull final PPOrderId orderId, @NonNull final Class<T> orderBOMLineClass)
+	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(
+			@NonNull final PPOrderId orderId,
+			@NonNull final Class<T> orderBOMLineClass)
 	{
+		return retrieveOrderBOMLines(ImmutableList.of(orderId), orderBOMLineClass);
+	}
+
+	@Override
+	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(
+			@NonNull final Collection<PPOrderId> orderIds,
+			@NonNull final Class<T> orderBOMLineClass)
+	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(orderBOMLineClass)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderId)
+				.addInArrayFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderIds)
 				.addOnlyActiveRecordsFilter()
-				//
-				.orderBy()
-				.addColumn(I_PP_Order_BOMLine.COLUMNNAME_Line, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
+				.orderBy(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID)
+				.orderBy(I_PP_Order_BOMLine.COLUMNNAME_Line)
 				//
 				.create()
-				.list(orderBOMLineClass);
+				.listImmutable(orderBOMLineClass);
 	}
 
 	@Override

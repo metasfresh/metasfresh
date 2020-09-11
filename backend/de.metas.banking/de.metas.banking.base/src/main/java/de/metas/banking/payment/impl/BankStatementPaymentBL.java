@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -134,7 +135,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(trxAmt);
 
 		return paymentBL.getPaymentIds(PaymentQuery.builder()
-				.limit(limit)
+				.limit(QueryLimit.ofInt(limit))
 				.docStatus(DocStatus.Completed)
 				.reconciled(false)
 				.direction(expectedPaymentDirection)

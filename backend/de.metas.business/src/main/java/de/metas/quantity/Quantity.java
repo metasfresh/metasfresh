@@ -47,6 +47,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
@@ -336,6 +337,11 @@ public final class Quantity implements Comparable<Quantity>
 	public String getUOMSymbol()
 	{
 		return uom.getUOMSymbol();
+	}
+	
+	public X12DE355 getX12DE355()
+	{
+		return X12DE355.ofCode(uom.getX12DE355());
 	}
 
 	/**

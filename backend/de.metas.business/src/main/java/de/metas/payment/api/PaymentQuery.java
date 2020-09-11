@@ -2,6 +2,8 @@ package de.metas.payment.api;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.QueryLimit;
+
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
@@ -41,8 +43,9 @@ import lombok.Value;
 @Builder
 public class PaymentQuery
 {
+	@NonNull
 	@Default
-	int limit = 100;
+	QueryLimit limit = QueryLimit.ONE_HUNDRED;
 
 	@NonNull
 	DocStatus docStatus;

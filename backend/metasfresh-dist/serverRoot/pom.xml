@@ -86,6 +86,11 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing.rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

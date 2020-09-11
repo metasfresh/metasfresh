@@ -18,7 +18,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.eevolution.api.IPPOrderBL;
 
 import com.google.common.collect.ImmutableList;
@@ -39,8 +38,8 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
@@ -106,8 +105,8 @@ public final class ProductsToPickRowsDataFactory
 
 	private final boolean considerAttributes;
 
-	public static final String ATTR_LotNumber_String = LotNumberDateAttributeDAO.ATTR_LotNumber_String;
-	public static final AttributeCode ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
+	public static final String ATTR_LotNumber_String = AttributeConstants.ATTR_LotNumber_String;
+	public static final AttributeCode ATTR_LotNumber = AttributeConstants.ATTR_LotNumber;
 
 	public static final String ATTR_BestBeforeDate_String = AttributeConstants.ATTR_BestBeforeDate_String;
 	public static final AttributeCode ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;

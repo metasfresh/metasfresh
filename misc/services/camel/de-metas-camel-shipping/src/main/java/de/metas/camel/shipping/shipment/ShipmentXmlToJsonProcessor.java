@@ -1,30 +1,8 @@
 package de.metas.camel.shipping.shipment;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.camel.shipping.CommonUtil;
-import de.metas.camel.shipping.JsonAttributeInstanceHelper;
-import de.metas.camel.shipping.XmlToJsonBaseProcessor;
-import de.metas.common.filemaker.FileMakerDataHelper;
-import de.metas.common.filemaker.ROW;
-import de.metas.common.rest_api.JsonAttributeInstance;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.shipment.JsonCreateShipmentInfo;
-import de.metas.common.shipment.JsonCreateShipmentRequest;
-import de.metas.common.shipment.JsonLocation;
-import lombok.NonNull;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
+import static de.metas.camel.shipping.XmlToJsonProcessorUtil.asLocalDate;
+import static de.metas.camel.shipping.XmlToJsonProcessorUtil.asLocalDateTime;
+import static de.metas.camel.shipping.XmlToJsonProcessorUtil.processExchange;
 import static de.metas.camel.shipping.shipment.ShipmentField.ARTICLE_FLAVOR;
 import static de.metas.camel.shipping.shipment.ShipmentField.CITY;
 import static de.metas.camel.shipping.shipment.ShipmentField.COUNTRY_CODE;
@@ -45,11 +23,39 @@ import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EXPIRY_DATE
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_SHIPPER_SEARCH_KEY;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.TRACKING_NUMBERS_SEPARATOR;
 
-public class ShipmentXmlToJsonProcessor extends XmlToJsonBaseProcessor implements Processor
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.camel.shipping.CommonUtil;
+import de.metas.camel.shipping.JsonAttributeInstanceHelper;
+import de.metas.common.filemaker.FileMakerDataHelper;
+import de.metas.common.filemaker.ROW;
+import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.shipment.JsonCreateShipmentInfo;
+import de.metas.common.shipment.JsonCreateShipmentRequest;
+import de.metas.common.shipment.JsonLocation;
+import lombok.NonNull;
+
+public class ShipmentXmlToJsonProcessor implements Processor
 {
 	private final static Log log = LogFactory.getLog(ShipmentXmlToJsonProcessor.class);
 
-	@Override public void process(final Exchange exchange)
+	@Override
+	public void process(final Exchange exchange)
 	{
 		processExchange(exchange, this::createShipmentInfo, this::buildCreateShipmentsRequest);
 	}

@@ -22,10 +22,36 @@
 
 package de.metas.rest_api.shipping;
 
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -75,28 +101,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 
 @Service
 class ReceiptCandidateAPIService
@@ -128,7 +132,7 @@ class ReceiptCandidateAPIService
 	/**
 	 * Exports them; Flags them as "exported - don't touch"; creates an export audit table with one line per shipment schedule.
 	 */
-	public JsonResponseReceiptCandidates exportReceiptCandidates(final int limit)
+	public JsonResponseReceiptCandidates exportReceiptCandidates(final QueryLimit limit)
 	{
 		final String transactionId = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
@@ -171,7 +175,7 @@ class ReceiptCandidateAPIService
 			}
 
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
-					.hasMoreItems(receiptSchedules.size() == limit)
+					.hasMoreItems(limit.isLimitHitOrExceeded(receiptSchedules))
 					.transactionKey(transactionId);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
@@ -234,7 +238,10 @@ class ReceiptCandidateAPIService
 	@NonNull
 	private ImmutableList<JsonQuantity> createJsonQuantities(@NonNull final Quantity quantity)
 	{
-		return ImmutableList.of(JsonQuantity.builder().qty(quantity.toBigDecimal()).uomCode(quantity.getUOMSymbol()).build());
+		return ImmutableList.of(JsonQuantity.builder()
+				.qty(quantity.toBigDecimal())
+				.uomCode(quantity.getX12DE355().getCode())
+				.build());
 	}
 
 	private JsonVendor createJsonVendor(

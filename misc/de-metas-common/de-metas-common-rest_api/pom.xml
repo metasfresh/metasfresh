@@ -37,7 +37,7 @@
     <version>10.0.0</version>
 
     <properties>
-        <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencies>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>de.metas.common.util</groupId>
             <artifactId>de-metas-common-util</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
         </dependency>
 
         <dependency>

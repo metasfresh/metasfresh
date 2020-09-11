@@ -34,6 +34,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -904,6 +905,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				}).iterate(hu);
 
 		return vhus;
+	}
+
+	@Override
+	public IHUQueryBuilder createHUQueryBuilder()
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsDAO.createHUQueryBuilder();
 	}
 
 	@Override

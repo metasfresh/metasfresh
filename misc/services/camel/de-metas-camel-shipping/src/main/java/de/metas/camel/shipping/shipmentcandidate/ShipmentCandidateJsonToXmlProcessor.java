@@ -22,8 +22,17 @@
 
 package de.metas.camel.shipping.shipmentcandidate;
 
-import de.metas.camel.shipping.FeedbackProzessor;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.PropertiesComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import de.metas.camel.shipping.CommonUtil;
+import de.metas.camel.shipping.FeedbackProzessor;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.COL;
 import de.metas.common.filemaker.FIELD;
@@ -37,15 +46,6 @@ import de.metas.common.shipping.Outcome;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import lombok.NonNull;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.spi.PropertiesComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.Properties;
 
 public class ShipmentCandidateJsonToXmlProcessor implements Processor
 {
@@ -89,8 +89,9 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		}
 
 		log.debug("process method called; scheduleList with " + items.size() + " items");
+		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{shipment-candidate.FMPXMLRESULT.DATABASE.NAME}}");
 		final FMPXMLRESULTBuilder builder = CommonUtil
-				.createFmpxmlresultBuilder(exchange, items.size())
+				.createFmpxmlresultBuilder(databaseName, items.size())
 				.metadata(METADATA);
 
 		final var resultsBuilder = JsonRequestCandidateResults.builder()
@@ -130,9 +131,9 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(dateOrdered.format(DateTimeFormatter.ofPattern("d.M.yyyy k:mm:ss")))); // _bestellung_zeitstempel
 
 		final var product = item.getProduct();
+		final var productNo = CommonUtil.extractProductNo(propertiesComponent, product, item.getOrgCode());
 
-		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, item.getOrgCode());
-		row.col(COL.of(artikelNummerPrefix + product.getProductNo())); // _artikel_nummer
+		row.col(COL.of(productNo)); // _artikel_nummer
 		row.col(COL.of(product.getName())); // _artikel_bezeichnung
 		row.col(COL.of(item.getQuantities().get(0).getQty().toString())); // _artikel_menge
 		row.col(COL.of(product.getWeight().toString())); // _artikel_gewicht_1_stueck

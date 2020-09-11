@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -233,7 +234,7 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addColumn(I_C_Conversion_Rate.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				//
-				.setLimit(1) // first only
+				.setLimit(QueryLimit.ONE) // first only
 		;
 	}
 
@@ -244,7 +245,7 @@ public class CurrencyDAO implements ICurrencyDAO
 			final CurrencyId currencyToId)
 	{
 		final List<Map<String, Object>> recordsList = retrieveRateQuery(conversionCtx, currencyFromId, currencyToId)
-				.setLimit(1)
+				.setLimit(QueryLimit.ONE)
 				.create()
 				.listColumns(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
 

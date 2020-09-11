@@ -59,11 +59,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- 07058: Libero (Distribution Network) dependency will be used for warehouse 
+		<!-- 07058: Manufacturing (Distribution Network) dependency will be used for warehouse 
 			association between OrderLine and ReceiptSchedule warehouses -->
 		<dependency>
-			<groupId>de.metas.adempiere.libero</groupId>
-			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 
