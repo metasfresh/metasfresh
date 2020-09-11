@@ -28,6 +28,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.metas.business.BusinessTestHelper;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.handlingunits.generichumodel.HURepository;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMDAO;
+
 /*
  * #%L
  * de.metas.edi
@@ -65,9 +81,9 @@ class DesadvBLTest
 
 		desadvBL = new DesadvBL(new HURepository());
 
-		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", IUOMDAO.X12DE355_Each).getC_UOM_ID());
-		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", IUOMDAO.X12DE355_COLI).getC_UOM_ID());
-		kiloUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("kilo", IUOMDAO.X12DE355_Kilogram).getC_UOM_ID());
+		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", X12DE355.EACH).getC_UOM_ID());
+		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", X12DE355.COLI).getC_UOM_ID());
+		kiloUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("kilo", X12DE355.KILOGRAM).getC_UOM_ID());
 
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", eachUomId);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());

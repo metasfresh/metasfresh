@@ -22,17 +22,17 @@
 
 package de.metas.common.receipt;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -47,7 +47,7 @@ public class JsonCreateReceiptsRequest
 	public JsonCreateReceiptsRequest(@JsonProperty("receiptList") final List<JsonCreateReceiptInfo> jsonCreateReceiptInfoList)
 	{
 		this.jsonCreateReceiptInfoList = jsonCreateReceiptInfoList != null
-				? jsonCreateReceiptInfoList.stream().filter(Objects::nonNull).collect(Collectors.toList())
+				? jsonCreateReceiptInfoList.stream().filter(Objects::nonNull).collect(ImmutableList.toImmutableList())
 				: ImmutableList.of();
 	}
 }

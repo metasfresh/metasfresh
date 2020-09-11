@@ -22,28 +22,30 @@
 
 package de.metas.inoutcandidate.exportaudit;
 
-import com.google.common.collect.ImmutableMap;
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.Arrays;
 
 public enum APIExportStatus implements ReferenceListAwareEnum
 {
-	DontExport(X_M_ShipmentSchedule.EXPORTSTATUS_DONT_EXPORT),
-	Pending(X_M_ShipmentSchedule.EXPORTSTATUS_PENDING),
-	Exported(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED),
-	ExportError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORT_ERROR),
-	ExportedAndForwarded(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_AND_FORWARDED),
-	ExportedAndError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_FORWARD_ERROR);
+	DontExport(X_M_ShipmentSchedule.EXPORTSTATUS_DONT_EXPORT), //
+	Pending(X_M_ShipmentSchedule.EXPORTSTATUS_PENDING), //
+	Exported(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED), //
+	ExportError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORT_ERROR), //
+	ExportedAndForwarded(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_AND_FORWARDED), //
+	ExportedAndError(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_FORWARD_ERROR) //
+	;
 
 	public static final ImmutableSet<APIExportStatus> EXPORTED_STATES = ImmutableSet.of(Exported, ExportedAndError, ExportedAndForwarded);
+
+	private static final ValuesIndex<APIExportStatus> typesByCode = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
@@ -67,12 +69,7 @@ public enum APIExportStatus implements ReferenceListAwareEnum
 
 	public static APIExportStatus ofCode(@NonNull final String code)
 	{
-		final APIExportStatus type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + APIExportStatus.class + " found for code: " + code);
-		}
-		return type;
+		return typesByCode.ofCode(code);
 	}
 
 	@Nullable
@@ -80,6 +77,4 @@ public enum APIExportStatus implements ReferenceListAwareEnum
 	{
 		return type != null ? type.getCode() : null;
 	}
-
-	private static final ImmutableMap<String, APIExportStatus> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), APIExportStatus::getCode);
 }

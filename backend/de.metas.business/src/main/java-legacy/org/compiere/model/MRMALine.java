@@ -36,6 +36,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -156,7 +157,9 @@ public class MRMALine extends X_M_RMALine
 	private MRMA getParent()
 	{
 		if (m_parent == null)
+		{
 			m_parent = new MRMA(getCtx(), getM_RMA_ID(), get_TrxName());
+		}
 		return m_parent;
 	}   // getParent
 
@@ -180,7 +183,9 @@ public class MRMALine extends X_M_RMALine
 	public MInOutLine getShipLine()
 	{
 		if ((m_ioLine == null || is_ValueChanged("M_InOutLine_ID")) && getM_InOutLine_ID() != 0)
+		{
 			m_ioLine = new MInOutLine(getCtx(), getM_InOutLine_ID(), get_TrxName());
+		}
 		return m_ioLine;
 	}	// getShipLine
 
@@ -291,9 +296,13 @@ public class MRMALine extends X_M_RMALine
 		if (this.getC_Charge_ID() != 0 && this.getQty().doubleValue() <= 0)
 		{
 			if (getQty().signum() == 0)
+			{
 				this.setQty(Env.ONE);
+			}
 			if (getAmt().signum() == 0)
+			{
 				this.setAmt(getUnitAmt());
+			}
 		}
 
 		// Set amount for products
@@ -325,7 +334,9 @@ public class MRMALine extends X_M_RMALine
 						+ " AND rl.M_RMALine_ID <> ?",
 				getM_InOutLine_ID(), getM_RMALine_ID());
 		if (totalQty == null)
+		{
 			totalQty = Env.ZERO;
+		}
 		totalQty = totalQty.add(getQty());
 		if (m_ioLine.getMovementQty().compareTo(totalQty) < 0)
 		{
@@ -363,9 +374,13 @@ public class MRMALine extends X_M_RMALine
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}   // addDescription
 
 	/**
@@ -377,7 +392,7 @@ public class MRMALine extends X_M_RMALine
 	{
 		if (m_ioLine == null) // Charge
 		{
-			return IUOMDAO.C_UOM_ID_Each; // Each
+			return UomId.EACH.getRepoId(); // Each
 		}
 
 		return m_ioLine.getC_UOM_ID();

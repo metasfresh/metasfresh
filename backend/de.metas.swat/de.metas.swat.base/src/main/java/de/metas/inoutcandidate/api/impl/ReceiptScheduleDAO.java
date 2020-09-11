@@ -3,8 +3,6 @@ package de.metas.inoutcandidate.api.impl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -15,7 +13,6 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -24,7 +21,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,11 +60,6 @@ import java.util.Set;
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	/**
-	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
-	 */
-	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
 
 	@Override
 	public Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query)
@@ -322,17 +313,6 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.anyMatch();
 	}
 
-	@Override
-	public void updateExportStatus(final String exportStatus, final PInstanceId pinstanceId)
-	{
-		updateColumnForSelection(
-				I_M_ReceiptSchedule.COLUMNNAME_ExportStatus,
-				exportStatus,
-				false /* updateOnlyIfNull */,
-				pinstanceId
-		);
-	}
-
 	@NonNull
 	public Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(@NonNull final ImmutableSet<ReceiptScheduleId> receiptScheduleIds)
 	{
@@ -349,106 +329,5 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId receiptScheduleId)
 	{
 		return InterfaceWrapperHelper.load(receiptScheduleId, I_M_ReceiptSchedule.class);
-	}
-
-	/**
-	 * Mass-update a given shipment schedule column.
-	 * <p>
-	 * If there were any changes and the invalidate parameter is on true, those shipment schedules will be invalidated.
-	 *
-	 * @param inoutCandidateColumnName {@link I_M_ReceiptSchedule}'s column to update
-	 * @param value                    value to set (you can also use {@link ModelColumnNameValue})
-	 * @param updateOnlyIfNull         if true then it will update only if column value is null (not set)
-	 * @param selectionId              ShipmentSchedule selection (AD_PInstance_ID)
-	 * @param trxName
-	 */
-	private final <ValueType> void updateColumnForSelection(
-			final String inoutCandidateColumnName,
-			final ValueType value,
-			final boolean updateOnlyIfNull,
-			final PInstanceId selectionId
-	)
-	{
-		//
-		// Create the selection which we will need to update
-		final IQueryBuilder<I_M_ReceiptSchedule> selectionQueryBuilder = queryBL
-				.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setOnlySelection(selectionId)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false) // do not touch the processed shipment schedules
-				;
-
-		if (updateOnlyIfNull)
-		{
-			selectionQueryBuilder.addEqualsFilter(inoutCandidateColumnName, null);
-		}
-		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
-		if (selectionToUpdateId == null)
-		{
-			// nothing to update
-			return;
-		}
-
-		//
-		// Update our new selection
-		final int countUpdated = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setOnlySelection(selectionToUpdateId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(inoutCandidateColumnName, value)
-				.execute();
-
-		//
-		// Cache invalidate
-		// We have to do this even if invalidate=false
-		cacheInvalidateBySelectionId(selectionToUpdateId, countUpdated);
-	}
-
-	private void cacheInvalidateBySelectionId(
-			@NonNull final PInstanceId selectionId,
-			final long estimatedSize)
-	{
-		final CacheInvalidateMultiRequest request;
-		if (estimatedSize < 0)
-		{
-			// unknown estimated size
-			request = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ReceiptSchedule.Table_Name);
-		}
-		else if (estimatedSize == 0)
-		{
-			// no records
-			// unknown estimated size
-			request = null;
-		}
-		else if (estimatedSize <= CACHE_INVALIDATE_ALL_THRESHOLD)
-		{
-			// relatively small amount of records
-			// => fetch and reset individually
-			final ImmutableSet<ReceiptScheduleId> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-					.setOnlySelection(selectionId)
-					.create()
-					.listIds(ReceiptScheduleId::ofRepoId);
-			if (!shipmentScheduleIds.isEmpty())
-			{
-				request = CacheInvalidateMultiRequest.rootRecords(I_M_ReceiptSchedule.Table_Name, shipmentScheduleIds);
-			}
-			else
-			{
-				// no records found => do nothing
-				request = null;
-			}
-		}
-		else
-		{
-			// large amount of records
-			// => instead of fetching all IDs better invalidate the whole table
-			request = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ReceiptSchedule.Table_Name);
-		}
-
-		//
-		// Perform the actual cache invalidation
-		if (request != null)
-		{
-			CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, request);
-		}
 	}
 }

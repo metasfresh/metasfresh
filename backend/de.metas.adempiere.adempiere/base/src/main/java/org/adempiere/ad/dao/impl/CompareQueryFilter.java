@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -35,15 +37,13 @@ import org.compiere.Adempiere;
 import org.compiere.model.MQuery;
 import org.compiere.util.TimeUtil;
 
-import de.metas.util.Check;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 @EqualsAndHashCode(doNotUseGetters = true, exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -273,7 +273,8 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	private static Object normalizeValue(final Object value)
+	@Nullable
+	static Object normalizeValue(@Nullable final Object value)
 	{
 		if (value == null)
 		{

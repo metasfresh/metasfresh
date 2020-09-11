@@ -22,11 +22,12 @@
 
 package de.metas.camel.shipping;
 
+import org.apache.camel.main.Main;
+
 import de.metas.camel.shipping.receipt.ReceiptXmlToJsonRouteBuilder;
 import de.metas.camel.shipping.receiptcandidate.ReceiptCandidateJsonToXmlRouteBuilder;
 import de.metas.camel.shipping.shipment.ShipmentXmlToJsonRouteBuilder;
 import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
-import org.apache.camel.main.Main;
 
 /**
  * A Camel Application
@@ -44,8 +45,9 @@ public class MainApp
 		main.configure().addRoutesBuilder(new ReceiptCandidateJsonToXmlRouteBuilder());
 		main.configure().addRoutesBuilder(new ShipmentXmlToJsonRouteBuilder());
 		main.configure().addRoutesBuilder(new ReceiptXmlToJsonRouteBuilder());
+		main.configure().addRoutesBuilder(new de.metas.camel.manufacturing.order.export.MetasfreshExportOrdersRouteBuilder());
+		// main.configure().addRoutesBuilder(new de.metas.camel.manufacturing.order.issue_and_receipt.MetasfreshImportIssuesAndReceiptRouteBuilder());
 		main.run(args);
 	}
 
 }
-
