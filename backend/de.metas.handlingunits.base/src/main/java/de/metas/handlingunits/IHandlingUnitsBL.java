@@ -548,5 +548,5 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
 
-	void setHUStatus(final I_M_HU hu, final IContextAware contextProvider, final String huStatus);
+	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 }

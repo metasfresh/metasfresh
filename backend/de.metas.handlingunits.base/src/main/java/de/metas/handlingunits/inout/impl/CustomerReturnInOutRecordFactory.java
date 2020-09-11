@@ -36,7 +36,7 @@ import static org.compiere.model.X_M_InOut.MOVEMENTTYPE_CustomerReturns;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
 @Repository
-public class CustomerReturnRepository
+public class CustomerReturnInOutRecordFactory
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);

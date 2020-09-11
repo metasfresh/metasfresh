@@ -110,9 +110,9 @@ public class CustomerReturnsWithoutHUsProducer
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-	private final CustomerReturnRepository customerReturnRepository;
+	private final CustomerReturnInOutRecordFactory customerReturnRepository;
 
-	public CustomerReturnsWithoutHUsProducer(final CustomerReturnRepository customerReturnRepository)
+	public CustomerReturnsWithoutHUsProducer(final CustomerReturnInOutRecordFactory customerReturnRepository)
 	{
 		this.customerReturnRepository = customerReturnRepository;
 	}
