@@ -50,6 +50,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -57,6 +58,7 @@ import lombok.NonNull;
 
 public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 {
+	
 	// services
 	private final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -72,6 +74,8 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 
 	// state
 	private I_M_Movement _movement;
+	
+	private static final AdMessageKey MSG_DD_Order_NoTransitLocator = AdMessageKey.of("org.eevolution.api.impl.DD_Order_MovementBuilder.DD_Order_DD_Order_NoTransitLocator");
 
 	private final void assumeNoMovementHeaderCreated()
 	{
@@ -320,6 +324,14 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
 		final I_M_Warehouse warehouseInTransit = ddOrder.getM_Warehouse();
 		final I_M_Locator locatorInTransit = warehouseBL.getDefaultLocator(warehouseInTransit);
+
+		if (locatorInTransit == null)
+		{
+			throw new AdempiereException(MSG_DD_Order_NoTransitLocator)
+					.appendParametersToMessage()
+					.setParameter("Warehouse", warehouseInTransit.getName())
+					;
+		}
 		return locatorInTransit.getM_Locator_ID();
 	}
 
