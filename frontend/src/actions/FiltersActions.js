@@ -113,7 +113,10 @@ export function filtersActiveContains({ filtersActive, key }) {
  */
 export function setNewFiltersActive({ storeActiveFilters, filterToAdd }) {
   storeActiveFilters = deepUnfreeze(storeActiveFilters);
-  if (!storeActiveFilters.length) {
+  if (
+    !storeActiveFilters.length ||
+    !foundAmongActiveFilters({ storeActiveFilters, filterToAdd })
+  ) {
     storeActiveFilters.push(filterToAdd);
   } else {
     storeActiveFilters.forEach((activeFilter, index) => {
@@ -123,4 +126,16 @@ export function setNewFiltersActive({ storeActiveFilters, filterToAdd }) {
     });
   }
   return storeActiveFilters;
+}
+
+/**
+ * @method foundAmongActiveFilters
+ * @summary checks that the filterToAdd is found among the storeActiveFilters
+ */
+function foundAmongActiveFilters({ storeActiveFilters, filterToAdd }) {
+  let isPresent = false;
+  storeActiveFilters.forEach((item) => {
+    if (item.filterId === filterToAdd.filterId) isPresent = true;
+  });
+  return isPresent;
 }
