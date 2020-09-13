@@ -27,7 +27,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum ReceiptField
+public enum ReceiptReturnField
 {
 	EXTERNAL_ID("_wareneingang_nummer"),
 	RECEIPT_SCHEDULE_ID("_anlieferung_position_id"),
@@ -37,7 +37,14 @@ public enum ReceiptField
 	DATE_RECEIVED("_wareneingang_zeitstempel"),
 	LOT_NUMBER("_wareneingang_mhd_charge"),
 	EXPIRY_DATE("_wareneingang_mhd_ablauf_datum"),
-	ARTICLE_FLAVOR("_artikel_geschmacksrichtung");
+	ARTICLE_FLAVOR("_artikel_geschmacksrichtung"),
+	RECEIPT_EXTERNAL_RESOURCE_URL("_wareneingang_lieferschein_url"),
+	//return specific fields
+	IS_RETURN("_wareneingang_ist_retoure_ja_nein"),
+	SHIPMENT_SCHEDULE_ID("_bestellung_position_id"),
+	SHIPMENT_DOCUMENT_NO("_aussendungen_siro_warenkorb_nummer"),
+	RETURN_EXTERNAL_RESOURCE_URL("_wareneingang_ist_retoure_ja_url")
+	;
 
 	private final String name;
 }

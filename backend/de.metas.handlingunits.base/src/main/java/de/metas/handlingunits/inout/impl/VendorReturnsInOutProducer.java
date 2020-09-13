@@ -1,28 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.base.Preconditions;
-
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -43,6 +21,23 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -225,20 +220,6 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	{
 		// only empty if there are no product lines.
 		return inoutLinesBuilder.isEmpty();
-	}
-
-	@Override
-	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
-	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(docBaseType)
-				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
-				.isSOTrx(isSOTrx)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build();
-		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 	}
 
 	@Override

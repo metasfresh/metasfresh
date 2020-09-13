@@ -22,10 +22,22 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Properties;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inout.IReturnsInOutProducer;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.handlingunits.snapshot.ISnapshotProducer;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,19 +52,9 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
-import de.metas.handlingunits.snapshot.ISnapshotProducer;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Properties;
 
 public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProducer
 {
@@ -236,7 +238,18 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return emptiesInOut;
 	}
 
-	protected abstract int getReturnsDocTypeId(String docBaseType, boolean isSOTrx, int adClientId, int adOrgId);
+	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
+	{
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
+				.isSOTrx(isSOTrx)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build();
+		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
+	}
 
 	/**
 	 * Asserts this producer is in configuration stage (nothing produced yet)

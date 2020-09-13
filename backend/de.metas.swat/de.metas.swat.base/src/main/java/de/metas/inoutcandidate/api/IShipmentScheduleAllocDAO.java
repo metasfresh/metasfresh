@@ -22,17 +22,17 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_M_InOutLine;
-
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_M_InOutLine;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {
@@ -112,5 +112,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * Returns the quantity that is either just picked or on a just drafted shipment line.
 	 */
 	BigDecimal retrieveQtyPickedAndUnconfirmed(I_M_ShipmentSchedule shipmentSchedule);
+
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecords(ShipmentScheduleId shipmentScheduleId);
 
 }
