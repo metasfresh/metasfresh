@@ -36,23 +36,32 @@ import lombok.Value;
 @Value
 public class UomId implements RepoIdAware
 {
-	int repoId;
+	public static final UomId EACH = new UomId(100);
 
 	@JsonCreator
 	public static UomId ofRepoId(final int repoId)
 	{
-		return new UomId(repoId);
+		if (repoId == EACH.repoId)
+		{
+			return EACH;
+		}
+		else
+		{
+			return new UomId(repoId);
+		}
 	}
 
 	public static UomId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new UomId(repoId) : null;
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	public static int toRepoId(final UomId uomId)
 	{
 		return uomId != null ? uomId.getRepoId() : -1;
 	}
+
+	int repoId;
 
 	private UomId(final int repoId)
 	{

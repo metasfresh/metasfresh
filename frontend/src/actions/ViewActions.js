@@ -27,13 +27,14 @@ import {
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
+  SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
+  UNSET_INCLUDED_VIEW,
   UPDATE_VIEW_DATA_ERROR,
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
-import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
  * @method resetView
@@ -212,13 +213,35 @@ function fetchLocationConfigError(id, error, isModal) {
 }
 
 /**
- * @method addLocationData
+ * @method addViewLocationData
  * @summary save geolocation data in the store
  */
 export function addViewLocationData(id, locationData, isModal) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
     payload: { id, locationData, isModal },
+  };
+}
+
+/**
+ * @method updateViewSuccess
+ * @summary success when updating view's properties
+ */
+export function updateViewSuccess({ id, data, isModal }) {
+  return {
+    type: UPDATE_VIEW_DATA_SUCCESS,
+    payload: { id, data, isModal },
+  };
+}
+
+/**
+ * @method updateViewError
+ * @summary failure when updating view's properties
+ */
+export function updateViewError(id, error, isModal) {
+  return {
+    type: UPDATE_VIEW_DATA_ERROR,
+    payload: { id, error, isModal },
   };
 }
 
@@ -234,24 +257,32 @@ export function toggleIncludedView(id, showIncludedView, isModal) {
 }
 
 /**
- * @method toggleIncludedView
- * @summary success when updating view's properties
+ * @method setIncludedView
+ * @summary set id of the included view in the store
  */
-export function updateViewSuccess(id, data, isModal) {
+export function setIncludedView({
+  windowId,
+  viewId,
+  viewProfileId = null,
+} = {}) {
   return {
-    type: UPDATE_VIEW_DATA_SUCCESS,
-    payload: { id, data, isModal },
+    type: SET_INCLUDED_VIEW,
+    payload: { id: windowId, viewId, viewProfileId },
   };
 }
 
 /**
- * @method toggleIncludedView
- * @summary failure when updating view's properties
+ * @method unsetIncludedView
+ * @summary reset included view's id in the store
  */
-export function updateViewError(id, error, isModal) {
+export function unsetIncludedView({
+  windowId,
+  viewId,
+  forceClose = false,
+} = {}) {
   return {
-    type: UPDATE_VIEW_DATA_ERROR,
-    payload: { id, error, isModal },
+    type: UNSET_INCLUDED_VIEW,
+    payload: { id: windowId, viewId, forceClose },
   };
 }
 
@@ -317,12 +348,12 @@ export function fetchDocument({
         ) {
           const row = response.data.result[0];
           const includedWindowId = row.supportIncludedViews
-            ? state.listHandler.includedView.windowType ||
+            ? state.viewHandler.includedView.windowId ||
               row.includedView.windowType ||
               row.includedView.windowId
             : null;
           const includedViewId = row.supportIncludedViews
-            ? state.listHandler.includedView.viewId || row.includedView.viewId
+            ? state.viewHandler.includedView.viewId || row.includedView.viewId
             : null;
 
           dispatch(
@@ -489,13 +520,11 @@ export function showIncludedView({
     }
 
     if (showIncludedView) {
-      dispatch(setListIncludedView({ windowType: windowId, viewId }));
+      dispatch(setIncludedView({ windowId, viewId }));
     }
 
     if (!showIncludedView) {
-      dispatch(
-        closeListIncludedView({ windowType: windowId, viewId, forceClose })
-      );
+      dispatch(unsetIncludedView({ windowId, viewId, forceClose }));
     }
   };
 }
@@ -513,7 +542,9 @@ export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
         const updatedData = {
           headerProperties: response.data,
         };
-        dispatch(updateViewSuccess(windowId, updatedData, isModal));
+        dispatch(
+          updateViewSuccess({ id: windowId, data: updatedData, isModal })
+        );
       })
       .catch((error) => {
         dispatch(updateViewError(windowId, error, isModal));

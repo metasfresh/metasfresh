@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<properties>
+		<migration-sql-basedir></migration-sql-basedir>
+	</properties>
+
+	<groupId>de.metas.manufacturing</groupId>
+	<artifactId>de.metas.manufacturing</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Import dependency management from Spring Boot -->
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.storage</groupId>
+			<artifactId>de.metas.storage</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-planning</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<!--
+			Lombok
+			See https://github.com/metasfresh/metasfresh/issues/1125
+			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
+			Also note that the version is managed by spring-boot.
+		 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

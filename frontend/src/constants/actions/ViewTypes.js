@@ -117,3 +117,15 @@ export const UPDATE_VIEW_DATA_ERROR = 'UPDATE_VIEW_DATA_ERROR';
  * @type {string} Update view data success
  */
 export const UPDATE_VIEW_DATA_SUCCESS = 'UPDATE_VIEW_DATA_SUCCESS';
+
+/**
+ * @constant
+ * @type {string} Store the included view's windowId
+ */
+export const SET_INCLUDED_VIEW = 'SET_INCLUDED_VIEW';
+
+/**
+ * @constant
+ * @type {string} Remove the included view's windowId
+ */
+export const UNSET_INCLUDED_VIEW = 'UNSET_INCLUDED_VIEW';

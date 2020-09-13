@@ -29,10 +29,13 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
+
+import javax.annotation.Nullable;
 
 @UtilityClass
 public class RouteBuilderCommonUtil
@@ -75,15 +78,36 @@ public class RouteBuilderCommonUtil
 	 */
 	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder, @NonNull final String routeId, @NonNull final String uploadURI)
 	{
+		final var maximumRedeliveries = resolveProperty(routeBuilder.getContext(),"siro.ftp.upload.deliver.retries", "0");
+
 		routeBuilder
 				.from(routeBuilder.direct(routeId))
 				.routeId(routeId)
 				.errorHandler(routeBuilder.defaultErrorHandler()
-						.maximumRedeliveries(0)
+						.maximumRedeliveries(Integer.parseInt(maximumRedeliveries))
 						.redeliveryDelay(10000)
 						.logHandled(true)
 						.retryAttemptedLogLevel(LoggingLevel.INFO)
 				)
 				.to(uploadURI);
+	}
+
+	@NonNull
+	public String resolveProperty(
+			@NonNull final CamelContext context,
+			@NonNull final String property,
+			@Nullable final String defaultValue)
+	{
+		final var propertyOpt = context
+				.getPropertiesComponent()
+				.resolveProperty(property);
+		if (defaultValue != null)
+		{
+			return propertyOpt.orElse(defaultValue);
+		}
+		else
+		{
+			return propertyOpt.orElseThrow(() -> new RuntimeCamelException("Missing property " + property));
+		}
 	}
 }

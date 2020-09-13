@@ -312,7 +312,7 @@ const mapStateToProps = (state) => ({
   pluginModal: state.windowHandler.pluginModal,
   overlay: state.windowHandler.overlay,
   indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
+  includedView: state.viewHandler.includedView,
   allowShortcut: state.windowHandler.allowShortcut,
   enableTutorial: state.appHandler.enableTutorial,
   processStatus: state.appHandler.processStatus,

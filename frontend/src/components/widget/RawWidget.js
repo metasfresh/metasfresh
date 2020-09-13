@@ -4,7 +4,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
-
+import _ from 'lodash';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
@@ -111,7 +111,7 @@ export class RawWidget extends Component {
   shouldComponentUpdate(nextProps) {
     switch (this.props.widgetType) {
       case 'YesNo':
-        return nextProps.widgetData[0].value !== this.props.widgetData[0].value;
+        return !_.isEqual(nextProps.widgetData[0], this.props.widgetData[0]);
 
       default:
         return true;

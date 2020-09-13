@@ -72,10 +72,7 @@ public interface ITaxBL extends ISingletonService
 	/**
 	 * Calculate Tax - no rounding
 	 *
-	 * @param tax
-	 * @param amount amount
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net
-	 * @param scale scale
 	 * @return tax amount
 	 */
 	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);

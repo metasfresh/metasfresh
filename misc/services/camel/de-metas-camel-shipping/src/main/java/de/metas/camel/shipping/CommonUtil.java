@@ -22,28 +22,32 @@
 
 package de.metas.camel.shipping;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.spi.PropertiesComponent;
+
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
 import de.metas.common.filemaker.PRODUCT;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.shipping.JsonProduct;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.spi.PropertiesComponent;
-
-import javax.annotation.Nullable;
-import java.util.regex.Pattern;
 
 @UtilityClass
 public class CommonUtil
 {
 	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
-			final @NonNull Exchange exchange,
+			final String databaseName,
 			final int numberOfItems)
 	{
-		final String databaseName = exchange.getContext().resolvePropertyPlaceholders("{{receiptCandidate.FMPXMLRESULT.DATABASE.NAME}}");
-
 		return FMPXMLRESULT.builder()
 				.errorCode("0")
 				.product(new PRODUCT())
@@ -54,7 +58,17 @@ public class CommonUtil
 	}
 
 	@NonNull
-	public String extractOrgPrefix(
+	public String extractProductNo(
+			@NonNull final PropertiesComponent propertiesComponent,
+			@NonNull final JsonProduct product,
+			@NonNull final String orgCode)
+	{
+		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, orgCode);
+		return artikelNummerPrefix + product.getProductNo();
+	}
+
+	@NonNull
+	private String extractOrgPrefix(
 			@NonNull final PropertiesComponent propertiesComponent,
 			@NonNull final String orgCode)
 	{
@@ -83,4 +97,19 @@ public class CommonUtil
 		}
 		return matcher.group(2);
 	}
+
+	public JsonError createJsonError(@NonNull final Throwable throwable)
+	{
+		final StringWriter sw = new StringWriter();
+		throwable.printStackTrace(new PrintWriter(sw));
+		final String stackTrace = sw.toString();
+
+		return JsonError.ofSingleItem(
+				JsonErrorItem.builder()
+						.message(throwable.getMessage())
+						.detail("Exception-Class=" + throwable.getClass().getName())
+						.stackTrace(stackTrace)
+						.build());
+	}
+
 }

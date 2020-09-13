@@ -1,7 +1,7 @@
 package de.metas.handlingunits.quarantine;
 
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.springframework.stereotype.Component;
 
@@ -71,7 +71,7 @@ public class QuarantineAttributeStorageListener implements IAttributeStorageList
 		}
 
 		final AttributeCode attributeCode = attributeValue.getAttributeCode();
-		final boolean relevantAttributeHasChanged = LotNumberDateAttributeDAO.ATTR_LotNumber.equals(attributeCode);
+		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_LotNumber.equals(attributeCode);
 
 		if (!relevantAttributeHasChanged)
 		{

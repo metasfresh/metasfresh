@@ -7,10 +7,13 @@ converts this between JSON (metasfresh) to XML and reads/writes that XML to disk
 
 | Logistics-Provider (xml `DATABASE/NAME`)| metasfresh (DB `Tabelle`) | 
 | ---- | ---------------------- |
-| aussendung (`bodymed_aussendungen_v2.fmp12`) | Shipment/Lieferung (`M_InOut`) |
-| wareneingang (`bodymed_wareneingang_v2.fmp12`) | Receipt/Wareneingang (`M_InOut`) |
-| anlieferung (`bodymed_anlieferung_v2.fmp12`) | Wareneingangsdispo/Receipt Schedule (`M_ReceiptSchedule`) |
-| bestellung (`bodymed_bestellung_v2.fmp12`) | Lieferdispo/Shipment Schedule (`M_ShipmentSchedule`) |
+| aussendung (`bodymed_aussendungen_v5.fmp12`) | Shipment/Lieferung (`M_InOut`) |
+| wareneingang (`bodymed_wareneingang_v5.fmp12`) | Receipt/Wareneingang (`M_InOut`) |
+| anlieferung (`bodymed_anlieferung_v4.fmp12`) | Wareneingangsdispo/Receipt Schedule (`M_ReceiptSchedule`) |
+| bestellung (`bodymed_bestellung_v4.fmp12`) | Lieferdispo/Shipment Schedule (`M_ShipmentSchedule`) |
+| lage(r)scan (`siro_lagescan_v1.fmp12`) | Inventory (`M_Inventory`)
+| stuecklisten (`bodymed_stuecklisten_v3.fmp12`) | production order mf => siro (`PP_Order`)
+| vorkonfektioniert (`siro_vorkonfektioniertist_v2.fmp12`) |  production "report" siro => mf (`PP_Order`)
 
 
 # How to deploy it

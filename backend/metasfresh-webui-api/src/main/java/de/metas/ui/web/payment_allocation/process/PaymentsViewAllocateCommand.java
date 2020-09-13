@@ -31,6 +31,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -42,7 +43,6 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -159,7 +159,7 @@ public class PaymentsViewAllocateCommand
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 		final CurrencyCode currencyCode = moneyService.getCurrencyCodeByCurrencyId(currencyId);
-		if (row.getServiceFeeAmt() != null && !Amount.zero(currencyCode).equals(row.getServiceFeeAmt()))
+		if (hasServiceFeesToPay(row, currencyCode))
 		{
 			if (paymentDocuments.size() != 1)
 			{
@@ -172,7 +172,7 @@ public class PaymentsViewAllocateCommand
 
 			final Optional<InvoiceProcessingFeeCalculation> calculatedFeeOptional = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
-							.orgId(row.getOrgId())
+							.orgId(row.getClientAndOrgId().getOrgId())
 							.paymentDate(paymentDate)
 							.customerId(row.getBPartnerId())
 							.invoiceId(row.getInvoiceId())
@@ -196,7 +196,6 @@ public class PaymentsViewAllocateCommand
 		final SOTrx soTrx = row.getDocBaseType().getSoTrx();
 
 		return PayableDocument.builder()
-				.orgId(row.getOrgId())
 				.invoiceId(row.getInvoiceId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
@@ -210,7 +209,15 @@ public class PaymentsViewAllocateCommand
 						.build()
 						.negateIf(soTrx.isPurchase()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.date(row.getDateInvoiced())
+				.clientAndOrgId(row.getClientAndOrgId())
+				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
 				.build();
+	}
+
+	private static boolean hasServiceFeesToPay(final @NonNull InvoiceRow row, final CurrencyCode currencyCode)
+	{
+		return row.getServiceFeeAmt() != null && !row.getServiceFeeAmt().isZero();
 	}
 
 	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)
@@ -226,7 +233,6 @@ public class PaymentsViewAllocateCommand
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 
 		return PaymentDocument.builder()
-				.orgId(row.getOrgId())
 				.paymentId(row.getPaymentId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
@@ -234,6 +240,8 @@ public class PaymentsViewAllocateCommand
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())
+				.clientAndOrgId(row.getClientAndOrgId())
+				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
 				.build();
 	}
 
