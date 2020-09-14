@@ -389,8 +389,10 @@ public class CanonicalXSDGenerator
 
 				final Element e = document.createElement(XSD_ELEMENT);
 				e.setAttribute(XSD_NAME, line.getValue());
-				e.setAttribute(XSD_MIN_OCCURS, line.isMandatory() ? "1" : "0");
-				e.setAttribute(XSD_MAX_OCCURS, "1");
+				if(!line.isMandatory())
+				{
+					e.setAttribute(XSD_MIN_OCCURS, "0");
+				}
 
 				if ((displayType == DisplayType.List
 						|| displayType == DisplayType.Button) // 05231 (al): encountered case with button on EDI_ExportStatus
@@ -464,11 +466,7 @@ public class CanonicalXSDGenerator
 					e.setAttribute(XSD_NAME, line.getValue());
 					e.setAttribute(XSD_TYPE, embededFormat.getValue() + NAME_TypeSuffix);
 					e.setAttribute(XSD_MIN_OCCURS, "0");
-					if (X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(line.getType()))
-					{
-						e.setAttribute(XSD_MAX_OCCURS, "1");
-					}
-					else
+					if (!X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(line.getType()))
 					{
 						e.setAttribute(XSD_MAX_OCCURS, "unbounded");
 					}
