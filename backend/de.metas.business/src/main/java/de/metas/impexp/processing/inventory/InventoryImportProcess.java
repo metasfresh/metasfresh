@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -17,7 +18,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Inventory;
@@ -63,7 +63,6 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -216,12 +215,32 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
+		if (!Check.isBlank(importRecord.getAttributeCode1()))
+		{
+			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode1().trim());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString1());
+		}
+		if (!Check.isBlank(importRecord.getAttributeCode2()))
+		{
+			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode2().trim());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString2());
+		}
+		if (!Check.isBlank(importRecord.getAttributeCode3()))
+		{
+			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode3().trim());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString3());
+		}
+		if (!Check.isBlank(importRecord.getAttributeCode4()))
+		{
+			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode4().trim());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString4());
+		}
+
 		//
 		// Lot
-		if (!Check.isEmpty(importRecord.getLot(), true))
+		if (!Check.isBlank(importRecord.getLot()))
 		{
-			final AttributeId lotNumberAttrId = lotNumberDateAttributeDAO.getLotNumberAttributeId();
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, lotNumberAttrId, importRecord.getLot());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_LotNumber, importRecord.getLot());
 		}
 
 		//
@@ -233,7 +252,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 
 		//
 		// TE
-		if (!Check.isEmpty(importRecord.getTE(), true))
+		if (!Check.isBlank(importRecord.getTE()))
 		{
 			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_TE, importRecord.getTE());
 		}
