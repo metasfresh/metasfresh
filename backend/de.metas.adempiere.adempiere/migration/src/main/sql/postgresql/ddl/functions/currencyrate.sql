@@ -2,18 +2,20 @@
 
 -- DROP FUNCTION currencyrate(numeric, numeric, timestamp with time zone, numeric, numeric, numeric);
 
+DROP FUNCTION IF EXISTS currencyrate(p_curfrom_id numeric, p_curto_id numeric, p_convdate timestamp with time zone, p_conversiontype_id numeric, p_client_id numeric, p_org_id numeric);
+
 CREATE OR REPLACE FUNCTION currencyrate(p_curfrom_id numeric, p_curto_id numeric, p_convdate timestamp with time zone, p_conversiontype_id numeric, p_client_id numeric, p_org_id numeric)
   RETURNS numeric AS
 $BODY$
-	
+
 /*************************************************************************
  * The contents of this file are subject to the Compiere License.  You may
- * obtain a copy of the License at    http://www.compiere.org/license.html 
- * Software is on an  "AS IS" basis,  WITHOUT WARRANTY OF ANY KIND, either 
+ * obtain a copy of the License at    http://www.compiere.org/license.html
+ * Software is on an  "AS IS" basis,  WITHOUT WARRANTY OF ANY KIND, either
  * express or implied. See the License for details. Code: Compiere ERP+CRM
  * Copyright (C) 1999-2001 Jorg Janke, ComPiere, Inc. All Rights Reserved.
  *
- * converted to postgreSQL by Karsten Thiemann (Schaeffer AG), 
+ * converted to postgreSQL by Karsten Thiemann (Schaeffer AG),
  * kthiemann@adempiere.org
  *************************************************************************
  ***
@@ -24,8 +26,8 @@ $BODY$
  * Test
  *		SELECT currencyrate(116, 100, null, null, null, null) FROM AD_System;  => .647169
  ************************************************************************/
-	
-	
+
+
 DECLARE
 	--	Currency From variables
 	cf_IsEuro		CHAR(1);
@@ -45,11 +47,11 @@ DECLARE
 	v_ConvDate		timestamp with time zone := trunc(now(), 'DD');
 	v_ConversionType_ID	NUMERIC := 0;
 	v_Rate			NUMERIC;
-	c			RECORD;			
+	c			RECORD;
 
 BEGIN
 	-- NOTE to developer: keep in sync with org.adempiere.service.impl.CurrencyDAO.retrieveDefaultConversionType(Properties, int, int, Date)
-	
+
 --	No Conversion
 	IF (p_CurFrom_ID = p_CurTo_ID) THEN
 		RETURN 1;
@@ -58,7 +60,7 @@ BEGIN
 	IF (p_ConvDate IS NOT NULL) THEN
 		v_ConvDate := p_ConvDate;   --  SysDate
 	END IF;
-	
+
 	--
     --  Default Conversion Type
 	IF (p_ConversionType_ID IS NULL OR p_ConversionType_ID <= 0)
@@ -140,6 +142,7 @@ BEGIN
 		FOR c IN SELECT	MultiplyRate
 			FROM	C_Conversion_Rate
 			WHERE	C_Currency_ID=v_CurrencyFrom AND C_Currency_ID_To=v_CurrencyTo
+              AND   IsActive='Y'
 			  AND	C_ConversionType_ID=v_ConversionType_ID
 			  AND	v_ConvDate BETWEEN ValidFrom AND ValidTo
 			  AND	AD_Client_ID IN (0,p_Client_ID) AND AD_Org_ID IN (0,p_Org_ID)
@@ -171,7 +174,7 @@ EXCEPTION WHEN OTHERS THEN
 	RAISE NOTICE '%', SQLERRM;
 	RETURN NULL;
 
-	
+
 END;
 
 $BODY$

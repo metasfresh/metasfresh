@@ -167,10 +167,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates all ICs that have the given <code>headerAggregationKey</code>.
-	 *
-	 * @param ctx
-	 * @param headerAggregationKey
-	 * @param trxName
 	 */
 	void invalidateCandsForHeaderAggregationKey(Properties ctx, String headerAggregationKey, String trxName);
 
@@ -319,9 +315,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Checks if the given <code>ic</code> is referenced by a <code>C_Invoice_Candidate_Recompute</code> record. The check is made within the ic's transaction.<br>
 	 * Please use this method instead of calling the SQL-column based {@link I_C_Invoice_Candidate#isToRecompute()}.
-	 *
-	 * @param ic
-	 * @return
 	 */
 	boolean isToRecompute(I_C_Invoice_Candidate ic);
 

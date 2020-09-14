@@ -28,6 +28,7 @@ import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidat
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument.PaymentDocumentType;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
@@ -66,6 +67,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
@@ -121,6 +123,8 @@ public class PaymentsViewAllocateCommandTest
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		bpartnerId = createBPartnerId();
+
+		SpringContextHolder.registerJUnitBean(moneyService);
 	}
 
 	private BPartnerId createBPartnerId()
@@ -313,7 +317,6 @@ public class PaymentsViewAllocateCommandTest
 			}
 		}
 
-
 		@Test
 		public void paymentDateInValidFrom()
 		{
@@ -334,7 +337,6 @@ public class PaymentsViewAllocateCommandTest
 			// Check output
 			checkPayableDocument(payableDocument, invoiceRow.getInvoiceId(), paymentDate, feeCompanyBPid2);
 		}
-
 
 		@Test
 		public void paymentDateBeforeValidFrom()

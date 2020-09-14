@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
@@ -49,16 +50,26 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -103,8 +114,10 @@ public class PaymentAllocationBuilderTest
 	private int nextInvoiceId = 1;
 	private int nextPaymentId = 1;
 	private final OrgId adOrgId = OrgId.ofRepoId(1000000); // just a dummy value
+	private final ClientId clientId = ClientId.ofRepoId(1000000); // just a dummy value
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
 	private CurrencyId euroCurrencyId;
+	private CurrencyId chfCurrencyId;
 	private Map<InvoiceDocBaseType, I_C_DocType> invoiceDocTypes;
 
 	@BeforeEach
@@ -119,13 +132,23 @@ public class PaymentAllocationBuilderTest
 		invoicesDAO = Services.get(IInvoiceDAO.class);
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		chfCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 		invoiceDocTypes = new HashMap<>();
+
+		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
+
 	}
 
 	private Money euro(final String amount)
 	{
-		final BigDecimal amountBD = !Check.isEmpty(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
-		return Money.of(amountBD, euroCurrencyId);
+		return money(amount, euroCurrencyId);
+	}
+
+	private Money money(final String amount, CurrencyId currencyId)
+	{
+		final BigDecimal amountBD = Check.isNotBlank(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
+		currencyId = currencyId == null ? euroCurrencyId : currencyId;
+		return Money.of(amountBD, currencyId);
 	}
 
 	private void assertExpected(final List<AllocationLineCandidate> candidatesExpected, final PaymentAllocationBuilder builder)
@@ -200,16 +223,19 @@ public class PaymentAllocationBuilderTest
 			final String discount,
 			final String writeOff,
 			final String invoiceProcessingFee,
-			final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
+			final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			@Nullable final CurrencyId currency)
 	{
-		final Money openAmt = euro(open);
+		final Money openAmt = money(open, currency);
 
 		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
-				.payAmt(euro(pay))
-				.discountAmt(euro(discount))
-				.writeOffAmt(euro(writeOff))
-				.invoiceProcessingFee(euro(invoiceProcessingFee))
+				.payAmt(money(pay, currency))
+				.discountAmt(money(discount, currency))
+				.writeOffAmt(money(writeOff, currency))
+				.invoiceProcessingFee(money(invoiceProcessingFee, currency))
 				.build();
+
+		final LocalDate acctDate = LocalDate.of(2020, Month.SEPTEMBER, 4);
 
 		//
 		// Create the invoice record (needed for the BL which calculates how much was allocated)
@@ -227,17 +253,17 @@ public class PaymentAllocationBuilderTest
 			invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
 			invoice.setC_DocType_ID(docType.getC_DocType_ID());
 			invoice.setIsSOTrx(docType.isSOTrx());
-			invoice.setDateInvoiced(TimeUtil.asTimestamp(date));
+			invoice.setDateInvoiced(TimeUtil.asTimestamp(acctDate));
 			invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 			invoice.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoice.setGrandTotal(invoiceGrandTotal.toBigDecimal());
 			invoice.setProcessed(true);
 			invoice.setDocStatus(IDocument.STATUS_Completed);
+			invoice.setDateAcct(TimeUtil.asTimestamp(acctDate));
 			InterfaceWrapperHelper.saveRecord(invoice);
 		}
 
 		return PayableDocument.builder()
-				.orgId(adOrgId)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.documentNo(invoice.getDocumentNo())
@@ -246,6 +272,8 @@ public class PaymentAllocationBuilderTest
 				.openAmt(openAmt)
 				.amountsToAllocate(amountsToAllocate)
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(clientId, adOrgId))
+				.date(acctDate)
 				.build();
 	}
 
@@ -268,8 +296,11 @@ public class PaymentAllocationBuilderTest
 	private PaymentDocument newPayment0(
 			@NonNull final PaymentDirection direction,
 			final String open,
-			final String amtToAllocate)
+			final String amtToAllocate,
+			@Nullable CurrencyId currency)
 	{
+		currency = currency == null ? euroCurrencyId : currency;
+
 		//
 		// Create a dummy record (needed for the BL which calculates how much was allocated)
 		final int paymentId = nextPaymentId++;
@@ -277,22 +308,22 @@ public class PaymentAllocationBuilderTest
 		payment.setC_Payment_ID(paymentId);
 		payment.setDocumentNo("PaymentDocNo" + paymentId);
 		payment.setC_BPartner_ID(bpartnerId.getRepoId());
-		payment.setC_Currency_ID(euroCurrencyId.getRepoId());
+		payment.setC_Currency_ID(currency.getRepoId());
 		InterfaceWrapperHelper.save(payment);
 
 		return PaymentDocument.builder()
-				.orgId(adOrgId)
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.documentNo(payment.getDocumentNo())
 				.paymentDirection(direction)
-				.openAmt(euro(open)
-				// .negateIf(direction.isOutboundPayment())
+				.openAmt(money(open, currency)
+						// .negateIf(direction.isOutboundPayment())
 				)
-				.amountToAllocate(euro(amtToAllocate)
-				// .negateIf(direction.isOutboundPayment())
+				.amountToAllocate(money(amtToAllocate, currency)
+						// .negateIf(direction.isOutboundPayment())
 				)
 				.dateTrx(LocalDate.of(2020, Month.JANUARY, 1))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(clientId, adOrgId))
 				.build();
 	}
 
@@ -307,7 +338,9 @@ public class PaymentAllocationBuilderTest
 			@Nullable final String invoiceProcessingFee,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
 			@Nullable final String overUnderAmt,
-			@Nullable final String paymentOverUnderAmt)
+			@Nullable final String paymentOverUnderAmt,
+			@Nullable final CurrencyId currency
+	)
 	{
 		return AllocationLineCandidate.builder()
 				.type(type)
@@ -321,13 +354,13 @@ public class PaymentAllocationBuilderTest
 				.dateAcct(date)
 				//
 				.amounts(AllocationAmounts.builder()
-						.payAmt(euro(allocatedAmt))
-						.discountAmt(euro(discountAmt))
-						.writeOffAmt(euro(writeOffAmt))
-						.invoiceProcessingFee(euro(invoiceProcessingFee))
+						.payAmt(money(allocatedAmt, currency))
+						.discountAmt(money(discountAmt, currency))
+						.writeOffAmt(money(writeOffAmt, currency))
+						.invoiceProcessingFee(money(invoiceProcessingFee, currency))
 						.build())
-				.payableOverUnderAmt(euro(overUnderAmt))
-				.paymentOverUnderAmt(euro(paymentOverUnderAmt))
+				.payableOverUnderAmt(money(overUnderAmt, currency))
+				.paymentOverUnderAmt(money(paymentOverUnderAmt, currency))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				//
 				.build();
@@ -404,6 +437,148 @@ public class PaymentAllocationBuilderTest
 	//
 	//
 
+	@Nested
+	class DifferentCurrencies
+	{
+		@Test
+		void oneSalesInvoice_OnePayment()
+		{
+			createConversionRates(3);
+
+			final PaymentDocument payment;
+			final PayableDocument invoice;
+			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+					// Invoices
+					ImmutableList.of(
+							invoice = invoice().type(CustomerInvoice).currency(euroCurrencyId).open("9000").pay("6000").discount("1599").writeOff("401").build()
+					),
+					// Payments
+					ImmutableList.of(
+							payment = payment().direction(INBOUND).currency(chfCurrencyId).open("18000").amtToAllocate("18000").build()
+					));
+
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					allocation().type(InvoiceToPayment)
+							.payableRef(invoice.getReference())
+							.paymentRef(payment.getReference())
+							.allocatedAmt("6000").discountAmt("1599").writeOffAmt("401").overUnderAmt("1000")
+							.paymentOverUnderAmt("0")
+							.build()
+			);
+
+			//
+			// Check
+			assertExpected(candidatesExpected, builder);
+			//
+			assertInvoiceAllocatedAmt(invoice.getInvoiceId(), 6000 + 1599 + 401);
+			assertInvoiceAllocated(invoice.getInvoiceId(), false);
+			//
+			assertPaymentAllocatedAmt(payment.getPaymentId(), 18000);
+		}
+
+		@Test
+		public void test_CustomerInvoiceAndCreditMemo_NoPayments()
+		{
+			createConversionRates(3);
+
+			final PayableDocument invoice1, invoice2;
+			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+					// Invoices
+					ImmutableList.of(
+							invoice1 = invoice().type(CustomerInvoice).currency(chfCurrencyId).open("5000").pay("999").build(),
+							invoice2 = invoice().type(CustomerCreditMemo).currency(euroCurrencyId).open("-333").pay("-333").build())
+					// Payments
+					, ImmutableList.of());
+
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					allocation().type(InvoiceToCreditMemo)
+							.currency(chfCurrencyId)
+							.payableRef(invoice1.getReference())
+							.paymentRef(invoice2.getReference())
+							.allocatedAmt("999")
+							.overUnderAmt("4001")
+							.build());
+
+			//
+			// Check
+			assertExpected(candidatesExpected, builder);
+			//
+			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +999);
+			assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+			//
+			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -333);
+			assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		}
+
+		@Test
+		@Disabled("Should be fixed in https://github.com/metasfresh/metasfresh/issues/9910")
+		public void test_NoInvoices_TwoPayments()
+		{
+			/*
+			 * Note to future developer:
+			 * This is just copy-pasta from a different test.
+			 * The expected numbers here are wrong and should be fixed.
+			 */
+			final PaymentDocument payment1, payment2;
+			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+					// Invoices
+					ImmutableList.of()
+					// Payments
+					, ImmutableList.of(
+							payment1 = payment().direction(OUTBOUND).currency(chfCurrencyId).open("-5000").amtToAllocate("-5000").build(),
+							payment2 = payment().direction(INBOUND).currency(euroCurrencyId).open("5000").amtToAllocate("5000").build()));
+
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					allocation().type(InboundPaymentToOutboundPayment)
+							.payableRef(payment1.getReference())
+							.paymentRef(payment2.getReference())
+							.allocatedAmt("-5000")
+							.build());
+
+			//
+			// Check
+			assertExpected(candidatesExpected, builder);
+			assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
+			assertPaymentAllocatedAmt(payment2.getPaymentId(), +5000);
+		}
+
+		/**
+		 * multiplyRate for EURO is set; multiplyRate for CHF is derived
+		 * <p>
+		 * example:
+		 * 1 euro = 10 chf and
+		 * 1 chf  = 0.1 euro (1/10)
+		 */
+		void createConversionRates(final double multiplyRate)
+		{
+			final CurrencyConversionTypeId conversionType = Services.get(ICurrencyDAO.class).getConversionTypeId(ConversionTypeMethod.Spot);
+
+			final I_C_Conversion_Rate euroChfRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
+			euroChfRate.setC_ConversionType_ID(conversionType.getRepoId());
+			euroChfRate.setC_Currency_ID(euroCurrencyId.getRepoId());
+			euroChfRate.setC_Currency_ID_To(chfCurrencyId.getRepoId());
+			euroChfRate.setMultiplyRate(BigDecimal.valueOf(multiplyRate));
+			euroChfRate.setValidFrom(TimeUtil.asTimestamp(date.minusYears(5))); // using +- 5 years because there are different dates used when creating the Invoices and Payments
+			euroChfRate.setValidTo(TimeUtil.asTimestamp(date.plusYears(5)));
+			InterfaceWrapperHelper.save(euroChfRate);
+
+			final I_C_Conversion_Rate chfEuroRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
+			chfEuroRate.setC_ConversionType_ID(conversionType.getRepoId());
+			chfEuroRate.setC_Currency_ID(chfCurrencyId.getRepoId());
+			chfEuroRate.setC_Currency_ID_To(euroCurrencyId.getRepoId());
+			chfEuroRate.setMultiplyRate(BigDecimal.ONE.divide(BigDecimal.valueOf(multiplyRate), 13, RoundingMode.HALF_UP));
+			chfEuroRate.setValidFrom(TimeUtil.asTimestamp(date.minusYears(5)));
+			chfEuroRate.setValidTo(TimeUtil.asTimestamp(date.plusYears(5)));
+			InterfaceWrapperHelper.save(chfEuroRate);
+		}
+	}
+
 	@Test
 	public void test_NoDocuments()
 	{
@@ -420,7 +595,7 @@ public class PaymentAllocationBuilderTest
 				ImmutableList.of(
 						invoice1 = invoice().type(VendorInvoice).open("-8000").pay("0").discount("-100").writeOff("-200").build())
 				// Payments
-				, ImmutableList.<PaymentDocument> of());
+				, ImmutableList.<PaymentDocument>of());
 
 		//
 		// Define expected candidates
@@ -473,7 +648,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.<PayableDocument> asList()
+				ImmutableList.of()
 				// Payments
 				, ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(),
@@ -501,7 +676,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2, payment3;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.<PayableDocument> asList()
+				Arrays.<PayableDocument>asList()
 				// Payments
 				, ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(), //
@@ -541,7 +716,7 @@ public class PaymentAllocationBuilderTest
 						invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
 						invoice2 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").build())
 				// Payments
-				, ImmutableList.<PaymentDocument> of());
+				, ImmutableList.<PaymentDocument>of());
 
 		//
 		// Define expected candidates
@@ -574,7 +749,7 @@ public class PaymentAllocationBuilderTest
 						invoice = invoice().type(VendorInvoice).open("-5000").pay("-1000").build(),
 						creditMemo = invoice().type(VendorCreditMemo).open("1000").pay("1000").build()),
 				// Payments
-				ImmutableList.<PaymentDocument> of());
+				ImmutableList.<PaymentDocument>of());
 
 		//
 		// Define expected candidates
@@ -613,7 +788,7 @@ public class PaymentAllocationBuilderTest
 							invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
 							invoice2 = invoice().type(VendorInvoice).open("-1000").pay("-1000").build())
 					// Payments
-					, ImmutableList.<PaymentDocument> of());
+					, ImmutableList.<PaymentDocument>of());
 		}
 
 		@Test

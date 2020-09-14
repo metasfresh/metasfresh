@@ -102,6 +102,32 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * General Database Interface
+ *
+ * @author Jorg Janke
+ * @author Ashley Ramdass (Posterita)
+ * <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
+ * connections set rw/ro properties for the connection accordingly.
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ * <li>BF [ 1647864 ] WAN: delete record error
+ * <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
+ * <li>FR [ 1904460 ] DB.executeUpdate should handle
+ * Boolean params
+ * <li>BF [ 1962568 ] DB.executeUpdate should handle null params
+ * <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
+ * <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
+ * Object[], String)
+ * <li>BF [ 2030233 ] Remove duplicate code from DB class
+ * <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
+ * <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
+ * <li>FR
+ * [ 2781053 ] Introduce DB.getValueNamePairs
+ * <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
+ * https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
+ * @author Teo Sarca, teo.sarca@gmail.com
+ * <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
+ * <li>FR [
+ * 2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
+ * @version $Id: DB.java,v 1.8 2006/10/09 00:22:29 jjanke Exp $ ---
  */
 @UtilityClass
 public class DB
@@ -969,11 +995,9 @@ public class DB
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @param sql
 	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @return number of rows updated
-	 * @throws DBException
 	 */
 	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
 	{
@@ -984,12 +1008,10 @@ public class DB
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @param sql
 	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @param timeOut optional timeOut parameter
 	 * @return number of rows updated
-	 * @throws DBException
 	 */
 	public int executeUpdateEx(final String sql, final Object[] params, final String trxName, final int timeOut) throws DBException
 	{
@@ -2359,8 +2381,6 @@ public class DB
 	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
-	 * @param columnName
-	 * @param paramsIn
 	 * @param paramsOut  if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
@@ -2750,7 +2770,8 @@ public class DB
 		T retrieveRowOrNull(ResultSet rs) throws SQLException;
 	}
 
-	public <T> List<T> retrieveRowsOutOfTrx(
+	@NonNull
+	public static <T> List<T> retrieveRowsOutOfTrx(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2758,7 +2779,8 @@ public class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
 	}
 
-	public <T> List<T> retrieveRows(
+	@NonNull
+	public static <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2766,7 +2788,8 @@ public class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
 	}
 
-	private <T> List<T> retrieveRows(
+	@NonNull
+	private static <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@Nullable final String trxName,

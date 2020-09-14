@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.quantity.QuantityTU;
-import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 
 /*
  * #%L
@@ -52,7 +52,7 @@ class HUPackingAwareBLTest
 	@Test
 	void calculateQtyTU()
 	{
-		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("Coli", IUOMDAO.X12DE355_COLI);
+		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("Coli", X12DE355.COLI);
 
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
 		orderLineRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
