@@ -2,10 +2,10 @@ import * as types from '../constants/FilterTypes';
 import { Map as iMap } from 'immutable';
 import deepUnfreeze from 'deep-unfreeze';
 
-export function clearAllFilters(data) {
+export function clearAllFilters({ id, data }) {
   return {
-    type: types.SET_CLEAR_ALL_FILTER,
-    payload: data,
+    type: types.CLEAR_ALL_FILTERS,
+    payload: { id, data },
   };
 }
 

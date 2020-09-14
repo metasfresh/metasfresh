@@ -1,5 +1,5 @@
 import * as types from '../constants/FilterTypes';
-import { produce } from 'immer';
+import { produce, original } from 'immer';
 export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
@@ -67,6 +67,19 @@ const reducer = produce((draftState, action) => {
     case types.UPDATE_WIDGET_SHOWN: {
       const { id, data } = action.payload;
       draftState[id].widgetShown = data;
+      return;
+    }
+    case types.CLEAR_ALL_FILTERS: {
+      const { id, data } = action.payload;
+      const currentFilters = original(draftState[id]);
+      if (currentFilters) {
+        const filtersAfterClearing = currentFilters.filtersActive
+          ? currentFilters.filtersActive.filter(
+              (filterItem) => filterItem.filterId !== data.filterId
+            )
+          : [];
+        draftState[id].filtersActive = filtersAfterClearing;
+      }
       return;
     }
   }

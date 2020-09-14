@@ -8,6 +8,7 @@ import {
   updateWidgetShown,
   setNewFiltersActive,
   updateActiveFilter,
+  clearAllFilters,
 } from '../../actions/FiltersActions';
 import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
@@ -440,35 +441,14 @@ class Filters extends PureComponent {
 
   /**
    * @method clearFilters
-   * @summary ToDo: Describe the method
-   * @param {*} filterToClear
+   * @summary Clears all the filters for a specified filter group
+   * @param {*} filterToClear - object containing the filters
    */
-  clearFilters = (filterToClear, propertyName) => {
-    const { updateDocList } = this.props;
-    let { filtersActive } = this.props;
-    let activeFilters = iMap(filtersActive);
-
-    if (filtersActive.size) {
-      activeFilters = activeFilters.filter((item, id) => {
-        if (id === filterToClear.filterId) {
-          if (propertyName && item.parameters && item.parameters.length) {
-            const parametersCopy = item.parameters.filter(
-              (param) => param.parameterName !== propertyName
-            );
-
-            if (parametersCopy.length > 0) {
-              item.parameters = parametersCopy;
-
-              return item;
-            }
-            return false;
-          }
-          return false;
-        }
-        return item;
-      });
-      updateDocList(activeFilters);
-    }
+  clearFilters = (filterToClear) => {
+    const { filterId, clearAllFilters, filters, updateDocList } = this.props;
+    clearAllFilters({ id: filterId, data: filterToClear });
+    // fetch again the doc content after filters were updated into the store
+    updateDocList(filters.filtersActive);
   };
 
   /**
@@ -538,13 +518,15 @@ class Filters extends PureComponent {
       filters,
     } = this.props;
     const widgetShown = filters ? filters.widgetShown : false;
-    const { notValidFields, activeFilter, activeFiltersCaptions } = this.state;
+    const { notValidFields, activeFiltersCaptions } = this.state;
 
     if (!filters || !viewId) return false;
-    const allFilters = this.annotateFilters(filters.filterData);
 
+    const { filtersActive } = filters;
+
+    const allFilters = this.annotateFilters(filters.filterData);
     const flatActiveFilterIds =
-      activeFilter !== null ? activeFilter.map((item) => item.filterId) : [];
+      filtersActive !== null ? filtersActive.map((item) => item.filterId) : [];
 
     return (
       <div
@@ -588,7 +570,7 @@ class Filters extends PureComponent {
                   handleShow={this.handleShow}
                   applyFilters={this.applyFilters}
                   clearFilters={this.clearFilters}
-                  active={activeFilter}
+                  active={filtersActive}
                   dropdownToggled={this.dropdownToggled}
                   filtersWrapper={this.filtersWrapper}
                 />
@@ -610,7 +592,7 @@ class Filters extends PureComponent {
                   handleShow={this.handleShow}
                   applyFilters={this.applyFilters}
                   clearFilters={this.clearFilters}
-                  active={activeFilter}
+                  active={filtersActive}
                   dropdownToggled={this.dropdownToggled}
                   filtersWrapper={this.filtersWrapper}
                   key={item.filterId}
@@ -639,8 +621,6 @@ Filters.propTypes = {
   resetInitialValues: PropTypes.func.isRequired,
   viewId: PropTypes.string,
   updateDocList: PropTypes.any,
-
-  // this should be an immutable Map
   filtersActive: PropTypes.any,
   filterData: PropTypes.any,
   initialValuesNulled: PropTypes.any,
@@ -650,6 +630,7 @@ Filters.propTypes = {
   updateWidgetShown: PropTypes.func,
   updateActiveFilter: PropTypes.func,
   filters: PropTypes.object,
+  clearAllFilters: PropTypes.func,
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -670,5 +651,6 @@ export default connect(
   {
     updateWidgetShown,
     updateActiveFilter,
+    clearAllFilters,
   }
 )(Filters);
