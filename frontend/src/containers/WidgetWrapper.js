@@ -1,6 +1,10 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+
+import { allowShortcut, disableShortcut } from '../actions/WindowActions';
+import { getCellWidgetData } from '../utils/tableHelpers';
+import { getTable } from '../reducers/tables';
 
 import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
@@ -23,8 +27,16 @@ class WidgetWrapper extends PureComponent {
 }
 
 const mapStateToProps = (state, props) => {
-  const { windowHandler } = state;
-  const { dataSource, fields } = props;
+  const { windowHandler, appHandler } = state;
+  const {
+    dataSource,
+    fields,
+    tableId,
+    rowIndex,
+    colIndex,
+    isEditable,
+    supportFieldEdit,
+  } = props;
   const { data } = windowHandler.master;
 
   let widgetData = null;
@@ -40,27 +52,52 @@ const mapStateToProps = (state, props) => {
       ];
 
       break;
-
     case 'element':
       widgetData = fields.reduce((result, item) => {
         data[item.field] && result.push(data[item.field]);
 
         return result;
       }, []);
+
+      if (!widgetData.length) {
+        widgetData = [{}];
+      }
+
+      break;
+    case 'table': {
+      const table = getTable(state, tableId);
+      const rows = table.rows;
+      const cells = rows[rowIndex];
+      const columnItem = table.cols[colIndex];
+
+      widgetData = getCellWidgetData(cells, columnItem, isEditable, supportFieldEdit);
+
+      break;
+    }
+    default:
+      widgetData = [{}];
+
       break;
   }
 
   return {
-    widgetData: widgetData,
+    widgetData,
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
   };
 };
 
-WidgetWrapper.props = {
+WidgetWrapper.propTypes = {
   renderMaster: PropTypes.bool,
   dataSource: PropTypes.string.isRequired,
 };
 
 export default connect(
   mapStateToProps,
-  null
+  {
+    allowShortcut,
+    disableShortcut,
+  },
+  null,
+  { forwardRef: true }
 )(WidgetWrapper);
