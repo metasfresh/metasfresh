@@ -291,35 +291,6 @@ class Filters extends PureComponent {
   };
 
   /**
-   * @method sortFilters
-   * @summary ToDo: Describe the method
-   * @param {array} data
-   */
-  sortFilters = (data) => {
-    const { filtersActive } = this.props;
-    return {
-      frequentFilters: annotateFilters({
-        unannotatedFilters: data
-          .filter((filter) => filter.frequent)
-          .toIndexedSeq()
-          .toArray(),
-        filtersActive,
-      }),
-      notFrequentFilters: annotateFilters({
-        unannotatedFilters: data
-          .filter((filter) => !filter.frequent && !filter.static)
-          .toIndexedSeq()
-          .toArray(),
-        filtersActive,
-      }),
-      staticFilters: annotateFilters({
-        unannotatedFilters: data.filter((filter) => filter.static),
-        filtersActive,
-      }),
-    };
-  };
-
-  /**
    * @method isFilterValid
    * @summary ToDo: Describe the method
    * @param {*} filters
