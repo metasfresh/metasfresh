@@ -120,37 +120,6 @@ class Lookup extends Component {
         if (nextIndex < widgetData.length && widgetData[index].field === prop) {
           let nextProp = properties[nextIndex];
 
-          // TODO: Looks like this code was never used
-          // if (nextProp.source === 'list') {
-          //   this.linkedList.map(listComponent => {
-          //     if (listComponent && listComponent.props) {
-          //       let listProp = listComponent.props.mainProperty;
-
-          //       if (
-          //         listProp &&
-          //         Array.isArray(listProp) &&
-          //         listProp.length > 0
-          //       ) {
-          //         const listPropField = listProp[0].field;
-
-          //         if (
-          //           listComponent.activate &&
-          //           listPropField === nextProp.field
-          //         ) {
-          //           listComponent.requestListData(true, true);
-          //           listComponent.activate();
-          //         }
-          //       }
-          //     }
-          //   });
-
-          //   this.setState({
-          //     property: nextProp.field,
-          //   });
-          // } else {
-          // this.setState({
-          //   property: nextProp.field,
-          // });
           this.setState(
             {
               property: nextProp.field,
@@ -159,7 +128,6 @@ class Lookup extends Component {
               onBlurWidget && onBlurWidget();
             }
           );
-          // }
         } else if (widgetData[widgetData.length - 1].field === prop) {
           this.setState(
             {
