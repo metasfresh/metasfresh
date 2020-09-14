@@ -181,7 +181,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		try
 		{
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -286,7 +286,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@VisibleForTesting
-	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule,@NonNull final CalculateShippingDateRule calculateShippingDateType)
+	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, @NonNull final CalculateShippingDateRule calculateShippingDateType)
 	{
 		final LocalDate today = SystemTime.asLocalDate();
 
@@ -384,6 +384,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setDateOrdered(order.getDateOrdered());
 				shipment.setC_Order_ID(order.getC_Order_ID()); // TODO change if partner allow consolidation too
 				shipment.setPOReference(order.getPOReference());
+				shipment.setC_Project_ID(order.getC_Project_ID());
 
 				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
