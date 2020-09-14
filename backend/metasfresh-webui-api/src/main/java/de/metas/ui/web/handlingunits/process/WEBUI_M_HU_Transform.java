@@ -263,9 +263,9 @@ public class WEBUI_M_HU_Transform
 				.build();
 
 		final WebuiHUTransformCommandResult result = command.execute();
-		updateViewFromResult(result);
-
 		moveToWarehouse(result);
+
+		updateViewFromResult(result);
 
 		return MSG_OK;
 	}
