@@ -9,8 +9,9 @@ import {
   setNewFiltersActive,
   updateActiveFilter,
   clearAllFilters,
+  annotateFilters,
 } from '../../actions/FiltersActions';
-import { fieldValueToString } from '../../utils/tableHelpers';
+
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 import deepUnfreeze from 'deep-unfreeze';
@@ -295,24 +296,26 @@ class Filters extends PureComponent {
    * @param {array} data
    */
   sortFilters = (data) => {
+    const { filtersActive } = this.props;
     return {
-      frequentFilters: this.annotateFilters(
-        data
+      frequentFilters: annotateFilters({
+        unannotatedFilters: data
           .filter((filter) => filter.frequent)
           .toIndexedSeq()
-          .toArray()
-      ),
-      notFrequentFilters: this.annotateFilters(
-        data
+          .toArray(),
+        filtersActive,
+      }),
+      notFrequentFilters: annotateFilters({
+        unannotatedFilters: data
           .filter((filter) => !filter.frequent && !filter.static)
           .toIndexedSeq()
-          .toArray()
-      ),
-      staticFilters: this.annotateFilters(
-        data.filter((filter) => filter.static)
-      )
-        .toIndexedSeq()
-        .toArray(),
+          .toArray(),
+        filtersActive,
+      }),
+      staticFilters: annotateFilters({
+        unannotatedFilters: data.filter((filter) => filter.static),
+        filtersActive,
+      }),
     };
   };
 
@@ -328,26 +331,6 @@ class Filters extends PureComponent {
     }
 
     return true;
-  };
-
-  /**
-   * @method isFilterActive
-   * @summary ToDo: Describe the method
-   * @param {*} filterId
-   */
-  isFilterActive = (filterId) => {
-    const { activeFilter } = this.state;
-
-    if (activeFilter) {
-      // filters with only defaultValues shouldn't be set to active
-      const active = activeFilter.find(
-        (item) => item.filterId === filterId && !item.defaultVal
-      );
-
-      return typeof active !== 'undefined';
-    }
-
-    return false;
   };
 
   /**
@@ -461,48 +444,6 @@ class Filters extends PureComponent {
     });
   };
 
-  /**
-   * @method annotateFilters
-   * @summary I think it creates caption for active filters to show when the widget is closed - Kuba
-   * @param {array} unannotatedFilters
-   */
-  annotateFilters = (unannotatedFilters) => {
-    const { activeFilter } = this.state;
-
-    return unannotatedFilters.map((unannotatedFilter) => {
-      const parameter =
-        unannotatedFilter.parameters && unannotatedFilter.parameters[0];
-      const isActive = this.isFilterActive(unannotatedFilter.filterId);
-      const currentFilter = activeFilter
-        ? activeFilter.find((f) => f.filterId === unannotatedFilter.filterId)
-        : null;
-      const activeParameter =
-        parameter && isActive && currentFilter && currentFilter.parameters[0];
-
-      const filterType =
-        unannotatedFilter.parameters && activeParameter
-          ? unannotatedFilter.parameters.find(
-              (filter) => filter.parameterName === activeParameter.parameterName
-            )
-          : parameter && parameter.widgetType;
-
-      const captionValue = activeParameter
-        ? fieldValueToString({
-            fieldValue: activeParameter.valueTo
-              ? [activeParameter.value, activeParameter.valueTo]
-              : activeParameter.value,
-            fieldType: filterType,
-          })
-        : '';
-
-      return {
-        ...unannotatedFilter,
-        captionValue,
-        isActive,
-      };
-    });
-  };
-
   // RENDERING FILTERS -------------------------------------------------------
   /**
    * @method render
@@ -524,7 +465,11 @@ class Filters extends PureComponent {
 
     const { filtersActive } = filters;
 
-    const allFilters = this.annotateFilters(filters.filterData);
+    const allFilters = annotateFilters({
+      unannotatedFilters: filters.filterData,
+      filtersActive,
+    });
+
     const flatActiveFilterIds =
       filtersActive !== null ? filtersActive.map((item) => item.filterId) : [];
 

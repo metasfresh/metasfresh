@@ -1,6 +1,7 @@
 import * as types from '../constants/FilterTypes';
 import { Map as iMap } from 'immutable';
 import deepUnfreeze from 'deep-unfreeze';
+import { fieldValueToString } from '../utils/tableHelpers';
 
 export function clearAllFilters({ id, data }) {
   return {
@@ -138,4 +139,69 @@ function foundAmongActiveFilters({ storeActiveFilters, filterToAdd }) {
     if (item.filterId === filterToAdd.filterId) isPresent = true;
   });
   return isPresent;
+}
+
+/**
+ * @method isFilterActive
+ * @summary Check within the active filters array if filterId given as param is active
+ * @param {string} filterId
+ * @param {array} activeFilter
+ */
+export function isFilterActive({ filterId, filtersActive }) {
+  if (filtersActive) {
+    // filters with only defaultValues shouldn't be set to active
+    const active = filtersActive.find(
+      (item) => item.filterId === filterId && !item.defaultVal
+    );
+
+    return typeof active !== 'undefined';
+  }
+
+  return false;
+}
+
+/**
+ * @method annotateFilters
+ * @summary Creates caption for active filters to show when the widget is closed
+ * @param {array} unannotatedFilters
+ * @param {array} filtersActive
+ */
+export function annotateFilters({ unannotatedFilters, filtersActive }) {
+  filtersActive = filtersActive ? filtersActive : [];
+
+  return unannotatedFilters.map((unannotatedFilter) => {
+    const parameter =
+      unannotatedFilter.parameters && unannotatedFilter.parameters[0];
+    const isActive = isFilterActive({
+      filterId: unannotatedFilter.filterId,
+      filtersActive,
+    });
+    const currentFilter = filtersActive
+      ? filtersActive.find((f) => f.filterId === unannotatedFilter.filterId)
+      : null;
+    const activeParameter =
+      parameter && isActive && currentFilter && currentFilter.parameters[0];
+
+    const filterType =
+      unannotatedFilter.parameters && activeParameter
+        ? unannotatedFilter.parameters.find(
+            (filter) => filter.parameterName === activeParameter.parameterName
+          )
+        : parameter && parameter.widgetType;
+
+    const captionValue = activeParameter
+      ? fieldValueToString({
+          fieldValue: activeParameter.valueTo
+            ? [activeParameter.value, activeParameter.valueTo]
+            : activeParameter.value,
+          fieldType: filterType,
+        })
+      : '';
+
+    return {
+      ...unannotatedFilter,
+      captionValue,
+      isActive,
+    };
+  });
 }
