@@ -3,13 +3,9 @@ import { produce, original } from 'immer';
 export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
-  clearAll: false,
   initialValuesNulled: new Map(),
-  // activeFilter: null,
-  // activeFiltersCaptions: null,
-  // flatFiltersMap: null,
-  // notValidFields: null,
   widgetShown: false,
+  filtersCaptions: {},
 };
 
 /**
@@ -24,18 +20,6 @@ export const initialFiltersLeafState = {
 export const getEntityRelatedId = ({ windowId, viewId, docId, tabId }) => {
   return `${windowId}_${viewId ? viewId : `${docId}_${tabId}`}`;
 };
-
-// export default function filters(state = initialState, action) {
-//   switch (action.type) {
-//     case types.SET_CLEAR_ALL_FILTER: {
-//       return { ...state, clearAll: action.payload };
-//     }
-
-//     default: {
-//       return state;
-//     }
-//   }
-// }
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
@@ -80,6 +64,11 @@ const reducer = produce((draftState, action) => {
           : [];
         draftState[id].filtersActive = filtersAfterClearing;
       }
+      return;
+    }
+    case types.UPDATE_FILTERS_CAPTIONS: {
+      const { id, filtersCaptions } = action.payload;
+      draftState[id].filtersCaptions = filtersCaptions;
       return;
     }
   }

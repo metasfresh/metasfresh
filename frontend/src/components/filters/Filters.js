@@ -10,6 +10,7 @@ import {
   updateActiveFilter,
   clearAllFilters,
   annotateFilters,
+  populateFiltersCaptions,
 } from '../../actions/FiltersActions';
 
 import FiltersFrequent from './FiltersFrequent';
@@ -24,7 +25,6 @@ import { getEntityRelatedId } from '../../reducers/filters';
  */
 class Filters extends PureComponent {
   state = {
-    activeFilter: null,
     activeFiltersCaptions: null,
     notValidFields: null,
   };
@@ -98,55 +98,14 @@ class Filters extends PureComponent {
    * @summary ToDo: Describe the method
    */
   parseActiveFilters = () => {
-    let { filtersActive, filterData, initialValuesNulled } = this.props;
+    let { filtersActive, filterData, filters } = this.props;
     let activeFilters = _.cloneDeep(filtersActive);
 
     // make new ES6 Map with the items from combined filters
     let mappedFiltersData = this.arrangeFilters(filterData);
     // put the resulted combined map of filters into the iMap and preserve existing functionality
     let filtersData = iMap(mappedFiltersData);
-    const activeFiltersCaptions = {};
-
-    // find any filters with default values first and extend
-    // activeFilters with them
-    filtersData.forEach((filter, filterId) => {
-      if (filter.parameters) {
-        outerParameters: for (let parameter of filter.parameters) {
-          const { defaultValue, parameterName } = parameter;
-          const nulledFilter = initialValuesNulled.get(filterId);
-
-          const isActive = filtersActive.has(filterId);
-
-          if (
-            !defaultValue ||
-            (nulledFilter && nulledFilter.has(parameterName))
-          ) {
-            if (isActive) {
-              activeFilters = activeFilters.set(filterId, {
-                defaultVal: false,
-                filterId,
-                parameters: activeFilters.get(filterId).parameters,
-              });
-            }
-            continue;
-          }
-
-          if (isActive) {
-            //look for existing parameterName in parameters array
-            // skip if found as they override defaultValue ALWAYS
-            const filterActive = activeFilters.get(filterId);
-
-            if (filterActive.parameters) {
-              for (let activeParameter of filterActive.parameters) {
-                if (activeParameter.parameterName === parameterName) {
-                  continue outerParameters;
-                }
-              }
-            }
-          }
-        }
-      }
-    });
+    const activeFiltersCaptions = populateFiltersCaptions(filters);
 
     if (activeFilters.size) {
       const removeDefault = {};
@@ -234,18 +193,11 @@ class Filters extends PureComponent {
         }
       }
 
-      const cleanActiveFilter = this.cleanupActiveFilter(
-        filterData.toIndexedSeq().toArray(),
-        activeFilters.toIndexedSeq().toArray()
-      );
-
       this.setState({
-        activeFilter: cleanActiveFilter,
         activeFiltersCaptions,
       });
     } else {
       this.setState({
-        activeFilter: null,
         activeFiltersCaptions: null,
       });
     }

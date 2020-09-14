@@ -55,6 +55,131 @@ export function updateWidgetShown({ id, data }) {
 }
 
 /**
+ * @method getParentFilter
+ * @summary as the name suggests the function is retrieving the filter data by key from the filterData
+ * @param {string} filterId - key identifying the filter
+ * @param {array} filterData array that contains all the filters as they are retrieved from the BE
+ */
+function getParentFilter({ filterId, filterData }) {
+  let parentFilter = {};
+  filterData.forEach((filter) => {
+    if (filter.filterId && filter.filterId === filterId) {
+      parentFilter = filter;
+    }
+    if (filter.includedFilters) {
+      filter.includedFilters.forEach((incFilter) => {
+        if (incFilter.filterId && incFilter.filterId === filterId) {
+          parentFilter = incFilter;
+        }
+      });
+    }
+  });
+  return parentFilter;
+}
+
+/**
+ * @method populateFiltersCaptions
+ * @summary updates the filtersCaptions object for the corresponding filter branch id in the store
+ * @param {string} id - filter id used as identifier for the filters branch
+ * @param {object} data - object containing the captions
+ */
+export function populateFiltersCaptions(filters) {
+  const filtersCaptions = {};
+  if (!filters) return {};
+  const { filterData, filtersActive } = filters;
+  if (!filtersActive) return {};
+
+  if (filtersActive.length) {
+    const removeDefault = {};
+
+    filtersActive.forEach((filter, filterId) => {
+      let captionsArray = ['', ''];
+
+      if (filter.parameters && filter.parameters.length) {
+        filter.parameters.forEach((filterParameter) => {
+          const { value, parameterName, defaultValue } = filterParameter;
+
+          if (!defaultValue && filterData) {
+            // we don't want to show captions, nor show filter button as active for default values
+            removeDefault[filterId] = true;
+            const parentFilter = getParentFilter({
+              filterId: filter.filterId, // we pass the actual key not the index
+              filterData,
+            });
+
+            const filterParameter = parentFilter.parameters.find(
+              (param) => param.parameterName === parameterName
+            );
+            let captionName = filterParameter.caption;
+            let itemCaption = filterParameter.caption;
+
+            switch (filterParameter.widgetType) {
+              case 'Text':
+                captionName = value;
+
+                if (!value) {
+                  captionName = '';
+                  itemCaption = '';
+                }
+                break;
+              case 'Lookup':
+              case 'List':
+                captionName = value && value.caption;
+                break;
+              case 'Labels':
+                captionName = value.values.reduce((caption, item) => {
+                  return `${caption}, ${item.caption}`;
+                }, '');
+                break;
+              case 'YesNo':
+                if (value === null) {
+                  captionName = '';
+                  itemCaption = '';
+                }
+                break;
+              case 'Switch':
+              default:
+                if (!value) {
+                  captionName = '';
+                  itemCaption = '';
+                }
+                break;
+            }
+
+            if (captionName) {
+              captionsArray[0] = captionsArray[0]
+                ? `${captionsArray[0]}, ${captionName}`
+                : captionName;
+            }
+
+            if (itemCaption) {
+              captionsArray[1] = captionsArray[1]
+                ? `${captionsArray[1]}, ${itemCaption}`
+                : itemCaption;
+            }
+          }
+        });
+      } else {
+        const originalFilter = filterData.filter(
+          (item) => item.filterId === filterId
+        );
+        captionsArray = [originalFilter.caption, originalFilter.caption];
+      }
+
+      if (captionsArray.join('').length) {
+        filtersCaptions[filterId] = captionsArray;
+      }
+    });
+  }
+
+  return filtersCaptions;
+  // return {
+  //   type: types.UPDATE_FILTERS_CAPTIONS,
+  //   payload: { id, filtersCaptions },
+  // };
+}
+
+/**
  * @method filtersToMap
  * @summary creates a map with the filters fetched from the layout request
  */
