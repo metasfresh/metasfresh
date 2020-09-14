@@ -369,17 +369,14 @@ class Filters extends PureComponent {
     const { updateDocList, filterId, updateActiveFilter } = this.props;
     const { filtersActive: storeActiveFilters } = this.props.filters;
 
-    // we are going to update the active filters from the redux store with the filter passed as param
+    // updating the active filters from the redux store with the filter passed as param
     const newFiltersActive = setNewFiltersActive({
       storeActiveFilters,
       filterToAdd,
     });
 
-    // update in the store the filters
-    updateActiveFilter({ id: filterId, data: newFiltersActive });
-
-    // move on to the logic from the DocList
-    updateDocList(newFiltersActive);
+    updateActiveFilter({ id: filterId, data: newFiltersActive }); // update in the store the filters
+    updateDocList(newFiltersActive); // move on and update the page with the new filters via DocList
   };
 
   /**
