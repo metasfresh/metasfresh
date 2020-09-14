@@ -135,7 +135,8 @@ public class ReceiptService
 				.stream()
 				.filter(createReceiptInfo -> createReceiptInfo.getDateReceived() != null
 						|| createReceiptInfo.getMovementDate() != null
-						|| Check.isNotBlank(createReceiptInfo.getExternalId()))
+						|| Check.isNotBlank(createReceiptInfo.getExternalId())
+				        || Check.isNotBlank(createReceiptInfo.getExternalResourceURL()))
 				.collect(Collectors.toMap(this::extractReceiptScheduleId, (createReceiptInfo) -> this.extractExternalInfo(createReceiptInfo, cache)));
 	}
 
@@ -212,6 +213,7 @@ public class ReceiptService
 				.externalId(receiptInfo.getExternalId())
 				.dateReceived(TimeUtil.asZonedDateTime(receiptInfo.getDateReceived(), timeZoneId))
 				.movementDate(receiptInfo.getMovementDate())
+				.externalResourceURL(receiptInfo.getExternalResourceURL())
 				.build();
 	}
 
