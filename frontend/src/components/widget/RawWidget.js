@@ -1,19 +1,18 @@
 import Moment from 'moment';
 import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
 import _ from 'lodash';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
-import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import {
   DATE_FORMAT,
   TIME_FORMAT,
   DATE_TIMEZONE_FORMAT,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
+
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -146,9 +145,14 @@ export class RawWidget extends Component {
    * @param {*} e
    */
   handleFocus = () => {
-    const { handleFocus, listenOnKeysFalse, dispatch, widgetType } = this.props;
+    const {
+      handleFocus,
+      listenOnKeysFalse,
+      disableShortcut,
+      widgetType,
+    } = this.props;
 
-    widgetType === 'LongText' && dispatch(disableShortcut()); // fix issue in Cypress with cut underscores - false positive failing tests
+    widgetType === 'LongText' && disableShortcut(); // fix issue in Cypress with cut underscores - false positive failing tests
     // - commented because if you focus on an item and you disable the shourtcuts you won't be able to use any shortcut
     //   assigned to that specific item/widget - see issue https://github.com/metasfresh/metasfresh/issues/7119
     listenOnKeysFalse && listenOnKeysFalse();
@@ -174,7 +178,7 @@ export class RawWidget extends Component {
    */
   handleBlur = (widgetField, value, id) => {
     const {
-      dispatch,
+      allowShortcut,
       handleBlur,
       listenOnKeysTrue,
       enableOnClickOutside,
@@ -186,7 +190,7 @@ export class RawWidget extends Component {
       },
       () => {
         enableOnClickOutside && enableOnClickOutside();
-        dispatch(allowShortcut());
+        allowShortcut();
         handleBlur && handleBlur(this.willPatch(widgetField, value));
 
         listenOnKeysTrue && listenOnKeysTrue();
@@ -1333,7 +1337,4 @@ export class RawWidget extends Component {
 RawWidget.propTypes = RawWidgetPropTypes;
 RawWidget.defaultProps = RawWidgetDefaultProps;
 
-export default connect((state) => ({
-  modalVisible: state.windowHandler.modal.visible,
-  timeZone: state.appHandler.me.timeZone,
-}))(RawWidget);
+export default RawWidget;

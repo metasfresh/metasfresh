@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
+import { get } from 'lodash';
 
 import { fetchTopActions } from '../../actions/WindowActions';
 import { dropdownRequest } from '../../actions/GenericActions';
@@ -166,7 +167,7 @@ class ActionButton extends PureComponent {
   getStatusClassName = (abrev) => {
     const { data } = this.props;
 
-    if (data.action.value && data.action.value.key !== abrev) {
+    if (get(data, ['action', 'value', 'key'], null) !== abrev) {
       return '';
     }
 

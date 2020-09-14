@@ -13,7 +13,7 @@ import { setBreadcrumb } from '../../actions/MenuActions';
 import keymap from '../../shortcuts/keymap';
 import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
 
-import Widget from '../../containers/WidgetWrapper';
+import WidgetWrapper from '../../containers/WidgetWrapper';
 import Indicator from '../app/Indicator';
 import Prompt from '../app/Prompt';
 import NewEmail from '../email/NewEmail';
@@ -663,10 +663,9 @@ class Header extends PureComponent {
                     onClick={() => this.toggleTooltip('')}
                     onMouseEnter={() => this.toggleTooltip(keymap.DOC_STATUS)}
                   >
-                    <Widget
+                    <WidgetWrapper
                       renderMaster={true}
                       dataSource="doc-status"
-
                       type="primary"
                       entity="window"
                       windowType={windowId}
