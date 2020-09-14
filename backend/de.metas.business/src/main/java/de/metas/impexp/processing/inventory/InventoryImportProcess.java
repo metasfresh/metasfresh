@@ -31,6 +31,7 @@ import org.compiere.model.X_I_Inventory;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.DocTypeId;
@@ -203,8 +204,8 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		importRecord.setM_Inventory_ID(inventoryId.getRepoId());
 		importRecord.setM_InventoryLine_ID(inventoryLine.getM_InventoryLine_ID());
 	}
-
-	private AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
+	@VisibleForTesting
+	AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
 	{
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
 		if (!productBL.isInstanceAttribute(productId))
