@@ -47,6 +47,7 @@ public class MainApp
 		main.configure().addRoutesBuilder(new ReceiptXmlToJsonRouteBuilder());
 		main.configure().addRoutesBuilder(new de.metas.camel.manufacturing.order.export.MetasfreshExportOrdersRouteBuilder());
 		// main.configure().addRoutesBuilder(new de.metas.camel.manufacturing.order.issue_and_receipt.MetasfreshImportIssuesAndReceiptRouteBuilder());
+		main.configure().addRoutesBuilder(new de.metas.camel.inventory.InventoryXmlToMetasfreshRouteBuilder());
 		main.run(args);
 	}
 
