@@ -166,6 +166,18 @@ class TableItem extends PureComponent {
         }
         break;
       case 'Tab':
+        updatePropertyValue({
+          property,
+          value: e.target.value,
+          tabId,
+          rowId,
+          isModal: modalVisible,
+          entity,
+          tableId,
+        });
+        e.stopPropagation();
+        this.handleEditProperty(e);
+        break;
       case 'Escape':
         if (edited === property) {
           updatePropertyValue({
