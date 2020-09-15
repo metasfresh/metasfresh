@@ -26,66 +26,6 @@ class Filters extends PureComponent {
   };
 
   /**
-   * @method arrangeFilters
-   * @summary combines the filters and also removes the other actives ones from same group
-   */
-  arrangeFilters = (filterData) => {
-    let combinedFilters = [];
-    for (const [key] of filterData.entries()) {
-      let item = filterData.get(key);
-      if (typeof item.includedFilters !== 'undefined') {
-        combinedFilters.push(...item.includedFilters);
-      } else {
-        combinedFilters.push(item);
-      }
-    }
-    let mappedFiltersData = new Map();
-    combinedFilters.forEach((item) => {
-      mappedFiltersData.set(item.filterId, item);
-    });
-    return mappedFiltersData;
-  };
-
-  cleanupActiveFilter = (allFilters, activeStateFilters) => {
-    let filtersToRemove = [];
-    activeStateFilters.forEach((activeStateFilter) => {
-      allFilters.forEach((filterItem) => {
-        if (Array.isArray(filterItem.includedFilters)) {
-          let groupFilter = filterItem.includedFilters;
-          let foundMatches = groupFilter.filter(
-            (gFilterItem) => gFilterItem.filterId === activeStateFilter.filterId
-          );
-          if (foundMatches.length > 0) {
-            filtersToRemove = groupFilter.filter(
-              (toRemove) => toRemove.filterId !== activeStateFilter.filterId
-            );
-          }
-        }
-      });
-    });
-    return activeStateFilters.filter(
-      (asFilterItem) =>
-        !this.isBlacklisted(asFilterItem.filterId, filtersToRemove)
-    );
-  };
-
-  /**
-   * @method isBlackListed
-   * @summary Check if the filterId is found among the filters to remove array
-   * @param {string filterId
-   * @param {array} filtersToRemove
-   */
-  isBlacklisted = (filterId, filtersToRemove) => {
-    let resultValue = false;
-    filtersToRemove.forEach((filterItem) => {
-      if (filterItem.filterId === filterId) {
-        resultValue = true;
-      }
-    });
-    return resultValue;
-  };
-
-  /**
    * @method isFilterValid
    * @summary ToDo: Describe the method
    * @param {*} filters
@@ -177,7 +117,7 @@ class Filters extends PureComponent {
   /**
    * @method handleShow
    * @summary Method to lock backdrop, to do not close on click onClickOutside
-   *  widgets that are bigger than filter wrapper
+   *          widgets that are bigger than filter wrapper
    * @param {*} value
    */
   handleShow = (value) => {
@@ -207,10 +147,9 @@ class Filters extends PureComponent {
     });
   };
 
-  // RENDERING FILTERS -------------------------------------------------------
   /**
    * @method render
-   * @summary ToDo: Describe the method
+   * @summary Main render function - renders the filters
    */
   render() {
     const {
@@ -313,16 +252,6 @@ class Filters extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {string} windowType
- * @prop {func} resetInitialValues
- * @prop {string} [viewId]
- * @prop {*} [filtersActive]
- * @prop {*} [filterData]
- * @prop {*} [initialValuesNulled]
- * @prop {*} [updateDocList]
- */
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
