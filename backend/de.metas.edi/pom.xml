@@ -15,7 +15,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir>80-de.metas.edi</migration-sql-basedir>
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>
