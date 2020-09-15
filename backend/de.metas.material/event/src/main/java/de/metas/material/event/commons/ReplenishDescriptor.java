@@ -22,16 +22,37 @@
 
 package de.metas.material.event.commons;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.Value;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
  * Makes sense together with a {@link MaterialDescriptor}.
  * The quantities are in the respective product's stock UOM.
  */
-
+@Value
 public class ReplenishDescriptor
 {
-	BigDecimal minimum;
+	public static final ReplenishDescriptor ZERO = new ReplenishDescriptor(BigDecimal.ZERO, BigDecimal.ZERO);
 
-	BigDecimal maximum;
+	BigDecimal min;
+
+	BigDecimal max;
+
+	@Builder
+	@JsonCreator
+	private ReplenishDescriptor(
+			@JsonProperty("min") @Nullable final BigDecimal min,
+			@JsonProperty("max") @Nullable final BigDecimal max)
+	{
+		this.min = CoalesceUtil.coalesce(min, BigDecimal.ZERO);
+		this.max = CoalesceUtil.coalesce(max, min);
+		Check.errorIf(this.min.compareTo(this.max) > 0, "Minimum={} maybe not be bigger than maximum={}", this.min, this.max);
+	}
 }

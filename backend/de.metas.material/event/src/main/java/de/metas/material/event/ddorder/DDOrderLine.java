@@ -1,13 +1,10 @@
 package de.metas.material.event.ddorder;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Builder;
@@ -15,6 +12,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -47,7 +45,7 @@ public class DDOrderLine
 	ProductDescriptor productDescriptor;
 
 	@Nullable
-	ReplenishDescriptor replenishDescriptor;
+	ReplenishDescriptor fromWarehouseReplenishDescriptor;
 
 	@NonNull
 	BigDecimal qty;
@@ -80,7 +78,7 @@ public class DDOrderLine
 		this.salesOrderLineId = salesOrderLineId;
 
 		this.productDescriptor = productDescriptor;
-		this.replenishDescriptor = fromWarehouseReplenishDescriptor;
+		this.fromWarehouseReplenishDescriptor = fromWarehouseReplenishDescriptor;
 
 		this.bPartnerId = bPartnerId;
 

@@ -1,26 +1,5 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -35,11 +14,34 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -148,7 +150,7 @@ public class DemandCandiateHandlerTest
 		Mockito.doReturn(new BigDecimal(quantity))
 				.when(availableToPromiseRepository)
 				.retrieveAvailableStockQtySum(query);
-//		// @formatter:off
+		//		// @formatter:off
 //		new Expectations()
 //		{{
 //			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
@@ -197,7 +199,7 @@ public class DemandCandiateHandlerTest
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
 				.postEventNow(Mockito.any());
-//		// @formatter:off verify that no event was fired
+		//		// @formatter:off verify that no event was fired
 //		new Verifications()
 //		{{
 //			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
@@ -220,7 +222,7 @@ public class DemandCandiateHandlerTest
 	}
 
 	/**
-	 * Like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords()},
+	 * Like {@link #onCandidateNewOrChange_noOlderRecords_invokeTwice_withDifferent_qty()},
 	 * but the method under test is called two times. We expect the code to recognize this and not count the 2nd invocation.
 	 */
 	@Test
@@ -267,7 +269,7 @@ public class DemandCandiateHandlerTest
 	}
 
 	/**
-	 * like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWitDifferent()},
+	 * like {@link #onCandidateNewOrChange_noOlderRecords_invokeTwiceWithSame()},
 	 * but on the 2nd invocation, a different demand-quantity is used.
 	 */
 	@Test
@@ -323,9 +325,9 @@ public class DemandCandiateHandlerTest
 
 	/**
 	 * given: existing candidate
-	 *
+	 * <p>
 	 * change its date and invoke the handler under test
-	 *
+	 * <p>
 	 * verify that
 	 * <li>the candidate's stock-candidate's date also changed</li>
 	 * <li>
@@ -359,5 +361,32 @@ public class DemandCandiateHandlerTest
 				.build();
 
 		return candidate;
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"0,0,0,0",
+			"0,0,-10,10",
+			"0,5,-10,15",
+			"5,5,5,0",
+			"5,6,5,0",
+			"5,5,6,0",
+			"5,7,6,0",
+			"5,5,3,2",
+			"5,7,3,4",
+			"5,7,-10,17",
+	})
+	void computeRequiredQty(String givenMin, String givenMax, String when, String then)
+	{
+		// given
+		final ReplenishDescriptor replenishDescriptor = ReplenishDescriptor.builder()
+				.min(new BigDecimal(givenMin))
+				.max(new BigDecimal(givenMax)).build();
+
+		// when
+		final BigDecimal actual = DemandCandiateHandler.computeRequiredQty(new BigDecimal(when), replenishDescriptor);
+
+		// then
+		assertThat(actual).isEqualByComparingTo(then);
 	}
 }

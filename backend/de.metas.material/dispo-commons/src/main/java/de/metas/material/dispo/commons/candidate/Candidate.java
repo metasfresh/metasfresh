@@ -1,27 +1,27 @@
 package de.metas.material.dispo.commons.candidate;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 
 /*
  * #%L
@@ -45,9 +45,9 @@ import lombok.experimental.Wither;
  * #L%
  */
 
+@With
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
-@Wither
 public class Candidate
 {
 	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescriptor eventDescr)
@@ -64,7 +64,6 @@ public class Candidate
 
 	ClientAndOrgId clientAndOrgId;
 
-	@NonNull
 	CandidateType type;
 
 	/**
@@ -86,8 +85,9 @@ public class Candidate
 
 	int seqNo;
 
-	@NonNull
 	MaterialDescriptor materialDescriptor;
+
+	ReplenishDescriptor replenishDescriptor;
 
 	BusinessCaseDetail businessCaseDetail;
 
@@ -105,6 +105,7 @@ public class Candidate
 			final MaterialDispoGroupId groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
+			final ReplenishDescriptor replenishDescriptor,
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
 			@Singular final List<TransactionDetail> transactionDetails)
@@ -123,7 +124,7 @@ public class Candidate
 		this.seqNo = seqNo;
 
 		this.materialDescriptor = materialDescriptor;
-
+		this.replenishDescriptor = CoalesceUtil.coalesce(replenishDescriptor, ReplenishDescriptor.ZERO);
 		this.businessCaseDetail = businessCaseDetail;
 		this.additionalDemandDetail = additionalDemandDetail;
 

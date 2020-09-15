@@ -1,17 +1,8 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Optional;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -25,9 +16,18 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQue
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Optional;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -170,14 +170,26 @@ public class DemandCandiateHandler implements CandidateHandler
 
 		final BigDecimal availableQuantityAfterDemandWasApplied = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 		Loggables.addLog("Quantity after demand applied: {}", availableQuantityAfterDemandWasApplied);
-		if (availableQuantityAfterDemandWasApplied.signum() < 0)
-		{
-			final BigDecimal requiredQty = availableQuantityAfterDemandWasApplied.negate();
 
+		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getReplenishDescriptor());
+		if (requiredQty.signum() > 0)
+		{
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 			materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
 			Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
 		}
+	}
+
+	@VisibleForTesting
+	static BigDecimal computeRequiredQty(
+			@NonNull final BigDecimal availableQuantityAfterDemandWasApplied,
+			@NonNull final ReplenishDescriptor replenishDescriptor)
+	{
+		if (availableQuantityAfterDemandWasApplied.compareTo(replenishDescriptor.getMin()) >= 0)
+		{
+			return ZERO;
+		}
+		return replenishDescriptor.getMax().subtract(availableQuantityAfterDemandWasApplied);
 	}
 }

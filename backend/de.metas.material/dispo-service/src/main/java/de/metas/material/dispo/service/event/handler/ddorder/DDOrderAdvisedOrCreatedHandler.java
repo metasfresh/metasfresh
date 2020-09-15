@@ -1,13 +1,6 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -27,6 +20,11 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /*
  * #%L
@@ -134,6 +132,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				// .status(candidateStatus)
 				.materialDescriptor(demandMaterialDescriptor)
+				.replenishDescriptor(ddOrderLine.getFromWarehouseReplenishDescriptor())
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
 				.seqNo(expectedSeqNoForDemandCandidate)
