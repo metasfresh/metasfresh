@@ -40,6 +40,7 @@ import {
   createFilter,
   deleteFilter,
   getFlatFiltersMap,
+  populateFiltersCaptions,
 } from './FiltersActions';
 
 /**
@@ -346,6 +347,10 @@ export function fetchDocument({
         const flatFiltersMap = getFlatFiltersMap({
           filterData: view.layout.filters,
         });
+        const activeFiltersCaptions = populateFiltersCaptions({
+          filterData: view.layout.filters,
+          filtersActive: response.data.filters,
+        });
         dispatch(
           createFilter({
             id: filterId,
@@ -353,6 +358,7 @@ export function fetchDocument({
               filterData: view.layout.filters, // set the proper layout for the filters
               filtersActive: response.data.filters,
               flatFiltersMap,
+              activeFiltersCaptions,
             },
           })
         );

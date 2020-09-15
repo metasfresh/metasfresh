@@ -2,15 +2,12 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { Map as iMap } from 'immutable';
-import _ from 'lodash';
 import {
   updateWidgetShown,
   setNewFiltersActive,
   updateActiveFilter,
   clearAllFilters,
   annotateFilters,
-  populateFiltersCaptions,
 } from '../../actions/FiltersActions';
 
 import FiltersFrequent from './FiltersFrequent';
@@ -25,25 +22,8 @@ import { getEntityRelatedId } from '../../reducers/filters';
  */
 class Filters extends PureComponent {
   state = {
-    activeFiltersCaptions: null,
     notValidFields: null,
   };
-
-  /**
-   * @method UNSAFE_componentWillReceiveProps
-   * @summary ToDo: Describe the method
-   */
-  UNSAFE_componentWillReceiveProps() {
-    this.parseActiveFilters();
-  }
-
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method
-   */
-  componentDidMount() {
-    this.parseActiveFilters();
-  }
 
   /**
    * @method arrangeFilters
@@ -64,143 +44,6 @@ class Filters extends PureComponent {
       mappedFiltersData.set(item.filterId, item);
     });
     return mappedFiltersData;
-  };
-
-  // PARSING FILTERS ---------------------------------------------------------
-
-  /*
-   * parseActiveFilters - this function does three things:
-   *  - creates a flat map of existing filter fields to store the widgetType for
-        further processing
-   *  - creates a local copy of active filters object including filters that
-   *    only have defaultValues set. `defaultVal` flag tells us, that this
-   *    filter has only defaultValues, and no values set by the user. We need
-   *    this to ble able to differentiate between filters that should be
-   *    indicated as active on load, or not.
-   *  - creates an object with captions of each active parameter per filter
-   *
-   * So first we traverse all filters data and perform actions in this order:
-   *  - if filter is in active filters and parameter has no defaultValue,
-   *    or defaultValue has been nullified by user's selection we add it
-   *    local active filters and set the `defaultVal` flag to false
-   *    (as it obviously was already set).
-   *  - if filter is active check if current loop parameter is set in the
-   *    active filters. If yes, do nothing as it'll always override the
-   *    defaultValue
-   *  - otherwise add parameter and filter to local active filters and set
-   *    the `defaultVal` to true as apparently there are no values set  
-   *  
-   *    Update: 10 March 2020, removed the logic to set the default 
-   * 
-   */
-  /**
-   * @method parseActiveFilters
-   * @summary ToDo: Describe the method
-   */
-  parseActiveFilters = () => {
-    let { filtersActive, filterData, filters } = this.props;
-    let activeFilters = _.cloneDeep(filtersActive);
-
-    // make new ES6 Map with the items from combined filters
-    let mappedFiltersData = this.arrangeFilters(filterData);
-    // put the resulted combined map of filters into the iMap and preserve existing functionality
-    let filtersData = iMap(mappedFiltersData);
-    const activeFiltersCaptions = populateFiltersCaptions(filters);
-
-    if (activeFilters.size) {
-      const removeDefault = {};
-
-      activeFilters.forEach((filter, filterId) => {
-        let captionsArray = ['', ''];
-
-        if (filter.parameters && filter.parameters.length) {
-          filter.parameters.forEach((filterParameter) => {
-            const { value, parameterName, defaultValue } = filterParameter;
-
-            if (!defaultValue) {
-              // we don't want to show captions, nor show filter button as active
-              // for default values
-              removeDefault[filterId] = true;
-
-              const parentFilter = filtersData.get(filterId);
-              const filterParameter = parentFilter.parameters.find(
-                (param) => param.parameterName === parameterName
-              );
-              let captionName = filterParameter.caption;
-              let itemCaption = filterParameter.caption;
-
-              switch (filterParameter.widgetType) {
-                case 'Text':
-                  captionName = value;
-
-                  if (!value) {
-                    captionName = '';
-                    itemCaption = '';
-                  }
-                  break;
-                case 'Lookup':
-                case 'List':
-                  captionName = value && value.caption;
-                  break;
-                case 'Labels':
-                  captionName = value.values.reduce((caption, item) => {
-                    return `${caption}, ${item.caption}`;
-                  }, '');
-                  break;
-                case 'YesNo':
-                  if (value === null) {
-                    captionName = '';
-                    itemCaption = '';
-                  }
-                  break;
-                case 'Switch':
-                default:
-                  if (!value) {
-                    captionName = '';
-                    itemCaption = '';
-                  }
-                  break;
-              }
-
-              if (captionName) {
-                captionsArray[0] = captionsArray[0]
-                  ? `${captionsArray[0]}, ${captionName}`
-                  : captionName;
-              }
-
-              if (itemCaption) {
-                captionsArray[1] = captionsArray[1]
-                  ? `${captionsArray[1]}, ${itemCaption}`
-                  : itemCaption;
-              }
-            }
-          });
-        } else {
-          const originalFilter = filtersData.get(filterId);
-          captionsArray = [originalFilter.caption, originalFilter.caption];
-        }
-
-        if (captionsArray.join('').length) {
-          activeFiltersCaptions[filterId] = captionsArray;
-        }
-      });
-
-      // if filter has defaultValues but also some user defined ones,
-      // we should still include it in active filters
-      if (Object.keys(removeDefault).length) {
-        for (let key of Object.keys(removeDefault)) {
-          activeFilters = activeFilters.setIn([key, 'defaultVal'], false);
-        }
-      }
-
-      this.setState({
-        activeFiltersCaptions,
-      });
-    } else {
-      this.setState({
-        activeFiltersCaptions: null,
-      });
-    }
   };
 
   cleanupActiveFilter = (allFilters, activeStateFilters) => {
@@ -379,11 +222,10 @@ class Filters extends PureComponent {
       filters,
     } = this.props;
     const widgetShown = filters ? filters.widgetShown : false;
-    const { notValidFields, activeFiltersCaptions } = this.state;
+    const { notValidFields } = this.state;
 
     if (!filters || !viewId) return false;
-
-    const { filtersActive } = filters;
+    const { filtersActive, filtersCaptions: activeFiltersCaptions } = filters;
 
     const allFilters = annotateFilters({
       unannotatedFilters: filters.filterData,

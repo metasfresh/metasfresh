@@ -25,12 +25,18 @@ const reducer = produce((draftState, action) => {
   switch (action.type) {
     case types.CREATE_FILTER: {
       const { id, data } = action.payload;
-      const { filterData, filtersActive, flatFiltersMap } = data;
+      const {
+        filterData,
+        filtersActive,
+        flatFiltersMap,
+        activeFiltersCaptions,
+      } = data;
       draftState[id] = {
         ...initialFiltersLeafState,
         filterData: filterData ? filterData : [],
         filtersActive: filtersActive ? filtersActive : [],
         flatFiltersMap,
+        filtersCaptions: activeFiltersCaptions,
       };
       return;
     }
@@ -64,11 +70,6 @@ const reducer = produce((draftState, action) => {
           : [];
         draftState[id].filtersActive = filtersAfterClearing;
       }
-      return;
-    }
-    case types.UPDATE_FILTERS_CAPTIONS: {
-      const { id, filtersCaptions } = action.payload;
-      draftState[id].filtersCaptions = filtersCaptions;
       return;
     }
   }

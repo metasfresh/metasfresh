@@ -167,16 +167,13 @@ export function populateFiltersCaptions(filters) {
       }
 
       if (captionsArray.join('').length) {
+        filtersCaptions[filter.filterId] = captionsArray;
         filtersCaptions[filterId] = captionsArray;
       }
     });
   }
 
   return filtersCaptions;
-  // return {
-  //   type: types.UPDATE_FILTERS_CAPTIONS,
-  //   payload: { id, filtersCaptions },
-  // };
 }
 
 /**
