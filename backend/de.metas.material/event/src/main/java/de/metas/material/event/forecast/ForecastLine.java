@@ -1,14 +1,19 @@
 package de.metas.material.event.forecast;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -36,18 +41,22 @@ import lombok.Value;
 @Builder
 public class ForecastLine
 {
-
-	private int forecastLineId;
+	int forecastLineId;
 
 	MaterialDescriptor materialDescriptor;
+
+	@JsonInclude(NON_NULL)
+	ReplenishDescriptor replenishDescriptor;
 
 	@JsonCreator
 	public ForecastLine(
 			@JsonProperty("forecastLineId") final int forecastLineId,
-			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor)
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
+			@JsonProperty("replenishDescriptor") @Nullable final ReplenishDescriptor replenishDescriptor)
 	{
 		this.forecastLineId = forecastLineId;
 		this.materialDescriptor = materialDescriptor;
+		this.replenishDescriptor = replenishDescriptor;
 	}
 
 	public void validate()

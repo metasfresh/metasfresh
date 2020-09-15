@@ -75,7 +75,6 @@ public class StockCandidateService
 	 *
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
-	 * @param candidate
 	 * @return a candidate with
 	 *         <ul>
 	 *         <li>type = {@link CandidateType#STOCK}</li>
@@ -125,16 +124,12 @@ public class StockCandidateService
 	}
 
 	/**
-	 * Updates the qty of the given candidate which is identified only by its id.
-	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
+	 * Updates the qty and date of the given candidate which is identified only by its id.
+	 * Differs from {@link #applyDeltaToMatchingLaterStockCandidates(SaveResult)} in that
 	 * if there is no existing persisted record, none is created but an exception is thrown.
-	 * Also it just updates the underlying persisted record of the given {@code candidateToUpdate} and nothing else.
-	 *
+	 * Also, it just updates the underlying persisted record of the given {@code candidateToUpdate} and nothing else.
 	 *
 	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
-	 *
-	 * @return a copy of the given {@code candidateToUpdate} with the quantity being a delta, similar to the return value of {@link #addOrUpdate(Candidate, boolean)}.
-	 *         TODO update lying javadocs
 	 */
 	public SaveResult updateQtyAndDate(@NonNull final Candidate candidateToUpdate)
 	{
@@ -165,14 +160,8 @@ public class StockCandidateService
 	/**
 	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code materialDescriptor}.
 	 * Iterate them and add the given {@code delta} to their quantity.
-	 * <p>
-	 *
-	 * @param materialDescriptor the product to match against
-	 * @param groupId the groupId to set to every stock record that we matched
-	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
-	public void applyDeltaToMatchingLaterStockCandidates(
-			@NonNull final SaveResult stockWithDelta)
+	public void applyDeltaToMatchingLaterStockCandidates(@NonNull final SaveResult stockWithDelta)
 	{
 		final CandidatesQuery query = createStockQueryBetweenDates(stockWithDelta);
 

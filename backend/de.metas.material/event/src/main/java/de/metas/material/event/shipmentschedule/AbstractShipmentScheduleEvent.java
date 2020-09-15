@@ -1,14 +1,18 @@
 package de.metas.material.event.shipmentschedule;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -45,6 +49,9 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
+	@JsonInclude(NON_NULL)
+	private final ReplenishDescriptor replenishDescriptor;
+
 	private final BigDecimal reservedQuantity;
 
 	private final int shipmentScheduleId;
@@ -52,12 +59,14 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
+			@Nullable final ReplenishDescriptor replenishDescriptor,
 			final BigDecimal reservedQuantity,
 			final int shipmentScheduleId)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
+		this.replenishDescriptor = replenishDescriptor;
 		this.reservedQuantity = reservedQuantity;
 	}
 

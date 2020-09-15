@@ -102,9 +102,6 @@ public class CandidateRepositoryWriteService
 
 	/**
 	 * Similar to {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)}, but the given {@code candidate}'s {@code seqNo} (if specified at all!) will only be persisted if none is stored yet.
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	public SaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
 	{
@@ -294,7 +291,7 @@ public class CandidateRepositoryWriteService
 	 * @return either returns the record contained in the given candidateRecord (but updated) or a new record.
 	 */
 	private I_MD_Candidate updateOrCreateCandidateRecord(
-			final I_MD_Candidate candidateRecord,
+			@Nullable final I_MD_Candidate candidateRecord,
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
@@ -655,7 +652,7 @@ public class CandidateRepositoryWriteService
 	public DeleteResult deleteCandidatebyId(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
-		DeleteResult deleteResult = new DeleteResult(candidateId, DateAndSeqNo
+		final DeleteResult deleteResult = new DeleteResult(candidateId, DateAndSeqNo
 				.builder()
 				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
 				.seqNo(candidateRecord.getSeqNo())

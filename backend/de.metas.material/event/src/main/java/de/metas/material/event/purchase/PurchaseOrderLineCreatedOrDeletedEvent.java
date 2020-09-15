@@ -1,9 +1,13 @@
 package de.metas.material.event.purchase;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -37,4 +41,8 @@ public class PurchaseOrderLineCreatedOrDeletedEvent implements MaterialEvent
 	OrderLineDescriptor orderLineDescriptor;
 
 	int purchaseCandidateRepoId;
+
+	@JsonProperty("replenishDescriptor")
+	@Nullable
+	ReplenishDescriptor replenishDescriptor;
 }

@@ -9,9 +9,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,6 +46,9 @@ public class DDOrderLine
 	@NonNull
 	ProductDescriptor productDescriptor;
 
+	@Nullable
+	ReplenishDescriptor replenishDescriptor;
+
 	@NonNull
 	BigDecimal qty;
 
@@ -60,19 +66,22 @@ public class DDOrderLine
 	@JsonCreator
 	@Builder
 	public DDOrderLine(
-			@JsonProperty("salesOrderLineId") int salesOrderLineId,
+			@JsonProperty("salesOrderLineId") final int salesOrderLineId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("bPartnerId") int bPartnerId,
-			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("fromWarehouseReplenishDescriptor") @Nullable final ReplenishDescriptor fromWarehouseReplenishDescriptor,
+			@JsonProperty("bPartnerId") final int bPartnerId,
+ 			@JsonProperty("qty") @NonNull final BigDecimal qty,
 			@JsonProperty("durationDays") final int durationDays,
 			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
 	{
 		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
-		
+
 		this.salesOrderLineId = salesOrderLineId;
 
 		this.productDescriptor = productDescriptor;
+		this.replenishDescriptor = fromWarehouseReplenishDescriptor;
+
 		this.bPartnerId = bPartnerId;
 
 		this.qty = qty;

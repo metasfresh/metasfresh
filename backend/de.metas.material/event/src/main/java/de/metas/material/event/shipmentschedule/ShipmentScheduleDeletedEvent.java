@@ -9,10 +9,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -55,6 +58,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 		super(
 				eventDescriptor,
 				materialDescriptor,
+				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				reservedQuantity,
 				shipmentScheduleId);
 	}

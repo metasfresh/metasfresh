@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -46,9 +49,11 @@ public class PurchaseCandidateUpdatedEvent extends PurchaseCandidateEvent
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
+			@JsonProperty("replenishDescriptor") @Nullable final ReplenishDescriptor replenishDescriptor,
 			@JsonProperty("vendorId") final int vendorId)
 	{
 		super(purchaseMaterialDescriptor,
+				replenishDescriptor,
 				eventDescriptor,
 				purchaseCandidateRepoId,
 				vendorId);

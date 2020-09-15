@@ -9,12 +9,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -52,6 +55,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 	public ShipmentScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("replenishDescriptor") @Nullable final ReplenishDescriptor replenishDescriptor,
 			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
@@ -59,6 +63,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 		super(
 				eventDescriptor,
 				materialDescriptor,
+				replenishDescriptor,
 				reservedQuantity,
 				shipmentScheduleId);
 
