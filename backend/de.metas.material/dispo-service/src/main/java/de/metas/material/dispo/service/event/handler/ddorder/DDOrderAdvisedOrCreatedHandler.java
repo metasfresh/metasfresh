@@ -99,6 +99,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ddOrderEvent.getSupplyRequiredDescriptor());
 		final DistributionDetail distributionDetail = createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine);
 
+		// create or update the supply candidate
 		final Candidate supplyCandidate = createSupplyCandidateBuilder(ddOrderEvent, ddOrderLine)
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
@@ -107,18 +108,11 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
 				.build();
-
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
-		if (supplyCandidateWithId.getQuantity().signum() == 0)
-		{
-			return null; // nothing was added as supply in the destination warehouse, so there is no demand to register either
-		}
 
-		//
-		// create the demand candidate
+		// create  or update the demand candidate
 
-		// we expect the demand candidate to go with the supplyCandidates SeqNo + 1,
-		// *but* it might also be the case that the demandCandidate attaches to an existing stock and in that case would need to get another SeqNo
+		// we expect the demand candidate to go with the supplyCandidate's SeqNo + 1,
 		final int expectedSeqNoForDemandCandidate = supplyCandidateWithId.getSeqNo() + 1;
 
 		final MaterialDispoGroupId groupId = supplyCandidateWithId.getGroupId();

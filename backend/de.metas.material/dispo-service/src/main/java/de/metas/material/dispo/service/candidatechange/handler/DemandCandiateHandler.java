@@ -60,19 +60,22 @@ public class DemandCandiateHandler implements CandidateHandler
 	private final PostMaterialEventService materialEventService;
 	private final StockCandidateService stockCandidateService;
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
+	private final SupplyCandidateHandler supplyCandidateHandler;
 
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
-			@NonNull final StockCandidateService stockCandidateService)
+			@NonNull final StockCandidateService stockCandidateService,
+			@NonNull final SupplyCandidateHandler supplyCandidateHandler)
 	{
 		this.candidateRepository = candidateRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
 		this.availableToPromiseRepository = availableToPromiseRepository;
 		this.stockCandidateService = stockCandidateService;
+		this.supplyCandidateHandler = supplyCandidateHandler;
 	}
 
 	@Override
@@ -174,8 +177,21 @@ public class DemandCandiateHandler implements CandidateHandler
 		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getReplenishDescriptor());
 		if (requiredQty.signum() > 0)
 		{
+			// create supply record now! otherwise
+			final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
+					.type(CandidateType.SUPPLY)
+					.businessCase(null)
+					.businessCaseDetail(null)
+					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
+					.groupId(demandCandidateWithId.getEffectiveGroupId())
+					.replenishDescriptor(demandCandidateWithId.getReplenishDescriptor())
+					.quantity(requiredQty)
+					.build();
+			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate);
+
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
-					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
+					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
+
 			materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
 			Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
 		}

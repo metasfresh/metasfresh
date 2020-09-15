@@ -87,12 +87,15 @@ public class DemandCandiateHandlerTest
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService);
 
+		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
+
 		demandCandidateHandler = new DemandCandiateHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService,
 				postMaterialEventService,
 				availableToPromiseRepository,
-				stockCandidateService);
+				stockCandidateService,
+				supplyCandidateHandler);
 	}
 
 	@Test
@@ -106,39 +109,62 @@ public class DemandCandiateHandlerTest
 		assertDemandEventWasFiredWithQuantity("23");
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-		assertThat(records).hasSize(2);
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		assertThat(records).hasSize(4);
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("23");
-		assertThat(stockRecord.getQty()).isEqualByComparingTo("-23"); // ..because there was no older record, the "delta" we provided is the current quantity
-		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
+		assertThat(demandStockRecord.getQty()).isEqualByComparingTo("-23"); // ..because there was no older record, the "delta" we provided is the current quantity
+		assertThat(demandStockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
+		assertThat(demandStockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
 
-		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		assertThat(supplyRecord.getQty()).isEqualByComparingTo("23");
+		final I_MD_Candidate supplyStockRecord = DispoTestUtils.retrieveStockCandidate(supplyRecord);
+		assertThat(supplyStockRecord.getQty()).isEqualByComparingTo("0"); // ..because there was no older record, the "delta" we provided is the current quantity
+		assertThat(supplyStockRecord.getMD_Candidate_ID()).isEqualTo(supplyRecord.getMD_Candidate_Parent_ID());
+		assertThat(supplyStockRecord.getSeqNo()).isEqualTo(supplyRecord.getSeqNo());
 	}
 
+	/**
+	 * demand: 23
+	 * available after demand: -13
+	 * => min and max=0, so we expect a demand event with 13
+	 */
 	@Test
 	public void onCandidateNewOrChange_unsufficient_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRepositoryReturnsQuantityForMaterial("-13", candidate.getMaterialDescriptor());
 
+		// when
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
 
+		// then
 		assertDemandEventWasFiredWithQuantity("13");
 
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2);
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
+
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		assertThat(demandRecord).extracting("qty.toString", "StorageAttributesKey")
+				.containsExactly("23", STORAGE_ATTRIBUTES_KEY.getAsString());
 
-		assertThat(demandRecord.getQty()).isEqualByComparingTo("23");
-		assertThat(demandRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
+		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
+		assertThat(demandStockRecord).extracting(
+				"MD_Candidate_Parent_ID",
+				"Qty.toString",
+				"StorageAttributesKey",
+				"SeqNo")
+				.containsExactly(demandRecord.getMD_Candidate_ID(), "-23", STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
-		assertThat(stockRecord.getQty()).isEqualByComparingTo("-23");
-		assertThat(stockRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
-		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		assertThat(supplyRecord).extracting("qty.toString", "StorageAttributesKey")
+				.containsExactly("13", STORAGE_ATTRIBUTES_KEY.getAsString());
 
-		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
+		final I_MD_Candidate supplyStockRecord = DispoTestUtils.retrieveStockCandidate(supplyRecord);
+		// the stock record's qty is -10 because we were at -23, and 13 were added
+		assertThat(supplyStockRecord).extracting("MD_Candidate_ID", "Qty.toString", "StorageAttributesKey")
+				.containsExactly(supplyRecord.getMD_Candidate_Parent_ID(), "-10", STORAGE_ATTRIBUTES_KEY.getAsString());
 	}
 
 	private void setupRepositoryReturnsQuantityForMaterial(
@@ -150,13 +176,6 @@ public class DemandCandiateHandlerTest
 		Mockito.doReturn(new BigDecimal(quantity))
 				.when(availableToPromiseRepository)
 				.retrieveAvailableStockQtySum(query);
-		//		// @formatter:off
-//		new Expectations()
-//		{{
-//			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
-//			times = 1;
-//			result = new BigDecimal(quantity);
-//		}}; // @formatter:on
 	}
 
 	private void assertDemandEventWasFiredWithQuantity(@NonNull final String expectedQty)
@@ -199,11 +218,6 @@ public class DemandCandiateHandlerTest
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
 				.postEventNow(Mockito.any());
-		//		// @formatter:off verify that no event was fired
-//		new Verifications()
-//		{{
-//			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
-//		}}; // @formatter:on
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
