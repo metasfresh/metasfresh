@@ -7,6 +7,7 @@
       "movementQuantity": 10,
       "dateReceived":"2020-05-27T15:20:03.000Z",
       "movementDate":"2020-05-27",
+      "externalResourceURL": "receipt_externalResourceURL",
       "attributes": [
         {
           "attributeName": "HU_ExpiryDate",

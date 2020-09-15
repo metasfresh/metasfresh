@@ -22,22 +22,21 @@
 
 package de.metas.common.receipt;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Value
 @Builder
@@ -67,7 +66,10 @@ public class JsonCreateReceiptInfo
 
 	@JsonProperty("attributes")
 	List<JsonAttributeInstance> attributes;
-	
+
+	@JsonProperty("externalResourceURL")
+	String externalResourceURL;
+
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonCreateReceiptInfoBuilder
 	{
