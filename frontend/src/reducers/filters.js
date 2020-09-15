@@ -3,9 +3,9 @@ import { produce, original } from 'immer';
 export const initialFiltersBranchState = {};
 
 export const initialFiltersLeafState = {
-  initialValuesNulled: new Map(),
   widgetShown: false,
   filtersCaptions: {},
+  notValidFields: null,
 };
 
 /**
@@ -70,6 +70,11 @@ const reducer = produce((draftState, action) => {
           : [];
         draftState[id].filtersActive = filtersAfterClearing;
       }
+      return;
+    }
+    case types.UPDATE_FLAG_NOTVALIDFIELDS: {
+      const { filterId, data } = action.payload;
+      draftState[filterId].notValidFields = data;
       return;
     }
   }

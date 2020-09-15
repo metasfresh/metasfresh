@@ -33,6 +33,17 @@ export function deleteFilter(id) {
 }
 
 /**
+ * @method updateNotValidFields
+ * @summary updates in the store the notValidFields flag
+ */
+export function updateNotValidFields({ filterId, data }) {
+  return {
+    type: types.UPDATE_FLAG_NOTVALIDFIELDS,
+    payload: { filterId, data },
+  };
+}
+
+/**
  * @method updateActiveFilter
  * @summary Updates the activeFilter in the store for the corresponding entity id
  */

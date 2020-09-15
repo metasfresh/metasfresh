@@ -9,6 +9,7 @@ import {
   clearAllFilters,
   annotateFilters,
   isFilterValid,
+  updateNotValidFields,
 } from '../../actions/FiltersActions';
 
 import FiltersFrequent from './FiltersFrequent';
@@ -22,10 +23,6 @@ import { getEntityRelatedId } from '../../reducers/filters';
  * @extends PureComponent
  */
 class Filters extends PureComponent {
-  state = {
-    notValidFields: null,
-  };
-
   /**
    * @method parseToPatch
    * @summary ToDo: Describe the method
@@ -60,31 +57,26 @@ class Filters extends PureComponent {
   // eslint-disable-next-line no-unused-vars
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
     const valid = isFilterValid(filter);
+    const { updateNotValidFields, filterId } = this.props;
+    updateNotValidFields({ filterId, data: !valid });
+    if (valid) {
+      const parsedFilter = filter.parameters
+        ? {
+            ...filter,
+            parameters: this.parseToPatch(filter.parameters),
+          }
+        : filter;
 
-    this.setState(
-      {
-        notValidFields: !valid,
-      },
-      () => {
-        if (valid) {
-          const parsedFilter = filter.parameters
-            ? {
-                ...filter,
-                parameters: this.parseToPatch(filter.parameters),
-              }
-            : filter;
+      this.setFilterActive(parsedFilter);
 
-          this.setFilterActive(parsedFilter);
-
-          cb && cb();
-        }
-      }
-    );
+      cb && cb();
+    }
   };
 
   /**
    * @method setFilterActive
-   * @summary This function updates the active filters we set and then triggers the pre-existing logic from DocList that will fetch the filtered data
+   * @summary This function updates the active filters we set and then triggers the pre-existing
+   *          logic from DocList that will fetch the filtered data
    * @param {object} filterToAdd
    */
   setFilterActive = (filterToAdd) => {
@@ -115,7 +107,7 @@ class Filters extends PureComponent {
   /**
    * @method clearFilters
    * @summary Clears all the filters for a specified filter group
-   * @param {*} filterToClear - object containing the filters
+   * @param {object} filterToClear - object containing the filters
    */
   clearFilters = (filterToClear) => {
     const { filterId, clearAllFilters, filters, updateDocList } = this.props;
@@ -126,12 +118,11 @@ class Filters extends PureComponent {
 
   /**
    * @method dropdownToggled
-   * @summary ToDo: Describe the method
+   * @summary Resets notValidFields flag to false
    */
   dropdownToggled = () => {
-    this.setState({
-      notValidFields: false,
-    });
+    const { updateNotValidFields, filterId } = this.props;
+    updateNotValidFields({ filterId, data: false });
   };
 
   /**
@@ -148,7 +139,7 @@ class Filters extends PureComponent {
       filters,
     } = this.props;
     const widgetShown = filters ? filters.widgetShown : false;
-    const { notValidFields } = this.state;
+    const notValidFields = filters ? filters.notValidFields : false;
 
     if (!filters || !viewId) return false;
     const { filtersActive, filtersCaptions: activeFiltersCaptions } = filters;
@@ -254,6 +245,7 @@ Filters.propTypes = {
   updateActiveFilter: PropTypes.func,
   filters: PropTypes.object,
   clearAllFilters: PropTypes.func,
+  updateNotValidFields: PropTypes.func,
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -275,5 +267,6 @@ export default connect(
     updateWidgetShown,
     updateActiveFilter,
     clearAllFilters,
+    updateNotValidFields,
   }
 )(Filters);
