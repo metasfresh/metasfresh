@@ -912,7 +912,7 @@ export class RawWidget extends Component {
               type="number"
               min={0}
               precision={widgetField === 'CableLength' ? 2 : 1}
-              step={subentity === 'quickInput' ? 0.1 : 1}
+              step={subentity === 'quickInput' ? 'any' : 1}
             />
             {widgetData[0].devices && (
               <div className="device-widget-wrapper">
