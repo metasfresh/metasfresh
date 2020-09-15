@@ -2,7 +2,7 @@ package de.metas.material.dispo.model;
 
 
 /** Generated Interface for MD_Candidate_Demand_Detail
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_MD_Candidate_Demand_Detail 
@@ -14,13 +14,6 @@ public interface I_MD_Candidate_Demand_Detail
     /** AD_Table_ID=540815 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Istmenge.
@@ -46,8 +39,8 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_ActualQty = "ActualQty";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -59,8 +52,8 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -69,8 +62,8 @@ public interface I_MD_Candidate_Demand_Detail
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -82,8 +75,7 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -92,8 +84,7 @@ public interface I_MD_Candidate_Demand_Detail
 	public void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -111,8 +102,8 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -126,8 +117,8 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -162,8 +153,8 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -172,8 +163,8 @@ public interface I_MD_Candidate_Demand_Detail
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -187,7 +178,7 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Dispo-Bedarfsdetail.
+	 * Set Dispo-Warenausgangsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -196,7 +187,7 @@ public interface I_MD_Candidate_Demand_Detail
 	public void setMD_Candidate_Demand_Detail_ID (int MD_Candidate_Demand_Detail_ID);
 
 	/**
-	 * Get Dispo-Bedarfsdetail.
+	 * Get Dispo-Warenausgangsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -266,7 +257,7 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
 
 	/**
-	 * Set Lieferdisposition.
+	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -275,7 +266,7 @@ public interface I_MD_Candidate_Demand_Detail
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Lieferdisposition.
+	 * Get Shipment Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -312,8 +303,8 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_PlannedQty = "PlannedQty";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -327,8 +318,8 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
