@@ -368,7 +368,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
-			invoice.setC_Project_ID(Services.get(IOrderDAO.class).getById(OrderId.ofRepoId(invoice.getC_Order_ID())).getC_Project_ID());
+			invoice.setC_Project_ID(invoiceHeader.getC_Order_ID() > 0 ?
+					Services.get(IOrderDAO.class).getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID())).getC_Project_ID() : 0);
 			if (invoiceHeader.getM_InOut_ID() > 0)
 			{
 				invoice.setM_InOut_ID(invoiceHeader.getM_InOut_ID()); // task 06630
