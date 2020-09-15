@@ -8,6 +8,7 @@ import {
   updateActiveFilter,
   clearAllFilters,
   annotateFilters,
+  isFilterValid,
 } from '../../actions/FiltersActions';
 
 import FiltersFrequent from './FiltersFrequent';
@@ -18,25 +19,11 @@ import { getEntityRelatedId } from '../../reducers/filters';
 /**
  * @file Class based component.
  * @module Filters
- * @extends Component
+ * @extends PureComponent
  */
 class Filters extends PureComponent {
   state = {
     notValidFields: null,
-  };
-
-  /**
-   * @method isFilterValid
-   * @summary ToDo: Describe the method
-   * @param {*} filters
-   */
-  isFilterValid = (filters) => {
-    if (filters.parameters) {
-      return !filters.parameters.filter((item) => item.mandatory && !item.value)
-        .length;
-    }
-
-    return true;
   };
 
   /**
@@ -72,7 +59,7 @@ class Filters extends PureComponent {
    */
   // eslint-disable-next-line no-unused-vars
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
-    const valid = this.isFilterValid(filter);
+    const valid = isFilterValid(filter);
 
     this.setState(
       {

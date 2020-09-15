@@ -327,3 +327,17 @@ export function annotateFilters({ unannotatedFilters, filtersActive }) {
     };
   });
 }
+
+/**
+ * @method isFilterValid
+ * @summary Function used to check the validity of a filter - returns a boolean value
+ * @param {object} filters
+ */
+export function isFilterValid(filters) {
+  if (filters.parameters) {
+    return !filters.parameters.filter((item) => item.mandatory && !item.value)
+      .length;
+  }
+
+  return true;
+}
