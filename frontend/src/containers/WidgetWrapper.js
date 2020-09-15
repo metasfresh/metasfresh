@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { allowShortcut, disableShortcut } from '../actions/WindowActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
+import { getMasterData, getMasterWidgetData } from '../reducers/windowHandler';
 
 import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
@@ -27,17 +28,17 @@ class WidgetWrapper extends PureComponent {
 }
 
 const mapStateToProps = (state, props) => {
-  const { windowHandler, appHandler } = state;
+  const { appHandler } = state;
   const {
     dataSource,
-    fields,
     tableId,
     rowIndex,
     colIndex,
     isEditable,
     supportFieldEdit,
+    layoutId,
   } = props;
-  const { data } = windowHandler.master;
+  const data = getMasterData(state);
 
   let widgetData = null;
 
@@ -53,15 +54,7 @@ const mapStateToProps = (state, props) => {
 
       break;
     case 'element':
-      widgetData = fields.reduce((result, item) => {
-        data[item.field] && result.push(data[item.field]);
-
-        return result;
-      }, []);
-
-      if (!widgetData.length) {
-        widgetData = [{}];
-      }
+      widgetData = getMasterWidgetData(state, layoutId);
 
       break;
     case 'table': {
@@ -70,7 +63,12 @@ const mapStateToProps = (state, props) => {
       const cells = rows[rowIndex];
       const columnItem = table.cols[colIndex];
 
-      widgetData = getCellWidgetData(cells, columnItem, isEditable, supportFieldEdit);
+      widgetData = getCellWidgetData(
+        cells,
+        columnItem,
+        isEditable,
+        supportFieldEdit
+      );
 
       break;
     }
@@ -81,8 +79,9 @@ const mapStateToProps = (state, props) => {
   }
 
   return {
+    relativeDocId: data.ID && data.ID.value,
     widgetData,
-    modalVisible: windowHandler.modal.visible,
+    modalVisible: state.windowHandler.modal.visible,
     timeZone: appHandler.me.timeZone,
   };
 };

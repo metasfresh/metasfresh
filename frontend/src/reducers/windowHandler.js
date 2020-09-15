@@ -1,6 +1,7 @@
 import update from 'immutability-helper';
 import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
+import { createCachedSelector } from 're-reselect';
 import merge from 'merge';
 
 import {
@@ -138,6 +139,51 @@ export const getQuickactions = createSelector(
   [getQuickactionsData],
   (actions) => actions
 );
+
+export const getMasterData = (state) => state.windowHandler.master.data;
+const getMasterLayout = (state, layoutPath) => {
+  const layout = state.windowHandler.master.layout;
+  const [
+    sectionIdx,
+    columnIdx,
+    elGroupIdx,
+    elLineIdx,
+    elIdx,
+  ] = layoutPath.split('_');
+
+  return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
+    elGroupIdx
+  ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+const selectWidgetData = (data, layout) => {
+  let widgetData = null;
+
+  widgetData = layout.fields.reduce((result, item) => {
+    data[item.field] && result.push(data[item.field]);
+
+    return result;
+  }, []);
+
+  if (!widgetData.length) {
+    widgetData = [{}];
+  }
+
+  return widgetData;
+};
+
+/**
+ * @method getMasterWidgetData
+ * @summary cached selector for picking widget data for a desired element
+ *
+ * @param {object} state - redux state
+ * @param {string} layoutPath - indexes of element in the layout structure
+ */
+export const getMasterWidgetData = createCachedSelector(
+  getMasterData,
+  getMasterLayout,
+  (data, layout) => selectWidgetData(data, layout)
+)((_state_, layoutPath) => layoutPath);
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
