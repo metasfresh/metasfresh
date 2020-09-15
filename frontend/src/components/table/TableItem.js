@@ -176,6 +176,7 @@ class TableItem extends PureComponent {
           tableId,
         });
         e.stopPropagation();
+        this.handleEditProperty(e);
         break;
       case 'Escape':
         if (edited === property) {
