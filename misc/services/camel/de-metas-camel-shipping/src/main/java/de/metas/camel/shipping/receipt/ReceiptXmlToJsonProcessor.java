@@ -59,6 +59,7 @@ import static de.metas.camel.shipping.receipt.ReceiptReturnField.LOT_NUMBER;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.MOVEMENT_DATE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.MOVEMENT_QUANTITY;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.PRODUCT_SEARCH_KEY;
+import static de.metas.camel.shipping.receipt.ReceiptReturnField.RECEIPT_EXTERNAL_RESOURCE_URL;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.RECEIPT_SCHEDULE_ID;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.RETURN_EXTERNAL_RESOURCE_URL;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.SHIPMENT_DOCUMENT_NO;
@@ -151,6 +152,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 				//
 				.dateReceived(getDateReceived(row, name2Index))
 				//
+				.externalResourceURL(FileMakerDataHelper.getValue(getValueRequest.fieldName(RECEIPT_EXTERNAL_RESOURCE_URL.getName()).build()))
 				.build();
 	}
 

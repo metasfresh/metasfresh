@@ -43,10 +43,13 @@ public class ReceiptScheduleExternalInfo
 	@Nullable
 	String externalId;
 
+	@Nullable
+	String externalResourceURL;
+
 	@Builder
-	public ReceiptScheduleExternalInfo(@Nullable final LocalDate movementDate, @Nullable final ZonedDateTime dateReceived, @Nullable final String externalId)
+	public ReceiptScheduleExternalInfo(@Nullable final LocalDate movementDate, @Nullable final ZonedDateTime dateReceived, @Nullable final String externalId, @Nullable final String externalResourceURL)
 	{
-		if (movementDate == null && dateReceived == null && Check.isBlank(externalId))
+		if (movementDate == null && dateReceived == null && Check.isBlank(externalId) && Check.isBlank(externalResourceURL))
 		{
 			throw new AdempiereException("Empty object!");
 		}
@@ -54,5 +57,6 @@ public class ReceiptScheduleExternalInfo
 		this.movementDate = movementDate;
 		this.dateReceived = dateReceived;
 		this.externalId = externalId;
+		this.externalResourceURL = externalResourceURL;
 	}
 }
