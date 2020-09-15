@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-// import MasterWidget from '../widget/MasterWidget';
-import Widget from '../../containers/WidgetWrapper';
+import WidgetWrapper from '../../containers/WidgetWrapper';
 
 class Element extends PureComponent {
   render() {
@@ -11,26 +10,29 @@ class Element extends PureComponent {
       rowId,
       dataId,
       elementLayout,
-      elementIndex,
       isFocused,
       tabIndex,
-      data,
       isModal,
       isAdvanced,
       isFullScreen,
       addRefToWidgets,
       onBlurWidget,
+      elementIndex,
+      elementsLineIndex,
+      elementGroupIndex,
+      sectionIndex,
+      columnIndex,
     } = this.props;
 
     const autoFocus = isFocused && elementIndex === 0;
     const fieldName = elementLayout.fields ? elementLayout.fields[0].field : '';
-    const relativeDocId = data.ID && data.ID.value;
+    const layoutId = `${sectionIndex}_${columnIndex}_${elementGroupIndex}_${elementsLineIndex}_${elementIndex}`;
 
     return (
-      <Widget
+      <WidgetWrapper
         renderMaster={true}
         dataSource="element"
-
+        layoutId={layoutId}
         ref={addRefToWidgets}
         entity="window"
         key={'element' + elementIndex}
@@ -39,7 +41,6 @@ class Element extends PureComponent {
         isModal={!!isModal}
         tabId={tabId}
         rowId={rowId}
-        relativeDocId={relativeDocId}
         isAdvanced={isAdvanced}
         tabIndex={tabIndex}
         autoFocus={!isModal && autoFocus}
@@ -55,6 +56,10 @@ class Element extends PureComponent {
 Element.propTypes = {
   elementLayout: PropTypes.object.isRequired,
   elementIndex: PropTypes.number.isRequired,
+  elementsLineIndex: PropTypes.number,
+  elementGroupIndex: PropTypes.number,
+  columnIndex: PropTypes.number,
+  sectionIndex: PropTypes.number,
   windowId: PropTypes.string.isRequired,
   tabId: PropTypes.string,
   rowId: PropTypes.string,

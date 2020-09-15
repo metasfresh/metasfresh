@@ -48,7 +48,6 @@ class Column extends PureComponent {
       tabId,
       rowId,
       dataId,
-      data,
       isFirst,
       isModal,
       isAdvanced,
@@ -56,6 +55,8 @@ class Column extends PureComponent {
       onBlurWidget,
       addRefToWidgets,
       requestElementGroupFocus,
+      columnIndex,
+      sectionIndex,
     } = this.props;
 
     return groups.map((elementGroupLayout, elementGroupIndex) => {
@@ -69,11 +70,13 @@ class Column extends PureComponent {
         <ElementGroup
           key={'elemGroups' + elementGroupIndex}
           elementGroupLayout={elementGroupLayout}
+          elementGroupIndex={elementGroupIndex}
+          columnIndex={columnIndex}
+          sectionIndex={sectionIndex}
           windowId={windowId}
           tabId={tabId}
           rowId={rowId}
           dataId={dataId}
-          data={data}
           shouldBeFocused={shouldBeFocused}
           tabIndex={tabIndex}
           isModal={isModal}
@@ -142,7 +145,8 @@ class Column extends PureComponent {
 Column.propTypes = {
   columnLayout: PropTypes.object.isRequired,
   colWidth: PropTypes.number,
-
+  columnIndex: PropTypes.number,
+  sectionIndex: PropTypes.number,
   windowId: PropTypes.string.isRequired,
   tabId: PropTypes.string,
   rowId: PropTypes.string,

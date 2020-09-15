@@ -12,6 +12,7 @@ import Section from './window/Section';
 import Dropzone from './Dropzone';
 import { INITIALLY_CLOSED } from '../constants/Constants';
 
+const EMPTY_OBJECT = {};
 /**
  * @file Class based component.
  * @module Window
@@ -322,7 +323,7 @@ class Window extends PureComponent {
    * @param {*} isDataEntry
    * @param {*} extendedData
    */
-  renderSections = (sections, isDataEntry, extendedData = {}) => {
+  renderSections = (sections, isDataEntry, extendedData = EMPTY_OBJECT) => {
     const {
       layout: { windowId },
       tabId,

@@ -68,6 +68,8 @@ class Section extends PureComponent {
         <Column
           key={`col-${columnIndex}`}
           columnLayout={columnLayout}
+          columnIndex={columnIndex}
+          sectionIndex={sectionIndex}
           colWidth={colWidth}
           windowId={windowId}
           tabId={tabId}

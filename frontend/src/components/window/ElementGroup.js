@@ -43,7 +43,6 @@ class ElementGroup extends PureComponent {
       tabId,
       rowId,
       dataId,
-      data,
       shouldBeFocused,
       tabIndex,
       isModal,
@@ -51,6 +50,9 @@ class ElementGroup extends PureComponent {
       isFullScreen,
       addRefToWidgets,
       onBlurWidget,
+      elementGroupIndex,
+      sectionIndex,
+      columnIndex,
     } = this.props;
 
     return elementsLinesLayoutArray.map(
@@ -61,11 +63,14 @@ class ElementGroup extends PureComponent {
           <ElementsLine
             key={'line' + elementsLineIndex}
             elementsLineLayout={elementsLineLayout}
+            elementsLineIndex={elementsLineIndex}
+            elementGroupIndex={elementGroupIndex}
+            columnIndex={columnIndex}
+            sectionIndex={sectionIndex}
             windowId={windowId}
             tabId={tabId}
             rowId={rowId}
             dataId={dataId}
-            data={data}
             isFocused={isFocused}
             tabIndex={tabIndex}
             isModal={isModal}
@@ -82,11 +87,13 @@ class ElementGroup extends PureComponent {
 
 ElementGroup.propTypes = {
   elementGroupLayout: PropTypes.object.isRequired,
+  elementGroupIndex: PropTypes.number,
+  columnIndex: PropTypes.number,
+  sectionIndex: PropTypes.number,
   windowId: PropTypes.string.isRequired,
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   dataId: PropTypes.string,
-  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   shouldBeFocused: PropTypes.bool,
   tabIndex: PropTypes.number,
   isModal: PropTypes.bool,
