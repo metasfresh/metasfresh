@@ -305,29 +305,6 @@ public interface I_M_Replenish
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_WarehouseSource_ID (int M_WarehouseSource_ID);
-
-	/**
-	 * Get Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_WarehouseSource_ID();
-
-    /** Column name M_WarehouseSource_ID */
-    public static final String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
-
-	/**
 	 * Set Replenish Type.
 	 * Method for re-ordering a product
 	 *
