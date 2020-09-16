@@ -4,13 +4,10 @@ import classnames from 'classnames';
 import counterpart from 'counterpart';
 
 import {
-  getDateFormat,
-  fieldValueToString,
   getSizeClass,
   getTdTitle,
   checkIfDateField,
 } from '../../utils/tableHelpers';
-import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
 import WidgetTooltip from '../widget/WidgetTooltip';
@@ -68,12 +65,7 @@ class TableCell extends PureComponent {
    * when you change a value within a table cell by typing something in that specific cell.
    */
   handleKeyDown = (e) => {
-    const {
-      onKeyDown,
-      property,
-      isReadonly,
-      updateRow,
-    } = this.props;
+    const { onKeyDown, property, isReadonly, updateRow } = this.props;
 
     if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
       return false; // CMD + C on Mac has to just copy
@@ -126,15 +118,15 @@ class TableCell extends PureComponent {
    * @param {object} e
    */
   onDoubleClick = (e) => {
-    const {
-      property,
-      isEditable,
-      handleDoubleClick,
-      isReadonly,
-    } = this.props;
+    const { property, isEditable, handleDoubleClick, isReadonly } = this.props;
 
     if (isEditable) {
-      handleDoubleClick({ event: e, property, focus: true, readonly: isReadonly });
+      handleDoubleClick({
+        event: e,
+        property,
+        focus: true,
+        readonly: isReadonly,
+      });
     }
   };
 
@@ -306,7 +298,7 @@ TableCell.propTypes = {
   tdValue: PropTypes.any,
   description: PropTypes.any, // TODO: We have 4 types of values here. Needs fixing at some point.
   tooltipData: PropTypes.any,
-  tooltipWidget: PropTypes.bool,
+  tooltipWidget: PropTypes.object,
   supportFieldEdit: PropTypes.bool,
   supportZoomInto: PropTypes.bool,
   updatedRow: PropTypes.any,

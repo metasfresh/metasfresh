@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -11,7 +10,6 @@ import {
   isCellEditable,
   tableRowPropTypes,
   getCellWidgetData,
-  fieldValueToString,
   getDescription,
   getTdValue,
   nestedSelect,
@@ -173,7 +171,12 @@ class TableRow extends PureComponent {
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
-          this.handleEditProperty({ event: e, property, focus: true, readonly });
+          this.handleEditProperty({
+            event: e,
+            property,
+            focus: true,
+            readonly,
+          });
           this.setState({ valueBeforeEditing: e.target.textContent });
         }
         updatePropertyValue({
@@ -228,7 +231,13 @@ class TableRow extends PureComponent {
           }
           this.listenOnKeysTrue();
 
-          this.handleEditProperty({ event: e, property, focus: true, readonly, select: true });
+          this.handleEditProperty({
+            event: e,
+            property,
+            focus: true,
+            readonly,
+            select: true,
+          });
         }
         break;
       }
@@ -297,7 +306,7 @@ class TableRow extends PureComponent {
 
             if (disabled || readonly) {
               this.listenOnKeysTrue();
-              this.handleEditProperty({ event: e });
+              this.handleEditProperty({ event });
             } else {
               this.listenOnKeysFalse();
             }
@@ -471,7 +480,12 @@ class TableRow extends PureComponent {
             );
             const isReadonly = widgetData[0].readonly;
             const isMandatory = widgetData[0].mandatory;
-            const tdValue = getTdValue({ widgetData, item, isEdited, isGerman });
+            const tdValue = getTdValue({
+              widgetData,
+              item,
+              isEdited,
+              isGerman,
+            });
             const description = getDescription({ widgetData, tdValue });
             let tooltipData = null;
             let tooltipWidget =

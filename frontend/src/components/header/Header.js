@@ -525,6 +525,8 @@ class Header extends PureComponent {
     }
   };
 
+  closeDropdownOverlay = () => this.closeOverlays('dropdown');
+
   /**
    * @method redirect
    * @summary ToDo: Describe the method
@@ -673,9 +675,7 @@ class Header extends PureComponent {
                       docId={docId}
                       activeTab={activeTab}
                       noLabel
-                      dropdownOpenCallback={() =>
-                        this.closeOverlays('dropdown')
-                      }
+                      dropdownOpenCallback={this.closeDropdownOverlay}
                       {...docStatus}
                     />
                     {tooltipOpen === keymap.DOC_STATUS && (
