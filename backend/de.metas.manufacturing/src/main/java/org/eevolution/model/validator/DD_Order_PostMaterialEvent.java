@@ -1,19 +1,6 @@
 package org.eevolution.model.validator;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -25,20 +12,43 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.material.replenish.ReplenishInfo;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
  * I add this into a dedicated interceptor (as opposed to adding the method to {@link DD_Order}) because there is at least one test case where I want {@link PP_Order} to be invoked without events being fired.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Interceptor(I_DD_Order.class)
-public class DD_OrderFireMaterialEvent
+@Component
+public class DD_Order_PostMaterialEvent
 {
+	private final ReplenishInfoRepository replenishInfoRepository;
+
+	public DD_Order_PostMaterialEvent(final ReplenishInfoRepository replenishInfoRepository)
+	{
+		this.replenishInfoRepository = replenishInfoRepository;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void fireMaterialEvent(@NonNull final I_DD_Order ddOrder)
@@ -104,6 +114,10 @@ public class DD_OrderFireMaterialEvent
 
 		final int bPartnerId = ddOrderLine.getC_BPartner_ID() > 0 ? ddOrderLine.getC_BPartner_ID() : ddOrder.getC_BPartner_ID();
 
+		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(
+				WarehouseId.ofRepoId(ddOrder.getM_Warehouse_From_ID()), // both from-warehouse and product are mandatory DB-columns
+				ProductId.ofRepoId(ddOrderLine.getM_Product_ID()));
+
 		return DDOrderLine.builder()
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ddOrderLine))
 				.bPartnerId(bPartnerId)
@@ -112,6 +126,7 @@ public class DD_OrderFireMaterialEvent
 				.networkDistributionLineId(ddOrderLine.getDD_NetworkDistributionLine_ID())
 				.salesOrderLineId(ddOrderLine.getC_OrderLineSO_ID())
 				.durationDays(durationDays)
+				.fromWarehouseReplenishDescriptor(replenishInfo.toReplenishDescriptor())
 				.build();
 	}
 

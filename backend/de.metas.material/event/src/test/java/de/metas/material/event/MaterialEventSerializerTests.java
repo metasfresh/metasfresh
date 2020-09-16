@@ -471,7 +471,6 @@ public class MaterialEventSerializerTests
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(30)
 				.materialDescriptor(materialDescriptor)
-				.replenishDescriptor(createSampleReplenishDescriptor())
 				.build();
 		final Forecast forecast = Forecast.builder()
 				.forecastId(20)

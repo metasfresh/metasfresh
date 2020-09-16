@@ -87,7 +87,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		//
 		// DRP
 		engine.addModelValidator(new org.eevolution.model.validator.DD_Order());
-		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent()); // gh #523
+		//engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent()); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderLine());
 		engine.addModelValidator(new org.eevolution.drp.model.validator.M_Movement());
 
