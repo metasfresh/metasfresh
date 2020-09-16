@@ -100,9 +100,7 @@ class TableContextMenu extends Component {
   loadReferences = () => {
     const { windowId, docId, tabId, selected, updateTableHeight } = this.props;
 
-    this.setState({
-      loadingReferences: true,
-    });
+    this.setState({ loadingReferences: true });
 
     this.closeEventSource();
     this.eventSource = referencesEventSource({
@@ -123,10 +121,22 @@ class TableContextMenu extends Component {
 
       onComplete: () => {
         const { references } = this.state;
-        if (references.length > 2) updateTableHeight(DROPDOWN_OFFSET_BIG);
-        this.setState({
-          loadingReferences: false,
-        });
+        if (references.length > 2) {
+          updateTableHeight(DROPDOWN_OFFSET_BIG);
+          const mainPanel = document.querySelector('.panel-vertical-scroll');
+          mainPanel.scrollTop = mainPanel.scrollHeight;
+
+          this.setState((prevState) => {
+            const { y: lastY } = prevState.contextMenu;
+            return {
+              contextMenu: {
+                ...prevState.contextMenu,
+                y: lastY - DROPDOWN_OFFSET_BIG,
+              },
+            };
+          });
+        }
+        this.setState({ loadingReferences: false });
       },
     });
   };
