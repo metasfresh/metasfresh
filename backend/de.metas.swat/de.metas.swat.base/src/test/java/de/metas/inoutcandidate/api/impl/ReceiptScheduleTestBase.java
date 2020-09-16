@@ -59,7 +59,7 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
@@ -177,9 +177,9 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 		Mockito.when(productAcctDAO.retrieveActivityForAcct(
-				ArgumentMatchers.any(),
-				ArgumentMatchers.eq(orgId),
-				ArgumentMatchers.any()))
+				Matchers.any(),
+				Matchers.eq(orgId),
+				Matchers.any()))
 				.thenReturn(activityId);
 
 		// #653
