@@ -37,9 +37,9 @@ import java.math.BigDecimal;
  * The quantities are in the respective product's stock UOM.
  */
 @Value
-public class ReplenishDescriptor
+public class MinMaxDescriptor
 {
-	public static final ReplenishDescriptor ZERO = new ReplenishDescriptor(BigDecimal.ZERO, BigDecimal.ZERO);
+	public static final MinMaxDescriptor ZERO = new MinMaxDescriptor(BigDecimal.ZERO, BigDecimal.ZERO);
 
 	BigDecimal min;
 
@@ -47,7 +47,7 @@ public class ReplenishDescriptor
 
 	@Builder
 	@JsonCreator
-	private ReplenishDescriptor(
+	private MinMaxDescriptor(
 			@JsonProperty("min") @Nullable final BigDecimal min,
 			@JsonProperty("max") @Nullable final BigDecimal max)
 	{

@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -131,7 +131,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 
 		ProductDescriptor productDescriptor;
 
-		ReplenishDescriptor replenishDescriptor;
+		MinMaxDescriptor minMaxDescriptor;
 
 		Instant issueOrReceiveDate;
 
@@ -157,7 +157,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 				@JsonProperty("oldPPOrderLineId") final int oldPPOrderLineId,
 				@JsonProperty("newPPOrderLineId") final int newPPOrderLineId,
 				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-				@JsonProperty("replenishDescriptor") @Nullable final ReplenishDescriptor replenishDescriptor,
+				@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 				@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 				@JsonProperty("oldQtyRequired") @NonNull final BigDecimal oldQtyRequired,
 				@JsonProperty("newQtyRequired") @NonNull final BigDecimal newQtyRequired,
@@ -167,7 +167,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 			this.oldPPOrderLineId = Check.assumeGreaterThanZero(oldPPOrderLineId, "oldPPOrderLineId");
 			this.newPPOrderLineId = Check.assumeGreaterThanZero(newPPOrderLineId, "newPPOrderLineId");
 			this.productDescriptor = productDescriptor;
-			this.replenishDescriptor = replenishDescriptor;
+			this.minMaxDescriptor = minMaxDescriptor;
 			this.issueOrReceiveDate = issueOrReceiveDate;
 			this.oldQtyRequired = oldQtyRequired;
 			this.newQtyRequired = newQtyRequired;

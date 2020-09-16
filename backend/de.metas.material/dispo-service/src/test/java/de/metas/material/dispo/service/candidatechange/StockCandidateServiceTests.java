@@ -108,7 +108,9 @@ public class StockCandidateServiceTests
 		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
 
-	/** creates a stock candidate at a certain time and then adds an earlier one */
+	/**
+	 * creates a stock candidate at a certain time and then adds an earlier one
+	 */
 	@Test
 	public void createStockCandidate_before_existing()
 	{
@@ -134,7 +136,9 @@ public class StockCandidateServiceTests
 		assertThat(result.getPreviousQty()).isNull();
 	}
 
-	/** creates a stock candidate at a certain time and then adds a later one */
+	/**
+	 * creates a stock candidate at a certain time and then adds a later one
+	 */
 	@Test
 	public void createStockCandidate_after_existing()
 	{
@@ -163,14 +167,16 @@ public class StockCandidateServiceTests
 	@Test
 	public void updateQuantity_error_if_missing_candidate_record()
 	{
-		final CandidateBuilder candidateBuilder = Candidate.builder()
+		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
+				.clearTransactionDetails()
 				.materialDescriptor(createMaterialDescriptor())
-				.id(CandidateId.ofRepoId(23));
+				.id(CandidateId.ofRepoId(23))
+				.build();
 
-		assertThatThrownBy(candidateBuilder::build)
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("clientAndOrgId");
+		assertThatThrownBy(() -> stockCandidateService.updateQtyAndDate(candidate))
+				.isInstanceOf(RuntimeException.class);
 	}
 
 	@Test

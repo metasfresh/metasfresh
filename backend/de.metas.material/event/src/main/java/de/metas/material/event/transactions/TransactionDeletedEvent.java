@@ -8,7 +8,7 @@ import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import lombok.Builder;
 import lombok.Singular;
 
@@ -49,7 +49,7 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 	public TransactionDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("replenishDescriptor") @Nullable final ReplenishDescriptor replenishDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("shipmentScheduleIds2Qtys") @Singular final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			@JsonProperty("receiptScheduleIdsQtys") @Singular final Map<Integer, BigDecimal> receiptScheduleIdsQtys,
 			@JsonProperty("receiptId") final InOutAndLineId receiptId,
@@ -64,7 +64,7 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
-				replenishDescriptor,
+				minMaxDescriptor,
 				shipmentScheduleIds2Qtys,
 				receiptScheduleIdsQtys,
 				receiptId,

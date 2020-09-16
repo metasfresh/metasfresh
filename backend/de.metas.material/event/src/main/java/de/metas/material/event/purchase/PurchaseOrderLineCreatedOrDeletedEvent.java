@@ -3,8 +3,8 @@ package de.metas.material.event.purchase;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -42,7 +42,7 @@ public class PurchaseOrderLineCreatedOrDeletedEvent implements MaterialEvent
 
 	int purchaseCandidateRepoId;
 
-	@JsonProperty("replenishDescriptor")
+	@JsonProperty("minMaxDescriptor")
 	@Nullable
-	ReplenishDescriptor replenishDescriptor;
+	MinMaxDescriptor minMaxDescriptor;
 }

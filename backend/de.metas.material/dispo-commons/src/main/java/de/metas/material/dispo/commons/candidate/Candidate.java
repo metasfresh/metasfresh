@@ -5,7 +5,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -88,7 +88,7 @@ public class Candidate
 
 	MaterialDescriptor materialDescriptor;
 
-	ReplenishDescriptor replenishDescriptor;
+	MinMaxDescriptor minMaxDescriptor;
 
 	BusinessCaseDetail businessCaseDetail;
 
@@ -106,7 +106,7 @@ public class Candidate
 			final MaterialDispoGroupId groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
-			final ReplenishDescriptor replenishDescriptor,
+			final MinMaxDescriptor minMaxDescriptor,
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails)
@@ -125,7 +125,7 @@ public class Candidate
 		this.seqNo = seqNo;
 
 		this.materialDescriptor = materialDescriptor;
-		this.replenishDescriptor = CoalesceUtil.coalesce(replenishDescriptor, ReplenishDescriptor.ZERO);
+		this.minMaxDescriptor = CoalesceUtil.coalesce(minMaxDescriptor, MinMaxDescriptor.ZERO);
 		this.businessCaseDetail = businessCaseDetail;
 		this.additionalDemandDetail = additionalDemandDetail;
 

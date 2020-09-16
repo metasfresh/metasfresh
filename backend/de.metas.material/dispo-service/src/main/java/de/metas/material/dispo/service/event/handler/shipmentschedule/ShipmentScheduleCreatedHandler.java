@@ -84,7 +84,7 @@ public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<Ship
 		final CandidateBuilder candidateBuilder = Candidate
 				.builderForEventDescr(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())
-				.replenishDescriptor(event.getReplenishDescriptor())
+				.minMaxDescriptor(event.getMinMaxDescriptor())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(demandDetail);

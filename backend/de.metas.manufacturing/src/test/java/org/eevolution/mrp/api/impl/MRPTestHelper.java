@@ -22,18 +22,35 @@ package org.eevolution.mrp.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.logging.LogManager;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.planning.DurationUnitCodeUtils;
+import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.impl.MRPContext;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -86,34 +103,17 @@ import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assume;
 import org.slf4j.Logger;
 
-import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.engine.impl.PlainDocumentBL;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.logging.LogManager;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.planning.DurationUnitCodeUtils;
-import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.impl.MRPContext;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public class MRPTestHelper
 {
@@ -312,7 +312,7 @@ public class MRPTestHelper
 	private org.eevolution.model.LiberoValidator createLiberoValidator()
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
-		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory);
+		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory, new ReplenishInfoRepository());
 
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(

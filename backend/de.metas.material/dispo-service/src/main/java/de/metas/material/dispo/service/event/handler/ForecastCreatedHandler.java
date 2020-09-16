@@ -83,7 +83,6 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 	{
 		candidateBuilder
 				.materialDescriptor(forecastLine.getMaterialDescriptor())
-				.replenishDescriptor(forecastLine.getReplenishDescriptor())
 				.businessCaseDetail(DemandDetail.forForecastLineId(
 						forecastLine.getForecastLineId(),
 						forecast.getForecastId(),

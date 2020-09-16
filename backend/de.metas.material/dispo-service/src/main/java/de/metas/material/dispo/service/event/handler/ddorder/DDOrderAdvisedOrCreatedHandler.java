@@ -126,7 +126,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				// .status(candidateStatus)
 				.materialDescriptor(demandMaterialDescriptor)
-				.replenishDescriptor(ddOrderLine.getFromWarehouseReplenishDescriptor())
+				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
 				.seqNo(expectedSeqNoForDemandCandidate)

@@ -9,8 +9,8 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -232,7 +232,7 @@ public class MaterialEventSerializerTests
 						.networkDistributionLineId(41)
 						.qty(TEN)
 						.salesOrderLineId(61)
-						.fromWarehouseReplenishDescriptor(createSampleReplenishDescriptor())
+						.fromWarehouseMinMaxDescriptor(createSampleMinMaxDescriptor())
 						.build())
 				.orgId(OrgId.ofRepoId(40))
 				.plantId(50)
@@ -241,9 +241,9 @@ public class MaterialEventSerializerTests
 				.build();
 	}
 
-	private static ReplenishDescriptor createSampleReplenishDescriptor()
+	private static MinMaxDescriptor createSampleMinMaxDescriptor()
 	{
-		return ReplenishDescriptor.builder()
+		return MinMaxDescriptor.builder()
 				.min(new BigDecimal("2"))
 				.max(new BigDecimal("3")).build();
 	}
@@ -345,7 +345,7 @@ public class MaterialEventSerializerTests
 				.newPPOrderLine(createPPOrderLine())
 				.ppOrderLineChange(ChangedPPOrderLineDescriptor.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(3))
-						.replenishDescriptor(createSampleReplenishDescriptor())
+						.minMaxDescriptor(createSampleMinMaxDescriptor())
 						.issueOrReceiveDate(NOW)
 						.oldPPOrderLineId(40)
 						.newPPOrderLineId(50)
@@ -389,7 +389,7 @@ public class MaterialEventSerializerTests
 				.line(createPPOrderLine())
 				.line(PPOrderLine.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(20))
-						.replenishDescriptor(createSampleReplenishDescriptor())
+						.minMaxDescriptor(createSampleMinMaxDescriptor())
 						.issueOrReceiveDate(NOW)
 						.description("desc2")
 						.productBomLineId(380)
@@ -407,7 +407,7 @@ public class MaterialEventSerializerTests
 				.description("desc1")
 				.productBomLineId(280)
 				.qtyRequired(valueOf(220))
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.receipt(true)
 				.build();
 	}
@@ -445,7 +445,7 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.purchaseCandidateRepoId(20)
 				.purchaseMaterialDescriptor(createMaterialDescriptor())
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.vendorId(30)
 				.build();
 
@@ -471,7 +471,6 @@ public class MaterialEventSerializerTests
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(30)
 				.materialDescriptor(materialDescriptor)
-				.replenishDescriptor(createSampleReplenishDescriptor())
 				.build();
 		final Forecast forecast = Forecast.builder()
 				.forecastId(20)
@@ -529,7 +528,7 @@ public class MaterialEventSerializerTests
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.orderedQuantityDelta(new BigDecimal("2"))
 				.reservedQuantity(new BigDecimal("3"))
 				.reservedQuantityDelta(new BigDecimal("4"))
@@ -546,7 +545,7 @@ public class MaterialEventSerializerTests
 		final ReceiptScheduleDeletedEvent receiptScheduleCreatedEvent = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.reservedQuantity(new BigDecimal("2"))
 				.receiptScheduleId(3)
 				.build();
@@ -625,7 +624,7 @@ public class MaterialEventSerializerTests
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.reservedQuantity(new BigDecimal("3"))
 				.shipmentScheduleId(4);
 	}
@@ -636,7 +635,7 @@ public class MaterialEventSerializerTests
 		final ShipmentScheduleUpdatedEvent shipmentScheduleUpdatedEvent = ShipmentScheduleUpdatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.orderedQuantityDelta(new BigDecimal("2"))
 				.reservedQuantity(new BigDecimal("3"))
 				.reservedQuantityDelta(new BigDecimal("4"))
@@ -705,7 +704,7 @@ public class MaterialEventSerializerTests
 				.materialDescriptor(createMaterialDescriptor())
 				.shipmentScheduleIds2Qty(20, TEN)
 				.shipmentScheduleIds2Qty(21, ONE.negate())
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
 						.huId(30)
 						.productDescriptor(createProductDescriptor())
@@ -723,7 +722,7 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.replenishDescriptor(createSampleReplenishDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.shipmentScheduleIds2Qty(20, TEN)
 				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.build();

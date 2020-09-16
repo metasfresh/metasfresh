@@ -1,15 +1,12 @@
 package de.metas.material.event.shipmentschedule;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -18,6 +15,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -55,7 +53,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 	public ShipmentScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("replenishDescriptor") @Nullable final ReplenishDescriptor replenishDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
@@ -63,7 +61,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 		super(
 				eventDescriptor,
 				materialDescriptor,
-				replenishDescriptor,
+				minMaxDescriptor,
 				reservedQuantity,
 				shipmentScheduleId);
 
