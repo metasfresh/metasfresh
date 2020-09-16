@@ -185,6 +185,19 @@ export const getMasterWidgetData = createCachedSelector(
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, layoutPath) => layoutPath);
 
+export const getMasterDocStatus = createSelector(
+  getMasterData,
+  (data) => {
+    return [
+      {
+        status: data.DocStatus || null,
+        action: data.DocAction || null,
+        displayed: true,
+      },
+    ];
+  }
+);
+
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
     case NO_CONNECTION:

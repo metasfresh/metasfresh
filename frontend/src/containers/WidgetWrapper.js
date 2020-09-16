@@ -5,7 +5,11 @@ import { connect } from 'react-redux';
 import { allowShortcut, disableShortcut } from '../actions/WindowActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
-import { getMasterData, getMasterWidgetData } from '../reducers/windowHandler';
+import {
+  getMasterData,
+  getMasterWidgetData,
+  getMasterDocStatus,
+} from '../reducers/windowHandler';
 
 import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
@@ -44,13 +48,7 @@ const mapStateToProps = (state, props) => {
 
   switch (dataSource) {
     case 'doc-status':
-      widgetData = [
-        {
-          status: data.DocStatus || null,
-          action: data.DocAction || null,
-          displayed: true,
-        },
-      ];
+      widgetData = getMasterDocStatus(state);
 
       break;
     case 'element':
