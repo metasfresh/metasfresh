@@ -70,7 +70,7 @@ public class ReplenishInfoRepository
 		else
 		{
 			min = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Min(), productId, uomId);
-			max = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Min(), productId, uomId);
+			max = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
 		}
 
 		return ReplenishInfo.builder()
