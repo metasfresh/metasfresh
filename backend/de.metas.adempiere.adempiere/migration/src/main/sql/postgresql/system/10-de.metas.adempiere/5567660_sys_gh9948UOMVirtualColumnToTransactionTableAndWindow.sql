@@ -37,7 +37,7 @@ SELECT update_Column_Translation_From_AD_Element(215)
 -- 2020-09-15T16:00:11.163Z
 -- URL zum Konzept
 UPDATE AD_Column
-SET ColumnSQL='(select C_UOM_ID from M_InOutLine iol where iol.M_InOutLine_ID = M_Transaction.M_InOutLine_ID)', IsUpdateable='N', Updated=TO_TIMESTAMP('2020-09-15 19:00:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET ColumnSQL='(select C_UOM_ID from m_product p where p.M_Product_ID = M_Transaction.M_Product_ID)', IsUpdateable='N', Updated=TO_TIMESTAMP('2020-09-15 19:00:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Column_ID = 571510
 ;
 
@@ -172,12 +172,4 @@ WHERE AD_UI_Element_ID = 545593
 UPDATE AD_UI_Element
 SET IsDisplayedGrid='Y', SeqNoGrid=150, Updated=TO_TIMESTAMP('2020-09-15 19:09:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_UI_Element_ID = 545594
-;
-
--- 2020-09-16T09:19:05.188Z
--- URL zum Konzept
-UPDATE AD_Column
-SET ColumnSQL='(case when M_Transaction.movementtype in(''W+'',''W-'') then (select C_UOM_ID from PP_Cost_Collector ppcc where ppcc.PP_Cost_Collector_ID = M_Transaction.PP_Cost_Collector_ID) when M_Transaction.movementtype in(''I+'', ''I-'') then (select C_UOM_ID from M_InventoryLine il where il.M_InventoryLine_ID = M_Transaction.M_InventoryLine_ID) else (select C_UOM_ID from m_product p where p.M_Product_ID = M_Transaction.M_Product_ID) end) ',
-    Updated=TO_TIMESTAMP('2020-09-16 12:19:05', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Column_ID = 571510
 ;
