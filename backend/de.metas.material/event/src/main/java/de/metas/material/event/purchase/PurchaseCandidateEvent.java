@@ -1,10 +1,9 @@
 package de.metas.material.event.purchase;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -44,18 +43,18 @@ public abstract class PurchaseCandidateEvent implements MaterialEvent
 	private final int purchaseCandidateRepoId;
 	private final MaterialDescriptor purchaseMaterialDescriptor;
 	@Nullable
-	private final ReplenishDescriptor replenishDescriptor;
+	private final MinMaxDescriptor minMaxDescriptor;
 	private final int vendorId;
 
 	protected PurchaseCandidateEvent(
 			@NonNull final MaterialDescriptor purchaseMaterialDescriptor,
-			@Nullable final ReplenishDescriptor replenishDescriptor,
+			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			@NonNull final EventDescriptor eventDescriptor,
 			final int purchaseCandidateRepoId,
 			final int vendorId)
 	{
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
-		this.replenishDescriptor = replenishDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 		this.eventDescriptor = eventDescriptor;
 		this.purchaseCandidateRepoId = Check.assumeGreaterThanZero(purchaseCandidateRepoId, "purchaseCandidateRepoId");
 		this.vendorId = Check.assumeGreaterThanZero(vendorId, "vendorId");

@@ -14,7 +14,7 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.organization.ClientAndOrgId;
@@ -393,12 +393,12 @@ public class DemandCandiateHandlerTest
 	void computeRequiredQty(String givenMin, String givenMax, String when, String then)
 	{
 		// given
-		final ReplenishDescriptor replenishDescriptor = ReplenishDescriptor.builder()
+		final MinMaxDescriptor minMaxDescriptor = MinMaxDescriptor.builder()
 				.min(new BigDecimal(givenMin))
 				.max(new BigDecimal(givenMax)).build();
 
 		// when
-		final BigDecimal actual = DemandCandiateHandler.computeRequiredQty(new BigDecimal(when), replenishDescriptor);
+		final BigDecimal actual = DemandCandiateHandler.computeRequiredQty(new BigDecimal(when), minMaxDescriptor);
 
 		// then
 		assertThat(actual).isEqualByComparingTo(then);

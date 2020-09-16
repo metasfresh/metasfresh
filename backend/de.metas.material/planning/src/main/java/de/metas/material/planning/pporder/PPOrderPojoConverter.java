@@ -145,7 +145,7 @@ public class PPOrderPojoConverter
 				.qtyDelivered(qtyDelivered.toBigDecimal())
 				.issueOrReceiveDate(issueOrReceiveDate)
 				.receipt(receipt)
-				.replenishDescriptor(replenishInfo.toReplenishDescriptor())
+				.minMaxDescriptor(replenishInfo.toMinMaxDescriptor())
 				.build();
 	}
 

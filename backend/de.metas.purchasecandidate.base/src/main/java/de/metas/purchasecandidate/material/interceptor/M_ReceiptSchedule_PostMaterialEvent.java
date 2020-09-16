@@ -8,9 +8,9 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
@@ -159,7 +159,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	private AbstractReceiptScheduleEvent createUpdatedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
-		final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(orderedMaterial).toReplenishDescriptor();
+		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
 
 		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(
 				receiptSchedule,
@@ -176,7 +176,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.reservedQuantityDelta(qtyReserved.subtract(extractQtyReserved(oldReceiptSchedule)))
 				.orderedQuantityDelta(orderedMaterial.getQuantity().subtract(oldOrderedQuantity))
-				.replenishDescriptor(replenishDescriptor)
+				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 		return event;
 	}
@@ -196,14 +196,14 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	private AbstractReceiptScheduleEvent createDeletedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
-		final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(orderedMaterial).toReplenishDescriptor();
+		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
 
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.replenishDescriptor(replenishDescriptor)
+				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 		return event;
 	}

@@ -90,7 +90,7 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 
 		candidateBuilder
 				.materialDescriptor(materialDescriptor)
-				.replenishDescriptor(event.getReplenishDescriptor())
+				.minMaxDescriptor(event.getMinMaxDescriptor())
 				.businessCaseDetail(purchaseDetail);
 
 		final Candidate supplyCandidate = updateBuilderFromEvent(candidateBuilder, event).build();

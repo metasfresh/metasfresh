@@ -126,7 +126,7 @@ public class DD_Order_PostMaterialEvent
 				.networkDistributionLineId(ddOrderLine.getDD_NetworkDistributionLine_ID())
 				.salesOrderLineId(ddOrderLine.getC_OrderLineSO_ID())
 				.durationDays(durationDays)
-				.fromWarehouseReplenishDescriptor(replenishInfo.toReplenishDescriptor())
+				.fromWarehouseMinMaxDescriptor(replenishInfo.toMinMaxDescriptor())
 				.build();
 	}
 

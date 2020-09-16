@@ -16,7 +16,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQue
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
@@ -174,7 +174,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final BigDecimal availableQuantityAfterDemandWasApplied = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 		Loggables.addLog("Quantity after demand applied: {}", availableQuantityAfterDemandWasApplied);
 
-		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getReplenishDescriptor());
+		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getMinMaxDescriptor());
 		if (requiredQty.signum() > 0)
 		{
 			// create supply record now! otherwise
@@ -184,7 +184,7 @@ public class DemandCandiateHandler implements CandidateHandler
 					.businessCaseDetail(null)
 					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
 					.groupId(demandCandidateWithId.getEffectiveGroupId())
-					.replenishDescriptor(demandCandidateWithId.getReplenishDescriptor())
+					.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
 					.quantity(requiredQty)
 					.build();
 			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate);
@@ -200,12 +200,12 @@ public class DemandCandiateHandler implements CandidateHandler
 	@VisibleForTesting
 	static BigDecimal computeRequiredQty(
 			@NonNull final BigDecimal availableQuantityAfterDemandWasApplied,
-			@NonNull final ReplenishDescriptor replenishDescriptor)
+			@NonNull final MinMaxDescriptor minMaxDescriptor)
 	{
-		if (availableQuantityAfterDemandWasApplied.compareTo(replenishDescriptor.getMin()) >= 0)
+		if (availableQuantityAfterDemandWasApplied.compareTo(minMaxDescriptor.getMin()) >= 0)
 		{
 			return ZERO;
 		}
-		return replenishDescriptor.getMax().subtract(availableQuantityAfterDemandWasApplied);
+		return minMaxDescriptor.getMax().subtract(availableQuantityAfterDemandWasApplied);
 	}
 }

@@ -344,8 +344,8 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setQty(stripZerosAfterTheDigit(quantity));
 		candidateRecord.setDateProjected(TimeUtil.asTimestamp(materialDescriptor.getDate()));
 
-		candidateRecord.setReplenish_MinQty(candidate.getReplenishDescriptor().getMin());
-		candidateRecord.setReplenish_MaxQty(candidate.getReplenishDescriptor().getMax());
+		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
+		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
 
 		updatCandidateRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
 

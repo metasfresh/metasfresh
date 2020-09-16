@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,7 +45,7 @@ public class DDOrderLine
 	ProductDescriptor productDescriptor;
 
 	@Nullable
-	ReplenishDescriptor fromWarehouseReplenishDescriptor;
+	MinMaxDescriptor fromWarehouseMinMaxDescriptor;
 
 	@NonNull
 	BigDecimal qty;
@@ -66,7 +66,7 @@ public class DDOrderLine
 	public DDOrderLine(
 			@JsonProperty("salesOrderLineId") final int salesOrderLineId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("fromWarehouseReplenishDescriptor") @Nullable final ReplenishDescriptor fromWarehouseReplenishDescriptor,
+			@JsonProperty("fromWarehouseMinMaxDescriptor") @Nullable final MinMaxDescriptor fromWarehouseMinMaxDescriptor,
 			@JsonProperty("bPartnerId") final int bPartnerId,
  			@JsonProperty("qty") @NonNull final BigDecimal qty,
 			@JsonProperty("durationDays") final int durationDays,
@@ -78,7 +78,7 @@ public class DDOrderLine
 		this.salesOrderLineId = salesOrderLineId;
 
 		this.productDescriptor = productDescriptor;
-		this.fromWarehouseReplenishDescriptor = fromWarehouseReplenishDescriptor;
+		this.fromWarehouseMinMaxDescriptor = fromWarehouseMinMaxDescriptor;
 
 		this.bPartnerId = bPartnerId;
 

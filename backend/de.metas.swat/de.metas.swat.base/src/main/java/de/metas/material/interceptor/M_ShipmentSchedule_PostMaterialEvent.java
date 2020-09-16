@@ -9,8 +9,8 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
@@ -117,9 +117,9 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				referencedLineFactory.createFor(shipmentSchedule)
 						.getDocumentLineDescriptor();
 
-		final ReplenishDescriptor replenishDescriptor = replenishInfoRepository
+		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository
 				.getBy(materialDescriptor)
-				.toReplenishDescriptor();
+				.toMinMaxDescriptor();
 
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
@@ -127,7 +127,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
-				.replenishDescriptor(replenishDescriptor)
+				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 	}
 
@@ -147,9 +147,9 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getQtyReserved()
 				.subtract(oldShipmentSchedule.getQtyReserved());
 
-		final ReplenishDescriptor replenishDescriptor = replenishInfoRepository
+		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository
 				.getBy(materialDescriptor)
-				.toReplenishDescriptor();
+				.toMinMaxDescriptor();
 
 		return ShipmentScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
@@ -158,7 +158,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.reservedQuantityDelta(reservedQuantityDelta)
 				.orderedQuantityDelta(orderedQuantityDelta)
-				.replenishDescriptor(replenishDescriptor)
+				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 	}
 

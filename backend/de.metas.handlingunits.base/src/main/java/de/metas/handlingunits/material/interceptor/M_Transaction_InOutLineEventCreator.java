@@ -12,7 +12,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
@@ -132,7 +132,7 @@ public class M_Transaction_InOutLineEventCreator
 			}
 			else
 			{
-				final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(materialDescriptor).toReplenishDescriptor();
+				final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor).toMinMaxDescriptor();
 
 				event = TransactionCreatedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
@@ -142,7 +142,7 @@ public class M_Transaction_InOutLineEventCreator
 						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
-						.replenishDescriptor(replenishDescriptor)
+						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
 			events.add(event);

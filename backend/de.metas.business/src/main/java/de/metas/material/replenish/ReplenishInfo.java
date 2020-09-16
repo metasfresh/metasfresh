@@ -22,7 +22,7 @@
 
 package de.metas.material.replenish;
 
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
@@ -46,9 +46,9 @@ public class ReplenishInfo
 	@NonNull
 	StockQtyAndUOMQty max;
 
-	public ReplenishDescriptor toReplenishDescriptor()
+	public MinMaxDescriptor toMinMaxDescriptor()
 	{
-		return ReplenishDescriptor.builder()
+		return MinMaxDescriptor.builder()
 				.min(min.getStockQty().toBigDecimal())
 				.max(max.getStockQty().toBigDecimal())
 				.build();

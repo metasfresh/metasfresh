@@ -31,8 +31,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.ClientAndOrgId;
@@ -198,7 +198,7 @@ public class CandidateRepositoryRetrieval
 				.date(TimeUtil.asInstant(dateProjected))
 				.build();
 
-		final ReplenishDescriptor replenishDescriptor = ReplenishDescriptor.builder()
+		final MinMaxDescriptor minMaxDescriptor = MinMaxDescriptor.builder()
 				.min(candidateRecord.getReplenish_MinQty())
 				.max(candidateRecord.getReplenish_MaxQty())
 				.build();
@@ -212,7 +212,7 @@ public class CandidateRepositoryRetrieval
 				// if the record has a group id, then set it.
 				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
 				.materialDescriptor(materialDescriptor)
-				.replenishDescriptor(replenishDescriptor);
+				.minMaxDescriptor(minMaxDescriptor);
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{

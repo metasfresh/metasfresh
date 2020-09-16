@@ -665,7 +665,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			return builder.type(CandidateType.UNEXPECTED_DECREASE)
 					.materialDescriptor(transactionCreatedEvent.getMaterialDescriptor().withQuantity(quantity.negate()))
-					.replenishDescriptor(transactionCreatedEvent.getReplenishDescriptor());
+					.minMaxDescriptor(transactionCreatedEvent.getMinMaxDescriptor());
 		}
 		else
 		{

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -69,7 +69,7 @@ public class PPOrderLine
 	ProductDescriptor productDescriptor;
 
 	@Nullable
-	ReplenishDescriptor replenishDescriptor;
+	MinMaxDescriptor minMaxDescriptor;
 
 	BigDecimal qtyRequired;
 
@@ -83,7 +83,7 @@ public class PPOrderLine
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("replenishDescriptor") @Nullable final ReplenishDescriptor replenishDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered)
@@ -96,7 +96,7 @@ public class PPOrderLine
 		this.ppOrderLineId = ppOrderLineId;
 		this.receipt = receipt;
 		this.productDescriptor = productDescriptor;
-		this.replenishDescriptor = replenishDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = qtyDelivered;

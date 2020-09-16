@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -53,18 +53,18 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	private final BigDecimal reservedQuantity;
 
 	@JsonInclude(NON_NULL)
-	private final ReplenishDescriptor replenishDescriptor;
+	private final MinMaxDescriptor minMaxDescriptor;
 
 	private final int receiptScheduleId;
 
 	public AbstractReceiptScheduleEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final MaterialDescriptor materialDescriptor,
-			@Nullable final ReplenishDescriptor replenishDescriptor,
+			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
 			final int receiptScheduleId)
 	{
-		this.replenishDescriptor = replenishDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 		this.receiptScheduleId = receiptScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;

@@ -6,7 +6,7 @@ import de.metas.inventory.IInventoryDAO;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ReplenishDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
@@ -141,7 +141,7 @@ final class M_Transaction_TransactionEventCreator
 			}
 			else
 			{
-				final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(materialDescriptor.getKey()).toReplenishDescriptor();
+				final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor.getKey()).toMinMaxDescriptor();
 
 				event = TransactionCreatedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
@@ -151,7 +151,7 @@ final class M_Transaction_TransactionEventCreator
 						.directMovementWarehouse(directMovementWarehouse)
 						.ppOrderId(costCollector.getPP_Order_ID())
 						.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
-						.replenishDescriptor(replenishDescriptor)
+						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
 			events.add(event);
@@ -200,7 +200,7 @@ final class M_Transaction_TransactionEventCreator
 			}
 			else
 			{
-				final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(materialDescriptor.getKey()).toReplenishDescriptor();
+				final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor.getKey()).toMinMaxDescriptor();
 
 				event = TransactionCreatedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
@@ -210,7 +210,7 @@ final class M_Transaction_TransactionEventCreator
 						.directMovementWarehouse(directMovementWarehouse)
 						.ddOrderId(ddOrderId)
 						.ddOrderLineId(movementLine.getDD_OrderLine_ID())
-						.replenishDescriptor(replenishDescriptor)
+						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
 			events.add(event);
@@ -250,7 +250,7 @@ final class M_Transaction_TransactionEventCreator
 			}
 			else
 			{
-				final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(materialDescriptor.getKey()).toReplenishDescriptor();
+				final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor.getKey()).toMinMaxDescriptor();
 
 				event = TransactionCreatedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
@@ -258,7 +258,7 @@ final class M_Transaction_TransactionEventCreator
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
-						.replenishDescriptor(replenishDescriptor)
+						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
 			events.add(event);
