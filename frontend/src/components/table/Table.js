@@ -448,6 +448,10 @@ export default class Table extends PureComponent {
       heightNew}px`;
   };
 
+  getAlert() {
+    console.log('getAlert from Child');
+  }
+
   render() {
     const {
       columns,
