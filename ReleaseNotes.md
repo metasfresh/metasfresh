@@ -9,15 +9,20 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.152 - WIP
-* https://github.com/metasfresh/metasfresh/issues/9919
-* https://github.com/metasfresh/metasfresh/issues/9897
-* https://github.com/metasfresh/metasfresh/issues/9916
-* https://github.com/metasfresh/metasfresh/issues/9895
-* https://github.com/metasfresh/metasfresh/pull/9894
-* https://github.com/metasfresh/metasfresh/issues/9901
-* https://github.com/metasfresh/metasfresh/issues/9908
-* https://github.com/metasfresh/metasfresh/issues/9898
+# metasfresh 5.152
+## Features
+* metasfresh
+  * [#9877](https://github.com/metasfresh/metasfresh/issues/9877) Manufacturing REST API
+  * [#9895](https://github.com/metasfresh/metasfresh/issues/9895) Implement display logic for Labels
+  * [#9897](https://github.com/metasfresh/metasfresh/issues/9897) Support Payment Allocation with different currencies
+  * [#9901](https://github.com/metasfresh/metasfresh/issues/9901) Extend REST API for Invoice Detail Item
+  * [#9908](https://github.com/metasfresh/metasfresh/issues/9908) Simplify approval in order planning
+
+## Fixes
+* metasfresh
+  * [#9916](https://github.com/metasfresh/metasfresh/issues/9916) White grid after browser back button in "Anrufliste"
+  * [#9919](https://github.com/metasfresh/metasfresh/issues/9919) Throw an error when there is no Transit Locator when completing a DD Order
+  * [#9898](https://github.com/metasfresh/metasfresh/issues/9898) Zoom into product prices from PLV not working
 
 # metasfresh 5.151
 ## Features
