@@ -57,11 +57,8 @@ public class C_PurchaseCandidate_PostMaterialEvent
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final ReplenishInfoRepository replenishInfoRepository;
 
-	/**
-	 * @param postMaterialEventService needs to be lazy because of some dependencies with Adempiere.java
-	 */
 	public C_PurchaseCandidate_PostMaterialEvent(
-			@NonNull /*@Lazy*/ final PostMaterialEventService postMaterialEventService,
+			@NonNull final PostMaterialEventService postMaterialEventService,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
 			@NonNull final ReplenishInfoRepository replenishInfoRepository)
 	{
