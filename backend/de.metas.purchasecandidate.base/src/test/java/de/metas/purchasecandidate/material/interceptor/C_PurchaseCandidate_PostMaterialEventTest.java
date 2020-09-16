@@ -1,15 +1,20 @@
 package de.metas.purchasecandidate.material.interceptor;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.uom.UomId;
 import de.metas.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -45,6 +50,10 @@ public class C_PurchaseCandidate_PostMaterialEventTest
 	private ModelProductDescriptorExtractor productDescriptorFactory;
 	private C_PurchaseCandidate_PostMaterialEvent mi;
 
+	private UomId uomId;
+	private WarehouseId warehouseId;
+	private ProductId productId;
+
 	@BeforeEach
 	public void init()
 	{
@@ -54,27 +63,27 @@ public class C_PurchaseCandidate_PostMaterialEventTest
 		productDescriptorFactory = Mockito.mock(ModelProductDescriptorExtractor.class);
 
 		mi = new C_PurchaseCandidate_PostMaterialEvent(postMaterialEventService, productDescriptorFactory, new ReplenishInfoRepository());
+
+		final I_C_UOM uomRecord = BusinessTestHelper.createUomKg();
+		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("Product", uomRecord);
+		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+		final I_M_Warehouse warehouseRecord = BusinessTestHelper.createWarehouse("Warehouse");
+		warehouseId = WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
 	}
 
 	@Test
 	public void createUpdatedEvent()
 	{
-		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
-		save(uomRecord);
-
-		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
-		save(productRecord);
-
 		final I_C_PurchaseCandidate purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
-		purchaseCandidateRecord.setM_Product(productRecord);
-		purchaseCandidateRecord.setC_UOM(uomRecord);
-		purchaseCandidateRecord.setM_WarehousePO_ID(20);
+		purchaseCandidateRecord.setM_Product_ID(productId.getRepoId());
+		purchaseCandidateRecord.setC_UOM_ID(uomId.getRepoId());
+		purchaseCandidateRecord.setM_WarehousePO_ID(warehouseId.getRepoId());
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
 		purchaseCandidateRecord.setVendor_ID(30);
 		save(purchaseCandidateRecord);
 
-		final ProductDescriptor p = ProductDescriptor.completeForProductIdAndEmptyAttribute(20);
+		final ProductDescriptor p = ProductDescriptor.completeForProductIdAndEmptyAttribute(productId.getRepoId());
 
 		Mockito.doReturn(p).when(productDescriptorFactory).createProductDescriptor(purchaseCandidateRecord);
 
@@ -82,7 +91,7 @@ public class C_PurchaseCandidate_PostMaterialEventTest
 		final PurchaseCandidateUpdatedEvent result = mi.createUpdatedEvent(purchaseCandidateRecord);
 
 		assertThat(result).isNotNull();
-		assertThat(result.getPurchaseMaterialDescriptor().getWarehouseId().getRepoId()).isEqualTo(20);
+		assertThat(result.getPurchaseMaterialDescriptor().getWarehouseId()).isEqualTo(warehouseId);
 		assertThat(result.getVendorId()).isEqualTo(30);
 	}
 
