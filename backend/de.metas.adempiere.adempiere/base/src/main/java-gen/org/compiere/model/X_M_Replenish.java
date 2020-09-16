@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenish, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 819945375L;
+	private static final long serialVersionUID = 1201937262L;
 
     /** Standard Constructor */
     public X_M_Replenish (Properties ctx, int M_Replenish_ID, String trxName)
@@ -172,21 +172,6 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
-	public void setM_WarehouseSource_ID (int M_WarehouseSource_ID)
-	{
-		if (M_WarehouseSource_ID < 1) 
-			set_Value (COLUMNNAME_M_WarehouseSource_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_WarehouseSource_ID, Integer.valueOf(M_WarehouseSource_ID));
-	}
-
-	@Override
-	public int getM_WarehouseSource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_WarehouseSource_ID);
 	}
 
 	/** 
