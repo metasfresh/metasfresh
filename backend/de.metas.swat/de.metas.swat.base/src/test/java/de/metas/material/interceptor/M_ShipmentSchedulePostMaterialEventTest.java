@@ -1,22 +1,5 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_Order;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -28,9 +11,26 @@ import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ import lombok.Setter;
  * #L%
  */
 
-public class M_ShipmentScheduleTest
+public class M_ShipmentSchedulePostMaterialEventTest
 {
 	private ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 
@@ -74,7 +74,7 @@ public class M_ShipmentScheduleTest
 	private I_M_ShipmentSchedule shipmentSchedule;
 
 	@Interceptor(I_M_ShipmentSchedule.class)
-	private static class M_ShipmentSchedule_Mocked extends M_ShipmentSchedule
+	private static class M_ShipmentSchedule_Mocked extends M_ShipmentSchedule_PostMaterialEvent
 	{
 		@Setter
 		private I_M_ShipmentSchedule oldShipmentSchedule;
@@ -82,9 +82,10 @@ public class M_ShipmentScheduleTest
 		public M_ShipmentSchedule_Mocked(
 				@NonNull final PostMaterialEventService postMaterialEventService,
 				@NonNull final ShipmentScheduleReferencedLineFactory referencedLineFactory,
-				@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+				@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+				@NonNull final ReplenishInfoRepository replenishInfoRepository)
 		{
-			super(postMaterialEventService, referencedLineFactory, productDescriptorFactory);
+			super(postMaterialEventService, referencedLineFactory, productDescriptorFactory, replenishInfoRepository);
 		}
 
 		@Override
@@ -106,7 +107,8 @@ public class M_ShipmentScheduleTest
 		shipmentScheduleInterceptor = new M_ShipmentSchedule_Mocked(
 				Mockito.mock(PostMaterialEventService.class),
 				shipmentScheduleReferencedLineFactory,
-				new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory());
+				new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory(),
+				new ReplenishInfoRepository());
 
 		final I_M_ShipmentSchedule oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		oldShipmentSchedule.setQtyOrdered_Calculated(TWENTY); // note that setQtyOrdered is just for display!, QtyOrdered_Calculated one or QtyOrdered_Override is where the qty is!
@@ -159,8 +161,6 @@ public class M_ShipmentScheduleTest
 	/**
 	 * Make sure that {@link ShipmentScheduleReferencedLineFactory} will return a {@link ShipmentScheduleReferencedLine}
 	 * that contains the given {@code orderLineDescriptor}.
-	 *
-	 * @param orderLineDescriptor
 	 */
 	private void setupShipmentScheduleReferencedLineFactory(@NonNull final OrderLineDescriptor orderLineDescriptor)
 	{

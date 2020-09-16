@@ -1,9 +1,12 @@
 package de.metas.purchasecandidate.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -11,12 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
-import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.util.time.SystemTime;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -40,10 +40,10 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-public class C_PurchaseCandidate_PostEventsTest
+public class C_PurchaseCandidate_PostMaterialEventTest
 {
 	private ModelProductDescriptorExtractor productDescriptorFactory;
-	private C_PurchaseCandidate_PostEvents mi;
+	private C_PurchaseCandidate_PostMaterialEvent mi;
 
 	@BeforeEach
 	public void init()
@@ -53,7 +53,7 @@ public class C_PurchaseCandidate_PostEventsTest
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		productDescriptorFactory = Mockito.mock(ModelProductDescriptorExtractor.class);
 
-		mi = new C_PurchaseCandidate_PostEvents(postMaterialEventService, productDescriptorFactory);
+		mi = new C_PurchaseCandidate_PostMaterialEvent(postMaterialEventService, productDescriptorFactory, new ReplenishInfoRepository());
 	}
 
 	@Test

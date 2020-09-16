@@ -112,7 +112,7 @@ public class DD_Order_PostMaterialEvent
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
-		final int bPartnerId = ddOrderLine.getC_BPartner_ID() > 0 ? ddOrderLine.getC_BPartner_ID() : ddOrder.getC_BPartner_ID();
+		final int bPartnerId = CoalesceUtil.firstGreaterThanZero(ddOrderLine.getC_BPartner_ID(), ddOrder.getC_BPartner_ID());
 
 		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(
 				WarehouseId.ofRepoId(ddOrder.getM_Warehouse_From_ID()), // both from-warehouse and product are mandatory DB-columns

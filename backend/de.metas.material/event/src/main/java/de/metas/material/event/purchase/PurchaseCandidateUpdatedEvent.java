@@ -2,7 +2,6 @@ package de.metas.material.event.purchase;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ReplenishDescriptor;
@@ -45,7 +44,7 @@ public class PurchaseCandidateUpdatedEvent extends PurchaseCandidateEvent
 
 	@JsonCreator
 	@Builder
-	public PurchaseCandidateUpdatedEvent(
+	private PurchaseCandidateUpdatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,

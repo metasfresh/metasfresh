@@ -1,16 +1,27 @@
 package org.eevolution.event;
 
-import static de.metas.document.engine.IDocument.STATUS_Completed;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.service.ClientId;
@@ -41,27 +52,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.event.pporder.MaterialDispoGroupId;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static de.metas.document.engine.IDocument.STATUS_Completed;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -313,7 +313,8 @@ public class PPOrderRequestedEventHandlerTests
 	private void registerPP_Order_Interceptor()
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
-		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory);
+		final ReplenishInfoRepository replenishInfoRepository = new ReplenishInfoRepository();
+		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory, replenishInfoRepository);
 
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(

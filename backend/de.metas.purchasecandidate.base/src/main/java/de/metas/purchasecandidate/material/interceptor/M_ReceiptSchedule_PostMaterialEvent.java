@@ -1,20 +1,6 @@
 package de.metas.purchasecandidate.material.interceptor;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -24,15 +10,28 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.ReplenishDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -58,23 +57,26 @@ import lombok.NonNull;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 @Component
-public class M_ReceiptSchedule_PostEvents
+public class M_ReceiptSchedule_PostMaterialEvent
 {
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
+	private final ReplenishInfoRepository replenishInfoRepository;
 
 	/**
 	 * @param postMaterialEventService needs to be lazy because of some dependencies with Adempiere.java
 	 */
-	public M_ReceiptSchedule_PostEvents(
-			@NonNull @Lazy final PostMaterialEventService postMaterialEventService,
+	public M_ReceiptSchedule_PostMaterialEvent(
+			@NonNull /*@Lazy*/ final PostMaterialEventService postMaterialEventService,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
+			@NonNull final ReplenishInfoRepository replenishInfoRepository)
 	{
 		this.postMaterialEventService = postMaterialEventService;
 		this.productDescriptorFactory = productDescriptorFactory;
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
+		this.replenishInfoRepository = replenishInfoRepository;
 	}
 
 	@ModelChange(timings = {
@@ -157,6 +159,7 @@ public class M_ReceiptSchedule_PostEvents
 	private AbstractReceiptScheduleEvent createUpdatedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
+		final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(orderedMaterial).toReplenishDescriptor();
 
 		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(
 				receiptSchedule,
@@ -173,6 +176,7 @@ public class M_ReceiptSchedule_PostEvents
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.reservedQuantityDelta(qtyReserved.subtract(extractQtyReserved(oldReceiptSchedule)))
 				.orderedQuantityDelta(orderedMaterial.getQuantity().subtract(oldOrderedQuantity))
+				.replenishDescriptor(replenishDescriptor)
 				.build();
 		return event;
 	}
@@ -192,12 +196,14 @@ public class M_ReceiptSchedule_PostEvents
 	private AbstractReceiptScheduleEvent createDeletedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
+		final ReplenishDescriptor replenishDescriptor = replenishInfoRepository.getBy(orderedMaterial).toReplenishDescriptor();
 
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
+				.replenishDescriptor(replenishDescriptor)
 				.build();
 		return event;
 	}

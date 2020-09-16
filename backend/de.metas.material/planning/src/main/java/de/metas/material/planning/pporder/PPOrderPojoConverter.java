@@ -1,17 +1,24 @@
 package de.metas.material.planning.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.compiere.util.TimeUtil.asInstant;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.replenish.ReplenishInfo;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
@@ -19,19 +26,12 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.DocStatus;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.pporder.MaterialDispoGroupId;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.product.ResourceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.compiere.util.TimeUtil.asInstant;
 
 /*
  * #%L
@@ -64,9 +64,13 @@ public class PPOrderPojoConverter
 			ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public PPOrderPojoConverter(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	private final ReplenishInfoRepository replenishInfoRepository;
+
+	public PPOrderPojoConverter(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+			@NonNull final ReplenishInfoRepository replenishInfoRepository)
 	{
 		this.productDescriptorFactory = productDescriptorFactory;
+		this.replenishInfoRepository = replenishInfoRepository;
 	}
 
 	public PPOrder getById(final int ppOrderId)
@@ -128,6 +132,10 @@ public class PPOrderPojoConverter
 		final Quantity qtyRequired = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderLineRecord.getQtyRequiered(), lineUomId), lineProductId);
 		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderLineRecord.getQtyDelivered(), lineUomId), lineProductId);
 
+		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(
+				WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()), // both from-warehouse and product are mandatory DB-columns
+				ProductId.ofRepoId(ppOrderLineRecord.getM_Product_ID()));
+
 		return PPOrderLine.builder()
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
 				.description(ppOrderLineRecord.getDescription())
@@ -137,6 +145,7 @@ public class PPOrderPojoConverter
 				.qtyDelivered(qtyDelivered.toBigDecimal())
 				.issueOrReceiveDate(issueOrReceiveDate)
 				.receipt(receipt)
+				.replenishDescriptor(replenishInfo.toReplenishDescriptor())
 				.build();
 	}
 

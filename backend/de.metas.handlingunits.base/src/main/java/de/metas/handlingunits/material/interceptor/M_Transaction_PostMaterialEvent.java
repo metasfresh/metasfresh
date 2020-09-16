@@ -1,7 +1,9 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.util.List;
-
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -11,10 +13,7 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
 
 /*
  * #%L
@@ -39,15 +38,14 @@ import lombok.NonNull;
  */
 @Interceptor(I_M_Transaction.class)
 @Component
-public class M_Transaction
+public class M_Transaction_PostMaterialEvent
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PostMaterialEventService materialEventService;
 	private final M_Transaction_TransactionEventCreator mtransactionEventCreator;
 	private final TransactionDescriptorFactory transactionDescriptorFactory;
 
-	public M_Transaction(
-			@NonNull final PostMaterialEventService materialEventService)
+	public M_Transaction_PostMaterialEvent(@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.mtransactionEventCreator = new M_Transaction_TransactionEventCreator();
