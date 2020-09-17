@@ -1224,7 +1224,7 @@ export function handleProcessResponse(response, type, id) {
           case 'openIncludedView':
             await dispatch(
               setIncludedView({
-                windowType: action.windowId,
+                windowId: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
               })
@@ -1234,7 +1234,7 @@ export function handleProcessResponse(response, type, id) {
           case 'closeIncludedView':
             await dispatch(
               setIncludedView({
-                windowType: action.windowId,
+                windowId: action.windowId,
                 viewId: action.viewId,
               })
             );
