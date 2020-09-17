@@ -14,7 +14,7 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 280039243L;
+	private static final long serialVersionUID = -1137521397L;
 
     /** Standard Constructor */
     public X_M_Shipper (Properties ctx, int M_Shipper_ID, String trxName)
@@ -218,4 +218,17 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
+
+	@Override
+	public void setInternalName (java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	@Override
+	public java.lang.String getInternalName()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+	}
+
 }

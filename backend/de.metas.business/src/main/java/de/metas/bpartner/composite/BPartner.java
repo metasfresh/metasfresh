@@ -1,14 +1,6 @@
 package de.metas.bpartner.composite;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.util.Check.isEmpty;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.RecordChangeLog;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
@@ -18,6 +10,12 @@ import de.metas.order.InvoiceRule;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
+import org.adempiere.ad.table.RecordChangeLog;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -104,6 +102,8 @@ public class BPartner
 
 	private final RecordChangeLog changeLog;
 
+	private final String shipmentAllocationBestBeforePolicy;
+
 	/** They are all nullable because we can create a completely empty instance which we then fill. */
 	@Builder(toBuilder = true)
 	private BPartner(
@@ -127,7 +127,8 @@ public class BPartner
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
 			@Nullable final String vatId,
-			@Nullable final RecordChangeLog changeLog)
+			@Nullable final RecordChangeLog changeLog,
+			@Nullable final String shipmentAllocationBestBeforePolicy)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -151,6 +152,7 @@ public class BPartner
 		this.vatId = vatId;
 
 		this.changeLog = changeLog;
+		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 	}
 
 	/** Only active bpartners are actually validated. Empty list means "valid" */
