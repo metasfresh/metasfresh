@@ -12,6 +12,7 @@ import {
 } from '../../utils/documentReferencesHelper';
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
+import { DROPDOWN_OFFSET_BIG } from '../../constants/Constants';
 
 class TableContextMenu extends Component {
   constructor(props) {
@@ -97,11 +98,9 @@ class TableContextMenu extends Component {
   };
 
   loadReferences = () => {
-    const { windowId, docId, tabId, selected } = this.props;
+    const { windowId, docId, tabId, selected, updateTableHeight } = this.props;
 
-    this.setState({
-      loadingReferences: true,
-    });
+    this.setState({ loadingReferences: true });
 
     this.closeEventSource();
     this.eventSource = referencesEventSource({
@@ -121,9 +120,23 @@ class TableContextMenu extends Component {
       },
 
       onComplete: () => {
-        this.setState({
-          loadingReferences: false,
-        });
+        const { references } = this.state;
+        if (references.length > 2) {
+          updateTableHeight(DROPDOWN_OFFSET_BIG);
+          const mainPanel = document.querySelector('.panel-vertical-scroll');
+          mainPanel.scrollTop = mainPanel.scrollHeight;
+
+          this.setState((prevState) => {
+            const { y: lastY } = prevState.contextMenu;
+            return {
+              contextMenu: {
+                ...prevState.contextMenu,
+                y: lastY - DROPDOWN_OFFSET_BIG,
+              },
+            };
+          });
+        }
+        this.setState({ loadingReferences: false });
       },
     });
   };
@@ -289,6 +302,7 @@ TableContextMenu.propTypes = {
   handleDelete: PropTypes.func,
   handleFieldEdit: PropTypes.func,
   handleZoomInto: PropTypes.func,
+  updateTableHeight: PropTypes.func,
 };
 
 export default connect()(TableContextMenu);
