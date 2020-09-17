@@ -1,22 +1,5 @@
 package de.metas.handlingunits.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.X_M_Transaction;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -32,6 +15,22 @@ import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.X_M_Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -55,7 +54,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class M_Transaction_HuDescriptorTest
+public class M_Transaction_PostMaterialEvent_HuDescriptorTest
 {
 	private static final BigDecimal THIRTY_IFCOS_PER_PALET = new BigDecimal("30");
 	private static final BigDecimal FOURTY_TOMATOES_PER_IFCO = new BigDecimal("40");

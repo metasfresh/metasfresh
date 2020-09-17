@@ -1,10 +1,8 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import java.math.BigDecimal;
-
 import com.google.common.base.Preconditions;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
@@ -13,6 +11,9 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor.SupplyRequiredDe
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -41,11 +42,15 @@ public class SupplyRequiredEventCreator
 {
 	public static SupplyRequiredEvent createSupplyRequiredEvent(
 			@NonNull final Candidate demandCandidate,
-			@NonNull final BigDecimal requiredAdditionalQty)
+			@NonNull final BigDecimal requiredAdditionalQty,
+			@Nullable final CandidateId supplyCandidateId)
 	{
 		verifyCandidateType(demandCandidate);
 
-		final SupplyRequiredDescriptor descriptor = createSupplyRequiredDescriptor(demandCandidate, requiredAdditionalQty);
+		final SupplyRequiredDescriptor descriptor = createSupplyRequiredDescriptor(
+				demandCandidate,
+				requiredAdditionalQty,
+				supplyCandidateId);
 
 		return SupplyRequiredEvent.builder()
 				.supplyRequiredDescriptor(descriptor)
@@ -61,11 +66,15 @@ public class SupplyRequiredEventCreator
 
 	private static SupplyRequiredDescriptor createSupplyRequiredDescriptor(
 			@NonNull final Candidate demandCandidate,
-			@NonNull final BigDecimal requiredAdditionalQty)
+			@NonNull final BigDecimal requiredAdditionalQty,
+			@Nullable final CandidateId supplyCandidateId)
 	{
 		final SupplyRequiredDescriptorBuilder descriptorBuilder = createAndInitSupplyRequiredDescriptor(
-				demandCandidate,
-				requiredAdditionalQty);
+				demandCandidate, requiredAdditionalQty);
+		if (supplyCandidateId != null)
+		{
+			descriptorBuilder.supplyCandidateId(supplyCandidateId.getRepoId());
+		}
 
 		if (demandCandidate.getDemandDetail() != null)
 		{

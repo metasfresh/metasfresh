@@ -1,16 +1,8 @@
 package de.metas.material.interceptor;
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_ForecastLine;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.base.Preconditions;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -19,8 +11,14 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.model.I_M_ForecastLine;
+import org.compiere.util.TimeUtil;
+
+import java.util.List;
 
 /*
  * #%L

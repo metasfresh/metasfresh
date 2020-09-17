@@ -1,13 +1,14 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.compiere.util.TimeUtil.asInstant;
-
-import java.math.BigDecimal;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.IDocument;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.material.event.forecast.ForecastLine;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
@@ -20,16 +21,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.util.List;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.IDocument;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.forecast.Forecast;
-import de.metas.material.event.forecast.ForecastCreatedEvent;
-import de.metas.material.event.forecast.ForecastLine;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.util.TimeUtil.asInstant;
 
 /*
  * #%L
@@ -53,7 +51,7 @@ import de.metas.material.event.forecast.ForecastLine;
  * #L%
  */
 @ExtendWith(AdempiereTestWatcher.class)
-public class M_ForecastEventCreatorTest
+public class M_ForecastPostMaterialEventEventCreatorTest
 {
 	private static final BPartnerId BPARTNER_ID_OF_FORECAST = BPartnerId.ofRepoId(50);
 	private static final BPartnerId BPARTNER_ID_OF_FIRST_FORECAST_LINE = BPartnerId.ofRepoId(51);

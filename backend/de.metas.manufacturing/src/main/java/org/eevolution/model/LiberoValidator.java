@@ -34,6 +34,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
+import org.eevolution.model.validator.PP_Order_PostMaterialEvent;
 
 /**
  * Libero Validator
@@ -78,7 +79,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(ppOrderConverter, materialEventService));
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
+		engine.addModelValidator(new PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product());
@@ -87,7 +88,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		//
 		// DRP
 		engine.addModelValidator(new org.eevolution.model.validator.DD_Order());
-		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent()); // gh #523
+		//engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent()); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderLine());
 		engine.addModelValidator(new org.eevolution.drp.model.validator.M_Movement());
 

@@ -1,31 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptorWithProductId;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -47,6 +22,29 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptorWithProductId;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -121,13 +119,15 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepository,
 				candidateRepositoryCommands);
 
+		final SupplyCandidateHandler supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
+
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				postMaterialEventService,
 				availableToPromiseRepository,
-				stockCandidateService);
-		final SupplyCandidateHandler supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
+				stockCandidateService,
+				supplyCandiateHandler);
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandiateHandler,
 				supplyCandiateHandler));
@@ -236,7 +236,7 @@ public class DDOrderAdvisedHandlerTests
 	}
 
 	/**
-	 * Like {@link #handleDistributionAdvisedEvent_with_two_events_chronological()},
+	 * Like {@link #handleDistributionAdvisedEvent_with_one_event()},
 	 * but intermediateWarehouseId => toWarehouseId and then fromWarehouseId => intermediateWarehouseId (i.e. first t2 and then t3),
 	 * because that's the sequence in which the planner would provide the advise-events to us.
 	 */

@@ -1,21 +1,18 @@
 package de.metas.handlingunits.material.interceptor;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.compiere.util.TimeUtil.asInstant;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.business.BusinessTestHelper;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.HUDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.transactions.AbstractTransactionEvent;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
@@ -28,19 +25,21 @@ import org.compiere.model.X_M_Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.inout.InOutAndLineId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.HUDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.transactions.AbstractTransactionEvent;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.compiere.util.TimeUtil.asInstant;
 
 /*
  * #%L
@@ -64,7 +63,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_Transaction_InOutLineEventCreatorTest
+public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 {
 	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THREE = new BigDecimal("3");
@@ -115,10 +114,12 @@ public class M_Transaction_InOutLineEventCreatorTest
 		final I_M_Transaction transaction = createShipmentTransaction();
 
 		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
+		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+				huDescriptionFactory,
+				new ReplenishInfoRepository());
 
 		// invoke the method under test
-		final List<MaterialEvent> events = mtransactionEventCreator
+		final List<MaterialEvent> events = transactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
@@ -142,10 +143,12 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(transaction);
 
 		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
+		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+				huDescriptionFactory,
+				new ReplenishInfoRepository());
 
 		// invoke the method under test
-		final List<MaterialEvent> events = mtransactionEventCreator
+		final List<MaterialEvent> events = transactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -173,11 +176,13 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(transaction);
 
 		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
+		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+				huDescriptionFactory,
+				new ReplenishInfoRepository());
 
 		//
 		// invoke the method under test
-		final List<MaterialEvent> events = mtransactionEventCreator
+		final List<MaterialEvent> events = transactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -211,7 +216,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 				return ImmutableList.of(huDescriptor);
 			}
 		};
-//		// @formatter:off
+		//		// @formatter:off
 //		new Expectations(M_Transaction_HuDescriptor.class)
 //		{{
 //			// partial mocking - we only want to mock this one method
@@ -247,10 +252,12 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(transaction);
 
 		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
+		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+				huDescriptionFactory,
+				new ReplenishInfoRepository());
 
 		// invoke the method under test
-		final List<MaterialEvent> events = mtransactionEventCreator
+		final List<MaterialEvent> events = transactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -275,10 +282,12 @@ public class M_Transaction_InOutLineEventCreatorTest
 		final I_M_Transaction transaction = createReceiptTransaction();
 
 		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
+		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+				huDescriptionFactory,
+				new ReplenishInfoRepository());
 
 		// invoke the method under test
-		final List<MaterialEvent> events = mtransactionEventCreator
+		final List<MaterialEvent> events = transactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
