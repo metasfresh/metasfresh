@@ -12,7 +12,11 @@ import {
 } from '../../utils/documentReferencesHelper';
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
-import { DROPDOWN_OFFSET_BIG } from '../../constants/Constants';
+import {
+  DROPDOWN_OFFSET_BIG,
+  TBL_CONTEXT_MENU_HEIGHT,
+  TBL_CONTEXT_MENU_MAX_Y,
+} from '../../constants/Constants';
 
 class TableContextMenu extends Component {
   constructor(props) {
@@ -128,7 +132,7 @@ class TableContextMenu extends Component {
         if (references.length > 2) {
           // for more than 5 links we add scroll, no of links is not limited
           if (references.length > 5) {
-            this.contextMenu.style.height = '300px';
+            this.contextMenu.style.height = TBL_CONTEXT_MENU_HEIGHT;
             this.contextMenu.style.overflowY = 'auto';
           }
           updateTableHeight(DROPDOWN_OFFSET_BIG);
@@ -144,7 +148,7 @@ class TableContextMenu extends Component {
               },
             };
           });
-        } else if (initialY > 706) {
+        } else if (initialY > TBL_CONTEXT_MENU_MAX_Y) {
           // routine to calculate and adjust position for bottom of the table clicks, also scroll automatically
           const beforeAssign = mainPanel.scrollTop;
           mainPanel.scrollTop = mainPanel.scrollHeight;
