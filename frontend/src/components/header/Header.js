@@ -562,7 +562,6 @@ class Header extends PureComponent {
       me,
       editmode,
       handleEditModeToggle,
-      activeTab,
       plugins,
       indicator,
       hasComments,
@@ -670,12 +669,12 @@ class Header extends PureComponent {
                       dataSource="doc-status"
                       type="primary"
                       entity="window"
-                      windowType={windowId}
+                      windowId={windowId}
                       dataId={dataId}
                       docId={docId}
-                      activeTab={activeTab}
-                      noLabel
+                      noLabel={true}
                       dropdownOpenCallback={this.closeDropdownOverlay}
+                      // caption/description/widgetType/fields
                       {...docStatus}
                     />
                     {tooltipOpen === keymap.DOC_STATUS && (
@@ -810,7 +809,6 @@ class Header extends PureComponent {
             siteName={siteName}
             editmode={editmode}
             handleEditModeToggle={handleEditModeToggle}
-            activeTab={activeTab}
           />
         )}
 
@@ -897,7 +895,6 @@ class Header extends PureComponent {
  * @prop {*} docSummaryData
  * @prop {*} docNoData
  * @prop {*} docStatus
- * @prop {*} docStatusData
  * @prop {*} dropzoneFocused
  * @prop {*} editmode
  * @prop {*} entity
@@ -924,7 +921,6 @@ Header.propTypes = {
   docSummaryData: PropTypes.any,
   docNoData: PropTypes.any,
   docStatus: PropTypes.any,
-  docStatusData: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
@@ -949,12 +945,22 @@ Header.propTypes = {
  * @summary ToDo: Describe the method
  * @param {object} state
  */
-const mapStateToProps = (state) => ({
-  inbox: state.appHandler.inbox,
-  me: state.appHandler.me,
-  pathname: state.routing.locationBeforeTransitions.pathname,
-  plugins: state.pluginsHandler.files,
-  indicator: state.windowHandler.indicator,
-});
+const mapStateToProps = (state) => {
+  const { master } = state.windowHandler;
+  const { docActionElement, documentSummaryElement } = master.layout;
+  const docSummaryData =
+    documentSummaryElement &&
+    master.data[documentSummaryElement.fields[0].field];
+
+  return {
+    inbox: state.appHandler.inbox,
+    me: state.appHandler.me,
+    pathname: state.routing.locationBeforeTransitions.pathname,
+    plugins: state.pluginsHandler.files,
+    indicator: state.windowHandler.indicator,
+    docStatus: docActionElement,
+    docSummaryData,
+  };
+};
 
 export default connect(mapStateToProps)(Header);

@@ -20,7 +20,6 @@ import WidgetTooltip from '../widget/WidgetTooltip';
 class TableCell extends PureComponent {
   constructor(props) {
     super(props);
-    this.widget = createRef();
     this.cellRef = createRef();
     this.clearWidgetValue = false;
 
@@ -70,6 +69,7 @@ class TableCell extends PureComponent {
     if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
+
     onKeyDown(e, property, isReadonly);
     !isReadonly && updateRow(); // toggle the flag in parrent component highlighting
     // the row giving the user feedback that an action is running
@@ -224,6 +224,8 @@ class TableCell extends PureComponent {
             tableId={tableId}
             {...item}
             {...{
+              tableId,
+              windowId,
               viewId,
               rowId,
               closeTableField,
@@ -242,14 +244,12 @@ class TableCell extends PureComponent {
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
-            windowType={windowId}
             isMainTable={mainTable}
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
             onChange={mainTable ? onCellChange : null}
-            ref={this.widget}
           />
         ) : (
           <div className={classnames({ 'with-widget': tooltipWidget })}>

@@ -22,11 +22,9 @@ import Header from './header/Header';
 class Container extends PureComponent {
   render() {
     const {
-      docActionElem,
       docNoData,
       docId,
       processStatus,
-      docSummaryData,
       dataId,
       windowId,
       breadcrumb,
@@ -54,7 +52,6 @@ class Container extends PureComponent {
       closeModalCallback,
       editmode,
       handleEditModeToggle,
-      activeTab,
       masterDocumentList,
       pluginComponents,
       setRawModalTitle,
@@ -85,13 +82,11 @@ class Container extends PureComponent {
         {!hideHeader && (
           // Forcing refresh component
           <Header
-            docStatus={docActionElem}
             windowId={windowId}
             showIndicator={modalHidden}
             {...{
               entity,
               docNoData,
-              docSummaryData,
               handleDeletedStatus,
               isDocumentNotSaved,
               viewId,
@@ -107,7 +102,6 @@ class Container extends PureComponent {
               docId,
               editmode,
               handleEditModeToggle,
-              activeTab,
               hasComments,
             }}
           />
@@ -224,18 +218,14 @@ class Container extends PureComponent {
 /**
  * @typedef {object} Props Component props
  * @prop {*} actions
- * @prop {*} activeTab
  * @prop {*} attachments
  * @prop {*} breadcrumb
  * @prop {*} children
  * @prop {bool} connectionError
  * @prop {*} closeModalCallback
  * @prop {string} dataId
- * @prop {*} docActionElem
- * @prop {*} docStatusData
  * @prop {*} docNoData
  * @prop {string} docId
- * @prop {*} docSummaryData
  * @prop {*} dropzoneFocused
  * @prop {*} editmode
  * @prop {*} entity
@@ -267,18 +257,14 @@ class Container extends PureComponent {
  */
 Container.propTypes = {
   actions: PropTypes.any,
-  activeTab: PropTypes.any,
   attachments: PropTypes.any,
   breadcrumb: PropTypes.any,
   children: PropTypes.any,
   closeModalCallback: PropTypes.any,
   connectionError: PropTypes.bool,
   dataId: PropTypes.any,
-  docActionElem: PropTypes.any,
   docId: PropTypes.any,
   docNoData: PropTypes.any,
-  docSummaryData: PropTypes.any,
-  docStatusData: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,

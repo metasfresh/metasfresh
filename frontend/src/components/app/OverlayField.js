@@ -86,14 +86,14 @@ class OverlayField extends Component {
         <MasterWidget
           entity="process"
           key={'element' + id}
-          windowType={type}
+          windowId={type}
           dataId={layout.pinstanceId}
           widgetData={widgetData}
           isModal={true}
           disabled={disabled}
           autoFocus={id === 0}
           captionElement={captionElement}
-          data={codeSelected || undefined}
+          value={codeSelected || undefined}
           onChange={onChange}
           {...elem}
         />

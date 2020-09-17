@@ -95,14 +95,14 @@ class TableRow extends PureComponent {
           const widgetData = prepareWidgetData(item, fieldsByName);
 
           if (widgetData) {
-            this.handleEditProperty(
-              null,
+            this.handleEditProperty({
+              event: null,
               property,
-              true,
-              widgetData[0],
-              false,
-              mark
-            );
+              focus: true,
+              readonly: widgetData[0].readonly,
+              select: false,
+              mark,
+            });
           }
         }
       });
@@ -133,11 +133,11 @@ class TableRow extends PureComponent {
     onClick(e, item);
   };
 
-  handleClickOutside = (e) => {
+  handleClickOutside = (event) => {
     const { changeListenOnTrue } = this.props;
 
     this.selectedCell && this.selectedCell.clearValue(true);
-    this.handleEditProperty(e);
+    this.handleEditProperty({ event });
 
     changeListenOnTrue();
   };
@@ -256,7 +256,7 @@ class TableRow extends PureComponent {
    * @param {boolean} [select] - flag if selected cell should be cleared
    * @param {boolean} [mark] - marks the text(like when you click and hold and select the text)
    */
-  handleEditProperty = (event, property, focus, readonly, select, mark) => {
+  handleEditProperty = ({ event, property, focus, readonly, select, mark }) => {
     this._focusCell(property, () => {
       this._editProperty({ event, property, focus, readonly, select, mark });
     });

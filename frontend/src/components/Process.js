@@ -32,7 +32,7 @@ class Process extends Component {
           <MasterWidget
             entity="process"
             key={'element' + id}
-            windowType={type}
+            windowId={type}
             dataId={layout.pinstanceId}
             widgetData={widgetData}
             isModal={true}

@@ -103,7 +103,7 @@ class EntryTable extends PureComponent {
               <MasterWidget
                 ref={addRefToWidgets}
                 entity="window"
-                windowType={windowId}
+                windowId={windowId}
                 dataId={documentId}
                 dataEntry={true}
                 fieldName={fieldName}
