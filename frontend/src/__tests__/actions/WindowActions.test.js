@@ -2,11 +2,16 @@ import thunk from 'redux-thunk'
 import nock from 'nock';
 import configureStore from 'redux-mock-store';
 import { Set } from 'immutable';
+import merge from 'merge';
+
+import viewHandler, { viewState, initialState } from '../../reducers/viewHandler';
+import windowState from '../../reducers/windowHandler';
 
 import {
   createWindow,
   initWindow,
   fetchTab,
+  handleProcessResponse,
 } from '../../actions/WindowActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { getScope, parseToDisplay } from '../../utils/documentListHelper';
@@ -15,6 +20,20 @@ import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
 import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
 import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
 import rowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
+import actionsFixtures from '../../../test_setup/fixtures/window/actions.json';
+
+const createStore = function(state = {}) {
+  const res = merge.recursive(
+    true,
+    {
+      viewHandler: initialState,
+      windowHandler: windowState,
+    },
+    state
+  );
+
+  return res;
+}
 
 describe('WindowActions thunks', () => {
   const propsData = masterWindowProps.props1;
@@ -153,5 +172,30 @@ describe('WindowActions thunks', () => {
     // @TODO: tests for NEW windows, NEW rows
 
     //@ TODO: loading top actions
+  });
+
+  describe('process', () => {
+    it('sets included view in the store from a process', () => {
+      const fixtures = actionsFixtures.processResponse;
+      const { type, id, response } = fixtures;
+      const state = createStore();
+      const store = mockStore(state);
+
+      const includedViewPayload = {
+        id: response.action.windowId,
+        viewId: response.action.viewId,
+        viewProfileId: null,
+      }
+
+      const expectedActions = [
+        { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: includedViewPayload },
+        { type: ACTION_TYPES.SET_PROCESS_STATE_SAVED },
+        { type: ACTION_TYPES.CLOSE_PROCESS_MODAL },
+      ]
+
+      return store.dispatch(handleProcessResponse({ data: response }, type, id)).then(() => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      });      
+    })
   });
 })
