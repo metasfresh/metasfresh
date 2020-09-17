@@ -88,7 +88,8 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
 				.process(new FeedbackProzessor())
 				.marshal(jacksonDataFormat)
-				.removeHeaders("*", "Authorization") // we don't want so send all headers as HTTP-headers; might be too much and we'd get an error back
+				.removeHeaders("*") // we don't want so send all headers as HTTP-headers; might be too much and we'd get an error back
+				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.log(LoggingLevel.DEBUG, "Sending feedback to metasfresh:\nHEADERS=${headers}\nBODY=${body}")
 				.to(http("{{metasfresh.api.feedback.receipt-candidate.uri}}"));
