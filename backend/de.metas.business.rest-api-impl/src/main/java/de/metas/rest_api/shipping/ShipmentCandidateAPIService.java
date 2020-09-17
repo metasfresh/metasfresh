@@ -573,11 +573,23 @@ class ShipmentCandidateAPIService
 		{
 			idsRegistryBuilder
 					.shipmentScheduleId(shipmentSchedule.getId())
-					.asiId(shipmentSchedule.getAttributeSetInstanceId())
-					.orderAndLineId(shipmentSchedule.getOrderAndLineId())
 					.bPartnerId(shipmentSchedule.getCustomerId())
-					.shipperId(shipmentSchedule.getShipperId())
 					.productId(shipmentSchedule.getProductId());
+
+			if (shipmentSchedule.getAttributeSetInstanceId() != null)
+			{
+				idsRegistryBuilder.asiId(shipmentSchedule.getAttributeSetInstanceId());
+			}
+
+			if (shipmentSchedule.getOrderAndLineId() != null)
+			{
+				idsRegistryBuilder.orderAndLineId(shipmentSchedule.getOrderAndLineId());
+			}
+
+			if (shipmentSchedule.getShipperId() != null)
+			{
+				idsRegistryBuilder.shipperId(shipmentSchedule.getShipperId());
+			}
 		}
 
 		return idsRegistryBuilder.build();
