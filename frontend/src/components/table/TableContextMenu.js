@@ -120,10 +120,19 @@ class TableContextMenu extends Component {
       },
 
       onComplete: () => {
-        const { references } = this.state;
+        let offset;
+        const { references, contextMenu } = this.state;
+        const { y: initialY } = contextMenu;
+        const mainPanel = document.querySelector('.panel-vertical-scroll');
+
         if (references.length > 2) {
+          // for more than 5 links we add scroll, no of links is not limited
+          if (references.length > 5) {
+            this.contextMenu.style.height = '300px';
+            this.contextMenu.style.overflowY = 'auto';
+          }
           updateTableHeight(DROPDOWN_OFFSET_BIG);
-          const mainPanel = document.querySelector('.panel-vertical-scroll');
+          offset = DROPDOWN_OFFSET_BIG;
           mainPanel.scrollTop = mainPanel.scrollHeight;
 
           this.setState((prevState) => {
@@ -131,11 +140,25 @@ class TableContextMenu extends Component {
             return {
               contextMenu: {
                 ...prevState.contextMenu,
-                y: lastY - DROPDOWN_OFFSET_BIG,
+                y: lastY - offset,
+              },
+            };
+          });
+        } else if (initialY > 706) {
+          // routine to calculate and adjust position for bottom of the table clicks, also scroll automatically
+          const beforeAssign = mainPanel.scrollTop;
+          mainPanel.scrollTop = mainPanel.scrollHeight;
+          let offset = initialY - mainPanel.scrollTop;
+          this.setState((prevState) => {
+            return {
+              contextMenu: {
+                ...prevState.contextMenu,
+                y: offset + beforeAssign,
               },
             };
           });
         }
+
         this.setState({ loadingReferences: false });
       },
     });
