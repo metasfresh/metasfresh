@@ -34,8 +34,10 @@ import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -93,6 +95,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	/**
 	 * Shipment on which the new shipment line will be created
@@ -430,6 +433,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		//
 		// Order Line Link (retrieved from current Shipment)
 		shipmentLine.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(orderLineId));
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId.getOrderLineId());
+		if (orderLine != null)
+		{
+			shipmentLine.setC_Project_ID(orderLine.getC_Project_ID());
+		}
 
 		optimisticallySetLineNo(shipmentLine);
 
