@@ -210,3 +210,5 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,617171,0,540802,540298,571289,'F',TO_TIMESTAMP('2020-09-15 09:24:11','YYYY-MM-DD HH24:MI:SS'),100,'Maximaler ATP. Wenn die Material-Dispo eine Aufstockung veranlasst, dann auf diese Menge.','Y','Y','N','Y','N','N','N',0,'Replenish_MaxQty',90,0,0,TO_TIMESTAMP('2020-09-15 09:24:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+delete from ad_modelvalidator where modelvalidationclass='de.metas.material.planning.interceptor.Main';
+delete from ad_modelvalidator where modelvalidationclass='de.metas.material.interceptor.Main';
