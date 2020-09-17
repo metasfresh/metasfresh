@@ -383,7 +383,7 @@ class Modal extends Component {
 
           this.removeModal();
         } catch (error) {
-          throw error;
+          console.error('Modal.handleStart error: ', error);
         } finally {
           if (this.mounted) {
             // prevent a memory leak
@@ -481,7 +481,7 @@ class Modal extends Component {
       <div className="modal-content-wrapper">
         <div className="panel panel-modal panel-modal-primary">
           <div
-            className={classnames('panel-modal-header', {
+            className={classnames('panel-groups-header', 'panel-modal-header', {
               'header-shadow': scrolled,
             })}
           >
@@ -748,9 +748,14 @@ Modal.propTypes = {
 };
 
 const mapStateToProps = (state, props) => {
-  const { tabId, dataId, parentWindowId, parentViewId } = props;
+  const { tabId, dataId, rawModalWindowId } = props;
+
+  const parentViewId = state.windowHandler.modal.parentViewId
+    ? state.windowHandler.modal.parentViewId
+    : props.parentViewId;
+
   const parentViewTableId = getTableId({
-    windowId: parentWindowId,
+    windowId: rawModalWindowId,
     viewId: parentViewId,
     tabId,
     docId: dataId,
@@ -762,6 +767,7 @@ const mapStateToProps = (state, props) => {
     parentSelection: parentSelector(state, parentViewTableId),
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator: state.windowHandler.indicator,
+    parentViewId,
   };
 };
 

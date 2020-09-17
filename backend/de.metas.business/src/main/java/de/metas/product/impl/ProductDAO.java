@@ -79,7 +79,7 @@ public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId> builder()
+	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -128,6 +128,7 @@ public class ProductDAO implements IProductDAO
 		return retrieveProductIdByValueOrNull(Env.getCtx(), value);
 	}
 
+	@Nullable
 	@Cached(cacheName = I_M_Product.Table_Name + "#ID#by#" + I_M_Product.COLUMNNAME_Value)
 	public ProductId retrieveProductIdByValueOrNull(@CacheCtx final Properties ctx, @NonNull final String value)
 	{
@@ -140,6 +141,7 @@ public class ProductDAO implements IProductDAO
 		return ProductId.ofRepoIdOrNull(productRepoId);
 	}
 
+	@Nullable
 	@Override
 	public ProductId retrieveProductIdBy(@NonNull final ProductQuery query)
 	{
@@ -210,7 +212,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public ProductCategoryId getDefaultProductCategoryId()
+	public @NonNull ProductCategoryId getDefaultProductCategoryId()
 	{
 		return defaultProductCategoryCache.getOrLoad(0, this::retrieveDefaultProductCategoryId);
 	}
@@ -233,6 +235,7 @@ public class ProductDAO implements IProductDAO
 		return productCategoryId;
 	}
 
+	@Nullable
 	@Override
 	public ProductId retrieveMappedProductIdOrNull(final ProductId productId, final OrgId orgId)
 	{
@@ -276,6 +279,7 @@ public class ProductDAO implements IProductDAO
 				.list(de.metas.product.model.I_M_Product.class);
 	}
 
+	@Nullable
 	@Override
 	public ProductCategoryId retrieveProductCategoryByProductId(@Nullable final ProductId productId)
 	{
@@ -288,6 +292,7 @@ public class ProductDAO implements IProductDAO
 		return product != null && product.isActive() ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
 	}
 
+	@Nullable
 	@Override
 	public ProductAndCategoryId retrieveProductAndCategoryIdByProductId(@NonNull final ProductId productId)
 	{
@@ -460,6 +465,10 @@ public class ProductDAO implements IProductDAO
 		if (request.getIsBOM() != null)
 		{
 			product.setIsBOM(request.getIsBOM());
+			if (!request.getIsBOM())
+			{
+				product.setIsVerified(false);
+			}
 		}
 
 		saveRecord(product);

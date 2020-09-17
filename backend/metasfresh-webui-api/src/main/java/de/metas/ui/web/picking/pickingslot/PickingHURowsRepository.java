@@ -1,24 +1,10 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.adempiere.warehouse.WarehouseId;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
@@ -30,9 +16,9 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -44,9 +30,22 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
 import de.metas.ui.web.picking.PickingConstants;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -144,24 +143,13 @@ public class PickingHURowsRepository
 	{
 		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 
-		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() != null
-				? shipmentSchedulesRepo.getById(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class)
-				: null;
+		final I_M_ShipmentSchedule currentShipmentSchedule = shipmentSchedulesRepo.getById(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class);
 
-		final Set<ProductId> productIds;
-		final Set<ShipmentScheduleId> allShipmentScheduleIds = query.getShipmentScheduleIds();
-		if (allShipmentScheduleIds.isEmpty())
-		{
-			productIds = ImmutableSet.of();
-		}
-		else if (allShipmentScheduleIds.size() == 1)
-		{
-			productIds = ImmutableSet.of(ProductId.ofRepoId(currentShipmentSchedule.getM_Product_ID()));
-		}
-		else
-		{
-			productIds = shipmentSchedulesRepo.getProductIdsByShipmentScheduleIds(allShipmentScheduleIds);
-		}
+		final Set<ShipmentScheduleId> allShipmentScheduleIds = Check.isEmpty(query.getShipmentScheduleIds())
+				? ImmutableSet.of(query.getCurrentShipmentScheduleId())
+				: query.getShipmentScheduleIds();
+
+		final Set<ProductId> productIds = shipmentSchedulesRepo.getProductIdsByShipmentScheduleIds(allShipmentScheduleIds);
 
 		final MatchingSourceHusQueryBuilder builder = MatchingSourceHusQuery.builder()
 				.productIds(productIds);

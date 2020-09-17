@@ -1,6 +1,6 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;

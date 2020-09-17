@@ -175,6 +175,8 @@ public interface IQueryBuilder<T>
 	/**
 	 * Filters those rows for whom the columnName's value is in given array.
 	 * If no values were provided the record is rejected.
+	 *
+	 * Note that "InArray*Filters" also support {@link RepoIdAware} and {@link de.metas.util.lang.ReferenceListAwareEnum}
 	 */
 	@SuppressWarnings("unchecked")
 	<V> IQueryBuilder<T> addInArrayFilter(String columnName, V... values);

@@ -38,6 +38,7 @@ export class RawWidget extends Component {
     super(props);
 
     const { widgetData } = props;
+    // TODO: We should use `null` instead
     let cachedValue = undefined;
 
     if (widgetData && widgetData[0]) {
@@ -74,6 +75,33 @@ export class RawWidget extends Component {
     if (textSelected) {
       rawWidget.select();
     }
+  }
+
+  // in some cases we initially have no widgetData when RawWidgets are created
+  // (Selection attributes) so we have to update the `cachedValue` to the
+  // value from widgetData, once it's available
+  static getDerivedStateFromProps(props, state) {
+    if (
+      typeof state.cachedValue === 'undefined' &&
+      props.widgetData &&
+      props.widgetData[0]
+    ) {
+      let cachedValue = undefined;
+      if (props.widgetData[0].value !== undefined) {
+        cachedValue = props.widgetData[0].value;
+      } else if (
+        props.widgetData[0].status &&
+        props.widgetData[0].status.value !== undefined
+      ) {
+        cachedValue = props.widgetData[0].status.value;
+      }
+
+      return {
+        cachedValue,
+      };
+    }
+
+    return null;
   }
 
   /**
@@ -118,9 +146,11 @@ export class RawWidget extends Component {
    * @param {*} e
    */
   handleFocus = () => {
-    const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
+    const { handleFocus, listenOnKeysFalse, dispatch, widgetType } = this.props;
 
-    dispatch(disableShortcut());
+    widgetType === 'LongText' && dispatch(disableShortcut()); // fix issue in Cypress with cut underscores - false positive failing tests
+    // - commented because if you focus on an item and you disable the shourtcuts you won't be able to use any shortcut
+    //   assigned to that specific item/widget - see issue https://github.com/metasfresh/metasfresh/issues/7119
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
@@ -365,7 +395,7 @@ export class RawWidget extends Component {
 
   /**
    * @method renderWidget
-   * @summary ToDo: Describe the method.
+   * @summary Renders a single widget
    */
   renderWidget = () => {
     const {
@@ -416,8 +446,9 @@ export class RawWidget extends Component {
       timeZone,
       fieldName,
       maxLength,
+      updateHeight,
+      rowIndex,
     } = this.props;
-
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited, charsTyped } = this.state;
 
@@ -1030,6 +1061,8 @@ export class RawWidget extends Component {
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
+            rowIndex={rowIndex}
+            updateHeight={updateHeight}
           />
         );
       case 'Address':
@@ -1119,6 +1152,10 @@ export class RawWidget extends Component {
       fields,
       type,
       noLabel,
+      // TODO: We should not be using an empty object when widgetData is not defined.
+      // It's really a bad practice. No value = null ! Right now sometimes it's an
+      // array with a single empty object, sometimes [-1], other times [undefined].
+      // That's a big NO NO
       widgetData,
       rowId,
       isModal,
@@ -1131,6 +1168,7 @@ export class RawWidget extends Component {
       fieldLabelClass,
       fieldInputClass,
     } = this.props;
+
     const {
       errorPopup,
       clearedFieldWarning,

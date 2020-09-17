@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
+import counterpart from 'counterpart';
 
 import {
   getDateFormat,
@@ -107,6 +108,16 @@ class TableCell extends PureComponent {
       !!supportZoomInto,
       supportFieldEdit
     );
+  };
+
+  /**
+   * @method handleFocus
+   * @summary Function called when the cell is focused and that further calls the parent handler
+   * function to handleFocusAction
+   */
+  handleFocus = () => {
+    const { property, handleFocusAction, supportFieldEdit } = this.props;
+    handleFocusAction({ fieldName: property, supportFieldEdit });
   };
 
   /**
@@ -226,6 +237,9 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
       onClickOutside,
+      updateHeight,
+      rowIndex,
+      hasComments,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     const docId = `${this.props.docId}`;
@@ -258,7 +272,9 @@ class TableCell extends PureComponent {
         onDoubleClick={this.onDoubleClick}
         onKeyDown={this.handleKeyDown}
         onContextMenu={this.handleRightClick}
+        onFocus={this.handleFocus}
         className={classnames(
+          'table-cell',
           {
             [`text-${item.gridAlign}`]: item.gridAlign,
             'cell-disabled': widgetData[0].readonly,
@@ -273,6 +289,12 @@ class TableCell extends PureComponent {
         )}
         data-cy={`cell-${property}`}
       >
+        {hasComments && (
+          <span
+            className="notification-number size-sm"
+            title={counterpart.translate('window.comments.caption')}
+          />
+        )}
         {isEdited ? (
           <MasterWidget
             {...item}
@@ -287,6 +309,7 @@ class TableCell extends PureComponent {
               listenOnKeysFalse,
               listenOnKeysTrue,
               onClickOutside,
+              rowIndex,
             }}
             clearValue={this.clearWidgetValue}
             entity={entity}
@@ -300,6 +323,7 @@ class TableCell extends PureComponent {
             handleBackdropLock={this.handleBackdropLock}
             onChange={mainTable ? onCellChange : null}
             ref={this.widget}
+            updateHeight={updateHeight}
           />
         ) : (
           <div className={classnames({ 'with-widget': tooltipWidget })}>
@@ -363,6 +387,10 @@ TableCell.propTypes = {
   viewId: PropTypes.string,
   modalVisible: PropTypes.bool,
   docId: PropTypes.any,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  hasComments: PropTypes.bool,
+  handleFocusAction: PropTypes.func,
 };
 
 export default TableCell;

@@ -38,6 +38,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -62,8 +63,11 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-		
-		final I_C_Payment linePayment = line.getC_Payment();
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		final I_C_Payment linePayment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
+
 		InterfaceWrapperHelper.refresh(linePayment, trxName); // refresh the payment : very important; otherwise the over amount is not seen
 		
 		Check.assumeNotNull(linePayment, "Null payment for line {}", line.getESR_ImportLine_ID());

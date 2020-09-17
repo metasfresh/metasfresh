@@ -88,14 +88,20 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     tabId: tabId,
     rowId: null, // all rows
     orderBy: orderBy,
-  }).then(
-    (res) =>
-      res.data &&
-      res.data.map((row) => ({
-        ...row,
-        fieldsByName: parseToDisplay(row.fieldsByName),
-      }))
-  );
+  })
+    .then(
+      (res) =>
+        res.data &&
+        res.data.result &&
+        res.data.result.map((row) => ({
+          ...row,
+          fieldsByName: parseToDisplay(row.fieldsByName),
+        }))
+    )
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('getTabRequest error: ', error);
+    });
 }
 
 /**

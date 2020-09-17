@@ -1,6 +1,6 @@
 package de.metas.ordercandidate.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.time.ZonedDateTime;
@@ -29,8 +29,10 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
@@ -177,12 +179,11 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@Nullable
 	public ProductId getM_Product_Effective_ID(@NonNull final I_C_OLCand olCand)
 	{
-		final int productRepoId = olCand.getM_Product_Override_ID() > 0
-				? olCand.getM_Product_Override_ID()
-				: olCand.getM_Product_ID();
-		return ProductId.ofRepoId(productRepoId);
+		final int productRepoId = CoalesceUtil.firstGreaterThanZero(olCand.getM_Product_Override_ID(), olCand.getM_Product_ID());
+		return ProductId.ofRepoIdOrNull(productRepoId);
 	}
 
 	@Override
@@ -199,8 +200,8 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		return olCandRecord.isManualPrice()
 				? getRecordOrStockUOMId(olCandRecord)
 				: UomId.ofRepoIdOrNull(firstGreaterThanZero(
-						olCandRecord.getC_UOM_Internal_ID(),
-						olCandRecord.getC_UOM_ID()));
+				olCandRecord.getC_UOM_Internal_ID(),
+				olCandRecord.getC_UOM_ID()));
 	}
 
 	@Override
@@ -315,7 +316,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	/**
-	 * @param if falling back to the {@code C_BPartner_Location} masterdata, then prefer this type.
+	 * @param type if falling back to the {@code C_BPartner_Location} masterdata, then prefer this type.
 	 */
 	private int getC_BP_Location_Effective_ID(@NonNull final I_C_OLCand olCandRecord, @NonNull final Type type)
 	{

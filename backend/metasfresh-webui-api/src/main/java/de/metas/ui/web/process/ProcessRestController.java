@@ -61,7 +61,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
@@ -122,12 +122,12 @@ public class ProcessRestController
 			@NonNull final DocumentId pinstanceDocId)
 	{
 		final PInstanceId pinstanceId = PInstanceId.ofRepoIdOrNull(pinstanceDocId.toIntOr(-1));
-		return ProcessMDC.putProcessAndInstanceId(processId.toAdProcessId(), pinstanceId);
+		return ProcessMDC.putProcessAndInstanceId(processId.toAdProcessIdOrNull(), pinstanceId);
 	}
 
 	private MDCCloseable putMDC(@NonNull final ProcessId processId)
 	{
-		return ProcessMDC.putAdProcessId(processId.toAdProcessId());
+		return ProcessMDC.putAdProcessId(processId.toAdProcessIdOrNull());
 	}
 
 	private JSONOptions newJsonOptions()

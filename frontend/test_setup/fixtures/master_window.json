@@ -44,5 +44,51 @@
         "query": "{}"
       }
     }
+  },
+  "props2": {
+    "location": {
+      "pathname": "/window/53009/1000000",
+      "search": "",
+      "hash": "",
+      "action": "POP",
+      "key": "5dgjlt",
+      "query": "{}"
+    },
+    "params": {
+      "windowType": "53009",
+      "docId": "1000000"
+    },
+    "route": {
+      "path": "/window/:windowType/:docId",
+      "component": "Connect",
+      "onEnter": "onEnter"
+    },
+    "router": {
+      "location": {
+        "pathname": "/window/53009/1000000",
+        "search": "",
+        "hash": "",
+        "action": "POP",
+        "key": null,
+        "query": {}
+      },
+      "params": {
+        "windowType": "53009",
+        "docId": "1000000"
+      },
+      "routes": []
+    }
+  },
+  "state2": {
+    "routing": {
+      "locationBeforeTransitions": {
+        "pathname": "/window/53009/1000000",
+        "search": "",
+        "hash": "",
+        "action": "POP",
+        "key": "null",
+        "query": "{}"
+      }
+    }
   }
 }

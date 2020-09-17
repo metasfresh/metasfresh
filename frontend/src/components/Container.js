@@ -60,6 +60,7 @@ class Container extends PureComponent {
       pluginComponents,
       setRawModalTitle,
       setRawModalDescription,
+      hasComments,
     } = this.props;
     const pluginModalVisible = pluginModal.visible;
     let PluginModalComponent = null;
@@ -109,6 +110,7 @@ class Container extends PureComponent {
               editmode,
               handleEditModeToggle,
               activeTab,
+              hasComments,
             }}
           />
         )}
@@ -117,7 +119,7 @@ class Container extends PureComponent {
 
         <div
           className={
-            'header-sticky-distance js-unselect ' +
+            'header-sticky-distance js-unselect panel-vertical-scroll ' +
             (noMargin ? 'dashboard' : 'container-fluid')
           }
         >
@@ -129,6 +131,7 @@ class Container extends PureComponent {
               modalTitle={modal.title}
               viewId={modal.viewId}
               parentWindowId={windowId}
+              rawModalWindowId={rawModal.windowId}
               parentDataId={dataId}
               parentViewId={viewId}
               rawModalVisible={rawModal.visible}
@@ -264,6 +267,7 @@ class Container extends PureComponent {
  * @prop {*} setModalTitle
  * @prop {string} siteName
  * @prop {string} windowId
+ * @prop {bool} hasComments - used to indicate comments in the details view
  */
 Container.propTypes = {
   actions: PropTypes.any,
@@ -305,6 +309,7 @@ Container.propTypes = {
   setRawModalDescription: PropTypes.any,
   setRawModalTitle: PropTypes.any,
   windowId: PropTypes.string,
+  hasComments: PropTypes.bool,
 };
 
 /**

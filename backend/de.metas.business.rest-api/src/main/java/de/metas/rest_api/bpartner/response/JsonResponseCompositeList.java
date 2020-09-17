@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.rest_api.common.JsonPagingDescriptor;
 import lombok.Builder;
 import lombok.NonNull;

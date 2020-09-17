@@ -242,6 +242,7 @@ public class IssueRepository
 				.latestActivityOnSubIssues(record.getLatestActivityOnSubIssues() != null ? record.getLatestActivityOnSubIssues().toInstant() : null)
 				.externalIssueNo(record.getExternalIssueNo())
 				.externalIssueURL(record.getIssueURL())
+				.processed(record.isProcessed())
 				.build();
 	}
 
@@ -255,6 +256,8 @@ public class IssueRepository
 		record.setC_Project_ID(NumberUtils.asInt(issueEntity.getProjectId(), -1));
 		record.setS_ExternalProjectReference_ID(NumberUtils.asInt(issueEntity.getExternalProjectReferenceId(), -1));
 		record.setS_Parent_Issue_ID(NumberUtils.asInt(issueEntity.getParentIssueId(), -1));
+
+		record.setProcessed(issueEntity.isProcessed());
 
 		record.setName(issueEntity.getName());
 		record.setValue(issueEntity.getSearchKey());

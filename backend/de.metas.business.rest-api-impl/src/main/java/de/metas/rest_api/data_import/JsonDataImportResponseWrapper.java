@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.rest_api.utils.JsonErrors;
 import lombok.Value;
 

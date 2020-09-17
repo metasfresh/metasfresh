@@ -1404,7 +1404,6 @@ public final class CConnection implements Serializable, Cloneable
 
 		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
 		{
-			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_RABBITMQ_CONNECTION_PROBLEM);
 			return rabbitMqProperties;
 		}
 

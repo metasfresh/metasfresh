@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.mmovement.api.IMovementBL;
+import org.adempiere.mmovement.api.IMovementDAO;
+import org.compiere.model.I_M_Movement;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
@@ -13,8 +16,10 @@ import org.eevolution.model.I_DD_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.order.model.interceptor.C_Order;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
 import de.metas.util.Services;
 
@@ -43,9 +48,12 @@ import de.metas.util.Services;
 @Interceptor(I_DD_Order.class)
 public class DD_Order
 {
+	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class); 
+	private final IMovementBL movementBL = Services.get(IMovementBL.class);
+	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
+	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 
-	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-
+	
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
 	{
@@ -61,7 +69,31 @@ public class DD_Order
 		C_Request_CreateFromDDOrder_Async.createWorkpackage(ddOrderLineToQuarantineIds);
 
 	}
-
+	
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
+	public void DD_Order_voidMovements(final I_DD_Order ddOrder)
+	{
+		// void if creating them automating is activated
+		if (huDDOrderBL.isCreateMovementOnComplete())
+		{
+			final List<I_M_Movement> movements =  movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID());
+			for (final I_M_Movement movement : movements)
+			{
+				movementBL.voidMovement(movement);	
+			}
+		}
+	}
+	
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
+	{
+		if (huDDOrderBL.isCreateMovementOnComplete())
+		{
+			huDDOrderBL.processDDOrderLines(ddOrder);
+		}
+	}
+	
+	
 	private List<Integer> retrieveLineToQuarantineWarehouseIds(final I_DD_Order ddOrder)
 	{
 		return ddOrderDAO.retrieveLines(ddOrder)
