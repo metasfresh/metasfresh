@@ -1,19 +1,22 @@
 package de.metas.material.event.receiptschedule;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
-import java.math.BigDecimal;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
  * #%L
@@ -49,14 +52,19 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 
 	private final BigDecimal reservedQuantity;
 
+	@JsonInclude(NON_NULL)
+	private final MinMaxDescriptor minMaxDescriptor;
+
 	private final int receiptScheduleId;
 
 	public AbstractReceiptScheduleEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final MaterialDescriptor materialDescriptor,
+			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
 			final int receiptScheduleId)
 	{
+		this.minMaxDescriptor = minMaxDescriptor;
 		this.receiptScheduleId = receiptScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
@@ -72,8 +80,6 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	{
 		checkIdGreaterThanZero("receiptScheduleId", receiptScheduleId);
 
-		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
-		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
 		Check.errorIf(reservedQuantity == null, "reservedQuantity may not be null");
 
 		return this;

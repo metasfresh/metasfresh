@@ -66,4 +66,8 @@ public class Product
 
 	@Nullable
 	BigDecimal weight;
+
+	@Nullable
+	CommodityNumberId commodityNumberId;
+
 }

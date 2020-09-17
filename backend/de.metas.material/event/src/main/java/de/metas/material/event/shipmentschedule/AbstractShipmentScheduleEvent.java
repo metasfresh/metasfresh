@@ -1,18 +1,21 @@
 package de.metas.material.event.shipmentschedule;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
-import java.math.BigDecimal;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
  * #%L
@@ -45,6 +48,9 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
+	@JsonInclude(NON_NULL)
+	private final MinMaxDescriptor minMaxDescriptor;
+
 	private final BigDecimal reservedQuantity;
 
 	private final int shipmentScheduleId;
@@ -52,12 +58,14 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
+			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
 			final int shipmentScheduleId)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 		this.reservedQuantity = reservedQuantity;
 	}
 

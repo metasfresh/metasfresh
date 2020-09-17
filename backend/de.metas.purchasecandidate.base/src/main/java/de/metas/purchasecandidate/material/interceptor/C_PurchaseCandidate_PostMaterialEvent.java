@@ -1,25 +1,16 @@
 package de.metas.purchasecandidate.material.interceptor;
 
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandler;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
@@ -27,6 +18,14 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -52,21 +51,20 @@ import lombok.NonNull;
 
 @Interceptor(I_C_PurchaseCandidate.class)
 @Component
-public class C_PurchaseCandidate_PostEvents
+public class C_PurchaseCandidate_PostMaterialEvent
 {
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
+	private final ReplenishInfoRepository replenishInfoRepository;
 
-	/**
-	 * @param postMaterialEventService needs to be lazy because of some dependencies with Adempiere.java
-	 * @param productDescriptorFactory
-	 */
-	public C_PurchaseCandidate_PostEvents(
-			@NonNull @Lazy final PostMaterialEventService postMaterialEventService,
-			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	public C_PurchaseCandidate_PostMaterialEvent(
+			@NonNull final PostMaterialEventService postMaterialEventService,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+			@NonNull final ReplenishInfoRepository replenishInfoRepository)
 	{
 		this.postMaterialEventService = postMaterialEventService;
 		this.productDescriptorFactory = productDescriptorFactory;
+		this.replenishInfoRepository = replenishInfoRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -130,11 +128,14 @@ public class C_PurchaseCandidate_PostEvents
 	{
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
+		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor).toMinMaxDescriptor();
+
 		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.vendorId(purchaseCandidateRecord.getVendor_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
+				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 		return purchaseCandidateUpdatedEvent;
 	}

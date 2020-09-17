@@ -1,13 +1,8 @@
-package de.metas.material.planning.interceptor;
-
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,14 +20,15 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
  * #L%
  */
 
-public class Main extends AbstractModuleInterceptor
+package de.metas.product;
+
+import de.metas.fresh.model.I_M_CommodityNumber;
+import de.metas.util.ISingletonService;
+
+import java.util.List;
+import java.util.Set;
+
+public interface ICommodityNumberDAO extends ISingletonService
 {
-	/**
-	 * Here we are going to register interceptors whose job it will be to notify the material disposition framework about notable events.
-	 */
-	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine)
-	{
-		engine.addModelValidator(S_Resource.INSTANCE);
-	}
+	List<I_M_CommodityNumber> getByIds(Set<CommodityNumberId> commodityNumberIds);
 }

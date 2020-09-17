@@ -1,20 +1,21 @@
 package de.metas.material.event.transactions;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import lombok.Builder;
 import lombok.Singular;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
 
 /*
  * #%L
@@ -48,6 +49,7 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 	public TransactionDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("shipmentScheduleIds2Qtys") @Singular final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			@JsonProperty("receiptScheduleIdsQtys") @Singular final Map<Integer, BigDecimal> receiptScheduleIdsQtys,
 			@JsonProperty("receiptId") final InOutAndLineId receiptId,
@@ -62,6 +64,7 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
+				minMaxDescriptor,
 				shipmentScheduleIds2Qtys,
 				receiptScheduleIdsQtys,
 				receiptId,

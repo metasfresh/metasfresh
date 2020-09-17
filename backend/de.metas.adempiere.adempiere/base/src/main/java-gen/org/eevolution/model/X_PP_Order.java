@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1549379916L;
+	private static final long serialVersionUID = -1424456137L;
 
     /** Standard Constructor */
     public X_PP_Order (Properties ctx, int PP_Order_ID, String trxName)
@@ -105,6 +105,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom)
+	{
+		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getCanBeExportedFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
+	}
+
+	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -174,6 +186,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getC_DocTypeTarget_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
+	}
+
+	@Override
+	public void setCopyFrom (java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -281,30 +305,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom)
-	{
-		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
-	}
-
-	@Override
-	public java.sql.Timestamp getCanBeExportedFrom() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
-	}
-
-	@Override
-	public void setCopyFrom (java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -727,21 +727,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
-	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
 	public void setMRP_AllowCleanup (boolean MRP_AllowCleanup)
 	{
 		set_Value (COLUMNNAME_MRP_AllowCleanup, Boolean.valueOf(MRP_AllowCleanup));
@@ -775,6 +760,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public boolean isMRP_ToDelete() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override
@@ -1016,7 +1016,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	@Override
 	public void setQtyBatchSize (java.math.BigDecimal QtyBatchSize)
 	{
-		throw new IllegalArgumentException ("QtyBatchSize is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_QtyBatchSize, QtyBatchSize);
+	}
 
 	@Override
 	public java.math.BigDecimal getQtyBatchSize() 
@@ -1117,6 +1118,30 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setScheduleType (java.lang.String ScheduleType)
+	{
+		set_Value (COLUMNNAME_ScheduleType, ScheduleType);
+	}
+
+	@Override
+	public java.lang.String getScheduleType() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ScheduleType);
+	}
+
+	@Override
+	public void setSerNo (java.lang.String SerNo)
+	{
+		set_Value (COLUMNNAME_SerNo, SerNo);
+	}
+
+	@Override
+	public java.lang.String getSerNo() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
+	}
+
+	@Override
 	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
@@ -1141,30 +1166,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
-	public void setScheduleType (java.lang.String ScheduleType)
-	{
-		set_Value (COLUMNNAME_ScheduleType, ScheduleType);
-	}
-
-	@Override
-	public java.lang.String getScheduleType() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ScheduleType);
-	}
-
-	@Override
-	public void setSerNo (java.lang.String SerNo)
-	{
-		set_Value (COLUMNNAME_SerNo, SerNo);
-	}
-
-	@Override
-	public java.lang.String getSerNo() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
 	}
 
 	@Override

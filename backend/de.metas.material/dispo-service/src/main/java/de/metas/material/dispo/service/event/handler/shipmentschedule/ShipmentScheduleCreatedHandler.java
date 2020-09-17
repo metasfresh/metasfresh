@@ -1,12 +1,6 @@
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -20,6 +14,10 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -86,6 +84,7 @@ public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<Ship
 		final CandidateBuilder candidateBuilder = Candidate
 				.builderForEventDescr(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())
+				.minMaxDescriptor(event.getMinMaxDescriptor())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(demandDetail);

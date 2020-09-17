@@ -1,21 +1,6 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.X_M_Transaction;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -27,12 +12,27 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_M_Transaction;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -64,10 +64,13 @@ public class M_Transaction_InOutLineEventCreator
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final M_Transaction_HuDescriptor huDescriptionFactory;
+	private final ReplenishInfoRepository replenishInfoRepository;
 
-	public M_Transaction_InOutLineEventCreator(@NonNull final M_Transaction_HuDescriptor huDescriptionFactory)
+	public M_Transaction_InOutLineEventCreator(@NonNull final M_Transaction_HuDescriptor huDescriptionFactory,
+			@NonNull final ReplenishInfoRepository replenishInfoRepository)
 	{
 		this.huDescriptionFactory = huDescriptionFactory;
+		this.replenishInfoRepository = replenishInfoRepository;
 	}
 
 	public List<MaterialEvent> createEventsForInOutLine(
@@ -102,7 +105,7 @@ public class M_Transaction_InOutLineEventCreator
 		final List<HUDescriptor> huDescriptors = huDescriptionFactory.createHuDescriptorsForInOutLine(shipmentLineId, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = huDescriptionFactory.newMaterialDescriptors()
+				materialDescriptors = huDescriptionFactory.newMaterialDescriptors()
 				.transaction(transaction)
 				.huDescriptors(huDescriptors)
 				.customerId(customerId)
@@ -129,6 +132,8 @@ public class M_Transaction_InOutLineEventCreator
 			}
 			else
 			{
+				final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor).toMinMaxDescriptor();
+
 				event = TransactionCreatedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
 						.transactionId(transaction.getTransactionId())
@@ -137,6 +142,7 @@ public class M_Transaction_InOutLineEventCreator
 						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
+						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
 			events.add(event);
@@ -192,11 +198,11 @@ public class M_Transaction_InOutLineEventCreator
 
 		throw new AdempiereException(
 				"For the given shipmentScheduleQtyPicked and transaction, one needs to be positive and one needs to be negative")
-						.appendParametersToMessage()
-						.setParameter("qtyPicked", qtyPicked)
-						.setParameter("movementQty", movementQty)
-						.setParameter("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked)
-						.setParameter("transaction", transaction);
+				.appendParametersToMessage()
+				.setParameter("qtyPicked", qtyPicked)
+				.setParameter("movementQty", movementQty)
+				.setParameter("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked)
+				.setParameter("transaction", transaction);
 	}
 
 	private List<MaterialEvent> createEventsForReceipt(
@@ -222,7 +228,7 @@ public class M_Transaction_InOutLineEventCreator
 		final List<HUDescriptor> huDescriptors = huDescriptionFactory.createHuDescriptorsForInOutLine(receiptLineId, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = huDescriptionFactory.newMaterialDescriptors()
+				materialDescriptors = huDescriptionFactory.newMaterialDescriptors()
 				.transaction(transaction)
 				.huDescriptors(huDescriptors)
 				.vendorId(bpartnerId)

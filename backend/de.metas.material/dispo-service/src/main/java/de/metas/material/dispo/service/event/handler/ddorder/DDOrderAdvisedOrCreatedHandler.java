@@ -1,13 +1,6 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -27,6 +20,11 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /*
  * #%L
@@ -101,6 +99,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ddOrderEvent.getSupplyRequiredDescriptor());
 		final DistributionDetail distributionDetail = createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine);
 
+		// create or update the supply candidate
 		final Candidate supplyCandidate = createSupplyCandidateBuilder(ddOrderEvent, ddOrderLine)
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
@@ -109,18 +108,11 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
 				.build();
-
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
-		if (supplyCandidateWithId.getQuantity().signum() == 0)
-		{
-			return null; // nothing was added as supply in the destination warehouse, so there is no demand to register either
-		}
 
-		//
-		// create the demand candidate
+		// create  or update the demand candidate
 
-		// we expect the demand candidate to go with the supplyCandidates SeqNo + 1,
-		// *but* it might also be the case that the demandCandidate attaches to an existing stock and in that case would need to get another SeqNo
+		// we expect the demand candidate to go with the supplyCandidate's SeqNo + 1,
 		final int expectedSeqNoForDemandCandidate = supplyCandidateWithId.getSeqNo() + 1;
 
 		final MaterialDispoGroupId groupId = supplyCandidateWithId.getGroupId();
@@ -134,6 +126,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				// .status(candidateStatus)
 				.materialDescriptor(demandMaterialDescriptor)
+				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
 				.seqNo(expectedSeqNoForDemandCandidate)

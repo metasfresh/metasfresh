@@ -22,15 +22,7 @@
 
 package de.metas.camel.shipping.shipmentcandidate;
 
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.spi.PropertiesComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.FeedbackProzessor;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
@@ -46,6 +38,18 @@ import de.metas.common.shipping.Outcome;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.PropertiesComponent;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.annotation.Nullable;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class ShipmentCandidateJsonToXmlProcessor implements Processor
 {
@@ -71,7 +75,18 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_empfaenger_land").build())
 			.field(FIELD.builder().name("_empfaenger_email").build())
 			.field(FIELD.builder().name("_empfaenger_telefon_muss_bei_express").build())
+			.field(FIELD.builder().name("_artikel_preis").build())
+			.field(FIELD.builder().name("_artikel_webshop_menge").build())
+			.field(FIELD.builder().name("_artikel_webshop_preis").build())
+			.field(FIELD.builder().name("_artikel_webshop_restmenge_noch_offen").build())
+			.field(FIELD.builder().name("_empfaenger_mhd_kurz_oder_lang").build())
+			.field(FIELD.builder().name("_empfaenger_versandart").build())
+			.field(FIELD.builder().name("_empfaenger_versanddienstleister").build())
+
 			.build();
+
+	private final static String EMPTY_FIELD = "";
+	private final static String SHIPPER_INTERNAL_NAME_SEPARATOR_PROP = "shipper.InternalName.parts.separator";
 
 	private final Log log = LogFactory.getLog(ShipmentCandidateJsonToXmlProcessor.class);
 
@@ -167,6 +182,65 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(customer.getContactEmail())); // _empfaenger_email
 		row.col(COL.of(customer.getContactPhone())); // _empfaenger_telefon_muss_bei_express
 
+		final String qtyDeliveredNetPrice = item.getDeliveredQtyNetPrice() != null
+				? item.getDeliveredQtyNetPrice().toString()
+				: EMPTY_FIELD;
+
+		row.col(COL.of(qtyDeliveredNetPrice));//_artikel_preis
+
+		final String orderedQty = item.getOrderedQty().get(0).getQty().toString();
+
+		row.col(COL.of(orderedQty));//_artikel_webshop_menge
+
+		final String orderedQtyNetPrice = item.getOrderedQtyNetPrice() != null
+				? item.getOrderedQtyNetPrice().toString()
+				: EMPTY_FIELD;
+
+		row.col(COL.of(orderedQtyNetPrice));//_artikel_webshop_preis
+
+		final String qtyToDeliver = item.getQuantities().get(0).getQty().toString();
+
+		row.col(COL.of(qtyToDeliver));//_artikel_webshop_restmenge_noch_offen
+
+		final String shipmentAllocationBestBeforePolicy = customer.getShipmentAllocationBestBeforePolicy();
+
+		row.col(COL.of(shipmentAllocationBestBeforePolicy));//_empfaenger_mhd_kurz_oder_lang
+
+		getShipperInternalNameParts(item.getShipperInternalSearchKey(), propertiesComponent)
+				.map(shipperNameParts -> {setShipperFields(row, shipperNameParts);return null;});
+
 		return row.build();
+	}
+
+	private Optional<List<String>> getShipperInternalNameParts(@Nullable final String shipperInternalName, @NonNull final PropertiesComponent propertiesComponent)
+	{
+		if (StringUtils.isBlank(shipperInternalName))
+		{
+			return Optional.empty();
+		}
+
+		final String shipperInternalNameSeparator = propertiesComponent.resolveProperty(SHIPPER_INTERNAL_NAME_SEPARATOR_PROP)
+				.orElseThrow(() -> new RuntimeException("Missing property:" + SHIPPER_INTERNAL_NAME_SEPARATOR_PROP + "!"));
+
+		return Optional.of(ImmutableList.copyOf(shipperInternalName.split(shipperInternalNameSeparator)));
+	}
+
+	private void setShipperFields(@NonNull final ROW.ROWBuilder rowBuilder, @NonNull final List<String> shipperNameParts)
+	{
+		if (shipperNameParts.size() == 2)
+		{
+			rowBuilder.col(COL.of(shipperNameParts.get(0)));//_empfaenger_versandart
+			rowBuilder.col(COL.of(shipperNameParts.get(1)));//_empfaenger_versanddienstleister
+		}
+		else if (shipperNameParts.size() == 1)
+		{
+			rowBuilder.col(COL.of(shipperNameParts.get(0)));//_empfaenger_versandart
+			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versanddienstleister
+		}
+		else
+		{
+			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versandart
+			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versanddienstleister
+		}
 	}
 }
