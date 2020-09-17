@@ -95,6 +95,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.process(new FeedbackProzessor())
 				.marshal(jacksonDataFormat)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.log(LoggingLevel.DEBUG, "Sending feedback to metasfresh:\nHEADERS=${headers}\nBODY=${body}")
 				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidatesResult"));
 	}
 }
