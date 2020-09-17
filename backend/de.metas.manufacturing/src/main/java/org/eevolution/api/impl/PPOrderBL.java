@@ -153,6 +153,7 @@ public class PPOrderBL implements IPPOrderBL
 
 			final I_AD_Workflow wf = order.getAD_Workflow();
 			qtyBatchSize = wf.getQtyBatchSize().setScale(0, RoundingMode.UP);
+			order.setQtyBatchSize(qtyBatchSize);
 		}
 
 		final BigDecimal qtyBatchs;
