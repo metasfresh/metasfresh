@@ -49,7 +49,8 @@ WHERE cost.m_product_id = p_M_Product_ID
   and cost.ad_client_id = p_AD_Client_ID
   and cost.AD_Org_Id = p_AD_Org_ID;
 
+
 $BODY$
     LANGUAGE SQL
-    VOLATILE
+    STABLE
 ;
