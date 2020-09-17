@@ -2,12 +2,19 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { allowShortcut, disableShortcut } from '../actions/WindowActions';
+import {
+  openModal,
+  patch,
+  updatePropertyValue,
+  allowShortcut,
+  disableShortcut,
+} from '../actions/WindowActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
 import {
   getMasterData,
   getMasterWidgetData,
+  getMasterWidgetFields,
   getMasterDocStatus,
 } from '../reducers/windowHandler';
 
@@ -32,7 +39,7 @@ class WidgetWrapper extends PureComponent {
 }
 
 const mapStateToProps = (state, props) => {
-  const { appHandler } = state;
+  const { appHandler, windowHandler } = state;
   const {
     dataSource,
     tableId,
@@ -41,10 +48,12 @@ const mapStateToProps = (state, props) => {
     isEditable,
     supportFieldEdit,
     layoutId,
+    fields,
   } = props;
   const data = getMasterData(state);
 
   let widgetData = null;
+  let fieldsCopy = null;
 
   switch (dataSource) {
     case 'doc-status':
@@ -53,13 +62,14 @@ const mapStateToProps = (state, props) => {
       break;
     case 'element':
       widgetData = getMasterWidgetData(state, layoutId);
+      fieldsCopy = getMasterWidgetFields(state, layoutId);
 
       break;
     case 'table': {
       const table = getTable(state, tableId);
       const rows = table.rows;
-      const cells = rows[rowIndex];
-      const columnItem = table.cols[colIndex];
+      const cells = rows[rowIndex].fieldsByName;
+      const columnItem = table.columns[colIndex];
 
       widgetData = getCellWidgetData(
         cells,
@@ -76,17 +86,41 @@ const mapStateToProps = (state, props) => {
       break;
   }
 
+  let activeTab = null;
+
+  if (windowHandler.master.layout) {
+    activeTab = windowHandler.master.layout.activeTab;
+  }
+
   return {
     relativeDocId: data.ID && data.ID.value,
     widgetData,
-    modalVisible: state.windowHandler.modal.visible,
+    activeTab,
+    modalVisible: windowHandler.modal.visible,
     timeZone: appHandler.me.timeZone,
+    fields: fieldsCopy || fields,
   };
 };
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} actions
+ * @prop {*} activeTab
+ */
 WidgetWrapper.propTypes = {
   renderMaster: PropTypes.bool,
   dataSource: PropTypes.string.isRequired,
+  relativeDocId: PropTypes.string.isRequired,
+  widgetData: PropTypes.array.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+  activeTab: PropTypes.string.isRequired,
+  timeZone: PropTypes.string.isRequired,
+  fields: PropTypes.array.isRequired,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  patch: PropTypes.func.isRequired,
+  updatePropertyValue: PropTypes.func.isRequired,
 };
 
 export default connect(
@@ -94,6 +128,9 @@ export default connect(
   {
     allowShortcut,
     disableShortcut,
+    openModal,
+    patch,
+    updatePropertyValue,
   },
   null,
   { forwardRef: true }

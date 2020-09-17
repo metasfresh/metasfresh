@@ -185,6 +185,11 @@ export const getMasterWidgetData = createCachedSelector(
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, layoutPath) => layoutPath);
 
+export const getMasterWidgetFields = createCachedSelector(
+  getMasterLayout,
+  (layout) => layout.fields
+)((_state, layoutPath) => layoutPath);
+
 export const getMasterDocStatus = createSelector(
   getMasterData,
   (data) => {

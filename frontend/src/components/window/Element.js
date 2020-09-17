@@ -1,5 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { omit } from 'lodash';
+
 import WidgetWrapper from '../../containers/WidgetWrapper';
 
 class Element extends PureComponent {
@@ -27,6 +29,7 @@ class Element extends PureComponent {
     const autoFocus = isFocused && elementIndex === 0;
     const fieldName = elementLayout.fields ? elementLayout.fields[0].field : '';
     const layoutId = `${sectionIndex}_${columnIndex}_${elementGroupIndex}_${elementsLineIndex}_${elementIndex}`;
+    const element = omit(elementLayout, ['fields']);
 
     return (
       <WidgetWrapper
@@ -36,7 +39,7 @@ class Element extends PureComponent {
         ref={addRefToWidgets}
         entity="window"
         key={'element' + elementIndex}
-        windowType={windowId}
+        windowId={windowId}
         dataId={dataId}
         isModal={!!isModal}
         tabId={tabId}
@@ -47,7 +50,7 @@ class Element extends PureComponent {
         fullScreen={isFullScreen}
         fieldName={fieldName}
         onBlurWidget={onBlurWidget}
-        {...elementLayout}
+        {...element}
       />
     );
   }
