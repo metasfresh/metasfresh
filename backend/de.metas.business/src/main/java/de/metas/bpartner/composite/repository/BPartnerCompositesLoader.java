@@ -1,30 +1,11 @@
 package de.metas.bpartner.composite.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.LogEntriesRepository;
-import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
-import org.adempiere.ad.table.RecordChangeLog;
-import org.adempiere.ad.table.RecordChangeLogEntry;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Postal;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
-
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -53,6 +34,23 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.LogEntriesRepository;
+import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
+import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.table.RecordChangeLogEntry;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -236,6 +234,7 @@ final class BPartnerCompositesLoader
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
 				.vatId(bpartnerRecord.getVATaxID())
+				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
 				//
 				.changeLog(recordChangeLog)
 				//
