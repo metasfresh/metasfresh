@@ -127,12 +127,12 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void setProjectToOrderline(final I_C_OrderLine orderline)
+	public void setProjectToOrderline(final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderline.getC_Order();
-		if (order != null)
+		if (orderLine.getC_Order_ID() > 0 && orderLine.getC_Project_ID() <= 0)
 		{
-			orderline.setC_Project_ID(order.getC_Project_ID());
+			final I_C_Order order = orderLine.getC_Order();
+			orderLine.setC_Project_ID(order.getC_Project_ID());
 		}
 	}
 
