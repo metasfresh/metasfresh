@@ -1,11 +1,17 @@
-package de.metas.impexp.processing;
+package de.metas.impexp;
+
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.api.Params;
+import org.adempiere.service.ClientId;
 
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.parser.ImpDataLine;
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -13,7 +19,7 @@ import lombok.Value;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,21 +39,28 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ImportDataDeleteRequest
+public class InsertIntoImportTableRequest
 {
 	@NonNull
-	String importTableName;
+	ImpFormat importFormat;
 
 	@NonNull
-	ImportDataDeleteMode mode;
-
-	@Nullable
-	String viewSqlWhereClause;
-
-	@Nullable
-	String selectionSqlWhereClause;
+	ClientId clientId;
 
 	@NonNull
-	@Default
-	Params additionalParameters = Params.EMPTY;
+	OrgId orgId;
+
+	@NonNull
+	UserId userId;
+
+	@NonNull
+	DataImportRunId dataImportRunId;
+
+	@Nullable
+	DataImportConfigId dataImportConfigId;
+
+	int insertBatchSize;
+
+	@NonNull
+	final Stream<ImpDataLine> stream;
 }

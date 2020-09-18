@@ -1,13 +1,13 @@
-package de.metas.impexp.async;
+package de.metas.impexp;
 
-import de.metas.impexp.processing.IAsyncImportProcessBuilderFactory;
-import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.async
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,17 +25,9 @@ import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
  * #L%
  */
 
-public final class AsyncImportProcessBuilderFactory implements IAsyncImportProcessBuilderFactory
+@Value
+@Builder
+public class AsyncImportRecordsResponse
 {
-	public static final transient AsyncImportProcessBuilderFactory instance = new AsyncImportProcessBuilderFactory();
-
-	private AsyncImportProcessBuilderFactory()
-	{
-	}
-
-	@Override
-	public IAsyncImportProcessBuilder newAsyncImportProcessBuilder()
-	{
-		return new AsyncImportProcessBuilder();
-	}
+	final int workpackageId;
 }

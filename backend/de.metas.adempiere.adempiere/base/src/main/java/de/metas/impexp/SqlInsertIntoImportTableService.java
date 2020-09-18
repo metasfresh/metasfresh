@@ -1,22 +1,12 @@
 package de.metas.impexp;
 
-import org.adempiere.service.ClientId;
-import org.adempiere.util.api.IParams;
-import org.springframework.core.io.Resource;
-
-import de.metas.impexp.config.DataImportConfigId;
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,31 +24,25 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class DataImportRequest
+@Service
+public class SqlInsertIntoImportTableService implements InsertIntoImportTableService
 {
-	@NonNull
-	Resource data;
 
-	@NonNull
-	DataImportConfigId dataImportConfigId;
+	@Override
+	public InsertIntoImportTableResult insertData(InsertIntoImportTableRequest request)
+	{
+		final SqlInsertIntoImportTableCommand command = SqlInsertIntoImportTableCommand.builder()
+				.importFormat(request.getImportFormat())
+				.clientId(request.getClientId())
+				.orgId(request.getOrgId())
+				.userId(request.getUserId())
+				.dataImportRunId(request.getDataImportRunId())
+				.dataImportConfigId(request.getDataImportConfigId())
+				.insertBatchSize(request.getInsertBatchSize())
+				.linesStream(request.getStream())
+				.build();
 
-	@NonNull
-	ClientId clientId;
+		return command.execute();
+	}
 
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	UserId userId;
-
-	boolean completeDocuments;
-
-	@NonNull
-	@Default
-	IParams additionalParameters = IParams.NULL;
-
-	boolean processImportRecordsSynchronously;
-	boolean stopOnFirstError;
 }

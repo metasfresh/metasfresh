@@ -3,11 +3,9 @@ package de.metas.impexp;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -17,6 +15,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -64,7 +63,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-final class ImportTableAppender
+final class SqlInsertIntoImportTableCommand
 {
 	// services
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -73,6 +72,7 @@ final class ImportTableAppender
 
 	//
 	// Parameters
+	private final String importFormatName;
 	private final ImportTableDescriptor importTableDescriptor;
 	private final ImmutableList<ImpFormatColumn> columns;
 	private final ClientId clientId;
@@ -81,25 +81,28 @@ final class ImportTableAppender
 	private final DataImportRunId dataImportRunId;
 	private final DataImportConfigId dataImportConfigId;
 	private final int insertBatchSize;
+	private Stream<ImpDataLine> linesStream;
 
 	//
 	// State
 	private SqlAndParamsExtractor<ImpDataLine> _sqlInsertIntoImportTable; // lazy
 	private int countTotalRows = 0;
 	private int countValidRows = 0;
-	private int countRowsWithError = 0;
+	private final ArrayList<InsertIntoImportTableResult.Error> errors = new ArrayList<>();
 
 	@Builder
-	private ImportTableAppender(
+	private SqlInsertIntoImportTableCommand(
 			@NonNull final ImpFormat importFormat,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final UserId userId,
 			@NonNull final DataImportRunId dataImportRunId,
 			@Nullable final DataImportConfigId dataImportConfigId,
-			final int insertBatchSize)
+			final int insertBatchSize,
+			@NonNull final Stream<ImpDataLine> linesStream)
 	{
 		this.importTableDescriptor = importFormat.getImportTableDescriptor();
+		this.importFormatName = importFormat.getName();
 		this.columns = importFormat.getColumns();
 
 		this.clientId = clientId;
@@ -108,21 +111,29 @@ final class ImportTableAppender
 		this.dataImportRunId = dataImportRunId;
 		this.dataImportConfigId = dataImportConfigId;
 		this.insertBatchSize = insertBatchSize > 0 ? insertBatchSize : DEFAULT_InsertBatchSize;
+
+		this.linesStream = linesStream;
 	}
 
-	public ImportTableAppendResult appendStream(@NonNull final Stream<ImpDataLine> stream)
+	public InsertIntoImportTableResult execute()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final Stream<List<ImpDataLine>> batchedStream = GuavaCollectors.batchAndStream(stream, insertBatchSize);
+		final Stream<List<ImpDataLine>> batchedStream = GuavaCollectors.batchAndStream(linesStream, insertBatchSize);
 		batchedStream.forEach(this::insertIntoDatabase);
 		stopwatch.stop();
 
-		return ImportTableAppendResult.builder()
-				.importTableName(importTableDescriptor.getTableName())
-				.duration(Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS)))
+		return InsertIntoImportTableResult.builder()
+				.fromResource(null) // N/A
+				.toImportTableName(importTableDescriptor.getTableName())
+				.importFormatName(importFormatName)
+				.dataImportConfigId(dataImportConfigId)
+				//
+				.duration(TimeUtil.toDuration(stopwatch))
+				.dataImportRunId(dataImportRunId)
 				.countTotalRows(countTotalRows)
 				.countValidRows(countValidRows)
-				.countRowsWithError(countRowsWithError)
+				.errors(errors)
+				//
 				.build();
 	}
 
@@ -157,7 +168,11 @@ final class ImportTableAppender
 				countTotalRows++;
 				if (line.hasErrors())
 				{
-					countRowsWithError++;
+					errors.add(InsertIntoImportTableResult.Error.builder()
+							.message(line.getErrorMessageAsStringOrNull())
+							.lineNo(line.getFileLineNo())
+							.lineContent(line.getLineString())
+							.build());
 				}
 				else
 				{

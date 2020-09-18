@@ -1,19 +1,10 @@
-package de.metas.impexp.processing;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.api.Params;
-
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
+package de.metas.impexp;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,23 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ImportDataDeleteRequest
+public interface ImportRecordsAsyncExecutor
 {
-	@NonNull
-	String importTableName;
-
-	@NonNull
-	ImportDataDeleteMode mode;
-
-	@Nullable
-	String viewSqlWhereClause;
-
-	@Nullable
-	String selectionSqlWhereClause;
-
-	@NonNull
-	@Default
-	Params additionalParameters = Params.EMPTY;
+	AsyncImportRecordsResponse schedule(ImportRecordsRequest request);
 }

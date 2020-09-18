@@ -1,9 +1,18 @@
 package de.metas.impexp;
 
+import java.net.URI;
 import java.time.Duration;
 
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.impexp.config.DataImportConfigId;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+import lombok.With;
 
 /*
  * #%L
@@ -29,12 +38,50 @@ import lombok.Value;
 
 @Value
 @Builder
-final class ImportTableAppendResult
+public final class InsertIntoImportTableResult
 {
-	String importTableName;
-	Duration duration;
+	//
+	// Configuration
+	@Nullable
+	@With
+	URI fromResource;
+	String toImportTableName;
+	@NonNull
+	String importFormatName;
+	@Nullable
+	DataImportConfigId dataImportConfigId;
 
+	//
+	// Result
+	@NonNull
+	Duration duration;
+	@NonNull
+	DataImportRunId dataImportRunId;
 	int countTotalRows;
 	int countValidRows;
-	int countRowsWithError;
+	@NonNull
+	@Singular
+	ImmutableList<Error> errors;
+
+	public boolean hasErrors()
+	{
+		return !getErrors().isEmpty();
+	}
+
+	public int getCountErrors()
+	{
+		return getErrors().size();
+	}
+
+	@Builder
+	@Value
+	public static class Error
+	{
+		String message;
+
+		int lineNo;
+
+		@NonNull
+		String lineContent;
+	}
 }

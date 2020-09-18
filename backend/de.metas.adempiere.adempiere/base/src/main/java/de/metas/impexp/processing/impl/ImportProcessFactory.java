@@ -5,10 +5,8 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import de.metas.impexp.processing.IAsyncImportProcessBuilderFactory;
 import de.metas.impexp.processing.IImportProcess;
 import de.metas.impexp.processing.IImportProcessFactory;
-import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -18,7 +16,6 @@ public class ImportProcessFactory implements IImportProcessFactory
 
 	private final ImportProcessDescriptorsMap importProcessDescriptorsMap = new ImportProcessDescriptorsMap();
 	private final ImportTablesRelatedProcessesRegistry relatedProcessesRegistry = new ImportTablesRelatedProcessesRegistry();
-	private IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory;
 
 	@Override
 	public <ImportRecordType> void registerImportProcess(
@@ -49,8 +46,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 	}
 
 	@Nullable
-	@Override
-	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessOrNull(@NonNull final Class<ImportRecordType> modelImportClass)
+	private <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessOrNull(@NonNull final Class<ImportRecordType> modelImportClass)
 	{
 		final Class<?> importProcessClass = importProcessDescriptorsMap.getImportProcessClassByModelImportClassOrNull(modelImportClass);
 		if (importProcessClass == null)
@@ -76,8 +72,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 	}
 
 	@Nullable
-	@Override
-	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(@NonNull final String importTableName)
+	private <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(@NonNull final String importTableName)
 	{
 		final Class<?> importProcessClass = importProcessDescriptorsMap.getImportProcessClassByImportTableNameOrNull(importTableName);
 		if (importProcessClass == null)
@@ -97,31 +92,5 @@ public class ImportProcessFactory implements IImportProcessFactory
 			throw new AdempiereException("No import process found for " + importTableName);
 		}
 		return importProcess;
-	}
-
-	@Override
-	public IAsyncImportProcessBuilder newAsyncImportProcessBuilder()
-	{
-		final IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory = this.asyncImportProcessBuilderFactory;
-		if (asyncImportProcessBuilderFactory == null)
-		{
-			throw new AdempiereException("Async import is not configured");
-		}
-
-		final IAsyncImportProcessBuilder builder = asyncImportProcessBuilderFactory.newAsyncImportProcessBuilder();
-		if (builder == null)
-		{
-			// shall not happen
-			throw new AdempiereException("Got null builder from " + asyncImportProcessBuilderFactory);
-		}
-
-		return builder;
-	}
-
-	@Override
-	public void setAsyncImportProcessBuilderFactory(@NonNull final IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory)
-	{
-		this.asyncImportProcessBuilderFactory = asyncImportProcessBuilderFactory;
-		logger.info("Set {}", asyncImportProcessBuilderFactory);
 	}
 }

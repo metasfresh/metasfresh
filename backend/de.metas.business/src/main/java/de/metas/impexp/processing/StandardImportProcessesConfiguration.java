@@ -16,12 +16,12 @@ import de.metas.dataentry.data.impexp.DataEntryRecordsImportProcess;
 import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
 import de.metas.impexp.processing.inventory.InventoryImportProcess;
-import de.metas.impexp.processing.product.ProductImportProcess;
-import de.metas.impexp.processing.request.RequestImportProcess;
-import de.metas.impexp.processing.user.ADUserImportProcess;
 import de.metas.location.impexp.PostalCodeImportProcess;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
+import de.metas.product.impexp.ProductImportProcess;
 import de.metas.replenishment.impexp.ReplenishmentImportProcess;
+import de.metas.request.impexp.RequestImportProcess;
+import de.metas.user.impexp.ADUserImportProcess;
 import de.metas.util.Services;
 
 /*

@@ -1,12 +1,10 @@
-package de.metas.impexp.processing;
-
-import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
+package de.metas.impexp;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,8 +22,10 @@ import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
  * #L%
  */
 
-@FunctionalInterface
-public interface IAsyncImportProcessBuilderFactory
+/**
+ * Reads the external data stream and inserts it to import table
+ */
+public interface InsertIntoImportTableService
 {
-	IAsyncImportProcessBuilder newAsyncImportProcessBuilder();
+	InsertIntoImportTableResult insertData(InsertIntoImportTableRequest request);
 }

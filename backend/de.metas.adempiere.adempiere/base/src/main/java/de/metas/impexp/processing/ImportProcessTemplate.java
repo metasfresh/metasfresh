@@ -42,6 +42,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
@@ -246,7 +247,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 			return selectionId;
 		}
 
-		return PInstanceId.ofRepoIdOrNull(getParameters().getParameterAsInt(PARAM_Selection_ID, -1));
+		return getParameters().getParameterAsId(PARAM_Selection_ID, PInstanceId.class);
 	}
 
 	protected final boolean isInsertOnly()
@@ -329,7 +330,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 					.mode(ImportDataDeleteMode.ONLY_IMPORTED)
 					.build());
 			resultCollector.setCountImportRecordsDeleted(countImportRecordsDeleted);
-			loggable.addLog("Deleted Old Imported =" + countImportRecordsDeleted);
+			loggable.addLog("Deleted Old Imported = {}", countImportRecordsDeleted);
 		}
 
 		//
@@ -360,7 +361,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
+	public int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
 	{
 		final StringBuilder sql = new StringBuilder("DELETE FROM " + getImportTableName() + " WHERE 1=1");
 
@@ -631,18 +632,16 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		sqlParams.add("E");
 
 		// I_ErrorMsg
+		final String errorMsg = AdempiereException.extractMessage(exception);
 		{
-			final String errorMsg = AdempiereException.extractMessage(exception);
-
 			sql.append(", " + ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?");
 			sqlParams.add(Check.isEmpty(errorMsg, true) ? "" : errorMsg + ", ");
 		}
 
 		// AD_Issue_ID
+		final AdIssueId adIssueId = errorManager.createIssue(exception);
 		if (importTableDescriptor.getAdIssueIdColumnName() != null)
 		{
-			final AdIssueId adIssueId = errorManager.createIssue(exception);
-
 			sql.append(", " + importTableDescriptor.getAdIssueIdColumnName() + "=?");
 			sqlParams.add(adIssueId);
 		}
@@ -666,6 +665,13 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
 				ITrx.TRXNAME_ThreadInherited,
 				CacheInvalidateMultiRequest.fromTableNameAndRecordIds(importTableName, importRecordIds));
+
+		getResultCollector().actualImportError(ActualImportRecordsResult.Error.builder()
+				.message(errorMsg)
+				.adIssueId(adIssueId)
+				.affectedImportRecordsCount(importRecordIds.size())
+				.build());
+
 	}
 
 	protected final int markNotImportedAllWithErrors()

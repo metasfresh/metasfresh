@@ -102,7 +102,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		MInventoryImportTableSqlUpdater.updateInventoryImportTable(selection);
 
 		final int countErrorRecords = MInventoryImportTableSqlUpdater.countRecordsWithErrors(selection);
-		getResultCollector().setCountImportRecordsWithErrors(countErrorRecords);
+		getResultCollector().setCountImportRecordsWithValidationErrors(countErrorRecords);
 	}
 
 	@Override

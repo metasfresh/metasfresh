@@ -1,9 +1,9 @@
-package de.metas.impexp.processing;
+package de.metas.impexp;
 
-import javax.annotation.Nullable;
-
+import org.adempiere.service.ClientId;
 import org.adempiere.util.api.Params;
 
+import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -13,7 +13,7 @@ import lombok.Value;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,19 +33,16 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ImportDataDeleteRequest
+public class ValidateImportRecordsRequest
 {
 	@NonNull
 	String importTableName;
 
 	@NonNull
-	ImportDataDeleteMode mode;
+	PInstanceId selectionId;
 
-	@Nullable
-	String viewSqlWhereClause;
-
-	@Nullable
-	String selectionSqlWhereClause;
+	@NonNull
+	ClientId clientId;
 
 	@NonNull
 	@Default
