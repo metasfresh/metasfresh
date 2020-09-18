@@ -46,6 +46,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Default executor for {@link ITrxItemChunkProcessor}.
@@ -55,6 +56,7 @@ import lombok.NonNull;
  * @param <IT>
  * @param <RT>
  */
+@ToString
 class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor<IT, RT>
 {
 	//
@@ -107,9 +109,8 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	}
 
 	@Override
-	public ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(final ITrxItemExceptionHandler exceptionHandler)
+	public ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(@NonNull final ITrxItemExceptionHandler exceptionHandler)
 	{
-		Check.assumeNotNull(exceptionHandler, "exceptionHandler not null");
 		this.exceptionHandler = exceptionHandler;
 
 		return this;
@@ -129,10 +130,8 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	}
 
 	@Override
-	public RT execute(final Iterator<? extends IT> items)
+	public RT execute(@NonNull final Iterator<? extends IT> items)
 	{
-		Check.assumeNotNull(items, "items not null");
-
 		final boolean requiresNewTrxs = trxManager.isNull(processorCtx.getTrx());
 
 		trxConstraintsBL.saveConstraints();
@@ -528,12 +527,4 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		// NOTE: no need to restore/reset thread transaction because the "execute" method will restore it anyways at the end
 		// trxManager.setThreadInheritedTrxName(null);
 	}
-
-	@Override
-	public String toString()
-	{
-		return "TrxItemChunkProcessorExecutor [processor=" + processor + ", exceptionHandler=" + exceptionHandler + ", onItemErrorPolicy=" + onItemErrorPolicy + ", useTrxSavepoints=" + useTrxSavepoints + ", chunkOpen=" + chunkOpen + ", chunkHasErrors=" + chunkHasErrors + ", chunkTrx=" + chunkTrx + ", chunkTrxIsLocal=" + chunkTrxIsLocal + ", chunkTrxSavepoint=" + chunkTrxSavepoint
-				+ ", processorCtx=" + processorCtx + ", chunkCtx=" + chunkCtx + ", trxManager=" + trxManager + ", trxConstraintsBL=" + trxConstraintsBL + "]";
-	}
-
 }
