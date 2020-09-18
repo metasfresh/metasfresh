@@ -1,5 +1,7 @@
 package de.metas.async.api.impl;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.async
@@ -26,7 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
 
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageParamsBuilder;
@@ -134,6 +139,33 @@ import lombok.NonNull;
 			Check.assumeNotEmpty(parameterName, "parameterName not empty");
 
 			final Object parameterValue = param.getValue();
+			parameterName2valueMap.put(parameterName, parameterValue);
+		}
+
+		return this;
+	}
+	
+	@Override
+	public IWorkPackageParamsBuilder setParameters(@Nullable final IParams parameters)
+	{
+		assertNotBuilt();
+
+		if (parameters == null)
+		{
+			return this;
+		}
+		
+		final Collection<String> parameterNames = parameters.getParameterNames();
+		if(parameterNames.isEmpty())
+		{
+			return this;
+		}
+
+		for (final String parameterName : parameterNames)
+		{
+			Check.assumeNotEmpty(parameterName, "parameterName not empty");
+
+			final Object parameterValue = parameters.getParameterAsObject(parameterName);
 			parameterName2valueMap.put(parameterName, parameterValue);
 		}
 
