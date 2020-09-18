@@ -141,6 +141,32 @@ public class ProductPlanningSchemaBLTest
 	@Test
 	public void createProductPlanningForAllProducts_3Schema_OrgOverride()
 	{
+		/*
+		 * Test explanation:
+		 * We have:
+		 * - ProductPlanningSchema 1:
+		 * 		- org 0
+		 * 		- warehouse 1
+		 * 		- distribution network 1
+		 * - ProductPlanningSchema 2:
+		 * 		- org 0
+		 * 		- warehouse 2
+		 * 		- distribution network 2
+		 * 		 * - ProductPlanningSchema 3, which is a copy of 2, but with Product org):
+		 * 		- org 3 (of the product)
+		 * 		- warehouse 2
+		 * 		- distribution network 2
+		 *
+		 * In this case, we expect to have 2 Product Planning:
+		 * - PP 1:
+		 * 		- Org 3
+		 * 		- Schema 1
+		 * - PP 2:
+		 * 		- Org 3
+		 * 		- Schema 3
+		 *
+		 * For schema 2 we do not create a Product Planning, because it would be identical on every field with PP 2.
+		 */
 		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.GENERATE_QUOTATION_BOM_PRODUCT;
 		final OrgId orgId = OrgId.ofRepoId(3);
 		final ProductId productId1 = createProduct("Product1", selector, orgId);
@@ -154,7 +180,6 @@ public class ProductPlanningSchemaBLTest
 		final WarehouseId warehouseId1 = createWarehouse("wh1");
 		final DistributionNetworkId distributionNetworkId1 = createNetworkDistribution("NwDist1");
 		final ProductPlanningSchema schema1 = createSchema(warehouseId1, distributionNetworkId1, selector, OrgId.ANY);
-
 
 		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
