@@ -3,7 +3,6 @@ import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
-
 import { getItemsByProperty } from '../../utils';
 import FiltersItem from './FiltersItem';
 
@@ -16,17 +15,14 @@ class FiltersNotFrequent extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.state = {
-      isOpenDropdown: false,
-      openFilterId: null,
-    };
+    this.state = { isOpenDropdown: false, openFilterId: null };
   }
 
   /**
    * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @param {*} target
-   * @todo Write the documentation
+   * @summary As the name suggests this is a handler for the case when user clicks outside the component
+   *          No action is done in case the target container contains input-dropdown-list
+   * @param {object} target element
    */
   handleClickOutside = ({ target }) => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
@@ -44,9 +40,9 @@ class FiltersNotFrequent extends PureComponent {
 
   /**
    * @method toggleDropdown
-   * @summary Executed when you clock on a filter and dropdown should show up
-   * @param {*} value
-   * @todo Write the documentation
+   * @summary Toggles the dropdown. Executed when you click on a filter header and the dropdown should show up
+   *          This also updates the openFilterId content after it does some checks
+   * @param {boolean} value
    */
   toggleDropdown = (value) => {
     const { active, data } = this.props;
@@ -69,25 +65,15 @@ class FiltersNotFrequent extends PureComponent {
 
   /**
    * @method toggleFilter
-   * @summary ToDo: Describe the method
-   * @param {*} index
-   * @todo Write the documentation
+   * @summary Updates in the state the openFilterId with the given filter index (matched from the filtersActive)
+   * @param {integer} index - position that corresponds to a filter in the filtersActive
    */
-  toggleFilter = (index) => {
-    this.setState({
-      openFilterId: index,
-    });
-  };
+  toggleFilter = (index) => this.setState({ openFilterId: index });
 
   // wrappers around props.handleShow to skip creating anonymous functions on render
   handleShowTrue = () => this.props.handleShow(true);
   handleShowFalse = () => this.props.handleShow(false);
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const {
       data,
@@ -202,25 +188,6 @@ class FiltersNotFrequent extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {bool} allowOutsideClick
- * @prop {func} resetInitialValues
- * @prop {bool} modalVisible
- * @prop {*} [filtersWrapper]
- * @prop {object} [activeFiltersCaptions]
- * @prop {*} data
- * @prop {*} windowType
- * @prop {*} notValidFields
- * @prop {*} viewId
- * @prop {*} handleShow
- * @prop {*} applyFilters
- * @prop {*} clearFilters
- * @prop {*} active
- * @prop {*} widgetShown
- * @prop {*} dropdownToggled
- * @todo Check title, buttons. Which proptype? Required or optional?
- */
 FiltersNotFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
