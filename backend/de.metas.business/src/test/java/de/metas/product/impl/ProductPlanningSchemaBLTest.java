@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.product.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -7,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
@@ -26,28 +49,6 @@ import de.metas.product.ProductPlanningSchema;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.model.X_M_Product_PlanningSchema;
 import de.metas.util.Services;
-
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class ProductPlanningSchemaBLTest
 {
@@ -123,6 +124,74 @@ public class ProductPlanningSchemaBLTest
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
 					assertThat(productPlanning.getM_Product_PlanningSchema_ID()).isEqualTo(schema2.getId().getRepoId());
+				});
+
+		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getDD_NetworkDistribution_ID()).isEqualTo(distributionNetworkId1.getRepoId());
+				});
+
+		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getDD_NetworkDistribution_ID()).isEqualTo(distributionNetworkId2.getRepoId());
+				});
+
+	}
+
+	@Test
+	public void createProductPlanningForAllProducts_3Schema_OrgOverride()
+	{
+		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.GENERATE_QUOTATION_BOM_PRODUCT;
+		final OrgId orgId = OrgId.ofRepoId(3);
+		final ProductId productId1 = createProduct("Product1", selector, orgId);
+
+		final WarehouseId warehouseId2 = createWarehouse("wh2");
+		final DistributionNetworkId distributionNetworkId2 = createNetworkDistribution("NwDist2");
+		final ProductPlanningSchema schema2 = createSchema(warehouseId2, distributionNetworkId2, selector, OrgId.ANY);
+
+		final ProductPlanningSchema schema3 = createSchema(warehouseId2, distributionNetworkId2, selector, orgId);
+
+		final WarehouseId warehouseId1 = createWarehouse("wh1");
+		final DistributionNetworkId distributionNetworkId1 = createNetworkDistribution("NwDist1");
+		final ProductPlanningSchema schema1 = createSchema(warehouseId1, distributionNetworkId1, selector, OrgId.ANY);
+
+
+		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
+
+		assertThat(defaultProductPlanningsForAllProducts).size().isEqualTo(2);
+
+		assertThat(defaultProductPlanningsForAllProducts).allSatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getM_Product_ID()).isEqualTo(productId1.getRepoId());
+				});
+
+		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getM_Warehouse_ID()).isEqualTo(warehouseId1.getRepoId());
+				});
+
+		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getM_Warehouse_ID()).isEqualTo(warehouseId2.getRepoId());
+				});
+
+		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getM_Product_PlanningSchema_ID()).isEqualTo(schema1.getId().getRepoId());
+					assertThat((schema1.getOrgId()).equals(OrgId.ANY));
+					assertThat(productPlanning.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
+				});
+
+		assertThat(defaultProductPlanningsForAllProducts).noneSatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getM_Product_PlanningSchema_ID()).isEqualTo(schema2.getId().getRepoId());
+				});
+
+		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
+				productPlanning -> {
+					assertThat(productPlanning.getM_Product_PlanningSchema_ID()).isEqualTo(schema3.getId().getRepoId());
+					assertThat(productPlanning.getAD_Org_ID()).isEqualTo(schema3.getOrgId().getRepoId());
+					assertThat(productPlanning.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
 				});
 
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
@@ -230,6 +299,23 @@ public class ProductPlanningSchemaBLTest
 	private ProductPlanningSchema createSchema(
 			final WarehouseId warehouseId,
 			final DistributionNetworkId distributionNetworkId,
+			final ProductPlanningSchemaSelector selector,
+			final OrgId orgId)
+	{
+		ProductPlanningSchema schema = createSchema(warehouseId, distributionNetworkId, selector);
+		schema = schema.toBuilder()
+				.orgId(orgId)
+				.build();
+
+		ProductPlanningSchemaDAO.save(schema);
+
+		// NOTE: to indirectly test it, we are loading it again and returning instead of just return it directly
+		return ProductPlanningSchemaDAO.getById(schema.getId());
+	}
+
+	private ProductPlanningSchema createSchema(
+			final WarehouseId warehouseId,
+			final DistributionNetworkId distributionNetworkId,
 			final ProductPlanningSchemaSelector selector)
 	{
 		final ProductPlanningSchema schema = ProductPlanningSchema.builder()
@@ -244,6 +330,20 @@ public class ProductPlanningSchemaBLTest
 
 		// NOTE: to indirectly test it, we are loading it again and returning instead of just return it directly
 		return ProductPlanningSchemaDAO.getById(schema.getId());
+	}
+
+	private ProductId createProduct(
+			@NonNull final String name,
+			@NonNull final ProductPlanningSchemaSelector selector,
+			@NonNull final OrgId orgId)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setValue(name);
+		product.setName(name);
+		product.setM_ProductPlanningSchema_Selector(selector.getCode());
+		product.setAD_Org_ID(orgId.getRepoId());
+		saveRecord(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	private ProductId createProduct(final String name, final ProductPlanningSchemaSelector selector)
