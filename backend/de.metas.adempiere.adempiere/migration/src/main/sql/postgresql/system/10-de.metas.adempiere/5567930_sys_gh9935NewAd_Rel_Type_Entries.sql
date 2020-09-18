@@ -276,7 +276,7 @@ WHERE l.IsActive = 'Y'
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, AD_Window_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy, WhereClause)
 VALUES (0, 3484, 0, 541181, 318, 167, TO_TIMESTAMP('2020-09-17 16:35:34', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y', 'N', 'N', TO_TIMESTAMP('2020-09-17 16:35:34', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'exists ( select 1 from C_Invoice i join C_InvoiceLine il on il.C_Invoice_ID = i.C_Invoice_ID join C_Project p on il.C_Invoice_ID = p.C_Project_ID where p.C_Project_ID=@C_Project_ID/-1@ and C_Invoice.C_Invoice_ID = il.C_Invoice_ID)')
+        'exists ( select 1 from C_Invoice i join C_InvoiceLine il on il.C_Invoice_ID = i.C_Invoice_ID join C_Project p on il.C_Project_ID = p.C_Project_ID where p.C_Project_ID=@C_Project_ID/-1@ and C_Invoice.C_Invoice_ID = il.C_Invoice_ID)')
 ;
 
 -- 2020-09-17T13:36:20.797Z
@@ -315,7 +315,7 @@ WHERE AD_Reference_ID = 541180
 -- 2020-09-17T13:43:00.362Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_Table
-SET WhereClause='exists ( select 1 from C_Invoice i join C_InvoiceLine il on il.C_Invoice_ID = i.C_Invoice_ID join C_Project p on il.C_Invoice_ID = p.C_Project_ID where p.C_Project_ID=@C_Project_ID/-1@ and C_Invoice.C_Invoice_ID = il.C_Invoice_ID and i.isSOTrx=''Y'')', Updated=TO_TIMESTAMP('2020-09-17 16:43:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET WhereClause='exists ( select 1 from C_Invoice i join C_InvoiceLine il on il.C_Invoice_ID = i.C_Invoice_ID join C_Project p on il.C_Project_ID = p.C_Project_ID where p.C_Project_ID=@C_Project_ID/-1@ and C_Invoice.C_Invoice_ID = il.C_Invoice_ID and i.isSOTrx=''Y'')', Updated=TO_TIMESTAMP('2020-09-17 16:43:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Reference_ID = 541181
 ;
 
