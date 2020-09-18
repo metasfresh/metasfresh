@@ -69,7 +69,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.streamCaching()
 				.setHeader("Authorization", simple("{{metasfresh.api.authtoken}}"))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-				.to("http://{{metasfresh.api.baseurl}}/shipments/shipmentCandidates")
+				.to("http://{{metasfresh.api.retrieve.shipment-candidate.uri}}")
 				.unmarshal(jacksonDataFormat)
 
 				.process(new ShipmentCandidateJsonToXmlProcessor())
@@ -95,6 +95,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 				.process(new FeedbackProzessor())
 				.marshal(jacksonDataFormat)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.to(http("{{metasfresh.api.baseurl}}/shipments/shipmentCandidatesResult"));
+				.log(LoggingLevel.DEBUG, "Sending feedback to metasfresh:\nHEADERS=${headers}\nBODY=${body}")
+				.to(http("{{metasfresh.api.feedback.shipment-candidate.uri}}"));
 	}
 }
