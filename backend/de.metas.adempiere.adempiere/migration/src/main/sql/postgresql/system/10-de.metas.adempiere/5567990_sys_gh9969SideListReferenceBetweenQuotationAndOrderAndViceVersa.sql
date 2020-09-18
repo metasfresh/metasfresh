@@ -63,3 +63,8 @@ INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Re
 UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from C_Order o where o.C_Order_ID=@Ref_Proposal_ID/-1@ and C_Order.C_Order_ID = o.C_Order_ID and o.c_doctypetarget_id = 1000027)',Updated=TO_TIMESTAMP('2020-09-18 11:21:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541185
 ;
 
+-- 2020-09-18T11:33:03.594Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from C_Order o where o.C_Order_ID=@Ref_Proposal_ID/-1@ and C_Order.C_Order_ID = o.C_Order_ID)',Updated=TO_TIMESTAMP('2020-09-18 14:33:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541185
+;
+
