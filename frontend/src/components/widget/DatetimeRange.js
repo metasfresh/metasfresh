@@ -48,6 +48,12 @@ class DatetimeRange extends Component {
       },
       () => {
         onChange(undefined, undefined);
+        // even if we reset the values we get autofocus on the input and calendar shown
+        // we need to use this workaround below to cancel programatically such that we hide the calendars automatically
+        const rangeInputEl = document.querySelector('div.range_inputs');
+        const rangeInputButtons = rangeInputEl.querySelectorAll('button');
+        const cancelBtn = rangeInputButtons ? rangeInputButtons[1] : null;
+        cancelBtn && cancelBtn.click();
       }
     );
   };
