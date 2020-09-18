@@ -13,18 +13,17 @@
  *****************************************************************************/
 package org.compiere.report.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.impexp.excel.AbstractExcelExporter;
-import de.metas.impexp.excel.CellValue;
-import de.metas.impexp.excel.CellValues;
-import de.metas.impexp.excel.ExcelExportConstants;
-import de.metas.impexp.excel.ExcelFormat;
+import de.metas.impexp.export.excel.AbstractExcelExporter;
+import de.metas.impexp.export.excel.CellValue;
+import de.metas.impexp.export.excel.CellValues;
+import de.metas.impexp.export.excel.ExcelExportConstants;
+import de.metas.impexp.export.excel.ExcelFormat;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL

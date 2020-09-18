@@ -1,10 +1,6 @@
-package de.metas.impexp.excel.service;
-
-import java.util.List;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -24,13 +20,34 @@ import java.util.List;
  * #L%
  */
 
-/** Implementors of this interface can receive data from {@link ExcelExporterService} and maybe in future others. */
-public interface DataConsumer<T>
+package de.metas.data.export.api.impl;
+
+import de.metas.data.export.api.IExportDataDestination;
+import de.metas.impexp.export.csv.CSVWriter;
+
+public class CSVDataDestination implements IExportDataDestination
 {
-	void putHeader(List<String> header);
+	public static CSVDataDestination cast(final IExportDataDestination dataDestination)
+	{
+		return (CSVDataDestination)dataDestination;
+	}
 
-	void putResult(T result);
+	private final CSVWriter csvWriter;
 
-	/** Might return {@code true} also if {@link #putResult(Object)} was called, but the result to consume turned out to be empty. */
-	boolean isNoDataAddedYet();
+	public CSVDataDestination(@NonNull final List CSVWriter csvWriter)
+	{
+		this.csvWriter = csvWriter;
+	}
+
+	@Override
+	public void appendLine(final List<Object> values) throws IOException
+	{
+		csvWriter.appendLine(values);
+	}
+
+	@Override
+	public void close() throws IOException
+	{
+		csvWriter.close();
+	}
 }

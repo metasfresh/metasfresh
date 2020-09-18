@@ -1,21 +1,8 @@
-package de.metas.impexp.excel;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +19,18 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.impexp.export.excel;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Cell value returned by {@link AbstractExcelExporter#getValueAt(int, int)}.

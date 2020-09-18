@@ -1,24 +1,8 @@
-package de.metas.impexp.excel.process;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-
-import de.metas.impexp.excel.JdbcExcelExporter;
-import de.metas.impexp.excel.service.ExcelExporterService;
-import de.metas.process.JavaProcess;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,9 +20,25 @@ import de.metas.process.JavaProcess;
  * #L%
  */
 
-public class ExportToExcelProcess extends JavaProcess
+package de.metas.impexp.export.process;
+
+import de.metas.impexp.export.DataConsumer;
+import de.metas.impexp.export.ResultSetToTableExporterService;
+import de.metas.process.JavaProcess;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+
+import java.io.File;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class ExportToTableProcess extends JavaProcess
 {
-	final ExcelExporterService excelExporterService = SpringContextHolder.instance.getBean(ExcelExporterService.class);
+	final ResultSetToTableExporterService excelExporterService = SpringContextHolder.instance.getBean(ResultSetToTableExporterService.class);
 
 	@Override
 	protected String doIt()
@@ -46,10 +46,7 @@ public class ExportToExcelProcess extends JavaProcess
 		final String sql = getSql();
 		final Evaluatee evalCtx = getEvalContext();
 
-		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
-				.ctx(getCtx())
-				.translateHeaders(getProcessInfo().isTranslateExcelHeaders())
-				.build();
+		final DataConsumer<ResultSet> jdbcExcelExporter = createDataConsumer();
 		excelExporterService.processDataFromSQL(sql, evalCtx, jdbcExcelExporter);
 
 		final File tempFile = jdbcExcelExporter.getResultFile();
@@ -57,6 +54,8 @@ public class ExportToExcelProcess extends JavaProcess
 
 		return MSG_OK;
 	}
+
+	protected abstract DataConsumer<ResultSet> createDataConsumer();
 
 	private String getSql()
 	{

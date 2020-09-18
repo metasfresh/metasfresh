@@ -1,10 +1,8 @@
-package de.metas.data.export.api.impl;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,13 @@ package de.metas.data.export.api.impl;
  * #L%
  */
 
+package de.metas.impexp.export.csv;
+
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,21 +38,8 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
-import org.compiere.util.DisplayType;
-
-import de.metas.data.export.api.IExportDataDestination;
-import de.metas.util.Check;
-import lombok.NonNull;
-
-public class CSVWriter implements IExportDataDestination
+public class CSVWriter
 {
-	public static CSVWriter cast(final IExportDataDestination dataDestination)
-	{
-		return (CSVWriter)dataDestination;
-	}
-
 	private Writer writer;
 
 	public static final String CONFIG_Encoding = "Encoding";
@@ -128,9 +120,8 @@ public class CSVWriter implements IExportDataDestination
 		this.lineEnding = lineEnding;
 	}
 
-	public void setHeader(final List<String> header)
+	public void setHeader(@NonNull final List<String> header)
 	{
-		Check.assumeNotNull(header, "header not null");
 		Check.assume(!header.isEmpty(), "header not empty");
 		Check.assume(!headerAppended, "header was not already appended");
 
@@ -165,7 +156,6 @@ public class CSVWriter implements IExportDataDestination
 		headerAppended = true;
 	}
 
-	@Override
 	public void appendLine(List<Object> values) throws IOException
 	{
 		appendHeader();
@@ -226,7 +216,6 @@ public class CSVWriter implements IExportDataDestination
 				+ fieldQuote;
 	}
 
-	@Override
 	public void close() throws IOException
 	{
 		if (writer == null)

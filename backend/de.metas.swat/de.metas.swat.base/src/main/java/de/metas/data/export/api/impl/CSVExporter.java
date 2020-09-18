@@ -22,14 +22,14 @@ package de.metas.data.export.api.impl;
  * #L%
  */
 
+import de.metas.data.export.api.IExportDataDestination;
+import de.metas.data.export.api.IExportDataSource;
+import de.metas.impexp.export.csv.CSVWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-
-import de.metas.data.export.api.IExportDataDestination;
-import de.metas.data.export.api.IExportDataSource;
 
 /**
  * Export {@link IExportDataSource} to CSV format.
@@ -45,11 +45,11 @@ import de.metas.data.export.api.IExportDataSource;
 	}
 
 	@Override
-	protected CSVWriter createDataDestination(final OutputStream out) throws UnsupportedEncodingException
+	protected CSVDataDestination createDataDestination(final OutputStream out) throws UnsupportedEncodingException
 	{
 		final CSVWriter csvWriter = new CSVWriter(out, getConfig());
 		csvWriter.setHeader(getDataSource().getFieldNames());
-		return csvWriter;
+		return new CSVDataDestination(csvWriter);
 	}
 
 	@Override

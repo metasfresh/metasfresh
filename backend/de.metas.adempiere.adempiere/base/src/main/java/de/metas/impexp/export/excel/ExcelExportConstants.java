@@ -1,21 +1,8 @@
-package de.metas.impexp.excel;
-
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ISysConfigBL;
-
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +19,18 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.impexp.export.excel;
+
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Value;
+import org.adempiere.service.ISysConfigBL;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
 @Builder

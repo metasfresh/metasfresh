@@ -1,5 +1,41 @@
-package de.metas.impexp.excel;
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
+package de.metas.impexp.export.excel;
+
+import de.metas.common.util.CoalesceUtil;
+import de.metas.impexp.export.DataConsumer;
+import de.metas.impexp.export.ExportUtils;
+import de.metas.impexp.export.ResultSetToTableExporterService;
+import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -7,24 +43,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.impexp.excel.service.DataConsumer;
-import de.metas.impexp.excel.service.ExcelExporterService;
-import de.metas.logging.LogManager;
-import de.metas.common.util.CoalesceUtil;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * DataConsumer that consumes a jdbc-{@link ResultSet} towards an excel file.
- * What it does is providing an {@link AbstractExcelExporter} that can be "filled" by {@link ExcelExporterService} from an open {@link ResultSet}.
+ * What it does is providing an {@link AbstractExcelExporter} that can be "filled" by {@link ResultSetToTableExporterService} from an open {@link ResultSet}.
  */
 @ToString(exclude = { "m_ctx", "m_resultSet", "m_columnHeaders" }) // exclude some fields, not sure if this is the best choice
 public class JdbcExcelExporter
@@ -78,14 +99,11 @@ public class JdbcExcelExporter
 	public void putResult(@NonNull final ResultSet result)
 	{
 		m_resultSet = result;
-		if (resultFile != null)
+		if (resultFile == null)
 		{
-			exportToFile(resultFile);
+			resultFile = ExportUtils.createTempFile("csv");
 		}
-		else
-		{
-			resultFile = exportToTempFile();
-		}
+		exportToFile(resultFile);
 	}
 
 	@Override

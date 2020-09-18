@@ -3,10 +3,14 @@
  */
 package de.metas.fresh.product.process;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.impexp.export.ResultSetToTableExporterService;
+import de.metas.impexp.export.excel.JdbcExcelExporter;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 import org.apache.poi.ss.usermodel.Font;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
@@ -14,14 +18,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.impexp.excel.JdbcExcelExporter;
-import de.metas.impexp.excel.service.ExcelExporterService;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.IProductDAO;
-import de.metas.util.Services;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -53,7 +52,7 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 {
 
 	private final static String tableName = "\"de.metas.fresh\".product_specifications_v";
-	private final ExcelExporterService excelExporterService = SpringContextHolder.instance.getBean(ExcelExporterService.class);
+	private final ResultSetToTableExporterService excelExporterService = SpringContextHolder.instance.getBean(ResultSetToTableExporterService.class);
 
 	@Override
 	protected String doIt() throws Exception

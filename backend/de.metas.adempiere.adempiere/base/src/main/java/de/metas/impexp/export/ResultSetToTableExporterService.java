@@ -1,34 +1,8 @@
-package de.metas.impexp.excel.service;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.util.DB;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,10 +20,35 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.impexp.export;
+
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.util.DB;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
-public class ExcelExporterService
+public class ResultSetToTableExporterService
 {
-	private static final Logger logger = LogManager.getLogger(ExcelExporterService.class);
+	private static final Logger logger = LogManager.getLogger(ResultSetToTableExporterService.class);
 
 	/** Like {@link #processDataFromSQL(String, DataConsumer)}, just with an empty evaluator. */
 	public void processDataFromSQL(
@@ -111,9 +110,6 @@ public class ExcelExporterService
 		{
 			DB.close(rs, pstmt);
 			DB.close(conn);
-			rs = null;
-			pstmt = null;
-			conn = null;
 		}
 	}
 }

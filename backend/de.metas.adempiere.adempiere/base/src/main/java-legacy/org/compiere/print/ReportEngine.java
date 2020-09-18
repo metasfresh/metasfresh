@@ -16,39 +16,21 @@
  *****************************************************************************/
 package org.compiere.print;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-import java.awt.print.PrinterJob;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.URI;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Locale;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.print.DocFlavor;
-import javax.print.StreamPrintService;
-import javax.print.StreamPrintServiceFactory;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.standard.Copies;
-import javax.print.attribute.standard.JobName;
-import javax.print.event.PrintServiceAttributeEvent;
-import javax.print.event.PrintServiceAttributeListener;
-import javax.xml.transform.stream.StreamResult;
-
+import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
+import de.metas.impexp.export.excel.ExcelFormats;
+import de.metas.logging.LogManager;
+import de.metas.print.IPrintService;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.report.server.ReportConstants;
+import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
@@ -83,21 +65,37 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.i18n.Language;
-import de.metas.i18n.Msg;
-import de.metas.impexp.excel.ExcelFormats;
-import de.metas.logging.LogManager;
-import de.metas.print.IPrintService;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessExecutor;
-import de.metas.process.ProcessInfo;
-import de.metas.report.server.ReportConstants;
-import de.metas.util.Check;
-import de.metas.util.FileUtil;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.print.DocFlavor;
+import javax.print.StreamPrintService;
+import javax.print.StreamPrintServiceFactory;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Copies;
+import javax.print.attribute.standard.JobName;
+import javax.print.event.PrintServiceAttributeEvent;
+import javax.print.event.PrintServiceAttributeListener;
+import javax.xml.transform.stream.StreamResult;
+import java.awt.print.PrinterJob;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Locale;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /**
  * Report Engine.

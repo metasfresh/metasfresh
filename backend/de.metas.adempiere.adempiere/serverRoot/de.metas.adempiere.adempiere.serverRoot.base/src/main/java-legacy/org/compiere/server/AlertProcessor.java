@@ -16,17 +16,18 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import java.io.File;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.event.Topic;
+import de.metas.i18n.Msg;
+import de.metas.impexp.export.ResultSetToTableExporterService;
+import de.metas.impexp.export.excel.ExcelFormats;
+import de.metas.impexp.export.excel.JdbcExcelExporter;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -41,20 +42,17 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.ValueNamePair;
 import org.springframework.core.io.FileSystemResource;
 
+import java.io.File;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.event.Topic;
-import de.metas.i18n.Msg;
-import de.metas.impexp.excel.ExcelFormats;
-import de.metas.impexp.excel.JdbcExcelExporter;
-import de.metas.impexp.excel.service.ExcelExporterService;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Set;
 
 /**
  * Alert Processor
@@ -347,7 +345,7 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	private String getExcelReport(final MAlertRule rule, final String sql, final Collection<File> attachments) throws Exception
 	{
-		final ExcelExporterService excelExporterService = SpringContextHolder.instance.getBean(ExcelExporterService.class);
+		final ResultSetToTableExporterService excelExporterService = SpringContextHolder.instance.getBean(ResultSetToTableExporterService.class);
 
 		final File file = rule.createReportFile(ExcelFormats.getDefaultFileExtension());
 

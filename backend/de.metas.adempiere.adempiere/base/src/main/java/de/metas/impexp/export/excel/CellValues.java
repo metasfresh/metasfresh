@@ -1,23 +1,8 @@
-package de.metas.impexp.excel;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.DisplayType;
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +19,19 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.impexp.export.excel;
+
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @UtilityClass
 public class CellValues
