@@ -226,6 +226,7 @@ export class RawWidget extends Component {
   handleKeyDown = (e, property, value) => {
     const { lastFormField, widgetType, closeTableField } = this.props;
     const { key } = e;
+
     this.updateTypedCharacters(e.target.value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
@@ -453,19 +454,19 @@ export class RawWidget extends Component {
       updateHeight,
       rowIndex,
     } = this.props;
-    let widgetValue = data != null ? data : widgetData[0].value;
+    let tabIndex = this.props.tabIndex;
     const { isEdited, charsTyped } = this.state;
+
+    let widgetValue = data != null ? data : widgetData[0].value;
+    if (widgetValue === null) {
+      widgetValue = '';
+    }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
       ? fields[0].parameterName
       : fields[0].field;
     const readonly = widgetData[0].readonly;
-    let tabIndex = this.props.tabIndex;
-
-    if (widgetValue === null) {
-      widgetValue = '';
-    }
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {
       tabIndex = -1;

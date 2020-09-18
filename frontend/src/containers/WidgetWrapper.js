@@ -110,10 +110,10 @@ const mapStateToProps = (state, props) => {
 WidgetWrapper.propTypes = {
   renderMaster: PropTypes.bool,
   dataSource: PropTypes.string.isRequired,
-  relativeDocId: PropTypes.string.isRequired,
+  relativeDocId: PropTypes.number.isRequired,
   widgetData: PropTypes.array.isRequired,
   modalVisible: PropTypes.bool.isRequired,
-  activeTab: PropTypes.string.isRequired,
+  activeTab: PropTypes.string,
   timeZone: PropTypes.string.isRequired,
   fields: PropTypes.array.isRequired,
   allowShortcut: PropTypes.func.isRequired,
