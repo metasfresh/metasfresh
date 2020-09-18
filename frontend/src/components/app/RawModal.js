@@ -244,7 +244,7 @@ class RawModal extends Component {
         deleteTable(tableId),
         closeModal(),
         unsetIncludedView({
-          windowType: windowId,
+          windowId: windowId,
           viewId,
           forceClose: true,
         }),

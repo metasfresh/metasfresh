@@ -463,7 +463,7 @@ class DocumentListContainer extends Component {
         }
 
         if (isIncluded) {
-          setIncludedView({ windowType: windowId, viewId: newViewId });
+          setIncludedView({ windowId, viewId: newViewId });
         }
 
         if (isModal) {
