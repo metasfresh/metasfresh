@@ -1,4 +1,4 @@
-package de.metas.impexp.processing.user;
+package de.metas.user.impexp;
 
 /*
  * #%L
