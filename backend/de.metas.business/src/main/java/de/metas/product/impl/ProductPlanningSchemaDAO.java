@@ -31,9 +31,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.GuavaCollectors;
 import lombok.Value;
@@ -78,29 +80,29 @@ final class ProductPlanningSchemaDAO
 	}
 
 	/**
-	 * @return The Product Planning Schema entries with the given Product Planning Schema Selector and Org. If the org does not match, fallback to org *.
+	 * Returns the Product Planning Schema entries with the given Product Planning Schema Selector and Org. If the org does not match, fallback to org *.
+	 * If there are 2 identical Product Planning Schemas, one for orgParam and one for *, we shall return only the one for orgParam.
 	 */
 	@NonNull
 	public static ImmutableSet<ProductPlanningSchema> retrieveSchemasForSelectorAndOrg(
 			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector,
 			@NonNull final OrgId orgId)
 	{
-		final Set<ProductPlanningSchema> schemasWithDuplicateOrgs = Services.get(IQueryBL.class)
+		final ImmutableMap<ProductPlanningSchemaId, ProductPlanningSchema> schemasWithDuplicateOrgs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_PlanningSchema.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
 				.addInArrayFilter(I_M_Product_PlanningSchema.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
-				.orderByDescending(I_M_Product_PlanningSchema.COLUMNNAME_AD_Org_ID) // orderby desc is needed because we want to get Org * last
 				.create()
 				.list()
 				.stream()
 				.map(ProductPlanningSchemaDAO::toProductPlanningSchema)
-				.collect(Collectors.toSet());
+				.collect(ImmutableMap.toImmutableMap(ProductPlanningSchema::getId, Function.identity()));
 
 		// remove duplicates where everything is the same, except the org, and repoId
 		// Technical: I am using the set.add property that if an object already exists in a set, the duplicate will not be inserted but skipped.
-		final Set<ProductPlanningSchemaIgnoringOrgAndId> schemasNoDuplicateOrgs = schemasWithDuplicateOrgs.stream()
+		final Set<ProductPlanningSchemaIgnoringOrgAndId> schemasNoDuplicateOrgs = schemasWithDuplicateOrgs.values().stream()
 				.sorted(Comparator.comparing(ProductPlanningSchema::getOrgId).reversed()) // * org remains last
 				.map(ProductPlanningSchemaIgnoringOrgAndId::new)
 				.collect(GuavaCollectors.toImmutableSet());
@@ -108,11 +110,7 @@ final class ProductPlanningSchemaDAO
 		final ImmutableSet.Builder<ProductPlanningSchema> result = ImmutableSet.builder();
 		for (final ProductPlanningSchemaIgnoringOrgAndId s : schemasNoDuplicateOrgs)
 		{
-			// this is not performant, but i cant find a better way to search for it.
-			schemasWithDuplicateOrgs.stream()
-					.filter(it -> Objects.equals(it.getId(), s.getSchema().getId()))
-					.findFirst()
-					.map(result::add);
+			result.add(schemasWithDuplicateOrgs.get(s.getSchema().getId()));
 		}
 
 		return result.build();
