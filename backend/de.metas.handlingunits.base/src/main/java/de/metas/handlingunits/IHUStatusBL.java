@@ -1,12 +1,8 @@
-package de.metas.handlingunits;
-
-import java.util.Collection;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,8 +20,13 @@ import java.util.Collection;
  * #L%
  */
 
+package de.metas.handlingunits;
+
+import java.util.Collection;
+
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -79,6 +80,8 @@ public interface IHUStatusBL extends ISingletonService
 	boolean isStatusActive(I_M_HU huRecord);
 
 	boolean isStatusIssued(I_M_HU huRecord);
+
+	boolean isStatusIssued(@NonNull HuId huId);
 
 	boolean isStatusActiveOrIssued(I_M_HU huRecord);
 
