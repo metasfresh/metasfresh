@@ -2,6 +2,7 @@ import * as types from '../constants/FilterTypes';
 import { Map as iMap } from 'immutable';
 import deepUnfreeze from 'deep-unfreeze';
 import { fieldValueToString } from '../utils/tableHelpers';
+import _ from 'lodash';
 
 export function clearAllFilters({ id, data }) {
   return {
@@ -203,35 +204,6 @@ export function filtersToMap(filtersArray) {
 }
 
 /**
- * @method getFlatFiltersMap
- * @summary Creates a flatFilterMap out of passed filterData array
- */
-export function getFlatFiltersMap({ filterData }) {
-  const flatFiltersMap = {};
-  filterData.forEach((filter) => {
-    if (filter.parameters) {
-      filter.parameters.forEach((parameter) => {
-        const { parameterName, widgetType } = parameter;
-        flatFiltersMap[`${filter.filterId}-${parameterName}`] = { widgetType };
-      });
-    } else if (filter.includedFilters) {
-      filter.includedFilters.forEach((includedFilter) => {
-        if (includedFilter.parameters) {
-          includedFilter.parameters.forEach((parameter) => {
-            const { parameterName, widgetType } = parameter;
-            flatFiltersMap[`${includedFilter.filterId}-${parameterName}`] = {
-              widgetType,
-            };
-          });
-        }
-      });
-    }
-  });
-
-  return flatFiltersMap;
-}
-
-/**
  * @method filtersActiveContains
  * @summary returns a boolean value depending on the presence of the key withing the activeFilters passed array
  */
@@ -351,4 +323,24 @@ export function isFilterValid(filters) {
   }
 
   return true;
+}
+
+/**
+ * @method parseToPatch
+ * @summary Patches the params, resulted array has the item values set to either null or previous values
+ *          this because filters with only defaultValue shoul not be sent to the server
+ * @param {array} params
+ */
+export function parseToPatch(params) {
+  return params.reduce((acc, param) => {
+    // filters with only defaltValue shouldn't be sent to server
+    if (!param.defaultValue || !_.isEqual(param.defaultValue, param.value)) {
+      acc.push({
+        ...param,
+        value: param.value === '' ? null : param.value,
+      });
+    }
+
+    return acc;
+  }, []);
 }

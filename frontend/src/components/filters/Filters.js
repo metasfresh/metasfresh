@@ -10,6 +10,7 @@ import {
   annotateFilters,
   isFilterValid,
   updateNotValidFields,
+  parseToPatch,
 } from '../../actions/FiltersActions';
 
 import FiltersFrequent from './FiltersFrequent';
@@ -24,46 +25,21 @@ import { getEntityRelatedId } from '../../reducers/filters';
  */
 class Filters extends PureComponent {
   /**
-   * @method parseToPatch
-   * @summary ToDo: Describe the method
-   * @param {*} params
-   */
-  parseToPatch = (params) => {
-    return params.reduce((acc, param) => {
-      if (
-        // filters with only defaltValue shouldn't be sent to server
-        !param.defaultValue ||
-        JSON.stringify(param.defaultValue) !== JSON.stringify(param.value)
-      ) {
-        acc.push({
-          ...param,
-          value: param.value === '' ? null : param.value,
-        });
-      }
-
-      return acc;
-    }, []);
-  };
-
-  // SETTING FILTERS  --------------------------------------------------------
-  /**
    * @method applyFilters
    * @summary This method should update docList
-   * @param {*} isActive
-   * @param {*} captionValue
    * @param {object} filter
-   * @param {*} cb
+   * @param {function} cb - executed if filter is valid and after it was applied
    */
-  // eslint-disable-next-line no-unused-vars
-  applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
+  applyFilters = ({ ...filter }, cb) => {
     const valid = isFilterValid(filter);
     const { updateNotValidFields, filterId } = this.props;
+
     updateNotValidFields({ filterId, data: !valid });
     if (valid) {
       const parsedFilter = filter.parameters
         ? {
             ...filter,
-            parameters: this.parseToPatch(filter.parameters),
+            parameters: parseToPatch(filter.parameters),
           }
         : filter;
 
