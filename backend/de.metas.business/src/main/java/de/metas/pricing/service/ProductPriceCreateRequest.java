@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.impexp.processing.product;
+package de.metas.pricing.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

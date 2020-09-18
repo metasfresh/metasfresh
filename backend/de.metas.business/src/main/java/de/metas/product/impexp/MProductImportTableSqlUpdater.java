@@ -1,4 +1,4 @@
-package de.metas.impexp.processing.product;
+package de.metas.product.impexp;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;

@@ -1,4 +1,4 @@
-package de.metas.impexp.processing.product;
+package de.metas.product.impexp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 

@@ -1,12 +1,13 @@
 /**
  *
  */
-package de.metas.impexp.processing.product;
+package de.metas.impexp.product;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPriceCreateRequest;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,7 +38,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ProductPriceImporter
+class ProductPriceImporter
 {
 
 	private final ProductPriceCreateRequest request;
