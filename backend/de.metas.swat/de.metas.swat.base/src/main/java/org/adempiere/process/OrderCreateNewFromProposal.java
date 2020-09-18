@@ -3,12 +3,14 @@ package org.adempiere.process;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -22,11 +24,13 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 public final class OrderCreateNewFromProposal extends JavaProcess
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final Optional<AdWindowId> orderWindowId = RecordZoomWindowFinder.findAdWindowId(I_C_Order.Table_Name);
 
 	private MOrder sourceOrder;
 
@@ -91,7 +95,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 
 		getResult().setRecordToOpen(
 				TableRecordReference.of(newOrder),
-				(String)null, // adWindowId
+				orderWindowId.get().getRepoId(), // adWindowId
 				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument);
 
 		return newOrder.getDocumentNo();
