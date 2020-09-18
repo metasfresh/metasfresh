@@ -28,7 +28,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000001,
@@ -56,7 +65,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000002,
@@ -85,7 +103,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000003,
@@ -112,7 +139,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000004,
@@ -139,7 +175,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000005,
@@ -166,7 +211,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000006,
@@ -193,7 +247,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000007,
@@ -220,7 +283,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000008,
@@ -247,7 +319,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000009,
@@ -274,7 +355,16 @@
           "qty": 12,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     },
     {
       "id": 1000011,
@@ -301,7 +391,16 @@
           "qty": 21,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "shipperInternalSearchKey": "Test_Shipper",
+      "orderedQty": [
+        {
+          "qty": 21,
+          "uomCode": "Stk"
+        }
+      ],
+      "deliveredQtyNetPrice": 0,
+      "orderedQtyNetPrice": 42
     }
   ],
   "hasMoreItems": false
