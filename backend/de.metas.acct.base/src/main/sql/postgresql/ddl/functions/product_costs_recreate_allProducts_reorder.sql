@@ -1,22 +1,21 @@
 drop function if exists product_costs_recreate_allProducts_reorder ();
 
-create function product_costs_recreate_allProducts_reorder() returns text
-
-
-    language plpgsql
-as
+create function product_costs_recreate_allProducts_reorder() RETURNS text
+    LANGUAGE plpgsql
+AS
 $$
 DECLARE
     rowcount integer;
     v_result text := '';
 BEGIN
-    UPDATE m_cost
+    UPDATE m_cost c
     SET currentcostprice=0,
         currentqty=0,
         cumulatedamt=0,
-        cumulatedqty=0
-        -- WHERE m_product_id = p_M_Product_ID
-    WHERE 1 = 1;
+        cumulatedqty=0,
+        c_currency_id=ac.c_currency_id /*make sure to also get the *current* currency of our ac*/
+    FROM c_acctschema ac
+    WHERE ac.c_acctschema_id=c.c_acctschema_id /*m_cost.c_acctschema_id is mandatory*/;
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     v_result := v_result || rowcount || ' M_Cost(s) set to ZERO; ';
     raise notice '% M_Cost(s) set to ZERO', rowcount;
@@ -54,6 +53,5 @@ BEGIN
 
     RETURN v_result;
 END;
-$$;
-
-alter function product_costs_recreate_allProducts_reorder() owner to metasfresh;
+$$
+;
