@@ -89,6 +89,7 @@ class MasterWidget extends PureComponent {
       updatePropertyValue,
     } = this.props;
     value = formatValueByWidgetType({ widgetType, value });
+
     let entity = viewId ? 'documentView' : this.props.entity;
     let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
     let ret = null;
@@ -105,7 +106,7 @@ class MasterWidget extends PureComponent {
     // to be sure it's not called if not needed.
     widgetType !== 'Button' &&
       !dataId &&
-      widgetType === 'ProductAttributes' &&
+      (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
       updatePropertyValue({
         property,
         value,
