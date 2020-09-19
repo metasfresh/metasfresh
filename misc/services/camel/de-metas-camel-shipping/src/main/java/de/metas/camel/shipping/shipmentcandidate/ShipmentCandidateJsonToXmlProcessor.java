@@ -82,6 +82,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_empfaenger_mhd_kurz_oder_lang").build())
 			.field(FIELD.builder().name("_empfaenger_versandart").build())
 			.field(FIELD.builder().name("_empfaenger_versanddienstleister").build())
+			.field(FIELD.builder().name("_bestellung_referenz").build())
 
 			.build();
 
@@ -208,6 +209,8 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 
 		getShipperInternalNameParts(item.getShipperInternalSearchKey(), propertiesComponent)
 				.map(shipperNameParts -> {setShipperFields(row, shipperNameParts);return null;});
+
+		row.col(COL.of(item.getPoReference()));//_bestellung_referenz
 
 		return row.build();
 	}

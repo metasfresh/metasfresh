@@ -1,26 +1,8 @@
 package de.metas.manufacturing.rest_api;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
-import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.ManufacturingOrderQuery;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.common.manufacturing.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
@@ -50,6 +32,23 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 /*
  * #%L
@@ -112,6 +111,7 @@ final class ManufacturingOrdersExportCommand
 				.limit(limit)
 				.canBeExportedFrom(canBeExportedFrom)
 				.exportStatus(APIExportStatus.Pending)
+				.onlyCompleted(true)
 				.build();
 		this.adLanguage = adLanguage;
 	}
@@ -119,7 +119,7 @@ final class ManufacturingOrdersExportCommand
 	public JsonResponseManufacturingOrdersBulk execute()
 	{
 		final ExportTransactionId transactionKey = ExportTransactionId.random();
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey.toJson()))
+		try (final MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey.toJson()))
 		{
 			final List<I_PP_Order> orders = getOrders();
 			if (orders.isEmpty())
