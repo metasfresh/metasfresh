@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.time.DurationUtils;

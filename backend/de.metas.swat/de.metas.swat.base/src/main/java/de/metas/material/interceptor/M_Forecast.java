@@ -22,8 +22,14 @@
 
 package de.metas.material.interceptor;
 
+import de.metas.calendar.CalendarId;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.mforecast.IForecastDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -38,6 +44,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -51,8 +58,6 @@ public class M_Forecast
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IForecastDAO forecastsRepo = Services.get(IForecastDAO.class);
 	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-	private final M_ForecastEventCreator forecastEventCreator;
-	private final PostMaterialEventService materialEventService;
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	public static final AdMessageKey MSG_CALENDAR_DOES_NOT_CONTAIN_PROMISED_DATE = AdMessageKey.of("de.metas.material.interceptor.M_Forecast.CalendarDoesNotContainPromisedDate");
 

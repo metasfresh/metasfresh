@@ -1,5 +1,6 @@
+drop function if exists product_costs_recreate_allProducts_reorder ();
 
-CREATE OR REPLACE FUNCTION product_costs_recreate_allproducts_reorder() RETURNS text
+create function product_costs_recreate_allProducts_reorder() RETURNS text
     LANGUAGE plpgsql
 AS
 $$
