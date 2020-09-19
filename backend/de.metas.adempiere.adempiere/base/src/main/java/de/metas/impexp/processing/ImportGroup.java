@@ -37,9 +37,9 @@ import lombok.ToString;
 
 @ToString
 @VisibleForTesting
-public final class ImportGroup<ImportRecordType>
+public final class ImportGroup<ImportGroupKey, ImportRecordType>
 {
-	public static <ImportRecordType> ImportGroup<ImportRecordType> newInstance(@NonNull final ImportGroupKey groupKey)
+	public static <ImportGroupKey, ImportRecordType> ImportGroup<ImportGroupKey, ImportRecordType> newInstance(@NonNull final ImportGroupKey groupKey)
 	{
 		return new ImportGroup<>(groupKey);
 	}

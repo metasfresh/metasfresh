@@ -5,9 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -20,6 +23,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -28,7 +32,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_Inventory;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -39,26 +42,32 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.impexp.processing.ImportGroupKey;
 import de.metas.impexp.processing.ImportGroupResult;
 import de.metas.impexp.processing.ImportProcessTemplate;
 import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.inventory.InventoryImportProcess.InventoryGroupKey;
+import de.metas.inventory.AggregationType;
+import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Import {@link I_I_Inventory} to {@link I_M_Inventory}.
  *
  */
-public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
+public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory, InventoryGroupKey>
 {
 	private static final Logger logger = LogManager.getLogger(InventoryImportProcess.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -113,12 +122,36 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 				+ ", " + I_I_Inventory.COLUMNNAME_I_Inventory_ID;
 	}
 
-	@Override
-	protected ImportGroupKey extractImportGroupKey(final I_I_Inventory importRecord)
+	@Value
+	@Builder
+	public static class InventoryGroupKey
 	{
-		return ImportGroupKey.builder()
-				.value("warehouse", Integer.toString(importRecord.getM_Warehouse_ID())) // importRecord.getWarehouseValue might be empty/null if the warehouse was looked up only via locatorValue
-				.value("movementDate", TimeUtil.asLocalDate(importRecord.getInventoryDate()).toString())
+		@Nullable
+		String externalHeaderId;
+
+		@NonNull
+		OrgId orgId;
+
+		@NonNull
+		DocTypeId docTypeId;
+
+		@Nullable
+		WarehouseId warehouseId;
+
+		Timestamp inventoryDate;
+	}
+
+	@Override
+	protected InventoryGroupKey extractImportGroupKey(final I_I_Inventory importRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeId(importRecord);
+
+		return InventoryGroupKey.builder()
+				.externalHeaderId(StringUtils.trimBlankToNull(importRecord.getExternalHeaderId()))
+				.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+				.docTypeId(docTypeId)
+				.warehouseId(WarehouseId.ofRepoIdOrNull(importRecord.getM_Warehouse_ID()))
+				.inventoryDate(importRecord.getInventoryDate())
 				.build();
 	}
 
@@ -130,10 +163,11 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 
 	@Override
 	protected ImportGroupResult importRecords(
+			@NonNull final InventoryGroupKey groupKey,
 			@NonNull final List<I_I_Inventory> importRecords,
 			@NonNull final IMutable<Object> stateHolder)
 	{
-		final I_M_Inventory inventory = createInventoryHeader(importRecords.get(0));
+		final I_M_Inventory inventory = createInventoryHeader(groupKey);
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
 
 		for (final I_I_Inventory importRecord : importRecords)
@@ -149,17 +183,15 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		return ImportGroupResult.countInserted(importRecords.size());
 	}
 
-	private I_M_Inventory createInventoryHeader(@NonNull final I_I_Inventory importRecord)
+	private I_M_Inventory createInventoryHeader(@NonNull final InventoryGroupKey groupKey)
 	{
-		final DocTypeId docTypeId = getDocTypeId(importRecord);
-
 		final I_M_Inventory inventory = newInstance(I_M_Inventory.class);
-		inventory.setExternalId(importRecord.getExternalHeaderId());
-		inventory.setAD_Org_ID(importRecord.getAD_Org_ID());
-		inventory.setDescription("I " + importRecord.getM_Warehouse_ID() + " " + importRecord.getInventoryDate());
-		inventory.setC_DocType_ID(docTypeId.getRepoId());
-		inventory.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
-		inventory.setMovementDate(importRecord.getInventoryDate());
+		inventory.setExternalId(groupKey.getExternalHeaderId());
+		inventory.setAD_Org_ID(groupKey.getOrgId().getRepoId());
+		// inventory.setDescription("I " + importRecord.getM_Warehouse_ID() + " " + importRecord.getInventoryDate());
+		inventory.setC_DocType_ID(groupKey.getDocTypeId().getRepoId());
+		inventory.setM_Warehouse_ID(WarehouseId.toRepoId(groupKey.getWarehouseId()));
+		inventory.setMovementDate(groupKey.getInventoryDate());
 		saveRecord(inventory);
 		return inventory;
 	}

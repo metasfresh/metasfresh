@@ -65,7 +65,8 @@ import lombok.NonNull;
  *
  * @param <ImportRecordType> import table model (e.g. I_I_BPartner).
  */
-public abstract class ImportProcessTemplate<ImportRecordType> implements IImportProcess<ImportRecordType>
+public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
+		implements IImportProcess<ImportRecordType>
 {
 	// services
 	private final transient Logger logger = LogManager.getLogger(getClass());
@@ -100,7 +101,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> setCtx(final Properties ctx)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> setCtx(final Properties ctx)
 	{
 		assertNotStarted();
 
@@ -115,7 +116,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> clientId(@NonNull final ClientId clientId)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> clientId(@NonNull final ClientId clientId)
 	{
 		assertNotStarted();
 
@@ -134,7 +135,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> setParameters(@NonNull final IParams params)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> setParameters(@NonNull final IParams params)
 	{
 		assertNotStarted();
 
@@ -148,7 +149,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> validateOnly(final boolean validateOnly)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> validateOnly(final boolean validateOnly)
 	{
 		assertNotStarted();
 
@@ -157,7 +158,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> completeDocuments(final boolean completeDocuments)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> completeDocuments(final boolean completeDocuments)
 	{
 		assertNotStarted();
 
@@ -176,7 +177,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> setLoggable(@NonNull final ILoggable loggable)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> setLoggable(@NonNull final ILoggable loggable)
 	{
 		assertNotStarted();
 
@@ -210,7 +211,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> selectedRecords(@NonNull final TableRecordReferenceSet selectedRecordRefs)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> selectedRecords(@NonNull final TableRecordReferenceSet selectedRecordRefs)
 	{
 		assertNotStarted();
 
@@ -225,7 +226,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType> selectedRecords(@NonNull final PInstanceId selectionId)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> selectedRecords(@NonNull final PInstanceId selectionId)
 	{
 		assertNotStarted();
 
@@ -467,7 +468,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 		final IMutable<Object> stateHolder = new Mutable<>();
-		final Mutable<ImportGroup<ImportRecordType>> currentImportGroupHolder = new Mutable<>();
+		final Mutable<ImportGroup<ImportGroupKey, ImportRecordType>> currentImportGroupHolder = new Mutable<>();
 
 		trxItemProcessorExecutorService
 				.<ImportRecordType, Void> createExecutor()
@@ -484,7 +485,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 					@Override
 					public void afterCompleteChunkError(final Throwable ex)
 					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
 						markAsError(currentGroup, ex);
 					}
 				})
@@ -500,7 +501,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 					@Override
 					public boolean isSameChunk(final ImportRecordType importRecord)
 					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
 						final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
 						return Objects.equals(currentGroup.getGroupKey(), groupKey);
 					}
@@ -508,14 +509,14 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 					@Override
 					public void process(final ImportRecordType importRecord)
 					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
 						currentGroup.addImportRecord(importRecord);
 					}
 
 					@Override
 					public void completeChunk()
 					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
 						importGroup(currentGroup, stateHolder);
 					}
 
@@ -553,7 +554,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	}
 
 	private void importGroup(
-			@NonNull final ImportGroup<ImportRecordType> importGroup,
+			@NonNull final ImportGroup<ImportGroupKey, ImportRecordType> importGroup,
 			@NonNull final IMutable<Object> stateHolder)
 	{
 		// shall not happen
@@ -569,7 +570,10 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 			final ImmutableList<ImportRecordType> importRecordsList = importGroup.getImportRecords();
 			overallResultCollector.addCountImportRecordsConsidered(importRecordsList.size());
 
-			final ImportGroupResult importGroupResult = importRecords(importRecordsList, stateHolder);
+			final ImportGroupResult importGroupResult = importRecords(
+					importGroup.getGroupKey(),
+					importRecordsList,
+					stateHolder);
 
 			for (final ImportRecordType importRecord : importRecordsList)
 			{
@@ -611,12 +615,13 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	protected abstract ImportRecordType retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException;
 
 	protected abstract ImportGroupResult importRecords(
+			final ImportGroupKey groupKey,
 			final List<ImportRecordType> importRecords,
 			final IMutable<Object> stateHolder) throws Exception;
 
 	@VisibleForTesting
 	protected void markAsError(
-			@NonNull final ImportGroup<ImportRecordType> importGroup,
+			@NonNull final ImportGroup<ImportGroupKey, ImportRecordType> importGroup,
 			@NonNull final Throwable exception)
 	{
 		final ImportTableDescriptor importTableDescriptor = getImportTableDescriptor();
