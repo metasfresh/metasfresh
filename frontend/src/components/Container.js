@@ -60,6 +60,7 @@ class Container extends PureComponent {
       pluginComponents,
       setRawModalTitle,
       setRawModalDescription,
+      hasComments,
     } = this.props;
     const pluginModalVisible = pluginModal.visible;
     let PluginModalComponent = null;
@@ -109,6 +110,7 @@ class Container extends PureComponent {
               editmode,
               handleEditModeToggle,
               activeTab,
+              hasComments,
             }}
           />
         )}
@@ -168,7 +170,7 @@ class Container extends PureComponent {
                   fetchQuickActionsOnInit={
                     !(
                       includedView &&
-                      includedView.windowType &&
+                      includedView.windowId &&
                       includedView.viewId
                     )
                   }
@@ -177,19 +179,17 @@ class Container extends PureComponent {
                   processStatus={processStatus}
                   includedView={includedView}
                   inBackground={
-                    includedView &&
-                    includedView.windowType &&
-                    includedView.viewId
+                    includedView && includedView.windowId && includedView.viewId
                   }
                   inModal={modal.visible}
                 />
 
                 {includedView &&
-                  includedView.windowType &&
+                  includedView.windowId &&
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowId={includedView.windowType}
+                      windowId={includedView.windowId}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
@@ -265,6 +265,7 @@ class Container extends PureComponent {
  * @prop {*} setModalTitle
  * @prop {string} siteName
  * @prop {string} windowId
+ * @prop {bool} hasComments - used to indicate comments in the details view
  */
 Container.propTypes = {
   actions: PropTypes.any,
@@ -306,6 +307,7 @@ Container.propTypes = {
   setRawModalDescription: PropTypes.any,
   setRawModalTitle: PropTypes.any,
   windowId: PropTypes.string,
+  hasComments: PropTypes.bool,
 };
 
 /**

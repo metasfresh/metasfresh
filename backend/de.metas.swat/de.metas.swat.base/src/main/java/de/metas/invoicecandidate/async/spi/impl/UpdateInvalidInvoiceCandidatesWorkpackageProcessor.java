@@ -1,11 +1,5 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -19,6 +13,11 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+
+import java.util.Properties;
 
 /*
  * #%L
@@ -46,15 +45,10 @@ import lombok.NonNull;
  * Workpackage processor used to update all invalid {@link I_C_Invoice_Candidate}s.<br>
  * Important notes:
  * <ul>
- * <li>to schedule an invoice candidates update please use {@link #schedule(Properties, String)}.
+ * <li>to schedule an invoice candidates update please use {@link #schedule(IInvoiceCandUpdateSchedulerRequest)}.
  * <li>you can set the maximum number of invalid ICs to update per run, by using <code>AD_Sysconfig</code> {@value #SYSCONFIG_MaxInvoiceCandidatesToUpdate}. If there are more invalid ICs than this
  * specified maximum, then the work package processor will schedule another workpackage for the remainder.
  * </ul>
- *
- *
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -70,9 +64,6 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 
 	private static final IInvoiceCandUpdateScheduler SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler();
 
-	/**
-	 *
-	 */
 	private static final String SYSCONFIG_MaxInvoiceCandidatesToUpdate = "de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate";
 
 	private static final int DEFAULT_MaxInvoiceCandidatesToUpdate = 500;
@@ -90,7 +81,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		trxManager.assertTrxNameNull(localTrxName);
 

@@ -133,7 +133,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, EDIInvoiceFeedback_QNAME, METHOD_setCInvoiceID))
 				.log(LoggingLevel.INFO, "Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
-				.log(LoggingLevel.INFO, "Sending success response to ecosio...")
+				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");

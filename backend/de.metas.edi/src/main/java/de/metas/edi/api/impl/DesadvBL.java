@@ -539,7 +539,7 @@ public class DesadvBL implements IDesadvBL
 		packRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
 
 		// Lot
-		final String lotNumber = rootHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNr);
+		final String lotNumber = rootHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
 		if (!isEmpty(lotNumber, true))
 		{
 			packRecord.setLotNumber(lotNumber);
@@ -632,9 +632,9 @@ public class DesadvBL implements IDesadvBL
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
-		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNr))
+		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNumber))
 		{
-			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNr);
+			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNumber);
 			return Optional.of(lotNumber);
 		}
 		return Optional.empty();

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /*
@@ -83,4 +84,8 @@ public interface IPPOrderReceiptHUProducer
 	IPPOrderReceiptHUProducer packUsingLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	IPPOrderReceiptHUProducer pickingCandidateId(PickingCandidateId pickingCandidateId);
+
+	IPPOrderReceiptHUProducer lotNumber(String lotNumber);
+
+	IPPOrderReceiptHUProducer bestBeforeDate(LocalDate bestBeforeDate);
 }

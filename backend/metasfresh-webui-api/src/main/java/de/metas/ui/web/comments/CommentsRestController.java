@@ -30,7 +30,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,10 +69,8 @@ public class CommentsRestController
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
 
-		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
-
 		final ZoneId zoneId = JSONOptions.of(userSession).getZoneId();
-		return commentsService.getCommentsFor(tableRecordReference, zoneId);
+		return commentsService.getRowCommentsAsJson(documentPath, zoneId);
 	}
 
 	@PostMapping
@@ -87,8 +84,6 @@ public class CommentsRestController
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
 
-		final TableRecordReference tableRecordReference = documentDescriptorFactory.getTableRecordReference(documentPath);
-
-		commentsService.addComment(tableRecordReference, jsonCommentCreateRequest);
+		commentsService.addComment(documentPath, jsonCommentCreateRequest);
 	}
 }

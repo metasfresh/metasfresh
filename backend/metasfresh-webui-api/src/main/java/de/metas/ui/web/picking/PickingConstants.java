@@ -64,5 +64,6 @@ public final class PickingConstants
 
 	public static final AdMessageKey MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND = AdMessageKey.of("WEBUI_Picking_NoPickedHuFound");
 	public static final AdMessageKey MSG_WEBUI_PICKING_TO_EXISTING_CUS_NOT_ALLOWED = AdMessageKey.of("WEBUI_Picking_PickingToExistingCUsNotAllowed");
-	public static final AdMessageKey MSG_WEBUI_PICKING_TO_THE_SAME_HU_FOR_MULTIPLE_ORDERS_NOT_ALLOWED = AdMessageKey.of("WEBUI_Picking_PickingToTheSameHUForMultipleOrders");
+
+	public static final String SYS_CONFIG_SHOW_ALL_PICKING_CANDIDATES_ON_PICKING_SLOTS = "de.metas.pickingSlots.showAllPickingCandidates";
 }

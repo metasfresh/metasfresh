@@ -235,6 +235,7 @@ final class BPartnerCompositesLoader
 				.invoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
+				.vatId(bpartnerRecord.getVATaxID())
 				//
 				.changeLog(recordChangeLog)
 				//

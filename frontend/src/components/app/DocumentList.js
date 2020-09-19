@@ -10,6 +10,7 @@ import {
   GEO_PANEL_STATES,
   filtersToMap,
   DLpropTypes,
+  renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
@@ -121,7 +122,7 @@ export default class DocumentList extends Component {
       updateParentSelectedIds,
       modal,
       parentWindowType,
-      reduxData,
+      viewData,
       layout,
       layoutNotFound,
       page,
@@ -159,7 +160,8 @@ export default class DocumentList extends Component {
       locationData,
       pending,
       layoutPending,
-    } = reduxData;
+      headerProperties,
+    } = viewData;
     const { clickOutsideLock, toggleWidth } = this.state;
     const selected = table.selected;
     const modalType = modal ? modal.modalType : null;
@@ -174,7 +176,7 @@ export default class DocumentList extends Component {
     const blurWhenOpen =
       layout && layout.includedView && layout.includedView.blurWhenOpen;
 
-    if (layoutNotFound || reduxData.notFound) {
+    if (layoutNotFound || viewData.notFound) {
       return (
         <BlankPage what={counterpart.translate('view.error.windowName')} />
       );
@@ -186,6 +188,7 @@ export default class DocumentList extends Component {
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
       layout && layout.supportGeoLocations && locationData;
+    const viewGroups = !isModal && headerProperties && headerProperties.groups;
 
     return (
       <div
@@ -196,6 +199,16 @@ export default class DocumentList extends Component {
         })}
         style={styleObject}
       >
+        {!!(viewGroups && viewGroups.length) && (
+          <div className="panel panel-primary">
+            <div className="panel-groups-header">
+              <div className="optional">
+                {renderHeaderProperties(viewGroups)}
+              </div>
+            </div>
+          </div>
+        )}
+
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
             <button
@@ -298,7 +311,7 @@ export default class DocumentList extends Component {
                     ? {
                         viewId: includedView.viewId,
                         viewSelectedIds: childSelected,
-                        windowType: includedView.windowType,
+                        windowType: includedView.windowId,
                       }
                     : NO_VIEW
                 }
@@ -321,7 +334,7 @@ export default class DocumentList extends Component {
 
         {layout && (
           <div className="document-list-body">
-            <div className="row table-row">
+            <div className="row table-context">
               <Table
                 entity="documentView"
                 ref={this.setTableRef}

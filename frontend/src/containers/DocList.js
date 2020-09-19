@@ -49,10 +49,10 @@ class DocList extends PureComponent {
    * @method updateUriCallback
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
-  updateUriCallback = (prop, value) => {
+  updateUriCallback = (updatedQuery) => {
     const { updateUri, query, pathname } = this.props;
-
-    updateUri(pathname, query, prop, value);
+    const { viewId } = updatedQuery;
+    viewId && updateUri(pathname, query, updatedQuery);
   };
 
   /**
@@ -140,7 +140,7 @@ class DocList extends PureComponent {
             !modal.visible && (
               <DocumentList
                 type="includedView"
-                windowId={includedView.windowType}
+                windowId={includedView.windowId}
                 defaultViewId={includedView.viewId}
                 parentWindowType={windowId}
                 parentDefaultViewId={viewId}
@@ -204,8 +204,8 @@ const mapStateToProps = (state) => {
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
     overlay: state.windowHandler.overlay,
-    includedView: state.listHandler.includedView.windowType
-      ? state.listHandler.includedView
+    includedView: state.viewHandler.includedView.windowId
+      ? state.viewHandler.includedView
       : null,
     processStatus: state.appHandler.processStatus,
     pathname: state.routing.locationBeforeTransitions.pathname,

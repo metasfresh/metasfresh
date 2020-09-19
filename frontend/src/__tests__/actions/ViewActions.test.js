@@ -7,7 +7,6 @@ import _ from 'lodash';
 import viewHandler, { viewState, initialState } from '../../reducers/viewHandler';
 import tablesHandler, {  getTableId } from '../../reducers/tables';
 import windowState from '../../reducers/windowHandler';
-import { initialState as listState } from '../../reducers/listHandler';
 
 import * as viewActions from '../../actions/ViewActions';
 import { createTableData } from '../../actions/TableActions';
@@ -17,6 +16,7 @@ import { flattenRows } from '../../utils/documentListHelper';
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
 import fixtures from '../../../test_setup/fixtures/grid/reducers.json';
+import generalData from '../../../test_setup/fixtures/grid/data.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -28,7 +28,6 @@ const createStore = function(state = {}) {
       viewHandler: initialState,
       tables: { ...tablesHandler(undefined, {}) },
       windowHandler: windowState,
-      listHandler: listState,
     },
     state
   );
@@ -66,6 +65,26 @@ describe('ViewActions synchronous', () => {
     expect(action.payload).toHaveProperty('id', id);
     expect(action.payload).toHaveProperty('showIncludedView', show);
   });
+
+  it('should call SET_INCLUDED_VIEW action with correct payload', () => {
+    const id = viewLayout.windowId;
+    const viewId = viewData.viewId;
+    const action = viewActions.setIncludedView({ windowId: id, viewId });
+
+    expect(action.type).toEqual(ACTION_TYPES.SET_INCLUDED_VIEW);
+    expect(action.payload).toHaveProperty('id', id);
+    expect(action.payload).toHaveProperty('viewId', viewId);
+  });
+
+  it('should call UNSET_INCLUDED_VIEW action with correct payload', () => {
+    const id = viewLayout.windowId;
+    const viewId = viewData.viewId;
+    const action = viewActions.unsetIncludedView({ windowId: id, viewId });
+
+    expect(action.type).toEqual(ACTION_TYPES.UNSET_INCLUDED_VIEW);
+    expect(action.payload).toHaveProperty('id', id);
+    expect(action.payload).toHaveProperty('viewId', viewId);
+  }); 
 });
 
 describe('ViewActions thunks', () => {
@@ -279,7 +298,7 @@ describe('ViewActions thunks', () => {
       });
   });
 
-  it(`dispatches 'TOGGLE_INCLUDED_VIEW' and 'SET_LIST_INCLUDED_VIEW' actions when
+  it(`dispatches 'TOGGLE_INCLUDED_VIEW' and 'SET_INCLUDED_VIEW' actions when
    fetching view rows data for included views`, () => {
     const layoutData = gridLayoutFixtures.layout2_parent;
     const rowsData = gridRowFixtures.data2_parent;
@@ -304,12 +323,12 @@ describe('ViewActions thunks', () => {
       id: windowId, showIncludedView: true, isModal: true,
     };
     const payload2 = {
-      windowType: includedWindowId, viewId: includedViewId, viewProfileId: null,
+      id: includedWindowId, viewId: includedViewId, viewProfileId: null,
     };
 
     const expectedActions = [
       { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload1 },
-      { type: ACTION_TYPES.SET_LIST_INCLUDED_VIEW, payload: payload2 },
+      { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload2 },
     ];
 
     nock(config.API_URL)
@@ -325,7 +344,7 @@ describe('ViewActions thunks', () => {
       });
   });
 
-  it(`dispatches 'CLOSE_LIST_INCLUDED_VIEW' action with viewId from the listHandler if it exists`, () => {
+  it(`dispatches 'UNSET_INCLUDED_VIEW' action with viewId from the 'includedView' if it exists`, () => {
     const layoutData = gridLayoutFixtures.layout2_parent;
     const rowsData = gridRowFixtures.data2_parent;
     const { windowId, viewId, pageLength } = rowsData;
@@ -341,15 +360,12 @@ describe('ViewActions thunks', () => {
             layout: { ...layoutData },
           },
         },
-      },
-      listHandler: {
-        ...listState,
         includedView: {
           viewId: includedViewId,
           windowType: includedWindowId,
           viewProfileId: null,
         }
-      }
+      },
     });
     const store = mockStore(state);
 
@@ -357,12 +373,12 @@ describe('ViewActions thunks', () => {
       id: windowId, showIncludedView: true, isModal: true,
     };
     const payload2 = {
-      windowType: includedWindowId, viewId: includedViewId, viewProfileId: null,
+      id: includedWindowId, viewId: includedViewId, viewProfileId: null,
     };
 
     const expectedActions = [
       { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload1 },
-      { type: ACTION_TYPES.SET_LIST_INCLUDED_VIEW, payload: payload2 },
+      { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload2 },
     ];
 
     nock(config.API_URL)
@@ -373,6 +389,76 @@ describe('ViewActions thunks', () => {
 
     return store
       .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: true }))
+      .then(() => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      });
+  });
+
+  it(`dispatches 'UPDATE_VIEW_DATA' when fetching header properties for views`, () => {
+    const headersData = generalData.headerProperties1;
+    const viewData = _.omit(
+      limitedViewData,
+      ['result']
+    );
+    const { windowId, viewId, pageLength, columnsByFieldName } = viewData;
+    const tableId = getTableId({ windowId, viewId });
+    const page = 1;
+    const tableData = createTableData({
+      ..._.pick(limitedViewData, [
+        'windowId',
+        'viewId',
+        'size',
+        'headerProperties',
+        'result',
+        'firstRow'
+      ]),
+      headerElements: limitedViewData.columnsByFieldName,
+      keyProperty: 'id',
+    });
+    const state = createStore({
+      viewHandler: {
+        views: {
+          [windowId]: {
+            layout: { ...limitedViewLayout },
+            ...viewData,
+          },
+        },
+      },
+      tables: {
+        [tableId]: createTableData({
+          ...limitedViewData,
+          ...limitedViewLayout
+        })
+      },
+    });
+    const store = mockStore(state);
+    const payload1 = {
+      id: windowId,
+      isModal: false,
+    };
+    const payload2 = {
+      id: windowId,
+      data: {
+        headerProperties: headersData,
+      },
+      isModal: false,
+    };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_DOCUMENT_PENDING, payload: payload1 },
+      { type: ACTION_TYPES.UPDATE_VIEW_DATA_SUCCESS, payload: payload2 },
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/headerProperties`)
+      .reply(200, headersData);
+
+    // check if headerProperties are empty before running actions
+    expect(store.getState().viewHandler.views[windowId].headerProperties.groups.length).toEqual(0);
+
+    return store
+      .dispatch(viewActions.fetchHeaderProperties({ windowId, viewId, isModal: false }))
       .then(() => {
         expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
       });

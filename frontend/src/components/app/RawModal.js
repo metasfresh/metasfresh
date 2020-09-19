@@ -6,9 +6,9 @@ import classnames from 'classnames';
 
 import { deleteViewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
-
 import { PATCH_RESET } from '../../constants/ActionTypes';
-import { closeListIncludedView } from '../../actions/ListActions';
+
+import { unsetIncludedView } from '../../actions/ViewActions';
 import { addNotification } from '../../actions/AppActions';
 import {
   closeModal,
@@ -19,6 +19,7 @@ import { deleteTable } from '../../actions/TableActions';
 
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
+import { renderHeaderProperties } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 
@@ -242,8 +243,8 @@ class RawModal extends Component {
         closeRawModal(),
         deleteTable(tableId),
         closeModal(),
-        closeListIncludedView({
-          windowType: windowId,
+        unsetIncludedView({
+          windowId: windowId,
           viewId,
           forceClose: true,
         }),
@@ -321,10 +322,6 @@ class RawModal extends Component {
     return <ModalContextShortcuts {...shortcutActions} />;
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const {
       modalTitle,
@@ -345,9 +342,13 @@ class RawModal extends Component {
         <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
-              className={classnames('panel-modal-header', {
-                'header-shadow': scrolled,
-              })}
+              className={classnames(
+                'panel-groups-header',
+                'panel-modal-header',
+                {
+                  'header-shadow': scrolled,
+                }
+              )}
             >
               <span className="panel-modal-header-title panel-modal-header-title-with-header-properties">
                 {modalTitle ? modalTitle : 'Modal'}
@@ -357,12 +358,7 @@ class RawModal extends Component {
               </span>
               {!!rawModal.headerProperties && (
                 <div className="optional">
-                  {rawModal.headerProperties.entries.map((entry, idx) => (
-                    <span key={idx} className="optional-name">
-                      <p className="caption">{entry.caption}:</p>{' '}
-                      <p className="value">{entry.value}</p>
-                    </span>
-                  ))}
+                  {renderHeaderProperties(rawModal.headerProperties.groups)}
                 </div>
               )}
               <div className="items-row-2">{this.renderButtons()}</div>

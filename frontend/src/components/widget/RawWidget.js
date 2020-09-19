@@ -4,7 +4,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
-
+import _ from 'lodash';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
@@ -111,7 +111,7 @@ export class RawWidget extends Component {
   shouldComponentUpdate(nextProps) {
     switch (this.props.widgetType) {
       case 'YesNo':
-        return nextProps.widgetData[0].value !== this.props.widgetData[0].value;
+        return !_.isEqual(nextProps.widgetData[0], this.props.widgetData[0]);
 
       default:
         return true;
@@ -146,9 +146,11 @@ export class RawWidget extends Component {
    * @param {*} e
    */
   handleFocus = () => {
-    const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
+    const { handleFocus, listenOnKeysFalse, dispatch, widgetType } = this.props;
 
-    dispatch(disableShortcut());
+    widgetType === 'LongText' && dispatch(disableShortcut()); // fix issue in Cypress with cut underscores - false positive failing tests
+    // - commented because if you focus on an item and you disable the shourtcuts you won't be able to use any shortcut
+    //   assigned to that specific item/widget - see issue https://github.com/metasfresh/metasfresh/issues/7119
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {

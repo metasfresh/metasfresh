@@ -67,7 +67,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { setListIncludedView } from './ListActions';
+import { setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -245,6 +245,7 @@ export function initDataSuccess({
   standardActions,
   validStatus,
   websocket,
+  hasComments,
 }) {
   return {
     data,
@@ -256,6 +257,7 @@ export function initDataSuccess({
     type: INIT_DATA_SUCCESS,
     validStatus,
     websocket,
+    hasComments,
   };
 }
 
@@ -423,7 +425,7 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       })
       .catch((error) => {
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -565,6 +567,7 @@ export function createWindow(
           validStatus: data.validStatus,
           includedTabsInfo: data.includedTabsInfo,
           websocket: data.websocketEndpoint,
+          hasComments: data.hasComments,
         })
       );
 
@@ -1220,8 +1223,8 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openIncludedView':
             await dispatch(
-              setListIncludedView({
-                windowType: action.windowId,
+              setIncludedView({
+                windowId: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
               })
@@ -1230,8 +1233,8 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'closeIncludedView':
             await dispatch(
-              setListIncludedView({
-                windowType: action.windowId,
+              setIncludedView({
+                windowId: action.windowId,
                 viewId: action.viewId,
               })
             );

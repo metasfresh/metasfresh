@@ -1,17 +1,17 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.OrderId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
@@ -23,14 +23,10 @@ import org.compiere.model.I_C_UOM;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_TO_EXISTING_CUS_NOT_ALLOWED;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_TO_THE_SAME_HU_FOR_MULTIPLE_ORDERS_NOT_ALLOWED;
 
 /*
  * #%L
@@ -134,20 +130,24 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	protected void validatePickingToHU()
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-
 		final I_M_HU hu = handlingUnitsBL.getById(pickingSlotRow.getHuId());
 
-		if (handlingUnitsBL.isVirtual(hu))
+		if (!handlingUnitsBL.isVirtual(hu))
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TO_EXISTING_CUS_NOT_ALLOWED));
+			return;
 		}
 
-		final OrderId orderIdOfThePickedHU = extractCorrespondingOrderId(pickingSlotRow.getHuId());
-		final OrderId orderIdOfTheCurrentSchedule = OrderId.ofRepoIdOrNull(getCurrentShipmentSchedule().getC_Order_ID());
+		final ImmutableSet<ProductId> productIds = handlingUnitsBL.getStorageFactory().streamHUProductStorages(ImmutableList.of(hu))
+				.map(IProductStorage::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		if (!orderIdOfThePickedHU.equals(orderIdOfTheCurrentSchedule))
+		final I_M_ShipmentSchedule selectedShipmentSchedule = getCurrentShipmentSchedule();
+
+		if (productIds.size() != 1 || !productIds.contains(ProductId.ofRepoId(selectedShipmentSchedule.getM_Product_ID())))
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TO_THE_SAME_HU_FOR_MULTIPLE_ORDERS_NOT_ALLOWED));
+			throw new AdempiereException("VHUs cannot have multiple product storages!")
+					.appendParametersToMessage()
+					.setParameter("HuId", hu.getM_HU_ID());
 		}
 	}
 
@@ -179,34 +179,4 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		return Optional.empty();
 	}
 
-	@NonNull
-	private OrderId extractCorrespondingOrderId(@NonNull final HuId huId)
-	{
-		final Set<ShipmentScheduleId> shipmentScheduleIds = getPickingCandidateService().getScheduleIdsByHuId(huId);
-
-		if (shipmentScheduleIds.isEmpty())
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND));
-		}
-
-		final ImmutableSet<OrderId> orderIds = getShipmentSchedulePA().getByIds(shipmentScheduleIds)
-				.values()
-				.stream()
-				.map(I_M_ShipmentSchedule::getC_Order_ID)
-				.map(OrderId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (orderIds.isEmpty())
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_PICKED_HU_FOUND));
-		}
-
-		if (orderIds.size() > 1)
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TO_THE_SAME_HU_FOR_MULTIPLE_ORDERS_NOT_ALLOWED));
-		}
-
-		return orderIds.asList().get(0);
-	}
 }

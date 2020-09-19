@@ -21,11 +21,18 @@ describe('TableCell', () => {
     expect(html).toContain(`data-cy="cell-AD_Org_ID"`);
     expect(html).toContain('0141');
     expect(html).toContain(
-      `class="text-left cell-disabled td-md Lookup pulse-off"`
+      `class="table-cell text-left cell-disabled td-md Lookup pulse-off"`
     );
     expect(html).toContain(
-      `<div class="cell-text-wrapper lookup-cell" title="0141">0141</div></div>`
+      `title="0141">0141</div>`
     );
+  });
+
+  it('renders notification indicator', () => {
+    const wrapperTableCell = shallow(<TableCell hasComments={true} {...tableCellProps} />);
+    const html = wrapperTableCell.html();
+
+    expect(html).toContain('notification-number');
   });
 
   it('Changing the widget type should be present in the output', () => {
@@ -34,5 +41,24 @@ describe('TableCell', () => {
     const html = wrapperTableCell.html();
 
     expect(html).toContain(`LongText`);
+  });
+
+  it('On escape input remains the same', done => {
+    tableCellProps.item.widgetType = 'Text';
+    const wrapperTableCell = shallow(<TableCell {...tableCellProps} />);
+    const input = wrapperTableCell.find('div[title="0141"]');
+    input.simulate('focus');
+    input.simulate('change', { target: { value: '1234' } });
+    input.simulate('keyDown', {
+      which: 27,
+      target: {
+        blur() {
+          input.simulate('blur');
+        },
+      },
+    });
+    const html = wrapperTableCell.html();
+    expect(html).toContain(`>0141<`);
+    done();
   });
 });

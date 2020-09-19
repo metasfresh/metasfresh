@@ -21,7 +21,7 @@
         <log4j2-version>2.13.3</log4j2-version>
         <slf4j-api.version>1.7.30</slf4j-api.version>
         <jackson.version>2.10.4</jackson.version>
-        <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencyManagement>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>de.metas.common.shipping</groupId>
             <artifactId>de-metas-common-shipping</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -133,7 +133,7 @@
         <dependency>
             <groupId>de.metas.common.filemaker</groupId>
             <artifactId>de-metas-common-filemaker</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.woodstox</groupId>
@@ -165,7 +165,7 @@
         <dependency>
             <groupId>de.metas.common.rest_api</groupId>
             <artifactId>de-metas-common-rest_api</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -179,9 +179,48 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.common.manufacturing</groupId>
+            <artifactId>de-metas-common-manufacturing</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.dataformat</groupId>
+                    <artifactId>jackson-dataformat-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.woodstox</groupId>
+                    <artifactId>woodstox-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.11</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- logging -->
@@ -227,6 +266,27 @@
         <defaultGoal>install</defaultGoal>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                    <source>14</source>
+                    <target>14</target>
+<!--                    <annotationProcessorPaths>-->
+<!--                        <annotationProcessorPath>-->
+<!--                            <groupId>org.projectlombok</groupId>-->
+<!--                            <artifactId>lombok</artifactId>-->
+<!--                            <version>1.18.8</version>-->
+<!--                        </annotationProcessorPath>-->
+<!--                    </annotationProcessorPaths>-->
+<!--                    <annotationProcessors>-->
+<!--                        <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</annotationProcessor>-->
+<!--                    </annotationProcessors>-->
+                </configuration>
+            </plugin>
+
             <!-- Allows the example to be run via 'mvn camel:run' -->
             <plugin>
                 <groupId>org.apache.camel</groupId>
@@ -245,7 +305,7 @@
                     <to>
                         <!-- we expect those environment variables to be set from the outside world -->
                         <!-- without specifying the tag in the image name, jib will push "latest", thx https://github.com/GoogleContainerTools/jib/issues/2237#issuecomment-575967019 -->
-                        <image>nexus.metasfresh.com:6001/metasfresh/de-metas-esb-shipmentschedule-camel:${env.MF_VERSION_DOCKERIZED}</image>
+                        <image>nexus.metasfresh.com:6001/metasfresh/de-metas-camel-shipping:${env.MF_VERSION_DOCKERIZED}</image>
                         <tags>
                             <tag>${env.BRANCH_NAME_DOCKERIZED}_LATEST</tag>
                         </tags>
@@ -253,7 +313,7 @@
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <image>openjdk:14.0.2</image>
+                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
                     </from>
                 </configuration>
                 <executions>

@@ -4,33 +4,37 @@ import {
   filterViewRequest,
   getViewLayout,
   locationConfigRequest,
+  headerPropertiesRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
 
 import {
   ADD_VIEW_LOCATION_DATA,
+  CREATE_VIEW,
+  CREATE_VIEW_SUCCESS,
+  CREATE_VIEW_ERROR,
+  DELETE_VIEW,
   FETCH_DOCUMENT_PENDING,
   FETCH_DOCUMENT_SUCCESS,
   FETCH_DOCUMENT_ERROR,
   FETCH_LAYOUT_PENDING,
   FETCH_LAYOUT_SUCCESS,
   FETCH_LAYOUT_ERROR,
-  CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
-  CREATE_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
-  DELETE_VIEW,
+  SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
+  UNSET_INCLUDED_VIEW,
+  UPDATE_VIEW_DATA_ERROR,
+  UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
-import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
  * @method resetView
@@ -209,13 +213,35 @@ function fetchLocationConfigError(id, error, isModal) {
 }
 
 /**
- * @method addLocationData
+ * @method addViewLocationData
  * @summary save geolocation data in the store
  */
 export function addViewLocationData(id, locationData, isModal) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
     payload: { id, locationData, isModal },
+  };
+}
+
+/**
+ * @method updateViewSuccess
+ * @summary success when updating view's properties
+ */
+export function updateViewSuccess({ id, data, isModal }) {
+  return {
+    type: UPDATE_VIEW_DATA_SUCCESS,
+    payload: { id, data, isModal },
+  };
+}
+
+/**
+ * @method updateViewError
+ * @summary failure when updating view's properties
+ */
+export function updateViewError(id, error, isModal) {
+  return {
+    type: UPDATE_VIEW_DATA_ERROR,
+    payload: { id, error, isModal },
   };
 }
 
@@ -227,6 +253,36 @@ export function toggleIncludedView(id, showIncludedView, isModal) {
   return {
     type: TOGGLE_INCLUDED_VIEW,
     payload: { id, showIncludedView, isModal },
+  };
+}
+
+/**
+ * @method setIncludedView
+ * @summary set id of the included view in the store
+ */
+export function setIncludedView({
+  windowId,
+  viewId,
+  viewProfileId = null,
+} = {}) {
+  return {
+    type: SET_INCLUDED_VIEW,
+    payload: { id: windowId, viewId, viewProfileId },
+  };
+}
+
+/**
+ * @method unsetIncludedView
+ * @summary reset included view's id in the store
+ */
+export function unsetIncludedView({
+  windowId,
+  viewId,
+  forceClose = false,
+} = {}) {
+  return {
+    type: UNSET_INCLUDED_VIEW,
+    payload: { id: windowId, viewId, forceClose },
   };
 }
 
@@ -292,12 +348,12 @@ export function fetchDocument({
         ) {
           const row = response.data.result[0];
           const includedWindowId = row.supportIncludedViews
-            ? state.listHandler.includedView.windowType ||
+            ? state.viewHandler.includedView.windowId ||
               row.includedView.windowType ||
               row.includedView.windowId
             : null;
           const includedViewId = row.supportIncludedViews
-            ? state.listHandler.includedView.viewId || row.includedView.viewId
+            ? state.viewHandler.includedView.viewId || row.includedView.viewId
             : null;
 
           dispatch(
@@ -317,7 +373,7 @@ export function fetchDocument({
         dispatch(fetchDocumentError(windowId, error, isModal));
 
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -369,7 +425,7 @@ export function createView({
         dispatch(createViewError(windowId, error, isModal));
 
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -396,7 +452,7 @@ export function fetchLayout(
       .catch((error) => {
         dispatch(fetchLayoutError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -423,7 +479,7 @@ export function filterView(windowId, viewId, filters, isModal = false) {
       .catch((error) => {
         dispatch(filterViewError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -434,8 +490,6 @@ export function filterView(windowId, viewId, filters, isModal = false) {
  */
 export function fetchLocationConfig(windowId, isModal = false) {
   return (dispatch) => {
-    const windowId = windowId;
-
     return locationConfigRequest()
       .then((response) => {
         dispatch(fetchLocationConfigSuccess(windowId, response.data, isModal));
@@ -443,7 +497,7 @@ export function fetchLocationConfig(windowId, isModal = false) {
       .catch((error) => {
         dispatch(fetchLocationConfigError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -466,13 +520,36 @@ export function showIncludedView({
     }
 
     if (showIncludedView) {
-      dispatch(setListIncludedView({ windowType: windowId, viewId }));
+      dispatch(setIncludedView({ windowId, viewId }));
     }
 
     if (!showIncludedView) {
-      dispatch(
-        closeListIncludedView({ windowType: windowId, viewId, forceClose })
-      );
+      dispatch(unsetIncludedView({ windowId, viewId, forceClose }));
     }
+  };
+}
+
+/**
+ * @method fetchHeaderProperties
+ * @summary Request view's header properties
+ */
+export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
+  return (dispatch) => {
+    dispatch(fetchDocumentPending(windowId, isModal));
+
+    return headerPropertiesRequest({ windowId, viewId })
+      .then((response) => {
+        const updatedData = {
+          headerProperties: response.data,
+        };
+        dispatch(
+          updateViewSuccess({ id: windowId, data: updatedData, isModal })
+        );
+      })
+      .catch((error) => {
+        dispatch(updateViewError(windowId, error, isModal));
+
+        return Promise.reject(error);
+      });
   };
 }

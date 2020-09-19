@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -61,6 +62,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.selection.pagination.PaginationService;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.logging.LogManager;
@@ -73,7 +75,6 @@ import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -118,7 +119,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private PInstanceId onlySelectionId;
 	private PInstanceId notInSelectionId;
 
-	private int limit = NO_LIMIT;
+	private QueryLimit limit = QueryLimit.NO_LIMIT;
 	private int offset = NO_LIMIT;
 
 	private List<SqlQueryUnion<T>> unions;
@@ -290,9 +291,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public <ET extends T> List<ET> list(final Class<ET> clazz) throws DBException
 	{
 		final List<ET> list;
-		if (limit > 0 && limit <= 100)
+		if (limit.isLessThanOrEqualTo(100))
 		{
-			list = new ArrayList<>(limit);
+			list = new ArrayList<>(limit.toInt());
 		}
 		else
 		{
@@ -317,9 +318,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				InterfaceWrapperHelper.setSaveDeleteDisabled(model, readOnly);
 				list.add(model);
 
-				if (limit > 0 && list.size() >= limit)
+				if(limit.isLimitHitOrExceeded(list))
 				{
-					log.debug("Limit of " + limit + " reached. Stop.");
+					log.debug("Limit of {} reached. Stop.", limit);
 					break;
 				}
 			}
@@ -749,7 +750,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public <AT> AT first(final String columnName, final Class<AT> valueType)
 	{
-		setLimit(1, 0);
+		setLimit(QueryLimit.ONE, 0);
 		final List<AT> result = aggregateList(columnName, Aggregate.FIRST, valueType);
 		if (result == null || result.isEmpty())
 		{
@@ -864,7 +865,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			setLimit(1); // no postQueryFilter => we don't need more than one row to decide if it matches
+			setLimit(QueryLimit.ONE); // no postQueryFilter => we don't need more than one row to decide if it matches
 			sqlSelect = new StringBuilder("SELECT 1 ");
 			fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
@@ -965,9 +966,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			poBufferedIterator.setBufferSize(iteratorBufferSize);
 		}
-		else if (limit != NO_LIMIT)
+		else if (limit.isLimited())
 		{   // use the set limit as our buffer size, if a limit has been set
-			poBufferedIterator.setBufferSize(limit);
+			poBufferedIterator.setBufferSize(limit.toInt());
 		}
 		return poBufferedIterator;
 
@@ -1263,7 +1264,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 				final int offsetFixed = offset > 0 ? offset : 0;
 				final int start = offsetFixed + 1;
-				final int end = limit + offsetFixed;
+				final int end = limit.toIntOrZero() + offsetFixed;
 				sql = DB.getDatabase().addPagingSQL(sql, start, end);
 			}
 			else
@@ -1449,14 +1450,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	// metas
 	@Override
-	public TypedSqlQuery<T> setLimit(final int limit)
+	public TypedSqlQuery<T> setLimit(@NonNull final QueryLimit limit)
 	{
 		this.limit = limit;
 		return this;
 	}
 
 	@Override
-	public TypedSqlQuery<T> setLimit(final int limit, final int offset)
+	public TypedSqlQuery<T> setLimit(@NonNull final QueryLimit limit, final int offset)
 	{
 		this.limit = limit;
 		this.offset = offset;
@@ -1468,7 +1469,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 */
 	public boolean hasLimitOrOffset()
 	{
-		return this.limit > 0 || this.offset >= 0;
+		return this.limit.isLimited() || this.offset >= 0;
 	}
 
 	@Override
@@ -1770,7 +1771,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		// In case we have LIMIT/OFFSET clauses, we shall update the records differently
 		// (i.e. by having a UPDATE FROM (sub select) ).
-		final boolean useSelectFromSubQuery = this.limit > 0 || this.offset >= 0;
+		final boolean useSelectFromSubQuery = this.limit.isLimited() || this.offset >= 0;
 		if (useSelectFromSubQuery)
 		{
 			return updateSql_UsingSelectFromSubQuery(sqlQueryUpdater);

@@ -62,11 +62,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -98,10 +95,12 @@ public class ShipmentService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
+	private final AttributeSetHelper attributeSetHelper;
 
-	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService)
+	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService, final AttributeSetHelper attributeSetHelper)
 	{
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
+		this.attributeSetHelper = attributeSetHelper;
 	}
 
 	public InOutGenerateResult updateShipmentSchedulesAndGenerateShipments(@NonNull final JsonCreateShipmentRequest request)
@@ -259,7 +258,7 @@ public class ShipmentService
 
 		final List<CreateAttributeInstanceReq> attributeInstanceRequestList = Check.isEmpty(attributes)
 				? null
-				: toCreateAttributeInstanceReqList(attributes);
+				: attributeSetHelper.toCreateAttributeInstanceReqList(attributes);
 
 		return UpdateShipmentScheduleRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
@@ -363,40 +362,6 @@ public class ShipmentService
 				.build();
 
 		return Optional.ofNullable(bPartnerDAO.retrieveBPartnerLocationId(bPartnerLocationQuery));
-	}
-
-	private List<CreateAttributeInstanceReq> toCreateAttributeInstanceReqList(@NonNull final Collection<JsonAttributeInstance> jsonAttributeInstances)
-	{
-		return jsonAttributeInstances.stream()
-				.map(this::toCreateAttributeInstanceReq)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private CreateAttributeInstanceReq toCreateAttributeInstanceReq(@NonNull final JsonAttributeInstance jsonAttributeInstance)
-	{
-		return CreateAttributeInstanceReq.builder()
-				.attributeCode(AttributeCode.ofString(jsonAttributeInstance.getAttributeCode()))
-				.value(extractAttributeValueObject(jsonAttributeInstance))
-				.build();
-	}
-
-	private Object extractAttributeValueObject(@NonNull final JsonAttributeInstance attributeInstance)
-	{
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(attributeInstance.getAttributeCode());
-		final AttributeValueType targetAttributeType = AttributeValueType.ofCode(attribute.getAttributeValueType());
-
-		switch (targetAttributeType)
-		{
-			case DATE:
-				return attributeInstance.getValueDate();
-			case NUMBER:
-				return attributeInstance.getValueNumber();
-			case STRING:
-			case LIST:
-				return attributeInstance.getValueStr();
-			default:
-				throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + targetAttributeType + ", @M_Attribute_ID@=" + attribute.getM_Attribute_ID());
-		}
 	}
 
 	//
