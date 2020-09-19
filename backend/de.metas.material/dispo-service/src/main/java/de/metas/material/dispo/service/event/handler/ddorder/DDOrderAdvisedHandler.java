@@ -1,16 +1,10 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import java.util.Collection;
-import java.util.Set;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -24,6 +18,7 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
@@ -31,6 +26,11 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -130,10 +130,20 @@ public class DDOrderAdvisedHandler
 			@NonNull final DDOrderLine ddOrderLine,
 			@NonNull final CandidateType candidateType)
 	{
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = ddOrderEvent.getSupplyRequiredDescriptor();
+
+		if (CandidateType.SUPPLY.equals(candidateType))
+		{ // see if there is already an unspecific (without business-case etc) supply that now needs to be updated
+			if (supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
+			{
+				return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
+			}
+		}
+
 		final DDOrderAdvisedEvent ddOrderAdvisedEvent = cast(ddOrderEvent);
 
 		final DemandDetail demandDetail = //
-				DemandDetail.forSupplyRequiredDescriptorOrNull(ddOrderEvent.getSupplyRequiredDescriptor());
+				DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ddOrderAdvisedEvent);
 
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
@@ -153,20 +163,17 @@ public class DDOrderAdvisedHandler
 				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
 				.build();
 
-		final CandidatesQuery query = CandidatesQuery.builder()
+		return CandidatesQuery.builder()
 				.type(candidateType)
-				.businessCase(CandidateBusinessCase.PRODUCTION)
+				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
 				.build();
-
-		return query;
 	}
 
 	private DDOrderAdvisedEvent cast(@NonNull final AbstractDDOrderEvent ddOrderEvent)
 	{
-		final DDOrderAdvisedEvent ddOrderAdvisedEvent = (DDOrderAdvisedEvent)ddOrderEvent;
-		return ddOrderAdvisedEvent;
+		return (DDOrderAdvisedEvent)ddOrderEvent;
 	}
 }

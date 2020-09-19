@@ -25,10 +25,13 @@ package de.metas.handlingunits.inout;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.InOutLineId;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface IHUInOutDAO extends ISingletonService
 {
@@ -49,10 +52,14 @@ public interface IHUInOutDAO extends ISingletonService
 	
 	List<I_M_InOutLine> retrieveInOutLinesForHU(I_M_HU topLevelHU);
 
+	List<I_M_HU> retrieveHandlingUnitsByInOutLineId(InOutLineId inOutLineId);
+
 	/**
 	 * Retrieve the handling units assigned to the lines of a given inout if and only if they have status shipped.
 	 */
 	List<I_M_HU> retrieveShippedHandlingUnits(I_M_InOut inOut);
+
+	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(Set<InOutLineId> shipmentLineIds);
 
 	List<I_M_HU> retrieveHUsForReceiptLineId(int receiptLineId);
 }

@@ -62,7 +62,8 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_artikel_geschmacksrichtung").build())
 			.field(FIELD.builder().name("_artikel_verpackungsgroesse").build())
 			.field(FIELD.builder().name("_artikel_hinweistext").build())
-			.build();
+		    .field(FIELD.builder().name("_fuer_zoll_artikel_intrastat_nummer").build())
+		.build();
 
 	private final Log log = LogFactory.getLog(ReceiptCandidateJsonToXmlProcessor.class);
 
@@ -135,6 +136,8 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		}
 		row.col(COL.of(product.getPackageSize())); // _artikel_verpackungsgroesse
 		row.col(COL.of(product.getDocumentNote())); // _artikel_hinweistext
+
+		row.col(COL.of(product.getCommodityNumberValue())); // _fuer_zoll_artikel_intrastat_nummer
 
 		return row.build();
 	}
