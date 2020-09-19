@@ -1,5 +1,37 @@
 package de.metas.order.model.interceptor;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.IOrderLinePricingConditions;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.CalloutOrder;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
 /*
@@ -23,38 +55,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.CalloutOrder;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductBL;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.IOrderLinePricingConditions;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
@@ -126,6 +126,16 @@ public class C_OrderLine
 		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setProjectToOrderline(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_Order_ID() > 0 && orderLine.getC_Project_ID() <= 0)
+		{
+			final I_C_Order order = orderLine.getC_Order();
+			orderLine.setC_Project_ID(order.getC_Project_ID());
+		}
+	}
+
 	/**
 	 * Set qtyOrdered, to make sure is up2date. Note that this value is also set in
 	 * {@link CalloutOrder#amt(java.util.Properties, int, org.compiere.model.GridTab, org.compiere.model.GridField, Object)}.
@@ -144,14 +154,13 @@ public class C_OrderLine
 	}
 
 	/**
-	 *
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
-					I_C_OrderLine.COLUMNNAME_QtyDelivered,
-					I_C_OrderLine.COLUMNNAME_C_Order_ID })
+			I_C_OrderLine.COLUMNNAME_QtyDelivered,
+			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{
 		Services.get(IOrderLineBL.class).updateQtyReserved(orderLine);
@@ -214,7 +223,6 @@ public class C_OrderLine
 	}
 
 	/**
-	 *
 	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
