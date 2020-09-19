@@ -85,7 +85,7 @@ public class ReceiptCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 		from(direct(RECEIPT_CANDIDATE_FEEDBACK_TO_MF))
 				.routeId("ReceiptCandidate-Feedback-TO-MF")
-				.log(LoggingLevel.INFO, "Reporting outcome to metasfresh")
+				.log(LoggingLevel.INFO, "Reporting receipt-candidate outcome to metasfresh")
 				.process(new FeedbackProzessor())
 				.marshal(jacksonDataFormat)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))

@@ -91,7 +91,7 @@ public class ShipmentCandidateJsonToXmlRouteBuilder extends EndpointRouteBuilder
 
 		from(direct(SHIPMENT_CANDIDATE_FEEDBACK_ROUTE))
 				.routeId(SHIPMENT_CANDIDATE_FEEDBACK_TO_MF)
-				.log(LoggingLevel.INFO, "Reporting shipmentCandidate-outcome to metasfresh")
+				.log(LoggingLevel.INFO, "Reporting shipment-candidate outcome to metasfresh")
 				.process(new FeedbackProzessor())
 				.marshal(jacksonDataFormat)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
