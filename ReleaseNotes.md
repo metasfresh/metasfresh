@@ -10,9 +10,11 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 5.153 - WIP
+* https://github.com/metasfresh/metasfresh/issues/9920
 * https://github.com/metasfresh/metasfresh/pull/9923
 * https://github.com/metasfresh/metasfresh/issues/9926
 * https://github.com/metasfresh/metasfresh/pull/9930
+* https://github.com/metasfresh/metasfresh/issues/9933
 * https://github.com/metasfresh/metasfresh/issues/9935
 * https://github.com/metasfresh/metasfresh/issues/9940
 * https://github.com/metasfresh/metasfresh/pull/9942
