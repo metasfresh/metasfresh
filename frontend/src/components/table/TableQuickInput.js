@@ -347,4 +347,3 @@ export default connect(
 )(TableQuickInput);
 
 export { TableQuickInput };
-

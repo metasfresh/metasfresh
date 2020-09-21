@@ -454,7 +454,7 @@ class FiltersItem extends PureComponent {
       modalVisible,
       timeZone,
       allowShortcut,
-      disableShortcut,  
+      disableShortcut,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
