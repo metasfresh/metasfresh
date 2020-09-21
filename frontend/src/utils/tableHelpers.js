@@ -49,7 +49,7 @@ export const containerPropTypes = {
 
   // action creators
   collapseTableRow: PropTypes.func.isRequired,
-  deselectTableItems: PropTypes.func.isRequired,
+  deselectTableRows: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
   updateTableSelection: PropTypes.func.isRequired,
 };
@@ -64,7 +64,7 @@ export const componentPropTypes = {
   onDeselect: PropTypes.func.isRequired,
 };
 
-// TableItem props
+// TableRow props
 export const tableRowPropTypes = {
   lastPage: PropTypes.string,
   cols: PropTypes.array.isRequired,
@@ -553,4 +553,30 @@ export function nestedSelect(elem) {
     });
 
   return res;
+}
+
+/**
+ * @method getTooltipWidget
+ * @summary check if cell has a tooltip and selects it's data if needed
+ *
+ * @param {object} item - row element
+ * @param {array} widgetData
+ */
+export function getTooltipWidget(item, widgetData) {
+  let tooltipData = null;
+  let tooltipWidget =
+    item.fields && item.widgetType === 'Lookup'
+      ? item.fields.find((field, idx) => {
+          if (field.type === 'Tooltip') {
+            tooltipData = widgetData[idx];
+
+            if (tooltipData && tooltipData.value) {
+              return field;
+            }
+          }
+          return false;
+        })
+      : null;
+
+  return { tooltipData, tooltipWidget };
 }

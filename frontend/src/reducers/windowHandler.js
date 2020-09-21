@@ -140,7 +140,14 @@ export const getQuickactions = createSelector(
   (actions) => actions
 );
 
+/**
+ * @method getMasterData
+ * @summary getter for master data
+ *
+ * @param {object} state - redux state
+ */
 export const getMasterData = (state) => state.windowHandler.master.data;
+
 const getMasterLayout = (state, layoutPath) => {
   const layout = state.windowHandler.master.layout;
   const [
@@ -177,7 +184,7 @@ const selectWidgetData = (data, layout) => {
  * @summary cached selector for picking widget data for a desired element
  *
  * @param {object} state - redux state
- * @param {string} layoutPath - indexes of element in the layout structure
+ * @param {string} layoutPath - indexes of elements in the layout structure
  */
 export const getMasterWidgetData = createCachedSelector(
   getMasterData,
@@ -185,11 +192,24 @@ export const getMasterWidgetData = createCachedSelector(
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, layoutPath) => layoutPath);
 
+/**
+ * @method getMasterWidgetFields
+ * @summary cached selector for picking fields of a layout section
+ *
+ * @param {object} state - redux state
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
 export const getMasterWidgetFields = createCachedSelector(
   getMasterLayout,
   (layout) => layout.fields
 )((_state, layoutPath) => layoutPath);
 
+/**
+ * @method getMasterDocStatus
+ * @summary selector for geting master document status
+ *
+ * @param {object} state - redux state
+ */
 export const getMasterDocStatus = createSelector(
   getMasterData,
   (data) => {

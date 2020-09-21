@@ -25,6 +25,11 @@ import RawWidget from '../components/widget/RawWidget';
  * @file Class based component.
  * @module WidgetWrapper
  * @extends PureComponent
+ * @summary this is a wrapper around widgets that's responsible for
+ * fetching data to the component. Depending on the `dataSource` prop it
+ * has a selection of strategies to get the data from the redux store. No
+ * `MasterWidget` or `RawWidget` component should be rendered directly - always
+ * wrap them in `WidgetWrapper` and if needed add another data selector.
  */
 class WidgetWrapper extends PureComponent {
   render() {
@@ -110,7 +115,7 @@ const mapStateToProps = (state, props) => {
 WidgetWrapper.propTypes = {
   renderMaster: PropTypes.bool,
   dataSource: PropTypes.string.isRequired,
-  relativeDocId: PropTypes.number.isRequired,
+  relativeDocId: PropTypes.number,
   widgetData: PropTypes.array.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   activeTab: PropTypes.string,
