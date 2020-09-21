@@ -117,7 +117,7 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 			}
 		}
 
-		for (final ImmutablePair<ProductId, OrgId> productAndOrg : ProductPlanningSchemaDAO.retrieveProductIdsForSchemaSelector(selector))
+		for (final ImmutablePair<ProductId, OrgId> productAndOrg : productDAO.retrieveProductsAndOrgsForSchemaSelector(selector))
 		{
 			final I_PP_Product_Planning planning = createOrUpdateProductPlanningAndSave(productAndOrg.getLeft(), productAndOrg.getRight(), schema);
 			createdPlannings.add(planning);

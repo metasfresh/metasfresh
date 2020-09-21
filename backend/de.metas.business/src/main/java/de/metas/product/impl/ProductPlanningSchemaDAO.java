@@ -221,28 +221,6 @@ final class ProductPlanningSchemaDAO
 	}
 
 	/**
-	 * @return All the active products with the given product planning schema selector
-	 */
-	public static Set<ImmutablePair<ProductId, OrgId>> retrieveProductIdsForSchemaSelector(
-			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
-				.create()
-				.listColumns(I_M_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_AD_Org_ID)
-				.stream()
-				.map(pair -> {
-					final ProductId productId = ProductId.ofRepoId((int)pair.get(I_M_Product.COLUMNNAME_M_Product_ID));
-					final OrgId orgId = OrgId.ofRepoId((int)pair.get(I_M_Product.COLUMNNAME_AD_Org_ID));
-					return ImmutablePair.of(productId, orgId);
-				})
-				.collect(Collectors.toSet());
-	}
-
-	/**
 	 * @return the product planning for the given product and schema if found, null otherwise.
 	 */
 	@Nullable
