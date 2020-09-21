@@ -53,11 +53,7 @@ import de.metas.util.Services;
  */
 public class MProduct extends X_M_Product
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 285926961771269935L;
-	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Deprecated
 	public static MProduct get(Properties ctx_IGNORED, int M_Product_ID)
@@ -325,27 +321,9 @@ public class MProduct extends X_M_Product
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
 		
-		if(newRecord)
-		{
-			createOrUpdateProductPlanningsForSelector();
-		}
-
 		return true;
 	}	// afterSave
 	
-	private void createOrUpdateProductPlanningsForSelector()
-	{
-		final ProductPlanningSchemaSelector productPlanningSchemaSelector = ProductPlanningSchemaSelector.ofNullableCode(getM_ProductPlanningSchema_Selector());
-		if (productPlanningSchemaSelector == null)
-		{
-			return;
-		}
-		
-		final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
-		final OrgId orgId = OrgId.ofRepoId(getAD_Org_ID());
-
-		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, orgId, productPlanningSchemaSelector);
-	}
 
 	@Override
 	protected boolean beforeDelete()
