@@ -134,7 +134,7 @@ class TableCell extends PureComponent {
    * @method clearValue
    * @summary Set local `clearWidgetValue` value based on a given `reset` param. It controls
    * if the widget should be constructed with current value cleared or not. It is called
-   * by the TableItem
+   * by the TableRow
    *
    * @param {string|null} reset - might also be `undefined` in which case (because we don't
    * have a strict comparison below) it will be true

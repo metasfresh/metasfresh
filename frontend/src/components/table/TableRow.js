@@ -13,6 +13,7 @@ import {
   getDescription,
   getTdValue,
   nestedSelect,
+  getTooltipWidget,
 } from '../../utils/tableHelpers';
 
 import TableCell from './TableCell';
@@ -487,20 +488,10 @@ class TableRow extends PureComponent {
               isGerman,
             });
             const description = getDescription({ widgetData, tdValue });
-            let tooltipData = null;
-            let tooltipWidget =
-              item.fields && item.widgetType === 'Lookup'
-                ? item.fields.find((field, idx) => {
-                    if (field.type === 'Tooltip') {
-                      tooltipData = widgetData[idx];
-
-                      if (tooltipData && tooltipData.value) {
-                        return field;
-                      }
-                    }
-                    return false;
-                  })
-                : null;
+            const { tooltipData, tooltipWidget } = getTooltipWidget(
+              item,
+              widgetData
+            );
 
             return (
               <TableCell

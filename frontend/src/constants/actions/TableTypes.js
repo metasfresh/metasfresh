@@ -38,7 +38,7 @@ export const UPDATE_TABLE_SELECTION = 'UPDATE_TABLE_SELECTION';
  * @constant
  * @type {string} deselect rows
  */
-export const DESELECT_TABLE_ITEMS = 'DESELECT_TABLE_ITEMS';
+export const DESELECT_TABLE_ROWS = 'DESELECT_TABLE_ROWS';
 
 /**
  * @constant
