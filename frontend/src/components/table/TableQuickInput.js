@@ -345,3 +345,6 @@ export default connect(
     disableShortcut,
   }
 )(TableQuickInput);
+
+export { TableQuickInput };
+
