@@ -70,6 +70,10 @@
                MAXREPEAT=" 1 "
                NAME="_wareneingang_ist_retoure_ja_url"
                TYPE=" TEXT "/>
+        <FIELD EMPTYOK=" YES "
+               MAXREPEAT=" 1 "
+               NAME="_wareneingang_lieferschein_url"
+               TYPE=" TEXT "/>
     </METADATA>
     <RESULTSET FOUND="1">
         <ROW MODID="16"
@@ -115,6 +119,9 @@
             </COL>
             <COL/><!-- _bestellung_position_id -->
             <COL/><!-- _wareneingang_ist_retoure_ja_url -->
+            <COL>
+                <DATA>receipt_externalResourceURL</DATA> <!-- _wareneingang_lieferschein_url -->
+            </COL>
         </ROW>
         <ROW MODID="16"
              RECORDID="2">
@@ -161,6 +168,7 @@
             <COL>
                 <DATA>externalResourceURL</DATA> <!-- _wareneingang_ist_retoure_ja_url -->
             </COL>
+            <COL/><!-- _wareneingang_lieferschein_url -->
         </ROW>
     </RESULTSET>
 </FMPXMLRESULT>

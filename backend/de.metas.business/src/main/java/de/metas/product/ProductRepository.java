@@ -83,6 +83,7 @@ public class ProductRepository
 				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
 				.packageSize(productRecord.getPackageSize())
 				.weight(productRecord.getWeight())
+				.commodityNumberId(CommodityNumberId.ofRepoIdOrNull(productRecord.getM_CommodityNumber_ID()))
 				.build();
 	}
 }

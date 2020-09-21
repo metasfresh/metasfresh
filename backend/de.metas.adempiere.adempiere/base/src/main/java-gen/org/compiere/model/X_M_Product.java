@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -220139620L;
+	private static final long serialVersionUID = 1180957861L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -1655,4 +1655,21 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 			 return BigDecimal.ZERO;
 		return bd;
 	}
+
+	@Override
+	public void setM_CommodityNumber_ID (int M_CommodityNumber_ID)
+	{
+		if (M_CommodityNumber_ID < 1)
+			set_Value (COLUMNNAME_M_CommodityNumber_ID, null);
+		else
+			set_Value (COLUMNNAME_M_CommodityNumber_ID, Integer.valueOf(M_CommodityNumber_ID));
+	}
+
+	@Override
+	public int getM_CommodityNumber_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CommodityNumber_ID);
+	}
+
+
 }

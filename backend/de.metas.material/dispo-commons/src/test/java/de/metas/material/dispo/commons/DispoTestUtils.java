@@ -1,22 +1,24 @@
 package de.metas.material.dispo.commons;
 
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -121,5 +123,25 @@ public class DispoTestUtils
 						.thenComparing(I_MD_Candidate::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
 		return sorted;
+	}
+
+	public I_MD_Candidate retrieveStockCandidate(@NonNull final I_MD_Candidate candidate)
+	{
+		final boolean hasChildStockRecord = X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND.equals(candidate.getMD_Candidate_Type());
+		final boolean hasParentStockRecord = X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY.equals(candidate.getMD_Candidate_Type());
+		if (hasChildStockRecord)
+		{
+			final List<I_MD_Candidate> childStockRecords = POJOLookupMap.get().getRecords(I_MD_Candidate.class, r -> r.getMD_Candidate_Parent_ID() == candidate.getMD_Candidate_ID());
+			assertThat(childStockRecords).hasSize(1);
+			return childStockRecords.get(0);
+		}
+		else if (hasParentStockRecord)
+		{
+			final I_MD_Candidate parentStockRecord = InterfaceWrapperHelper.load(candidate.getMD_Candidate_Parent_ID(), I_MD_Candidate.class);
+			assertThat(parentStockRecord).isNotNull();
+			return parentStockRecord;
+		}
+
+		throw new RuntimeException("MD_CANDIDATE_TYPE=" + candidate.getMD_Candidate_Type() + " is not yet supported by this test utility class");
 	}
 }

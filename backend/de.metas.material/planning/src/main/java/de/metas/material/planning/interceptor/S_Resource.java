@@ -1,14 +1,14 @@
 package de.metas.material.planning.interceptor;
 
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.ModelValidator;
-
 import de.metas.material.planning.IResourceDAO;
 import de.metas.product.IProductDAO;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -32,19 +32,12 @@ import de.metas.util.Services;
  * #L%
  */
 @Interceptor(I_S_Resource.class)
+@Component
 public class S_Resource
 {
-	static final S_Resource INSTANCE = new S_Resource();
-
-	private S_Resource()
-	{
-	}
-
 	/**
 	 * Creates a resource product.<br>
 	 * Note that it's important to create it <b>after</b> new, because otherwise the given {@code resource}'s {@code Value} mit still be {@code null} (https://github.com/metasfresh/metasfresh/issues/1580)
-	 * 
-	 * @param resource
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createResourceProduct(final I_S_Resource resource)
@@ -64,5 +57,4 @@ public class S_Resource
 		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
 		Services.get(IProductDAO.class).deleteProductByResourceId(resourceId);
 	}
-
 }

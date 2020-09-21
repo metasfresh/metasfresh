@@ -1,24 +1,10 @@
 package de.metas.material.dispo.commons.repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -45,6 +31,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
@@ -52,8 +39,20 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 /*
  * #%L
@@ -199,6 +198,11 @@ public class CandidateRepositoryRetrieval
 				.date(TimeUtil.asInstant(dateProjected))
 				.build();
 
+		final MinMaxDescriptor minMaxDescriptor = MinMaxDescriptor.builder()
+				.min(candidateRecord.getReplenish_MinQty())
+				.max(candidateRecord.getReplenish_MaxQty())
+				.build();
+
 		final CandidateBuilder candidateBuilder = Candidate.builder()
 				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(candidateRecord.getAD_Client_ID(), candidateRecord.getAD_Org_ID()))
@@ -207,7 +211,8 @@ public class CandidateRepositoryRetrieval
 
 				// if the record has a group id, then set it.
 				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
-				.materialDescriptor(materialDescriptor);
+				.materialDescriptor(materialDescriptor)
+				.minMaxDescriptor(minMaxDescriptor);
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{

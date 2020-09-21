@@ -1,22 +1,25 @@
 package de.metas.material.event.transactions;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Map;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
  * #%L
@@ -49,6 +52,9 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
+	@JsonInclude(NON_NULL)
+	private final MinMaxDescriptor minMaxDescriptor;
+
 	/** note: one shipment-inoutLine might be an aggregation of multiple shipment schedules */
 	private final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys;
 
@@ -74,6 +80,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 	public AbstractTransactionEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
+			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			final Map<Integer, BigDecimal> receiptScheduleIds2Qtys,
 			final InOutAndLineId receiptId,
@@ -91,6 +98,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.eventDescriptor = eventDescriptor;
 
 		this.materialDescriptor = materialDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 		this.huOnHandQtyChangeDescriptors = huOnHandQtyChangeDescriptors;
 
 		this.shipmentScheduleIds2Qtys = shipmentScheduleIds2Qtys;
