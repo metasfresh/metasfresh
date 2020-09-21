@@ -767,6 +767,31 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
+	 * Set Filtered-Count with header aggregation Key.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setFilteredItemsWithSameHeaderAggregationKey (int FilteredItemsWithSameHeaderAggregationKey);
+
+	/**
+	 * Get Filtered-Count with header aggregation Key.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getFilteredItemsWithSameHeaderAggregationKey();
+
+    /** Column definition for FilteredItemsWithSameHeaderAggregationKey */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_FilteredItemsWithSameHeaderAggregationKey = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "FilteredItemsWithSameHeaderAggregationKey", null);
+    /** Column name FilteredItemsWithSameHeaderAggregationKey */
+    public static final String COLUMNNAME_FilteredItemsWithSameHeaderAggregationKey = "FilteredItemsWithSameHeaderAggregationKey";
+
+	/**
 	 * Set Kopf-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String
@@ -961,7 +986,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
 
 	/**
-	 * Set zu Akt..
+	 * Set Recompute.
 	 * Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	 *
 	 * <br>Type: YesNo
@@ -973,7 +998,7 @@ public interface I_M_ShipmentSchedule
 	public void setIsToRecompute (boolean IsToRecompute);
 
 	/**
-	 * Get zu Akt..
+	 * Get Recompute.
 	 * Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	 *
 	 * <br>Type: YesNo
