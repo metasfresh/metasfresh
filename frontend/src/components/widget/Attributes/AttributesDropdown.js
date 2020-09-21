@@ -2,9 +2,13 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
-import RawWidget from '../RawWidget';
+import { connect } from 'react-redux';
 import classnames from 'classnames';
+
+import { allowShortcut, disableShortcut } from '../../../actions/WindowActions';
 import { DROPUP_START } from '../../../constants/Constants';
+
+import RawWidget from '../RawWidget';
 
 /**
  * @file Class based component.
@@ -90,6 +94,10 @@ class AttributesDropdown extends PureComponent {
       disableOnClickOutside,
       enableOnClickOutside,
       isModal,
+      modalVisible,
+      timeZone,
+      allowShortcut,
+      disableShortcut,
     } = this.props;
 
     if (layout) {
@@ -110,9 +118,15 @@ class AttributesDropdown extends PureComponent {
             handleChange={handleChange}
             disableOnClickOutside={disableOnClickOutside}
             enableOnClickOutside={enableOnClickOutside}
-            tabIndex={tabIndex}
-            isModal={isModal}
             attributeWidget={true}
+            {...{
+              tabIndex,
+              isModal,
+              modalVisible,
+              timeZone,
+              allowShortcut,
+              disableShortcut,
+            }}
           />
         );
       });
@@ -142,6 +156,15 @@ class AttributesDropdown extends PureComponent {
   }
 }
 
+const mapStateToProps = (state) => {
+  const { appHandler, windowHandler } = state;
+
+  return {
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
+};
+
 /**
  * @typedef {object} Props Component props
  * @prop {number} [tabIndex]
@@ -155,7 +178,10 @@ class AttributesDropdown extends PureComponent {
  * @prop {func} handlePatch
  * @prop {func} disableOnClickOutside
  * @prop {func} enableOnClickOutside
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {func} allowShortcut
+ * @prop {func} disableShortcut
+ * @prop {bool} modalVisible
+ * @prop {string} timeZone
  */
 AttributesDropdown.propTypes = {
   tabIndex: PropTypes.number,
@@ -170,6 +196,16 @@ AttributesDropdown.propTypes = {
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
 };
 
-export default onClickOutside(AttributesDropdown);
+export default connect(
+  mapStateToProps,
+  {
+    allowShortcut,
+    disableShortcut,
+  }
+)(onClickOutside(AttributesDropdown));

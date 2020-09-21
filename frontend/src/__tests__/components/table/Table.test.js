@@ -7,7 +7,7 @@ import merge from 'merge';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import viewHandler from '../../../reducers/viewHandler';
-import tablesHandler, { initialTableState } from '../../../reducers/tables';
+import tablesHandler, { initialTableState, getTableId } from '../../../reducers/tables';
 import { createTableData } from '../../../actions/TableActions';
 import propsData from '../../../../test_setup/fixtures/table/props.json';
 import tableData from '../../../../test_setup/fixtures/table/data.json';
@@ -49,8 +49,9 @@ const tableProps = {
   ...propsData.props1,
   ...initialTableState,
   ...createTableData(tableData),
+  tableId: getTableId(propsData.props1),
   collapseTableRow: jest.fn(),
-  deselectTableItems: jest.fn(),
+  deselectTableRows: jest.fn(),
   openModal: jest.fn(),
   updateTableSelection: jest.fn(),
   onSelect: jest.fn(),
