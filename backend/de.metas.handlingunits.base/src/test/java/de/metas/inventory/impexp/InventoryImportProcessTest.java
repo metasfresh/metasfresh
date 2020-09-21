@@ -28,9 +28,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
-import de.metas.inventory.impexp.InventoryImportProcess;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -75,6 +76,8 @@ public class InventoryImportProcessTest
 
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(new InventoryRepository());
+		SpringContextHolder.registerJUnitBean(new HuForInventoryLineFactory());
 
 		inventoryImportProcess = new InventoryImportProcess();
 
