@@ -118,6 +118,23 @@
                MAXREPEAT="1"
                NAME="_aussendungen_siro_warenkorb_nummer"
                TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_sendung_dienstleister"
+               TYPE="TEXT"/><!-- shipper.InternalName_Seg1-->
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_sendung_versandart"
+               TYPE="TEXT"/><!-- shipper.InternalName_Seg2-->
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_korrektur_artikel_menge"
+               TYPE="TEXT"/>  <!-- qtyToDeliver-Override -->
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_sendung_gewichte"
+               TYPE="TEXT"/>  <!-- package.weight -->
+
     </METADATA>
     <RESULTSET FOUND="2">
         <ROW MODID="27"
@@ -186,7 +203,11 @@
                 <DATA>1</DATA>
             </COL>
             <COL>
-                <DATA>cp-test-trk-no-c1</DATA><!-- tracking number -->
+                <DATA>
+                    cp-test-trk-no-c1
+                    cp-test-trk-no-c2
+                    cp-test-trk-no-c3
+                </DATA><!-- tracking numbers -->
             </COL>
             <COL>
                 <DATA>1</DATA><!-- shipment yes/no flag -->
@@ -202,6 +223,22 @@
             </COL>
             <COL>
                 <DATA>cp-document-no-1</DATA> <!-- doc number -->
+            </COL>
+            <COL>
+                <DATA>shipper.InternalName_Seg1</DATA> <!-- shipper.InternalName_Seg1 -->
+            </COL>
+            <COL>
+                <DATA>shipper.InternalName_Seg2</DATA> <!-- shipper.InternalName_Seg2-->
+            </COL>
+            <COL>
+                <DATA>150</DATA> <!-- qtyToDeliver-Override -->
+            </COL>
+            <COL>
+                <DATA>
+                    1
+                    2
+                    3
+                </DATA> <!-- package.weight -->
             </COL>
         </ROW>
     </RESULTSET>

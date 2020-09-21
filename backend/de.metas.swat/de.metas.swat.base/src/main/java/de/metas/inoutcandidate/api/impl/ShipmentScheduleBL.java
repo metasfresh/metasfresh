@@ -742,6 +742,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			addAttributes(shipmentSchedule, request.getAttributes());
 		}
 
+		if (request.getShipperId() != null)
+		{
+			shipmentSchedule.setM_Shipper_ID(request.getShipperId().getRepoId());
+		}
+
 		saveRecord(shipmentSchedule);
 	}
 
