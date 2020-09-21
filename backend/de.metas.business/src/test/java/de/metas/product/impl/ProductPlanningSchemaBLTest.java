@@ -53,6 +53,7 @@ import de.metas.util.Services;
 public class ProductPlanningSchemaBLTest
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+	private final OrgId defaultOrgId = OrgId.ofRepoId(1);
 
 	@Before
 	public void init()
@@ -173,13 +174,13 @@ public class ProductPlanningSchemaBLTest
 
 		final WarehouseId warehouseId2 = createWarehouse("wh2");
 		final DistributionNetworkId distributionNetworkId2 = createNetworkDistribution("NwDist2");
-		final ProductPlanningSchema schema2 = createSchema(warehouseId2, distributionNetworkId2, selector, OrgId.ANY);
+		final ProductPlanningSchema schema2 = createSchema(warehouseId2, distributionNetworkId2, selector, this.defaultOrgId);
 
 		final ProductPlanningSchema schema3 = createSchema(warehouseId2, distributionNetworkId2, selector, orgId);
 
 		final WarehouseId warehouseId1 = createWarehouse("wh1");
 		final DistributionNetworkId distributionNetworkId1 = createNetworkDistribution("NwDist1");
-		final ProductPlanningSchema schema1 = createSchema(warehouseId1, distributionNetworkId1, selector, OrgId.ANY);
+		final ProductPlanningSchema schema1 = createSchema(warehouseId1, distributionNetworkId1, selector, this.orgId);
 
 		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
@@ -203,7 +204,7 @@ public class ProductPlanningSchemaBLTest
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
 					assertThat(productPlanning.getM_Product_PlanningSchema_ID()).isEqualTo(schema1.getId().getRepoId());
-					assertThat((schema1.getOrgId()).equals(OrgId.ANY));
+					assertThat((schema1.getOrgId()).equals(this.defaultOrgId));
 					assertThat(productPlanning.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
 				});
 
@@ -345,7 +346,7 @@ public class ProductPlanningSchemaBLTest
 	{
 		final ProductPlanningSchema schema = ProductPlanningSchema.builder()
 				.selector(selector)
-				.orgId(OrgId.ANY)
+				.orgId(this.defaultOrgId)
 				.warehouseId(warehouseId)
 				.distributionNetworkId(distributionNetworkId)
 				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.CREATE_DISTRIBUTION_ORDER)
@@ -377,6 +378,7 @@ public class ProductPlanningSchemaBLTest
 		product.setValue(name);
 		product.setName(name);
 		product.setM_ProductPlanningSchema_Selector(selector.getCode());
+		product.setAD_Org_ID(this.defaultOrgId.getRepoId());
 		saveRecord(product);
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
