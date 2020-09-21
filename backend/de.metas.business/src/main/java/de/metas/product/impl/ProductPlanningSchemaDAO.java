@@ -68,6 +68,9 @@ import javax.annotation.Nullable;
 @UtilityClass
 final class ProductPlanningSchemaDAO
 {
+
+	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@NonNull
 	public static ProductPlanningSchema getById(@NonNull final ProductPlanningSchemaId schemaId)
 	{
@@ -80,78 +83,24 @@ final class ProductPlanningSchemaDAO
 	}
 
 	/**
-	 * Returns the Product Planning Schema entries with the given Product Planning Schema Selector and Org. If the org does not match, fallback to org *.
-	 * If there are 2 identical Product Planning Schemas, one for orgParam and one for *, we shall return only the one for orgParam.
+	 * Returns the Product Planning Schema entries with the given Product Planning Schema Selector and Org.
 	 */
 	@NonNull
 	public static ImmutableSet<ProductPlanningSchema> retrieveSchemasForSelectorAndOrg(
 			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector,
 			@NonNull final OrgId orgId)
 	{
-		final ImmutableMap<ProductPlanningSchemaId, ProductPlanningSchema> schemasWithDuplicateOrgs = Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Product_PlanningSchema.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
-				.addInArrayFilter(I_M_Product_PlanningSchema.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.list()
 				.stream()
 				.map(ProductPlanningSchemaDAO::toProductPlanningSchema)
-				.collect(ImmutableMap.toImmutableMap(ProductPlanningSchema::getId, Function.identity()));
-
-		// remove duplicates where everything is the same, except the org, and repoId
-		// Technical: I am using the set.add property that if an object already exists in a set, the duplicate will not be inserted but skipped.
-		final Set<ProductPlanningSchemaIgnoringOrgAndId> schemasNoDuplicateOrgs = schemasWithDuplicateOrgs.values().stream()
-				.sorted(Comparator.comparing(ProductPlanningSchema::getOrgId).reversed()) // * org remains last
-				.map(ProductPlanningSchemaIgnoringOrgAndId::new)
-				.collect(GuavaCollectors.toImmutableSet());
-
-		final ImmutableSet.Builder<ProductPlanningSchema> result = ImmutableSet.builder();
-		for (final ProductPlanningSchemaIgnoringOrgAndId s : schemasNoDuplicateOrgs)
-		{
-			result.add(schemasWithDuplicateOrgs.get(s.getSchema().getId()));
-		}
-
-		return result.build();
-	}
-
-	/**
-	 * Used as a delegate to ProductPlanningSchema, to calculate if 2 schemas are equals, ignoring only their ID and Org
-	 */
-
-	@Value
-	private static class ProductPlanningSchemaIgnoringOrgAndId
-	{
-		ProductPlanningSchema schema;
-
-		@Override
-		public boolean equals(final Object o)
-		{
-			if (schema == o)
-				return true;
-			if (o == null || getClass() != o.getClass())
-				return false;
-			final ProductPlanningSchema that = ((ProductPlanningSchemaIgnoringOrgAndId)o).getSchema();
-			return schema.isAttributeDependant() == that.isAttributeDependant() &&
-					schema.isCreatePlan() == that.isCreatePlan() &&
-					schema.isCompleteGeneratedDocuments() == that.isCompleteGeneratedDocuments() &&
-					schema.isPickDirectlyIfFeasible() == that.isPickDirectlyIfFeasible() &&
-					schema.getSelector() == that.getSelector() &&
-					Objects.equals(schema.getPlantId(), that.getPlantId()) &&
-					Objects.equals(schema.getWarehouseId(), that.getWarehouseId()) &&
-					Objects.equals(schema.getPlannerId(), that.getPlannerId()) &&
-					Objects.equals(schema.getManufactured(), that.getManufactured()) &&
-					Objects.equals(schema.getRoutingId(), that.getRoutingId()) &&
-					Objects.equals(schema.getDistributionNetworkId(), that.getDistributionNetworkId()) &&
-					schema.getOnMaterialReceiptWithDestWarehouse() == that.getOnMaterialReceiptWithDestWarehouse();
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return Objects.hash(schema.getSelector(), schema.getPlantId(), schema.getWarehouseId(), schema.isAttributeDependant(), schema.getPlannerId(), schema.getManufactured(), schema.isCreatePlan(), schema.isCompleteGeneratedDocuments(), schema.isPickDirectlyIfFeasible(), schema.getRoutingId(), schema.getDistributionNetworkId(), schema.getOnMaterialReceiptWithDestWarehouse());
-		}
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
@@ -212,7 +161,7 @@ final class ProductPlanningSchemaDAO
 	public static List<I_PP_Product_Planning> retrieveProductPlanningsForSchemaId(
 			@NonNull final ProductPlanningSchemaId schemaId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class)
+		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schemaId)
@@ -228,7 +177,7 @@ final class ProductPlanningSchemaDAO
 			@NonNull final ProductId productId,
 			@NonNull final ProductPlanningSchemaId schemaId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class)
+		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
@@ -245,7 +194,7 @@ final class ProductPlanningSchemaDAO
 	 */
 	public static Stream<I_M_Product> streamProductsWithNoProductPlanningButWithSchemaSelector()
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBL queryBL = ProductPlanningSchemaDAO.queryBL;
 
 		final IQuery<I_PP_Product_Planning> existentProductPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
