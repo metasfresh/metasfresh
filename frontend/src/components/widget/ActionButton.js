@@ -297,7 +297,7 @@ class ActionButton extends PureComponent {
   render() {
     const { data, modalVisible } = this.props;
     const { list, prompt } = this.state;
-    const abrev = data.status.value && data.status.value.key;
+    const abrev = get(data, ['status', 'value', 'key'], null);
     const status = this.getStatusContext(abrev);
     let value;
 
