@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1908405298L;
+	private static final long serialVersionUID = -1947633462L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -294,6 +294,28 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.sql.Timestamp getHU_BestBeforeDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_HU_BestBeforeDate);
+	}
+
+	/** 
+	 * HUAggregationType AD_Reference_ID=540976
+	 * Reference name: HUAggregationType
+	 */
+	public static final int HUAGGREGATIONTYPE_AD_Reference_ID=540976;
+	/** SINGLE_HU = S */
+	public static final String HUAGGREGATIONTYPE_SINGLE_HU = "S";
+	/** MULTIPLE_HUS = M */
+	public static final String HUAGGREGATIONTYPE_MULTIPLE_HUS = "M";
+	@Override
+	public void setHUAggregationType (java.lang.String HUAggregationType)
+	{
+
+		set_Value (COLUMNNAME_HUAggregationType, HUAggregationType);
+	}
+
+	@Override
+	public java.lang.String getHUAggregationType() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_HUAggregationType);
 	}
 
 	@Override

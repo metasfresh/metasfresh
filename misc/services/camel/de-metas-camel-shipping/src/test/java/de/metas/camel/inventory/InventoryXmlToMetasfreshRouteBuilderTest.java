@@ -86,6 +86,6 @@ public class InventoryXmlToMetasfreshRouteBuilderTest extends CamelTestSupport
 		assertThat(localStorage.getCalled()).isEqualTo(1);
 		assertThat(toMetasfresh.getCalled()).isEqualTo(1);
 		assertThat(toMetasfresh.getLastMessageBody())
-				.isEqualTo("H201-15-03;20.08.2020;B-15020111;10;1;01.06.2021;45-15\r\n");
+				.isEqualTo("H201-15-03;20.08.2020;B-15020111;10;1;01.06.2021;45-15;M\r\n");
 	}
 }

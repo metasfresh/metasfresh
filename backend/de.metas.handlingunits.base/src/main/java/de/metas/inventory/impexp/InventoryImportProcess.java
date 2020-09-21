@@ -1,4 +1,4 @@
-package de.metas.impexp.processing.inventory;
+package de.metas.inventory.impexp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -23,38 +23,55 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_Inventory;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineHU;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
+import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
+import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
+import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.impexp.processing.ImportGroupResult;
 import de.metas.impexp.processing.ImportProcessTemplate;
 import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.inventory.InventoryImportProcess.InventoryGroupKey;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -72,10 +89,16 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	private static final Logger logger = LogManager.getLogger(InventoryImportProcess.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
+
+	private final Timestamp now = SystemTime.asDayTimestamp();
 
 	@Override
 	public Class<I_I_Inventory> getImportModelClass()
@@ -114,14 +137,24 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		getResultCollector().setCountImportRecordsWithValidationErrors(countErrorRecords);
 	}
 
+	/**
+	 * NOTE to dev: keep in sync with {@link InventoryGroupKey}.
+	 */
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Inventory.COLUMNNAME_WarehouseValue
+		return I_I_Inventory.COLUMNNAME_ExternalHeaderId
+				+ ", " + I_I_Inventory.COLUMNNAME_AD_Org_ID
+				+ ", " + I_I_Inventory.COLUMNNAME_WarehouseValue
 				+ ", " + I_I_Inventory.COLUMNNAME_InventoryDate
+				+ ", " + I_I_Inventory.COLUMNNAME_HUAggregationType
+				//
 				+ ", " + I_I_Inventory.COLUMNNAME_I_Inventory_ID;
 	}
 
+	/**
+	 * NOTE to dev: keep in sync with {@link InventoryImportProcess#getImportOrderBySql()}
+	 */
 	@Value
 	@Builder
 	public static class InventoryGroupKey
@@ -138,6 +171,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		@Nullable
 		WarehouseId warehouseId;
 
+		@NonNull
 		Timestamp inventoryDate;
 	}
 
@@ -151,8 +185,33 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
 				.docTypeId(docTypeId)
 				.warehouseId(WarehouseId.ofRepoIdOrNull(importRecord.getM_Warehouse_ID()))
-				.inventoryDate(importRecord.getInventoryDate())
+				.inventoryDate(CoalesceUtil.coalesce(importRecord.getInventoryDate(), now))
 				.build();
+	}
+
+	private DocTypeId getDocTypeId(@NonNull final I_I_Inventory importRecord)
+	{
+		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(importRecord.getHUAggregationType());
+		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType(huAggregationType);
+
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(importRecord.getAD_Client_ID())
+				.adOrgId(importRecord.getAD_Org_ID())
+				.build());
+	}
+
+	private static DocBaseAndSubType getDocBaseAndSubType(@Nullable final HUAggregationType huAggregationType)
+	{
+		if (huAggregationType == null)
+		{
+			return DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
+		}
+		else
+		{
+			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
+		}
 	}
 
 	@Override
@@ -196,46 +255,101 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		return inventory;
 	}
 
-	private DocTypeId getDocTypeId(@NonNull final I_I_Inventory importRecord)
-	{
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.adClientId(importRecord.getAD_Client_ID())
-				.adOrgId(importRecord.getAD_Org_ID())
-				.build());
-	}
-
 	private void createInventoryLine(
 			@NonNull final I_I_Inventory importRecord,
 			@NonNull final InventoryId inventoryId)
 	{
-		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
-		inventoryLine.setExternalId(importRecord.getExternalLineId());
-		inventoryLine.setQtyCount(importRecord.getQtyCount());
-		inventoryLine.setCostPrice(importRecord.getCostPrice());
-		inventoryLine.setM_Inventory_ID(inventoryId.getRepoId());
-		inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
-
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(importRecord.getM_Locator_ID());
+		final OrgId orgId = OrgId.ofRepoId(importRecord.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-		final UomId uomId = productBL.getStockUOMId(productId);
-		inventoryLine.setM_Product_ID(productId.getRepoId());
-		inventoryLine.setC_UOM_ID(uomId.getRepoId());
-
+		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
+		final Quantity qtyCount = Quantity.of(importRecord.getQtyCount(), stockingUOM);
 		final AttributeSetInstanceId asiId = extractASI(importRecord);
-		inventoryLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
-
 		final int chargeId = inventoryBL.getDefaultInternalChargeId();
-		inventoryLine.setC_Charge_ID(chargeId);
+		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(importRecord.getHUAggregationType());
 
-		inventoryLine.setIsCounted(true);
+		final List<HuForInventoryLine> hus;
+		if (HUAggregationType.MULTI_HU.equals(huAggregationType))
+		{
+			hus = getEligibleHUs(productId, asiId, locatorId);
+		}
+		else
+		{
+			hus = ImmutableList.of();
+		}
 
-		InterfaceWrapperHelper.saveRecord(inventoryLine);
-		logger.trace("Insert inventory line - {}", inventoryLine);
+		final Quantity qtyBooked = computeTotalQtyBooked(hus, qtyCount.getUOM(), UOMConversionContext.of(productId));
+
+		final I_M_InventoryLine inventoryLineRecord = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
+		inventoryLineRecord.setM_Inventory_ID(inventoryId.getRepoId());
+		inventoryLineRecord.setAD_Org_ID(orgId.getRepoId());
+		inventoryLineRecord.setExternalId(importRecord.getExternalLineId());
+		inventoryLineRecord.setM_Locator_ID(locatorId.getRepoId());
+		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
+		inventoryLineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		inventoryLineRecord.setCostPrice(importRecord.getCostPrice());
+		inventoryLineRecord.setC_Charge_ID(chargeId);
+
+		//
+		// Qtys
+		inventoryLineRecord.setHUAggregationType(HUAggregationType.toCodeOrNull(huAggregationType));
+		Quantity.getCommonUomIdOfAll(qtyCount, qtyBooked); // just to make sure we are using same UOM
+		inventoryLineRecord.setC_UOM_ID(qtyCount.getUomId().getRepoId());
+		inventoryLineRecord.setQtyCount(qtyCount.toBigDecimal());
+		inventoryLineRecord.setQtyBook(qtyBooked.toBigDecimal());
+		inventoryLineRecord.setIsCounted(true);
+
+		InterfaceWrapperHelper.saveRecord(inventoryLineRecord);
+		logger.trace("Insert inventory line - {}", inventoryLineRecord);
+
+		//
+		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord)
+				.withInventoryLineHUs(toInventoryLineHUs(hus))
+				.distributeQtyCountToHUs(qtyCount);
+
+		inventoryRepository.saveInventoryLineHURecords(inventoryLine);
 
 		//
 		importRecord.setM_Inventory_ID(inventoryId.getRepoId());
-		importRecord.setM_InventoryLine_ID(inventoryLine.getM_InventoryLine_ID());
+		importRecord.setM_InventoryLine_ID(inventoryLineRecord.getM_InventoryLine_ID());
 	}
+
+	private List<InventoryLineHU> toInventoryLineHUs(final List<HuForInventoryLine> hus)
+	{
+		return hus.stream()
+				.map(DraftInventoryLinesCreator::toInventoryLineHU)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<HuForInventoryLine> getEligibleHUs(final ProductId productId, final AttributeSetInstanceId asiId, final LocatorId locatorId)
+	{
+		final LocatorAndProductStrategy husFinder = HUsForInventoryStrategies.locatorAndProduct()
+				.huForInventoryLineFactory(huForInventoryLineFactory)
+				//
+				// .warehouseId(null)
+				.locatorId(locatorId)
+				.productId(productId)
+				.asiId(asiId)
+				//
+				.build();
+
+		final List<HuForInventoryLine> hus = husFinder.streamHus()
+				.collect(ImmutableList.toImmutableList());
+		return hus;
+	}
+
+	private Quantity computeTotalQtyBooked(
+			final List<HuForInventoryLine> hus,
+			final I_C_UOM targetUOM,
+			final UOMConversionContext conversionCtx)
+	{
+		return hus.stream()
+				.map(HuForInventoryLine::getQuantityBooked)
+				.map(qty -> uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUOM))
+				.reduce(Quantity::add)
+				.orElseGet(() -> Quantity.zero(targetUOM));
+	}
+
 	@VisibleForTesting
 	AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
 	{

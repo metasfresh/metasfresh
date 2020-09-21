@@ -1,4 +1,4 @@
-package de.metas.impexp.processing.inventory;
+package de.metas.inventory.impexp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import de.metas.business.BusinessTestHelper;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.inventory.impexp.InventoryImportProcess;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;

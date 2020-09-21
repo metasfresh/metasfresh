@@ -1,4 +1,4 @@
-package de.metas.impexp.processing.inventory;
+package de.metas.inventory.impexp;
 
 import java.util.List;
 
@@ -87,27 +87,31 @@ final class MInventoryImportTableSqlUpdater
 				+ "	       JOIN extractLocatorDimensions(inv.WarehouseLocatorIdentifier) as d on 1=1"
 				+ "     ) AS dimensions "
 				+ "WHERE I_IsImported<>'Y' AND dimensions.dimensions_I_Inventory_ID = i.I_Inventory_ID ")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateWarehouse(@NonNull final ImportRecordsSelection selection)
 	{
 		// Try to set M_Warehouse_ID based on warehouse value
-		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.WarehouseValue=w.Value) ")
-				.append("WHERE M_Warehouse_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		{
+			StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+					.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.WarehouseValue=w.Value) ")
+					.append("WHERE M_Warehouse_ID IS NULL ")
+					.append("AND I_IsImported<>'Y' ")
+					.append(selection.toSqlWhereClause("i"));
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 
 		// Try to set M_Warehouse_ID based on locator value
-		sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.locatorvalue=l.Value) ")
-				.append("WHERE M_Warehouse_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		{
+			StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+					.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.locatorvalue=l.Value) ")
+					.append("WHERE M_Warehouse_ID IS NULL ")
+					.append("AND I_IsImported<>'Y' ")
+					.append(selection.toSqlWhereClause("i"));
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 	}
 
 	private void dbUpdateCreateLocators(@NonNull final ImportRecordsSelection selection)

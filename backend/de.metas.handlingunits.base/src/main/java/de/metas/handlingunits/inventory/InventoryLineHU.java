@@ -153,6 +153,11 @@ public class InventoryLineHU
 		return qtyBook;
 	}
 
+	public Quantity getQtyCountButNotBooked()
+	{
+		return getQtyCount().subtract(getQtyBook());
+	}
+
 	/**
 	 * @param qtyCountToAdd needs to have the same UOM as this instance's current qtyCount.
 	 */

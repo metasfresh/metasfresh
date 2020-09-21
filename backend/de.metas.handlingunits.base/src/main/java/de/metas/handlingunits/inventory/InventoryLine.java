@@ -223,9 +223,14 @@ public class InventoryLine
 			}
 		}
 
+		return withInventoryLineHUs(newInventoryLineHUs);
+	}
+
+	public InventoryLine withInventoryLineHUs(@NonNull final List<InventoryLineHU> inventoryLineHUs)
+	{
 		return toBuilder()
 				.clearInventoryLineHUs()
-				.inventoryLineHUs(newInventoryLineHUs)
+				.inventoryLineHUs(inventoryLineHUs)
 				.build();
 	}
 }

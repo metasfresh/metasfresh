@@ -36,6 +36,7 @@ import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
 import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_I_Inventory;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -83,6 +84,7 @@ import de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleInvali
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleHUTrxListener;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentSchedulePackingMaterialLineListener;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandler;
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.inoutcandidate.agg.key.impl.HUShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
@@ -214,6 +216,8 @@ public final class Main extends AbstractModuleInterceptor
 		// Register GridTabSummaryInfo entries (08734) - override de.metas.swat implementation
 		final IGridTabSummaryInfoFactory gridTabSummaryInfoFactory = Services.get(IGridTabSummaryInfoFactory.class);
 		gridTabSummaryInfoFactory.register(I_C_Invoice_Candidate.Table_Name, new HUC_Invoice_Candidate_GridTabSummaryInfoProvider(), true); // forceOverride
+		
+		registerImportProcesses();
 	}
 
 	public static void setupPricing()
@@ -429,5 +433,11 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Register Handlers
 		keyRegistry.registerAggregationKeyValueHandler(registrationKey, new HUShipmentScheduleKeyValueHandler());
+	}
+	
+	private void registerImportProcesses()
+	{
+		final IImportProcessFactory importProcessesFactory = Services.get(IImportProcessFactory.class);
+		importProcessesFactory.registerImportProcess(I_I_Inventory.class, de.metas.inventory.impexp.InventoryImportProcess.class);
 	}
 }

@@ -38,14 +38,6 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonInventoryLine.JsonInventoryLineBuilder.class)
 public class JsonInventoryLine
 {
-	public static final String COLUMNNAME_LocatorValue = "LocatorValue";
-	public static final String COLUMNNAME_InventoryDate = "InventoryDate";
-	public static final String COLUMNNAME_ProductValue = "ProductValue";
-	public static final String COLUMNNAME_QtyCount = "QtyCount";
-	public static final String COLUMNNAME_ExternalLineId = "ExternalLineId";
-	public static final String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
-	public static final String COLUMNNAME_LotNumber = "LotNumber";
-
 	String locatorValue;
 	LocalDate inventoryDate;
 	String productValue;

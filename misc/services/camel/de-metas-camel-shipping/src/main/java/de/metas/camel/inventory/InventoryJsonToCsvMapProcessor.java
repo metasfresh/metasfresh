@@ -39,7 +39,13 @@ import lombok.NonNull;
 
 class InventoryJsonToCsvMapProcessor implements Processor
 {
-	private final static Log log = LogFactory.getLog(InventoryJsonToCsvMapProcessor.class);
+	private static final Log log = LogFactory.getLog(InventoryJsonToCsvMapProcessor.class);
+
+	/**
+	 * MULTI_HU
+	 * NOTE to developers: Please keep in sync with list reference "HUAggregationType" {@code AD_Reference_ID=540976}
+	 */
+	private static final String HU_AGGREGATION_TYPE = "M";
 
 	private final MetasfreshCsvImportFormat csvImportFormat;
 
@@ -77,13 +83,14 @@ class InventoryJsonToCsvMapProcessor implements Processor
 		System.out.println("line=" + line);
 		final Map<String, Object> map = new HashMap<>();
 
-		putCsvCell(map, JsonInventoryLine.COLUMNNAME_LocatorValue, line.getLocatorValue());
-		putCsvCell(map, JsonInventoryLine.COLUMNNAME_InventoryDate, line.getInventoryDate());
-		putCsvCell(map, JsonInventoryLine.COLUMNNAME_ProductValue, line.getProductValue());
-		putCsvCell(map, JsonInventoryLine.COLUMNNAME_QtyCount, line.getQtyCount());
-		putCsvCell(map, JsonInventoryLine.COLUMNNAME_ExternalLineId, line.getExternalLineId());
-		putCsvCell(map, JsonInventoryLine.COLUMNNAME_BestBeforeDate, line.getBestbeforeDate());
-		putCsvCell(map, JsonInventoryLine.COLUMNNAME_LotNumber, line.getLotNumber());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_LocatorValue, line.getLocatorValue());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_InventoryDate, line.getInventoryDate());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_ProductValue, line.getProductValue());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_QtyCount, line.getQtyCount());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_ExternalLineId, line.getExternalLineId());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_BestBeforeDate, line.getBestbeforeDate());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_LotNumber, line.getLotNumber());
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_HUAggregationType, HU_AGGREGATION_TYPE);
 		return map;
 	}
 

@@ -127,13 +127,14 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 				.skipHeaderRecord(true)
 				.delimiter(csvDelimiter)
 				.newLine("\r\n")
-				.stringColumn(JsonInventoryLine.COLUMNNAME_LocatorValue)
-				.dateColumn(JsonInventoryLine.COLUMNNAME_InventoryDate, dateFormat)
-				.stringColumn(JsonInventoryLine.COLUMNNAME_ProductValue)
-				.numberColumn(JsonInventoryLine.COLUMNNAME_QtyCount)
-				.stringColumn(JsonInventoryLine.COLUMNNAME_ExternalLineId)
-				.dateColumn(JsonInventoryLine.COLUMNNAME_BestBeforeDate, dateFormat)
-				.stringColumn(JsonInventoryLine.COLUMNNAME_LotNumber)
+				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_LocatorValue)
+				.dateColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_InventoryDate, dateFormat)
+				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_ProductValue)
+				.numberColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_QtyCount)
+				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_ExternalLineId)
+				.dateColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_BestBeforeDate, dateFormat)
+				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_LotNumber)
+				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_HUAggregationType)
 				.build();
 	}
 

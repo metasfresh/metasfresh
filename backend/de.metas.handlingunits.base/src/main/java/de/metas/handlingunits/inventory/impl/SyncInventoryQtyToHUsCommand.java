@@ -1,5 +1,15 @@
 package de.metas.handlingunits.inventory.impl;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.compiere.util.Env;
+
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -47,16 +57,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import lombok.Value;
 
 /*
  * #%L
@@ -88,7 +89,6 @@ public class SyncInventoryQtyToHUsCommand
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final InventoryRepository inventoryRepository;
 	private final SourceHUsService sourceHUsService;
 
@@ -181,7 +181,9 @@ public class SyncInventoryQtyToHUsCommand
 		});
 	}
 
-	private InventoryLine addQtyDiffToHU(@NonNull final InventoryLine inventoryLine, @NonNull final InventoryId inventoryId)
+	private InventoryLine addQtyDiffToHU(
+			@NonNull final InventoryLine inventoryLine,
+			@NonNull final InventoryId inventoryId)
 	{
 		final InventoryLineBuilder result = inventoryLine.toBuilder()
 				.clearInventoryLineHUs();
@@ -191,17 +193,23 @@ public class SyncInventoryQtyToHUsCommand
 		if (inventoryLine.isSingleHUAggregation())
 		{
 			final I_M_InventoryLine inventoryLineRecord = inventoryRepository.getInventoryLineRecordFor(inventoryLine);
-
-			final Quantity qtyDiff = inventoryLine.getMovementQty();
-
 			final IAllocationSource source = createInventoryLineAllocationSourceOrDestination(inventoryLineRecord);
-			final IAllocationDestination huDestination = createHUAllocationDestination(inventoryLineRecord);
+			final IAllocationDestination huDestination;
+			final HuId huId = HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID());
+			if (huId != null)
+			{
+				huDestination = createHUListAllocationSourceDestination(huId);
+			}
+			else
+			{
+				huDestination = allocationDestinationToCreateNewHU(inventoryLine);
+			}
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-					.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext(Env.getCtx(), ClientAndOrgId.ofClientAndOrg(inventoryLineRecord.getAD_Client_ID(), inventoryLineRecord.getAD_Org_ID())))
+					.setHUContext(huContextFactory.createMutableHUContext(Env.getCtx(), ClientAndOrgId.ofClientAndOrg(inventoryLineRecord.getAD_Client_ID(), inventoryLineRecord.getAD_Org_ID())))
 					.setDateAsToday()
 					.setProduct(inventoryLine.getProductId())
-					.setQuantity(qtyDiff)
+					.setQuantity(inventoryLine.getMovementQty())
 					.setFromReferencedModel(inventoryLineRecord)
 					.setForceQtyAllocation(true)
 					.create();
@@ -232,12 +240,15 @@ public class SyncInventoryQtyToHUsCommand
 		{
 			for (final InventoryLineHU inventoryLineHU : inventoryLine.getInventoryLineHUs())
 			{
-				final IAllocationDestination huDestination = syncQtyToInventoryLine(inventoryLine, inventoryLineHU);
+				final SyncQtyFromInventoryLineToHUResult syncResult = syncQtyFromInventoryLineToHU(SyncQtyFromInventoryLineToHURequest.builder()
+						.inventoryLine(inventoryLine)
+						.qtyCountButNotBooked(inventoryLineHU.getQtyCountButNotBooked())
+						.huId(inventoryLineHU.getHuId())
+						.build());
 
 				if (inventoryLineHU.getHuId() == null)
 				{
-					final HuId createdHUId = extractSingleCreatedHUId(huDestination);
-
+					final HuId createdHUId = syncResult.getCreatedHUId();
 					final InventoryLineHU resultInventoryLineHU = inventoryLine
 							.getSingleLineHU()
 							.toBuilder()
@@ -264,41 +275,104 @@ public class SyncInventoryQtyToHUsCommand
 		return resultInventoryLine;
 	}
 
-	private IAllocationDestination syncQtyToInventoryLine(
-			@NonNull final InventoryLine inventoryLine,
-			@NonNull final InventoryLineHU inventoryLineHU)
+	@Value
+	@Builder
+	private static class SyncQtyFromInventoryLineToHURequest
 	{
-		final Quantity qtyDiff = inventoryLineHU.getQtyCount().subtract(inventoryLineHU.getQtyBook());
+		@NonNull
+		InventoryLine inventoryLine;
+
+		@NonNull
+		Quantity qtyCountButNotBooked;
+
+		@Nullable
+		HuId huId;
+	}
+
+	@Value
+	@Builder
+	private static class SyncQtyFromInventoryLineToHUResult
+	{
+		public static SyncQtyFromInventoryLineToHUResult NOTHING = builder().build();
+
+		@Nullable
+		HuId createdHUId;
+	}
+
+	private SyncQtyFromInventoryLineToHUResult syncQtyFromInventoryLineToHU(@NonNull final SyncQtyFromInventoryLineToHURequest request)
+	{
+		final Quantity qtyCountNotBooked = request.getQtyCountButNotBooked();
+		if (qtyCountNotBooked.signum() == 0)
+		{
+			return SyncQtyFromInventoryLineToHUResult.NOTHING;
+		}
+
+		final InventoryLine inventoryLine = request.getInventoryLine();
 		final ProductId productId = inventoryLine.getProductId();
-		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.toBigDecimal());
-
 		final I_M_InventoryLine inventoryLineRecord = inventoryRepository.getInventoryLineRecordFor(inventoryLine);
-		final IAllocationSource source = new GenericAllocationSourceDestination(productStorage, inventoryLineRecord);
 
-		final IAllocationDestination huDestination;
-		if (inventoryLineHU.getHuId() == null)
+		final IAllocationSource source;
+		final IAllocationDestination destination;
+		final Quantity qtyToTransfer;
+		boolean newHUExpected = false;
+
+		//
+		// Case: HU has less than counted
+		// => increase HU qty
+		if (qtyCountNotBooked.signum() > 0)
 		{
-			huDestination = HUProducerDestination.ofVirtualPI()
-					.setHUStatus(X_M_HU.HUSTATUS_Active)
-					.setLocatorId(inventoryLine.getLocatorId());
+			qtyToTransfer = qtyCountNotBooked;
+
+			source = new GenericAllocationSourceDestination(
+					new PlainProductStorage(productId, qtyToTransfer),
+					inventoryLineRecord);
+
+			if (request.getHuId() == null)
+			{
+				destination = allocationDestinationToCreateNewHU(inventoryLine);
+				newHUExpected = true;
+			}
+			else
+			{
+				destination = createHUListAllocationSourceDestination(request.getHuId());
+			}
 		}
-		else
+		//
+		// Case: HU has less than counted
+		// => decrease HU qty
+		else // qtyCountNotBooked < 0
 		{
-			huDestination = createHUListAllocationSourceDestination(inventoryLineHU.getHuId());
+			qtyToTransfer = qtyCountNotBooked.negate();
+
+			if (request.getHuId() == null)
+			{
+				throw new AdempiereException("HU field shall be set when Qty Count is less than Booked for " + request);
+			}
+			else
+			{
+				source = createHUListAllocationSourceDestination(request.getHuId());
+			}
+
+			destination = new GenericAllocationSourceDestination(
+					new PlainProductStorage(productId, qtyToTransfer),
+					inventoryLineRecord);
 		}
 
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(huContextFactory.createMutableHUContext())
-				.setDateAsToday()
-				.setProduct(inventoryLine.getProductId())
-				.setQuantity(qtyDiff)
-				.setFromReferencedModel(inventoryLineRecord)
-				.setForceQtyAllocation(true)
-				.create();
+		HULoader.of(source, destination)
+				.load(AllocationUtils.createAllocationRequestBuilder()
+						.setHUContext(huContextFactory.createMutableHUContext())
+						.setDateAsToday()
+						.setProduct(inventoryLine.getProductId())
+						.setQuantity(qtyToTransfer)
+						.setFromReferencedModel(inventoryLineRecord)
+						.setForceQtyAllocation(true)
+						.create());
 
-		HULoader.of(source, huDestination)
-				.load(request);
-		return huDestination;
+		return SyncQtyFromInventoryLineToHUResult.builder()
+				.createdHUId(newHUExpected
+						? extractSingleCreatedHUId(destination)
+						: null)
+				.build();
 	}
 
 	private void subtractQtyDiffFromHU(final InventoryLine inventoryLine)
@@ -336,7 +410,11 @@ public class SyncInventoryQtyToHUsCommand
 		{
 			for (final InventoryLineHU inventoryLineHU : inventoryLine.getInventoryLineHUs())
 			{
-				syncQtyToInventoryLine(inventoryLine, inventoryLineHU);
+				syncQtyFromInventoryLineToHU(SyncQtyFromInventoryLineToHURequest.builder()
+						.inventoryLine(inventoryLine)
+						.qtyCountButNotBooked(inventoryLineHU.getQtyCountButNotBooked())
+						.huId(inventoryLineHU.getHuId())
+						.build());
 			}
 		}
 	}
@@ -349,22 +427,14 @@ public class SyncInventoryQtyToHUsCommand
 		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
 	}
 
-	private IAllocationDestination createHUAllocationDestination(final I_M_InventoryLine inventoryLine)
+	private IHUProducerAllocationDestination allocationDestinationToCreateNewHU(final @NonNull InventoryLine inventoryLine)
 	{
-		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
-		if (huId != null)
-		{
-			return createHUListAllocationSourceDestination(huId);
-		}
-		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
-		else
-		{
-			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLine.getM_Locator_ID());
+		// TODO handle when inventoryLine.getM_HU_PI_Item_Product_ID() is set
 
-			return HUProducerDestination.ofVirtualPI()
-					.setHUStatus(X_M_HU.HUSTATUS_Active)
-					.setLocatorId(locatorId);
-		}
+		// TODO: transfer attributes from ASI!!!
+		return HUProducerDestination.ofVirtualPI()
+				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.setLocatorId(inventoryLine.getLocatorId());
 	}
 
 	private HUListAllocationSourceDestination createHUListAllocationSourceDestination(@NonNull final HuId huId)

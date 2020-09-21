@@ -510,6 +510,31 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_HU_BestBeforeDate = "HU_BestBeforeDate";
 
 	/**
+	 * Set HU aggregation.
+	 * Specifies whether the respective line is about one HU or about potientielly many HUs.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHUAggregationType (java.lang.String HUAggregationType);
+
+	/**
+	 * Get HU aggregation.
+	 * Specifies whether the respective line is about one HU or about potientielly many HUs.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getHUAggregationType();
+
+    /** Column definition for HUAggregationType */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_HUAggregationType = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "HUAggregationType", null);
+    /** Column name HUAggregationType */
+    public static final String COLUMNNAME_HUAggregationType = "HUAggregationType";
+
+	/**
 	 * Set Import Error Message.
 	 * Messages generated from import process
 	 *

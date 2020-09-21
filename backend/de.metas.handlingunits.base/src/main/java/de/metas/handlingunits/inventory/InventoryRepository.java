@@ -64,6 +64,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -513,7 +514,7 @@ public class InventoryRepository
 					lineHURecord = newInstance(I_M_InventoryLine_HU.class);
 				}
 
-				lineHURecord.setAD_Org_ID(inventoryLine.getId().getRepoId());
+				lineHURecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
 				lineHURecord.setM_InventoryLine_ID(inventoryLine.getId().getRepoId());
 				updateInventoryLineHURecord(lineHURecord, lineHU);
 
@@ -524,6 +525,20 @@ public class InventoryRepository
 			// the pre-existing records that we did not see until now are not needed anymore; delete them.
 			InterfaceWrapperHelper.deleteAll(existingInventoryLineHURecords.values());
 		}
+	}
+
+	public void createNewInventoryLineHU(
+			@NonNull final InventoryLineHU request,
+			@NonNull final InventoryLineId inventoryLineId,
+			@NonNull final OrgId orgId)
+	{
+		Check.assumeNull(request.getId(), "shall not be saved: {}", request);
+		final I_M_InventoryLine_HU lineHURecord = newInstance(I_M_InventoryLine_HU.class);
+		lineHURecord.setAD_Org_ID(orgId.getRepoId());
+		lineHURecord.setM_InventoryLine_ID(inventoryLineId.getRepoId());
+		updateInventoryLineHURecord(lineHURecord, request);
+
+		saveRecord(lineHURecord);
 	}
 
 	public Optional<Quantity> getFreshBookedQtyFromStorage(@NonNull final ProductId productId, @NonNull final UomId inventoryLineUOMId, @NonNull final HuId huId)
