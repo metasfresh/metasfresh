@@ -10,8 +10,8 @@
       "externalResourceURL": "receipt_externalResourceURL",
       "attributes": [
         {
-          "attributeName": "HU_ExpiryDate",
-          "attributeCode": "HU_ExpiryDate",
+          "attributeName": "HU_BestBeforeDate",
+          "attributeCode": "HU_BestBeforeDate",
           "valueStr": null,
           "valueNumber": null,
           "valueDate": "2024-05-27"
@@ -37,8 +37,8 @@
     {
       "attributes": [
         {
-          "attributeName": "HU_ExpiryDate",
-          "attributeCode": "HU_ExpiryDate",
+          "attributeName": "HU_BestBeforeDate",
+          "attributeCode": "HU_BestBeforeDate",
           "valueStr": null,
           "valueNumber": null,
           "valueDate": "2024-05-27"
