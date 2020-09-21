@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 
 import { getZoomIntoWindow } from '../../api';
@@ -294,9 +293,4 @@ MasterWidget.propTypes = {
   clearValue: PropTypes.bool,
 };
 
-export default connect(
-  null,
-  null,
-  null,
-  { forwardRef: true }
-)(MasterWidget);
+export default MasterWidget;

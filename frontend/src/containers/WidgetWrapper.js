@@ -140,3 +140,5 @@ export default connect(
   null,
   { forwardRef: true }
 )(WidgetWrapper);
+
+export { WidgetWrapper };
