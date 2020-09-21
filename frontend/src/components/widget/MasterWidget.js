@@ -93,7 +93,7 @@ class MasterWidget extends PureComponent {
       viewId,
     });
 
-    // TODO: Leaving this for now in case this is used in some edga cases
+    // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
     // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
     // Attributes component so that it won't need it anymore. Or add better guards
