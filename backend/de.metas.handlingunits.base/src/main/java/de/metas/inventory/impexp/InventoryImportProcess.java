@@ -260,6 +260,8 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 			@NonNull final InventoryId inventoryId)
 	{
 		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(importRecord.getM_Locator_ID());
+		Check.assumeNotNull(locatorId, "locator shall be set");
+
 		final OrgId orgId = OrgId.ofRepoId(importRecord.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
 		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
@@ -303,8 +305,23 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		logger.trace("Insert inventory line - {}", inventoryLineRecord);
 
 		//
+		final List<InventoryLineHU> inventoryLineHUs;
+		if (!hus.isEmpty())
+		{
+			inventoryLineHUs = toInventoryLineHUs(hus);
+		}
+		else
+		{
+			inventoryLineHUs = ImmutableList.of(InventoryLineHU.builder()
+					.huId(null) // will be created later, on inventory complete. this is just a placeholder
+					.qtyCount(qtyCount)
+					.qtyBook(qtyBooked)
+					.build());
+		}
+
+		//
 		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord)
-				.withInventoryLineHUs(toInventoryLineHUs(hus))
+				.withInventoryLineHUs(inventoryLineHUs)
 				.distributeQtyCountToHUs(qtyCount);
 
 		inventoryRepository.saveInventoryLineHURecords(inventoryLine);
@@ -321,7 +338,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<HuForInventoryLine> getEligibleHUs(final ProductId productId, final AttributeSetInstanceId asiId, final LocatorId locatorId)
+	private List<HuForInventoryLine> getEligibleHUs(
+			@NonNull final ProductId productId,
+			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final LocatorId locatorId)
 	{
 		final LocatorAndProductStrategy husFinder = HUsForInventoryStrategies.locatorAndProduct()
 				.huForInventoryLineFactory(huForInventoryLineFactory)
@@ -333,9 +353,8 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				//
 				.build();
 
-		final List<HuForInventoryLine> hus = husFinder.streamHus()
+		return husFinder.streamHus()
 				.collect(ImmutableList.toImmutableList());
-		return hus;
 	}
 
 	private Quantity computeTotalQtyBooked(

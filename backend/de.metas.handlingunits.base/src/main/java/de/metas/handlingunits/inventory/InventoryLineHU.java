@@ -153,7 +153,7 @@ public class InventoryLineHU
 		return qtyBook;
 	}
 
-	public Quantity getQtyCountButNotBooked()
+	public Quantity getQtyCountMinusBooked()
 	{
 		return getQtyCount().subtract(getQtyBook());
 	}
@@ -188,5 +188,10 @@ public class InventoryLineHU
 				.map(InventoryLineHU::getHuId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public InventoryLineHU withHuId(final @NonNull HuId huId)
+	{
+		return toBuilder().huId(huId).build();
 	}
 }
