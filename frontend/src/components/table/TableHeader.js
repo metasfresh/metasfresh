@@ -145,7 +145,7 @@ TableHeader.propTypes = {
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,
-  headersFields: PropTypes.func,
+  headersFields: PropTypes.object,
   setActiveSortFields: PropTypes.func,
 };
 
@@ -154,7 +154,8 @@ const mapStateToProps = (state, ownProps) => {
   const tableId = getTableId({ windowId, viewId, docId, tabId });
 
   return {
-    headersFields: state.tables.headers ? state.tables.headers[tableId] : {},
+    headersFields:
+      state.tables && state.tables.headers ? state.tables.headers[tableId] : {},
   };
 };
 
