@@ -165,10 +165,9 @@ class TableRow extends PureComponent {
       fieldsByName,
       onFastInlineEdit,
     } = this.props;
-
+    const { listenOnKeys, edited, valueBeforeEditing } = this.state;
     const inputContent = e.target.value;
 
-    const { listenOnKeys, edited, valueBeforeEditing } = this.state;
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
@@ -281,7 +280,7 @@ class TableRow extends PureComponent {
    * @param {boolean} [select] - flag if selected cell should be cleared
    */
   _editProperty = ({ event, property, focus, readonly, select, mark }) => {
-    if (typeof readonly === undefined ? !readonly : true) {
+    if (typeof readonly !== undefined ? !readonly : true) {
       if (this.state.edited === property && event) event.persist();
 
       // cell's widget will have the value cleared on creation
