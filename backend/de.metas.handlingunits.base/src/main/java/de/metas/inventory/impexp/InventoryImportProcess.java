@@ -324,7 +324,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.withInventoryLineHUs(inventoryLineHUs)
 				.distributeQtyCountToHUs(qtyCount);
 
-		inventoryRepository.saveInventoryLineHURecords(inventoryLine);
+		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
 
 		//
 		importRecord.setM_Inventory_ID(inventoryId.getRepoId());
