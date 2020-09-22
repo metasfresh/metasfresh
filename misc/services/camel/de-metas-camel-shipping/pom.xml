@@ -317,7 +317,7 @@
                 <version>3.4.0</version>
                 <configuration>
                     <logClasspath>true</logClasspath>
-                    <mainClass>de.metas.camel.shipping.MainApp</mainClass>
+                    <mainClass>de.metas.camel.MainApp</mainClass>
                 </configuration>
             </plugin>
 

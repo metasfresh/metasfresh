@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.shipping;
+package de.metas.camel;
 
 import org.apache.camel.main.Main;
 

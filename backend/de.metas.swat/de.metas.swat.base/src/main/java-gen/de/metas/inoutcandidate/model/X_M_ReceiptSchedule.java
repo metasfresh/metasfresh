@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_ReceiptSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1743682537L;
+	private static final long serialVersionUID = 380219894L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -424,6 +424,17 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.lang.String getExportStatus() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExportStatus);
+	}
+
+	@Override
+	public void setFilteredItemsWithSameC_Order_ID (int FilteredItemsWithSameC_Order_ID)
+	{
+		throw new IllegalArgumentException ("FilteredItemsWithSameC_Order_ID is virtual column");	}
+
+	@Override
+	public int getFilteredItemsWithSameC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FilteredItemsWithSameC_Order_ID);
 	}
 
 	@Override
