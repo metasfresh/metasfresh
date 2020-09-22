@@ -4,13 +4,11 @@ import renderer from 'react-test-renderer';
 
 import fixtures from '../../../../test_setup/fixtures/table/table_item_props.json';
 
-import { getTableId } from '../../../reducers/tables';
-import TableRow from '../../../components/table/TableRow';
+import TableItem from '../../../components/table/TableItem';
 
 function createInitProps(propsSeed = fixtures.oldProps1, customProps) {
   return {
     ...propsSeed,
-    tableId: getTableId(propsSeed),
     onClick: jest.fn(),
     handleSelect: jest.fn(),
     onDoubleClick: jest.fn(),
@@ -24,17 +22,17 @@ function createInitProps(propsSeed = fixtures.oldProps1, customProps) {
   };
 }
 
-describe('Table row (TableRow)', () => {
+describe('Table row (TableItem)', () => {
   it('renders without errors', () => {
     const props = createInitProps();
 
-    shallow(<TableRow {...props} />);
+    shallow(<TableItem {...props} />);
   });
 
   it('output matches snapshot', () => {
     const props = createInitProps();
 
-    const component = renderer.create(<TableRow {...props} />);
+    const component = renderer.create(<TableItem {...props} />);
     const tree = component.toJSON();
     expect(tree).toMatchSnapshot();
   });
@@ -46,7 +44,7 @@ describe('Table row (TableRow)', () => {
     const tbody = document.createElement('tbody');
     table.appendChild(tbody);
 
-    const wrapper = mount(<TableRow {...props} />, { attachTo: tbody });
+    const wrapper = mount(<TableItem {...props} />, { attachTo: tbody });
 
     expect(wrapper.find('.row-1 [data-cy="cell-QtyEntered"]').text()).toEqual(
       '3'

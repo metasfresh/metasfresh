@@ -31,7 +31,7 @@ import {
   deleteTable,
   updateTableSelection,
   updateGridTableData,
-  deselectTableRows,
+  deselectTableItems,
 } from '../actions/TableActions';
 import { clearAllFilters } from '../actions/FiltersActions';
 import {
@@ -224,7 +224,7 @@ class DocumentListContainer extends Component {
   connectWebSocket = (customViewId) => {
     const {
       windowId,
-      deselectTableRows,
+      deselectTableItems,
       updateGridTableData,
       fetchHeaderProperties,
       isModal,
@@ -252,7 +252,7 @@ class DocumentListContainer extends Component {
             });
 
             if (removedRows.length) {
-              deselectTableRows(tableId, removedRows);
+              deselectTableItems(tableId, removedRows);
             } else {
               // TODO: Quick actions should probably be handled via redux
               this.updateQuickActions();
@@ -841,7 +841,7 @@ export default connect(
     push,
     updateRawModal,
     updateTableSelection,
-    deselectTableRows,
+    deselectTableItems,
     fetchLocationConfig,
     clearAllFilters,
     updateGridTableData,

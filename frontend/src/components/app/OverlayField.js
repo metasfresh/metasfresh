@@ -2,15 +2,7 @@ import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
-import { connect } from 'react-redux';
 
-import {
-  openModal,
-  patch,
-  updatePropertyValue,
-  allowShortcut,
-  disableShortcut,
-} from '../../actions/WindowActions';
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
 import BarcodeScanner from '../widget/BarcodeScanner/BarcodeScannerWidget';
@@ -79,14 +71,7 @@ class OverlayField extends Component {
    * @todo Write the documentation
    */
   renderElements = (layout, data, type) => {
-    const {
-      disabled,
-      codeSelected,
-      onChange,
-      openModal,
-      patch,
-      updatePropertyValue,
-    } = this.props;
+    const { disabled, codeSelected, onChange } = this.props;
     const elements = layout.elements;
 
     return elements.map((elem, id) => {
@@ -101,18 +86,15 @@ class OverlayField extends Component {
         <MasterWidget
           entity="process"
           key={'element' + id}
-          windowId={type}
+          windowType={type}
           dataId={layout.pinstanceId}
           widgetData={widgetData}
           isModal={true}
           disabled={disabled}
           autoFocus={id === 0}
           captionElement={captionElement}
-          value={codeSelected || undefined}
+          data={codeSelected || undefined}
           onChange={onChange}
-          openModal={openModal}
-          patch={patch}
-          updatePropertyValue={updatePropertyValue}
           {...elem}
         />
       );
@@ -135,10 +117,6 @@ class OverlayField extends Component {
       handleChange,
       captionValue,
       codeSelected,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
     } = this.props;
     const parameters = layout.parameters;
     return parameters.map((item, index) => {
@@ -178,10 +156,6 @@ class OverlayField extends Component {
             onShow,
             onHide,
             viewId,
-            modalVisible,
-            timeZone,
-            allowShortcut,
-            disableShortcut,
           }}
         />
       );
@@ -221,15 +195,6 @@ class OverlayField extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  const { appHandler, windowHandler } = state;
-
-  return {
-    modalVisible: windowHandler.modal.visible,
-    timeZone: appHandler.me.timeZone,
-  };
-};
-
 /**
  * @typedef {object} OverlayField
  * @prop {func} onChange
@@ -252,13 +217,7 @@ const mapStateToProps = (state) => {
  * @prop {any} onScanBarcode
  * @prop {any} onSelectBarcode
  * @prop {any} handleSubmit
- * @prop {bool} modalVisible
- * @prop {string} timeZone
- * @prop {func} allowShortcut
- * @prop {func} disableShortcut
- * @prop {func} updatePropertyValue
- * @prop {func} openModal
- * @prop {func} patch
+ * @todo Check props. Which proptype? Required or optional?
  */
 OverlayField.propTypes = {
   onChange: PropTypes.func,
@@ -281,24 +240,6 @@ OverlayField.propTypes = {
   onScanBarcode: PropTypes.any,
   onSelectBarcode: PropTypes.any,
   handleSubmit: PropTypes.any,
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  timeZone: PropTypes.string.isRequired,
-  updatePropertyValue: PropTypes.func.isRequired,
-  openModal: PropTypes.func.isRequired,
-  patch: PropTypes.func.isRequired,
 };
 
-export default BarcodeScanner(
-  connect(
-    mapStateToProps,
-    {
-      allowShortcut,
-      disableShortcut,
-      openModal,
-      patch,
-      updatePropertyValue,
-    }
-  )(onClickOutside(OverlayField))
-);
+export default BarcodeScanner(onClickOutside(OverlayField));

@@ -66,12 +66,12 @@ export function setActiveSort(id, active) {
 }
 
 /**
- * @method deselectTableRows
- * @summary deselect rows or deselect all if an empty `ids` array is provided
+ * @method deselectTableItems
+ * @summary deselect items or deselect all if an empty `ids` array is provided
  */
-export function deselectTableRows(id, selection) {
+export function deselectTableItems(id, selection) {
   return {
-    type: types.DESELECT_TABLE_ROWS,
+    type: types.DESELECT_TABLE_ITEMS,
     payload: { id, selection },
   };
 }

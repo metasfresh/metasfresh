@@ -9,23 +9,20 @@ import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
-
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import keymap from '../../shortcuts/keymap';
-import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
-
-import WidgetWrapper from '../../containers/WidgetWrapper';
 import Indicator from '../app/Indicator';
 import Prompt from '../app/Prompt';
 import NewEmail from '../email/NewEmail';
 import Inbox from '../inbox/Inbox';
 import NewLetter from '../letter/NewLetter';
+import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips';
+import MasterWidget from '../widget/MasterWidget';
 import Breadcrumb from './Breadcrumb';
 import SideList from './SideList';
 import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
-
-import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -525,8 +522,6 @@ class Header extends PureComponent {
     }
   };
 
-  closeDropdownOverlay = () => this.closeOverlays('dropdown');
-
   /**
    * @method redirect
    * @summary ToDo: Describe the method
@@ -547,6 +542,7 @@ class Header extends PureComponent {
       siteName,
       docNoData,
       docStatus,
+      docStatusData,
       dataId,
       breadcrumb,
       showSidelist,
@@ -562,6 +558,7 @@ class Header extends PureComponent {
       me,
       editmode,
       handleEditModeToggle,
+      activeTab,
       plugins,
       indicator,
       hasComments,
@@ -664,17 +661,18 @@ class Header extends PureComponent {
                     onClick={() => this.toggleTooltip('')}
                     onMouseEnter={() => this.toggleTooltip(keymap.DOC_STATUS)}
                   >
-                    <WidgetWrapper
-                      renderMaster={true}
-                      dataSource="doc-status"
-                      type="primary"
+                    <MasterWidget
                       entity="window"
-                      windowId={windowId}
+                      windowType={windowId}
                       dataId={dataId}
                       docId={docId}
-                      noLabel={true}
-                      dropdownOpenCallback={this.closeDropdownOverlay}
-                      // caption/description/widgetType/fields
+                      activeTab={activeTab}
+                      widgetData={[docStatusData]}
+                      noLabel
+                      type="primary"
+                      dropdownOpenCallback={() =>
+                        this.closeOverlays('dropdown')
+                      }
                       {...docStatus}
                     />
                     {tooltipOpen === keymap.DOC_STATUS && (
@@ -809,6 +807,7 @@ class Header extends PureComponent {
             siteName={siteName}
             editmode={editmode}
             handleEditModeToggle={handleEditModeToggle}
+            activeTab={activeTab}
           />
         )}
 
@@ -895,6 +894,7 @@ class Header extends PureComponent {
  * @prop {*} docSummaryData
  * @prop {*} docNoData
  * @prop {*} docStatus
+ * @prop {*} docStatusData
  * @prop {*} dropzoneFocused
  * @prop {*} editmode
  * @prop {*} entity
@@ -921,6 +921,7 @@ Header.propTypes = {
   docSummaryData: PropTypes.any,
   docNoData: PropTypes.any,
   docStatus: PropTypes.any,
+  docStatusData: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
@@ -945,22 +946,12 @@ Header.propTypes = {
  * @summary ToDo: Describe the method
  * @param {object} state
  */
-const mapStateToProps = (state) => {
-  const { master } = state.windowHandler;
-  const { docActionElement, documentSummaryElement } = master.layout;
-  const docSummaryData =
-    documentSummaryElement &&
-    master.data[documentSummaryElement.fields[0].field];
-
-  return {
-    inbox: state.appHandler.inbox,
-    me: state.appHandler.me,
-    pathname: state.routing.locationBeforeTransitions.pathname,
-    plugins: state.pluginsHandler.files,
-    indicator: state.windowHandler.indicator,
-    docStatus: docActionElement,
-    docSummaryData,
-  };
-};
+const mapStateToProps = (state) => ({
+  inbox: state.appHandler.inbox,
+  me: state.appHandler.me,
+  pathname: state.routing.locationBeforeTransitions.pathname,
+  plugins: state.pluginsHandler.files,
+  indicator: state.windowHandler.indicator,
+});
 
 export default connect(mapStateToProps)(Header);
