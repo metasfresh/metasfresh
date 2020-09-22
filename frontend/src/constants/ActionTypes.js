@@ -438,3 +438,9 @@ export const DELETE_TOP_ACTIONS = 'DELETE_TOP_ACTIONS';
  * @type {string} set languages in the app handler
  */
 export const SET_LANGUAGES = 'SET_LANGUAGES';
+
+/**
+ * @constant
+ * @type {string} used to set sortFields in the store, action triggered in the TableHeaders
+ */
+export const SET_SORT_FIELDS = 'SET_SORT_FIELDS';

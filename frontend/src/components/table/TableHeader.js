@@ -1,17 +1,18 @@
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-
+import { setActiveSortFields } from '../../actions/TableActions';
 import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
-export default class TableHeader extends PureComponent {
+class TableHeader extends PureComponent {
   UNSAFE_componentWillMount() {
     this.setInitialState();
   }
 
   setInitialState() {
-    const { orderBy } = this.props;
+    const { orderBy, windowType: windowId, viewId, docId, tabId } = this.props;
 
     let fields = {};
     orderBy &&
@@ -19,9 +20,8 @@ export default class TableHeader extends PureComponent {
         fields[item.fieldName] = item.ascending;
       });
 
-    this.setState({
-      fields,
-    });
+    const tableId = getTableId({ windowId, viewId, docId, tabId });
+    setActiveSortFields({ id: tableId, fields });
   }
 
   handleClick = (field, sortable) => {
@@ -38,8 +38,9 @@ export default class TableHeader extends PureComponent {
       docId,
       viewId,
       setActiveSort,
+      setActiveSortFields,
     } = this.props;
-    const stateFields = this.state.fields;
+    const { headersFields: stateFields } = this.props;
     const tableId = getTableId({ windowId: windowType, viewId, docId, tabId });
     let fields = {};
     let sortingValue = null;
@@ -56,10 +57,8 @@ export default class TableHeader extends PureComponent {
       fields[field] = sortingValue;
     }
 
-    // TODO: We don't have to spread `fields` as it's a new object anyway
-    this.setState({
-      fields: { ...fields },
-    });
+    // update Redux
+    setActiveSortFields({ id: tableId, fields });
 
     onSortTable(sortingValue, field, true, page, tabId);
     setActiveSort(tableId, true);
@@ -71,8 +70,9 @@ export default class TableHeader extends PureComponent {
   };
 
   renderSorting = (field, caption, sortable, description) => {
-    const { fields } = this.state;
-    const fieldSorting = fields[field];
+    const { headersFields } = this.props;
+    if (!headersFields) return false;
+    const fieldSorting = headersFields[field];
 
     return (
       <div
@@ -87,8 +87,8 @@ export default class TableHeader extends PureComponent {
         </span>
         <span
           className={classnames('sort-ico', {
-            'sort rotate-90': field in fields && fieldSorting,
-            sort: field in fields && !fieldSorting,
+            'sort rotate-90': field in headersFields && fieldSorting,
+            sort: field in headersFields && !fieldSorting,
           })}
         >
           <i className="meta-icon-chevron-1" />
@@ -145,4 +145,22 @@ TableHeader.propTypes = {
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,
+  headersFields: PropTypes.func,
+  setActiveSortFields: PropTypes.func,
 };
+
+const mapStateToProps = (state, ownProps) => {
+  const { viewId, windowType: windowId, docId, tabId } = ownProps;
+  const tableId = getTableId({ windowId, viewId, docId, tabId });
+
+  return {
+    headersFields: state.tables.headers ? state.tables.headers[tableId] : {},
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  {
+    setActiveSortFields,
+  }
+)(TableHeader);

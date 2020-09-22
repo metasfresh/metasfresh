@@ -326,6 +326,13 @@ const reducer = produce((draftState, action) => {
       const { id, active } = action.payload;
 
       draftState[id].activeSort = active;
+      return;
+    }
+    case types.SET_SORT_FIELDS: {
+      const { id, fields } = action.payload;
+      draftState.headers = {};
+      draftState.headers[id] = fields;
+      return;
     }
   }
 }, initialState);
