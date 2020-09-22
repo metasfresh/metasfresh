@@ -83,8 +83,8 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_artikel_webshop_preis").build())
 			.field(FIELD.builder().name("_artikel_webshop_restmenge_noch_offen").build())
 			.field(FIELD.builder().name("_empfaenger_mhd_kurz_oder_lang").build())
-			.field(FIELD.builder().name("_empfaenger_versandart").build())
 			.field(FIELD.builder().name("_empfaenger_versanddienstleister").build())
+			.field(FIELD.builder().name("_empfaenger_versandart").build())
 			.field(FIELD.builder().name("_bestellung_referenz").build())
 
 			.build();
@@ -232,18 +232,18 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 	{
 		if (shipperNameParts.size() == 2)
 		{
-			rowBuilder.col(COL.of(shipperNameParts.get(0)));//_empfaenger_versandart
-			rowBuilder.col(COL.of(shipperNameParts.get(1)));//_empfaenger_versanddienstleister
+			rowBuilder.col(COL.of(shipperNameParts.get(0)));//_empfaenger_versanddienstleister
+			rowBuilder.col(COL.of(shipperNameParts.get(1)));//_empfaenger_versandart
 		}
 		else if (shipperNameParts.size() == 1)
 		{
-			rowBuilder.col(COL.of(shipperNameParts.get(0)));//_empfaenger_versandart
-			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versanddienstleister
+			rowBuilder.col(COL.of(shipperNameParts.get(0)));//_empfaenger_versanddienstleister
+			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versandart
 		}
 		else
 		{
-			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versandart
 			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versanddienstleister
+			rowBuilder.col(COL.of(EMPTY_FIELD));//_empfaenger_versandart
 		}
 	}
 }
