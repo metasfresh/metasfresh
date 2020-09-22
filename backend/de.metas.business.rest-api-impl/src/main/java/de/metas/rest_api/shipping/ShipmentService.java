@@ -175,11 +175,11 @@ public class ShipmentService
 
 			if (incomingProductId == null || incomingProductId.getRepoId() != shipmentSchedule.getM_Product_ID())
 			{
-				throw new AdempiereException("Invalid productSearchKey!")
+				throw new AdempiereException("Inconsistent productSearchKey!")
 						.appendParametersToMessage()
-						.setParameter("productSearchKey", createShipmentInfo.getProductSearchKey())
-						.setParameter("corresponding productId", incomingProductId)
-						.setParameter("shipmentSchedule.M_Product_ID", shipmentSchedule.getM_Product_ID());
+						.setParameter("jsonCreateShipmentInfo.productSearchKey", createShipmentInfo.getProductSearchKey())
+						.setParameter("productSearchKey is resolved to productId", incomingProductId)
+						.setParameter("M_ShipmentSchedule.M_Product_ID", shipmentSchedule.getM_Product_ID());
 			}
 		}
 	}
