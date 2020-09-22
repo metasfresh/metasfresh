@@ -5,6 +5,7 @@ import { Map, List } from 'immutable';
 
 import masterWindowData from '../../../test_setup/fixtures/master_window/data.json';
 import masterWindowLayout from '../../../test_setup/fixtures/master_window/layout.json';
+import modalFixtures from '../../../test_setup/fixtures/window/modal.json';
 import {
   updateTabRowsData,
   initDataSuccess,
@@ -17,6 +18,8 @@ import reducer, {
   getWidgetData,
   getWidgetFields,
   getMasterDocStatus,
+  getProcessWidgetData,
+  getProcessWidgetFields,
 } from '../../reducers/windowHandler';
 
 const createState = function(state = {}) {
@@ -55,7 +58,7 @@ describe('WindowHandler helper functions', () => {
     });
     const masterData = getData(state, true);
 
-    expect(masterData).toEqual(state.windowHandler.master.data);
+    expect(masterData).toEqual(state.windowHandler.modal.data);
   });
 
   it('getMasterDocStatus should return values from state.windowHandler.master.data[DocStatus/DocAction]', () => {
@@ -116,6 +119,26 @@ describe('WindowHandler helper functions', () => {
     expect(widgetData[0]).toEqual(fieldData);
   });
 
+  it('getProcessWidgetData should return state.windowHandler.modal.data[fieldName]', () => {
+    const data = modalFixtures.process_data1;
+    const layout = modalFixtures.process_layout1;
+    const state = createState({
+      windowHandler: {
+        modal: {
+          data: data.fieldsByName,
+          layout,
+        }, 
+      },
+    });
+
+    const elementIndex = '0';
+    const widgetData = getProcessWidgetData(state, true, elementIndex);
+    const fieldName = layout.elements[elementIndex].fields[0].field;
+    const fieldData = data.fieldsByName[fieldName];
+
+    expect(widgetData[0]).toEqual(fieldData);
+  });
+
   it('getWidgetFields should return state.master.layout[path].fields', () => {
     const layout = masterWindowLayout.layout1;
     const state = createState({
@@ -150,6 +173,25 @@ describe('WindowHandler helper functions', () => {
     const layoutFields = layout.sections[0].columns[0].elementGroups[0].elementsLine[2].elements[0].fields;
 
     expect(fieldsData).toEqual(layoutFields);
+  });
+
+  it('getProcessWidgetFields should return state.modal.layout[path].fields', () => {
+    const data = modalFixtures.process_data1;
+    const layout = modalFixtures.process_layout1;
+    const state = createState({
+      windowHandler: {
+        modal: {
+          data: data.fieldsByName,
+          layout,
+        }, 
+      },
+    });
+
+    const elementIndex = '0';
+    const fieldsData = getProcessWidgetFields(state, true, elementIndex);
+    const layoutFields = layout.elements[elementIndex].fields;
+
+    expect(fieldsData).toEqual(layoutFields);    
   });
 });
 
