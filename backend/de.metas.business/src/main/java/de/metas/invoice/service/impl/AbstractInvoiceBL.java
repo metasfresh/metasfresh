@@ -1746,4 +1746,40 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return sysconfigs.getReferenceListAware(SYSCONFIG_C_Invoice_PaymentRule, PaymentRule.OnCredit, PaymentRule.class);
 	}
 
+	@Override
+	public final void discountInvoice(final org.compiere.model.I_C_Invoice invoice, final BigDecimal discountAmt, final String description)
+	{
+		if (discountAmt.signum() == 0)
+		{
+			return;
+		}
+
+		final BigDecimal discountAmtAbs;
+		if (!invoice.isSOTrx())
+		{
+			// API
+			discountAmtAbs = discountAmt.negate();
+		}
+		else
+		{
+			// ARI
+			discountAmtAbs = discountAmt;
+		}
+
+		// @formatter:off
+		Services.get(IAllocationBL.class).newBuilder()
+			.orgId(invoice.getAD_Org_ID())
+			.currencyId(invoice.getC_Currency_ID())
+			.dateAcct(invoice.getDateAcct())
+			.dateTrx(invoice.getDateInvoiced())
+			.addLine()
+				.orgId(invoice.getAD_Org_ID())
+				.bpartnerId(invoice.getC_BPartner_ID())
+				.invoiceId(invoice.getC_Invoice_ID())
+				.amount(BigDecimal.ZERO)
+				.discountAmt(discountAmtAbs)
+			.lineDone()
+			.create(true);
+		// @formatter:on
+	}
 }

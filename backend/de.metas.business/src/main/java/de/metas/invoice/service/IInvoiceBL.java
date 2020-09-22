@@ -423,4 +423,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * - set Price_UOM_ID to C_InvoiceLine.C_UOM_ID
 	 */
 	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
+
+	void discountInvoice(I_C_Invoice invoice, BigDecimal discountAmt, String description);
 }
