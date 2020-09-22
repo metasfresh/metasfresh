@@ -57,6 +57,11 @@ public class FileMakerDataHelper
 	{
 		final String valueStr = getValue(request);
 
+		return toBigDecimalOrNull(valueStr);
+	}
+
+	public static BigDecimal toBigDecimalOrNull(final String valueStr)
+	{
 		if (valueStr == null || valueStr.trim().isEmpty())
 		{
 			return null;
@@ -66,7 +71,7 @@ public class FileMakerDataHelper
 
 		try
 		{
-			valueBigDecimal = new BigDecimal(valueStr);
+			valueBigDecimal = new BigDecimal(valueStr.trim());
 		}
 		catch (final Exception e)
 		{

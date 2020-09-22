@@ -51,8 +51,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.ARTICLE_FLAVOR;
+import static de.metas.camel.shipping.receipt.ReceiptReturnField.BEST_BEFORE_DATE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.DATE_RECEIVED;
-import static de.metas.camel.shipping.receipt.ReceiptReturnField.EXPIRY_DATE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.EXTERNAL_ID;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.IS_RETURN;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.LOT_NUMBER;
@@ -231,13 +231,13 @@ public class ReceiptXmlToJsonProcessor implements Processor
 		final FileMakerDataHelper.GetValueRequest getExpiryDateReq = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
 				.fieldName2Index(fieldName2Index)
-				.fieldName(EXPIRY_DATE.getName())
+				.fieldName(BEST_BEFORE_DATE.getName())
 				.build();
 
 		final String expiryDateStr = FileMakerDataHelper.getValue(getExpiryDateReq);
 
-		XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, EXPIRY_DATE.getName())
-				.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.EXPIRY_DATE, expiryDate))
+		XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, BEST_BEFORE_DATE.getName())
+				.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.BEST_BEFORE_DATE, expiryDate))
 				.map(jsonAttributeInstances::add);
 
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequest = FileMakerDataHelper.GetValueRequest.builder()

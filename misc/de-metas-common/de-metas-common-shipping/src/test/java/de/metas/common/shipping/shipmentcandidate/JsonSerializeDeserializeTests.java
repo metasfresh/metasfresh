@@ -84,7 +84,6 @@ class JsonSerializeDeserializeTests
 				.documentNo("dNo")
 				.movementQuantity(BigDecimal.ONE)
 				.productSearchKey("p_key")
-				.trackingNumbers(ImmutableList.of("tr-no1"))
 				.movementDate(LocalDateTime.of(2020,7,24,18,13))
 				.attributes(ImmutableList.of(mockAttributeInstance()))
 				.shipToLocation(location)
@@ -92,7 +91,6 @@ class JsonSerializeDeserializeTests
 
 		final JsonCreateShipmentRequest jsonCreateShipmentRequest = JsonCreateShipmentRequest
 				.builder()
-				.shipperCode("shippercode")
 				.createShipmentInfoList(ImmutableList.of(jsonCreateShipmentInfo))
 				.build();
 

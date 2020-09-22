@@ -1,11 +1,10 @@
 {
-  "shipperCode": "Siro",
   "shipmentList": [
     {
       "shipmentScheduleId": 1,
       "productSearchKey": "productSearchKey",
       "businessPartnerSearchKey": null,
-      "movementQuantity": 12,
+      "movementQuantity": 150,
       "movementDate": "2020-07-29T16:16:59.000Z",
       "documentNo": "cp-document-no-1",
       "deliveryRule": "F",
@@ -25,9 +24,21 @@
         "countryCode": "countryCode",
         "zipCode": "12"
       },
-      "trackingNumbers": [
-        "cp-test-trk-no-c1"
-      ]
+      "packages": [
+        {
+          "trackingCode": "cp-test-trk-no-c1",
+          "weight": 1
+        },
+        {
+          "trackingCode": "cp-test-trk-no-c2",
+          "weight": 2
+        },
+        {
+          "trackingCode": "cp-test-trk-no-c3",
+          "weight": 3
+        }
+      ],
+      "shipperInternalName":"shipper.InternalName_Seg1_shipper.InternalName_Seg2"
     }
   ]
 }

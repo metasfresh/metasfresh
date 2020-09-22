@@ -36,7 +36,7 @@ public enum ReceiptReturnField
 	MOVEMENT_DATE("_wareneingang_datum"),
 	DATE_RECEIVED("_wareneingang_zeitstempel"),
 	LOT_NUMBER("_wareneingang_mhd_charge"),
-	EXPIRY_DATE("_wareneingang_mhd_ablauf_datum"),
+	BEST_BEFORE_DATE("_wareneingang_mhd_ablauf_datum"),
 	ARTICLE_FLAVOR("_artikel_geschmacksrichtung"),
 	RECEIPT_EXTERNAL_RESOURCE_URL("_wareneingang_lieferschein_url"),
 	//return specific fields

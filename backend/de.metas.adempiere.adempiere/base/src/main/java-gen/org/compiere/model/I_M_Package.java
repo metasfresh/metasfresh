@@ -551,4 +551,29 @@ public interface I_M_Package
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTrackingURL (java.lang.String TrackingURL);
+
+	/**
+	 * Get Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTrackingURL();
+
+	/** Column definition for TrackingURL */
+	public static final org.adempiere.model.ModelColumn<I_M_Package, Object> COLUMN_TrackingURL = new org.adempiere.model.ModelColumn<I_M_Package, Object>(I_M_Package.class, "TrackingURL", null);
+	/** Column name TrackingURL */
+	public static final String COLUMNNAME_TrackingURL = "TrackingURL";
 }

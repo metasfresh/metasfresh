@@ -122,4 +122,21 @@ public class ShipperDAO implements IShipperDAO
 
 		return Maps.uniqueIndex(shipperList, (shipper) -> ShipperId.ofRepoId(shipper.getM_Shipper_ID()));
 	}
+
+	@NonNull
+	public Map<String,I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
+	{
+		if (Check.isEmpty(internalNameSet))
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_M_Shipper> shipperList = queryBL.createQueryBuilder(I_M_Shipper.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Shipper.COLUMNNAME_InternalName, internalNameSet)
+				.create()
+				.list();
+
+		return Maps.uniqueIndex(shipperList, I_M_Shipper::getInternalName);
+	}
 }
