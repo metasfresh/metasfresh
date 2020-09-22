@@ -1,10 +1,19 @@
 package de.metas.product.model.interceptor;
 
+import de.metas.organization.OrgId;
+import de.metas.product.IProductPlanningSchemaBL;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.product.ProductPOCopyRecordSupport;
@@ -34,10 +43,36 @@ import de.metas.product.ProductPOCopyRecordSupport;
 @Component()
 public class M_Product
 {
+	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+
 	@Init
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
 	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void afterNew(final @NonNull I_M_Product product, @NonNull final ModelChangeType changeType)
+	{
+		if (changeType.isNew())
+		{
+			createOrUpdateProductPlanningsForSelector(product);
+		}
+	}
+
+	private void createOrUpdateProductPlanningsForSelector(final @NonNull I_M_Product product)
+	{
+		final ProductPlanningSchemaSelector productPlanningSchemaSelector = ProductPlanningSchemaSelector.ofNullableCode(product.getM_ProductPlanningSchema_Selector());
+		if (productPlanningSchemaSelector == null)
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
+
+		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, orgId, productPlanningSchemaSelector);
+	}
+
 }
