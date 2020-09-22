@@ -87,7 +87,7 @@ const initialModalState = {
   validStatus: {},
   includedTabsInfo: {},
   staticModalType: '',
-}
+};
 
 export const initialState = {
   connectionError: false,
@@ -171,6 +171,16 @@ const getLayout = (state, isModal, layoutPath) => {
   ].elementsLine[elLineIdx].elements[elIdx];
 };
 
+const getProcessLayout = (state, isModal, elementIndex) =>
+  state.windowHandler.modal.layout.elements[elementIndex];
+
+/**
+ * @method selectWidgetData
+ * @summary map layout fields to widgets
+ *
+ * @param {object} data
+ * @param {object} layout
+ */
 const selectWidgetData = (data, layout) => {
   let widgetData = null;
 
@@ -211,6 +221,33 @@ export const getWidgetData = createCachedSelector(
  */
 export const getWidgetFields = createCachedSelector(
   getLayout,
+  (layout) => layout.fields
+)((_state, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getProcessWidgetData
+ * @summary cached selector for picking widget data for a desired element in process
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getProcessWidgetData = createCachedSelector(
+  getData,
+  getProcessLayout,
+  (data, layout) => selectWidgetData(data, layout)
+)((_state_, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getProcessWidgetFields
+ * @summary cached selector for picking fields of process's elements
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getProcessWidgetFields = createCachedSelector(
+  getProcessLayout,
   (layout) => layout.fields
 )((_state, isModal, layoutPath) => layoutPath);
 

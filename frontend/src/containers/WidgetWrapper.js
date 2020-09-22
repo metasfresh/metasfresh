@@ -16,6 +16,8 @@ import {
   getWidgetData,
   getWidgetFields,
   getMasterDocStatus,
+  getProcessWidgetData,
+  getProcessWidgetFields,
 } from '../reducers/windowHandler';
 
 import MasterWidget from '../components/widget/MasterWidget';
@@ -72,6 +74,11 @@ const mapStateToProps = (state, props) => {
       fieldsCopy = getWidgetFields(state, isModal, layoutId);
 
       break;
+    case 'process':
+      widgetData = getProcessWidgetData(state, true, layoutId);
+      fieldsCopy = getProcessWidgetFields(state, true, layoutId);
+
+      break;
     case 'table': {
       const table = getTable(state, tableId);
       const rows = table.rows;
@@ -117,7 +124,7 @@ const mapStateToProps = (state, props) => {
 WidgetWrapper.propTypes = {
   renderMaster: PropTypes.bool,
   dataSource: PropTypes.string.isRequired,
-  relativeDocId: PropTypes.number,
+  relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   widgetData: PropTypes.array.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   activeTab: PropTypes.string,
