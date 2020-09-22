@@ -2,28 +2,10 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { setActiveSortFields } from '../../actions/TableActions';
 import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
-class TableHeader extends PureComponent {
-  UNSAFE_componentWillMount() {
-    this.setInitialState();
-  }
-
-  setInitialState() {
-    const { orderBy, windowType: windowId, viewId, docId, tabId } = this.props;
-
-    let fields = {};
-    orderBy &&
-      orderBy.map((item) => {
-        fields[item.fieldName] = item.ascending;
-      });
-
-    const tableId = getTableId({ windowId, viewId, docId, tabId });
-    setActiveSortFields({ id: tableId, fields });
-  }
-
+export class TableHeader extends PureComponent {
   handleClick = (field, sortable) => {
     if (!sortable) {
       return;
@@ -38,7 +20,6 @@ class TableHeader extends PureComponent {
       docId,
       viewId,
       setActiveSort,
-      setActiveSortFields,
     } = this.props;
     const { headersFields: stateFields } = this.props;
     const tableId = getTableId({ windowId: windowType, viewId, docId, tabId });
@@ -56,9 +37,6 @@ class TableHeader extends PureComponent {
       );
       fields[field] = sortingValue;
     }
-
-    // update Redux
-    setActiveSortFields({ id: tableId, fields });
 
     onSortTable(sortingValue, field, true, page, tabId);
     setActiveSort(tableId, true);
@@ -146,7 +124,6 @@ TableHeader.propTypes = {
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,
   headersFields: PropTypes.object,
-  setActiveSortFields: PropTypes.func,
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -161,7 +138,5 @@ const mapStateToProps = (state, ownProps) => {
 
 export default connect(
   mapStateToProps,
-  {
-    setActiveSortFields,
-  }
+  null
 )(TableHeader);
