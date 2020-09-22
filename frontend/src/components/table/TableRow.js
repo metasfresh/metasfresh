@@ -191,17 +191,23 @@ class TableRow extends PureComponent {
         });
         break;
       case 'Tab':
-        updatePropertyValue({
-          property,
-          value: e.target.value,
-          tabId,
-          rowId,
-          isModal: modalVisible,
-          entity,
-          tableId,
-        });
+        // this test is for a case when user is navigating around the table
+        // without activating the field. Then there's no widget (input), so the value
+        // is undefined and we don't have to worry about it
+        if (typeof e.target.value !== 'undefined') {
+          updatePropertyValue({
+            property,
+            value: e.target.value,
+            tabId,
+            rowId,
+            isModal: modalVisible,
+            entity,
+            tableId,
+          });
+        }
         e.stopPropagation();
         this.handleEditProperty(e);
+
         break;
       case 'Escape':
         if (edited === property) {
