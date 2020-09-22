@@ -2,12 +2,14 @@ package de.metas.impexp.parser;
 
 import javax.annotation.Nullable;
 
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
  * A cell of {@link ImpDataCell}.
  *
  */
+@EqualsAndHashCode
 @ToString
 public class ImpDataCell
 {

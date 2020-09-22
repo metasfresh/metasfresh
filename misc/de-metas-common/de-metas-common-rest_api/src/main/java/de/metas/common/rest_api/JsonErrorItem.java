@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 @ApiModel(description = "Error informations")
@@ -68,7 +69,7 @@ public class JsonErrorItem
 			@JsonProperty("message") @Nullable final String message,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
-			@JsonProperty("parameters") @Nullable final Map<String, String> parameters,
+			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
 			@JsonProperty("adIssueId") @Nullable final JsonMetasfreshId adIssueId,
 			@JsonProperty("throwable") @Nullable final Throwable throwable)
 	{

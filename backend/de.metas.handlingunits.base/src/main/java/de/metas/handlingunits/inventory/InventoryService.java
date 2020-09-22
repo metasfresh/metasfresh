@@ -1,5 +1,20 @@
 package de.metas.handlingunits.inventory;
 
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Service;
+
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -12,6 +27,8 @@ import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
@@ -22,17 +39,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.X_C_DocType;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -65,7 +71,9 @@ public class InventoryService
 	private final InventoryRepository inventoryRepository;
 	private final SourceHUsService sourceHUsService;
 
-	public InventoryService(@NonNull final InventoryRepository inventoryRepository,@NonNull final SourceHUsService sourceHUsService)
+	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
+
+	public InventoryService(@NonNull final InventoryRepository inventoryRepository, @NonNull final SourceHUsService sourceHUsService)
 	{
 		this.inventoryRepository = inventoryRepository;
 		this.sourceHUsService = sourceHUsService;
@@ -98,7 +106,7 @@ public class InventoryService
 	public static HUAggregationType computeHUAggregationType(@NonNull final DocBaseAndSubType baseAndSubType)
 	{
 		final InventoryLine inventoryLine = null;
-		return SyncInventoryQtyToHUsCommand.computeHUAggregationType(inventoryLine, baseAndSubType);
+		return computeHUAggregationType(inventoryLine, baseAndSubType);
 	}
 
 	public void updateHUAggregationTypeIfAllowed(@NonNull final I_M_Inventory inventoryRecord)
@@ -106,11 +114,46 @@ public class InventoryService
 		final Inventory inventory = inventoryRepository.toInventory(inventoryRecord);
 		for (final InventoryLine inventoryLine : inventory.getLines())
 		{
-			final HUAggregationType huAggregationType = SyncInventoryQtyToHUsCommand.computeHUAggregationType(inventoryLine, inventory.getDocBaseAndSubType());
+			final HUAggregationType huAggregationType = computeHUAggregationType(inventoryLine, inventory.getDocBaseAndSubType());
 			inventoryLine.setHuAggregationType(huAggregationType);
 		}
 
 		inventoryRepository.saveInventoryLines(inventory);
+	}
+
+	private static HUAggregationType computeHUAggregationType(
+			@Nullable final InventoryLine inventoryLine,
+			@NonNull final DocBaseAndSubType baseAndSubType)
+	{
+		final HUAggregationType huAggregationTypeToUse = Optional
+				.ofNullable(AggregationType.getByDocTypeOrNull(baseAndSubType))
+				.map(AggregationType::getHuAggregationType)
+				.orElse(HUAggregationType.SINGLE_HU); // the default
+
+		if (inventoryLine == null)
+		{
+			return huAggregationTypeToUse; // nothing more to check
+		}
+
+		final HUAggregationType huAggregationTypeCurrent = inventoryLine.getHuAggregationType();
+		if (huAggregationTypeCurrent == null)
+		{
+			return huAggregationTypeToUse;
+		}
+		else if (huAggregationTypeCurrent.equals(huAggregationTypeToUse))
+		{
+			return huAggregationTypeToUse;
+		}
+		else if (inventoryLine.getId() == null)
+		{
+			return huAggregationTypeToUse;
+		}
+		else
+		{
+			// this line already has a different aggregation type
+			throw new AdempiereException(MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE)
+					.markAsUserValidationError();
+		}
 	}
 
 	public void setQtyBookedFromStorage(@NonNull final I_M_InventoryLine inventoryLine)

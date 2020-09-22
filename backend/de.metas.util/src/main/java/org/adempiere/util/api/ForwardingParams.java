@@ -7,6 +7,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -72,6 +73,12 @@ public class ForwardingParams implements IParams
 	public int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
 		return params.getParameterAsInt(parameterName, defaultValue);
+	}
+
+	@Override
+	public <T extends RepoIdAware> T getParameterAsId(String parameterName, Class<T> type)
+	{
+		return params.getParameterAsId(parameterName, type);
 	}
 
 	@Override

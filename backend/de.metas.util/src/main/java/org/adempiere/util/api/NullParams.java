@@ -31,6 +31,8 @@ import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.lang.RepoIdAware;
+
 /**
  * No parameters implementation of {@link IParams}. Get your instance using {@link IParams#NULL}.
  *
@@ -67,6 +69,12 @@ import com.google.common.collect.ImmutableList;
 	public int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
 		return defaultValue;
+	}
+
+	@Override
+	public <T extends RepoIdAware> T getParameterAsId(String parameterName, Class<T> type)
+	{
+		return null;
 	}
 
 	@Override
