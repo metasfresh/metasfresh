@@ -49,32 +49,51 @@ import {
   UPDATE_RAW_MODAL,
 } from '../constants/ActionTypes';
 
+const initialMasterState = {
+  layout: {
+    activeTab: null,
+  },
+  data: [],
+  saveStatus: {},
+  validStatus: {},
+  includedTabsInfo: {},
+  hasComments: false,
+  docId: undefined,
+  websocket: null,
+  topActions: {
+    actions: [],
+    fetching: false,
+    error: false,
+  },
+};
+const initialModalState = {
+  visible: false,
+  type: '',
+  dataId: null,
+  tabId: null,
+  rowId: null,
+  viewId: null,
+  layout: {},
+  data: {},
+  modalTitle: '',
+  modalType: '',
+  isAdvanced: false,
+  viewDocumentIds: [],
+  childViewId: null,
+  childViewSelectedIds: [],
+  parentViewId: null,
+  triggerField: null,
+  saveStatus: {},
+  validStatus: {},
+  includedTabsInfo: {},
+  staticModalType: '',
+}
+
 export const initialState = {
   connectionError: false,
 
   // TODO: this should be moved to a separate `modalHandler`
-  modal: {
-    visible: false,
-    type: '',
-    dataId: null,
-    tabId: null,
-    rowId: null,
-    viewId: null,
-    layout: {},
-    data: {},
-    modalTitle: '',
-    modalType: '',
-    isAdvanced: false,
-    viewDocumentIds: [],
-    childViewId: null,
-    childViewSelectedIds: [],
-    parentViewId: null,
-    triggerField: null,
-    saveStatus: {},
-    validStatus: {},
-    includedTabsInfo: {},
-    staticModalType: '',
-  },
+  modal: initialModalState,
   overlay: {
     visible: false,
     data: null,
@@ -95,23 +114,7 @@ export const initialState = {
   },
 
   // this only feeds data to details view now
-  master: {
-    layout: {
-      activeTab: null,
-    },
-    data: [],
-    saveStatus: {},
-    validStatus: {},
-    includedTabsInfo: {},
-    hasComments: false,
-    docId: undefined,
-    websocket: null,
-    topActions: {
-      actions: [],
-      fetching: false,
-      error: false,
-    },
-  },
+  master: initialMasterState,
 
   quickActions: {},
   indicator: 'saved',
@@ -141,15 +144,20 @@ export const getQuickactions = createSelector(
 );
 
 /**
- * @method getMasterData
+ * @method getData
  * @summary getter for master data
  *
  * @param {object} state - redux state
  */
-export const getMasterData = (state) => state.windowHandler.master.data;
+export const getData = (state, isModal = false) => {
+  const selector = isModal ? 'modal' : 'master';
 
-const getMasterLayout = (state, layoutPath) => {
-  const layout = state.windowHandler.master.layout;
+  return state.windowHandler[selector].data;
+};
+
+const getLayout = (state, isModal, layoutPath) => {
+  const selector = isModal ? 'modal' : 'master';
+  const layout = state.windowHandler[selector].layout;
   const [
     sectionIdx,
     columnIdx,
@@ -180,29 +188,31 @@ const selectWidgetData = (data, layout) => {
 };
 
 /**
- * @method getMasterWidgetData
+ * @method getWidgetData
  * @summary cached selector for picking widget data for a desired element
  *
  * @param {object} state - redux state
+ * @param {boolean} isModal
  * @param {string} layoutPath - indexes of elements in the layout structure
  */
-export const getMasterWidgetData = createCachedSelector(
-  getMasterData,
-  getMasterLayout,
+export const getWidgetData = createCachedSelector(
+  getData,
+  getLayout,
   (data, layout) => selectWidgetData(data, layout)
-)((_state_, layoutPath) => layoutPath);
+)((_state_, isModal, layoutPath) => layoutPath);
 
 /**
- * @method getMasterWidgetFields
+ * @method getWidgetFields
  * @summary cached selector for picking fields of a layout section
  *
  * @param {object} state - redux state
+ * @param {boolean} isModal
  * @param {string} layoutPath - indexes of elements in the layout structure
  */
-export const getMasterWidgetFields = createCachedSelector(
-  getMasterLayout,
+export const getWidgetFields = createCachedSelector(
+  getLayout,
   (layout) => layout.fields
-)((_state, layoutPath) => layoutPath);
+)((_state, isModal, layoutPath) => layoutPath);
 
 /**
  * @method getMasterDocStatus
@@ -211,7 +221,7 @@ export const getMasterWidgetFields = createCachedSelector(
  * @param {object} state - redux state
  */
 export const getMasterDocStatus = createSelector(
-  getMasterData,
+  getData,
   (data) => {
     return [
       {
@@ -401,11 +411,8 @@ export default function windowHandler(state = initialState, action) {
     case CLEAR_MASTER_DATA:
       return {
         ...state,
-        master: {
-          ...state.master,
-          data: {},
-          docId: undefined,
-        },
+        master: initialMasterState,
+        modal: initialModalState,
       };
     case SORT_TAB:
       return Object.assign({}, state, {

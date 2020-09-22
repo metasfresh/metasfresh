@@ -30,11 +30,12 @@ class Element extends PureComponent {
     const fieldName = elementLayout.fields ? elementLayout.fields[0].field : '';
     const layoutId = `${sectionIndex}_${columnIndex}_${elementGroupIndex}_${elementsLineIndex}_${elementIndex}`;
     const element = omit(elementLayout, ['fields']);
+    const dataSource = isModal ? 'modal' : 'element';
 
     return (
       <WidgetWrapper
         renderMaster={true}
-        dataSource="element"
+        dataSource={dataSource}
         layoutId={layoutId}
         ref={addRefToWidgets}
         entity="window"

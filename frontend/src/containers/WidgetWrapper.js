@@ -12,9 +12,9 @@ import {
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
 import {
-  getMasterData,
-  getMasterWidgetData,
-  getMasterWidgetFields,
+  getData,
+  getWidgetData,
+  getWidgetFields,
   getMasterDocStatus,
 } from '../reducers/windowHandler';
 
@@ -54,8 +54,9 @@ const mapStateToProps = (state, props) => {
     supportFieldEdit,
     layoutId,
     fields,
+    isModal,
   } = props;
-  const data = getMasterData(state);
+  const data = getData(state);
 
   let widgetData = null;
   let fieldsCopy = null;
@@ -65,9 +66,10 @@ const mapStateToProps = (state, props) => {
       widgetData = getMasterDocStatus(state);
 
       break;
+    case 'modal':
     case 'element':
-      widgetData = getMasterWidgetData(state, layoutId);
-      fieldsCopy = getMasterWidgetFields(state, layoutId);
+      widgetData = getWidgetData(state, isModal, layoutId);
+      fieldsCopy = getWidgetFields(state, isModal, layoutId);
 
       break;
     case 'table': {
