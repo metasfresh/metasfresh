@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.impl;
 
+import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.inout.InOutId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
@@ -45,5 +46,5 @@ public class AddTrackingCodesForInOutWithoutHUReq
 	ZonedDateTime shipDate;
 
 	@NonNull
-	List<String> trackingCodes;
+	List<PackageInfo> packageInfos;
 }

@@ -29,7 +29,6 @@ import de.metas.common.rest_api.JsonAttributeSetInstance;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
-import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -41,7 +40,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ApiModel(description="Single receipt candidate; basically this tells the logistics provider to expect a particular delivery item from a vendor.\n"
+@ApiModel(description = "Single receipt candidate; basically this tells the logistics provider to expect a particular delivery item from a vendor.\n"
 		+ "It translates to a particular `M_ReceiptSchedule` record in metasfresh.")
 @Value
 public class JsonResponseReceiptCandidate
@@ -60,6 +59,12 @@ public class JsonResponseReceiptCandidate
 	@ApiModelProperty(position = 30)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
+
+	@ApiModelProperty(position = 35,
+			value = "If there is a purchase order, then this is the number of overall exportable items from that order.\n"
+					+ "Useful if due to `limit`, not all items of one order are exported in one invocation.")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Integer numberOfItemsWithSameOrderId;
 
 	@ApiModelProperty(position = 40)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -84,6 +89,7 @@ public class JsonResponseReceiptCandidate
 			@JsonProperty("orderDocumentNo") @Nullable final String orderDocumentNo,
 			@JsonProperty("poReference") @Nullable final String poReference,
 			@JsonProperty("dateOrdered") @Nullable final LocalDateTime dateOrdered,
+			@JsonProperty("numberOfItemsWithSameOrderId") @Nullable final Integer numberOfItemsWithSameOrderId,
 			@JsonProperty("product") @NonNull final JsonProduct product,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
 			@JsonProperty("quantities") @NonNull @Singular final List<JsonQuantity> quantities)
@@ -93,6 +99,7 @@ public class JsonResponseReceiptCandidate
 		this.orderDocumentNo = orderDocumentNo;
 		this.poReference = poReference;
 		this.dateOrdered = dateOrdered;
+		this.numberOfItemsWithSameOrderId = numberOfItemsWithSameOrderId;
 		this.product = product;
 		this.attributeSetInstance = attributeSetInstance;
 		this.quantities = quantities;

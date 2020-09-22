@@ -25,16 +25,13 @@ package de.metas.handlingunits.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -44,46 +41,26 @@ public class InOutPackageDAO implements IInOutPackageDAO
 
 	@Override
 	@NonNull
-	public ImmutableList<I_M_Package> createM_Packages(@NonNull final CreatePackagesRequest packagesRequest)
+	public ImmutableList<I_M_Package> createM_Packages(@NonNull final List<CreatePackagesRequest> packagesRequestList)
 	{
-		final ImmutableList<I_M_Package> packages;
-
-		final boolean withTrackingCodes = !Check.isEmpty(packagesRequest.getTrackingCodes());
-
-		if (withTrackingCodes)
-		{
-			packages = packagesRequest.getTrackingCodes()
-					.stream()
-					.map(trackingCode -> createM_Package(packagesRequest.getInOutId(),
-							packagesRequest.getShipperId(), trackingCode, packagesRequest.isProcessed()))
-					.collect(ImmutableList.toImmutableList());
-		}
-		else
-		{
-			final I_M_Package mPackage =
-					createM_Package(packagesRequest.getInOutId(),packagesRequest.getShipperId(), null, packagesRequest.isProcessed());
-			packages = ImmutableList.of(mPackage);
-		}
-
-		return packages;
+		return packagesRequestList.stream().map(this::createM_Package).collect(ImmutableList.toImmutableList());
 	}
 
-	private I_M_Package createM_Package(@NonNull final InOutId inOutId,
-			@NonNull final ShipperId shipperId,
-			@Nullable final String trackingCode,
-	        final boolean isProcessed)
+	private I_M_Package createM_Package(@NonNull final CreatePackagesRequest createPackageRequest)
 	{
-		final I_M_InOut inOut = inOutDAO.getById(inOutId);
+		final I_M_InOut inOut = inOutDAO.getById(createPackageRequest.getInOutId());
 
 		final I_M_Package mPackage = newInstance(I_M_Package.class);
-		mPackage.setM_Shipper_ID(shipperId.getRepoId());
+		mPackage.setM_Shipper_ID(createPackageRequest.getShipperId().getRepoId());
 		mPackage.setAD_Org_ID(inOut.getAD_Org_ID());
-		mPackage.setProcessed(isProcessed);
+		mPackage.setProcessed(createPackageRequest.isProcessed());
 		mPackage.setShipDate(null);
 		mPackage.setC_BPartner_ID(inOut.getC_BPartner_ID());
 		mPackage.setC_BPartner_Location_ID(inOut.getC_BPartner_Location_ID());
 		mPackage.setM_InOut_ID(inOut.getM_InOut_ID());
-		mPackage.setTrackingInfo(trackingCode);
+		mPackage.setTrackingInfo(createPackageRequest.getTrackingCode());
+		mPackage.setPackageWeight(createPackageRequest.getWeight());
+		mPackage.setTrackingURL(createPackageRequest.getTrackingURL());
 
 		InterfaceWrapperHelper.save(mPackage);
 

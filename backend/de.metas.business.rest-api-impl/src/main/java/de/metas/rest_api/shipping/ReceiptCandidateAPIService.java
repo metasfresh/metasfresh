@@ -135,7 +135,7 @@ class ReceiptCandidateAPIService
 	/**
 	 * Exports them; Flags them as "exported - don't touch"; creates an export audit table with one line per shipment schedule.
 	 */
-	public JsonResponseReceiptCandidates exportReceiptCandidates(final QueryLimit limit)
+	public JsonResponseReceiptCandidates exportReceiptCandidates(@NonNull final QueryLimit limit)
 	{
 		final String transactionId = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
@@ -207,7 +207,7 @@ class ReceiptCandidateAPIService
 
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(receiptSchedule, attributesForASIs);
 					final JsonVendor vendor = createJsonVendor(receiptSchedule, bpartnerIdToBPartner);
-					final JsonProduct jsonProduct = createJsonProduct(receiptSchedule, vendor.getLanguage(), productInfo, commodityNumber);
+					final JsonProduct jsonProduct = createJsonProduct(vendor.getLanguage(), productInfo, commodityNumber);
 					final I_C_Order orderRecord = orderIdToOrderRecord.get(receiptSchedule.getOrderId());
 					final Quantity quantity = receiptSchedule.getQuantityToDeliver();
 					final List<JsonQuantity> quantities = createJsonQuantities(quantity);
@@ -223,7 +223,8 @@ class ReceiptCandidateAPIService
 					{
 						itemBuilder
 								.orderDocumentNo(orderRecord.getDocumentNo())
-								.poReference(orderRecord.getPOReference());
+								.poReference(orderRecord.getPOReference())
+								.numberOfItemsWithSameOrderId(receiptSchedule.getNumberOfItemsWithSameOrderId());
 					}
 
 					result.item(itemBuilder.build());
@@ -269,7 +270,6 @@ class ReceiptCandidateAPIService
 	}
 
 	private JsonProduct createJsonProduct(
-			@NonNull final ReceiptSchedule receiptSchedule,
 			@NonNull final String adLanguage,
 			@NonNull final Product product,
 			@Nullable final String commodityNumber)
@@ -280,12 +280,8 @@ class ReceiptCandidateAPIService
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight())
-				.commodityNumberValue(commodityNumber);
-
-		if (product.getDescription() != null)
-		{
-			productBuilder.description(product.getDescription().translate(adLanguage));
-		}
+				.commodityNumberValue(commodityNumber)
+				.description(product.getDescription().translate(adLanguage));
 
 		return productBuilder.build();
 	}

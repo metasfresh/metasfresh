@@ -23,22 +23,20 @@
 package de.metas.common.receipt;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.MeasurableRequest;
 import de.metas.common.customerreturns.JsonCreateCustomerReturnInfo;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.List;
+import java.util.Objects;
+
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = JsonCreateReceiptsRequest.JsonCreateReceiptsRequestBuilder.class)
 public class JsonCreateReceiptsRequest extends MeasurableRequest
 {
@@ -51,6 +49,7 @@ public class JsonCreateReceiptsRequest extends MeasurableRequest
 	List<JsonCreateCustomerReturnInfo> jsonCreateCustomerReturnInfoList;
 
 	@Builder
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	public JsonCreateReceiptsRequest(@JsonProperty("receiptList") final List<JsonCreateReceiptInfo> jsonCreateReceiptInfoList,
 			@JsonProperty("returnList") final List<JsonCreateCustomerReturnInfo> jsonCreateCustomerReturnInfoList)
 	{

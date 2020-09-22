@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,35 +20,35 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.common.shipment;
 
-import de.metas.inout.InOutId;
-import de.metas.shipping.ShipperId;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
 @Builder
-public class CreatePackagesRequest
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonDeserialize(builder = JsonPackage.JsonPackageBuilder.class)
+public class JsonPackage
 {
+	@JsonProperty("trackingCode")
 	@NonNull
-	InOutId inOutId;
-
-	@NonNull
-	ShipperId shipperId;
-
-	boolean processed;
-
-	@Nullable
 	String trackingCode;
 
-	@Nullable
+	@JsonProperty("weight")
 	BigDecimal weight;
 
-	@Nullable
-	String trackingURL;
+	@JsonPOJOBuilder(withPrefix = "")
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class JsonPackageBuilder
+	{
+	}
 }

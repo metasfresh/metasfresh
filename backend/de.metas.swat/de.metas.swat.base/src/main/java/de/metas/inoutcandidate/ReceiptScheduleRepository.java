@@ -130,7 +130,8 @@ public class ReceiptScheduleRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.quantityToDeliver(receiptScheduleBL.getQtyToMove(record).getStockQty())
-				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()));
+				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
+				.numberOfItemsWithSameOrderId(record.getFilteredItemsWithSameC_Order_ID());
 		if (record.getDateOrdered() != null)
 		{
 			receiptScheduleBuilder.dateOrdered(record.getDateOrdered().toLocalDateTime());

@@ -13,12 +13,15 @@ public interface SiroShipmentConstants
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
 	String SHIPMENT_XML_TO_JSON_PROCESSOR = "shipment-xml-to-json-id";
 
-	String SIRO_SHIPPER_SEARCH_KEY = "Siro";
 	String DEFAULT_DELIVERY_RULE_FORCE = "F";
 
 	String DELIVERY_DATE_PATTERN = "dd.MM.yyyy HH.mm.ss";
 
-	String TRACKING_NUMBERS_SEPARATOR = " ";
+	String TRACKING_NUMBERS_SEPARATOR = "shipment.tracking.numbers.separator";
+	String PACKAGE_WEIGHT_SEPARATOR = "shipment.package.weight.separator";
 
 	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.MM.dd", "dd.MM.yyyy");
+
+	String EMPTY_FIELD = "";
+	String SHIPPER_INTERNAL_NAME_SEPARATOR_PROP = "shipper.InternalName.parts.separator";
 }

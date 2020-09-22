@@ -51,6 +51,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EMPTY_FIELD;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP;
+
 public class ShipmentCandidateJsonToXmlProcessor implements Processor
 {
 	public static final METADATA METADATA = de.metas.common.filemaker.METADATA.builder()
@@ -85,9 +88,6 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_bestellung_referenz").build())
 
 			.build();
-
-	private final static String EMPTY_FIELD = "";
-	private final static String SHIPPER_INTERNAL_NAME_SEPARATOR_PROP = "shipper.InternalName.parts.separator";
 
 	private final Log log = LogFactory.getLog(ShipmentCandidateJsonToXmlProcessor.class);
 
