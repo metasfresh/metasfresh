@@ -47,7 +47,7 @@ public class DataImportResult
 	public boolean hasErrors()
 	{
 		return insertIntoImportTable.hasErrors()
-				|| importRecordsValidation.hasErrors()
-				|| actualImport.hasErrors();
+				|| (importRecordsValidation != null && importRecordsValidation.hasErrors())
+				|| (actualImport != null && actualImport.hasErrors());
 	}
 }

@@ -89,11 +89,11 @@ public class DataImportRestController
 			@ApiParam("Try to complete documents if it applies to the given import") //
 			@RequestParam(name = "completeDocuments", required = false, defaultValue = "true") final boolean completeDocuments,
 
-			@ApiParam("The text file you are importing") //
-			@RequestBody @NonNull final String content,
-
 			@ApiParam("If true the data import will run synchronously") //
-			@RequestParam("runSynchronous") final boolean runSynchronous)
+			@RequestParam(name = "runSynchronous", required = false, defaultValue = "false") final boolean runSynchronous,
+
+			@ApiParam("The text file you are importing") //
+			@RequestBody @NonNull final String content)
 	{
 		final Resource data = new ByteArrayResource(content.getBytes(StandardCharsets.UTF_8));
 		return importFile(dataImportConfigInternalName, completeDocuments, data, runSynchronous);
@@ -107,11 +107,11 @@ public class DataImportRestController
 			@ApiParam("Try to complete documents if it applies to the given import") //
 			@RequestParam(name = "completeDocuments", required = false, defaultValue = "true") final boolean completeDocuments,
 
-			@ApiParam("The text file you are importing") //
-			@RequestParam("file") @NonNull final MultipartFile file,
-
 			@ApiParam("If true the data import will run synchronously") //
-			@RequestParam("runSynchronous") final boolean runSynchronous)
+			@RequestParam(name = "runSynchronous", required = false, defaultValue = "false") final boolean runSynchronous,
+
+			@ApiParam("The text file you are importing") //
+			@RequestParam("file") @NonNull final MultipartFile file)
 	{
 		final Resource data = toResource(file);
 		return importFile(dataImportConfigInternalName, completeDocuments, data, runSynchronous);
@@ -143,7 +143,7 @@ public class DataImportRestController
 		}
 		catch (final Exception ex)
 		{
-			logger.debug("Got error", ex);
+			logger.warn("Got error", ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.badRequest()
