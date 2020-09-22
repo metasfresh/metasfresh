@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
+import { shallow, mount, render } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
@@ -70,8 +70,17 @@ describe('Table component', () => {
   });
 
   it('props passed are correctly set within the wrapper', () => {
-    const wrapper = mount(<Table {...tableProps} />);
-    const wrapperProps = wrapper.props();
+    const wrapper = mount(
+      <Provider store={store}>
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+          <Table {...tableProps} />
+        </ShortcutProvider>
+      </Provider>
+    );
+    const nodeProps = wrapper.props();
+    const subProps = nodeProps.children.props;
+    const wrapperProps = subProps.children.props;
+
 
     expect(wrapperProps.entity).toEqual(tableProps.entity);
     expect(wrapperProps.windowId).toEqual(tableProps.windowId);
@@ -92,7 +101,13 @@ describe('Table component', () => {
       ...tableProps,
       rows: [],
     };
-    const wrapper = shallow(<Table {...localProps} />);
+    const wrapper = render(
+      <Provider store={store}>
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+          <Table {...localProps} />
+        </ShortcutProvider>
+      </Provider>
+    );
 
     expect(wrapper.html()).toContain(tableData.emptyResultText);
   });
