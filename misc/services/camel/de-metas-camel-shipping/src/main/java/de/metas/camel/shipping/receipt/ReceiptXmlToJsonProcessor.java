@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static de.metas.camel.CommonConstants.VALUE_TRUE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.ARTICLE_FLAVOR;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.BEST_BEFORE_DATE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.DATE_RECEIVED;
@@ -66,7 +67,6 @@ import static de.metas.camel.shipping.receipt.ReceiptReturnField.SHIPMENT_DOCUME
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.SHIPMENT_SCHEDULE_ID;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.DATE_RECEIVED_PATTERNS;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.EXPIRY_DATE_PATTERNS;
-import static de.metas.camel.shipping.receipt.SiroReceiptConstants.IS_RETURN_VALUE_TRUE;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.MOVEMENT_DATE_PATTERNS;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.ORG_PREFIX_TOKEN;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.ORG_PREFIX_TO_ORG_CODE_PROPERTY_PATTERN;
@@ -120,11 +120,11 @@ public class ReceiptXmlToJsonProcessor implements Processor
 			return false;
 		}
 
-		return IS_RETURN_VALUE_TRUE.equals(isReturn);
+		return VALUE_TRUE.equalsIgnoreCase(isReturn);
 	}
 
 	@NonNull
-	private JsonCreateReceiptInfo createReceiptInfo(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private JsonCreateReceiptInfo createReceiptInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
 	{
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
@@ -156,8 +156,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 				.build();
 	}
 
-
-	private JsonCreateCustomerReturnInfo createCustomerReturnInfo(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
+	private JsonCreateCustomerReturnInfo createCustomerReturnInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
@@ -193,14 +192,14 @@ public class ReceiptXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private LocalDate getMovementDate(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private LocalDate getMovementDate(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
 	{
 		final FileMakerDataHelper.GetValueRequest request =
 				FileMakerDataHelper.GetValueRequest.builder()
-				.row(row)
-				.fieldName2Index(name2Index)
-				.fieldName(MOVEMENT_DATE.getName())
-				.build();
+						.row(row)
+						.fieldName2Index(name2Index)
+						.fieldName(MOVEMENT_DATE.getName())
+						.build();
 
 		final String value = FileMakerDataHelper.getValue(request);
 
@@ -209,7 +208,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private LocalDateTime getDateReceived(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private LocalDateTime getDateReceived(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
 	{
 		final FileMakerDataHelper.GetValueRequest request =
 				FileMakerDataHelper.GetValueRequest.builder()
@@ -280,7 +279,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private JsonMetasfreshId getShipmentScheduleId(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private JsonMetasfreshId getShipmentScheduleId(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
 	{
 		final FileMakerDataHelper.GetValueRequest request =
 				FileMakerDataHelper.GetValueRequest.builder()
@@ -325,7 +324,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 		final String orgPrefix2CodeProperty = ORG_PREFIX_TO_ORG_CODE_PROPERTY_PATTERN.replace(ORG_PREFIX_TOKEN, orgPrefix);
 
 		final String orgCode = propertiesComponent.resolveProperty(orgPrefix2CodeProperty)
-				.orElseThrow( () -> new RuntimeException("Missing property: " + orgPrefix2CodeProperty + "!"));
+				.orElseThrow(() -> new RuntimeException("Missing property: " + orgPrefix2CodeProperty + "!"));
 
 		return orgCode;
 	}

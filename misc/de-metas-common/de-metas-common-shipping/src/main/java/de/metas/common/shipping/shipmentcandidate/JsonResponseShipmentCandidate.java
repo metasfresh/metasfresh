@@ -41,7 +41,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ApiModel(description="Single shipment candidate; basically this is a ship-TODO item. It translates to a particular `M_ShipmentSchedule` record in metasfresh.")
+@ApiModel(description = "Single shipment candidate; basically this is a ship-TODO item. It translates to a particular `M_ShipmentSchedule` record in metasfresh.")
 @Value
 public class JsonResponseShipmentCandidate
 {
@@ -63,6 +63,12 @@ public class JsonResponseShipmentCandidate
 	@ApiModelProperty(position = 40)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
+
+	@ApiModelProperty(position = 45,
+			value = "This is the number of overall exportable items that would end up in the same shipment.\n"
+					+ "Useful if due to `limit`, not all items of one shipment are exported in one invocation.")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Integer numberOfItemsForSameShipment;
 
 	@ApiModelProperty(position = 50, required = true)
 	JsonProduct product;
@@ -90,6 +96,11 @@ public class JsonResponseShipmentCandidate
 			value = "The net price of the ordered quantity")
 	BigDecimal orderedQtyNetPrice;
 
+	@ApiModelProperty(position = 115, required = true,
+			value = "The net price of the quantity currently to deliver")
+	@Nullable
+	private final BigDecimal qtyToDeliverNetPrice;
+
 	@ApiModelProperty(position = 120, required = true,
 			value = "The net price of the delivered quantity ")
 	BigDecimal deliveredQtyNetPrice;
@@ -102,20 +113,23 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("orderDocumentNo") @Nullable final String orderDocumentNo,
 			@JsonProperty("poReference") @Nullable final String poReference,
 			@JsonProperty("dateOrdered") @Nullable final LocalDateTime dateOrdered,
+			@JsonProperty("numberOfItemsForSameShipment") @Nullable final Integer numberOfItemsForSameShipment,
 			@JsonProperty("product") @NonNull final JsonProduct product,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
 			@JsonProperty("customer") @NonNull final JsonCustomer customer,
 			@JsonProperty("quantities") @NonNull @Singular final List<JsonQuantity> quantities,
 			@JsonProperty("shipperInternalSearchKey") @Nullable final String shipperInternalSearchKey,
 			@JsonProperty("orderedQty") @NonNull final List<JsonQuantity> orderedQty,
-			@JsonProperty("deliveredQtyNetPrice") @Nullable final BigDecimal deliveredQtyNetPrice,
-			@JsonProperty("orderedQtyNetPrice") @Nullable final BigDecimal orderedQtyNetPrice)
+			@JsonProperty("deliveredQtyNetPrice") @NonNull final BigDecimal deliveredQtyNetPrice,
+			@JsonProperty("qtyToDeliverNetPrice") @NonNull final BigDecimal qtyToDeliverNetPrice,
+			@JsonProperty("orderedQtyNetPrice") @NonNull final BigDecimal orderedQtyNetPrice)
 	{
 		this.id = id;
 		this.orgCode = orgCode;
 		this.orderDocumentNo = orderDocumentNo;
 		this.poReference = poReference;
 		this.dateOrdered = dateOrdered;
+		this.numberOfItemsForSameShipment = numberOfItemsForSameShipment;
 		this.product = product;
 		this.attributeSetInstance = attributeSetInstance;
 		this.customer = customer;
@@ -123,6 +137,7 @@ public class JsonResponseShipmentCandidate
 		this.shipperInternalSearchKey = shipperInternalSearchKey;
 		this.orderedQty = orderedQty;
 		this.deliveredQtyNetPrice = deliveredQtyNetPrice;
+		this.qtyToDeliverNetPrice = qtyToDeliverNetPrice;
 		this.orderedQtyNetPrice = orderedQtyNetPrice;
 	}
 }

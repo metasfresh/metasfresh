@@ -69,6 +69,7 @@ public class ReceiptXmlToJsonRouteBuilder extends EndpointRouteBuilder
 						.marshal(requestJacksonDataFormat)
 						.removeHeaders("*", "Authorization") // we don't want so send all headers as HTTP-headers; might be too much and we'd get an error back
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
+						.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.to(http(CREATE_RECEIPT_MF_URL))
 						.unmarshal(responseJacksonDataFormat)

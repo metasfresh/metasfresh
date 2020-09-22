@@ -46,6 +46,7 @@ import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates.J
 import de.metas.common.shipping.receiptcandidate.JsonVendor;
 import de.metas.common.shipping.receiptcandidate.JsonVendor.JsonVendorBuilder;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
@@ -91,7 +92,6 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -146,7 +146,7 @@ class ReceiptCandidateAPIService
 
 			final ReceiptScheduleQuery receiptScheduleQuery = ReceiptScheduleQuery.builder()
 					.limit(limit)
-					.canBeExportedFrom(Instant.now())
+					.canBeExportedFrom(SystemTime.asInstant())
 					.exportStatus(APIExportStatus.Pending)
 					.build();
 			final List<ReceiptSchedule> receiptSchedules = receiptScheduleRepository.getBy(receiptScheduleQuery);
@@ -276,6 +276,7 @@ class ReceiptCandidateAPIService
 	{
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
 				.productNo(product.getProductNo())
+				.stocked(product.isStocked())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())

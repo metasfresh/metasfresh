@@ -10,14 +10,16 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "quantities": [
         {
           "qty": 1,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "numberOfItemsWithSameOrderId": 2
     },
     {
       "id": 1000001,
@@ -29,6 +31,7 @@
         "name": "Convenience Salat 250g",
         "description": "",
         "weight": 0.250000000000,
+        "stocked": true,
         "documentNote": "documentNote-Salat"
       },
       "quantities": [
@@ -36,7 +39,8 @@
           "qty": 2,
           "uomCode": "Stk"
         }
-      ]
+      ],
+      "numberOfItemsWithSameOrderId": 2
     }
   ],
   "hasMoreItems": false

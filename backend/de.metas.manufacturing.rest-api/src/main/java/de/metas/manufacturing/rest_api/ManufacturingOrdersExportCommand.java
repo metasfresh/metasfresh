@@ -202,6 +202,7 @@ final class ManufacturingOrdersExportCommand
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight())
+				.stocked(product.isStocked())
 				.build();
 	}
 

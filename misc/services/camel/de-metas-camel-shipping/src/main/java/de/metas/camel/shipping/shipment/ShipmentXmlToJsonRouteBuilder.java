@@ -49,11 +49,12 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 						.marshal(requestJacksonDataFormat)
 						.removeHeaders("*") // we don't want so send all headers as HTTP-headers; might be too much and we'd get an error back
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
+						.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.to(http(CREATE_SHIPMENT_MF_URL))
 						.unmarshal(responseJacksonDataFormat)
 						.process(new ShipmentResponseProcessor())
-				.end()		;
+				.end();
 				// @formatter:off
 	}
 }

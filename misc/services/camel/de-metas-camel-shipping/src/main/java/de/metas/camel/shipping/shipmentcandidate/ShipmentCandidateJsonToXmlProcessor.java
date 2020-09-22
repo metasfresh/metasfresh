@@ -49,8 +49,9 @@ import javax.annotation.Nullable;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
+import static de.metas.camel.CommonConstants.VALUE_FALSE;
+import static de.metas.camel.CommonConstants.VALUE_TRUE;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EMPTY_FIELD;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP;
 
@@ -61,6 +62,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_bestellung_nummer").build())
 			.field(FIELD.builder().name("_bestellung_datum").build())
 			.field(FIELD.builder().name("_bestellung_zeitstempel").build())
+			.field(FIELD.builder().name("_bestellung_positionsanzahl").build())
 			.field(FIELD.builder().name("_artikel_nummer").build())
 			.field(FIELD.builder().name("_artikel_bezeichnung").build())
 			.field(FIELD.builder().name("_artikel_menge").build())
@@ -68,6 +70,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_artikel_geschmacksrichtung").build())
 			.field(FIELD.builder().name("_artikel_verpackungsgroesse").build())
 			.field(FIELD.builder().name("_artikel_hinweistext").build())
+			.field(FIELD.builder().name("_artikel_ist_lagerhaltig").build())
 			.field(FIELD.builder().name("_empfaenger_firma").build())
 			.field(FIELD.builder().name("_empfaenger_ansprechpartner").build())
 			.field(FIELD.builder().name("_empfaenger_strasse").build())
@@ -146,6 +149,15 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(dateOrdered.toLocalDate().format(DateTimeFormatter.ofPattern("d.M.yyyy")))); // _bestellung_datum
 		row.col(COL.of(dateOrdered.format(DateTimeFormatter.ofPattern("d.M.yyyy k:mm:ss")))); // _bestellung_zeitstempel
 
+		if (item.getNumberOfItemsForSameShipment() != null)
+		{ //_bestellung_positionsanzahl
+			row.col(COL.of(item.getNumberOfItemsForSameShipment().toString()));
+		}
+		else
+		{
+			row.col(COL.of(null));
+		}
+
 		final var product = item.getProduct();
 		final var productNo = CommonUtil.extractProductNo(propertiesComponent, product, item.getOrgCode());
 
@@ -163,6 +175,8 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		}
 		row.col(COL.of(product.getPackageSize())); // _artikel_verpackungsgroesse
 		row.col(COL.of(product.getDocumentNote())); // _artikel_hinweistext
+
+		row.col(COL.of(product.isStocked() ? VALUE_TRUE : VALUE_FALSE)); // _artikel_ist_lagerhaltig
 
 		final var customer = item.getCustomer();
 		if (Objects.equals(customer.getCompanyName(), customer.getContactName()))  // _empfaenger_firma
@@ -183,11 +197,10 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(customer.getContactEmail())); // _empfaenger_email
 		row.col(COL.of(customer.getContactPhone())); // _empfaenger_telefon_muss_bei_express
 
-		final String qtyDeliveredNetPrice = item.getDeliveredQtyNetPrice() != null
+		final String qtyToDeliverNetPrice = item.getQtyToDeliverNetPrice() != null
 				? item.getDeliveredQtyNetPrice().toString()
 				: EMPTY_FIELD;
-
-		row.col(COL.of(qtyDeliveredNetPrice));//_artikel_preis
+		row.col(COL.of(qtyToDeliverNetPrice));//_artikel_preis
 
 		final String orderedQty = item.getOrderedQty().get(0).getQty().toString();
 
@@ -207,25 +220,27 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 
 		row.col(COL.of(shipmentAllocationBestBeforePolicy));//_empfaenger_mhd_kurz_oder_lang
 
-		getShipperInternalNameParts(item.getShipperInternalSearchKey(), propertiesComponent)
-				.map(shipperNameParts -> {setShipperFields(row, shipperNameParts);return null;});
+		//_empfaenger_versandart & _empfaenger_versanddienstleister
+		final List<String> shipperInternalNameParts = getShipperInternalNameParts(item.getShipperInternalSearchKey(), propertiesComponent);
+		setShipperFields(row, shipperInternalNameParts);
 
 		row.col(COL.of(item.getPoReference()));//_bestellung_referenz
 
 		return row.build();
 	}
 
-	private Optional<List<String>> getShipperInternalNameParts(@Nullable final String shipperInternalName, @NonNull final PropertiesComponent propertiesComponent)
+	private List<String> getShipperInternalNameParts(@Nullable final String shipperInternalName, @NonNull final PropertiesComponent propertiesComponent)
 	{
 		if (StringUtils.isBlank(shipperInternalName))
 		{
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
-		final String shipperInternalNameSeparator = propertiesComponent.resolveProperty(SHIPPER_INTERNAL_NAME_SEPARATOR_PROP)
+		final String shipperInternalNameSeparator = propertiesComponent
+				.resolveProperty(SHIPPER_INTERNAL_NAME_SEPARATOR_PROP)
 				.orElseThrow(() -> new RuntimeException("Missing property:" + SHIPPER_INTERNAL_NAME_SEPARATOR_PROP + "!"));
 
-		return Optional.of(ImmutableList.copyOf(shipperInternalName.split(shipperInternalNameSeparator)));
+		return ImmutableList.copyOf(shipperInternalName.split(shipperInternalNameSeparator));
 	}
 
 	private void setShipperFields(@NonNull final ROW.ROWBuilder rowBuilder, @NonNull final List<String> shipperNameParts)

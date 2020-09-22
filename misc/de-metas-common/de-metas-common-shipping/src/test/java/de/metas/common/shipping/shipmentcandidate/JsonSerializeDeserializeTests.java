@@ -110,7 +110,7 @@ class JsonSerializeDeserializeTests
 	@Test
 	void product() throws IOException
 	{
-		final JsonProduct productOrig = JsonProduct.builder().productNo("productNo").name("name").build();
+		final JsonProduct productOrig = JsonProduct.builder().productNo("productNo").name("name").stocked(true).build();
 
 		assertOK(productOrig, JsonProduct.class);
 	}
@@ -159,7 +159,7 @@ class JsonSerializeDeserializeTests
 
 	private JsonProduct createJsonProduct()
 	{
-		return JsonProduct.builder().productNo("productNo").name("name").build();
+		return JsonProduct.builder().productNo("productNo").name("name").stocked(true).build();
 	}
 
 	@Test
@@ -175,7 +175,7 @@ class JsonSerializeDeserializeTests
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 1))
 						.poReference("poReference_1")
 						.orderDocumentNo("orderDocumentNo_1")
-						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").documentNote("documentNote_1").build())
+						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").stocked(true).documentNote("documentNote_1").build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").shipmentAllocationBestBeforePolicy("E").build())
 						.build())
@@ -185,7 +185,7 @@ class JsonSerializeDeserializeTests
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 2))
 						.poReference("poReference_2")
 						.orderDocumentNo("orderDocumentNo_2")
-						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").build())
+						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").stocked(true).build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 						.customer(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").shipmentAllocationBestBeforePolicy("E").build())
 						.build())
