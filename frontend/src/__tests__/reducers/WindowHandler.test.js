@@ -3,106 +3,23 @@ import configureStore from 'redux-mock-store';
 import merge from 'merge';
 import { Map, List } from 'immutable';
 
-import masterWindowData from '../../../test_setup/fixtures/master_window/data.json';
-import masterWindowLayout from '../../../test_setup/fixtures/master_window/layout.json';
 import {
   updateTabRowsData,
   initDataSuccess,
   initLayoutSuccess,
 } from '../../actions/WindowActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
-import reducer, {
-  initialState,
-  getMasterData,
-  getMasterWidgetData,
-  getMasterWidgetFields,
-  getMasterDocStatus,
-} from '../../reducers/windowHandler';
+import reducer, { initialState } from '../../reducers/windowHandler';
 
 const createState = function(state = {}) {
   return merge.recursive(
     true,
     {
-      windowHandler: {
-        ...initialState,
-      },
+      ...initialState,
     },
     state
   );
-};
-
-describe('WindowHandler helper functions', () => {
-  it('getMasterData should return state.windowHandler.master.data', () => {
-    const state = createState({
-      windowHandler: {
-        master: {
-          data: masterWindowData.data1[0].fieldsByName,
-        },
-      },
-    });
-    const masterData = getMasterData(state);
-
-    expect(masterData).toEqual(state.windowHandler.master.data);
-  });
-
-  it('getMasterDocStatus should return values from state.windowHandler.master.data[DocStatus/DocAction]', () => {
-    const data = masterWindowData.data1[0].fieldsByName;
-    const state = createState({
-      windowHandler: {
-        master: {
-          data,
-        }, 
-      },
-    });
-
-    const mockStatusData = [
-      {
-        status: data.DocStatus,
-        action: data.DocAction,
-        displayed: true,
-      },
-    ];
-    const statusData = getMasterDocStatus(state);
-
-    expect(statusData).toEqual(mockStatusData);
-  });
-
-  it('getMasterWidgetData should return state.windowHandler.master.data[fieldName]', () => {
-    const layout = masterWindowLayout.layout1;
-    const state = createState({
-      windowHandler: {
-        master: {
-          data: masterWindowData.data1[0].fieldsByName,
-          layout,
-        }, 
-      },
-    });
-    const selectorPath = '0_0_0_2_0';
-    const widgetData = getMasterWidgetData(state, selectorPath);
-    const fieldName = layout.sections[0].columns[0].elementGroups[0].elementsLine[2].elements[0].fields[0].field;
-    const fieldData = masterWindowData.data1[0].fieldsByName[fieldName];
-
-    expect(widgetData[0]).toEqual(fieldData);
-  });
-
-  it('getMasterWidgetFields should return state.master.layout[path].fields', () => {
-    const layout = masterWindowLayout.layout1;
-    const state = createState({
-      windowHandler: {
-        master: {
-          data: masterWindowData.data1[0].fieldsByName,
-          layout,
-        },
-        
-      },
-    });
-    const selectorPath = `0_0_0_2_0`
-    const fieldsData = getMasterWidgetFields(state, selectorPath);
-    const layoutFields = layout.sections[0].columns[0].elementGroups[0].elementsLine[2].elements[0].fields;
-
-    expect(fieldsData).toEqual(layoutFields);
-  });
-});
+}
 
 describe('WindowHandler reducer', () => {
     it('should return the initial state', () => {
