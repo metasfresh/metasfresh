@@ -97,11 +97,12 @@ public class BPartner
 	private InvoiceRule invoiceRule;
 
 	private String globalId;
-	
+
 	private String vatId;
 
 	private final RecordChangeLog changeLog;
 
+	/** Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}. */
 	private final String shipmentAllocationBestBeforePolicy;
 
 	/** They are all nullable because we can create a completely empty instance which we then fill. */
@@ -155,7 +156,9 @@ public class BPartner
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 	}
 
-	/** Only active bpartners are actually validated. Empty list means "valid" */
+	/**
+	 * Only active bpartners are actually validated. Empty list means "valid"
+	 */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();

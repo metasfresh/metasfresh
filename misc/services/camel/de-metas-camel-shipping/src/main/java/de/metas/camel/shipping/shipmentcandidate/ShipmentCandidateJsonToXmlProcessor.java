@@ -217,8 +217,18 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(qtyToDeliver));//_artikel_webshop_restmenge_noch_offen
 
 		final String shipmentAllocationBestBeforePolicy = customer.getShipmentAllocationBestBeforePolicy();
-
-		row.col(COL.of(shipmentAllocationBestBeforePolicy));//_empfaenger_mhd_kurz_oder_lang
+		if ("E".equals(shipmentAllocationBestBeforePolicy))
+		{
+			row.col(COL.of("kurz"));//_empfaenger_mhd_kurz_oder_lang
+		}
+		else if ("N".equals(shipmentAllocationBestBeforePolicy))
+		{
+			row.col(COL.of("lang"));//_empfaenger_mhd_kurz_oder_lang
+		}
+		else
+		{
+			row.col(COL.of(null));
+		}
 
 		//_empfaenger_versandart & _empfaenger_versanddienstleister
 		final List<String> shipperInternalNameParts = getShipperInternalNameParts(item.getShipperInternalSearchKey(), propertiesComponent);
