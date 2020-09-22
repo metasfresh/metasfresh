@@ -235,8 +235,9 @@ public final class QRStringParser extends AbstractESRPaymentStringParser
 				true,
 				amount,
 				ibanAccountNo,
-				referenceType == "QRR" ? true : false,
+				referenceType.equals("QRR") ? true : false,
 				reference,
+				unstructuredMessage,
 				currency);
 
 		final IPaymentStringDataProvider dataProvider = new QRPaymentStringDataProvider(paymentString);
