@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Table row (TableRow) output matches snapshot 1`] = `
+exports[`Table row (TableItem) output matches snapshot 1`] = `
 <tr
   className="row-1 table-row row-1000003 tr-odd"
   onClick={[Function]}

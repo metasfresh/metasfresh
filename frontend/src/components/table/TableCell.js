@@ -4,12 +4,13 @@ import classnames from 'classnames';
 import counterpart from 'counterpart';
 
 import {
+  getDateFormat,
+  fieldValueToString,
   getSizeClass,
-  getTdTitle,
-  checkIfDateField,
 } from '../../utils/tableHelpers';
+import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
-import WidgetWrapper from '../../containers/WidgetWrapper';
+import MasterWidget from '../widget/MasterWidget';
 import WidgetTooltip from '../widget/WidgetTooltip';
 
 /**
@@ -20,6 +21,7 @@ import WidgetTooltip from '../widget/WidgetTooltip';
 class TableCell extends PureComponent {
   constructor(props) {
     super(props);
+    this.widget = createRef();
     this.cellRef = createRef();
     this.clearWidgetValue = false;
 
@@ -64,14 +66,22 @@ class TableCell extends PureComponent {
    * when you change a value within a table cell by typing something in that specific cell.
    */
   handleKeyDown = (e) => {
-    const { onKeyDown, property, isReadonly, updateRow } = this.props;
-
+    const {
+      handleKeyDown,
+      property,
+      item,
+      getWidgetData,
+      isEditable,
+      supportFieldEdit,
+      readonly,
+      updateRow,
+    } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
-
-    onKeyDown(e, property, isReadonly);
-    !isReadonly && updateRow(); // toggle the flag in parrent component highlighting
+    handleKeyDown(e, property, widgetData[0]);
+    !readonly && updateRow(); // toggle the flag in parrent component highlighting
     // the row giving the user feedback that an action is running
   };
 
@@ -118,30 +128,89 @@ class TableCell extends PureComponent {
    * @param {object} e
    */
   onDoubleClick = (e) => {
-    const { property, isEditable, handleDoubleClick, isReadonly } = this.props;
+    const {
+      property,
+      item,
+      getWidgetData,
+      isEditable,
+      supportFieldEdit,
+      handleDoubleClick,
+    } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
-    if (isEditable) {
-      handleDoubleClick({
-        event: e,
-        property,
-        focus: true,
-        readonly: isReadonly,
-      });
-    }
+    isEditable && handleDoubleClick(e, property, true, widgetData[0]);
   };
 
   /**
    * @method clearValue
    * @summary Set local `clearWidgetValue` value based on a given `reset` param. It controls
    * if the widget should be constructed with current value cleared or not. It is called
-   * by the TableRow
+   * be the TableItem
    *
-   * @param {string|null} reset - might also be `undefined` in which case (because we don't
-   * have a strict comparison below) it will be true
+   * @param {string|null} reset - might be also `undefined` case in which because below
+   * we don't have a strict comparison it will be true
    */
   clearValue = (reset) => {
     this.clearWidgetValue = reset == null ? true : false;
   };
+
+  /**
+   * @method getTdValue
+   * @summary Get the content of the table divider based on the widgetData provided
+   *
+   * @param {array} widgetData
+   */
+  getTdValue = (widgetData) => {
+    const { isEdited, item, isGerman } = this.props;
+
+    return !isEdited
+      ? fieldValueToString({
+          fieldValue: widgetData[0].value,
+          fieldType: item.widgetType,
+          precision: widgetData[0].precision,
+          isGerman,
+        })
+      : null;
+  };
+
+  /**
+   * @method getDescription
+   * @summary Get the description based on the widgetData and table divider value provided
+   *
+   * @param {array} widgetData
+   * @param {string|null} tdValue
+   */
+  getDescription = ({ widgetData, tdValue }) => {
+    return widgetData[0].value && widgetData[0].value.description
+      ? widgetData[0].value.description
+      : tdValue;
+  };
+
+  /**
+   * @method getTdTitle
+   * @summary Get the table divider title based on item content and provided description
+   *
+   * @param {object} item
+   * @param {string} desciption
+   */
+  getTdTitle = ({ item, description }) => {
+    return item.widgetType === 'YesNo' ||
+      item.widgetType === 'Switch' ||
+      item.widgetType === 'Color'
+      ? ''
+      : description;
+  };
+
+  /**
+   * @method checkIfDateField
+   * @summary check if it's a date field or not
+   *
+   * @param {object} item
+   */
+  checkIfDateField = ({ item }) =>
+    DATE_FIELD_FORMATS[item.widgetType]
+      ? getDateFormat(item.widgetType)
+      : false;
 
   render() {
     const {
@@ -150,6 +219,7 @@ class TableCell extends PureComponent {
       supportFieldEdit,
       cellExtended,
       extendLongText,
+      getWidgetData,
       item,
       windowId,
       rowId,
@@ -170,22 +240,30 @@ class TableCell extends PureComponent {
       updateHeight,
       rowIndex,
       hasComments,
-      tableId,
-      isReadonly,
-      isMandatory,
-      tooltipData,
-      tooltipWidget,
-      tdValue,
-      description,
-      colIndex,
     } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
-
-    const tdTitle = getTdTitle({ item, description });
+    const tdValue = this.getTdValue(widgetData);
+    const description = this.getDescription({ widgetData, tdValue });
+    let tdTitle = this.getTdTitle({ item, description });
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
-    const isDateField = checkIfDateField({ item });
+    const isDateField = this.checkIfDateField({ item });
     let style = cellExtended ? { height: extendLongText * 20 } : {};
+    let tooltipData = null;
+    let tooltipWidget =
+      item.fields && item.widgetType === 'Lookup'
+        ? item.fields.find((field, idx) => {
+            if (field.type === 'Tooltip') {
+              tooltipData = widgetData[idx];
+
+              if (tooltipData && tooltipData.value) {
+                return field;
+              }
+            }
+            return false;
+          })
+        : null;
 
     return (
       <td
@@ -199,8 +277,8 @@ class TableCell extends PureComponent {
           'table-cell',
           {
             [`text-${item.gridAlign}`]: item.gridAlign,
-            'cell-disabled': isReadonly,
-            'cell-mandatory': isMandatory,
+            'cell-disabled': widgetData[0].readonly,
+            'cell-mandatory': widgetData[0].mandatory,
           },
           getSizeClass(item),
           item.widgetType,
@@ -218,16 +296,13 @@ class TableCell extends PureComponent {
           />
         )}
         {isEdited ? (
-          <WidgetWrapper
-            renderMaster={true}
-            dataSource="table"
-            tableId={tableId}
+          <MasterWidget
             {...item}
             {...{
-              tableId,
-              windowId,
+              getWidgetData,
               viewId,
               rowId,
+              widgetData,
               closeTableField,
               isOpenDatePicker,
               listenOnKeys,
@@ -235,21 +310,20 @@ class TableCell extends PureComponent {
               listenOnKeysTrue,
               onClickOutside,
               rowIndex,
-              colIndex,
-              isEditable,
-              supportFieldEdit,
-              entity,
-              updateHeight,
             }}
             clearValue={this.clearWidgetValue}
+            entity={entity}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
+            windowType={windowId}
             isMainTable={mainTable}
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
             onChange={mainTable ? onCellChange : null}
+            ref={this.widget}
+            updateHeight={updateHeight}
           />
         ) : (
           <div className={classnames({ 'with-widget': tooltipWidget })}>
@@ -282,26 +356,18 @@ class TableCell extends PureComponent {
 TableCell.propTypes = {
   tabId: PropTypes.any,
   windowId: PropTypes.any,
-  viewId: PropTypes.string,
-  rowId: PropTypes.string,
-  docId: PropTypes.any,
-  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
-  colIndex: PropTypes.number,
-  tabIndex: PropTypes.number,
   keyProperty: PropTypes.string,
+  tabIndex: PropTypes.number,
   listenOnKeys: PropTypes.bool,
   listenOnKeysFalse: PropTypes.func,
   listenOnKeysTrue: PropTypes.func,
   closeTableField: PropTypes.func,
-  isReadonly: PropTypes.bool,
-  isMandatory: PropTypes.bool,
   tdValue: PropTypes.any,
-  description: PropTypes.any, // TODO: We have 4 types of values here. Needs fixing at some point.
-  tooltipData: PropTypes.any,
-  tooltipWidget: PropTypes.object,
   supportFieldEdit: PropTypes.bool,
   supportZoomInto: PropTypes.bool,
   updatedRow: PropTypes.any,
+  readonly: PropTypes.bool,
+  rowId: PropTypes.string,
   item: PropTypes.object,
   isEditable: PropTypes.bool,
   updateRow: PropTypes.any,
@@ -310,7 +376,7 @@ TableCell.propTypes = {
   property: PropTypes.string,
   getWidgetData: PropTypes.func,
   handleRightClick: PropTypes.func,
-  onKeyDown: PropTypes.func,
+  handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
   onClickOutside: PropTypes.func,
   onCellChange: PropTypes.func,
@@ -318,11 +384,13 @@ TableCell.propTypes = {
   isGerman: PropTypes.bool,
   entity: PropTypes.any,
   mainTable: PropTypes.bool,
+  viewId: PropTypes.string,
   modalVisible: PropTypes.bool,
+  docId: PropTypes.any,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   hasComments: PropTypes.bool,
   handleFocusAction: PropTypes.func,
-  tableId: PropTypes.string.isRequired,
 };
 
 export default TableCell;
