@@ -1,12 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-
-import {
-  openModal,
-  patch,
-  updatePropertyValue,
-} from '../actions/WindowActions';
 
 import MasterWidget from './widget/MasterWidget';
 import Loader from './app/Loader';
@@ -30,9 +23,8 @@ class Process extends Component {
    * @todo Write the documentation
    */
   renderElements = (layout, data, type) => {
-    const { disabled, openModal, patch, updatePropertyValue } = this.props;
+    const { disabled } = this.props;
     const elements = layout.elements;
-
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map((item) => data[item.field] || -1);
       return (
@@ -40,15 +32,12 @@ class Process extends Component {
           <MasterWidget
             entity="process"
             key={'element' + id}
-            windowId={type}
+            windowType={type}
             dataId={layout.pinstanceId}
             widgetData={widgetData}
             isModal={true}
             disabled={disabled}
             autoFocus={id === 0}
-            openModal={openModal}
-            patch={patch}
-            updatePropertyValue={updatePropertyValue}
             {...elem}
           />
         </div>
@@ -88,16 +77,6 @@ Process.propTypes = {
   data: PropTypes.any,
   layout: PropTypes.any,
   type: PropTypes.any,
-  updatePropertyValue: PropTypes.func.isRequired,
-  openModal: PropTypes.func.isRequired,
-  patch: PropTypes.func.isRequired,
 };
 
-export default connect(
-  null,
-  {
-    openModal,
-    patch,
-    updatePropertyValue,
-  }
-)(Process);
+export default Process;

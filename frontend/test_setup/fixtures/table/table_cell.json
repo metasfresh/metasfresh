@@ -41,15 +41,5 @@
   "tdValue": "{\"key\":\"1000000\",\"caption\":\"testfirma WebUI AG\"}",
   "cellExtended": false,
   "isRowSelected": false,
-  "isEdited": false,
-  "tableId": "anyid",
-  "widgetData": [{
-    "field": "AD_Org_ID",
-    "readonly": true,
-    "value": {
-      "key": "1000000",
-      "caption": "testfirma WebUI AG"
-    }
-  }],
-  "isReadonly": true
+  "isEdited": false
 }
