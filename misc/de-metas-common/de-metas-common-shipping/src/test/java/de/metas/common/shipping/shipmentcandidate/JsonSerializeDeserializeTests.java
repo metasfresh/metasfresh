@@ -151,6 +151,7 @@ class JsonSerializeDeserializeTests
 						.build())
 				.shipperInternalSearchKey("shipperInternalSearchKey")
 				.deliveredQtyNetPrice(BigDecimal.ZERO)
+				.qtyToDeliverNetPrice(BigDecimal.TEN)
 				.orderedQtyNetPrice(BigDecimal.TEN)
 				.build();
 
@@ -178,6 +179,9 @@ class JsonSerializeDeserializeTests
 						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").stocked(true).documentNote("documentNote_1").build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").shipmentAllocationBestBeforePolicy("E").build())
+						.orderedQtyNetPrice(BigDecimal.ONE)
+						.qtyToDeliverNetPrice(BigDecimal.ONE)
+						.deliveredQtyNetPrice(BigDecimal.TEN)
 						.build())
 				.item(JsonResponseShipmentCandidate.builder()
 						.id(JsonMetasfreshId.of(20))
@@ -188,6 +192,9 @@ class JsonSerializeDeserializeTests
 						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").stocked(true).build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 						.customer(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").shipmentAllocationBestBeforePolicy("E").build())
+						.orderedQtyNetPrice(BigDecimal.ONE)
+						.qtyToDeliverNetPrice(BigDecimal.ONE)
+						.deliveredQtyNetPrice(BigDecimal.TEN)
 						.build())
 				.build();
 

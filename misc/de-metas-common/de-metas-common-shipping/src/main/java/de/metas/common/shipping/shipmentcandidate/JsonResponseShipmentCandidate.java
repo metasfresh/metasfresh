@@ -92,16 +92,16 @@ public class JsonResponseShipmentCandidate
 			value = "The internal search key of the assigned shipper")
 	String shipperInternalSearchKey;
 
-	@ApiModelProperty(position = 110, required = true,
+	@ApiModelProperty(position = 110,
 			value = "The net price of the ordered quantity")
 	BigDecimal orderedQtyNetPrice;
 
-	@ApiModelProperty(position = 115, required = true,
+	@ApiModelProperty(position = 115,
 			value = "The net price of the quantity currently to deliver")
 	@Nullable
 	private final BigDecimal qtyToDeliverNetPrice;
 
-	@ApiModelProperty(position = 120, required = true,
+	@ApiModelProperty(position = 120,
 			value = "The net price of the delivered quantity ")
 	BigDecimal deliveredQtyNetPrice;
 
@@ -120,9 +120,9 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("quantities") @NonNull @Singular final List<JsonQuantity> quantities,
 			@JsonProperty("shipperInternalSearchKey") @Nullable final String shipperInternalSearchKey,
 			@JsonProperty("orderedQty") @NonNull final List<JsonQuantity> orderedQty,
-			@JsonProperty("deliveredQtyNetPrice") @NonNull final BigDecimal deliveredQtyNetPrice,
-			@JsonProperty("qtyToDeliverNetPrice") @NonNull final BigDecimal qtyToDeliverNetPrice,
-			@JsonProperty("orderedQtyNetPrice") @NonNull final BigDecimal orderedQtyNetPrice)
+			@JsonProperty("deliveredQtyNetPrice") @Nullable final BigDecimal deliveredQtyNetPrice,
+			@JsonProperty("qtyToDeliverNetPrice") @Nullable final BigDecimal qtyToDeliverNetPrice,
+			@JsonProperty("orderedQtyNetPrice") @Nullable final BigDecimal orderedQtyNetPrice)
 	{
 		this.id = id;
 		this.orgCode = orgCode;
