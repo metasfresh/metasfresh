@@ -330,8 +330,8 @@ const reducer = produce((draftState, action) => {
     }
     case types.SET_SORT_FIELDS: {
       const { tableId, fields } = action.payload;
-      draftState.headers = {};
-      draftState.headers[tableId] = fields;
+      draftState.sortOptions = {};
+      draftState.sortOptions[tableId] = fields;
       return;
     }
   }

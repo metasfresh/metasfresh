@@ -132,7 +132,9 @@ const mapStateToProps = (state, ownProps) => {
 
   return {
     headersFields:
-      state.tables && state.tables.headers ? state.tables.headers[tableId] : {},
+      state.tables && state.tables.sortOptions
+        ? state.tables.sortOptions[tableId]
+        : {},
   };
 };
 
