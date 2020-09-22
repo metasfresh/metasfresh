@@ -1,14 +1,13 @@
 package de.metas.camel.inventory;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
 import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.ROW;
 import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -100,12 +99,12 @@ class InventoryXmlRowWrapper
 	/** Best Before Date */
 	public LocalDate get_wareneingang_mhd_ablauf_datum()
 	{
-		return getValueAsLocalDate("_wareneingang_mhd_ablauf_datum");
+		return getValueAsLocalDate("_lagerscan_mhd_ablauf_datum");
 	}
 
 	/** Lot Number */
 	public String get_wareneingang_mhd_charge()
 	{
-		return metadata.getCell(row, "_wareneingang_mhd_charge").getValueAsString();
+		return metadata.getCell(row, "_lagerscan_mhd_charge").getValueAsString();
 	}
 }
