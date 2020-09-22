@@ -62,7 +62,7 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 				this::toJsonRequestManufacturingOrdersReport);
 	}
 
-	private <T, R> void processExchange(
+	private static <T, R> void processExchange(
 			final Exchange exchange,
 			final BiFunction<ROW, METADATA, T> itemBuilder,
 			final Function<List<T>, R> requestBuilder)

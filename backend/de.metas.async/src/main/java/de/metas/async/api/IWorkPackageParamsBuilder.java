@@ -24,6 +24,10 @@ package de.metas.async.api;
 
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.util.api.IParams;
+
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 
@@ -46,10 +50,12 @@ public interface IWorkPackageParamsBuilder
 	/**
 	 * Set/Updates given workpackage parameter
 	 */
-	IWorkPackageParamsBuilder setParameter(final String parameterName, final Object parameterValue);
+	IWorkPackageParamsBuilder setParameter(final String parameterName, @Nullable final Object parameterValue);
 
 	/**
 	 * Set/Updates given workpackage parameters
 	 */
-	IWorkPackageParamsBuilder setParameters(final Map<String, ? extends Object> parameters);
+	IWorkPackageParamsBuilder setParameters(@Nullable final Map<String, ? extends Object> parameters);
+
+	IWorkPackageParamsBuilder setParameters(@Nullable IParams parameters);
 }

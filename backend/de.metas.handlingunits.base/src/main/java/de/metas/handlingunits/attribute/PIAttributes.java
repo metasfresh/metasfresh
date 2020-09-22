@@ -42,7 +42,7 @@ import lombok.ToString;
 @ToString
 public final class PIAttributes implements Iterable<I_M_HU_PI_Attribute>
 {
-	public static final PIAttributes of(@NonNull final Collection<I_M_HU_PI_Attribute> piAttributes)
+	public static PIAttributes of(@NonNull final Collection<I_M_HU_PI_Attribute> piAttributes)
 	{
 		if (piAttributes.isEmpty())
 		{
@@ -132,5 +132,10 @@ public final class PIAttributes implements Iterable<I_M_HU_PI_Attribute>
 	public boolean isEmpty()
 	{
 		return attributesByAttributeId.isEmpty();
+	}
+
+	public boolean isUseInASI(@NonNull final AttributeId attributeId)
+	{
+		return getByAttributeId(attributeId).isUseInASI();
 	}
 }

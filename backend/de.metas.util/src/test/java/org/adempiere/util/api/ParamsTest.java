@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
+import de.metas.util.lang.RepoIdAwaresTest.DummyRepoIdAware;
 import lombok.Getter;
 
 /*
@@ -61,27 +62,82 @@ public class ParamsTest
 		}
 	}
 
+	private static Params singleParam(final String parameterName, final Object value)
+	{
+		return Params.ofMap(ImmutableMap.<String, Object> builder()
+				.put(parameterName, value)
+				.build());
+	}
+
 	@Nested
 	public class getParameterAsEnum
 	{
 		@Test
 		public void regularEnum()
 		{
-			final Params params = Params.ofMap(ImmutableMap.<String, Object> builder()
-					.put("param", TestRegularEnum.OPTION1.name())
-					.build());
-
+			final Params params = singleParam("param", TestRegularEnum.OPTION1.name());
 			assertThat(params.getParameterAsEnum("param", TestRegularEnum.class).get()).isSameAs(TestRegularEnum.OPTION1);
 		}
 
 		@Test
 		public void referenceListAwareEnum()
 		{
-			final Params params = Params.ofMap(ImmutableMap.<String, Object> builder()
-					.put("param", TestReferenceListAwareEnum.OPTION1.getCode())
-					.build());
-
+			final Params params = singleParam("param", TestReferenceListAwareEnum.OPTION1.getCode());
 			assertThat(params.getParameterAsEnum("param", TestReferenceListAwareEnum.class).get()).isSameAs(TestReferenceListAwareEnum.OPTION1);
+		}
+	}
+
+	@Nested
+	public class getParameterAsId
+	{
+		@Test
+		public void fromNegativeInt()
+		{
+			final Params params = singleParam("param", -1);
+			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
+		}
+
+		@Test
+		public void fromPositiveInt()
+		{
+			final Params params = singleParam("param", 1234);
+			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isEqualTo(DummyRepoIdAware.ofRepoId(1234));
+		}
+
+		@Test
+		public void fromMissingValue()
+		{
+			final Params params = Params.EMPTY;
+			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
+		}
+
+		@Test
+		public void fromRepoIdAware()
+		{
+			final DummyRepoIdAware id = DummyRepoIdAware.ofRepoId(111);
+			final Params params = singleParam("param", id);
+			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isSameAs(id);
+		}
+
+		@Test
+		public void fromPositiveString()
+		{
+			final Params params = singleParam("param", "1234");
+			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isEqualTo(DummyRepoIdAware.ofRepoId(1234));
+		}
+
+		@Test
+		public void fromNegativeString()
+		{
+			final Params params = singleParam("param", "-1234");
+			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
+		}
+
+		@Test
+		public void fromInvalidString()
+		{
+			final Params params = singleParam("param", "invalid_number");
+			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
 		}
 
 	}

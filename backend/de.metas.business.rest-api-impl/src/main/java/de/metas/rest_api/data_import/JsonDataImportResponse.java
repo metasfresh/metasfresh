@@ -1,7 +1,15 @@
 package de.metas.rest_api.data_import;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.impexp.DataImportRunId;
+import de.metas.impexp.config.DataImportConfigId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,24 +36,71 @@ import lombok.Value;
 
 @Value
 @Builder
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonDataImportResponse
 {
-	int dataImportConfigId;
+	@Value
+	@Builder
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class JsonInsertIntoImportTable
+	{
+		String fromResource;
+		String toImportTableName;
+		String importFormatName;
+		DataImportConfigId dataImportConfigId;
 
-	@NonNull
-	String importFormatName;
+		String duration;
+		DataImportRunId dataImportRunId;
+		int countTotalRows;
+		int countValidRows;
 
-	//
-	// Source file
-	int countSourceFileValidLines;
-	int countSourceFileErrorLines;
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		List<JsonErrorItem> errors;
+	}
 
-	//
-	// Import table
-	String importTableName;
-	int countImportRecordsWithErrors;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	JsonInsertIntoImportTable insertIntoImportTable;
 
-	//
-	// Target table
-	String targetTableName;
+	@Value
+	@Builder
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class JsonImportRecordsValidation
+	{
+		String importTableName;
+		String duration;
+		int countImportRecordsDeleted;
+		int countErrors;
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	JsonImportRecordsValidation importRecordsValidation;
+
+	@Value
+	@Builder
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class JsonActualImport
+	{
+		String importTableName;
+		String targetTableName;
+		int countImportRecordsConsidered;
+		int countInsertsIntoTargetTable;
+		int countUpdatesIntoTargetTable;
+
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		List<JsonErrorItem> errors;
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	JsonActualImport actualImport;
+
+	@Value
+	@Builder
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class JsonActualImportAsync
+	{
+		int workpackageId;
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	JsonActualImportAsync actualImportAsync;
 }

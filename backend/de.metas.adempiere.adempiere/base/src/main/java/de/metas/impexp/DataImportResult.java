@@ -36,22 +36,18 @@ public class DataImportResult
 	@NonNull
 	DataImportConfigId dataImportConfigId;
 
-	@NonNull
-	String importFormatName;
-
-	//
-	// Source file
-	int countSourceFileValidLines;
-	int countSourceFileErrorLines;
-
-	//
-	// Import table
-	String importTableName;
-	int countImportRecordsWithErrors;
-
-	//
-	// Target table
-	String targetTableName;
-
 	Duration duration;
+
+	@NonNull
+	InsertIntoImportTableResult insertIntoImportTable;
+	ValidateImportRecordsResult importRecordsValidation;
+	ActualImportRecordsResult actualImport;
+	AsyncImportRecordsResponse asyncImportResult;
+
+	public boolean hasErrors()
+	{
+		return insertIntoImportTable.hasErrors()
+				|| (importRecordsValidation != null && importRecordsValidation.hasErrors())
+				|| (actualImport != null && actualImport.hasErrors());
+	}
 }

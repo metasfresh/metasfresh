@@ -10,6 +10,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
+import de.metas.impexp.InsertIntoImportTableResult;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -69,7 +70,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
 
-		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
+		final DataImportResult result = dataImportService.importDataFromResource(DataImportRequest.builder()
 				.data(data)
 				.dataImportConfigId(getDataImportConfigId())
 				.clientId(getClientId())
@@ -80,9 +81,23 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 		deleteAttachmentEntry();
 
-		return "@IsImportScheduled@ #" + result.getCountSourceFileValidLines()
-				+ ", @IsError@ #" + result.getCountSourceFileErrorLines()
-				+ " (took " + result.getDuration() + ")";
+		return toSummaryString(result);
+	}
+
+	private String toSummaryString(final DataImportResult importResult)
+	{
+		final StringBuilder result = new StringBuilder();
+		result.append("@IsImportScheduled@");
+
+		final InsertIntoImportTableResult insertIntoImportTable = importResult.getInsertIntoImportTable();
+		if (insertIntoImportTable != null)
+		{
+			result.append("#").append(insertIntoImportTable.getCountValidRows())
+					.append(", @IsError@ #").append(insertIntoImportTable.getErrors().size());
+		}
+
+		result.append(" (took " + importResult.getDuration() + ")");
+		return result.toString();
 	}
 
 	private AttachmentEntryId getAttachmentEntryId()
