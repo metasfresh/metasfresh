@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.acct.model.validator.C_BP_BankAccount;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
@@ -70,6 +72,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
+import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SepaMarshallerException;
@@ -86,8 +89,11 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemMember
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ContactDetails2CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceInformation2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CustomerCreditTransferInitiationV03CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.DocumentType3Code;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.FinancialInstitutionIdentification7CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.FinancialInstitutionIdentification7CHBicOrClrId;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.GenericAccountIdentification1CH;
@@ -650,7 +656,16 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final AccountIdentification4ChoiceCH id = objectFactory.createAccountIdentification4ChoiceCH();
 			cdtrAcct.setId(id);
 
-			final String iban = line.getIBAN();
+			String iban = line.getIBAN();
+			
+			// if QRR Remittance Info QR IBAN must be used
+			if (isQrrRemittanceInfo(line.getStructuredRemittanceInfo())) 
+			{
+				if (bankAccount != null) {
+					if (!Check.isEmpty(bankAccount.getQR_IBAN()))
+						iban = bankAccount.getQR_IBAN();
+				}
+			}
 			if (!Check.isEmpty(iban, true) && paymentType != PAYMENT_TYPE_1)
 			{
 				// prefer IBAN, unless we have paypent type 1 (because then we use the ISR participant number)
@@ -678,7 +693,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		{
 			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
 			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true)
-					|| (paymentType == PAYMENT_TYPE_3 && !isQrIBAN(line.getIBAN()))
+					|| (paymentType == PAYMENT_TYPE_3 && !isQrrRemittanceInfo(line.getStructuredRemittanceInfo()) && !isScorRemittanceInfo(line.getStructuredRemittanceInfo()))
 					|| paymentType == PAYMENT_TYPE_5)
 			{
 				Check.errorIf(paymentType == PAYMENT_TYPE_1, SepaMarshallerException.class,
@@ -701,6 +716,30 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
 					rmtInf.setUstrd(validReference);
 				}
+			}
+			else if (paymentType == PAYMENT_TYPE_3 && isQrrRemittanceInfo(line.getStructuredRemittanceInfo())) {
+				final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
+				rmtInf.setStrd(strd);
+				final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
+				final CreditorReferenceType2 cdtrRefType = objectFactory.createCreditorReferenceType2();
+				final CreditorReferenceType1Choice cdOrPrtry = objectFactory.createCreditorReferenceType1Choice();
+				cdOrPrtry.setPrtry("QRR");
+				cdtrRefType.setCdOrPrtry(cdOrPrtry);
+				cdtrRefInf.setTp(cdtrRefType);
+				strd.setCdtrRefInf(cdtrRefInf);
+				cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
+			}
+			else if (paymentType == PAYMENT_TYPE_3 && isScorRemittanceInfo(line.getStructuredRemittanceInfo())) {
+				final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
+				rmtInf.setStrd(strd);
+				final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
+				final CreditorReferenceType2 cdtrRefType = objectFactory.createCreditorReferenceType2();
+				final CreditorReferenceType1Choice cdOrPrtry = objectFactory.createCreditorReferenceType1Choice();
+				cdOrPrtry.setCd(DocumentType3Code.valueOf("SCOR"));				
+				cdtrRefType.setCdOrPrtry(cdOrPrtry);
+				cdtrRefInf.setTp(cdtrRefType);
+				strd.setCdtrRefInf(cdtrRefInf);
+				cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
 			}
 			else
 			{
@@ -891,7 +930,105 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		return isQrIban;
 	}
+	
+	/**
+	 * Returns true if the given RemittanceInfo is supposed to be a «ISO Creditor Reference» ISO 11649. This can be assumed if the given RemittanceInfo starts with "RF".
+	 * and has a check sum (module 97 10) on char 3-4
+	 * @param remittanceInfo
+	 * @return
+	 */
+	@VisibleForTesting
+	static boolean isScorRemittanceInfo(final String remittanceInfo)
+	{
+		if (Check.isEmpty(remittanceInfo, true))
+		{
+			return false;
+		}
+		final String remittanceInfoToUse = remittanceInfo.replaceAll(" ", "");
+		
+		// must be at least 5 chars
+		if (remittanceInfoToUse.length() < 5) 
+		{
+			return false;
+		}
+		
+		if (!remittanceInfoToUse.startsWith("RF")) {
+			return false;
+		}
+		final String refScor = remittanceInfoToUse.substring(4) + remittanceInfoToUse.substring(0,4);
+		
+		refScor.replaceAll("A","10");
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < refScor.length(); i++) {
+		    char ch = refScor.charAt(i);
+		    if (String.valueOf(ch).matches("\\d*"))
+		    {
+		    	sb.append(ch);
+		    } else {
+		    	sb.append(Character.getNumericValue(Character.toLowerCase(ch)));
+		    }
+		}
+		String refScorProcessed  = sb.toString();
+		BigInteger checkScorSum;
+  	    try {
+  	    	checkScorSum = new BigInteger(refScorProcessed);
+	    } catch (Exception e) {
+	    	return false;
+	    }	 
+	    // Modulo calculate
+	    BigInteger faktor = new BigInteger("97");
+	    long div = checkScorSum.remainder(faktor).longValue();
+		
+	    if (div != 1)
+	    {
+	    	return false;
+	    }
 
+		return true;
+	}
+
+	/**
+	 * Returns true if the given RemittanceInfo is supposed to be a «QR Reference» (old ESR). This can be assumed if the given RemittanceInfo has 27 numeric chars.
+	 * and the last char is the check digit
+	 * @param remittanceInfo
+	 * @return
+	 */
+	@VisibleForTesting
+	protected boolean isQrrRemittanceInfo(final String remittanceInfo)
+	{
+		// must not be empty
+		if (Check.isEmpty(remittanceInfo, true))
+		{
+			return false;
+		}
+		final String remittanceInfoToUse = remittanceInfo.replaceAll(" ", "");
+
+		// must only contains numbers
+		if (!remittanceInfoToUse.matches("\\d*")) {
+			return false;			
+		}
+
+		// must be exactly 27 chars
+		if (remittanceInfoToUse.length() != 27) 
+		{
+			return false;
+		}
+
+		// char 27 must be check digit
+		final String qrRef = remittanceInfoToUse.substring(0,26);
+		final int qrRefCeckDigit = Integer.parseInt(remittanceInfoToUse.substring(26,27));
+		
+		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+		final int checkDigit = esrImportBL.calculateESRCheckDigit(qrRef);
+		
+		if (checkDigit != qrRefCeckDigit) 
+		{
+			return false;						
+		}
+		
+		return true;
+	}
+	
 	protected String getBankNameIfAny(final I_SEPA_Export_Line line)
 	{
 		final I_C_BP_BankAccount bpartnerBankAccount = line.getC_BP_BankAccount();
@@ -959,7 +1096,16 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		else
 		{
 			final CurrencyCode currencyCode = extractCurrencyCode(line);
-			final String iban = line.getIBAN();
+			String iban = line.getIBAN();
+			
+			// if QRR Remittance Info QR IBAN must be used
+			if (isQrrRemittanceInfo(line.getStructuredRemittanceInfo())) 
+			{
+				if (bPBankAccount != null) {
+					if (!Check.isEmpty(bPBankAccount.getQR_IBAN()))
+						iban = bPBankAccount.getQR_IBAN();
+				}
+			}
 
 			final boolean swizzIban = isSwizzIBAN(iban);
 			if (swizzIban || bPBankAccount.isEsrAccount())

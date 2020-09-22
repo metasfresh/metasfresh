@@ -59,6 +59,8 @@ public interface IPaymentString
 
 	String getReferenceNoComplete();
 
+	String getUnstructuredMessage();
+
 	Timestamp getPaymentDate();
 
 	Timestamp getAccountDate();

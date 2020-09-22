@@ -47,7 +47,8 @@ public class PaymentString implements IPaymentString
 	private final String ibanAccountNo;
 	private final String currency;
 	private final Boolean qrPaymentString; 
-	private final Boolean qrIBAN; 
+	private final Boolean qrIBAN;
+	private final String unstructuredMessage;
 
 	private IPaymentStringDataProvider dataProvider = null;
 
@@ -77,6 +78,7 @@ public class PaymentString implements IPaymentString
 		this.qrIBAN = false;
 		this.currency = null;
 		this.qrPaymentString = false;
+		this.unstructuredMessage = null;
 	}
 	
 	public PaymentString(
@@ -87,6 +89,7 @@ public class PaymentString implements IPaymentString
 			final String ibanAccountNo,
 			final Boolean qrIBAN,
 			final String referenceNoComplete,
+			final String unstructuredMessage,
 			final String currency)
 	{
 		this.collectedErrors = collectedErrors;
@@ -98,6 +101,7 @@ public class PaymentString implements IPaymentString
 		this.ibanAccountNo = ibanAccountNo;
 		this.qrIBAN = qrIBAN;
 		this.referenceNoComplete = referenceNoComplete;
+		this.unstructuredMessage = unstructuredMessage;
 		this.currency = currency;
 
 		this.postAccountNo = null;
@@ -147,6 +151,12 @@ public class PaymentString implements IPaymentString
 	public String getReferenceNoComplete()
 	{
 		return referenceNoComplete;
+	}
+
+	@Override
+	public String getUnstructuredMessage()
+	{
+		return unstructuredMessage;
 	}
 
 	@Override

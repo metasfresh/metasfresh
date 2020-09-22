@@ -108,6 +108,7 @@ public class ESRQRStringParserTests
 		assertThat(result.getIbanAccountNo()).isEqualTo("CH4409000000909909999");
 		assertThat(result.getReferenceNoComplete()).isEqualTo("000000000000010360022841297");
 		assertThat(result.getAmount()).isEqualTo(new BigDecimal("999.99"));
+		assertTrue(result.isQRIBAN());
 	}
 
 }

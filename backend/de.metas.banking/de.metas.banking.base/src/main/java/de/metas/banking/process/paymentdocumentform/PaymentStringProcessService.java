@@ -53,6 +53,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -70,6 +71,7 @@ public class PaymentStringProcessService
 
 	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
 	private final IPaymentRequestDAO paymentRequestDAO = Services.get(IPaymentRequestDAO.class);
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 
@@ -153,7 +155,7 @@ public class PaymentStringProcessService
 		return ProcessPreconditionsResolution.acceptIf(!invoice.isSOTrx());
 	}
 
-	public void createPaymentRequestFromTemplate(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final I_C_Payment_Request template)
+	public void createPaymentRequestFromTemplate(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final I_C_Payment_Request template, @Nullable final IPaymentString paymentString)
 	{
 		if (template == null)
 		{
@@ -169,7 +171,8 @@ public class PaymentStringProcessService
 			throw new AdempiereException(msg).markAsUserValidationError();
 		}
 
-		paymentRequestBL.createPaymentRequest(invoice, template);
+		paymentRequestBL.createPaymentRequest(invoice, template, paymentString);
+		
 	}
 
 	public I_C_Payment_Request createPaymentRequestTemplate(final I_C_BP_BankAccount bankAccount, final BigDecimal amount, final IPaymentString paymentString)
