@@ -158,6 +158,7 @@ public class DataImportService
 				.setCtx(Env.getCtx())
 				.setLoggable(Loggables.get())
 				.selectedRecords(request.getSelectionId())
+				.completeDocuments(request.isCompleteDocuments())
 				.setParameters(request.getAdditionalParameters())
 				.run();
 

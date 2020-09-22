@@ -53,6 +53,7 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 	@VisibleForTesting
 	static final String METASFRESH_EP_DATA_IMPORT = "http://{{metasfresh.api.baseurl}}/import/text"
 			+ "?dataImportConfig={{metasfresh.inventory.dataImportConfig}}"
+			+ "&runSynchronous=true"
 			+ "&completeDocuments={{metasfresh.inventory.completeDocuments}}";
 
 	@VisibleForTesting
