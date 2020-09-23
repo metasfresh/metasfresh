@@ -1,5 +1,20 @@
 package de.metas.invoice.service;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.X_C_DocType;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -41,20 +56,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.X_C_DocType;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
 {
@@ -429,7 +430,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * 
 	 * @param invoice
 	 * @param discountAmt - the value is not AP corrected. The correction is done inside this function
-	 * @param description
+	 * @param date
 	 */
-	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, String description);
+	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
 }

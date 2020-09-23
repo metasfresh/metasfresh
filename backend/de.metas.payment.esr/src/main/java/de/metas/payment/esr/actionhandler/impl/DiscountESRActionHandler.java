@@ -56,7 +56,7 @@ public class DiscountESRActionHandler extends AbstractESRActionHandler
 			@Override
 			public void run(String trxName) throws Exception
 			{
-				invoiceBL.discountInvoice(invoice, discount, message);
+				invoiceBL.discountInvoice(invoice, discount, payment.getDateAcct());
 			}
 		});
 		

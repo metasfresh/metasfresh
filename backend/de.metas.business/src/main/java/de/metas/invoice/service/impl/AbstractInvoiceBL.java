@@ -1753,7 +1753,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final void discountInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice, final @NonNull Amount discountAmt , final String description)
+	public final void discountInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice, final @NonNull Amount discountAmt, final @NonNull Timestamp date)
 	{
 		if (discountAmt .signum() == 0)
 		{
@@ -1767,8 +1767,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Services.get(IAllocationBL.class).newBuilder()
 			.orgId(invoice.getAD_Org_ID())
 			.currencyId(currencyId)
-			.dateAcct(invoice.getDateAcct())
-			.dateTrx(invoice.getDateInvoiced())
+			.dateAcct(date)
+			.dateTrx(date)
 			.addLine()
 				.orgId(invoice.getAD_Org_ID())
 				.bpartnerId(invoice.getC_BPartner_ID())
