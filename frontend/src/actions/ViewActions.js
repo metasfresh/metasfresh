@@ -35,12 +35,21 @@ import {
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
+<<<<<<< HEAD
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 import {
   createFilter,
   deleteFilter,
   populateFiltersCaptions,
 } from './FiltersActions';
+=======
+import {
+  createGridTable,
+  updateGridTable,
+  deleteTable,
+  setActiveSortFields,
+} from './TableActions';
+>>>>>>> master
 
 /**
  * @method resetView
@@ -338,6 +347,9 @@ export function fetchDocument({
         }
 
         dispatch(updateGridTable(tableId, tableData));
+        dispatch(
+          setActiveSortFields({ tableId, orderBy: response.data.orderBy })
+        );
 
         const state = getState();
         const view = getView(state, windowId, isModal);

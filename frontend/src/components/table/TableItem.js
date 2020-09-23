@@ -157,6 +157,9 @@ class TableItem extends PureComponent {
       fieldsByName,
       onFastInlineEdit,
     } = this.props;
+
+    const inputContent = e.target.value;
+
     const { listenOnKeys, edited, valueBeforeEditing } = this.state;
     switch (e.key) {
       case 'Enter':
@@ -164,8 +167,29 @@ class TableItem extends PureComponent {
           this.handleEditProperty(e, property, true, widgetData);
           this.setState({ valueBeforeEditing: e.target.textContent });
         }
+        updatePropertyValue({
+          property,
+          value: inputContent,
+          tabId,
+          rowId,
+          isModal: modalVisible,
+          entity,
+          tableId,
+        });
         break;
       case 'Tab':
+        updatePropertyValue({
+          property,
+          value: e.target.value,
+          tabId,
+          rowId,
+          isModal: modalVisible,
+          entity,
+          tableId,
+        });
+        e.stopPropagation();
+        this.handleEditProperty(e);
+        break;
       case 'Escape':
         if (edited === property) {
           updatePropertyValue({

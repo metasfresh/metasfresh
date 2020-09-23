@@ -45,8 +45,11 @@ public class JsonCreateReceiptsResponse
 {
 	@JsonProperty("createdReceiptIdList")
 	List<JsonMetasfreshId> createdReceiptIdList;
-	
-	
+
+	@JsonProperty("createdReturnIdList")
+	List<JsonMetasfreshId> createdReturnIdList;
+
+
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonCreateReceiptsResponseBuilder
 	{

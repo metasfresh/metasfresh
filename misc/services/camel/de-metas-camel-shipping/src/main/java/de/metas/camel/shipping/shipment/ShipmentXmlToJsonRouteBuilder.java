@@ -47,6 +47,7 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 					.otherwise()
 						.log(LoggingLevel.INFO, "Posting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} shipments to metasfresh.")
 						.marshal(requestJacksonDataFormat)
+						.removeHeaders("*") // we don't want so send all headers as HTTP-headers; might be too much and we'd get an error back
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.to(http(CREATE_SHIPMENT_MF_URL))

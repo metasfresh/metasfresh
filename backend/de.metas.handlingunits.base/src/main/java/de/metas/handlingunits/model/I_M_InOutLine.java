@@ -55,7 +55,7 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 
 	// @formatter:off
 	public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-	// public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
+	public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
 	public int getM_HU_PI_Item_Product_ID();
 	public void setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product M_HU_PI_Item_Product) throws RuntimeException;
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;

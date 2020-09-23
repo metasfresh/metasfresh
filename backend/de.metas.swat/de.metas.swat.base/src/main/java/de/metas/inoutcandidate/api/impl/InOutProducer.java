@@ -498,6 +498,7 @@ public class InOutProducer implements IInOutProducer
 		//external id
 		{
 			receiptHeader.setExternalId(getExternalId(rs));
+			receiptHeader.setExternalResourceURL(getExternalResourceURL(rs));
 		}
 
 		//
@@ -646,6 +647,19 @@ public class InOutProducer implements IInOutProducer
 				? StringUtils.trimBlankToNull(externalInfo.getExternalId())
 				: null;
 	}
+
+	@Nullable
+	private String getExternalResourceURL(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+
+		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
+
+		return externalInfo != null
+				? StringUtils.trimBlankToNull(externalInfo.getExternalResourceURL())
+				: null;
+	}
+
 
 	private Timestamp getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{

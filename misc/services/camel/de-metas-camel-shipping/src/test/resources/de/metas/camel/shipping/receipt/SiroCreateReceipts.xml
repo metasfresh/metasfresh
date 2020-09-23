@@ -24,7 +24,7 @@
                TYPE="TEXT"/>
         <FIELD EMPTYOK="YES"
                MAXREPEAT="1"
-               NAME="_wareneingang_ist_eine_retoure"
+               NAME="_wareneingang_ist_retoure_ja_nein"
                TYPE="TEXT"/>
         <FIELD EMPTYOK="YES"
                MAXREPEAT="1"
@@ -62,49 +62,113 @@
                MAXREPEAT=" 1 "
                NAME="_anlieferung_position_id"
                TYPE=" TEXT "/>
+        <FIELD EMPTYOK=" YES "
+               MAXREPEAT=" 1 "
+               NAME="_bestellung_position_id"
+               TYPE=" TEXT "/>
+        <FIELD EMPTYOK=" YES "
+               MAXREPEAT=" 1 "
+               NAME="_wareneingang_ist_retoure_ja_url"
+               TYPE=" TEXT "/>
+        <FIELD EMPTYOK=" YES "
+               MAXREPEAT=" 1 "
+               NAME="_wareneingang_lieferschein_url"
+               TYPE=" TEXT "/>
     </METADATA>
     <RESULTSET FOUND="1">
         <ROW MODID="16"
              RECORDID="2">
             <COL>
-                <DATA>123</DATA>
+                <DATA>123</DATA><!-- _wareneingang_nummer -->
             </COL>
             <COL>
-                <DATA>27.05.2020</DATA>
+                <DATA>27.05.2020</DATA><!-- _wareneingang_datum -->
             </COL>
             <COL>
-                <DATA>27.05.2020 15.20.03</DATA>
+                <DATA>27.05.2020 15.20.03</DATA><!-- _wareneingang_zeitstempel -->
             </COL>
             <COL>
-                <DATA>ja</DATA>
+                <DATA>nein</DATA><!-- _wareneingang_ist_retoure_ja_nein -->
             </COL>
             <COL>
-                <DATA>test-lot-number</DATA>
+                <DATA>test-lot-number</DATA><!-- _wareneingang_mhd_charge -->
             </COL>
             <COL>
-                <DATA>27.05.2024</DATA>
+                <DATA>27.05.2024</DATA><!-- _wareneingang_mhd_ablauf_datum -->
             </COL>
             <COL>
-                <DATA>productSearchKey</DATA>
+                <DATA>1-productSearchKey</DATA><!-- _artikel_nummer -->
             </COL>
             <COL>
-                <DATA>product name</DATA>
+                <DATA>product name</DATA><!-- _artikel_bezeichnung -->
             </COL>
             <COL>
-                <DATA>10</DATA>
+                <DATA>10</DATA><!-- _artikel_menge -->
             </COL>
             <COL>
-                <DATA>0.45 kg</DATA>
+                <DATA>0.45 kg</DATA><!-- _artikel_gewicht_1_stueck -->
             </COL>
             <COL>
-                <DATA>article_flavor</DATA>
+                <DATA>article_flavor</DATA><!-- _artikel_geschmacksrichtung -->
             </COL>
             <COL>
-                <DATA>12</DATA>
+                <DATA>12</DATA> <!-- _artikel_verpackungsgroesse -->
             </COL>
             <COL>
-                <DATA>1</DATA>
+                <DATA>1</DATA> <!-- _anlieferung_position_id -->
             </COL>
+            <COL/><!-- _bestellung_position_id -->
+            <COL/><!-- _wareneingang_ist_retoure_ja_url -->
+            <COL>
+                <DATA>receipt_externalResourceURL</DATA> <!-- _wareneingang_lieferschein_url -->
+            </COL>
+        </ROW>
+        <ROW MODID="16"
+             RECORDID="2">
+            <COL>
+                <DATA>123</DATA><!-- _wareneingang_nummer -->
+            </COL>
+            <COL>
+                <DATA>27.05.2020</DATA><!-- _wareneingang_datum -->
+            </COL>
+            <COL>
+                <DATA>27.05.2020 15.20.03</DATA><!-- _wareneingang_zeitstempel -->
+            </COL>
+            <COL>
+                <DATA>ja</DATA><!-- _wareneingang_ist_retoure_ja_nein -->
+            </COL>
+            <COL>
+                <DATA>test-lot-number</DATA><!-- _wareneingang_mhd_charge -->
+            </COL>
+            <COL>
+                <DATA>27.05.2024</DATA><!-- _wareneingang_mhd_ablauf_datum -->
+            </COL>
+            <COL>
+                <DATA>1-productSearchKey</DATA><!-- _artikel_nummer -->
+            </COL>
+            <COL>
+                <DATA>product name</DATA><!-- _artikel_bezeichnung -->
+            </COL>
+            <COL>
+                <DATA>10</DATA><!-- _artikel_menge -->
+            </COL>
+            <COL>
+                <DATA>0.45 kg</DATA><!-- _artikel_gewicht_1_stueck -->
+            </COL>
+            <COL>
+                <DATA>article_flavor</DATA><!-- _artikel_geschmacksrichtung -->
+            </COL>
+            <COL>
+                <DATA>12</DATA> <!-- _artikel_verpackungsgroesse -->
+            </COL>
+            <COL/><!-- _anlieferung_position_id -->
+            <COL>
+                <DATA>1</DATA> <!-- _bestellung_position_id -->
+            </COL>
+            <COL>
+                <DATA>externalResourceURL</DATA> <!-- _wareneingang_ist_retoure_ja_url -->
+            </COL>
+            <COL/><!-- _wareneingang_lieferschein_url -->
         </ROW>
     </RESULTSET>
 </FMPXMLRESULT>

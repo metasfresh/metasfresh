@@ -1,18 +1,19 @@
 package de.metas.material.event.receiptschedule;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -57,6 +58,7 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	public ReceiptScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("orderedQuantityDelta") final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("reservedQuantityDelta") final BigDecimal reservedQuantityDelta,
@@ -64,6 +66,7 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
+				minMaxDescriptor,
 				reservedQuantity,
 				receiptScheduleId);
 

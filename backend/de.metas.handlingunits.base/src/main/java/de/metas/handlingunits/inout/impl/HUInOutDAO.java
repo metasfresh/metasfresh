@@ -22,6 +22,8 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -32,7 +34,9 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,12 +48,17 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public class HUInOutDAO implements IHUInOutDAO
 {
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
 	@Override
 	public List<I_M_InOutLine> retrievePackingMaterialLines(final I_M_InOut inOut)
 	{
@@ -84,7 +93,6 @@ public class HUInOutDAO implements IHUInOutDAO
 	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
 	{
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 
@@ -101,11 +109,18 @@ public class HUInOutDAO implements IHUInOutDAO
 	}
 
 	@Override
+	public List<I_M_HU> retrieveHandlingUnitsByInOutLineId(@NonNull final InOutLineId inOutLineId)
+	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+		return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutDAO.getLineById(inOutLineId));
+	}
+
+	@Override
 	public List<I_M_HU> retrieveShippedHandlingUnits(final I_M_InOut inOut)
 	{
 
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 
@@ -122,6 +137,23 @@ public class HUInOutDAO implements IHUInOutDAO
 			}
 		}
 		return new ArrayList<>(hus.values());
+	}
+
+	@NonNull
+	public Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(@NonNull final Set<InOutLineId> shipmentLineIds)
+	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+		final List<I_M_InOutLine> inOutLines = inOutDAO.getLinesByIds(shipmentLineIds, I_M_InOutLine.class);
+
+		return inOutLines
+				.stream()
+				.map(inOutLine -> {
+					final InOutLineId inOutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
+					return new HashMap.SimpleEntry<>(inOutLineId, getShippedHUsByShipmentLine(inOutLine));
+				})
+				.filter(entry -> !entry.getValue().isEmpty())
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
 	/**
@@ -162,14 +194,21 @@ public class HUInOutDAO implements IHUInOutDAO
 	@Override
 	public List<I_M_InOutLine> retrieveInOutLinesForHU(final I_M_HU topLevelHU)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		return huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
 	}
 
 	@Override
 	public List<I_M_HU> retrieveHUsForReceiptLineId(final int receiptLineId)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		return huAssignmentDAO.retrieveTopLevelHUsForModel(TableRecordReference.of(I_M_InOutLine.Table_Name, receiptLineId), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@NonNull
+	private List<I_M_HU> getShippedHUsByShipmentLine(@NonNull final I_M_InOutLine inOutLine)
+	{
+		 return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLine)
+				 .stream()
+				 .filter(hu -> X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus()))
+				 .collect(ImmutableList.toImmutableList());
 	}
 }

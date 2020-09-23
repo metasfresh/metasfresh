@@ -7,6 +7,7 @@
       "movementQuantity": 10,
       "dateReceived": "2020-05-27T15:20:03.000Z",
       "movementDate": "2020-05-27",
+      "externalResourceURL": "receipt_externalResourceURL",
       "attributes": [
         {
           "attributeName": "HU_ExpiryDate",
@@ -30,6 +31,45 @@
           "valueDate": null
         }
       ]
+    }
+  ],
+  "returnList": [
+    {
+      "attributes": [
+        {
+          "attributeName": "HU_ExpiryDate",
+          "attributeCode": "HU_ExpiryDate",
+          "valueStr": null,
+          "valueNumber": null,
+          "valueDate": "2024-05-27"
+        },
+        {
+          "attributeName": "Article_Flavor",
+          "attributeCode": "Article_Flavor",
+          "valueStr": "article_flavor",
+          "valueNumber": null,
+          "valueDate": null
+        },
+        {
+          "attributeName": "Lot-Nummer",
+          "attributeCode": "Lot-Nummer",
+          "valueStr": "test-lot-number",
+          "valueNumber": null,
+          "valueDate": null
+        }
+      ],
+      "dateReceived":"2020-05-27T15:20:03.000Z",
+      "movementDate":"2020-05-27",
+      "externalId": "123",
+      "externalResourceURL": "externalResourceURL",
+      "movementQuantity": 10,
+      "orgCode": "001",
+      "productSearchKey": "productSearchKey",
+      "returnedGoodsWarehouseType": "Quarantine",
+      "shipmentDocumentNumber": null,
+      "movementTUQty": null,
+      "hupiItemProductId": null,
+      "shipmentScheduleId": 1
     }
   ]
 }

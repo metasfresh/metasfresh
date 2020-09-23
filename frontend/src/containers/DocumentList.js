@@ -44,6 +44,7 @@ import {
   setSorting as setListSorting,
 } from '../actions/ListActions';
 import { updateRawModal, indicatorState } from '../actions/WindowActions';
+import { setBreadcrumb } from '../actions/MenuActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 
 import {
@@ -90,13 +91,22 @@ class DocumentListContainer extends Component {
   };
 
   componentWillUnmount() {
-    const { isModal, windowId, viewId, deleteView, deleteTable } = this.props;
+    const {
+      isModal,
+      windowId,
+      viewId,
+      deleteView,
+      deleteTable,
+      setBreadcrumb,
+    } = this.props;
 
     this.mounted = false;
     disconnectWS.call(this);
 
     deleteTable(getTableId({ windowId, viewId }));
     deleteView(windowId, isModal);
+    // besides the clearing of the Table and View, if we are on the Dashboard we clear the breadcrumbs in the redux store
+    window.location.pathname === '/' && setBreadcrumb([]);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -834,6 +844,7 @@ export default connect(
     fetchLocationConfig,
     updateGridTableData,
     fetchHeaderProperties,
+    setBreadcrumb,
   },
   null,
   { forwardRef: true }

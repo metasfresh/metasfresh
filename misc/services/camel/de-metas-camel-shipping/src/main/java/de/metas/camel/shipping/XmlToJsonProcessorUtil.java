@@ -1,9 +1,9 @@
 package de.metas.camel.shipping;
 
+import de.metas.common.MeasurableRequest;
 import de.metas.common.filemaker.FIELD;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.RESULTSET;
-import de.metas.common.filemaker.ROW;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
@@ -19,41 +19,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
-/*
- * #%L
- * de-metas-camel-shipping
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @UtilityClass
 public class XmlToJsonProcessorUtil
 {
 	private final static Log log = LogFactory.getLog(XmlToJsonProcessorUtil.class);
 
-	public static <T, R> void processExchange(
+	public void processExchange(
 			final Exchange exchange,
-			final BiFunction<ROW, Map<String, Integer>, T> buildRequestItemFunction,
-			final Function<List<T>, R> buildRequestFunction)
+			final Function<ProcessXmlToJsonRequest, ? extends MeasurableRequest> buildRequestFunction)
 	{
 		final FMPXMLRESULT fmpxmlresult = exchange.getIn().getBody(FMPXMLRESULT.class);
 
@@ -77,14 +52,15 @@ public class XmlToJsonProcessorUtil
 
 		final RESULTSET resultset = fmpxmlresult.getResultset();
 
-		final List<T> requestItems = resultset.getRows()
-				.stream()
-				.map(row -> buildRequestItemFunction.apply(row, name2Index))
-				.collect(Collectors.toList());
+		final ProcessXmlToJsonRequest xmlToJsonRequest = ProcessXmlToJsonRequest.builder()
+				.name2Index(name2Index)
+				.resultset(resultset)
+				.propertiesComponent(exchange.getContext().getPropertiesComponent())
+				.build();
 
-		final R request = buildRequestFunction.apply(requestItems);
+		final MeasurableRequest request = buildRequestFunction.apply(xmlToJsonRequest);
 
-		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, requestItems.size());
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, request.getSize());
 		exchange.getIn().setBody(request);
 	}
 

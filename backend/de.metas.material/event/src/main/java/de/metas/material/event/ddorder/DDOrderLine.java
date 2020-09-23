@@ -1,17 +1,18 @@
 package de.metas.material.event.ddorder;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -43,6 +44,9 @@ public class DDOrderLine
 	@NonNull
 	ProductDescriptor productDescriptor;
 
+	@Nullable
+	MinMaxDescriptor fromWarehouseMinMaxDescriptor;
+
 	@NonNull
 	BigDecimal qty;
 
@@ -60,19 +64,22 @@ public class DDOrderLine
 	@JsonCreator
 	@Builder
 	public DDOrderLine(
-			@JsonProperty("salesOrderLineId") int salesOrderLineId,
+			@JsonProperty("salesOrderLineId") final int salesOrderLineId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("bPartnerId") int bPartnerId,
-			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("fromWarehouseMinMaxDescriptor") @Nullable final MinMaxDescriptor fromWarehouseMinMaxDescriptor,
+			@JsonProperty("bPartnerId") final int bPartnerId,
+ 			@JsonProperty("qty") @NonNull final BigDecimal qty,
 			@JsonProperty("durationDays") final int durationDays,
 			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
 	{
 		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
-		
+
 		this.salesOrderLineId = salesOrderLineId;
 
 		this.productDescriptor = productDescriptor;
+		this.fromWarehouseMinMaxDescriptor = fromWarehouseMinMaxDescriptor;
+
 		this.bPartnerId = bPartnerId;
 
 		this.qty = qty;

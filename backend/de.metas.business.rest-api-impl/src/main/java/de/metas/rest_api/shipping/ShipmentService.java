@@ -230,6 +230,7 @@ public class ShipmentService
 		}
 	}
 
+	@Nullable
 	private UpdateShipmentScheduleRequest toUpdateShipmentScheduleRequestOrNull(
 			@NonNull final JsonCreateShipmentInfo createShipmentInfo,
 			@NonNull final ShipmentSchedulesCache cache)

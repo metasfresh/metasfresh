@@ -37,6 +37,7 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -77,6 +78,22 @@ public class JsonResponseShipmentCandidate
 			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
 	List<JsonQuantity> quantities;
 
+	@ApiModelProperty(position = 90, required = true,
+			value = "The shipment schedule's ordered quantity, possibly in different UOMs")
+	List<JsonQuantity> orderedQty;
+
+	@ApiModelProperty(position = 100,
+			value = "The internal search key of the assigned shipper")
+	String shipperInternalSearchKey;
+
+	@ApiModelProperty(position = 110, required = true,
+			value = "The net price of the ordered quantity")
+	BigDecimal orderedQtyNetPrice;
+
+	@ApiModelProperty(position = 120, required = true,
+			value = "The net price of the delivered quantity ")
+	BigDecimal deliveredQtyNetPrice;
+
 	@JsonCreator
 	@Builder
 	private JsonResponseShipmentCandidate(
@@ -88,7 +105,11 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("product") @NonNull final JsonProduct product,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
 			@JsonProperty("customer") @NonNull final JsonCustomer customer,
-			@JsonProperty("quantities") @NonNull @Singular final List<JsonQuantity> quantities)
+			@JsonProperty("quantities") @NonNull @Singular final List<JsonQuantity> quantities,
+			@JsonProperty("shipperInternalSearchKey") @Nullable final String shipperInternalSearchKey,
+			@JsonProperty("orderedQty") @NonNull final List<JsonQuantity> orderedQty,
+			@JsonProperty("deliveredQtyNetPrice") @Nullable final BigDecimal deliveredQtyNetPrice,
+			@JsonProperty("orderedQtyNetPrice") @Nullable final BigDecimal orderedQtyNetPrice)
 	{
 		this.id = id;
 		this.orgCode = orgCode;
@@ -99,6 +120,10 @@ public class JsonResponseShipmentCandidate
 		this.attributeSetInstance = attributeSetInstance;
 		this.customer = customer;
 		this.quantities = quantities;
+		this.shipperInternalSearchKey = shipperInternalSearchKey;
+		this.orderedQty = orderedQty;
+		this.deliveredQtyNetPrice = deliveredQtyNetPrice;
+		this.orderedQtyNetPrice = orderedQtyNetPrice;
 	}
 }
 

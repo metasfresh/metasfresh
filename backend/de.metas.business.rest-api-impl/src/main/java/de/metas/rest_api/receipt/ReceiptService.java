@@ -76,6 +76,7 @@ public class ReceiptService
 		this.attributeSetHelper = attributeSetHelper;
 	}
 
+	@NonNull
 	public List<InOutId> updateReceiptCandidatesAndGenerateReceipts(@NonNull final JsonCreateReceiptsRequest request)
 	{
 		final ReceiptScheduleCache cache = new ReceiptScheduleCache(receiptScheduleDAO);
@@ -134,7 +135,8 @@ public class ReceiptService
 				.stream()
 				.filter(createReceiptInfo -> createReceiptInfo.getDateReceived() != null
 						|| createReceiptInfo.getMovementDate() != null
-						|| Check.isNotBlank(createReceiptInfo.getExternalId()))
+						|| Check.isNotBlank(createReceiptInfo.getExternalId())
+				        || Check.isNotBlank(createReceiptInfo.getExternalResourceURL()))
 				.collect(Collectors.toMap(this::extractReceiptScheduleId, (createReceiptInfo) -> this.extractExternalInfo(createReceiptInfo, cache)));
 	}
 
@@ -166,7 +168,6 @@ public class ReceiptService
 
 	private void validateCreateReceiptInfo(@NonNull final JsonCreateReceiptInfo jsonCreateReceiptInfo, @NonNull final ReceiptScheduleCache cache)
 	{
-
 		final I_M_ReceiptSchedule receiptSchedule = cache.getById(extractReceiptScheduleId(jsonCreateReceiptInfo));
 
 		if (receiptSchedule.isProcessed())
@@ -212,6 +213,7 @@ public class ReceiptService
 				.externalId(receiptInfo.getExternalId())
 				.dateReceived(TimeUtil.asZonedDateTime(receiptInfo.getDateReceived(), timeZoneId))
 				.movementDate(receiptInfo.getMovementDate())
+				.externalResourceURL(receiptInfo.getExternalResourceURL())
 				.build();
 	}
 

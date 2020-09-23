@@ -26,10 +26,11 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import de.metas.order.OrderId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -58,7 +59,7 @@ public class ShipmentSchedule
 	private final BPartnerContactId contactId;
 
 	@Nullable
-	private final OrderId orderId;
+	private final OrderAndLineId orderAndLineId;
 
 	@Nullable
 	private final LocalDateTime dateOrdered;
@@ -69,9 +70,18 @@ public class ShipmentSchedule
 	@NonNull
 	private final Quantity quantityToDeliver;
 
+	@NonNull
+	private final Quantity orderedQuantity;
+
+	@NonNull
+	private final Quantity deliveredQty;
+
 	@Nullable
 	private final AttributeSetInstanceId attributeSetInstanceId;
 
 	@NonNull
 	private APIExportStatus exportStatus;
+
+	@Nullable
+	private ShipperId shipperId;
 }

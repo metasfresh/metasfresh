@@ -27,16 +27,12 @@ import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,6 +42,7 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -53,6 +50,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Interceptor(I_M_Forecast.class)
+@Component
 public class M_Forecast
 {
 	private static final String MSG_DOC_ACTION_NOT_ALLOWED_AFTER_COMPLETION = "M_Forecast_DocAction_Not_Allowed_After_Completion";
@@ -60,21 +58,10 @@ public class M_Forecast
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IForecastDAO forecastsRepo = Services.get(IForecastDAO.class);
 	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-	private final M_ForecastEventCreator forecastEventCreator;
-	private final PostMaterialEventService materialEventService;
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	public static final AdMessageKey MSG_CALENDAR_DOES_NOT_CONTAIN_PROMISED_DATE = AdMessageKey.of("de.metas.material.interceptor.M_Forecast.CalendarDoesNotContainPromisedDate");
 
-	public M_Forecast(
-			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
-			@NonNull final PostMaterialEventService materialEventService)
-	{
-		forecastEventCreator = new M_ForecastEventCreator(productDescriptorFactory);
-		this.materialEventService = materialEventService;
-	}
-
-	@Init
-	public void init()
+	public M_Forecast()
 	{
 		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
@@ -91,19 +78,6 @@ public class M_Forecast
 	{
 		final String message = msgBL.getMsg(Env.getCtx(), MSG_DOC_ACTION_NOT_ALLOWED_AFTER_COMPLETION);
 		throw new AdempiereException(message);
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void fireForecastCreatedEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
-	{
-		final List<I_M_ForecastLine> forecastLines = forecastsRepo.retrieveLinesByForecastId(forecast.getM_Forecast_ID());
-		if (forecastLines.isEmpty())
-		{
-			return;
-		}
-
-		final ForecastCreatedEvent forecastCreatedEvent = forecastEventCreator.createEventWithLinesAndTiming(forecastLines, timing);
-		materialEventService.postEventAfterNextCommit(forecastCreatedEvent);
 	}
 
 	@ModelChange(
