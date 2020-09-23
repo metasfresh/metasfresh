@@ -15,8 +15,8 @@ import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
   initialState,
   getData,
-  getWidgetData,
-  getWidgetFields,
+  getElementWidgetData,
+  getElementWidgetFields,
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
@@ -83,7 +83,7 @@ describe('WindowHandler helper functions', () => {
     expect(statusData).toEqual(mockStatusData);
   });
 
-  it('getWidgetData should return state.windowHandler.master.data[fieldName]', () => {
+  it('getElementWidgetData should return state.windowHandler.master.data[fieldName]', () => {
     const layout = masterWindowLayout.layout1;
     const state = createState({
       windowHandler: {
@@ -94,14 +94,14 @@ describe('WindowHandler helper functions', () => {
       },
     });
     const selectorPath = '0_0_0_2_0';
-    const widgetData = getWidgetData(state, false, selectorPath);
+    const widgetData = getElementWidgetData(state, false, selectorPath);
     const fieldName = layout.sections[0].columns[0].elementGroups[0].elementsLine[2].elements[0].fields[0].field;
     const fieldData = masterWindowData.data1[0].fieldsByName[fieldName];
 
     expect(widgetData[0]).toEqual(fieldData);
   });
 
-  it('getWidgetData should return state.windowHandler.modal.data[fieldName]', () => {
+  it('getElementWidgetData should return state.windowHandler.modal.data[fieldName]', () => {
     const layout = masterWindowLayout.layout1;
     const state = createState({
       windowHandler: {
@@ -112,7 +112,7 @@ describe('WindowHandler helper functions', () => {
       },
     });
     const selectorPath = '0_0_0_2_0';
-    const widgetData = getWidgetData(state, true, selectorPath);
+    const widgetData = getElementWidgetData(state, true, selectorPath);
     const fieldName = layout.sections[0].columns[0].elementGroups[0].elementsLine[2].elements[0].fields[0].field;
     const fieldData = masterWindowData.data1[0].fieldsByName[fieldName];
 
@@ -139,7 +139,7 @@ describe('WindowHandler helper functions', () => {
     expect(widgetData[0]).toEqual(fieldData);
   });
 
-  it('getWidgetFields should return state.master.layout[path].fields', () => {
+  it('getElementWidgetFields should return state.master.layout[path].fields', () => {
     const layout = masterWindowLayout.layout1;
     const state = createState({
       windowHandler: {
@@ -147,17 +147,16 @@ describe('WindowHandler helper functions', () => {
           data: masterWindowData.data1[0].fieldsByName,
           layout,
         },
-        
       },
     });
     const selectorPath = `0_0_0_2_0`
-    const fieldsData = getWidgetFields(state, false, selectorPath);
+    const fieldsData = getElementWidgetFields(state, false, selectorPath);
     const layoutFields = layout.sections[0].columns[0].elementGroups[0].elementsLine[2].elements[0].fields;
 
     expect(fieldsData).toEqual(layoutFields);
   });
 
-  it('getWidgetFields should return state.modal.layout[path].fields', () => {
+  it('getElementWidgetFields should return state.modal.layout[path].fields', () => {
     const layout = masterWindowLayout.layout1;
     const state = createState({
       windowHandler: {
@@ -165,11 +164,10 @@ describe('WindowHandler helper functions', () => {
           data: masterWindowData.data1[0].fieldsByName,
           layout,
         },
-        
       },
     });
     const selectorPath = `0_0_0_2_0`
-    const fieldsData = getWidgetFields(state, true, selectorPath);
+    const fieldsData = getElementWidgetFields(state, true, selectorPath);
     const layoutFields = layout.sections[0].columns[0].elementGroups[0].elementsLine[2].elements[0].fields;
 
     expect(fieldsData).toEqual(layoutFields);

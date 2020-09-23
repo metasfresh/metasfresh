@@ -155,7 +155,7 @@ export const getData = (state, isModal = false) => {
   return state.windowHandler[selector].data;
 };
 
-const getLayout = (state, isModal, layoutPath) => {
+const getElementLayout = (state, isModal, layoutPath) => {
   const selector = isModal ? 'modal' : 'master';
   const layout = state.windowHandler[selector].layout;
   const [
@@ -198,29 +198,29 @@ const selectWidgetData = (data, layout) => {
 };
 
 /**
- * @method getWidgetData
+ * @method getElementWidgetData
  * @summary cached selector for picking widget data for a desired element
  *
  * @param {object} state - redux state
  * @param {boolean} isModal
  * @param {string} layoutPath - indexes of elements in the layout structure
  */
-export const getWidgetData = createCachedSelector(
+export const getElementWidgetData = createCachedSelector(
   getData,
-  getLayout,
+  getElementLayout,
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, isModal, layoutPath) => layoutPath);
 
 /**
- * @method getWidgetFields
+ * @method getElementWidgetFields
  * @summary cached selector for picking fields of a layout section
  *
  * @param {object} state - redux state
  * @param {boolean} isModal
  * @param {string} layoutPath - indexes of elements in the layout structure
  */
-export const getWidgetFields = createCachedSelector(
-  getLayout,
+export const getElementWidgetFields = createCachedSelector(
+  getElementLayout,
   (layout) => layout.fields
 )((_state, isModal, layoutPath) => layoutPath);
 

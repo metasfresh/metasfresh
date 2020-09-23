@@ -13,8 +13,8 @@ import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
 import {
   getData,
-  getWidgetData,
-  getWidgetFields,
+  getElementWidgetData,
+  getElementWidgetFields,
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
@@ -70,8 +70,8 @@ const mapStateToProps = (state, props) => {
       break;
     case 'modal':
     case 'element':
-      widgetData = getWidgetData(state, isModal, layoutId);
-      fieldsCopy = getWidgetFields(state, isModal, layoutId);
+      widgetData = getElementWidgetData(state, isModal, layoutId);
+      fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
 
       break;
     case 'process':

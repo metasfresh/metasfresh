@@ -25,6 +25,7 @@ class Process extends PureComponent {
 
     return elements.map((elem, idx) => {
       const element = omit(elem, ['fields']);
+
       return (
         <div key={`${idx}-${layout.pinstanceId}`}>
           <WidgetWrapper
@@ -32,7 +33,7 @@ class Process extends PureComponent {
             dataSource="process"
             layoutId={`${idx}`}
             entity="process"
-            key={'element' + idx}
+            key={`element${idx}`}
             windowId={type}
             dataId={layout.pinstanceId}
             isModal={true}
