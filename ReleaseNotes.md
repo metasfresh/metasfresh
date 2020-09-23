@@ -9,24 +9,28 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.153 - WIP
-* https://github.com/metasfresh/metasfresh/issues/9920
-* https://github.com/metasfresh/metasfresh/pull/9923
-* https://github.com/metasfresh/metasfresh/issues/9926
-* https://github.com/metasfresh/metasfresh/pull/9930
-* https://github.com/metasfresh/metasfresh/issues/9933
-* https://github.com/metasfresh/metasfresh/issues/9935
-* https://github.com/metasfresh/metasfresh/issues/9940
-* https://github.com/metasfresh/metasfresh/pull/9942
-* https://github.com/metasfresh/metasfresh/pull/9943
-* https://github.com/metasfresh/metasfresh/issues/9946
-* https://github.com/metasfresh/metasfresh/issues/9947
-* https://github.com/metasfresh/metasfresh/issues/9948
-* https://github.com/metasfresh/metasfresh/issues/9969
-* https://github.com/metasfresh/metasfresh/issues/9877
-* https://github.com/metasfresh/metasfresh/issues/9933
-* https://github.com/metasfresh/metasfresh/issues/9951
-* https://github.com/metasfresh/metasfresh/issues/9954
+# metasfresh 5.153
+## Features
+* metasfresh
+  * [#9877](https://github.com/metasfresh/metasfresh/issues/9877) Manufacturing REST API
+  * [#9920](https://github.com/metasfresh/metasfresh/issues/9920) Handle good returns via REST-API
+  * [#9926](https://github.com/metasfresh/metasfresh/issues/9926) Enhance HU Transformation process to allow movement of the created HUs
+  * [#9933](https://github.com/metasfresh/metasfresh/issues/9933) Receipt API enhancement
+  * [#9935](https://github.com/metasfresh/metasfresh/issues/9935) Assign deliveries and invoices to the project, automatically and manually
+  * [#9946](https://github.com/metasfresh/metasfresh/issues/9946) Cancel Date filter
+  * [#9948](https://github.com/metasfresh/metasfresh/issues/9948) Insert UOM in 'Produkt Transaktionen' window
+  * [#9951](https://github.com/metasfresh/metasfresh/issues/9951) Add Croatia to country area table for EU
+  * [#9954](https://github.com/metasfresh/metasfresh/issues/9954) Adjustments for export shipment schedules API
+  * [#9969](https://github.com/metasfresh/metasfresh/issues/9969) Order from quotation (construction), reference to quotation
+
+## Fixes
+* metasfresh
+  * [#9923](https://github.com/metasfresh/metasfresh/pull/9923) Fix swing's wrong language on machine
+  * [#9930](https://github.com/metasfresh/metasfresh/pull/9930) Fix scroll in expanded mode
+  * [#9940](https://github.com/metasfresh/metasfresh/issues/9940) Sales Order: Allow multiple decimals
+  * [#9942](https://github.com/metasfresh/metasfresh/pull/9942) Fix qty input batch entry
+  * [#9943](https://github.com/metasfresh/metasfresh/pull/9943) Fix `de.metas.printing.common` pom
+  * [#9947](https://github.com/metasfresh/metasfresh/issues/9947) Zoom into links in subtabs sometimes cut off
 
 # metasfresh 5.152
 ## Features
