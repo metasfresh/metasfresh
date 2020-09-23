@@ -236,8 +236,8 @@
             <COL>
                 <DATA>
                     1
-                    2
-                    3
+                    2,25
+                    1.003,5
                 </DATA> <!-- package.weight -->
             </COL>
         </ROW>

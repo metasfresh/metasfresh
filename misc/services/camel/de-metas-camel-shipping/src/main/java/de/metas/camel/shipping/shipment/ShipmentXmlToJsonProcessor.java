@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -85,7 +86,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.attributes(getAttributes(row, fieldName2Index))
 				.movementDate(getDeliveryDate(row, fieldName2Index))
 				.packages(getPackages(row, fieldName2Index, propertiesComponent))
-				.movementQuantity(getQtyToDeliver(row, fieldName2Index))
+				.movementQuantity(getMovementQty(row, fieldName2Index, propertiesComponent))
 				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, DOCUMENT_NO)))
 				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, PRODUCT_VALUE))))
 				.shipperInternalName(getShipperInternalName(row, fieldName2Index, propertiesComponent))
@@ -186,20 +187,24 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private BigDecimal getQtyToDeliver(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index)
+	private BigDecimal getMovementQty(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
+		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
+
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequestBuilder = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
 				.fieldName2Index(fieldName2Index);
 
-		final BigDecimal movementQtyOverride = FileMakerDataHelper.getBigDecimalValue(getValueRequestBuilder.fieldName(DELIVERED_QTY_OVERRIDE.getName()).build());
+		final String movementQtyOverrideStr = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(DELIVERED_QTY_OVERRIDE.getName()).build());
 
-		if (movementQtyOverride != null)
+		if (StringUtils.isNotBlank(movementQtyOverrideStr))
 		{
-			return movementQtyOverride;
+			return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQtyOverrideStr, locale);
 		}
 
-		return FileMakerDataHelper.getBigDecimalValue(getValueRequestBuilder.fieldName(DELIVERED_QTY.getName()).build());
+		final String movementQty = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(DELIVERED_QTY.getName()).build());
+
+		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQty, locale);
 	}
 
 	@Nullable
@@ -225,11 +230,13 @@ public class ShipmentXmlToJsonProcessor implements Processor
 
 		final String packageWeightStr = getValueByName(row, fieldName2Index, PACKAGE_WEIGHT);
 
+		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
+
 		final List<BigDecimal> packageWeightList = StringUtils.isBlank(packageWeightStr)
 				? ImmutableList.of()
 				: Stream.of(packageWeightStr.split(packageWeightSeparator))
 				  	.filter(StringUtils::isNotBlank)
-				    .map(FileMakerDataHelper::toBigDecimalOrNull)
+				    .map(weight -> XmlToJsonProcessorUtil.toBigDecimalOrNull(weight, locale))
 					.filter(Objects::nonNull)
 				    .collect(ImmutableList.toImmutableList());
 

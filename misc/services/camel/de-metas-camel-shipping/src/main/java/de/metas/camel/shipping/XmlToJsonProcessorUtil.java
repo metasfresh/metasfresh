@@ -7,19 +7,26 @@ import de.metas.common.filemaker.RESULTSET;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
+import org.apache.camel.spi.PropertiesComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.LOCALE_COUNTRY_LANGUAGE_SEPARATOR;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_LOCALE_PROPERTY;
 
 @UtilityClass
 public class XmlToJsonProcessorUtil
@@ -126,5 +133,42 @@ public class XmlToJsonProcessorUtil
 		}
 
 		return localDateTime;
+	}
+
+	public Locale getLocale(@NonNull final PropertiesComponent propertiesComponent)
+	{
+		final String propertyValue = propertiesComponent.resolveProperty(SIRO_LOCALE_PROPERTY)
+				.orElseThrow(() -> new RuntimeException("Missing property:" + SIRO_LOCALE_PROPERTY + "!"));
+
+		final String[] localeParts = propertyValue.split(LOCALE_COUNTRY_LANGUAGE_SEPARATOR);
+
+		if (localeParts.length != 2)
+		{
+			throw new RuntimeException("Unexpected value for property: [" + SIRO_LOCALE_PROPERTY + "]! value: [" + propertyValue + "] !");
+		}
+
+		return new Locale(localeParts[0], localeParts[1]);
+	}
+
+	public static BigDecimal toBigDecimalOrNull(final String valueStr, final Locale locale)
+	{
+		if (valueStr == null || valueStr.trim().isEmpty())
+		{
+			return null;
+		}
+
+		BigDecimal valueBigDecimal;
+		final String valueToConvert = valueStr.trim();
+
+		try
+		{
+			valueBigDecimal = BigDecimal.valueOf(NumberFormat.getNumberInstance(locale).parse(valueToConvert).doubleValue());
+		}
+		catch (final Exception e)
+		{
+			valueBigDecimal = null;
+		}
+
+		return valueBigDecimal;
 	}
 }
