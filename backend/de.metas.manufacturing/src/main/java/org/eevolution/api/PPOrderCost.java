@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.manufacturing
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.eevolution.api;
 
 import java.math.BigDecimal;
@@ -21,28 +43,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @Getter
@@ -88,11 +88,15 @@ public class PPOrderCost
 
 		if (trxType.isCoProduct())
 		{
-			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
 			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
 			{
+				this.coProductCostDistributionPercent = Percent.ZERO;
 				// TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
 				// throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
+			}
+			else
+			{
+				this.coProductCostDistributionPercent = coProductCostDistributionPercent;
 			}
 		}
 		else
@@ -101,7 +105,9 @@ public class PPOrderCost
 		}
 	}
 
-	/** DON'T call it directly. It's called only by API */
+	/**
+	 * DON'T call it directly. It's called only by API
+	 */
 	public void setId(@NonNull final PPOrderCostId id)
 	{
 		this.id = id;
