@@ -35,21 +35,17 @@ import {
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
-<<<<<<< HEAD
-import { createGridTable, updateGridTable, deleteTable } from './TableActions';
-import {
-  createFilter,
-  deleteFilter,
-  populateFiltersCaptions,
-} from './FiltersActions';
-=======
 import {
   createGridTable,
   updateGridTable,
   deleteTable,
   setActiveSortFields,
 } from './TableActions';
->>>>>>> master
+import {
+  createFilter,
+  deleteFilter,
+  populateFiltersCaptions,
+} from './FiltersActions';
 
 /**
  * @method resetView
