@@ -377,7 +377,8 @@ public class C_Invoice // 03771
 		return Money.of(salesInvoice.getGrandTotal(), CurrencyId.ofRepoId(salesInvoice.getC_Currency_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Invoice.COLUMNNAME_M_Warehouse_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }
+	, ifColumnsChanged = {I_C_Invoice.COLUMNNAME_M_Warehouse_ID, I_C_Invoice.COLUMNNAME_DateInvoiced})
 	public void updateInvoiceLinesTax(@NonNull final I_C_Invoice invoice)
 	{
 		invoiceBL.setInvoiceLineTaxes(Env.getCtx(), invoice);
