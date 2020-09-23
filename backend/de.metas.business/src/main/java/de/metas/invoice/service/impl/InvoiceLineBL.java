@@ -91,29 +91,13 @@ import lombok.NonNull;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
-	private static final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-	private static final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private static final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-
-	private static final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
-	private static final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private static final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-
-	private static final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	private static final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private static final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-	private static final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
-	private static final IProductBL productBL = Services.get(IProductBL.class);
-	private static final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
 	private static final Logger logger = LogManager.getLogger(InvoiceLineBL.class);
 
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 		final int taxId = il.getC_Tax_ID();
 
@@ -130,6 +114,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public boolean setTax(final Properties ctx, final org.compiere.model.I_C_InvoiceLine il, final String trxName)
 	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
@@ -178,6 +166,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final BPartnerLocationId partnerLocationId,
 			final boolean isSOTrx)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
@@ -287,6 +280,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
 		final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
@@ -311,6 +306,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
@@ -347,6 +344,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private Quantity calculateQtyInvoicedInPriceUOM(@NonNull final I_C_InvoiceLine ilRecord)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyEntered = ilRecord.getQtyEntered();
 		Check.assumeNotNull(qtyEntered, "qtyEntered not null; ilRecord={}", ilRecord);
@@ -403,6 +402,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			@NonNull final PriceListId priceListId,
 			@NonNull final Quantity priceQty)
 	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		final SOTrx isSOTrx = SOTrx.ofBoolean(invoice.isSOTrx());
@@ -440,6 +441,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		if (invoice.getC_BPartner_Location_ID() <= 0)
@@ -459,6 +462,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public void updateLineNetAmt(final I_C_InvoiceLine line, final BigDecimal qtyEntered)
 	{
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(line))
 		{
 			if (qtyEntered != null)
@@ -484,6 +489,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public void updatePrices(final I_C_InvoiceLine invoiceLine)
 	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 		// Product was not set yet. There is no point to calculate the prices
 		if (invoiceLine.getM_Product_ID() <= 0)
 		{
@@ -537,6 +544,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private static void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final CurrencyPrecision precision)
 	{
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+
 		final Percent discount = Percent.of(invoiceLine.getDiscount());
 		final BigDecimal priceEntered = invoiceLine.getPriceEntered();
 

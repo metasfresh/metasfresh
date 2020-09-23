@@ -175,17 +175,6 @@ import lombok.NonNull;
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 
-	private static final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-	private static final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-	private static final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
-	private static final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private static final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-
-	private static final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-	private static final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
@@ -726,6 +715,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	private BPartnerLocationId getBillBPartnerLocationId(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		final List<I_C_BPartner_Location> bpLocations = bpartnersRepo.retrieveBPartnerLocations(bpartnerId);
 		for (final I_C_BPartner_Location loc : bpLocations)
 		{
@@ -753,6 +743,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@NonNull final SOTrx soTrx,
 			@NonNull final ZonedDateTime date)
 	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
 		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerLocationId.getBpartnerId(), soTrx);
 		if (pricingSystemId == null)
 		{
@@ -823,6 +815,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void updateDescriptionFromDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice, final String defaultDescription, final String defaultDocumentNote)
 	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
 		final int docTypeId = invoice.getC_DocTypeTarget_ID();
 		if (docTypeId <= 0)
 		{
@@ -879,6 +873,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void ensureUOMsAreNotNull(final @NonNull InvoiceId invoiceId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId); // // TODO tbp: create this method!
 		for (final I_C_InvoiceLine line : lines)
@@ -900,6 +895,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
 		renumberLines(lines, step);
 	}
@@ -1240,6 +1237,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		// services
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 		// // Make sure QtyInvoicedInPriceUOM is up2date
 		invoiceLineBL.setQtyInvoicedInPriceUOM(invoiceLine);
@@ -1304,6 +1303,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void setTaxAmt(final I_C_InvoiceLine invoiceLine)
 	{
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
 		final int taxId = invoiceLine.getC_Tax_ID();
 		if (taxId <= 0)
 		{
@@ -1362,6 +1364,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
 		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
@@ -1382,6 +1386,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void setInvoiceLineTaxes(final Properties ctx, @NonNull final I_C_Invoice invoice)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
 
@@ -1429,7 +1438,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 
 			invoiceLineBL.setTaxForInvoiceLine(ctx, il, orgId, invoiceDate, countryFromId, partnerLocationId, isSOTrx);
-			
+
 			invoiceDAO.save(il);
 		}
 	}
@@ -1614,6 +1623,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void updateInvoiceLineIsReadOnlyFlags(@NonNull final I_C_Invoice invoice, final I_C_InvoiceLine... invoiceLines)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final boolean saveLines;
 		final List<I_C_InvoiceLine> linesToUpdate;
 		if (Check.isEmpty(invoiceLines))
@@ -1720,6 +1731,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 		final org.compiere.model.I_C_Invoice reversalInvoice = invoice.getReversal();
