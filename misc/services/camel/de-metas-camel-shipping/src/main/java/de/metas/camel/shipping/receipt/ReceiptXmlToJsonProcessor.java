@@ -47,6 +47,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -90,7 +91,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 		final List<JsonCreateReceiptInfo> createReceiptInfos = resultset.getRows()
 				.stream()
 				.filter(row -> !isReturn(row, name2Index))
-				.map(row -> createReceiptInfo(row, name2Index))
+				.map(row -> createReceiptInfo(row, name2Index, propertiesComponent))
 				.collect(Collectors.toList());
 
 		final List<JsonCreateCustomerReturnInfo> customerReturnInfos = resultset.getRows()
@@ -124,7 +125,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 	}
 
 	@NonNull
-	private JsonCreateReceiptInfo createReceiptInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
+	private JsonCreateReceiptInfo createReceiptInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
@@ -144,7 +145,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 				//
 				.productSearchKey(getProductSearchKey(getValueRequest.fieldName(PRODUCT_SEARCH_KEY.getName()).build()))
 				//
-				.movementQuantity(FileMakerDataHelper.getBigDecimalValue(getValueRequest.fieldName(MOVEMENT_QUANTITY.getName()).build()))
+				.movementQuantity(getMovementQty(row, name2Index, propertiesComponent))
 				//
 				.attributes(buildAttributeInstanceList(row, name2Index))
 				//
@@ -169,7 +170,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 			throw new RuntimeException("Missing mandatory filed: productSearchKey! mapping for " + PRODUCT_SEARCH_KEY.getName() + " !");
 		}
 
-		final BigDecimal returnedQty = FileMakerDataHelper.getBigDecimalValue(getValueRequest.fieldName(MOVEMENT_QUANTITY.getName()).build());
+		final BigDecimal returnedQty = getMovementQty(row, name2Index, propertiesComponent);
 
 		if (returnedQty == null)
 		{
@@ -327,5 +328,21 @@ public class ReceiptXmlToJsonProcessor implements Processor
 				.orElseThrow(() -> new RuntimeException("Missing property: " + orgPrefix2CodeProperty + "!"));
 
 		return orgCode;
+	}
+
+	@Nullable
+	private BigDecimal getMovementQty(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
+	{
+		final FileMakerDataHelper.GetValueRequest getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
+				.row(row)
+				.fieldName2Index(name2Index)
+				.fieldName(MOVEMENT_QUANTITY.getName())
+				.build();
+
+		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
+
+		final String movementQtyStr = FileMakerDataHelper.getValue(getValueRequest);
+
+		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQtyStr, locale);
 	}
 }

@@ -20,6 +20,9 @@ public interface SiroShipmentConstants
 	String TRACKING_NUMBERS_SEPARATOR = "shipment.tracking.numbers.separator";
 	String PACKAGE_WEIGHT_SEPARATOR = "shipment.package.weight.separator";
 
+	String SIRO_LOCALE_PROPERTY = "siro.locale";
+	String LOCALE_COUNTRY_LANGUAGE_SEPARATOR = ",";
+
 	Set<String> EXPIRY_DATE_PATTERNS = ImmutableSet.of("yyyy/MM/dd", "yyyy.MM.dd", "dd.MM.yyyy");
 
 	String EMPTY_FIELD = "";
