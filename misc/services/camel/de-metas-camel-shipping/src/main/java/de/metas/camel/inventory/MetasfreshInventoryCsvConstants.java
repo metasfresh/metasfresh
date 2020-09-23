@@ -27,6 +27,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 class MetasfreshInventoryCsvConstants
 {
+	public static final String COLUMNNAME_WarehouseValue = "WarehouseValue";
 	public static final String COLUMNNAME_LocatorValue = "LocatorValue";
 	public static final String COLUMNNAME_InventoryDate = "InventoryDate";
 	public static final String COLUMNNAME_ProductValue = "ProductValue";

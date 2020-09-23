@@ -1,16 +1,15 @@
 package de.metas.camel.inventory;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.camel.test.endpoints.CaptureLastMessage;
+import de.metas.camel.test.endpoints.DoNothing;
+import lombok.Builder;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
-import de.metas.camel.test.endpoints.CaptureLastMessage;
-import de.metas.camel.test.endpoints.DoNothing;
-import lombok.Builder;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -86,6 +85,6 @@ public class InventoryXmlToMetasfreshRouteBuilderTest extends CamelTestSupport
 		assertThat(localStorage.getCalled()).isEqualTo(1);
 		assertThat(toMetasfresh.getCalled()).isEqualTo(1);
 		assertThat(toMetasfresh.getLastMessageBody())
-				.isEqualTo("H201-15-03;20.08.2020;B-15020111;10;1;01.06.2021;45-15;M\r\n");
+				.isEqualTo("warehouseValue1;H201-15-03;20.08.2020;B-15020111;10;1;01.06.2021;45-15;M\r\n");
 	}
 }

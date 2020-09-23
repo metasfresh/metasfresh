@@ -1,19 +1,17 @@
 package de.metas.camel.inventory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
-import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import lombok.NonNull;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -83,6 +81,7 @@ class InventoryJsonToCsvMapProcessor implements Processor
 		System.out.println("line=" + line);
 		final Map<String, Object> map = new HashMap<>();
 
+		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_WarehouseValue, line.getWarehouseValue());
 		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_LocatorValue, line.getLocatorValue());
 		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_InventoryDate, line.getInventoryDate());
 		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_ProductValue, line.getProductValue());

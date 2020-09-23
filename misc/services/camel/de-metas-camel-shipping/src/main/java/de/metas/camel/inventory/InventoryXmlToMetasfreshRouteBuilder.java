@@ -1,10 +1,9 @@
 package de.metas.camel.inventory;
 
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
-
-import java.time.format.DateTimeFormatter;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -13,11 +12,10 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.model.dataformat.CsvDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.time.format.DateTimeFormatter;
 
-import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
-import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import lombok.NonNull;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
 
 /*
  * #%L
@@ -128,6 +126,7 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 				.skipHeaderRecord(true)
 				.delimiter(csvDelimiter)
 				.newLine("\r\n")
+				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_WarehouseValue)
 				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_LocatorValue)
 				.dateColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_InventoryDate, dateFormat)
 				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_ProductValue)
