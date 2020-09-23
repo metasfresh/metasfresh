@@ -583,21 +583,6 @@ class MenuOverlay extends Component {
                 <div className="input-flex input-primary">
                   <i className="input-icon meta-icon-preview" />
 
-                  {/* <DebounceInput
-                    debounceTimeout={250}
-                    type="text"
-                    inputRef={(ref) => {
-                      this.searchInputQuery = ref;
-                    }}
-                    className="input-field"
-                    placeholder={counterpart.translate(
-                      'window.type.placeholder'
-                    )}
-                    autoComplete="new-password"
-                    onChange={this.handleQuery}
-                    onKeyDown={this.handleKeyDown}
-                  /> */}
-
                   <input
                     type="text"
                     ref={(ref) => {
