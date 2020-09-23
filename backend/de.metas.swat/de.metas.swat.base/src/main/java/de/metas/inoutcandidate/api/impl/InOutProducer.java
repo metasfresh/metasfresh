@@ -651,13 +651,8 @@ public class InOutProducer implements IInOutProducer
 	@Nullable
 	private String getExternalResourceURL(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+		return StringUtils.trimBlankToNull(receiptSchedule.getExternalResourceURL());
 
-		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
-
-		return externalInfo != null
-				? StringUtils.trimBlankToNull(externalInfo.getExternalResourceURL())
-				: null;
 	}
 
 
