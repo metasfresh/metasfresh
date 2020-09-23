@@ -369,7 +369,7 @@ public class ESRTestBase
 
 		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
 		esrImportLine.setESR_Import(esrImport);
-		esrImportLine.setC_BP_BankAccount(account);
+		esrImportLine.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
 		esrImportLine.setESRPostParticipantNumber(ESR_RenderedAccountNo.replaceAll("-", ""));
 		esrImportLine.setESRFullReferenceNumber(fullRefNo);
