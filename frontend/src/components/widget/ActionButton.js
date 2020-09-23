@@ -260,7 +260,7 @@ class ActionButton extends PureComponent {
   };
 
   handleSubmit = () => {
-    const { list } = this.state;
+    const { list, prompt } = this.state;
 
     let activePrompt = null;
     list.forEach((listItem) => {
