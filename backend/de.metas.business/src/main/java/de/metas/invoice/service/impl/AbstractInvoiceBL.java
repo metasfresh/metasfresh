@@ -85,6 +85,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -1747,9 +1748,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final void discountInvoice(final org.compiere.model.I_C_Invoice invoice, final BigDecimal discountAmt, final String description)
+	public final void discountInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice, final @NonNull Amount discountAmt , final String description)
 	{
-		if (discountAmt.signum() == 0)
+		if (discountAmt .signum() == 0)
 		{
 			return;
 		}
@@ -1758,12 +1759,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (!invoice.isSOTrx())
 		{
 			// API
-			discountAmtAbs = discountAmt.negate();
+			discountAmtAbs = discountAmt.getAsBigDecimal().negate();
 		}
 		else
 		{
 			// ARI
-			discountAmtAbs = discountAmt;
+			discountAmtAbs = discountAmt.getAsBigDecimal();
 		}
 
 		// @formatter:off

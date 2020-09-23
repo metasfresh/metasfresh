@@ -24,6 +24,7 @@ package de.metas.invoice.service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -424,5 +425,11 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
 
-	void discountInvoice(I_C_Invoice invoice, BigDecimal discountAmt, String description);
+	/**
+	 * 
+	 * @param invoice
+	 * @param discountAmt - the value is not AP corrected. The correction is done inside this function
+	 * @param description
+	 */
+	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, String description);
 }

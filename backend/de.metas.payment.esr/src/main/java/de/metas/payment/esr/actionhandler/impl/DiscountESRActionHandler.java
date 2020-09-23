@@ -48,27 +48,21 @@ public class DiscountESRActionHandler extends AbstractESRActionHandler
 		final I_C_Payment payment = esrImportLinePaymentId == null ? null
 				: paymentDAO.getById(esrImportLinePaymentId);
 
-		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-
-//		InterfaceWrapperHelper.refresh(payment, trxName); // refresh the payment : very important; otherwise the over amount is not seen
-//		InterfaceWrapperHelper.refresh(invoice, trxName); // refresh the payment : very important; otherwise the over amount is not seen
 		Check.assumeNotNull(payment, "Null payment for line {}", line.getESR_ImportLine_ID());
 		Check.errorIf(payment.getOverUnderAmt().signum() > 0, "Exces payment for line {}. Can't discount this", line.getESR_ImportLine_ID());
 
 		final Amount discount = invoiceDAO.retrieveOpenAmt(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 
-		trxManager.run(trxName, new TrxRunnable()
+		trxManager.runInThreadInheritedTrx(new TrxRunnable()
 		{
 			@Override
 			public void run(String trxName) throws Exception
 			{
-				// must assure that the invoice has transaction
-				InterfaceWrapperHelper.refresh(invoice, trxName);
-				invoiceBL.discountInvoice(invoice, discount.getAsBigDecimal(), message);
+				invoiceBL.discountInvoice(invoice, discount, message);
 			}
 		});
+		
 		return true;
-
 	}
 
 }
