@@ -135,6 +135,7 @@ public class PaymentAllocationBuilderTest
 		chfCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 		invoiceDocTypes = new HashMap<>();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 
 	}
