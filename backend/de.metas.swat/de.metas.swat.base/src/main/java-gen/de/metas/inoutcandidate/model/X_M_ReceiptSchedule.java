@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_ReceiptSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 380219894L;
+	private static final long serialVersionUID = 379829186L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -882,4 +882,17 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Status);
 	}
+
+	@Override
+	public void setExternalResourceURL (java.lang.String ExternalResourceURL)
+	{
+		set_Value (COLUMNNAME_ExternalResourceURL, ExternalResourceURL);
+	}
+
+	@Override
+	public java.lang.String getExternalResourceURL()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalResourceURL);
+	}
+
 }
