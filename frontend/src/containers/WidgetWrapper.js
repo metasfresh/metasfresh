@@ -58,7 +58,7 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
-  const data = getData(state);
+  const data = getData(state, isModal);
 
   let widgetData = null;
   let fieldsCopy = null;
