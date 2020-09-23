@@ -145,3 +145,9 @@ export const TBL_CONTEXT_MENU_HEIGHT = '300px';
  *                 case when there are many OL and you click on one line at the bottom.
  */
 export const TBL_CONTEXT_MENU_MAX_Y = 706;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the debounce time when performing a search
+ */
+export const DEBOUNCE_TIME_SEARCH = 150;

@@ -18,6 +18,7 @@ import {
 import { clearMasterData, closeModal } from '../../actions/WindowActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
+import { DEBOUNCE_TIME_SEARCH } from '../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -36,7 +37,7 @@ class MenuOverlay extends Component {
   overlayItems = []; // this is used to hold the references to items from the results - we need to access the first one
 
   /**
-   * @summary wraps the debounce function and persists the event before returning the debounced function. 
+   * @summary wraps the debounce function and persists the event before returning the debounced function.
    *          This in order to get rid of synthetic event warnings
    * @param  {...any} args
    */
@@ -607,10 +608,13 @@ class MenuOverlay extends Component {
                       'window.type.placeholder'
                     )}
                     autoComplete="new-password"
-                    onChange={this.debounceEventHandler(this.handleQuery, 250)}
+                    onChange={this.debounceEventHandler(
+                      this.handleQuery,
+                      DEBOUNCE_TIME_SEARCH
+                    )}
                     onKeyDown={this.debounceEventHandler(
                       this.handleKeyDown,
-                      250
+                      DEBOUNCE_TIME_SEARCH
                     )}
                   />
 
