@@ -1,21 +1,21 @@
 package de.metas.camel.inventory;
 
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.ROW;
 import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.PropertiesComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -46,8 +46,10 @@ class InventoryXmlToJsonProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
+		final var propertiesComponent = exchange.getContext().getPropertiesComponent();
+
 		processExchange(exchange,
-				(rawRow, metadata) -> toJsonInventoryLine(rawRow, metadata),
+				(rawRow, metadata) -> toJsonInventoryLine(rawRow, metadata, propertiesComponent),
 				lines -> toJsonInventory(lines));
 	}
 
@@ -83,10 +85,14 @@ class InventoryXmlToJsonProcessor implements Processor
 	@NonNull
 	private static JsonInventoryLine toJsonInventoryLine(
 			@NonNull final ROW rawRow,
-			@NonNull final METADATA metadata)
+			@NonNull final METADATA metadata,
+			@NonNull final PropertiesComponent propertiesComponent)
 	{
 		final InventoryXmlRowWrapper row = InventoryXmlRowWrapper.wrap(rawRow, metadata);
+		final var warehouseValue = CommonUtil.extractWarehouseValue(propertiesComponent, row.get_siro_kunden_id());
+
 		return JsonInventoryLine.builder()
+				.warehouseValue(warehouseValue)
 				.locatorValue(row.get_lagerscan_lagerplatz())
 				.inventoryDate(row.get_lagerscan_datum())
 				.productValue(row.get_artikel_nummer())

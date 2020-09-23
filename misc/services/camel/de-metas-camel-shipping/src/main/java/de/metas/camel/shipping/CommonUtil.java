@@ -22,15 +22,6 @@
 
 package de.metas.camel.shipping;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.spi.PropertiesComponent;
-
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
@@ -40,6 +31,13 @@ import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.shipping.JsonProduct;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.spi.PropertiesComponent;
+
+import javax.annotation.Nullable;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class CommonUtil
@@ -57,6 +55,17 @@ public class CommonUtil
 						.name(databaseName)
 						.records(Integer.toString(numberOfItems))
 						.build());
+	}
+
+	@NonNull
+	public String extractWarehouseValue(
+			@NonNull final PropertiesComponent propertiesComponent,
+			@NonNull final String _siro_kunden_id)
+	{
+		final var propertyKey = "_siro_kunden_id." + _siro_kunden_id + ".warehouseValue";
+		return propertiesComponent
+				.resolveProperty(propertyKey)
+				.orElseThrow(() -> new RuntimeCamelException("Unexpected _siro_kunden_id=" + _siro_kunden_id + "; fix it in metasfresh or add '" + propertyKey + "' to the properties file"));
 	}
 
 	@NonNull
@@ -114,7 +123,7 @@ public class CommonUtil
 		{
 			return null;
 		}
-		return matcher.group(1).replaceAll("-","");
+		return matcher.group(1).replaceAll("-", "");
 	}
 
 	public JsonError createJsonError(@NonNull final Throwable throwable)

@@ -51,6 +51,12 @@ class InventoryXmlRowWrapper
 		this.metadata = metadata;
 	}
 
+	/** customer-ID which we map to M_Warehouse.Value  */
+	public String get_siro_kunden_id()
+	{
+		return metadata.getCell(row, "_siro_kunden_id").getValueAsString();
+	}
+
 	/** Qty Count */
 	public BigDecimal get_artikel_menge_lagerplatz()
 	{
