@@ -563,7 +563,6 @@ class MenuOverlay extends Component {
    */
   render() {
     const { queriedResults, deepSubNode, query, data } = this.state;
-
     const { nodeId, node, handleMenuOverlay, openModal } = this.props;
     const nodeData = data.length
       ? data
