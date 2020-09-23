@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import { debounce } from 'lodash';
 
 import {
   breadcrumbRequest,
@@ -33,6 +34,19 @@ class MenuOverlay extends Component {
   };
 
   overlayItems = []; // this is used to hold the references to items from the results - we need to access the first one
+
+  /**
+   * @summary wraps the debounce function and persists the event before returning the debounced function. 
+   *          This in order to get rid of synthetic event warnings
+   * @param  {...any} args
+   */
+  debounceEventHandler = (...args) => {
+    const debounced = debounce(...args);
+    return function(e) {
+      e.persist();
+      return debounced(e);
+    };
+  };
 
   /**
    * @method componentDidMount
@@ -593,8 +607,11 @@ class MenuOverlay extends Component {
                       'window.type.placeholder'
                     )}
                     autoComplete="new-password"
-                    onChange={this.handleQuery}
-                    onKeyDown={this.handleKeyDown}
+                    onChange={this.debounceEventHandler(this.handleQuery, 250)}
+                    onKeyDown={this.debounceEventHandler(
+                      this.handleKeyDown,
+                      250
+                    )}
                   />
 
                   {query && (
