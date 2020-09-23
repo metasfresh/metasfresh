@@ -30,6 +30,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -100,6 +101,9 @@ public class HUStatusBL implements IHUStatusBL
 			X_M_HU.HUSTATUS_Picked, // a HU can be commissioned/picked anywhere, and it still needs to be moved around afterwards
 			X_M_HU.HUSTATUS_Shipped, // when restoring a snapshot HU for a customer return, the locator is set on a HU with status E..
 			X_M_HU.HUSTATUS_Active);
+
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 
 	@Override
 	public boolean isQtyOnHand(final String huStatus)
@@ -240,7 +244,7 @@ public class HUStatusBL implements IHUStatusBL
 
 	@Override
 	public boolean isStatusIssued(@NonNull final HuId huId){
-		return isStatusIssued(InterfaceWrapperHelper.load(huId, I_M_HU.class));
+		return isStatusIssued(handlingUnitsDAO.getById(huId));
 	}
 
 	@Override
