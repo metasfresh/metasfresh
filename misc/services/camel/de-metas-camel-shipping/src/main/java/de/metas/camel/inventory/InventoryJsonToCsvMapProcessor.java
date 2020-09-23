@@ -9,6 +9,7 @@ import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +97,7 @@ class InventoryJsonToCsvMapProcessor implements Processor
 	private void putCsvCell(
 			@NonNull final Map<String, Object> csvRow,
 			@NonNull final String columnName,
-			@NonNull final Object value)
+			@Nullable final Object value)
 	{
 		csvRow.put(columnName, csvImportFormat.formatValue(columnName, value));
 	}
