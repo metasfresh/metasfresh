@@ -23,14 +23,20 @@ package de.metas.invoice.service;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.invoice.InvoiceId;
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  *
@@ -98,4 +104,6 @@ public interface IInvoiceLineBL extends ISingletonService
 	void updateLineNetAmt(I_C_InvoiceLine line, BigDecimal qtyEntered);
 
 	void updatePrices(I_C_InvoiceLine invoiceLine);
+
+	boolean setTaxForInvoiceLine(Properties ctx, org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationId partnerLocationId, boolean isSOTrx);
 }

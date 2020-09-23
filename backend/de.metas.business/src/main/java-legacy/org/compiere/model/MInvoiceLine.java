@@ -27,6 +27,8 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -599,6 +601,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public boolean setTax()
 	{
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 		if (isDescription())
 		{
 			return true;
@@ -633,11 +637,23 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		//
 		// From
+
 		final OrgId fromOrgId = OrgId.ofRepoId(getAD_Org_ID());
-		final CountryId fromCountryId = Services.get(IBPartnerOrgBL.class).getOrgCountryId(fromOrgId);
-		if (fromCountryId == null)
+		final CountryId fromCountryId;
+
+		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
+
+		if (invoiceWarehouseId != null)
 		{
-			throw new OrgHasNoBPartnerLinkException(fromOrgId);
+			fromCountryId = warehouseBL.getCountryId(invoiceWarehouseId);
+		}
+		else
+		{
+			fromCountryId = Services.get(IBPartnerOrgBL.class).getOrgCountryId(fromOrgId);
+			if (fromCountryId == null)
+			{
+				throw new OrgHasNoBPartnerLinkException(fromOrgId);
+			}
 		}
 
 		//
