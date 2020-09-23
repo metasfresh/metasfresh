@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.crm.interceptor;
 
 import java.sql.Timestamp;
@@ -13,28 +35,6 @@ import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.window.model.DocumentCollection;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Interceptor(I_R_Request.class)
 @Component
 public class R_Request
@@ -44,7 +44,7 @@ public class R_Request
 
 	/**
 	 * If request has the ReminderDate set then update the BPartner's ReminderDateExtern or ReminderDateIntern (based on request's sales rep).
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/2066
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_R_Request.COLUMNNAME_ReminderDate)
@@ -82,9 +82,24 @@ public class R_Request
 			// nothing to do
 			return;
 		}
-		
+
 		InterfaceWrapperHelper.save(bpartner);
 		documentsCollection.invalidateDocumentByRecordId(I_C_BPartner.Table_Name, bpartner.getC_BPartner_ID());
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_R_Request.COLUMNNAME_StartTime, I_R_Request.COLUMNNAME_StartDate })
+	public void updateStartDateAndStartTime(final I_R_Request request)
+	{
+		if (request.getStartDate() == null)
+		{
+			request.setStartDate(request.getStartTime());
+		}
+
+		if (request.getStartTime() == null)
+		{
+			request.setStartTime(request.getStartDate());
+		}
+	}
 }
