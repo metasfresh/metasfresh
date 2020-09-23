@@ -1,7 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import DebounceInput from 'react-debounce-input';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
@@ -32,6 +31,8 @@ class MenuOverlay extends Component {
     path: '',
     data: {},
   };
+
+  overlayItems = []; // this is used to hold the references to items from the results - we need to access the first one
 
   /**
    * @method componentDidMount
@@ -335,7 +336,8 @@ class MenuOverlay extends Component {
     const { handleMenuOverlay } = this.props;
     const input = this.searchInputQuery;
 
-    const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
+    const allMenuItems = document.getElementsByClassName('js-menu-item');
+    const firstMenuItem = allMenuItems[0];
     const firstQueryItem = document
       .getElementsByClassName('menu-overlay-query')[0]
       .getElementsByClassName('js-menu-item')[0];
@@ -408,7 +410,15 @@ class MenuOverlay extends Component {
         break;
       case 'Enter':
         e.preventDefault();
-
+        if (
+          firstQueryItem.className.includes('menu-overlay-search-item-focused')
+        ) {
+          firstQueryItem.classList.remove('menu-overlay-search-item-focused');
+          if (this.overlayItems.length) {
+            const { props: itemProps } = this.overlayItems[0];
+            this.linkClick(itemProps);
+          }
+        }
         document.activeElement.click();
         break;
       case 'Backspace':
@@ -422,6 +432,15 @@ class MenuOverlay extends Component {
         e.preventDefault();
 
         handleMenuOverlay('', '');
+        break;
+      default:
+        // - clear existing focuses
+        for (let menuItem of allMenuItems) {
+          menuItem.classList.remove('menu-overlay-search-item-focused');
+        }
+        // - focus on the first item
+        firstQueryItem &&
+          firstQueryItem.classList.add('menu-overlay-search-item-focused');
     }
   };
 
@@ -529,6 +548,7 @@ class MenuOverlay extends Component {
    */
   render() {
     const { queriedResults, deepSubNode, query, data } = this.state;
+
     const { nodeId, node, handleMenuOverlay, openModal } = this.props;
     const nodeData = data.length
       ? data
@@ -548,13 +568,27 @@ class MenuOverlay extends Component {
                 <div className="input-flex input-primary">
                   <i className="input-icon meta-icon-preview" />
 
-                  <DebounceInput
+                  {/* <DebounceInput
                     debounceTimeout={250}
                     type="text"
                     inputRef={(ref) => {
                       this.searchInputQuery = ref;
                     }}
                     className="input-field"
+                    placeholder={counterpart.translate(
+                      'window.type.placeholder'
+                    )}
+                    autoComplete="new-password"
+                    onChange={this.handleQuery}
+                    onKeyDown={this.handleKeyDown}
+                  /> */}
+
+                  <input
+                    type="text"
+                    ref={(ref) => {
+                      this.searchInputQuery = ref;
+                    }}
+                    className="input-field focus-visible"
                     placeholder={counterpart.translate(
                       'window.type.placeholder'
                     )}
@@ -574,6 +608,9 @@ class MenuOverlay extends Component {
                 {queriedResults &&
                   queriedResults.map((result, index) => (
                     <MenuOverlayItem
+                      ref={(overlayItem) => {
+                        this.overlayItems[index] = overlayItem;
+                      }}
                       key={index}
                       query={true}
                       transparentBookmarks={true}
