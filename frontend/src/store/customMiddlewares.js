@@ -12,7 +12,8 @@ const navigationMiddleware = ({ dispatch }) => (next) => (action) => {
 
   if (
     action.type === '@@router/LOCATION_CHANGE' &&
-    action.payload.action === 'POP' && action.payload.pathname === '/'
+    action.payload.action === 'POP' &&
+    action.payload.pathname === '/'
   ) {
     // make sure we clear the breadcrumbs once we are on the dashboard
     dispatch(setBreadcrumb([]));
