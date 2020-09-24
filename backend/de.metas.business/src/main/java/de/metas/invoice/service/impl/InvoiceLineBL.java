@@ -112,7 +112,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public boolean setTax(final org.compiere.model.I_C_InvoiceLine il, final String trxName)
+	public boolean setTaxBasedOnShipment(final org.compiere.model.I_C_InvoiceLine il, final String trxName)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -136,13 +136,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final Timestamp shipDate = io.getMovementDate();
 
-		final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
+		final BPartnerLocationId shipToPartnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
 
 		final boolean isSOTrx = io.isSOTrx();
 
 		final CountryId countryFromId = invoiceBL.getFromCountryId(invoice, il);
 
-		return setTaxForInvoiceLine(il, inOutOrgId, shipDate, countryFromId, partnerLocationId, isSOTrx);
+		return setTaxForInvoiceLine(il, inOutOrgId, shipDate, countryFromId, shipToPartnerLocationId, isSOTrx);
 	}
 
 	@Override

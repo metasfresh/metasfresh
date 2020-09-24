@@ -1387,23 +1387,30 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-
-		final Timestamp invoiceDate = invoice.getDateInvoiced();
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 
-		final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
-
-		final boolean isSOTrx = invoice.isSOTrx();
-
 		for (final I_C_InvoiceLine il : lines)
 		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(il.getM_InOutLine_ID());
+
+			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+			final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+
+			final OrgId orgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+			final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
+
+			final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
+					: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+
+			final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
+
 			final CountryId countryFromId = getFromCountryId(invoice, il);
 
-			invoiceLineBL.setTaxForInvoiceLine(il, orgId, invoiceDate, countryFromId, partnerLocationId, isSOTrx);
+			invoiceLineBL.setTaxForInvoiceLine(il, orgId, taxDate, countryFromId, taxBPartnerLocationId, isSOTrx);
 
 			invoiceDAO.save(il);
 		}

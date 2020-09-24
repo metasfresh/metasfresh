@@ -54,7 +54,7 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * @param il
 	 * @param getTrxName
 	 */
-	boolean setTax(org.compiere.model.I_C_InvoiceLine il, String getTrxName);
+	boolean setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine il, String getTrxName);
 
 	/**
 	 * @param invoiceLine
@@ -102,5 +102,5 @@ public interface IInvoiceLineBL extends ISingletonService
 
 	void updatePrices(I_C_InvoiceLine invoiceLine);
 
-	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationId partnerLocationId, boolean isSOTrx);
+	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationId taxPartnerLocationId, boolean isSOTrx);
 }
