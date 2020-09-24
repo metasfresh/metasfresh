@@ -17,9 +17,6 @@ public interface IWarehouseAdvisor extends ISingletonService
 {
 	/**
 	 * Suggests warehouse to be used by given order line
-	 *
-	 * @param orderLine
-	 * @return
 	 */
 	public WarehouseId evaluateWarehouse(final I_C_OrderLine orderLine);
 
@@ -27,9 +24,6 @@ public interface IWarehouseAdvisor extends ISingletonService
 
 	/**
 	 * Suggests warehouse to be used by given order
-	 *
-	 * @param order
-	 * @return
 	 */
 	public WarehouseId evaluateOrderWarehouse(final I_C_Order order);
 }

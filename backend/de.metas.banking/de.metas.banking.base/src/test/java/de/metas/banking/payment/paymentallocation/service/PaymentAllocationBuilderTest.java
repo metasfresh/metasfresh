@@ -49,10 +49,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import de.metas.currency.CurrencyRepository;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
