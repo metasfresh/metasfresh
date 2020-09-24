@@ -112,6 +112,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		configRepository = new InvoiceProcessingServiceCompanyConfigRepository();
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(configRepository, moneyService);
