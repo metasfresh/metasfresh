@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
 
@@ -48,6 +50,7 @@ class IInvoiceBLTest
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		invoiceBL = Services.get(IInvoiceBL.class);
 	}
 

@@ -113,6 +113,7 @@ public class PaymentAllocationBuilderTest
 		AdempiereTestHelper.get().init();
 
 		// services
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		allocationDAO = Services.get(IAllocationDAO.class);
 		paymentDAO = Services.get(IPaymentDAO.class);
 		invoiceBL = Services.get(IInvoiceBL.class);

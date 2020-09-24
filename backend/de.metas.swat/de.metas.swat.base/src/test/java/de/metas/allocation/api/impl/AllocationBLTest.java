@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
@@ -52,6 +53,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
@@ -76,6 +78,8 @@ public class AllocationBLTest
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		
 		trxManager = Services.get(ITrxManager.class);
 		invoiceDAO = Services.get(IInvoiceDAO.class);
 		allocationDAO = Services.get(IAllocationDAO.class);

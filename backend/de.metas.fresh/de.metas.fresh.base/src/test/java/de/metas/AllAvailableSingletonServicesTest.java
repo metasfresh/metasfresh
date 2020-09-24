@@ -2,6 +2,7 @@ package de.metas;
 
 import com.google.common.base.Stopwatch;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -92,6 +93,7 @@ public class AllAvailableSingletonServicesTest
 
 		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 	}
 
 	@ParameterizedTest

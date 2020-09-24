@@ -31,6 +31,7 @@ import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -58,7 +59,6 @@ import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -66,6 +66,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
@@ -111,7 +112,10 @@ public class PaymentsViewAllocateCommandTest
 	{
 		AdempiereTestHelper.get().init();
 
-		moneyService = new MoneyService(new CurrencyRepository());
+		final CurrencyRepository currencyRepo = new CurrencyRepository();
+		SpringContextHolder.registerJUnitBean(currencyRepo);
+
+		moneyService = new MoneyService(currencyRepo);
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(
 				new InvoiceProcessingServiceCompanyConfigRepository(),
 				moneyService);

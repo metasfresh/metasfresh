@@ -52,6 +52,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -84,7 +85,9 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
@@ -162,6 +165,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
 
 	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
+
+	private final CurrencyRepository currenciesRepo = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
@@ -1724,4 +1730,31 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return sysconfigs.getReferenceListAware(SYSCONFIG_C_Invoice_PaymentRule, PaymentRule.OnCredit, PaymentRule.class);
 	}
 
+	@Override
+	public final void discountInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice, final @NonNull Amount discountAmt, final @NonNull Timestamp date)
+	{
+		if (discountAmt .signum() == 0)
+		{
+			return;
+		}
+
+		final Amount discountAmtAbs = discountAmt.negateIfNot(invoice.isSOTrx());
+		final CurrencyId currencyId = currenciesRepo.getCurrencyIdByCurrencyCode(discountAmt.getCurrencyCode());
+
+		// @formatter:off
+		Services.get(IAllocationBL.class).newBuilder()
+			.orgId(invoice.getAD_Org_ID())
+			.currencyId(currencyId)
+			.dateAcct(date)
+			.dateTrx(date)
+			.addLine()
+				.orgId(invoice.getAD_Org_ID())
+				.bpartnerId(invoice.getC_BPartner_ID())
+				.invoiceId(invoice.getC_Invoice_ID())
+				.amount(BigDecimal.ZERO)
+				.discountAmt(discountAmtAbs.getAsBigDecimal())
+			.lineDone()
+			.create(true);
+		// @formatter:on
+	}
 }

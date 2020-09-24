@@ -4,6 +4,62 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Payment;
+import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoice.interceptor.C_Invoice;
+import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
+import de.metas.payment.processor.PaymentProcessorService;
+import de.metas.payment.reservation.PaymentReservationCaptureRepository;
+import de.metas.payment.reservation.PaymentReservationRepository;
+import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -76,6 +132,8 @@ public class PaymentBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		paymentBL = (PaymentBL)Services.get(IPaymentBL.class);
 
@@ -473,6 +531,77 @@ public class PaymentBLTest
 				assertThat(payment2.isReconciled()).isTrue();
 				assertThat(PaymentBL.extractPaymentReconcileReference(payment2)).isEqualTo(bankStatementLine2);
 			}
+		}
+	}
+
+	@Nested
+	public class canAllocateOrderPaymentToInvoice
+	{
+		private I_C_DocType prepayDocType;
+		private I_C_DocType salesOrderDocType;
+		private C_Invoice c_invoiceInterceptor;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			AdempiereTestHelper.get().init();
+
+			SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+
+			prepayDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			salesOrderDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
+
+			final @NonNull PaymentReservationRepository reservationsRepo = new PaymentReservationRepository();
+			final @NonNull PaymentReservationCaptureRepository capturesRepo = new PaymentReservationCaptureRepository();
+			final @NonNull PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.empty());
+			c_invoiceInterceptor = new C_Invoice(new PaymentReservationService(reservationsRepo, capturesRepo, paymentProcessors));
+		}
+
+		@SuppressWarnings("ConstantConditions")
+		@NonNull
+		protected I_C_DocType createDocType(@NonNull final String baseType, @Nullable final String subType)
+		{
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(baseType);
+			docType.setDocSubType(subType);
+			saveRecord(docType);
+			return docType;
+		}
+
+		@SuppressWarnings("ConstantConditions")
+		@NonNull
+		private I_C_Payment createPayment(@Nullable final ExternalId externalOrderId)
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setExternalOrderId(ExternalId.toValue(externalOrderId));
+			payment.getExternalOrderId();
+			save(payment);
+			return payment;
+		}
+
+		@SuppressWarnings("ConstantConditions")
+		@NonNull
+		private de.metas.adempiere.model.I_C_Order createSalesOrder(
+				@Nullable final ExternalId externalOrderId,
+				@NonNull final I_C_DocType prepayDocType,
+				@Nullable final I_C_Payment payment)
+		{
+			final de.metas.adempiere.model.I_C_Order order = newInstance(de.metas.adempiere.model.I_C_Order.class);
+			order.setExternalId(ExternalId.toValue(externalOrderId));
+			order.setC_DocType_ID(prepayDocType.getC_DocType_ID());
+			order.setIsSOTrx(true);
+			saveRecord(order);
+
+			if (payment != null)
+			{
+				order.setC_Payment_ID(payment.getC_Payment_ID());
+				payment.setC_Order_ID(order.getC_Order_ID());
+
+				saveRecord(payment);
+				saveRecord(order);
+			}
+
+			return order;
 		}
 	}
 }
