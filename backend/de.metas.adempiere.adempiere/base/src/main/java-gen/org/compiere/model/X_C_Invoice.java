@@ -1976,4 +1976,21 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UserFlag);
 	}
+	
+	
+	@Override
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
 }

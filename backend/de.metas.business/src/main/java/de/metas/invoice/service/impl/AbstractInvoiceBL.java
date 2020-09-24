@@ -1,6 +1,5 @@
 package de.metas.invoice.service.impl;
 
-
 /*
  * #%L
  * de.metas.swat.base
@@ -54,11 +53,14 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PriceList;
@@ -85,6 +87,8 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
@@ -101,6 +105,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -115,6 +122,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingContext;
@@ -169,6 +177,7 @@ import lombok.NonNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
+
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
@@ -713,7 +722,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private BPartnerLocationId getBillBPartnerLocationId(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-
 		final List<I_C_BPartner_Location> bpLocations = bpartnersRepo.retrieveBPartnerLocations(bpartnerId);
 		for (final I_C_BPartner_Location loc : bpLocations)
 		{
@@ -741,9 +749,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@NonNull final SOTrx soTrx,
 			@NonNull final ZonedDateTime date)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(bpartnerLocationId.getBpartnerId(), soTrx);
+		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerLocationId.getBpartnerId(), soTrx);
 		if (pricingSystemId == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@")
@@ -752,7 +760,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 					.appendParametersToMessage();
 		}
 
-		final CountryId countryId = bpartnerDAO.getBPartnerLocationCountryId(bpartnerLocationId);
+		final CountryId countryId = bpartnersRepo.getBPartnerLocationCountryId(bpartnerLocationId);
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		return priceListBL.getCurrentPriceList(pricingSystemId, countryId, date, soTrx)
@@ -813,6 +821,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void updateDescriptionFromDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice, final String defaultDescription, final String defaultDocumentNote)
 	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
 		final int docTypeId = invoice.getC_DocTypeTarget_ID();
 		if (docTypeId <= 0)
 		{
@@ -836,8 +846,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner bPartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+		final I_C_BPartner bPartner = bpartnersRepo.getById(invoice.getC_BPartner_ID());
 
 		final String adLanguage = CoalesceUtil.coalesce(bPartner.getAD_Language(), Env.getAD_Language());
 
@@ -869,8 +878,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void ensureUOMsAreNotNull(final @NonNull InvoiceId invoiceId)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId); // // TODO tbp: create this method!
 		for (final I_C_InvoiceLine line : lines)
@@ -892,8 +901,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
 	{
-
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
 		renumberLines(lines, step);
 	}
@@ -1234,8 +1243,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		// services
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 		// // Make sure QtyInvoicedInPriceUOM is up2date
 		invoiceLineBL.setQtyInvoicedInPriceUOM(invoiceLine);
@@ -1300,6 +1309,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void setTaxAmt(final I_C_InvoiceLine invoiceLine)
 	{
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
 		final int taxId = invoiceLine.getC_Tax_ID();
 		if (taxId <= 0)
 		{
@@ -1307,7 +1319,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// setLineNetAmt();
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final I_C_Tax tax = taxDAO.getTaxById(taxId);
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 		if (tax.isDocumentLevel() && invoice.isSOTrx())
@@ -1318,7 +1329,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
-		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal TaxAmt = taxBL.calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1360,6 +1371,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
 		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
@@ -1375,6 +1387,84 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return invoice.isTaxIncluded(); // 08486: use the invoice's flag, not whatever the PL sais right now
+	}
+
+	@Override
+	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+		for (final I_C_InvoiceLine il : lines)
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(il.getM_InOutLine_ID());
+
+			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+			final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+
+			final OrgId orgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+			final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
+
+			final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
+					: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+
+			final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
+
+			final CountryId countryFromId = getFromCountryId(invoice, il);
+
+			invoiceLineBL.setTaxForInvoiceLine(il, orgId, taxDate, countryFromId, taxBPartnerLocationId, isSOTrx);
+
+			invoiceDAO.save(il);
+		}
+	}
+
+	@Override
+	public CountryId getFromCountryId(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+
+		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
+
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+		final CountryId orgCountryId = bpartnerOrgBL.getOrgCountryId(orgId);
+
+		final CountryId warehouseCountryId = invoiceWarehouseId == null ? null : warehouseBL.getCountryId(invoiceWarehouseId);
+
+		final CountryId countryFromId;
+
+		if (warehouseCountryId != null)
+		{
+
+			countryFromId = warehouseCountryId;
+		}
+		else if (invoiceLine.getM_InOutLine_ID() > 0)
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(invoiceLine.getM_InOutLine_ID());
+
+			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+
+			final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+			countryFromId = warehouseBL.getCountryId(warehouseId);
+		}
+		else
+		{
+			countryFromId = orgCountryId;
+			if (countryFromId == null)
+			{
+				throw new OrgHasNoBPartnerLinkException(orgId);
+			}
+		}
+
+		return countryFromId;
 	}
 
 	@Override
@@ -1557,11 +1647,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void updateInvoiceLineIsReadOnlyFlags(@NonNull final I_C_Invoice invoice, final I_C_InvoiceLine... invoiceLines)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final boolean saveLines;
 		final List<I_C_InvoiceLine> linesToUpdate;
 		if (Check.isEmpty(invoiceLines))
 		{
-			final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 			linesToUpdate = invoiceDAO.retrieveLines(invoice);
 			saveLines = true;
 		}
@@ -1664,12 +1755,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 		final org.compiere.model.I_C_Invoice reversalInvoice = invoice.getReversal();
 
 		// services
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 		final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
