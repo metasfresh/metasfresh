@@ -608,7 +608,7 @@ public class ManufacturingOrderAPIServiceTest
 			assertThat(result.getIssues()).isEmpty();
 			assertThat(result.getReceipts())
 					.containsExactly(
-							JsonResponseReceiveFromManufacturingOrder.builder().requestId("req1").outcome(Outcome.OK).build());
+							JsonResponseReceiveFromManufacturingOrder.builder().requestId("req1").build());
 
 			//
 			// Check cost collector
@@ -688,7 +688,7 @@ public class ManufacturingOrderAPIServiceTest
 			assertThat(result.getReceipts()).isEmpty();
 			assertThat(result.getIssues())
 					.containsExactly(
-							JsonResponseIssueToManufacturingOrder.builder().requestId("req1").outcome(Outcome.OK).build());
+							JsonResponseIssueToManufacturingOrder.builder().requestId("req1").build());
 
 			//
 			// Check HU
@@ -733,14 +733,11 @@ public class ManufacturingOrderAPIServiceTest
 
 			//
 			// Check result
+			assertThat(result.isOK()).isFalse();
 			assertThat(result.getReceipts()).isEmpty();
-			assertThat(result.getIssues()).hasSize(1);
+			assertThat(result.getIssues()).isEmpty();
 
-			final JsonResponseIssueToManufacturingOrder issueResponse = result.getIssues().get(0);
-			assertThat(issueResponse.getRequestId()).isEqualTo("req1");
-			assertThat(issueResponse.getOutcome()).isEqualTo(Outcome.ERROR);
-
-			final JsonErrorItem jsonErrorItem = issueResponse.getError().getErrors().get(0);
+			final JsonErrorItem jsonErrorItem = result.getError().getErrors().get(0);
 			assertThat(jsonErrorItem.getMessage()).startsWith("No HU found ");
 			assertThat(jsonErrorItem.getAdIssueId()).isNotNull();
 		}

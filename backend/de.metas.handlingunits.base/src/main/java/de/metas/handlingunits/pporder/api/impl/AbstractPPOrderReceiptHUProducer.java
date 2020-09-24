@@ -166,7 +166,7 @@ import lombok.Value;
 		this.processReceiptCandidates = true;
 		this.receiveOneVHU = true;
 
-		final List<I_M_HU> vhus = trxManager.callInNewTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
+		final List<I_M_HU> vhus = trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
 
 		if (vhus.isEmpty())
 		{

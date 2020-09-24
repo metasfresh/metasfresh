@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
@@ -25,7 +26,6 @@ import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport.JsonResponseManufacturingOrdersReportBuilder;
 import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
-import de.metas.common.manufacturing.Outcome;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -76,6 +76,7 @@ import lombok.NonNull;
 
 class ManufacturingOrderReportProcessCommand
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -103,8 +104,24 @@ class ManufacturingOrderReportProcessCommand
 
 	public JsonResponseManufacturingOrdersReport execute()
 	{
-		final ExportTransactionId transactionKey = ExportTransactionId.random();
+		final ExportTransactionId transactionKey = ExportTransactionId.optionalOfString(request.getTransactionKey())
+				.orElseGet(ExportTransactionId::random);
 
+		try
+		{
+			return trxManager.callInThreadInheritedTrx(() -> executeInTrx(transactionKey));
+		}
+		catch (final Exception ex)
+		{
+			return JsonResponseManufacturingOrdersReport.builder()
+					.transactionKey(transactionKey.toJson())
+					.error(createJsonError(ex))
+					.build();
+		}
+	}
+
+	private JsonResponseManufacturingOrdersReport executeInTrx(@NonNull final ExportTransactionId transactionKey)
+	{
 		final JsonResponseManufacturingOrdersReportBuilder result = JsonResponseManufacturingOrdersReport.builder()
 				.transactionKey(transactionKey.toJson());
 
@@ -112,36 +129,14 @@ class ManufacturingOrderReportProcessCommand
 		{
 			for (final JsonRequestIssueToManufacturingOrder issue : request.getIssues())
 			{
-				try
-				{
-					final JsonResponseIssueToManufacturingOrder issueResult = processIssue(issue);
-					result.issue(issueResult);
-				}
-				catch (Exception ex)
-				{
-					result.issue(JsonResponseIssueToManufacturingOrder.builder()
-							.requestId(issue.getRequestId())
-							.outcome(Outcome.ERROR)
-							.error(createJsonError(ex))
-							.build());
-				}
+				final JsonResponseIssueToManufacturingOrder issueResult = processIssue(issue);
+				result.issue(issueResult);
 			}
 
 			for (final JsonRequestReceiveFromManufacturingOrder receipt : request.getReceipts())
 			{
-				try
-				{
-					JsonResponseReceiveFromManufacturingOrder receiptResult = processReceipt(receipt);
-					result.receipt(receiptResult);
-				}
-				catch (Exception ex)
-				{
-					result.receipt(JsonResponseReceiveFromManufacturingOrder.builder()
-							.requestId(receipt.getRequestId())
-							.outcome(Outcome.ERROR)
-							.error(createJsonError(ex))
-							.build());
-				}
+				final JsonResponseReceiveFromManufacturingOrder receiptResult = processReceipt(receipt);
+				result.receipt(receiptResult);
 			}
 		}
 
@@ -156,7 +151,7 @@ class ManufacturingOrderReportProcessCommand
 		final ProductId productId = productBL.getProductIdByValue(productNo);
 		if (productId == null)
 		{
-			throw new RuntimeException("No product found for `" + productNo + "`");
+			throw new AdempiereException("No product found for `" + productNo + "`");
 		}
 
 		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
@@ -176,7 +171,6 @@ class ManufacturingOrderReportProcessCommand
 
 		return JsonResponseIssueToManufacturingOrder.builder()
 				.requestId(issue.getRequestId())
-				.outcome(Outcome.OK)
 				.build();
 	}
 
@@ -209,7 +203,6 @@ class ManufacturingOrderReportProcessCommand
 
 		return JsonResponseReceiveFromManufacturingOrder.builder()
 				.requestId(receipt.getRequestId())
-				.outcome(Outcome.OK)
 				.build();
 	}
 

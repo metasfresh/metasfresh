@@ -6,9 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import de.metas.common.rest_api.JsonError;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -41,12 +39,6 @@ public class JsonResponseIssueToManufacturingOrder
 {
 	@Nullable
 	String requestId;
-
-	@NonNull
-	Outcome outcome;
-
-	@Nullable
-	JsonError error;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonResponseIssueToManufacturingOrderBuilder

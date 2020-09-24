@@ -22,6 +22,15 @@
 
 package de.metas.camel.shipping;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.spi.PropertiesComponent;
+
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
@@ -31,18 +40,11 @@ import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.shipping.JsonProduct;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.spi.PropertiesComponent;
-
-import javax.annotation.Nullable;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.regex.Pattern;
 
 @UtilityClass
 public class CommonUtil
 {
-	private final static String PRODUCT_AND_ORG_PREFIX_PATTERN = "([^-]*-)?(.*)";
+	private final static Pattern PRODUCT_AND_ORG_PREFIX_PATTERN = Pattern.compile("([^-]*-)?(.*)");
 
 	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
 			final String databaseName,
@@ -74,7 +76,7 @@ public class CommonUtil
 			@NonNull final JsonProduct product,
 			@NonNull final String orgCode)
 	{
-		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, orgCode);
+		final var artikelNummerPrefix = extractOrgPrefix(propertiesComponent, orgCode);
 		return artikelNummerPrefix + product.getProductNo();
 	}
 
@@ -100,8 +102,7 @@ public class CommonUtil
 			return productValueWithOrgCode;
 		}
 
-		final var prefix = Pattern.compile(PRODUCT_AND_ORG_PREFIX_PATTERN);
-		final var matcher = prefix.matcher(productValueWithOrgCode);
+		final var matcher = PRODUCT_AND_ORG_PREFIX_PATTERN.matcher(productValueWithOrgCode);
 		if (!matcher.matches())
 		{
 			return productValueWithOrgCode;
@@ -117,8 +118,7 @@ public class CommonUtil
 			return null;
 		}
 
-		final var prefix = Pattern.compile(PRODUCT_AND_ORG_PREFIX_PATTERN);
-		final var matcher = prefix.matcher(productValueWithOrgCode);
+		final var matcher = PRODUCT_AND_ORG_PREFIX_PATTERN.matcher(productValueWithOrgCode);
 		if (!matcher.matches())
 		{
 			return null;

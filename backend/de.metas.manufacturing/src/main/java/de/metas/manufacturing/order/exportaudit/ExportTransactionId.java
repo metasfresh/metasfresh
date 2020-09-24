@@ -1,6 +1,9 @@
 package de.metas.manufacturing.order.exportaudit;
 
+import java.util.Optional;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -43,6 +46,11 @@ public final class ExportTransactionId
 	public static ExportTransactionId ofString(@NonNull final String value)
 	{
 		return new ExportTransactionId(value);
+	}
+
+	public static Optional<ExportTransactionId> optionalOfString(@Nullable final String value)
+	{
+		return Check.isNotBlank(value) ? Optional.of(ofString(value)) : Optional.empty();
 	}
 
 	private final String value;
