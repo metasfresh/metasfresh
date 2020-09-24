@@ -343,6 +343,32 @@ class MenuOverlay extends Component {
   };
 
   /**
+   * @method rafAsync
+   * @summary - uses requestAnimationFrame method which tells the browser that you wish to perform an animation and requests
+   *            that the browser calls a specified function to update an animation before the next repaint
+   */
+  rafAsync = () => {
+    return new Promise((resolve) => {
+      requestAnimationFrame(resolve);
+    });
+  };
+
+  /**
+   * @method checkElement
+   * @summary - function used to make sure the element we are looking for is present at the time we access it
+   */
+  checkElement = () => {
+    const selectedElement = document
+      .getElementsByClassName('menu-overlay-query')[0]
+      .getElementsByClassName('js-menu-item')[0];
+    if (!selectedElement) {
+      return this.rafAsync().then(() => this.checkElement());
+    } else {
+      return Promise.resolve(selectedElement);
+    }
+  };
+
+  /**
    * @method handleKeyDown
    * @summary ToDo: Describe the method.
    * @param {object} event
@@ -453,9 +479,13 @@ class MenuOverlay extends Component {
         for (let menuItem of allMenuItems) {
           menuItem.classList.remove('menu-overlay-search-item-focused');
         }
-        // - focus on the first item
-        firstQueryItem &&
-          firstQueryItem.classList.add('menu-overlay-search-item-focused');
+        // use check element function to check if the element is there - case when only one single char typed (in this case element might not be yet present)
+        this.checkElement().then((firstResponseElement) => {
+          firstResponseElement &&
+            firstResponseElement.classList.add(
+              'menu-overlay-search-item-focused'
+            );
+        });
     }
   };
 
