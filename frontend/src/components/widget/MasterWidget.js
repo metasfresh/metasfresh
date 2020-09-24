@@ -63,7 +63,8 @@ class MasterWidget extends PureComponent {
 
   /**
    * @method handlePatch
-   * @summary ToDo: Describe the method.
+   * @summary Performs the actual patch request and for `Product attributes` also
+   * updates the field value stored in the redux store.
    * @param {*} property
    * @param {*} value
    */
@@ -96,8 +97,7 @@ class MasterWidget extends PureComponent {
     // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
     // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
-    // Attributes component so that it won't need it anymore. Or add better guards
-    // to be sure it's not called if not needed.
+    // Attributes component so that it won't need it anymore.
     // https://github.com/metasfresh/me03/issues/5384
     widgetType !== 'Button' &&
       !dataId &&
@@ -232,14 +232,21 @@ class MasterWidget extends PureComponent {
     onBlurWidget && onBlurWidget(fieldName);
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  handleFocus = () => this.handleFocusFn(true);
+
+  handleBlur = () => this.handleFocusFn(false);
+
+  handleFocusFn = (val) => {
+    const { handleBackdropLock } = this.props;
+
+    if (handleBackdropLock) {
+      handleBackdropLock(val);
+    }
+  };
+
   render() {
-    const { handleBackdropLock, onClickOutside, windowId } = this.props;
+    const { onClickOutside, windowId } = this.props;
     const { updated, value } = this.state;
-    const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 
     return (
       <RawWidget
@@ -247,8 +254,8 @@ class MasterWidget extends PureComponent {
         windowType={windowId}
         updated={updated}
         data={value}
-        handleFocus={() => handleFocusFn(true)}
-        handleBlur={() => handleFocusFn(false)}
+        handleFocus={this.handleFocus}
+        handleBlur={this.handleBlur}
         onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
