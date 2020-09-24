@@ -369,6 +369,19 @@ class MenuOverlay extends Component {
   };
 
   /**
+   * @method clearResponseFirstElement
+   * @summary - clears the marking of the first response element, used when you use the arrows, up and down
+   */
+  clearResponseFirstElement = () => {
+    this.checkElement().then((firstResponseElement) => {
+      firstResponseElement &&
+        firstResponseElement.classList.remove(
+          'menu-overlay-search-item-focused'
+        );
+    });
+  };
+
+  /**
    * @method handleKeyDown
    * @summary ToDo: Describe the method.
    * @param {object} event
@@ -414,6 +427,8 @@ class MenuOverlay extends Component {
             firstMenuItem.focus();
           }
         }
+        this.clearResponseFirstElement();
+
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -438,6 +453,7 @@ class MenuOverlay extends Component {
         if (document.activeElement.classList.contains('js-menu-item')) {
           this.handleArrowUp();
         }
+        this.clearResponseFirstElement();
 
         break;
       case 'Tab':
