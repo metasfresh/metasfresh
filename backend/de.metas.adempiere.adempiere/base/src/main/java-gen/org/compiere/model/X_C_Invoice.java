@@ -1978,31 +1978,19 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 	
 	
-	/**
-	 * Set Lager.
-	 *
-	 * @param M_Warehouse_ID Storage Warehouse and Service Point
-	 */
 	@Override
-	public void setM_Warehouse_ID(int M_Warehouse_ID)
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
 	{
-		if (M_Warehouse_ID < 1)
-			set_Value(COLUMNNAME_M_Warehouse_ID, null);
-		else
-			set_Value(COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
 	}
 
-	/**
-	 * Get Lager.
-	 *
-	 * @return Storage Warehouse and Service Point
-	 */
 	@Override
-	public int getM_Warehouse_ID()
+	public int getM_Warehouse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
-		if (ii == null)
-			return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
+
 }

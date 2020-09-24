@@ -1972,32 +1972,27 @@ public interface I_C_Invoice
     /** Column name UserFlag */
     public static final String COLUMNNAME_UserFlag = "UserFlag";
     
-    
     /**
-	 * Set Lager.
+	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID(int M_Warehouse_ID);
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
+	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_ID();
 
-	/**
-	 * Column name M_Warehouse_ID
-	 */
-	public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";	
 	
 }
