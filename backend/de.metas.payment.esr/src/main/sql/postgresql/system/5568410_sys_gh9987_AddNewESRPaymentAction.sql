@@ -1,6 +1,6 @@
 -- 2020-09-22T10:24:34.943Z
 -- URL zum Konzept
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540386,542188,TO_TIMESTAMP('2020-09-22 12:24:34','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Rabatt',TO_TIMESTAMP('2020-09-22 12:24:34','YYYY-MM-DD HH24:MI:SS'),100,'T','Discount')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540386,542188,TO_TIMESTAMP('2020-09-22 12:24:34','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Skonto',TO_TIMESTAMP('2020-09-22 12:24:34','YYYY-MM-DD HH24:MI:SS'),100,'T','Discount')
 ;
 
 -- 2020-09-22T10:24:34.961Z
@@ -10,7 +10,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- 2020-09-22T10:25:22.176Z
 -- URL zum Konzept
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-09-22 12:25:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542188
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Skonto', Updated=TO_TIMESTAMP('2020-09-22 12:25:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542188
 ;
 
 -- 2020-09-22T10:25:28.184Z
