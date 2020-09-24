@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -256,8 +257,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setM_AttributeSetInstance_ID(oLine.getM_AttributeSetInstance_ID());
 		setS_ResourceAssignment_ID(oLine.getS_ResourceAssignment_ID());
 		setC_UOM_ID(oLine.getC_UOM_ID());
-		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(this, I_C_OrderLine.class);
+		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
+		final I_C_OrderLine ol = create(this, I_C_OrderLine.class);
 		il.setPrice_UOM_ID(ol.getPrice_UOM_ID());
 		il.setIsPackagingMaterial(ol.isPackagingMaterial());
 		//
@@ -265,7 +266,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setPriceActual(oLine.getPriceActual());
 		setPriceLimit(oLine.getPriceLimit());
 		setPriceList(oLine.getPriceList());
-		InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setDiscount(oLine.getDiscount()); // metas cg: task 05052
+		create(this, I_C_InvoiceLine.class).setDiscount(oLine.getDiscount()); // metas cg: task 05052
 		//
 		// 07442
 		// Do not change the tax (or tax category) if it was already set
@@ -350,7 +351,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		int C_OrderLine_ID = sLine.getC_OrderLine_ID();
 		if (C_OrderLine_ID != 0)
 		{
-			I_C_OrderLine oLine = InterfaceWrapperHelper.create(sLine.getC_OrderLine(), I_C_OrderLine.class);									// metas: changed for better future caching
+			I_C_OrderLine oLine = create(sLine.getC_OrderLine(), I_C_OrderLine.class);									// metas: changed for better future caching
 			// MOrderLine oLine = new MOrderLine (getCtx(), C_OrderLine_ID, get_TrxName()); // metas: changed for better future caching
 			setS_ResourceAssignment_ID(oLine.getS_ResourceAssignment_ID());
 			//
@@ -368,7 +369,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			// metas: begin: US1184
 			if (getPriceActual().compareTo(getPriceList()) != 0)
 			{
-				InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setIsManualPrice(true);
+				create(this, I_C_InvoiceLine.class).setIsManualPrice(true);
 				// metas: end
 				//
 			}
@@ -378,7 +379,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 			if (tax == null)
 			{
-				InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setDiscount(oLine.getDiscount()); // metas cg: task 05052
+				create(this, I_C_InvoiceLine.class).setDiscount(oLine.getDiscount()); // metas cg: task 05052
 				setC_Tax_ID(oLine.getC_Tax_ID());
 				setC_TaxCategory_ID(oLine.getC_TaxCategory_ID());
 			}
@@ -402,7 +403,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 			if (tax == null)
 			{
-				final I_C_Tax rmaTax = InterfaceWrapperHelper.create(getCtx(), rmaLine.getC_Tax_ID(), I_C_Tax.class, get_TrxName());
+				final I_C_Tax rmaTax = create(getCtx(), rmaLine.getC_Tax_ID(), I_C_Tax.class, get_TrxName());
 				setC_TaxCategory_ID(rmaTax.getC_TaxCategory_ID());
 			}
 			else
@@ -432,8 +433,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setUser2_ID(sLine.getUser2_ID());
 
 		// task FRESH-273
-		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
-		final de.metas.inout.model.I_M_InOutLine sl = InterfaceWrapperHelper.create(sLine, de.metas.inout.model.I_M_InOutLine.class);
+		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
+		final de.metas.inout.model.I_M_InOutLine sl = create(sLine, de.metas.inout.model.I_M_InOutLine.class);
 		il.setIsPackagingMaterial(sl.isPackagingMaterial());
 
 	}	// setShipLine
@@ -513,7 +514,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		m_productPricing.setM_PriceList_ID(M_PriceList_ID);
 		m_productPricing.setPriceDate(m_DateInvoiced);
 
-		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 		// Set the IsManualPrice in the pricing engine based on the value in the invoice Line
@@ -633,7 +634,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final I_C_Invoice invoice = getC_Invoice();
 
-		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
 		final CountryId fromCountryId = invoiceBL.getFromCountryId(invoice, invoiceLine);
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(getM_InOutLine_ID());
@@ -715,7 +716,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public void setLineNetAmt()
 	{
 		// metas 05129: removed duplicate code, using metas version
-		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
 		Services.get(IInvoiceBL.class).setLineNetAmt(invoiceLine);
 	}	// setLineNetAmt
 
@@ -1121,7 +1122,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		if (getC_TaxCategory_ID() <= 0)
 		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getC_OrderLine(), I_C_OrderLine.class);
+			final I_C_OrderLine orderLine = create(getC_OrderLine(), I_C_OrderLine.class);
 
 			final int taxCategoryID;
 
@@ -1132,7 +1133,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 			else
 			{
-				final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+				final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
 
 				taxCategoryID = TaxCategoryId.toRepoId(Services.get(IInvoiceBL.class).getTaxCategoryId(invoiceLine));
 			}
@@ -1696,7 +1697,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setC_Tax_ID(rmaLine.getC_Tax_ID());
 
-			final I_C_Tax rmaTax = InterfaceWrapperHelper.create(getCtx(), rmaLine.getC_Tax_ID(), I_C_Tax.class, get_TrxName());
+			final I_C_Tax rmaTax = create(getCtx(), rmaLine.getC_Tax_ID(), I_C_Tax.class, get_TrxName());
 			setC_TaxCategory_ID(rmaTax.getC_TaxCategory_ID());
 		}
 		else
@@ -1725,7 +1726,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		setC_Campaign_ID(rmaLine.getC_Campaign_ID());
 
-		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
 		// task FRESH-273
 		il.setIsPackagingMaterial(true);
 	}
