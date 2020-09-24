@@ -181,7 +181,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
-	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine)}.
+	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
 	 */
 	private static final ModelDynAttributeAccessor<I_C_InvoiceLine, Boolean> HAS_FIXED_LINE_NUMBER = new ModelDynAttributeAccessor<>(Boolean.class);
 
@@ -1359,10 +1359,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	/**
-	 * Calls {@link #isTaxIncluded(I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
-	 *
-	 * @param invoiceLine
-	 * @return
+	 * Calls {@link #isTaxIncluded(org.compiere.model.I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
 	 */
 	@Override
 	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
