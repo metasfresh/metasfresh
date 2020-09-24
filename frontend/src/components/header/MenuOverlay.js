@@ -604,6 +604,14 @@ class MenuOverlay extends Component {
   }
 
   /**
+   * @summary - sets a reference to the search input
+   * @param {*} ref
+   */
+  setSearchInputQuery = (ref) => {
+    this.searchInputQuery = ref;
+  };
+
+  /**
    * @method render
    * @summary ToDo: Describe the method.
    */
@@ -630,9 +638,7 @@ class MenuOverlay extends Component {
 
                   <input
                     type="text"
-                    ref={(ref) => {
-                      this.searchInputQuery = ref;
-                    }}
+                    ref={this.setSearchInputQuery}
                     className="input-field focus-visible"
                     placeholder={counterpart.translate(
                       'window.type.placeholder'
