@@ -36,30 +36,7 @@ INSERT INTO t_alter_column values('c_invoice','M_Warehouse_ID','NUMERIC(10)',nul
 
 
 
--- 2020-09-23T20:55:28.404Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,571520,617691,0,542806,0,TO_TIMESTAMP('2020-09-23 23:55:26','YYYY-MM-DD HH24:MI:SS'),100,'Lager oder Ort für Dienstleistung',0,'D','Das Lager identifiziert ein einzelnes Lager für Artikel oder einen Standort an dem Dienstleistungen geboten werden.',0,'Y','Y','Y','N','N','N','N','N','Lager',780,460,0,1,1,TO_TIMESTAMP('2020-09-23 23:55:26','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
--- 2020-09-23T20:55:28.918Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=617691 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2020-09-23T20:55:29.038Z
--- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(459) 
-;
-
--- 2020-09-23T20:55:29.185Z
--- URL zum Konzept
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=617691
-;
-
--- 2020-09-23T20:55:29.222Z
--- URL zum Konzept
-/* DDL */ select AD_Element_Link_Create_Missing_Field(617691)
-;
 
 -- 2020-09-23T20:56:03.154Z
 -- URL zum Konzept
