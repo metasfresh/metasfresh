@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
-import _ from 'lodash';
+
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import {
@@ -103,20 +103,6 @@ export class RawWidget extends Component {
     return null;
   }
 
-  /**
-   *  Re-rendering conditions by widgetType this to prevent unnecessary re-renders
-   *  Performance boost
-   */
-  shouldComponentUpdate(nextProps) {
-    switch (this.props.widgetType) {
-      case 'YesNo':
-        return !_.isEqual(nextProps.widgetData[0], this.props.widgetData[0]);
-
-      default:
-        return true;
-    }
-  }
-
   setRef = (ref) => {
     this.rawWidget = ref;
   };
@@ -170,13 +156,15 @@ export class RawWidget extends Component {
   };
 
   /**
-   * @method handleBlurBlur
-   * @summary ToDo: Describe the method.
+   * @method handleBlurWithParams
+   * @summary on blurring the widget field enable shortcuts/key event listeners
+   * and patch the field if necessary
+   *
    * @param {*} widgetField
    * @param {*} value
    * @param {*} id
    */
-  handleBlur = (widgetField, value, id) => {
+  handleBlurWithParams = (widgetField, value, id) => {
     const {
       allowShortcut,
       handleBlur,
@@ -203,6 +191,23 @@ export class RawWidget extends Component {
   };
 
   /**
+   * @method handleBlur
+   * @summary Wrapper around `handleBlurWithParams` to grab the missing
+   * parameters and avoid anonymous function in event handlers
+   * @param {*} e - DOM event
+   */
+  handleBlur = (e) => {
+    const { filterWidget, fields, id } = this.props;
+
+    const value = e.target.value;
+    const widgetField = filterWidget
+      ? fields[0].parameterName
+      : fields[0].field;
+
+    this.handleBlurWithParams(widgetField, value, id);
+  };
+
+  /**
    * @method updateTypedCharacters
    * @summary updates in the state the number of charactes typed
    * @param {typedText} string
@@ -219,13 +224,21 @@ export class RawWidget extends Component {
    * @method handleKeyDown
    * @summary key handler for the widgets. For number fields we're suppressing up/down
    *          arrows to enable table row navigation
-   * @param {*} e
-   * @param {*} property
-   * @param {*} value
+   * @param {*} e - DOM event
    */
-  handleKeyDown = (e, property, value) => {
-    const { lastFormField, widgetType, closeTableField } = this.props;
+  handleKeyDown = (e) => {
+    const {
+      lastFormField,
+      widgetType,
+      filterWidget,
+      fields,
+      closeTableField,
+    } = this.props;
+    const value = e.target.value;
     const { key } = e;
+    const widgetField = filterWidget
+      ? fields[0].parameterName
+      : fields[0].field;
 
     this.updateTypedCharacters(e.target.value);
 
@@ -246,15 +259,31 @@ export class RawWidget extends Component {
 
       this.handleBlur();
 
-      return this.handlePatch(property, value, null, null, true);
+      return this.handlePatch(widgetField, value, null, null, true);
     }
 
     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
       if (key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
-      return this.handlePatch(property, value);
+      return this.handlePatch(widgetField, value);
     }
+  };
+
+  /**
+   * @method handleChange
+   * @summary onChange event handler
+   * @param {*} e - DOM event
+   */
+  handleChange = (e) => {
+    const { handleChange, filterWidget, fields } = this.props;
+    const widgetField = filterWidget
+      ? fields[0].parameterName
+      : fields[0].field;
+
+    handleChange &&
+      this.updateTypedCharacters(e.target.value) &&
+      handleChange(widgetField, e.target.value);
   };
 
   /**
@@ -353,13 +382,22 @@ export class RawWidget extends Component {
   };
 
   /**
-   * @method handleErrorPopup
-   * @summary ToDo: Describe the method.
-   * @param {*} value
+   * @method showErrorPopup
+   * @summary shows error message on mouse over
    */
-  handleErrorPopup = (value) => {
+  showErrorPopup = () => {
     this.setState({
-      errorPopup: value,
+      errorPopup: true,
+    });
+  };
+
+  /**
+   * @method hideErrorPopup
+   * @summary hides error message on mouse out
+   */
+  hideErrorPopup = () => {
+    this.setState({
+      errorPopup: false,
     });
   };
 
@@ -420,7 +458,6 @@ export class RawWidget extends Component {
       dropdownOpenCallback,
       autoFocus,
       fullScreen,
-      //@TODO Looks like `fields` and `widgetData` are the very same thing 99.9% of the time.
       fields,
       windowType,
       dataId,
@@ -491,13 +528,9 @@ export class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: (e) =>
-        handleChange &&
-        this.updateTypedCharacters(e.target.value) &&
-        handleChange(widgetField, e.target.value),
-      onBlur: (e) => this.handleBlur(widgetField, e.target.value, id),
-      onKeyDown: (e) =>
-        this.handleKeyDown(e, widgetField, e.target.value, widgetType),
+      onChange: this.handleChange,
+      onBlur: this.handleBlur,
+      onKeyDown: this.handleKeyDown,
       title: widgetValue,
       id,
     };
@@ -688,11 +721,11 @@ export class RawWidget extends Component {
           <Lookup
             {...{
               attribute,
+              // recent
             }}
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
-            recent={[]}
             dataId={dataId}
             properties={fields}
             windowType={windowType}
@@ -727,7 +760,7 @@ export class RawWidget extends Component {
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
             onFocus={this.focus}
-            onBlur={this.handleBlur}
+            onBlur={this.handleBlurWithParams}
             onChange={this.handlePatch}
             onBlurWidget={onBlurWidget}
             onClickOutside={this.props.onClickOutside}
@@ -753,7 +786,7 @@ export class RawWidget extends Component {
             rowId={rowId}
             tabId={tabId}
             onFocus={this.focus}
-            onBlur={this.handleBlur}
+            onBlur={this.handleBlurWithParams}
             onChange={this.handlePatch}
             align={gridAlign}
             updated={updated}
@@ -789,7 +822,7 @@ export class RawWidget extends Component {
             rowId={rowId}
             tabId={tabId}
             onFocus={this.focus}
-            onBlur={this.handleBlur}
+            onBlur={this.handleBlurWithParams}
             onChange={this.handlePatch}
             align={gridAlign}
             updated={updated}
@@ -828,8 +861,6 @@ export class RawWidget extends Component {
                 }),
                 {
                   'input-focused': isEdited,
-                },
-                {
                   'border-danger': showErrorBorder,
                 }
               )}
@@ -856,8 +887,6 @@ export class RawWidget extends Component {
                 }),
                 {
                   'input-focused': isEdited,
-                },
-                {
                   'border-danger': showErrorBorder,
                 }
               )}
@@ -1277,8 +1306,12 @@ export class RawWidget extends Component {
           )}
           <div
             className={fieldClass}
-            onMouseEnter={() => this.handleErrorPopup(true)}
-            onMouseLeave={() => this.handleErrorPopup(false)}
+            onMouseEnter={
+              validStatus && !validStatus.valid
+                ? this.showErrorPopup
+                : undefined
+            }
+            onMouseLeave={this.hideErrorPopup}
           >
             {!clearedFieldWarning && warning && (
               <div
