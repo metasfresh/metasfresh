@@ -126,6 +126,7 @@ public class PaymentAllocationBuilderTest
 		AdempiereTestHelper.get().init();
 
 		// services
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		allocationDAO = Services.get(IAllocationDAO.class);
 		paymentDAO = Services.get(IPaymentDAO.class);
 		invoiceBL = Services.get(IInvoiceBL.class);
@@ -135,7 +136,6 @@ public class PaymentAllocationBuilderTest
 		chfCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 		invoiceDocTypes = new HashMap<>();
 
-		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 
 	}
