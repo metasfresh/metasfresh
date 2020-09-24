@@ -1,5 +1,7 @@
 package de.metas.invoice.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -9,8 +11,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -112,11 +112,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public boolean setTax(final Properties ctx, final org.compiere.model.I_C_InvoiceLine il, final String trxName)
+	public boolean setTax(final org.compiere.model.I_C_InvoiceLine il, final String trxName)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
@@ -138,27 +138,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(io.getM_Warehouse_ID());
-
 		final boolean isSOTrx = io.isSOTrx();
 
-		final CountryId countryFromId;
-		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
+		final CountryId countryFromId = invoiceBL.getFromCountryId(invoice, il);
 
-		if (invoiceWarehouseId != null)
-		{
-			countryFromId = warehouseBL.getCountryId(invoiceWarehouseId);
-		}
-		else
-		{
-			countryFromId = warehouseBL.getCountryId(warehouseId);
-		}
-
-		return setTaxForInvoiceLine(ctx, il, inOutOrgId, shipDate, countryFromId, partnerLocationId, isSOTrx);
+		return setTaxForInvoiceLine(il, inOutOrgId, shipDate, countryFromId, partnerLocationId, isSOTrx);
 	}
 
 	@Override
-	public boolean setTaxForInvoiceLine(final Properties ctx,
+	public boolean setTaxForInvoiceLine(
 			final org.compiere.model.I_C_InvoiceLine il,
 			final OrgId orgId,
 			final Timestamp taxDate,
@@ -192,6 +180,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				logger.debug(il + "has M_Product_ID=" + il.getM_Product_ID() + ": returning");
 				return false;
 			}
+
+			final Properties ctx = getCtx(invoice);
 
 			final int taxId = taxBL.retrieveTaxIdForCategory(ctx,
 					countryFromId,

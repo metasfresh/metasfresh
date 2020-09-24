@@ -1,5 +1,22 @@
 package de.metas.invoice.interceptor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -48,23 +65,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -377,10 +377,9 @@ public class C_Invoice // 03771
 		return Money.of(salesInvoice.getGrandTotal(), CurrencyId.ofRepoId(salesInvoice.getC_Currency_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }
-	, ifColumnsChanged = {I_C_Invoice.COLUMNNAME_M_Warehouse_ID, I_C_Invoice.COLUMNNAME_DateInvoiced})
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_Warehouse_ID, I_C_Invoice.COLUMNNAME_DateInvoiced })
 	public void updateInvoiceLinesTax(@NonNull final I_C_Invoice invoice)
 	{
-		invoiceBL.setInvoiceLineTaxes(Env.getCtx(), invoice);
+		invoiceBL.setInvoiceLineTaxes(invoice);
 	}
 }

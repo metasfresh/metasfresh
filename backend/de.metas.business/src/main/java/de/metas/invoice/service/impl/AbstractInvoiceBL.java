@@ -1384,23 +1384,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public void setInvoiceLineTaxes(final Properties ctx, @NonNull final I_C_Invoice invoice)
+	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
 
 		final Timestamp invoiceDate = invoice.getDateInvoiced();
-
-		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
-
-		final CountryId warehouseCountryId = invoiceWarehouseId == null ? null : warehouseBL.getCountryId(invoiceWarehouseId);
-
-		final CountryId orgCountryId = bpartnerOrgBL.getOrgCountryId(orgId);
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 
@@ -1410,37 +1401,57 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		for (final I_C_InvoiceLine il : lines)
 		{
-			final CountryId countryFromId;
+			final CountryId countryFromId = getFromCountryId(invoice, il);
 
-			if (warehouseCountryId != null)
-			{
-
-				countryFromId = warehouseCountryId;
-			}
-			else if (il.getM_InOutLine_ID() > 0)
-			{
-				final InOutLineId inoutLineId = InOutLineId.ofRepoId(il.getM_InOutLine_ID());
-
-				final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
-
-				final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
-
-				final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
-				countryFromId = warehouseBL.getCountryId(warehouseId);
-			}
-			else
-			{
-				countryFromId = orgCountryId;
-				if (countryFromId == null)
-				{
-					throw new OrgHasNoBPartnerLinkException(orgId);
-				}
-			}
-
-			invoiceLineBL.setTaxForInvoiceLine(ctx, il, orgId, invoiceDate, countryFromId, partnerLocationId, isSOTrx);
+			invoiceLineBL.setTaxForInvoiceLine(il, orgId, invoiceDate, countryFromId, partnerLocationId, isSOTrx);
 
 			invoiceDAO.save(il);
 		}
+	}
+
+	@Override
+	public CountryId getFromCountryId(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+
+		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
+
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+		final CountryId orgCountryId = bpartnerOrgBL.getOrgCountryId(orgId);
+
+		final CountryId warehouseCountryId = invoiceWarehouseId == null ? null : warehouseBL.getCountryId(invoiceWarehouseId);
+
+		final CountryId countryFromId;
+
+		if (warehouseCountryId != null)
+		{
+
+			countryFromId = warehouseCountryId;
+		}
+		else if (invoiceLine.getM_InOutLine_ID() > 0)
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(invoiceLine.getM_InOutLine_ID());
+
+			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+
+			final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+			countryFromId = warehouseBL.getCountryId(warehouseId);
+		}
+		else
+		{
+			countryFromId = orgCountryId;
+			if (countryFromId == null)
+			{
+				throw new OrgHasNoBPartnerLinkException(orgId);
+			}
+		}
+
+		return countryFromId;
 	}
 
 	@Override

@@ -27,16 +27,12 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
@@ -601,7 +597,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public boolean setTax()
 	{
-		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 		if (isDescription())
 		{
@@ -639,22 +635,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// From
 
 		final OrgId fromOrgId = OrgId.ofRepoId(getAD_Org_ID());
-		final CountryId fromCountryId;
-
-		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
-
-		if (invoiceWarehouseId != null)
-		{
-			fromCountryId = warehouseBL.getCountryId(invoiceWarehouseId);
-		}
-		else
-		{
-			fromCountryId = Services.get(IBPartnerOrgBL.class).getOrgCountryId(fromOrgId);
-			if (fromCountryId == null)
-			{
-				throw new OrgHasNoBPartnerLinkException(fromOrgId);
-			}
-		}
+		
+		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
+		final CountryId fromCountryId =invoiceBL.getFromCountryId(invoice, invoiceLine);
 
 		//
 		// To
