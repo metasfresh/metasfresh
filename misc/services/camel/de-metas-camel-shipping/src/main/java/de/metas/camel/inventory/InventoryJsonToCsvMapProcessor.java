@@ -65,7 +65,7 @@ class InventoryJsonToCsvMapProcessor implements Processor
 			return;
 		}
 
-		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, inventory.getLinesCount());
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, inventory.getSize());
 		exchange.getIn().setBody(toCSV(inventory));
 	}
 

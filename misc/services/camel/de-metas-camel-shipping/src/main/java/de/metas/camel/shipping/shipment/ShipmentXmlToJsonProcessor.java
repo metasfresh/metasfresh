@@ -6,6 +6,7 @@ import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
+import de.metas.camel.shipping.shipment.inventory.InventoryCorrectionXmlToJsonProcessor;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,8 +72,15 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	}
 
 	@NonNull
-	private JsonCreateShipmentInfo createShipmentInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
+	private Optional<JsonCreateShipmentInfo> createShipmentInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
+		final boolean isOutOfStockCorrectionRequired = InventoryCorrectionXmlToJsonProcessor.isOutOfStockCorrectionRequired(row, fieldName2Index, propertiesComponent);
+
+		if (isOutOfStockCorrectionRequired)
+		{
+			return Optional.empty();//will be handled in de.metas.camel.shipping.shipment.ShipmentXmlToJsonRouteBuilder.MF_SHIPMENT_INVENTORY_CORRECTION
+		}
+
 		final String shipmentScheduleId = getValueByName(row, fieldName2Index, SHIPMENT_SCHEDULE_ID);
 
 		if (StringUtils.isBlank(shipmentScheduleId))
@@ -79,7 +88,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 			throw new RuntimeException("Missing mandatory filed: ShipmentScheduleId!");
 		}
 
-		return JsonCreateShipmentInfo.builder()
+		final JsonCreateShipmentInfo createShipmentInfo = JsonCreateShipmentInfo.builder()
 				.deliveryRule(DEFAULT_DELIVERY_RULE_FORCE)
 				.shipmentScheduleId(JsonMetasfreshId.of(Integer.parseInt(shipmentScheduleId)))
 				.shipToLocation(getLocation(row, fieldName2Index, shipmentScheduleId))
@@ -91,6 +100,8 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, PRODUCT_VALUE))))
 				.shipperInternalName(getShipperInternalName(row, fieldName2Index, propertiesComponent))
 				.build();
+
+		return Optional.of(createShipmentInfo);
 	}
 
 	private JsonCreateShipmentRequest buildCreateShipmentsRequest(@NonNull final ProcessXmlToJsonRequest xmlToJsonRequest)
@@ -101,6 +112,8 @@ public class ShipmentXmlToJsonProcessor implements Processor
 		final List<JsonCreateShipmentInfo> createShipmentInfos = resultset.getRows()
 				.stream()
 				.map(row -> createShipmentInfo(row, name2Index, xmlToJsonRequest.getPropertiesComponent()))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(Collectors.toList());
 
 		return JsonCreateShipmentRequest.builder()

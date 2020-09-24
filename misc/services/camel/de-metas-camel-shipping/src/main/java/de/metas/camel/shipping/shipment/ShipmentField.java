@@ -25,7 +25,11 @@ public enum ShipmentField
 	SHIPPER_INTERNAL_NAME_SEG_1("_sendung_dienstleister"),
 	SHIPPER_INTERNAL_NAME_SEG_2("_sendung_versandart"),
 	PACKAGE_WEIGHT("_sendung_gewichte"),
-	DELIVERED_QTY_OVERRIDE("_korrektur_artikel_menge")
+	DELIVERED_QTY_OVERRIDE("_korrektur_artikel_menge"),
+
+	//inventory specific:
+	IS_OUT_OF_STOCK("_korrektur_wenn_out_of_stock"),
+	OUT_OF_STOCK_LOCATOR("_korrektur_lagerplatz_out_of_stock")
 	;
 
 	private final String name;
