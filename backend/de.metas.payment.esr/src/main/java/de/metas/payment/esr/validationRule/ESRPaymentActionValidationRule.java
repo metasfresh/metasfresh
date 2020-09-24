@@ -121,6 +121,7 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		final List<String> underPaymentGroup = new ArrayList<String>();
 		underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount);
 		underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning);
+		underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Discount);
 		// metas-ts: talked with mo: that action only makes sense with overpayments (just commenting out because there is no particular task for this change)
 		// underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 

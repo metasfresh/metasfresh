@@ -2,6 +2,7 @@ package de.metas.document.archive.async.spi.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -10,6 +11,7 @@ import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyRepository;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.user.UserRepository;
@@ -51,6 +53,8 @@ public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 	@Before
 	public void init()
 	{
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		
 		processor = new DocOutboundWorkpackageProcessor();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));

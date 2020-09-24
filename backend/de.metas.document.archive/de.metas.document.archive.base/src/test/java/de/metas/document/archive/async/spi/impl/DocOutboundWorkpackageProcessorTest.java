@@ -3,6 +3,7 @@ package de.metas.document.archive.async.spi.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
 import org.compiere.model.PrintInfo;
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
@@ -46,6 +48,9 @@ public class DocOutboundWorkpackageProcessorTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		
 		processor = new DocOutboundWorkpackageProcessor();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));

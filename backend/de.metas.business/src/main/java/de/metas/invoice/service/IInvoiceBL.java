@@ -39,6 +39,7 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -425,6 +426,14 @@ public interface IInvoiceBL extends ISingletonService
 	 * - set Price_UOM_ID to C_InvoiceLine.C_UOM_ID
 	 */
 	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
+
+	/**
+	 * 
+	 * @param invoice
+	 * @param discountAmt - the value is not AP corrected. The correction is done inside this function
+	 * @param date
+	 */
+	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
 
 	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
 

@@ -1,6 +1,6 @@
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactoryTest.forRecord=[ {
   "orgId" : 10,
-  "id" : 100005,
+  "id" : 100010,
   "salesRepBPartnerId" : 20,
   "customerBPartnerId" : 30,
   "commissionDate" : "2020-03-21",
@@ -8,10 +8,10 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
   "triggerType" : "SalesCreditmemo",
   "invoiceLines" : [ {
     "id" : {
-      "repoId" : 100006,
-      "invoiceId" : 100005
+      "repoId" : 100011,
+      "invoiceId" : 100010
     },
-    "productId" : 100004,
+    "productId" : 100009,
     "forecastCommissionPoints" : 0,
     "commissionPointsToInvoice" : 0,
     "invoicedCommissionPoints" : -100,
