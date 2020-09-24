@@ -9,11 +9,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
@@ -180,7 +183,8 @@ final class MInventoryImportTableSqlUpdater
 		});
 	}
 
-	private LocatorId getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
+	@VisibleForTesting
+	LocatorId getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
 	{
 		//
 		// check if exists, because might be created meanwhile
@@ -190,11 +194,14 @@ final class MInventoryImportTableSqlUpdater
 			return null;
 		}
 
+		final IWarehouseBL warehousesBL = Services.get(IWarehouseBL.class);
+		final OrgId warehouseOrgId = warehousesBL.getWarehouseOrgId(warehouseId);
+
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 		return warehousesRepo.createOrUpdateLocator(CreateOrUpdateLocatorRequest.builder()
 				.warehouseId(warehouseId)
 				.locatorValue(importRecord.getLocatorValue())
-				.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+				.orgId(warehouseOrgId)
 				.x(importRecord.getX())
 				.y(importRecord.getY())
 				.z(importRecord.getZ())
