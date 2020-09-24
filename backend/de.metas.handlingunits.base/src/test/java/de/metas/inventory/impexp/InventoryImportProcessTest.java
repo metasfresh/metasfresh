@@ -6,7 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -14,12 +16,16 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -28,13 +34,19 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,13 +58,13 @@ import de.metas.util.time.SystemTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed
  * in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -87,7 +99,7 @@ public class InventoryImportProcessTest
 
 		uomEach = BusinessTestHelper.createUomEach();
 		final I_M_AttributeSet attributeSet = attributesTestHelper.createM_AttributeSet();
-		I_M_Product product = BusinessTestHelper.createProduct("product", uomEach);
+		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach);
 		product.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
 		saveRecord(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
@@ -205,5 +217,93 @@ public class InventoryImportProcessTest
 							.build());
 		}
 
+	}
+
+	@Nested
+	public class extractImportGroupKey
+	{
+		private IDocTypeDAO docTypeDAO;
+
+		private OrgId orgId1;
+		private DocTypeId org1_docTypeId;
+		private WarehouseId org1_warehouseId;
+
+		private OrgId orgId2;
+		private DocTypeId org2_docTypeId;
+		private WarehouseId org2_warehouseId;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			docTypeDAO = Services.get(IDocTypeDAO.class);
+
+			final Properties ctx = Env.getCtx();
+			Env.setClientId(ctx, ClientId.METASFRESH);
+
+			orgId1 = BusinessTestHelper.createOrgWithTimeZone();
+			org1_docTypeId = createInventoryDocType(orgId1);
+			org1_warehouseId = createWarehouse(orgId1);
+
+			orgId2 = BusinessTestHelper.createOrgWithTimeZone();
+			org2_docTypeId = createInventoryDocType(orgId2);
+			org2_warehouseId = createWarehouse(orgId2);
+		}
+
+		private DocTypeId createInventoryDocType(@NonNull final OrgId orgId)
+		{
+			return docTypeDAO.createDocType(DocTypeCreateRequest.builder()
+					.ctx(Env.getCtx())
+					.name("Inventory DocType for " + orgId)
+					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+					.docSubType(null)
+					.adOrgId(orgId.getRepoId())
+					.build());
+		}
+
+		private WarehouseId createWarehouse(@NonNull final OrgId orgId)
+		{
+			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+			warehouse.setAD_Org_ID(orgId.getRepoId());
+			saveRecord(warehouse);
+			return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+		}
+
+		@Test
+		public void withOrgWarehouse1()
+		{
+			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
+			importRecord.setExternalHeaderId("ExternalHeaderId1");
+			importRecord.setAD_Org_ID(orgId2.getRepoId()); // does not matter, but intentionally setting it to the other org
+			importRecord.setM_Warehouse_ID(org1_warehouseId.getRepoId());
+			importRecord.setInventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")));
+
+			final InventoryGroupKey groupKey = inventoryImportProcess.extractImportGroupKey(importRecord);
+			assertThat(groupKey).isEqualTo(InventoryGroupKey.builder()
+					.externalHeaderId("ExternalHeaderId1")
+					.docTypeId(org1_docTypeId)
+					.warehouseOrgId(orgId1)
+					.warehouseId(org1_warehouseId)
+					.inventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")))
+					.build());
+		}
+
+		@Test
+		public void withOrgWarehouse2()
+		{
+			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
+			importRecord.setExternalHeaderId("ExternalHeaderId1");
+			importRecord.setAD_Org_ID(orgId1.getRepoId()); // does not matter, but intentionally setting it to the other org
+			importRecord.setM_Warehouse_ID(org2_warehouseId.getRepoId());
+			importRecord.setInventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")));
+
+			final InventoryGroupKey groupKey = inventoryImportProcess.extractImportGroupKey(importRecord);
+			assertThat(groupKey).isEqualTo(InventoryGroupKey.builder()
+					.externalHeaderId("ExternalHeaderId1")
+					.docTypeId(org2_docTypeId)
+					.warehouseOrgId(orgId2)
+					.warehouseId(org2_warehouseId)
+					.inventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")))
+					.build());
+		}
 	}
 }

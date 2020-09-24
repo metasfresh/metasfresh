@@ -13,6 +13,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -25,6 +26,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -93,6 +95,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
@@ -163,12 +166,12 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		String externalHeaderId;
 
 		@NonNull
-		OrgId orgId;
-
-		@NonNull
 		DocTypeId docTypeId;
 
-		@Nullable
+		@NonNull
+		OrgId warehouseOrgId;
+
+		@NonNull
 		WarehouseId warehouseId;
 
 		@NonNull
@@ -178,27 +181,39 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	@Override
 	protected InventoryGroupKey extractImportGroupKey(final I_I_Inventory importRecord)
 	{
-		final DocTypeId docTypeId = getDocTypeId(importRecord);
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(importRecord.getM_Warehouse_ID());
+		if (warehouseId == null)
+		{
+			throw new FillMandatoryException(I_I_Inventory.COLUMNNAME_M_Warehouse_ID);
+		}
+
+		final OrgId warehouseOrgId = warehouseBL.getWarehouseOrgId(warehouseId);
+
+		final DocTypeId docTypeId = getDocTypeId(importRecord, warehouseOrgId);
 
 		return InventoryGroupKey.builder()
 				.externalHeaderId(StringUtils.trimBlankToNull(importRecord.getExternalHeaderId()))
-				.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
 				.docTypeId(docTypeId)
-				.warehouseId(WarehouseId.ofRepoIdOrNull(importRecord.getM_Warehouse_ID()))
+				.warehouseOrgId(warehouseOrgId)
+				.warehouseId(warehouseId)
 				.inventoryDate(CoalesceUtil.coalesce(importRecord.getInventoryDate(), now))
 				.build();
 	}
 
-	private DocTypeId getDocTypeId(@NonNull final I_I_Inventory importRecord)
+	private DocTypeId getDocTypeId(
+			@NonNull final I_I_Inventory importRecord,
+			@NonNull final OrgId orgId)
 	{
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(importRecord.getHUAggregationType());
 		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType(huAggregationType);
 
+		final int clientId = importRecord.getAD_Client_ID();
+
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docBaseAndSubType.getDocBaseType())
 				.docSubType(docBaseAndSubType.getDocSubType())
-				.adClientId(importRecord.getAD_Client_ID())
-				.adOrgId(importRecord.getAD_Org_ID())
+				.adClientId(clientId)
+				.adOrgId(orgId.getRepoId())
 				.build());
 	}
 
@@ -224,14 +239,14 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	protected ImportGroupResult importRecords(
 			@NonNull final InventoryGroupKey groupKey,
 			@NonNull final List<I_I_Inventory> importRecords,
-			@NonNull final IMutable<Object> stateHolder)
+			@NonNull final IMutable<Object> stateHolder_NOTUSED)
 	{
 		final I_M_Inventory inventory = createInventoryHeader(groupKey);
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
 
 		for (final I_I_Inventory importRecord : importRecords)
 		{
-			createInventoryLine(importRecord, inventoryId);
+			createInventoryLine(importRecord, inventoryId, groupKey.getWarehouseOrgId());
 		}
 
 		if (isCompleteDocuments())
@@ -246,10 +261,9 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	{
 		final I_M_Inventory inventory = newInstance(I_M_Inventory.class);
 		inventory.setExternalId(groupKey.getExternalHeaderId());
-		inventory.setAD_Org_ID(groupKey.getOrgId().getRepoId());
-		// inventory.setDescription("I " + importRecord.getM_Warehouse_ID() + " " + importRecord.getInventoryDate());
+		inventory.setAD_Org_ID(groupKey.getWarehouseOrgId().getRepoId());
 		inventory.setC_DocType_ID(groupKey.getDocTypeId().getRepoId());
-		inventory.setM_Warehouse_ID(WarehouseId.toRepoId(groupKey.getWarehouseId()));
+		inventory.setM_Warehouse_ID(groupKey.getWarehouseId().getRepoId());
 		inventory.setMovementDate(groupKey.getInventoryDate());
 		saveRecord(inventory);
 		return inventory;
@@ -257,12 +271,12 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 
 	private void createInventoryLine(
 			@NonNull final I_I_Inventory importRecord,
-			@NonNull final InventoryId inventoryId)
+			@NonNull final InventoryId inventoryId,
+			@NonNull final OrgId orgId)
 	{
 		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(importRecord.getM_Locator_ID());
 		Check.assumeNotNull(locatorId, "locator shall be set");
 
-		final OrgId orgId = OrgId.ofRepoId(importRecord.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
 		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
 		final Quantity qtyCount = Quantity.of(importRecord.getQtyCount(), stockingUOM);
