@@ -44,7 +44,7 @@ class InventoryXmlToJsonProcessor implements Processor
 	private final static Log log = LogFactory.getLog(InventoryXmlToJsonProcessor.class);
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final var propertiesComponent = exchange.getContext().getPropertiesComponent();
 
@@ -89,13 +89,15 @@ class InventoryXmlToJsonProcessor implements Processor
 			@NonNull final PropertiesComponent propertiesComponent)
 	{
 		final InventoryXmlRowWrapper row = InventoryXmlRowWrapper.wrap(rawRow, metadata);
+
 		final var warehouseValue = CommonUtil.extractWarehouseValue(propertiesComponent, row.get_siro_kunden_id());
+		final var productValue = CommonUtil.removeOrgPrefix(row.get_artikel_nummer());
 
 		return JsonInventoryLine.builder()
 				.warehouseValue(warehouseValue)
 				.locatorValue(row.get_lagerscan_lagerplatz())
 				.inventoryDate(row.get_lagerscan_datum())
-				.productValue(row.get_artikel_nummer())
+				.productValue(productValue)
 				.qtyCount(row.get_artikel_menge_lagerplatz())
 				.externalLineId(row.get_lagerscan_id())
 				.bestbeforeDate(row.get_wareneingang_mhd_ablauf_datum())
