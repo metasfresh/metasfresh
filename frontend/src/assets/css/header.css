@@ -639,3 +639,8 @@
     justify-content: top;
     align-items: center;
 }
+
+.menu-overlay-search-item-focused {
+  text-decoration: underline;
+  text-underline-position: under;
+}

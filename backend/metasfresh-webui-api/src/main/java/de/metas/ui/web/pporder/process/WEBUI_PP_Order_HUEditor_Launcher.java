@@ -1,7 +1,30 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.pporder.process;
 
 import java.util.List;
 
+import de.metas.handlingunits.IHUStatusBL;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +34,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -35,39 +57,16 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * This process opens a HU editor window within the production window
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class WEBUI_PP_Order_HUEditor_Launcher
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
-	private final IHUPPOrderQtyDAO huOrderCandidatesRepo = Services.get(IHUPPOrderQtyDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -173,7 +172,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 			return false;
 		}
 
-		if (huOrderCandidatesRepo.isHuIdIssued(huId))
+		if (huStatusBL.isStatusIssued(huId))
 		{
 			return false;
 		}
