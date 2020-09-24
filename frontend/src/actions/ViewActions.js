@@ -338,6 +338,7 @@ export function fetchDocument({
         }
 
         dispatch(updateGridTable(tableId, tableData));
+
         dispatch(
           setActiveSortFields({ tableId, orderBy: response.data.orderBy })
         );

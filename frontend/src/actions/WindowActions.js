@@ -79,6 +79,7 @@ import {
   updateTabTable,
   updateTableSelection,
   updateTableRowProperty,
+  setActiveSortFields,
 } from './TableActions';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
@@ -601,6 +602,10 @@ export function createWindow(
                 tabId,
                 ...tab,
               };
+
+              dispatch(
+                setActiveSortFields({ tableId, orderBy: tab.defaultOrderBys })
+              );
               dispatch(updateTabTable(tableId, tableData));
             });
           }
