@@ -66,6 +66,23 @@ export function setActiveSort(id, active) {
 }
 
 /**
+ * @method setActiveSortFilters
+ * @summary Sets the sortFilters in the redux store - used for the sorting direction display logic
+ */
+export function setActiveSortFields(id, orderBy) {
+  const fields = {};
+  orderBy &&
+    orderBy.map((item) => {
+      fields[item.fieldName] = item.ascending;
+    });
+
+  return {
+    type: types.SET_SORT_FIELDS,
+    payload: { id, fields },
+  };
+}
+
+/**
  * @method deselectTableItems
  * @summary deselect items or deselect all if an empty `ids` array is provided
  */
@@ -556,21 +573,5 @@ export function updateTableSelection(id, selection, keyProperty = 'id') {
     });
 
     return Promise.resolve(selection);
-  };
-}
-
-/**
- * @method setActiveSortFilters
- * @summary Sets the sortFilters in the redux store - used for the sorting direction display logic
- */
-export function setActiveSortFields({ tableId, orderBy }) {
-  let fields = {};
-  orderBy &&
-    orderBy.map((item) => {
-      fields[item.fieldName] = item.ascending;
-    });
-  return {
-    type: types.SET_SORT_FIELDS,
-    payload: { tableId, fields },
   };
 }

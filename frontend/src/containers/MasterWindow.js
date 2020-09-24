@@ -16,6 +16,7 @@ import {
   deleteTable,
   updateTabTableData,
   updateTabRowsData,
+  setActiveSortFields,
 } from '../actions/TableActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { getTabRequest, getRowsData } from '../api';
@@ -224,7 +225,8 @@ class MasterWindowContainer extends PureComponent {
       master,
       params: { windowType, docId },
     } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
+    const ascending = !asc;
+    const orderBy = (ascending ? '+' : '-') + field;
     const dataId = master.docId;
 
     const activeTabId = master.layout.activeTab;
@@ -237,8 +239,10 @@ class MasterWindowContainer extends PureComponent {
       tabId: activeTabId,
     });
 
-    sortTab('master', tabId, field, asc);
+    sortTab('master', tabId, field, ascending);
     getTabRequest(tabId, windowType, dataId, orderBy).then((rows) => {
+      const sortOption = [{ fieldName: field, ascending }];
+      setActiveSortFields(tableId, sortOption);
       updateTabTableData(tableId, rows);
     });
   };
@@ -332,5 +336,6 @@ export default connect(
     updateTabTableData,
     push,
     deleteTable,
+    setActiveSortFields,
   }
 )(MasterWindowContainer);

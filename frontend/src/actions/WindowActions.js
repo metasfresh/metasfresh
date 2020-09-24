@@ -603,9 +603,7 @@ export function createWindow(
                 ...tab,
               };
 
-              dispatch(
-                setActiveSortFields({ tableId, orderBy: tab.defaultOrderBys })
-              );
+              dispatch(setActiveSortFields(tableId, tab.defaultOrderBys));
               dispatch(updateTabTable(tableId, tableData));
             });
           }
