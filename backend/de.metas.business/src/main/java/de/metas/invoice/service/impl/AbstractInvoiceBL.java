@@ -196,9 +196,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
 
 	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
-	
-	
-	private final CurrencyRepository currenciesRepo = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
@@ -1847,14 +1844,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void discountInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice, final @NonNull Amount discountAmt, final @NonNull Timestamp date)
 	{
-		if (discountAmt .signum() == 0)
+		final CurrencyRepository currenciesRepo = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+
+		if (discountAmt.signum() == 0)
 		{
 			return;
 		}
 
 		final Amount discountAmtAbs = discountAmt.negateIfNot(invoice.isSOTrx());
 		final CurrencyId currencyId = currenciesRepo.getCurrencyIdByCurrencyCode(discountAmt.getCurrencyCode());
-		
+
 		// @formatter:off
 		Services.get(IAllocationBL.class).newBuilder()
 			.orgId(invoice.getAD_Org_ID())
