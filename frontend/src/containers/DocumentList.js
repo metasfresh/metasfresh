@@ -9,7 +9,6 @@ import { get } from 'lodash';
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import {
   locationSearchRequest,
-  deleteStaticFilter,
   getViewRowsByIds,
 } from '../api';
 import { getTableId } from '../reducers/tables';
@@ -125,8 +124,9 @@ class DocumentListContainer extends Component {
       updateUri,
       page,
       sort,
+      filter,
     } = this.props;
-    const { staticFilterCleared } = this.state;
+    const staticFilterCleared = filter ? filter.staticFilterCleared : false;
 
     const included =
       includedView && includedView.windowId && includedView.viewId;
@@ -189,7 +189,6 @@ class DocumentListContainer extends Component {
         {
           filtersActive: iMap(),
           initialValuesNulled: iMap(),
-          staticFilterCleared: false,
           panelsState: GEO_PANEL_STATES[0],
         },
         () => {
@@ -285,21 +284,6 @@ class DocumentListContainer extends Component {
     if (this.quickActionsComponent) {
       this.quickActionsComponent.updateActions(childSelection);
     }
-  };
-
-  /**
-   * @method clearStaticFilters
-   * @summary ToDo: Describe the method.
-   */
-  clearStaticFilters = (filterId) => {
-    const { push, windowId, viewId } = this.props;
-
-    deleteStaticFilter(windowId, viewId, filterId).then((response) => {
-      // TODO: I think this should be stored in redux too
-      this.setState({ staticFilterCleared: true }, () =>
-        push(`/window/${windowId}?viewId=${response.data.viewId}`)
-      );
-    });
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
@@ -796,7 +780,6 @@ class DocumentListContainer extends Component {
         onFilterChange={this.handleFilterChange}
         onRedirectToDocument={this.redirectToDocument}
         onRedirectToNewDocument={this.onRedirectToNewDocument}
-        onClearStaticFilters={this.clearStaticFilters}
         onResetInitialFilters={this.resetInitialFilters}
         onUpdateQuickActions={this.updateQuickActions}
         setQuickActionsComponentRef={this.setQuickActionsComponentRef}

@@ -3,8 +3,6 @@ import { Map as iMap } from 'immutable';
 import deepUnfreeze from 'deep-unfreeze';
 import { fieldValueToString } from '../utils/tableHelpers';
 import _ from 'lodash';
-import { deleteStaticFilter } from '../api';
-import { push } from 'react-router-redux';
 
 export function clearAllFilters({ id, data }) {
   return {
@@ -72,16 +70,7 @@ export function updateWidgetShown({ id, data }) {
  * @method clearStaticFilters
  * @summary Clears the existing static filters for a filter branch in the redux store
  */
-export function clearStaticFilters({
-  filterId,
-  staticFilterId,
-  windowId,
-  viewId,
-  data,
-}) {
-  deleteStaticFilter(windowId, viewId, staticFilterId).then((response) => {
-    push(`/window/${windowId}?viewId=${response.data.viewId}`);
-  });
+export function clearStaticFilters({ filterId, data }) {
   return {
     type: types.CLEAR_STATIC_FILTERS,
     payload: { filterId, data },

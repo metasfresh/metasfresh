@@ -20,7 +20,6 @@ import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import GeoMap from '../maps/GeoMap';
-import { FILTER_VIEW_PENDING } from '../../constants/ActionTypes';
 
 /**
  * @file Class based component.
@@ -143,7 +142,6 @@ export default class DocumentList extends Component {
       hasIncluded,
       onRedirectToNewDocument,
       onShowIncludedViewOnSelect,
-      onClearStaticFilters,
       onSortData,
       onShowSelectedIncludedView,
       table,
@@ -270,7 +268,6 @@ export default class DocumentList extends Component {
                     viewId,
                   }}
                   data={staticFilters}
-                  clearFilters={onClearStaticFilters}
                 />
               )}
             </div>
@@ -429,7 +426,6 @@ DocumentList.propTypes = {
   onChangePage: PropTypes.func,
   onFilterChange: PropTypes.func,
   onRedirectToDocument: PropTypes.func,
-  onClearStaticFilters: PropTypes.func,
   onResetInitialFilters: PropTypes.func,
   onRedirectToNewDocument: PropTypes.func,
   onUpdateQuickActions: PropTypes.func,
