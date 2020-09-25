@@ -15,9 +15,6 @@ export class FiltersStatic extends PureComponent {
 
         clearStaticFilters({
           filterId,
-          staticFilterId,
-          windowId,
-          viewId,
           data: true,
         });
       });
