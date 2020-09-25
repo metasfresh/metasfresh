@@ -18,7 +18,7 @@ shipping:
     - /etc/localtime:/etc/localtime:ro
     - /etc/timezone:/etc/timezone:ro
     - ./volumes/shipping/resources:/app/resources:ro
-    - ./volumes/shipping/output/xml:/app/output/xml:rw
+    - ./volumes/shipping/files:/app/files:rw
     - ./volumes/shipping/heapdump:/app/heapdump:rw
   environment:
     JAVA_TOOL_OPTIONS: "-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/heapdump -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8794"
@@ -39,7 +39,7 @@ The actually correct image can be found the respective jenkins build, e.g. https
 
 According to the `docker-compose.yml` above, a customized `shipping.properties` and `log4j2.properties`can be placed in `<base-directory>/volumes/shipping/resources`.
 
-To persist XML files on the docker-host, the `shipping.properties`'s `local.file.output_path` 
-property has to be `/app/output/xml` or a subfolder within `/app/output/xml`.
+To persist XML files on the docker-host, the `shipping.properties`'s `siro.*.local.storage` and `local.file.output_path` 
+property has to be below `/app/files`
 
 Note that camel will generate all the required folders on the fly.
