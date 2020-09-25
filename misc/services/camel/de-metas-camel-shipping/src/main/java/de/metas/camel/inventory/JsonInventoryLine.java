@@ -1,13 +1,14 @@
 package de.metas.camel.inventory;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+
 import lombok.Builder;
 import lombok.Value;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -40,6 +41,7 @@ public class JsonInventoryLine
 	String warehouseValue;
 	String locatorValue;
 	LocalDate inventoryDate;
+	/** product code without org prefix */
 	String productValue;
 	BigDecimal qtyCount;
 	String externalLineId;

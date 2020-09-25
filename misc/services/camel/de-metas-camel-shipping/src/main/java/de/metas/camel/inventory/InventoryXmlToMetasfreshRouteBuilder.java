@@ -1,9 +1,10 @@
 package de.metas.camel.inventory;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
-import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import lombok.NonNull;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
+
+import java.time.format.DateTimeFormatter;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -11,11 +12,14 @@ import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.model.dataformat.CsvDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.format.DateTimeFormatter;
+import com.google.common.annotations.VisibleForTesting;
 
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
+import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,6 +45,8 @@ import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATI
 
 public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 {
+	private static final Logger log = LoggerFactory.getLogger(InventoryXmlToMetasfreshRouteBuilder.class);
+
 	@VisibleForTesting
 	static final String ROUTE_ID = "inventoryImport-from-XML";
 	private static final String SIRO_FTP_PATH = "{{siro.ftp.retrieve.inventory.endpoint}}";
@@ -58,13 +64,17 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 	static final String LOCAL_STORAGE_URL = "{{siro.manufacturing-orders.local.storage}}";
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
+		RouteBuilderCommonUtil.setupProperties(getContext());
+
 		final MetasfreshCsvImportFormat csvImportFormat = getMetasfreshCsvImportFormat(getContext());
+		log.info("CSV import format: " + csvImportFormat);
+
+		final ProductCodesToExclude productCodesToExclude = getProductCodesToExclude(getContext());
+		log.info("product codes to exclude: " + productCodesToExclude);
 
 		errorHandler(defaultErrorHandler());
-
-		RouteBuilderCommonUtil.setupProperties(getContext());
 
 		from(SIRO_FTP_PATH).routeId(ROUTE_ID)
 				.streamCaching()
@@ -76,7 +86,7 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 		//@formatter:off
 		from(direct(ROUTE_ID_FROM_JSON)).routeId(ROUTE_ID_FROM_JSON)
 				.streamCaching()
-				.process(new InventoryJsonToCsvMapProcessor(csvImportFormat))
+				.process(new InventoryJsonToCsvMapProcessor(csvImportFormat, productCodesToExclude))
 				.choice()
 					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
 						.log(LoggingLevel.INFO, "Nothing to do! no inventories were found in file: ${header." + Exchange.FILE_NAME + "}")
@@ -136,6 +146,12 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_LotNumber)
 				.stringColumn(MetasfreshInventoryCsvConstants.COLUMNNAME_HUAggregationType)
 				.build();
+	}
+
+	private static ProductCodesToExclude getProductCodesToExclude(@NonNull final CamelContext context)
+	{
+		final String excludeProducts = RouteBuilderCommonUtil.resolveProperty(context, "metasfresh.inventory.exclude-products", "");
+		return ProductCodesToExclude.ofCommaSeparatedString(excludeProducts);
 	}
 
 }
