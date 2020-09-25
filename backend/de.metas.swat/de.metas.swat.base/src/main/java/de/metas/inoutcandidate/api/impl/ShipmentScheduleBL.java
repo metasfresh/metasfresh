@@ -794,7 +794,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		if (maybeSetBackToPending)
 		{
 			final I_M_ShipmentSchedule oldSchedRecord = createOld(schedRecord, I_M_ShipmentSchedule.class);
-			final boolean qtyToDeliverWasIncreased = oldSchedRecord.getQtyToDeliver().compareTo(schedRecord.getQtyToDeliver()) > 0;
+			final boolean qtyToDeliverWasIncreased = oldSchedRecord.getQtyToDeliver().compareTo(schedRecord.getQtyToDeliver()) < 0;
 			if (qtyToDeliverWasIncreased)
 			{
 				logger.debug("currentExportStatus={} and qtyToDeliverWasIncreased from {} to {}; -> set export status to {}",
