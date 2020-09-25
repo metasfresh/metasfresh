@@ -10,6 +10,13 @@
       "deliveryRule": "F",
       "attributes": [
         {
+          "attributeName": "HU_BestBeforeDate",
+          "attributeCode": "HU_BestBeforeDate",
+          "valueStr": null,
+          "valueNumber": null,
+          "valueDate": "2024-05-27"
+        },
+        {
           "attributeName": "Lot-Nummer",
           "attributeCode": "Lot-Nummer",
           "valueStr": "cp-lot-no-1",

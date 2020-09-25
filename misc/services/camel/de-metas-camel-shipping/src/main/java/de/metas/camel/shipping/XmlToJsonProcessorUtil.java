@@ -135,7 +135,7 @@ public class XmlToJsonProcessorUtil
 		return localDateTime;
 	}
 
-	public Locale getLocale(@NonNull final PropertiesComponent propertiesComponent)
+	public static Locale getLocale(@NonNull final PropertiesComponent propertiesComponent)
 	{
 		final String propertyValue = propertiesComponent.resolveProperty(SIRO_LOCALE_PROPERTY)
 				.orElseThrow(() -> new RuntimeException("Missing property:" + SIRO_LOCALE_PROPERTY + "!"));

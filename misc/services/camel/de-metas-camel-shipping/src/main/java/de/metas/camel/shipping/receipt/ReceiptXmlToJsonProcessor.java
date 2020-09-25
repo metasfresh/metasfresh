@@ -205,7 +205,6 @@ public class ReceiptXmlToJsonProcessor implements Processor
 		final String value = FileMakerDataHelper.getValue(request);
 
 		return XmlToJsonProcessorUtil.asLocalDate(value, MOVEMENT_DATE_PATTERNS, MOVEMENT_DATE.getName()).orElse(null);
-
 	}
 
 	@Nullable
