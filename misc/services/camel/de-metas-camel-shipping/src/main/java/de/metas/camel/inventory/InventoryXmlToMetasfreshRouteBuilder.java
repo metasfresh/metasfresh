@@ -10,6 +10,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.dataformat.CsvDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 import org.slf4j.Logger;
@@ -75,6 +76,8 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 		log.info("product codes to exclude: " + productCodesToExclude);
 
 		errorHandler(defaultErrorHandler());
+		onException(HttpOperationFailedException.class)
+				.process(this::handleHttpOperationFailedException);
 
 		from(SIRO_FTP_PATH).routeId(ROUTE_ID)
 				.streamCaching()
@@ -97,6 +100,8 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
 						.to(METASFRESH_EP_DATA_IMPORT)
+						//.unmarshal(jsonDataFormat(JsonDataImportResponseWrapper.class))
+						.process(this::handleMetasfreshDataImportResponse)
 					.end();
 		//@formatter:on
 
@@ -152,6 +157,31 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 	{
 		final String excludeProducts = RouteBuilderCommonUtil.resolveProperty(context, "metasfresh.inventory.exclude-products", "");
 		return ProductCodesToExclude.ofCommaSeparatedString(excludeProducts);
+	}
+
+	private void handleHttpOperationFailedException(final Exchange exchange)
+	{
+		final var request = exchange.getIn().getBody(String.class);
+		final var exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, HttpOperationFailedException.class);
+		if (exception == null)
+		{
+			log.warn("Got unkown error on exchange=" + exchange);
+			return;
+		}
+
+		log.warn("Failed processing request: " + request
+				+ "\n\t Error: " + exception.getMessage()
+				+ "\n\t HTTP Code: " + exception.getStatusCode()
+				+ "\n\t URI: " + exception.getUri()
+				+ "\n\t From Filename: " + exchange.getIn().getHeader(Exchange.FILE_NAME)
+				+ "\n\t Response body: " + exception.getResponseBody()
+				+ "\n\t Response headers: " + exception.getResponseHeaders());
+	}
+
+	private void handleMetasfreshDataImportResponse(final Exchange exchange)
+	{
+		final String response = exchange.getIn().getBody(String.class);
+		log.info("Successfully processed: " + response);
 	}
 
 }
