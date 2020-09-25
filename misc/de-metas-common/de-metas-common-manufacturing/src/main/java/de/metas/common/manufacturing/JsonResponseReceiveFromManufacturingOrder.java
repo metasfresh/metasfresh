@@ -1,11 +1,14 @@
 package de.metas.common.manufacturing;
 
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -39,6 +42,8 @@ public class JsonResponseReceiveFromManufacturingOrder
 {
 	@Nullable
 	String requestId;
+
+	Set<JsonMetasfreshId> costCollectorIds;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonResponseReceiveFromManufacturingOrderBuilder
