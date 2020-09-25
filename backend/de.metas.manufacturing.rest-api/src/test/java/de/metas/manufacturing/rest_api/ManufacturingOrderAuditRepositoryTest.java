@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.error.AdIssueId;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -41,20 +41,20 @@ import de.metas.organization.OrgId;
 @ExtendWith(AdempiereTestWatcher.class)
 public class ManufacturingOrderAuditRepositoryTest
 {
-	private ManufacturingOrderAuditRepository auditRepository;
+	private ManufacturingOrderExportAuditRepository auditRepository;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		auditRepository = new ManufacturingOrderAuditRepository();
+		auditRepository = new ManufacturingOrderExportAuditRepository();
 	}
 
 	@Test
 	void save_and_getByTransactionId()
 	{
 		final ManufacturingOrderExportAudit audit = ManufacturingOrderExportAudit.builder()
-				.transactionId(ExportTransactionId.ofString("transactionId"))
+				.transactionId(APITransactionId.ofString("transactionId"))
 				.item(ManufacturingOrderExportAuditItem.builder()
 						.orderId(PPOrderId.ofRepoId(11))
 						.orgId(OrgId.ofRepoId(10))

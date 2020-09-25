@@ -17,7 +17,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.error.AdIssueId;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -52,13 +52,13 @@ import lombok.Value;
  */
 
 @Repository
-public class ManufacturingOrderAuditRepository
+public class ManufacturingOrderExportAuditRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public void save(@NonNull final ManufacturingOrderExportAudit audit)
 	{
-		final ExportTransactionId transactionId = audit.getTransactionId();
+		final APITransactionId transactionId = audit.getTransactionId();
 		final StagingData stagingData = retrieveStagingData(transactionId);
 
 		for (final ManufacturingOrderExportAuditItem item : audit.getItems())
@@ -81,7 +81,7 @@ public class ManufacturingOrderAuditRepository
 		}
 	}
 
-	public ManufacturingOrderExportAudit getByTransactionId(@NonNull final ExportTransactionId transactionId)
+	public ManufacturingOrderExportAudit getByTransactionId(@NonNull final APITransactionId transactionId)
 	{
 		final StagingData stagingData = retrieveStagingData(transactionId);
 		return toExportAudit(stagingData);
@@ -110,7 +110,7 @@ public class ManufacturingOrderAuditRepository
 	}
 
 	@NonNull
-	private StagingData retrieveStagingData(@NonNull final ExportTransactionId transactionId)
+	private StagingData retrieveStagingData(@NonNull final APITransactionId transactionId)
 	{
 		final ImmutableList<I_PP_Order_ExportAudit> records = queryBL.createQueryBuilder(I_PP_Order_ExportAudit.class)
 				.addOnlyActiveRecordsFilter()
@@ -132,7 +132,7 @@ public class ManufacturingOrderAuditRepository
 	@Value
 	private static class StagingData
 	{
-		private final ExportTransactionId transactionId;
+		private final APITransactionId transactionId;
 		private final ImmutableList<I_PP_Order_ExportAudit> records;
 
 		@Getter(AccessLevel.NONE)
@@ -140,7 +140,7 @@ public class ManufacturingOrderAuditRepository
 
 		@Builder
 		private StagingData(
-				@NonNull final ExportTransactionId transactionId,
+				@NonNull final APITransactionId transactionId,
 				@NonNull final List<I_PP_Order_ExportAudit> records)
 		{
 			this.transactionId = transactionId;

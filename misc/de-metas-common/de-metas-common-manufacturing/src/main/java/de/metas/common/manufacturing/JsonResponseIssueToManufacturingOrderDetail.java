@@ -1,16 +1,15 @@
 package de.metas.common.manufacturing;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonQuantity;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -38,18 +37,18 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonResponseIssueToManufacturingOrder.JsonResponseIssueToManufacturingOrderBuilder.class)
-public class JsonResponseIssueToManufacturingOrder
+@JsonDeserialize(builder = JsonResponseIssueToManufacturingOrderDetail.JsonResponseIssueToManufacturingOrderDetailBuilder.class)
+public class JsonResponseIssueToManufacturingOrderDetail
 {
 	@Nullable
-	String requestId;
-
+	JsonMetasfreshId costCollectorId;
+	@Nullable
+	JsonMetasfreshId huId;
 	@NonNull
-	@Singular
-	List<JsonResponseIssueToManufacturingOrderDetail> details;
+	JsonQuantity qty;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonResponseIssueToManufacturingOrderBuilder
+	public static class JsonResponseIssueToManufacturingOrderDetailBuilder
 	{
 	}
 }
