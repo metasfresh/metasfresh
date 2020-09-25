@@ -10,7 +10,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
-import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.dataformat.CsvDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import de.metas.camel.util.ErrorHandlingUtils;
 import lombok.NonNull;
 
 /*
@@ -64,6 +64,9 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 	@VisibleForTesting
 	static final String LOCAL_STORAGE_URL = "{{siro.inventory.local.storage}}";
 
+	@VisibleForTesting
+	static final String ERRORFILE_FOLDER = "{{siro.ftp.retrieve.inventory.errorLogFolder}}";
+
 	@Override
 	public void configure()
 	{
@@ -76,8 +79,7 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 		log.info("product codes to exclude: " + productCodesToExclude);
 
 		errorHandler(defaultErrorHandler());
-		onException(HttpOperationFailedException.class)
-				.process(this::handleHttpOperationFailedException);
+		ErrorHandlingUtils.setupWriteErrorLogFile(this, ERRORFILE_FOLDER);
 
 		from(SIRO_FTP_PATH).routeId(ROUTE_ID)
 				.streamCaching()
@@ -157,25 +159,6 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 	{
 		final String excludeProducts = RouteBuilderCommonUtil.resolveProperty(context, "metasfresh.inventory.exclude-products", "");
 		return ProductCodesToExclude.ofCommaSeparatedString(excludeProducts);
-	}
-
-	private void handleHttpOperationFailedException(final Exchange exchange)
-	{
-		final var request = exchange.getIn().getBody(String.class);
-		final var exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, HttpOperationFailedException.class);
-		if (exception == null)
-		{
-			log.warn("Got unkown error on exchange=" + exchange);
-			return;
-		}
-
-		log.warn("Failed processing request: " + request
-				+ "\n\t Error: " + exception.getMessage()
-				+ "\n\t HTTP Code: " + exception.getStatusCode()
-				+ "\n\t URI: " + exception.getUri()
-				+ "\n\t From Filename: " + exchange.getIn().getHeader(Exchange.FILE_NAME)
-				+ "\n\t Response body: " + exception.getResponseBody()
-				+ "\n\t Response headers: " + exception.getResponseHeaders());
 	}
 
 	private void handleMetasfreshDataImportResponse(final Exchange exchange)
