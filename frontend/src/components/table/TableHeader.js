@@ -1,11 +1,35 @@
 import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
+
 import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
-export class TableHeader extends PureComponent {
+export default class TableHeader extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      fields: {},
+    };
+  }
+
+  static getDerivedStateFromProps(props) {
+    if (props.orderBy) {
+      const fields = {};
+      props.orderBy &&
+        props.orderBy.map((item) => {
+          fields[item.fieldName] = item.ascending;
+        });
+
+      return {
+        fields,
+      };
+    }
+
+    return null;
+  }
+
   handleClick = (field, sortable) => {
     if (!sortable) {
       return;
@@ -21,7 +45,7 @@ export class TableHeader extends PureComponent {
       viewId,
       setActiveSort,
     } = this.props;
-    const { headersFields: stateFields } = this.props;
+    const stateFields = this.state.fields;
     const tableId = getTableId({ windowId: windowType, viewId, docId, tabId });
     let fields = {};
     let sortingValue = null;
@@ -38,6 +62,11 @@ export class TableHeader extends PureComponent {
       fields[field] = sortingValue;
     }
 
+    // TODO: We don't have to spread `fields` as it's a new object anyway
+    this.setState({
+      fields: { ...fields },
+    });
+
     onSortTable(sortingValue, field, true, page, tabId);
     setActiveSort(tableId, true);
 
@@ -48,9 +77,8 @@ export class TableHeader extends PureComponent {
   };
 
   renderSorting = (field, caption, sortable, description) => {
-    const { headersFields } = this.props;
-    if (!headersFields) return false;
-    const fieldSorting = headersFields[field];
+    const { fields } = this.state;
+    const fieldSorting = fields[field];
 
     return (
       <div
@@ -65,8 +93,8 @@ export class TableHeader extends PureComponent {
         </span>
         <span
           className={classnames('sort-ico', {
-            'sort rotate-90': field in headersFields && fieldSorting,
-            sort: field in headersFields && !fieldSorting,
+            'sort rotate-90': field in fields && fieldSorting,
+            sort: field in fields && !fieldSorting,
           })}
         >
           <i className="meta-icon-chevron-1" />
@@ -123,22 +151,4 @@ TableHeader.propTypes = {
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,
-  headersFields: PropTypes.object,
 };
-
-const mapStateToProps = (state, ownProps) => {
-  const { viewId, windowType: windowId, docId, tabId } = ownProps;
-  const tableId = getTableId({ windowId, viewId, docId, tabId });
-
-  return {
-    headersFields:
-      state.tables && state.tables[tableId]
-        ? state.tables[tableId].sortOptions
-        : {},
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  null
-)(TableHeader);

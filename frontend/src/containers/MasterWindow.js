@@ -226,8 +226,8 @@ class MasterWindowContainer extends PureComponent {
     } = this.props;
     const orderBy = (asc ? '+' : '-') + field;
     const dataId = master.docId;
-
     const activeTabId = master.layout.activeTab;
+
     if (!activeTabId) {
       return;
     }

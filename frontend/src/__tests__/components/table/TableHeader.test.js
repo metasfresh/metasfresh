@@ -3,7 +3,7 @@ import { shallow, mount } from 'enzyme';
 
 import tableHeaderProps from '../../../../test_setup/fixtures/table/table_header.json';
 
-import { TableHeader } from '../../../components/table/TableHeader';
+import TableHeader from '../../../components/table/TableHeader';
 
 const props = {
   ...tableHeaderProps,
@@ -55,7 +55,6 @@ describe('TableHeader', () => {
       onSortTable: onSortTableSpy,
       setActiveSort: jest.fn(),
       deselect: jest.fn(),
-      headersFields: { DateOrdered: false },
     };
 
     const wrapper = mount(
