@@ -2,10 +2,9 @@ package de.metas.camel.manufacturing.order.issue_and_receipt;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import de.metas.camel.shipping.receipt.ReceiptResponseProcessor;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 
 /*
@@ -32,14 +31,12 @@ import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 
 class JsonResponseManufacturingOrdersReportProcessor implements Processor
 {
-	private final Log log = LogFactory.getLog(ReceiptResponseProcessor.class);
+	private static final Logger log = LoggerFactory.getLogger(JsonResponseManufacturingOrdersReportProcessor.class);
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
-		// to be extended when we will send feedback to mf
 		final JsonResponseManufacturingOrdersReport response = exchange.getIn().getBody(JsonResponseManufacturingOrdersReport.class);
-
 		log.info("Successfully processed: " + response);
 	}
 

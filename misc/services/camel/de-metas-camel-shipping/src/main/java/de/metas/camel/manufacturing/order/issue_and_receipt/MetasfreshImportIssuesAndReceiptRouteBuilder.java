@@ -8,6 +8,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.component.jackson.JacksonDataFormat;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -58,6 +59,8 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
+		onException(HttpOperationFailedException.class)
+				.process(this::handleHttpOperationFailedException);
 
 		RouteBuilderCommonUtil.setupProperties(getContext());
 
@@ -70,9 +73,9 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 				.process(new XmlToJsonRequestManufacturingOrdersReportProcessor()).id(XML_TO_JSON_PROCESSOR_ID)
 				.choice()
 					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
-						.log(LoggingLevel.INFO, "Nothing to do! no issues/receipts were found in file:" + header(Exchange.FILE_NAME))
+						.log(LoggingLevel.INFO, "Nothing to do! no issues/receipts were found in file: ${header." + Exchange.FILE_NAME+"}")
 					.otherwise()
-						.log(LoggingLevel.INFO, "Posting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " manufacturing issues and receipts to metasfresh.")
+						.log(LoggingLevel.INFO, "Posting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} manufacturing issues and receipts to metasfresh.")
 						.marshal(jsonDataFormat(JsonRequestManufacturingOrdersReport.class))
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
@@ -91,5 +94,24 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 	private @NonNull JacksonXMLDataFormat xmlDataFormat()
 	{
 		return RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
+	}
+
+	private void handleHttpOperationFailedException(final Exchange exchange)
+	{
+		final var request = exchange.getIn().getBody(String.class);
+		final var exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, HttpOperationFailedException.class);
+		if (exception == null)
+		{
+			log.warn("Got unkown error on exchange=" + exchange);
+			return;
+		}
+
+		log.warn("Failed processing request: " + request
+				+ "\n\t Error: " + exception.getMessage()
+				+ "\n\t HTTP Code: " + exception.getStatusCode()
+				+ "\n\t URI: " + exception.getUri()
+				+ "\n\t From Filename: " + exchange.getIn().getHeader(Exchange.FILE_NAME)
+				+ "\n\t Response body: " + exception.getResponseBody()
+				+ "\n\t Response headers: " + exception.getResponseHeaders());
 	}
 }

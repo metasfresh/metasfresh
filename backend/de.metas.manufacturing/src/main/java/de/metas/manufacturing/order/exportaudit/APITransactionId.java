@@ -1,6 +1,9 @@
 package de.metas.manufacturing.order.exportaudit;
 
+import java.util.Optional;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -32,22 +35,27 @@ import lombok.NonNull;
  */
 
 @EqualsAndHashCode
-public final class ExportTransactionId
+public final class APITransactionId
 {
-	public static ExportTransactionId random()
+	public static APITransactionId random()
 	{
-		return new ExportTransactionId(UUID.randomUUID().toString());
+		return new APITransactionId(UUID.randomUUID().toString());
 	}
 
 	@JsonCreator
-	public static ExportTransactionId ofString(@NonNull final String value)
+	public static APITransactionId ofString(@NonNull final String value)
 	{
-		return new ExportTransactionId(value);
+		return new APITransactionId(value);
+	}
+
+	public static Optional<APITransactionId> optionalOfString(@Nullable final String value)
+	{
+		return Check.isNotBlank(value) ? Optional.of(ofString(value)) : Optional.empty();
 	}
 
 	private final String value;
 
-	private ExportTransactionId(@NonNull final String value)
+	private APITransactionId(@NonNull final String value)
 	{
 		Check.assumeNotEmpty(value, "value is not empty");
 		this.value = value;

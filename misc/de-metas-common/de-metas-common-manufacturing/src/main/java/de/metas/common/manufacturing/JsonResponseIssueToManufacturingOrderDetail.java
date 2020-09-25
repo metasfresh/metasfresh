@@ -1,18 +1,20 @@
-package de.metas.camel.inventory;
+package de.metas.common.manufacturing;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonQuantity;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de-metas-camel-shipping
+ * de-metas-common-manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -35,21 +37,18 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonInventoryLine.JsonInventoryLineBuilder.class)
-public class JsonInventoryLine
+@JsonDeserialize(builder = JsonResponseIssueToManufacturingOrderDetail.JsonResponseIssueToManufacturingOrderDetailBuilder.class)
+public class JsonResponseIssueToManufacturingOrderDetail
 {
-	String warehouseValue;
-	String locatorValue;
-	LocalDate inventoryDate;
-	/** product code without org prefix */
-	String productValue;
-	BigDecimal qtyCount;
-	String externalLineId;
-	LocalDate bestbeforeDate;
-	String lotNumber;
+	@Nullable
+	JsonMetasfreshId costCollectorId;
+	@Nullable
+	JsonMetasfreshId huId;
+	@NonNull
+	JsonQuantity qty;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonInventoryLineBuilder
+	public static class JsonResponseIssueToManufacturingOrderDetailBuilder
 	{
 	}
 }

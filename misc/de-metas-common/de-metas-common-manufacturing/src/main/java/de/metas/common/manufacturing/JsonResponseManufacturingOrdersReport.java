@@ -2,10 +2,13 @@ package de.metas.common.manufacturing;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
+import de.metas.common.rest_api.JsonError;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -42,6 +45,9 @@ public class JsonResponseManufacturingOrdersReport
 	@NonNull
 	String transactionKey;
 
+	@Nullable
+	JsonError error;
+
 	@NonNull
 	@Singular
 	List<JsonResponseReceiveFromManufacturingOrder> receipts;
@@ -53,5 +59,15 @@ public class JsonResponseManufacturingOrdersReport
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonResponseManufacturingOrdersReportBuilder
 	{
+	}
+	
+	public boolean isOK()
+	{
+		return error == null;
+	}
+
+	public boolean hasErrors()
+	{
+		return error != null;
 	}
 }

@@ -1,18 +1,21 @@
 package de.metas.camel.inventory;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
-import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import lombok.NonNull;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.camel.metasfresh_data_import.MetasfreshCsvImportFormat;
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,39 +50,56 @@ class InventoryJsonToCsvMapProcessor implements Processor
 	private static final String HU_AGGREGATION_TYPE = "M";
 
 	private final MetasfreshCsvImportFormat csvImportFormat;
+	private final ProductCodesToExclude productCodesToExclude;
 
-	public InventoryJsonToCsvMapProcessor(@NonNull final MetasfreshCsvImportFormat csvImportFormat)
+	public InventoryJsonToCsvMapProcessor(
+			@NonNull final MetasfreshCsvImportFormat csvImportFormat,
+			@NonNull final ProductCodesToExclude productCodesToExclude)
 	{
 		this.csvImportFormat = csvImportFormat;
+		this.productCodesToExclude = productCodesToExclude;
 	}
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final JsonInventory inventory = exchange.getIn().getBody(JsonInventory.class);
 
-		if (inventory.isEmpty())
-		{
-			log.debug("exchange.body is empty! -> nothing to do!");
-			exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, 0);
-			return;
-		}
+		final List<Map<String, Object>> csv = toCSV(inventory);
 
-		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, inventory.getSize());
-		exchange.getIn().setBody(toCSV(inventory));
+		exchange.getIn().setBody(csv);
+		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, csv.size());
 	}
 
-	private List<Map<String, Object>> toCSV(final JsonInventory inventory)
+	private ImmutableList<Map<String, Object>> toCSV(@Nullable final JsonInventory inventory)
 	{
+		if (inventory == null || inventory.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return inventory.getLines()
 				.stream()
+				.filter(this::checkAllowToExportAndLog)
 				.map(this::toCSV)
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private boolean checkAllowToExportAndLog(final JsonInventoryLine line)
+	{
+		if (productCodesToExclude.isProductCodeExcluded(line.getProductValue()))
+		{
+			log.info("Line excluded because product is on exclude list: " + line);
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
 	private Map<String, Object> toCSV(final JsonInventoryLine line)
 	{
-		System.out.println("line=" + line);
 		final Map<String, Object> map = new HashMap<>();
 
 		putCsvCell(map, MetasfreshInventoryCsvConstants.COLUMNNAME_WarehouseValue, line.getWarehouseValue());
@@ -99,7 +119,11 @@ class InventoryJsonToCsvMapProcessor implements Processor
 			@NonNull final String columnName,
 			@Nullable final Object value)
 	{
+		if (!csvImportFormat.hasColumn(columnName))
+		{
+			return;
+		}
+
 		csvRow.put(columnName, csvImportFormat.formatValue(columnName, value));
 	}
-
 }

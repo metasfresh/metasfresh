@@ -2,6 +2,8 @@ package de.metas.common.manufacturing;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -39,6 +41,9 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonRequestManufacturingOrdersReport.JsonRequestManufacturingOrdersReportBuilder.class)
 public class JsonRequestManufacturingOrdersReport
 {
+	@Nullable
+	String transactionKey;
+
 	@NonNull
 	@Singular
 	List<JsonRequestReceiveFromManufacturingOrder> receipts;
