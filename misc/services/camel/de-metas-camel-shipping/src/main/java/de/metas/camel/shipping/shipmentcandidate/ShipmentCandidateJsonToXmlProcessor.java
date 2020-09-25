@@ -190,7 +190,7 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(customer.getContactName())); // _empfaenger_ansprechpartner
 		row.col(COL.of(customer.getStreet())); // _empfaenger_strasse
 		row.col(COL.of(customer.getStreetNo())); // _empfaenger_hausnummer
-		row.col(COL.of(null)); // _empfaenger_zustellinfo
+		row.col(COL.of(item.getDeliveryInfo())); // _empfaenger_zustellinfo
 		row.col(COL.of(customer.getPostal())); // _empfaenger_plz
 		row.col(COL.of(customer.getCity())); // _empfaenger_ort
 		row.col(COL.of(customer.getCountryCode())); // _empfaenger_land
