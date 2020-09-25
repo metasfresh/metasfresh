@@ -20,6 +20,7 @@ import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import GeoMap from '../maps/GeoMap';
+import { FILTER_VIEW_PENDING } from '../../constants/ActionTypes';
 
 /**
  * @file Class based component.
@@ -150,6 +151,7 @@ export default class DocumentList extends Component {
       parentSelected,
       onUpdateQuickActions,
       setQuickActionsComponentRef,
+      filterId,
     } = this.props;
     const {
       staticFilters,
@@ -262,6 +264,11 @@ export default class DocumentList extends Component {
 
               {staticFilters && (
                 <FiltersStatic
+                  {...{
+                    filterId,
+                    windowId,
+                    viewId,
+                  }}
                   data={staticFilters}
                   clearFilters={onClearStaticFilters}
                 />

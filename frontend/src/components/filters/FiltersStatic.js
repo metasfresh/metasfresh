@@ -1,9 +1,32 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { clearStaticFilters } from '../../actions/FiltersActions';
+import { connect } from 'react-redux';
 
-export default class FiltersStatic extends PureComponent {
+export class FiltersStatic extends PureComponent {
+  clearItemStaticFilters = (staticFilterId) => {
+    const {
+      clearFilters,
+      filterId,
+      clearStaticFilters,
+      windowId,
+      viewId,
+    } = this.props;
+
+    filterId &&
+      clearStaticFilters({
+        filterId,
+        staticFilterId,
+        windowId,
+        viewId,
+        data: true,
+      });
+    clearFilters(staticFilterId);
+    // TO REMOVE clearFilters !
+  };
+
   render() {
-    const { data, clearFilters } = this.props;
+    const { data } = this.props;
     return (
       <div className="filter-wrapper">
         {data.map((item, index) => {
@@ -11,7 +34,7 @@ export default class FiltersStatic extends PureComponent {
             <div className="filter-wrapper" key={index}>
               <button
                 className={'btn btn-meta-disabled ' + 'btn-distance btn-sm'}
-                onClick={() => clearFilters(item.id)}
+                onClick={() => this.clearItemStaticFilters(item.id)}
               >
                 <i className="meta-icon-trash" />
                 {item.caption}
@@ -27,4 +50,13 @@ export default class FiltersStatic extends PureComponent {
 FiltersStatic.propTypes = {
   data: PropTypes.array,
   clearFilters: PropTypes.func,
+  filterId: PropTypes.string,
+  clearStaticFilters: PropTypes.func,
+  windowId: PropTypes.string,
+  viewId: PropTypes.string,
 };
+
+export default connect(
+  null,
+  { clearStaticFilters }
+)(FiltersStatic);

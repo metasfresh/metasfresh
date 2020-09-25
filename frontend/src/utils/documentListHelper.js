@@ -142,6 +142,7 @@ const DLmapStateToProps = (state, props) => {
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
     filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
+    filterId,
   };
 };
 

@@ -71,6 +71,11 @@ const reducer = produce((draftState, action) => {
       draftState[filterId].notValidFields = data;
       return;
     }
+    case types.CLEAR_STATIC_FILTERS: {
+      const { filterId, data } = action.payload;
+      draftState[filterId].staticFilterCleared = data;
+      return;
+    }
   }
 }, initialFiltersBranchState);
 
