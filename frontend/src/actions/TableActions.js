@@ -558,19 +558,3 @@ export function updateTableSelection(id, selection, keyProperty = 'id') {
     return Promise.resolve(selection);
   };
 }
-
-/**
- * @method setActiveSortFilters
- * @summary Sets the sortFilters in the redux store - used for the sorting direction display logic
- */
-export function setActiveSortFields({ tableId, orderBy }) {
-  let fields = {};
-  orderBy &&
-    orderBy.map((item) => {
-      fields[item.fieldName] = item.ascending;
-    });
-  return {
-    type: types.SET_SORT_FIELDS,
-    payload: { tableId, fields },
-  };
-}
