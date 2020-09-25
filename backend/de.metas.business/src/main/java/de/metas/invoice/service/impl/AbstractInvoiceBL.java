@@ -73,7 +73,6 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -147,6 +146,51 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_RMA;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Tax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.util.Check.assumeNotNull;
 
 /*
  * #%L
@@ -200,13 +244,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
-
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
 		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
 		if (creditCtx.isReferenceInvoice())
 		{
-
 			if (invoice.isPaid())
 			{
 				throw new AdempiereException(
@@ -1849,6 +1891,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final Amount discountAmtAbs = discountAmt.negateIfNot(invoice.isSOTrx());
+
+		// don't declare during init; it won't be available yet
+		final CurrencyRepository currenciesRepo = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 		final CurrencyId currencyId = currenciesRepo.getCurrencyIdByCurrencyCode(discountAmt.getCurrencyCode());
 
 		// @formatter:off
