@@ -52,7 +52,7 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 	static final String ROUTE_ID = "inventoryImport-from-XML";
 	private static final String SIRO_FTP_PATH = "{{siro.ftp.retrieve.inventory.endpoint}}";
 
-	/** Route to be used to import {@link JsonInventory} objects to metasfresh */
+	/** Route to be used to import {@link de.metas.camel.inventory.JsonInventory} objects to metasfresh */
 	public static final String ROUTE_ID_FROM_JSON = "inventoryImport-from-JSON";
 
 	@VisibleForTesting
@@ -62,7 +62,7 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 			+ "&completeDocuments={{metasfresh.inventory.completeDocuments}}";
 
 	@VisibleForTesting
-	static final String LOCAL_STORAGE_URL = "{{siro.manufacturing-orders.local.storage}}";
+	static final String LOCAL_STORAGE_URL = "{{siro.inventory.local.storage}}";
 
 	@Override
 	public void configure()
