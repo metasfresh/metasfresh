@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -39,6 +40,7 @@ import lombok.Value;
  */
 
 @Value
+@ToString(exclude = "newLine")
 public class MetasfreshCsvImportFormat
 {
 	boolean skipHeaderRecord;
