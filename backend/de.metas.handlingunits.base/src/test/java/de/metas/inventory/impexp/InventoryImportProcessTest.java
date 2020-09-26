@@ -1,15 +1,19 @@
 package de.metas.inventory.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Properties;
-
+import de.metas.business.BusinessTestHelper;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -33,20 +37,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
-import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
-import de.metas.impexp.format.ImportTableDescriptorRepository;
-import de.metas.impexp.processing.DBFunctionsRepository;
-import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -237,9 +236,6 @@ public class InventoryImportProcessTest
 		{
 			docTypeDAO = Services.get(IDocTypeDAO.class);
 
-			final Properties ctx = Env.getCtx();
-			Env.setClientId(ctx, ClientId.METASFRESH);
-
 			orgId1 = BusinessTestHelper.createOrgWithTimeZone();
 			org1_docTypeId = createInventoryDocType(orgId1);
 			org1_warehouseId = createWarehouse(orgId1);
@@ -247,6 +243,10 @@ public class InventoryImportProcessTest
 			orgId2 = BusinessTestHelper.createOrgWithTimeZone();
 			org2_docTypeId = createInventoryDocType(orgId2);
 			org2_warehouseId = createWarehouse(orgId2);
+
+			final Properties ctx = Env.getCtx();
+			Env.setClientId(ctx, ClientId.METASFRESH);
+			Env.setOrgId(ctx, orgId2);
 		}
 
 		private DocTypeId createInventoryDocType(@NonNull final OrgId orgId)
