@@ -128,16 +128,8 @@ public class InventoryXmlToMetasfreshRouteBuilder extends EndpointRouteBuilder
 
 	private static MetasfreshCsvImportFormat getMetasfreshCsvImportFormat(@NonNull final CamelContext context)
 	{
-		final String csvDelimiter = RouteBuilderCommonUtil.resolveProperty(
-				context,
-				"metasfresh.inventory.csv.delimiter",
-				";");
-
-		final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(
-				RouteBuilderCommonUtil.resolveProperty(
-						context,
-						"metasfresh.inventory.csv.date-pattern",
-						"dd.MM.yyyy"));
+		final String csvDelimiter = RouteBuilderCommonUtil.resolveProperty(context, "metasfresh.inventory.csv.delimiter", ";");
+		final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(RouteBuilderCommonUtil.resolveProperty(context, "metasfresh.inventory.csv.date-pattern", "dd.MM.yyyy"));
 
 		return MetasfreshCsvImportFormat.builder()
 				.skipHeaderRecord(true)
