@@ -1,38 +1,5 @@
 package de.metas.inventory.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Properties;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_I_Inventory;
-import org.compiere.model.I_M_AttributeSet;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -47,6 +14,40 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_I_Inventory;
+import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -71,6 +72,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class InventoryImportProcessTest
 {
 	private InventoryImportProcess inventoryImportProcess;
@@ -240,11 +242,11 @@ public class InventoryImportProcessTest
 			final Properties ctx = Env.getCtx();
 			Env.setClientId(ctx, ClientId.METASFRESH);
 
-			orgId1 = BusinessTestHelper.createOrgWithTimeZone();
+			orgId1 = AdempiereTestHelper.createOrgWithTimeZone();
 			org1_docTypeId = createInventoryDocType(orgId1);
 			org1_warehouseId = createWarehouse(orgId1);
 
-			orgId2 = BusinessTestHelper.createOrgWithTimeZone();
+			orgId2 = AdempiereTestHelper.createOrgWithTimeZone();
 			org2_docTypeId = createInventoryDocType(orgId2);
 			org2_warehouseId = createWarehouse(orgId2);
 		}
@@ -273,11 +275,13 @@ public class InventoryImportProcessTest
 		{
 			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
 			importRecord.setExternalHeaderId("ExternalHeaderId1");
-			importRecord.setAD_Org_ID(orgId2.getRepoId()); // does not matter, but intentionally setting it to the other org
 			importRecord.setM_Warehouse_ID(org1_warehouseId.getRepoId());
 			importRecord.setInventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")));
+			importRecord.setAD_Org_ID(orgId2.getRepoId()); // does not matter, but intentionally setting it to the other org
+			Env.setOrgId(Env.getCtx(), orgId2);
 
 			final InventoryGroupKey groupKey = inventoryImportProcess.extractImportGroupKey(importRecord);
+
 			assertThat(groupKey).isEqualTo(InventoryGroupKey.builder()
 					.externalHeaderId("ExternalHeaderId1")
 					.docTypeId(org1_docTypeId)
@@ -292,11 +296,13 @@ public class InventoryImportProcessTest
 		{
 			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
 			importRecord.setExternalHeaderId("ExternalHeaderId1");
-			importRecord.setAD_Org_ID(orgId1.getRepoId()); // does not matter, but intentionally setting it to the other org
 			importRecord.setM_Warehouse_ID(org2_warehouseId.getRepoId());
 			importRecord.setInventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")));
+			importRecord.setAD_Org_ID(orgId1.getRepoId()); // does not matter, but intentionally setting it to the other org
+			Env.setOrgId(Env.getCtx(), orgId2);
 
 			final InventoryGroupKey groupKey = inventoryImportProcess.extractImportGroupKey(importRecord);
+
 			assertThat(groupKey).isEqualTo(InventoryGroupKey.builder()
 					.externalHeaderId("ExternalHeaderId1")
 					.docTypeId(org2_docTypeId)
