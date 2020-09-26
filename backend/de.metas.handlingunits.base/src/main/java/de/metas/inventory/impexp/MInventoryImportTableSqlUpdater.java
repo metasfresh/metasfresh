@@ -1,7 +1,12 @@
 package de.metas.inventory.impexp;
 
-import java.util.List;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -16,14 +21,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.util.List;
 
 /*
  * #%L
@@ -52,7 +50,6 @@ import lombok.experimental.UtilityClass;
  * Those updates complements the data from existing metasfresh records and flag those import records that can't yet be imported.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 final class MInventoryImportTableSqlUpdater
@@ -63,6 +60,7 @@ final class MInventoryImportTableSqlUpdater
 	{
 		dbUpdateLocatorDimensions(selection);
 		dbUpdateWarehouse(selection);
+		dbUpdateOrg(selection);
 		dbUpdateCreateLocators(selection);
 		dbUpdateProducts(selection);
 		dbUpdateSubProducer(selection);
@@ -90,7 +88,7 @@ final class MInventoryImportTableSqlUpdater
 				+ "	       JOIN extractLocatorDimensions(inv.WarehouseLocatorIdentifier) as d on 1=1"
 				+ "     ) AS dimensions "
 				+ "WHERE I_IsImported<>'Y' AND dimensions.dimensions_I_Inventory_ID = i.I_Inventory_ID ")
-						.append(selection.toSqlWhereClause("i"));
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
@@ -115,6 +113,20 @@ final class MInventoryImportTableSqlUpdater
 					.append(selection.toSqlWhereClause("i"));
 			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
+	}
+
+	/**
+	 * The M_Inventory records were created with the AD_Org_ID of the currently logged in user, which might be wrong
+	 * This method fixes the org to the warehouse's Org.
+ 	 */
+	private void dbUpdateOrg(@NonNull final ImportRecordsSelection selection)
+	{
+		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET AD_Org_ID=(SELECT AD_Org_ID FROM M_Warehouse w WHERE i.M_Warehouse_ID=w.M_Warehouse_ID) ")
+				.append("WHERE AD_Org_ID!=(SELECT AD_Org_ID FROM M_Warehouse w WHERE i.M_Warehouse_ID=w.M_Warehouse_ID) ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateCreateLocators(@NonNull final ImportRecordsSelection selection)
@@ -287,21 +299,6 @@ final class MInventoryImportTableSqlUpdater
 
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
 	{
-		//
-		// No Organization
-		{
-			final String sql = "UPDATE I_Inventory "
-					+ " SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Organization, ' "
-					+ " WHERE (AD_Org_ID IS NULL OR AD_Org_ID=" + OrgId.ANY.getRepoId() + ")"
-					+ " AND I_IsImported<>'Y' "
-					+ selection.toSqlWhereClause();
-			final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-			if (no != 0)
-			{
-				logger.warn("No Organization = {}", no);
-			}
-		}
-
 		//
 		// No Locator
 		{
