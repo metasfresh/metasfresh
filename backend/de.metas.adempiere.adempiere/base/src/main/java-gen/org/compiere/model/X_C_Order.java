@@ -19,7 +19,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -394691916L;
+	private static final long serialVersionUID = 913474842L;
 
 	/**
 	 * Standard Constructor
@@ -3286,4 +3286,17 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 			return BigDecimal.ZERO;
 		return bd;
 	}
+
+	@Override
+	public void setDeliveryInfo (java.lang.String DeliveryInfo)
+	{
+		set_Value (COLUMNNAME_DeliveryInfo, DeliveryInfo);
+	}
+
+	@Override
+	public java.lang.String getDeliveryInfo()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DeliveryInfo);
+	}
+
 }

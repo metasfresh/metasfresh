@@ -105,6 +105,11 @@ public class JsonResponseShipmentCandidate
 			value = "The net price of the delivered quantity ")
 	BigDecimal deliveredQtyNetPrice;
 
+
+	@ApiModelProperty(position = 130,
+			value = "Delivery information")
+	String deliveryInfo;
+
 	@JsonCreator
 	@Builder
 	private JsonResponseShipmentCandidate(
@@ -122,7 +127,8 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("orderedQty") @NonNull final List<JsonQuantity> orderedQty,
 			@JsonProperty("deliveredQtyNetPrice") @Nullable final BigDecimal deliveredQtyNetPrice,
 			@JsonProperty("qtyToDeliverNetPrice") @Nullable final BigDecimal qtyToDeliverNetPrice,
-			@JsonProperty("orderedQtyNetPrice") @Nullable final BigDecimal orderedQtyNetPrice)
+			@JsonProperty("orderedQtyNetPrice") @Nullable final BigDecimal orderedQtyNetPrice,
+			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo)
 	{
 		this.id = id;
 		this.orgCode = orgCode;
@@ -139,6 +145,7 @@ public class JsonResponseShipmentCandidate
 		this.deliveredQtyNetPrice = deliveredQtyNetPrice;
 		this.qtyToDeliverNetPrice = qtyToDeliverNetPrice;
 		this.orderedQtyNetPrice = orderedQtyNetPrice;
+		this.deliveryInfo = deliveryInfo;
 	}
 }
 

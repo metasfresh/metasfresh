@@ -45,13 +45,13 @@ import lombok.ToString;
 public class ManufacturingOrderExportAudit
 {
 	@Getter
-	private final ExportTransactionId transactionId;
+	private final APITransactionId transactionId;
 
 	private final HashMap<PPOrderId, ManufacturingOrderExportAuditItem> items;
 
 	@Builder
 	private ManufacturingOrderExportAudit(
-			@NonNull final ExportTransactionId transactionId,
+			@NonNull final APITransactionId transactionId,
 			@NonNull @Singular List<ManufacturingOrderExportAuditItem> items)
 	{
 		this.transactionId = transactionId;

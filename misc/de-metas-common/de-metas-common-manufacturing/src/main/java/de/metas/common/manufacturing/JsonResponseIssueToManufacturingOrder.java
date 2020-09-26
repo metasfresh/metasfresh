@@ -1,5 +1,7 @@
 package de.metas.common.manufacturing;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -7,6 +9,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -39,6 +43,10 @@ public class JsonResponseIssueToManufacturingOrder
 {
 	@Nullable
 	String requestId;
+
+	@NonNull
+	@Singular
+	List<JsonResponseIssueToManufacturingOrderDetail> details;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonResponseIssueToManufacturingOrderBuilder

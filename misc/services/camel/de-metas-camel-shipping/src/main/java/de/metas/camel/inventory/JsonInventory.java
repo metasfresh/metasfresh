@@ -1,15 +1,16 @@
 package de.metas.camel.inventory;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-
+import de.metas.common.MeasurableRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -37,7 +38,7 @@ import lombok.Value;
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonInventory.JsonInventoryBuilder.class)
-public class JsonInventory
+public class JsonInventory extends MeasurableRequest
 {
 	@NonNull
 	@Singular
@@ -53,8 +54,11 @@ public class JsonInventory
 		return lines.isEmpty();
 	}
 
-	public int getLinesCount()
+	@Override
+	@JsonIgnore
+	public int getSize()
 	{
 		return lines.size();
 	}
+
 }

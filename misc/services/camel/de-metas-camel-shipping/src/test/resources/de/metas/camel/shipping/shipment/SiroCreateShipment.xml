@@ -134,6 +134,14 @@
                MAXREPEAT="1"
                NAME="_sendung_gewichte"
                TYPE="TEXT"/>  <!-- package.weight -->
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_korrektur_wenn_out_of_stock"
+               TYPE="TEXT"/>  <!-- isOutOfStock -->
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_korrektur_lagerplatz_out_of_stock"
+               TYPE="TEXT"/>  <!-- OutOfStock - Locator Value -->
 
     </METADATA>
     <RESULTSET FOUND="2">
@@ -219,7 +227,7 @@
                 <DATA>cp-lot-no-1</DATA> <!-- lot number -->
             </COL>
             <COL>
-                <DATA/>
+                <DATA>27.05.2024</DATA> <!-- best before date -->
             </COL>
             <COL>
                 <DATA>cp-document-no-1</DATA> <!-- doc number -->
@@ -239,6 +247,119 @@
                     2,25
                     1.003,5
                 </DATA> <!-- package.weight -->
+            </COL>
+            <COL>
+                <DATA/> <!-- isOutOfStock -->
+            </COL>
+            <COL>
+                <DATA/> <!-- outOfStock-LocatorValue -->
+            </COL>
+        </ROW>
+        <ROW MODID="27"
+             RECORDID="8">
+            <COL>
+                <DATA>1</DATA> <!-- shipScheduleId --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>12</DATA> <!-- orderNo --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>27.05.2020</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>27.05.2020 17:12:47</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>productSearchKey</DATA><!-- productKey -->
+            </COL>
+            <COL>
+                <DATA>test p cp</DATA><!--productName-->
+            </COL>
+            <COL>
+                <DATA/>
+            </COL>
+            <COL>
+                <DATA>12</DATA><!--shipped qty--> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA/>
+            </COL>
+            <COL>
+                <DATA/>
+            </COL>
+            <COL>
+                <DATA/>
+            </COL>
+            <COL>
+                <DATA>contact</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>street</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>8</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA/>
+            </COL>
+            <COL>
+                <DATA>12</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>city</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>countryCode</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA/>
+            </COL>
+            <COL>
+                <DATA>somee@email.com</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>1</DATA> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>
+                </DATA><!-- tracking numbers --><!-- not needed outOfStock case -->
+            </COL>
+            <COL>
+                <DATA>1</DATA><!-- shipment yes/no flag --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>29.07.2020 16.16.59</DATA> <!-- shipping date --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>cp-lot-no-1</DATA> <!-- lot number -->
+            </COL>
+            <COL>
+                <DATA>27.05.2024</DATA> <!-- best before date -->
+            </COL>
+            <COL>
+                <DATA>cp-document-no-1</DATA> <!-- doc number --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>shipper.InternalName_Seg1</DATA> <!-- shipper.InternalName_Seg1 --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>shipper.InternalName_Seg2</DATA> <!-- shipper.InternalName_Seg2--> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>150</DATA> <!-- qtyToDeliver-Override --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>
+                    1
+                    2,25
+                    1.003,5
+                </DATA> <!-- package.weight --> <!-- <notNeededOutOfStockCase> -->
+            </COL>
+            <COL>
+                <DATA>0</DATA> <!-- isOutOfStock -->
+            </COL>
+            <COL>
+                <DATA>locatorValue</DATA> <!-- outOfStock-LocatorValue -->
             </COL>
         </ROW>
     </RESULTSET>

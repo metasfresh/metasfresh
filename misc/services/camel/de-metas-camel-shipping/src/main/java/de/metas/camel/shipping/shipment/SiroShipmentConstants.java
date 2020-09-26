@@ -12,6 +12,7 @@ public interface SiroShipmentConstants
 	String AUTHORIZATION = "Authorization";
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
 	String SHIPMENT_XML_TO_JSON_PROCESSOR = "shipment-xml-to-json-id";
+	String INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR = "inv-correct-xml-to-json-id";
 
 	String DEFAULT_DELIVERY_RULE_FORCE = "F";
 

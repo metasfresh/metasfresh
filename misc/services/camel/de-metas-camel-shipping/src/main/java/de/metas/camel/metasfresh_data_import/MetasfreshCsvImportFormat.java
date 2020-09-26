@@ -78,6 +78,11 @@ public class MetasfreshCsvImportFormat
 		return getColumn(columnName).formatValue(value);
 	}
 
+	public boolean hasColumn(final String columnName)
+	{
+		return columnsByColumnName.get(columnName) != null;
+	}
+
 	private MetasfreshColumnCsvImportFormat getColumn(@NonNull final String columnName)
 	{
 		MetasfreshColumnCsvImportFormat column = columnsByColumnName.get(columnName);

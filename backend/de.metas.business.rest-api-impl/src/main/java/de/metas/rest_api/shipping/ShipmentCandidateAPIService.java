@@ -666,6 +666,7 @@ class ShipmentCandidateAPIService
 
 		candidateBuilder.orderDocumentNo(orderRecord.getDocumentNo());
 		candidateBuilder.poReference(orderRecord.getPOReference());
+		candidateBuilder.deliveryInfo(orderRecord.getDeliveryInfo());
 	}
 
 	private static class ShipmentCandidateExportException extends AdempiereException

@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
+import org.eevolution.api.PPCostCollectorId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -67,6 +69,7 @@ import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -113,6 +116,7 @@ import lombok.Value;
 	private boolean skipCreatingReceiptCandidates;
 	private boolean processReceiptCandidates;
 	private boolean receiveOneVHU;
+	private LinkedHashSet<PPCostCollectorId> createdCostCollectorIds = new LinkedHashSet<>();
 
 	//
 	// Abstract methods
@@ -250,9 +254,13 @@ import lombok.Value;
 		{
 			// Process the receipt candidates we just created
 			// => HU will be activated, a receipt cost collector will be generated,
-			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+			final List<I_PP_Cost_Collector> costCollectors = HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
 					.setCandidatesToProcess(receiptCandidates)
 					.process();
+
+			costCollectors.stream()
+					.map(costCollector -> PPCostCollectorId.ofRepoId(costCollector.getPP_Cost_Collector_ID()))
+					.forEach(createdCostCollectorIds::add);
 		}
 	}
 
@@ -455,6 +463,12 @@ import lombok.Value;
 	{
 		this.bestBeforeDate = bestBeforeDate;
 		return this;
+	}
+
+	@Override
+	public ImmutableSet<PPCostCollectorId> getCreatedCostCollectorIds()
+	{
+		return ImmutableSet.copyOf(createdCostCollectorIds);
 	}
 
 	//

@@ -1,7 +1,12 @@
 package de.metas.inventory.impexp;
 
-import java.util.List;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -16,14 +21,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.util.List;
 
 /*
  * #%L
@@ -287,21 +285,6 @@ final class MInventoryImportTableSqlUpdater
 
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
 	{
-		//
-		// No Organization
-		{
-			final String sql = "UPDATE I_Inventory "
-					+ " SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Organization, ' "
-					+ " WHERE (AD_Org_ID IS NULL OR AD_Org_ID=" + OrgId.ANY.getRepoId() + ")"
-					+ " AND I_IsImported<>'Y' "
-					+ selection.toSqlWhereClause();
-			final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-			if (no != 0)
-			{
-				logger.warn("No Organization = {}", no);
-			}
-		}
-
 		//
 		// No Locator
 		{
