@@ -22,6 +22,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -36,6 +37,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -70,6 +72,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class InventoryImportProcessTest
 {
 	private InventoryImportProcess inventoryImportProcess;
@@ -236,17 +239,16 @@ public class InventoryImportProcessTest
 		{
 			docTypeDAO = Services.get(IDocTypeDAO.class);
 
-			orgId1 = BusinessTestHelper.createOrgWithTimeZone();
+			final Properties ctx = Env.getCtx();
+			Env.setClientId(ctx, ClientId.METASFRESH);
+
+			orgId1 = AdempiereTestHelper.createOrgWithTimeZone();
 			org1_docTypeId = createInventoryDocType(orgId1);
 			org1_warehouseId = createWarehouse(orgId1);
 
-			orgId2 = BusinessTestHelper.createOrgWithTimeZone();
+			orgId2 = AdempiereTestHelper.createOrgWithTimeZone();
 			org2_docTypeId = createInventoryDocType(orgId2);
 			org2_warehouseId = createWarehouse(orgId2);
-
-			final Properties ctx = Env.getCtx();
-			Env.setClientId(ctx, ClientId.METASFRESH);
-			Env.setOrgId(ctx, orgId2);
 		}
 
 		private DocTypeId createInventoryDocType(@NonNull final OrgId orgId)
@@ -273,11 +275,13 @@ public class InventoryImportProcessTest
 		{
 			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
 			importRecord.setExternalHeaderId("ExternalHeaderId1");
-			importRecord.setAD_Org_ID(orgId2.getRepoId()); // does not matter, but intentionally setting it to the other org
 			importRecord.setM_Warehouse_ID(org1_warehouseId.getRepoId());
 			importRecord.setInventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")));
+			importRecord.setAD_Org_ID(orgId2.getRepoId()); // does not matter, but intentionally setting it to the other org
+			Env.setOrgId(Env.getCtx(), orgId2);
 
 			final InventoryGroupKey groupKey = inventoryImportProcess.extractImportGroupKey(importRecord);
+
 			assertThat(groupKey).isEqualTo(InventoryGroupKey.builder()
 					.externalHeaderId("ExternalHeaderId1")
 					.docTypeId(org1_docTypeId)
@@ -292,11 +296,13 @@ public class InventoryImportProcessTest
 		{
 			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
 			importRecord.setExternalHeaderId("ExternalHeaderId1");
-			importRecord.setAD_Org_ID(orgId1.getRepoId()); // does not matter, but intentionally setting it to the other org
 			importRecord.setM_Warehouse_ID(org2_warehouseId.getRepoId());
 			importRecord.setInventoryDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-05")));
+			importRecord.setAD_Org_ID(orgId1.getRepoId()); // does not matter, but intentionally setting it to the other org
+			Env.setOrgId(Env.getCtx(), orgId2);
 
 			final InventoryGroupKey groupKey = inventoryImportProcess.extractImportGroupKey(importRecord);
+
 			assertThat(groupKey).isEqualTo(InventoryGroupKey.builder()
 					.externalHeaderId("ExternalHeaderId1")
 					.docTypeId(org2_docTypeId)

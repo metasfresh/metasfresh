@@ -50,7 +50,6 @@ import java.util.List;
  * Those updates complements the data from existing metasfresh records and flag those import records that can't yet be imported.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 final class MInventoryImportTableSqlUpdater
@@ -61,6 +60,7 @@ final class MInventoryImportTableSqlUpdater
 	{
 		dbUpdateLocatorDimensions(selection);
 		dbUpdateWarehouse(selection);
+		dbUpdateOrg(selection);
 		dbUpdateCreateLocators(selection);
 		dbUpdateProducts(selection);
 		dbUpdateSubProducer(selection);
@@ -88,7 +88,7 @@ final class MInventoryImportTableSqlUpdater
 				+ "	       JOIN extractLocatorDimensions(inv.WarehouseLocatorIdentifier) as d on 1=1"
 				+ "     ) AS dimensions "
 				+ "WHERE I_IsImported<>'Y' AND dimensions.dimensions_I_Inventory_ID = i.I_Inventory_ID ")
-						.append(selection.toSqlWhereClause("i"));
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
@@ -113,6 +113,20 @@ final class MInventoryImportTableSqlUpdater
 					.append(selection.toSqlWhereClause("i"));
 			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
+	}
+
+	/**
+	 * The M_Inventory records were created with the AD_Org_ID of the currently logged in user, which might be wrong
+	 * This method fixes the org to the warehouse's Org.
+ 	 */
+	private void dbUpdateOrg(@NonNull final ImportRecordsSelection selection)
+	{
+		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET AD_Org_ID=(SELECT AD_Org_ID FROM M_Warehouse w WHERE i.M_Warehouse_ID=w.M_Warehouse_ID) ")
+				.append("WHERE AD_Org_ID!=(SELECT AD_Org_ID FROM M_Warehouse w WHERE i.M_Warehouse_ID=w.M_Warehouse_ID) ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateCreateLocators(@NonNull final ImportRecordsSelection selection)
