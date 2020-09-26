@@ -12,7 +12,10 @@ import javax.annotation.Nullable;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -42,6 +45,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ErrorHandlingUtils
 {
+	private static final Logger log = LoggerFactory.getLogger(ErrorHandlingUtils.class);
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS");
 
 	public static void setupWriteErrorLogFile(@NonNull final RouteBuilder routeBuilder, @NonNull final String toEndpoint)
@@ -51,6 +55,8 @@ public class ErrorHandlingUtils
 				.log(LoggingLevel.WARN, "Processing failed: \n${body}")
 				.to(toEndpoint);
 
+		final String toEndpointParsed = RouteBuilderCommonUtil.parseUri(routeBuilder.getContext(), toEndpoint);
+		log.info("Configured to write error as file to " + toEndpointParsed);
 	}
 
 	public static void convertExceptionToFileContent(final Exchange exchange)
