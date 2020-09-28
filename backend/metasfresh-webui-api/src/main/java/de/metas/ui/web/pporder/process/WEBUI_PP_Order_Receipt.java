@@ -1,10 +1,26 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.pporder.process;
-
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -23,6 +39,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -30,28 +48,14 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class WEBUI_PP_Order_Receipt
 		extends WEBUI_PP_Order_Template
@@ -59,12 +63,13 @@ public class WEBUI_PP_Order_Receipt
 {
 	// services
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, mandatory = false)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCU, mandatory = true)
@@ -73,15 +78,14 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU, mandatory = true)
 	private BigDecimal p_QtyTU;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU, mandatory = false)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU)
 	private BigDecimal p_QtyLU;
 
 	private transient PackingInfoProcessParams _packingInfoParams;
 
 	/**
 	 * Makes sure that an instance exists and is in sync with this processe's parameters.
-	 * 
-	 * @return
+	 *
 	 */
 	private PackingInfoProcessParams getPackingInfoParams()
 	{
@@ -184,7 +188,6 @@ public class WEBUI_PP_Order_Receipt
 	}
 
 	/**
-	 *
 	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
@@ -196,7 +199,6 @@ public class WEBUI_PP_Order_Receipt
 	/**
 	 * For the currently selected pip this method loads att
 	 *
-	 * @return
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, dependsOn = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
 	public LookupValuesList getM_HU_PI_Item_IDs()
@@ -219,7 +221,7 @@ public class WEBUI_PP_Order_Receipt
 	}
 
 	@Override
-	protected void postProcess(boolean success)
+	protected void postProcess(final boolean success)
 	{
 		// Invalidate the view because for sure we have changes
 		final PPOrderLinesView ppOrderLinesView = getView();
