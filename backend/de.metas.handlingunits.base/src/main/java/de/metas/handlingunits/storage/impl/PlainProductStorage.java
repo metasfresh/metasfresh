@@ -13,15 +13,14 @@ package de.metas.handlingunits.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -29,12 +28,25 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 public class PlainProductStorage extends AbstractProductStorage
 {
 	private final Capacity capacityTotal;
 	private BigDecimal qtyInitial;
+
+	public PlainProductStorage(
+			final ProductId productId,
+			@NonNull final Quantity qtyTotal)
+	{
+		this(productId,
+				qtyTotal.getUOM(),
+				qtyTotal.toBigDecimal(),
+				BigDecimal.ZERO // qtyInitial=0 => empty by default
+		);
+	}
 
 	public PlainProductStorage(final ProductId productId,
 			final I_C_UOM uom,
@@ -55,7 +67,7 @@ public class PlainProductStorage extends AbstractProductStorage
 		capacityTotal = Capacity.createCapacity(qtyTotal,
 				productId, uom,
 				false // allowNegativeCapacity
-				);
+		);
 
 		Check.assumeNotNull(qtyInitial, "qtyInitial not null");
 		this.qtyInitial = qtyInitial;

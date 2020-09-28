@@ -43,3 +43,8 @@ private
 # Intellij Idea
 *.iml
 /.metadata/
+
+#
+# Camel
+misc/services/camel/de-metas-camel-shipping/tmp/
+

@@ -30,6 +30,8 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.I_C_DataImport;
+import org.compiere.model.I_C_DataImport_Run;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
@@ -43,13 +45,13 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.ImmutableTranslatableString.ImmutableTranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
 
@@ -150,10 +152,8 @@ import lombok.NonNull;
 				+ "\n LEFT OUTER JOIN AD_Window_Trl w_po_trl ON (w_po_trl.AD_Window_ID=w_po.AD_Window_ID AND w_po_trl.AD_Language=w_so_trl.AD_Language)";
 
 		//@formatter:off
-		sql += "WHERE t.TableName NOT LIKE 'I%'" // No Import
-
-				+ " AND t.IsActive='Y'" // gh #1489 : only consider active tables
-
+		sql += "WHERE " // No Import
+				+ " t.IsActive='Y'" // gh #1489 : only consider active tables
 				+ " AND EXISTS ("
 					+ "SELECT 1 FROM AD_Tab tt "
 						+ "WHERE (tt.AD_Window_ID=t.AD_Window_ID OR tt.AD_Window_ID=t.PO_Window_ID)"
@@ -163,15 +163,18 @@ import lombok.NonNull;
 							+ " tt.SeqNo=10"
 						+ ")"
 				+ ")"
-
 				// Consider tables which have an AD_Table_ID/Record_ID reference to our column
-				+ " AND ("
-					+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName=? AND IsKey='N') " // #2
-				+ ") "
-
-				//
-				+ "ORDER BY 2"; // FIXME ORDER BY!
+				+ " AND (t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName=? AND IsKey='N'))" // #1
+				;
 		//@formatter:on
+
+		if (isExcludeImportRecords(sourceKeyColumnName))
+		{
+			sql += "\n AND t.TableName NOT LIKE 'I%'";
+		}
+
+		sql += "\n ORDER BY 2";
+
 		sqlParams.add(sourceKeyColumnName);
 
 		PreparedStatement pstmt = null;
@@ -268,6 +271,12 @@ import lombok.NonNull;
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	private static boolean isExcludeImportRecords(final String sourceKeyColumnName)
+	{
+		return !sourceKeyColumnName.equals(I_C_DataImport.COLUMNNAME_C_DataImport_ID)
+				&& !sourceKeyColumnName.equals(I_C_DataImport_Run.COLUMNNAME_C_DataImport_Run_ID);
 	}
 
 	private static MQuery buildMQuery(final GenericZoomInfoDescriptor zoomInfoDescriptor, final IZoomSource source)

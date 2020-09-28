@@ -18,10 +18,19 @@ public enum ShipmentField
 	COUNTRY_CODE("_empfaenger_land"),
 	DELIVERY_DATE("_aussendungen_zeitstempel"),
 	LOT_NUMBER("_aussendungen_mhd_charge"),
-	EXPIRY_DATE("_aussendungen_mhd_ablauf_datum"),
+	BEST_BEFORE_DATE("_aussendungen_mhd_ablauf_datum"),
 	ARTICLE_FLAVOR("_artikel_geschmacksrichtung"),
 	DOCUMENT_NO("_aussendungen_siro_warenkorb_nummer"),
-	TRACKING_NUMBERS("_sendung_nummern");
+	TRACKING_NUMBERS("_sendung_nummern"),
+	SHIPPER_INTERNAL_NAME_SEG_1("_sendung_dienstleister"),
+	SHIPPER_INTERNAL_NAME_SEG_2("_sendung_versandart"),
+	PACKAGE_WEIGHT("_sendung_gewichte"),
+	DELIVERED_QTY_OVERRIDE("_korrektur_artikel_menge"),
+
+	//inventory specific:
+	IS_OUT_OF_STOCK("_korrektur_wenn_out_of_stock"),
+	OUT_OF_STOCK_LOCATOR("_korrektur_lagerplatz_out_of_stock")
+	;
 
 	private final String name;
 }

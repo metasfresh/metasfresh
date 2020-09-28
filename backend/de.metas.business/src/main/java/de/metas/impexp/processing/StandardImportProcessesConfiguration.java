@@ -3,7 +3,6 @@ package de.metas.impexp.processing;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_BPartner_GlobalID;
 import org.compiere.model.I_I_DiscountSchema;
-import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_I_Postal;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_I_Replenish;
@@ -15,13 +14,12 @@ import de.metas.bpartner.impexp.BPartnerImportProcess;
 import de.metas.dataentry.data.impexp.DataEntryRecordsImportProcess;
 import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
-import de.metas.impexp.processing.inventory.InventoryImportProcess;
-import de.metas.impexp.processing.product.ProductImportProcess;
-import de.metas.impexp.processing.request.RequestImportProcess;
-import de.metas.impexp.processing.user.ADUserImportProcess;
 import de.metas.location.impexp.PostalCodeImportProcess;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
+import de.metas.product.impexp.ProductImportProcess;
 import de.metas.replenishment.impexp.ReplenishmentImportProcess;
+import de.metas.request.impexp.RequestImportProcess;
+import de.metas.user.impexp.ADUserImportProcess;
 import de.metas.util.Services;
 
 /*
@@ -61,7 +59,6 @@ public class StandardImportProcessesConfiguration
 		importProcessesFactory.registerImportProcess(I_I_User.class, ADUserImportProcess.class);
 		importProcessesFactory.registerImportProcess(I_I_Product.class, ProductImportProcess.class);
 		importProcessesFactory.registerImportProcess(I_I_Request.class, RequestImportProcess.class);
-		importProcessesFactory.registerImportProcess(I_I_Inventory.class, InventoryImportProcess.class);
 		importProcessesFactory.registerImportProcess(I_I_DiscountSchema.class, DiscountSchemaImportProcess.class);
 		importProcessesFactory.registerImportProcess(I_I_BPartner_GlobalID.class, BPartnerGlobalIDImportProcess.class);
 		importProcessesFactory.registerImportProcess(I_I_Replenish.class, ReplenishmentImportProcess.class);

@@ -46,13 +46,19 @@ public class ApplyReceiptScheduleChangesRequest
 	@Nullable
 	List<CreateAttributeInstanceReq> attributes;
 
+	@Nullable
+	String externalResourceURL;
+
 	@Builder
 	public ApplyReceiptScheduleChangesRequest(
-			@NonNull final ReceiptScheduleId receiptScheduleId,
+			@NonNull  final ReceiptScheduleId receiptScheduleId,
 			@Nullable final BigDecimal qtyInStockingUOM,
-			@Nullable final List<CreateAttributeInstanceReq> attributes)
+			@Nullable final List<CreateAttributeInstanceReq> attributes,
+			@Nullable final String externalResourceURL)
 	{
-		if (qtyInStockingUOM == null && Check.isEmpty(attributes))
+		if (qtyInStockingUOM == null
+				&& Check.isEmpty(attributes)
+		        && Check.isBlank(externalResourceURL))
 		{
 			throw new AdempiereException("Empty request!");
 		}
@@ -60,6 +66,7 @@ public class ApplyReceiptScheduleChangesRequest
 		this.receiptScheduleId = receiptScheduleId;
 		this.qtyInStockingUOM = qtyInStockingUOM;
 		this.attributes = attributes;
+		this.externalResourceURL = externalResourceURL;
 	}
 
 	public boolean hasAttributes()

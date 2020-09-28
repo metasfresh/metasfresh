@@ -7,12 +7,13 @@ import java.util.function.Function;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.camel.manufacturing.order.export.MainProductOrComponent;
+import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.METADATA;
@@ -50,7 +51,7 @@ import lombok.Value;
 
 class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 {
-	private final static Log log = LogFactory.getLog(XmlToJsonRequestManufacturingOrdersReportProcessor.class);
+	private static final Logger log = LoggerFactory.getLogger(XmlToJsonRequestManufacturingOrdersReportProcessor.class);
 
 	@Override
 	public void process(final Exchange exchange)
@@ -62,7 +63,7 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 				this::toJsonRequestManufacturingOrdersReport);
 	}
 
-	private <T, R> void processExchange(
+	private static <T, R> void processExchange(
 			final Exchange exchange,
 			final BiFunction<ROW, METADATA, T> itemBuilder,
 			final Function<List<T>, R> requestBuilder)
@@ -86,7 +87,7 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 				.collect(ImmutableList.toImmutableList());
 
 		final R request = requestBuilder.apply(items);
-		System.out.println("REQUEST: " + request);
+		log.info("REQUEST: " + request);
 
 		exchange.getIn().setHeader(RouteBuilderCommonUtil.NUMBER_OF_ITEMS, items.size());
 		exchange.getIn().setBody(request);
@@ -144,12 +145,15 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 			@NonNull final IssueOrReceiptXmlRow row,
 			@NonNull final RunningContext runningContext)
 	{
+		final String productNoWithOrgCode = row.get_artikel_nummer();
+		final String productNo = CommonUtil.removeOrgPrefix(productNoWithOrgCode);
+
 		return JsonRequestIssueToManufacturingOrder.builder()
 				.requestId(runningContext.nextRequestId())
 				.orderId(row.get_stueckliste_id())
 				.qtyToIssueInStockUOM(row.get_artikel_menge())
 				.date(SystemTime.asZonedDateTime())
-				.productNo(row.get_artikel_nummer())
+				.productNo(productNo)
 				.handlingUnit(JsonRequestHULookup.builder()
 						.lotNumber(row.get_vorkonfektioniertist_mhd_charge())
 						.bestBeforeDate(row.get_vorkonfektioniertist_mhd_ablauf_datum())

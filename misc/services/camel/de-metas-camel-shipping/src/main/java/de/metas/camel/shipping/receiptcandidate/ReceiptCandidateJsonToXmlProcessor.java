@@ -22,14 +22,6 @@
 
 package de.metas.camel.shipping.receiptcandidate;
 
-import java.time.format.DateTimeFormatter;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.spi.PropertiesComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.FeedbackProzessor;
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
@@ -45,6 +37,13 @@ import de.metas.common.shipping.Outcome;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidate;
 import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
 import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.PropertiesComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.time.format.DateTimeFormatter;
 
 public class ReceiptCandidateJsonToXmlProcessor implements Processor
 {
@@ -62,8 +61,9 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_artikel_geschmacksrichtung").build())
 			.field(FIELD.builder().name("_artikel_verpackungsgroesse").build())
 			.field(FIELD.builder().name("_artikel_hinweistext").build())
-		    .field(FIELD.builder().name("_fuer_zoll_artikel_intrastat_nummer").build())
-		.build();
+			.field(FIELD.builder().name("_fuer_zoll_artikel_intrastat_nummer").build())
+			.field(FIELD.builder().name("_anlieferung_positionsanzahl").build())
+			.build();
 
 	private final Log log = LogFactory.getLog(ReceiptCandidateJsonToXmlProcessor.class);
 
@@ -130,15 +130,26 @@ public class ReceiptCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(product.getName())); // _artikel_bezeichnung
 		row.col(COL.of(item.getQuantities().get(0).getQty().toString())); // _artikel_menge
 		row.col(COL.of(product.getWeight().toString())); // _artikel_gewicht_1_stueck
-		if (item.getAttributeSetInstance() != null)
+		if (item.getAttributeSetInstance() != null)  // _artikel_geschmacksrichtung
 		{
-			row.col(COL.of(item.getAttributeSetInstance().getValueStr("FLAVOR"))); // _artikel_geschmacksrichtung
+			row.col(COL.of(item.getAttributeSetInstance().getValueStr("FLAVOR")));
+		}
+		else
+		{
+			row.col(COL.of(null));
 		}
 		row.col(COL.of(product.getPackageSize())); // _artikel_verpackungsgroesse
 		row.col(COL.of(product.getDocumentNote())); // _artikel_hinweistext
 
 		row.col(COL.of(product.getCommodityNumberValue())); // _fuer_zoll_artikel_intrastat_nummer
-
+		if (item.getNumberOfItemsWithSameOrderId() != null) // _anlieferung_positionsanzahl
+		{
+			row.col(COL.of(item.getNumberOfItemsWithSameOrderId().toString()));
+		}
+		else
+		{
+			row.col(COL.of(null));
+		}
 		return row.build();
 	}
 }

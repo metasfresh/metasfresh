@@ -3,9 +3,10 @@ package de.metas.ui.web.impexp;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.api.Params;
+import org.compiere.SpringContextHolder;
 
-import de.metas.impexp.processing.IImportProcess;
-import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.impexp.DataImportService;
 import de.metas.impexp.processing.ImportDataDeleteMode;
 import de.metas.impexp.processing.ImportDataDeleteRequest;
 import de.metas.process.IProcessPrecondition;
@@ -16,7 +17,6 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -44,7 +44,7 @@ import lombok.NonNull;
 
 public class DeleteImportDataProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
+	private final DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
 
 	@Param(parameterName = "ImportDeleteMode", mandatory = true)
 	@Getter
@@ -65,23 +65,20 @@ public class DeleteImportDataProcess extends ViewBasedProcessTemplate implements
 	protected String doIt()
 	{
 		final String importTableName = getTableName();
-
-		final IImportProcess<Object> importProcess = importProcessFactory.newImportProcessForTableName(importTableName);
-		importProcess.setCtx(getCtx());
-		importProcess.setParameters(getParameterAsIParams());
-		importProcess.setLoggable(this);
-
 		final ImportDataDeleteMode deleteMode = getDeleteMode();
+		final String viewSqlWhereClause = getViewSqlWhereClause(DocumentIdsSelection.ALL)
+				.map(SqlViewRowsWhereClause::toSqlString)
+				.orElse(null);
+		final String selectionSqlWhereClause = ImportDataDeleteMode.ONLY_SELECTED.equals(deleteMode)
+				? getSelectionSqlWhereClause().map(SqlViewRowsWhereClause::toSqlString).orElse(null)
+				: null;
 
-		final int deletedCount = importProcess.deleteImportRecords(ImportDataDeleteRequest.builder()
+		final int deletedCount = dataImportService.deleteImportRecords(ImportDataDeleteRequest.builder()
+				.importTableName(importTableName)
 				.mode(deleteMode)
-				.viewSqlWhereClause(getViewSqlWhereClause(DocumentIdsSelection.ALL)
-						.map(SqlViewRowsWhereClause::toSqlString)
-						.orElse(null))
-				.selectionSqlWhereClause(
-						ImportDataDeleteMode.ONLY_SELECTED.equals(deleteMode)
-								? getSelectionSqlWhereClause().map(SqlViewRowsWhereClause::toSqlString).orElse(null)
-								: null)
+				.viewSqlWhereClause(viewSqlWhereClause)
+				.selectionSqlWhereClause(selectionSqlWhereClause)
+				.additionalParameters(Params.copyOf(getParameterAsIParams()))
 				.build());
 
 		return "@Deleted@ " + deletedCount;
