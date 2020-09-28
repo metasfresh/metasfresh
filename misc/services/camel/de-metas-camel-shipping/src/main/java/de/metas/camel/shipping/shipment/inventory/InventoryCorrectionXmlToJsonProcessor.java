@@ -30,6 +30,7 @@ import de.metas.camel.shipping.XmlToJsonProcessorUtil;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -97,7 +98,7 @@ public class InventoryCorrectionXmlToJsonProcessor implements Processor
 		final JsonInventoryLine inventoryLine = JsonInventoryLine.builder()
 				.locatorValue(FileMakerDataHelper.getValue(request.fieldName(OUT_OF_STOCK_LOCATOR.getName()).build()))
 				//
-				.inventoryDate(LocalDate.now()) // we don't have a specific field for this
+				.inventoryDate(SystemTime.asLocalDate()) // we don't have a specific field for this
 				//
 				.productValue(CommonUtil.removeOrgPrefix(productAndOrg))
 				//
