@@ -1,15 +1,16 @@
 package de.metas.camel.inventory;
 
-import de.metas.camel.test.endpoints.CaptureLastMessage;
-import de.metas.camel.test.endpoints.DoNothing;
-import lombok.Builder;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.camel.test.endpoints.CaptureLastMessage;
+import de.metas.camel.test.endpoints.DoNothing;
+import lombok.Builder;
 
 /*
  * #%L
@@ -65,6 +66,10 @@ public class InventoryXmlToMetasfreshRouteBuilderTest extends CamelTestSupport
 					advice.interceptSendToEndpoint(InventoryXmlToMetasfreshRouteBuilder.METASFRESH_EP_DATA_IMPORT)
 							.skipSendToOriginalEndpoint()
 							.process(toMetasfresh);
+
+					advice.interceptSendToEndpoint(InventoryXmlToMetasfreshRouteBuilder.ERRORFILE_FOLDER)
+							.skipSendToOriginalEndpoint()
+							.process(new DoNothing());
 				});
 	}
 
