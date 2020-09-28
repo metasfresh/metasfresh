@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 708031135L;
+	private static final long serialVersionUID = -1602991070L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -86,6 +86,18 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.sql.Timestamp getDateProjected() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateProjected);
+	}
+
+	@Override
+	public void setIsReservedForCustomer (boolean IsReservedForCustomer)
+	{
+		set_Value (COLUMNNAME_IsReservedForCustomer, Boolean.valueOf(IsReservedForCustomer));
+	}
+
+	@Override
+	public boolean isReservedForCustomer() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReservedForCustomer);
 	}
 
 	@Override
