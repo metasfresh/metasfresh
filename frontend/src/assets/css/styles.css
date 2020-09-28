@@ -55,7 +55,7 @@ html {
  *        https://github.com/metasfresh/metasfresh-webui-frontend/issues/2666
  */
 body {
-    background-color: #F8FAFB;
+    background-color: $brand-bright-color;
     color: $brand-font-color;
     font-size: 14px;
     font-family: 'Roboto', sans-serif;
@@ -1679,4 +1679,8 @@ td.pulse-off input {
     .error {
         color: $brand-danger-color;
     }
+}
+
+.themed {
+    @import './themes/styles.css';
 }

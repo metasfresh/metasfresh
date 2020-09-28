@@ -152,6 +152,7 @@
     "object-hash": "2.0.1",
     "pigeon-maps": "0.14.0",
     "pigeon-marker": "0.3.4",
+    "postcss-partial-import": "^4.1.0",
     "prop-types": "15.7.2",
     "quagga": "0.12.1",
     "query-string": "6.11.0",

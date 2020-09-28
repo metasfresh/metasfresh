@@ -97,6 +97,7 @@ module.exports = {
             options: {
               ident: 'postcss',
               plugins: () => [
+                require('postcss-partial-import'),
                 require('postcss-import')({
                   addDependencyTo: webpack,
                   path: ['node_modules', 'src/assets'],

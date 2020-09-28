@@ -1,0 +1,15 @@
+.btn-meta-success {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 15px;
+  color: #FFFFFF;
+  text-align: center;
+  line-height: 22px;
+  background-color: #297FA6;
+  border: none;
+  border-radius: 6px;
+  -moz-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.349019607843137);
+  -webkit-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.349019607843137);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.349019607843137); 
+}
