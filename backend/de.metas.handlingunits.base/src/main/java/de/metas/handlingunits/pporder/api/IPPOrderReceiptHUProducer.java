@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /*
@@ -33,6 +34,8 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.quantity.Quantity;
+
+import javax.annotation.Nullable;
 
 /**
  * Generates manufacturing receipt candidates ({@link I_PP_Order_Qty}) together with the planning HUs.
@@ -83,4 +86,8 @@ public interface IPPOrderReceiptHUProducer
 	IPPOrderReceiptHUProducer packUsingLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	IPPOrderReceiptHUProducer pickingCandidateId(PickingCandidateId pickingCandidateId);
+
+	IPPOrderReceiptHUProducer lotNumber(String lotNumber);
+
+	IPPOrderReceiptHUProducer bestBeforeDate(@Nullable LocalDate bestBeforeDate);
 }
