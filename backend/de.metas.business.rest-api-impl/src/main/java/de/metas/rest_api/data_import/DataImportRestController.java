@@ -1,27 +1,6 @@
 package de.metas.rest_api.data_import;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.compiere.util.Trace;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -42,6 +21,24 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.Trace;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /*
  * #%L
@@ -132,7 +129,7 @@ public class DataImportRestController
 					.data(data)
 					.dataImportConfigId(dataImportConfig.getId())
 					.clientId(Env.getClientId())
-					.orgId(Env.getOrgId())
+					.orgId(Env.getOrgId()) // in case of I_Inventory, the AD_Org_ID might be overwritten with the respective M_Warehouse's AD_Org_ID
 					.userId(Env.getLoggedUserId())
 					.completeDocuments(completeDocuments)
 					.processImportRecordsSynchronously(runSynchronous)
