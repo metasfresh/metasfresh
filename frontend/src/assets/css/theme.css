@@ -1,3 +1,9 @@
 .btn_lvl1_primary_enabled {
-  
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 15px;
+  color: #FFFFFF;
+  text-align: center;
+  line-height: 22px;
 }
