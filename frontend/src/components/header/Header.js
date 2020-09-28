@@ -609,7 +609,13 @@ class Header extends PureComponent {
                 />
               </div>
               <div className="header-left-side">
-                <div
+                {/* custom design */}
+                <div className="float-left header-tab">DASHBOARD</div>
+                <div className="float-left header-tab">SUCHE</div>
+                <div className="float-left header-tab">TOOLS & RESOURCEN</div>
+                <div className="float-left header-tab">SYSTEM-ADMINISTRATION</div>
+
+                {/* <div
                   onClick={() => this.closeOverlays('isSubheaderShow')}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
@@ -655,7 +661,7 @@ class Header extends PureComponent {
                   isDocumentNotSaved={isDocumentNotSaved}
                   handleMenuOverlay={this.handleMenuOverlay}
                   openModal={this.openModal}
-                />
+                /> */}
               </div>
 
               <div className="header-right-side">

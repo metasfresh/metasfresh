@@ -17,3 +17,13 @@
 .custom-logo {
   padding-right: 4rem;
 }
+
+.header-tab {
+  margin-right: 1rem;
+  color: $brand-link-color;
+  cursor: pointer;
+}
+
+.header-tab :hover {
+  color: #ffffff;
+}
