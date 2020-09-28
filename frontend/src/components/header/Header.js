@@ -20,7 +20,7 @@ import NewEmail from '../email/NewEmail';
 import Inbox from '../inbox/Inbox';
 import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
-import Breadcrumb from './Breadcrumb';
+// import Breadcrumb from './Breadcrumb';
 import SideList from './SideList';
 import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
@@ -543,7 +543,7 @@ class Header extends PureComponent {
    */
   render() {
     const {
-      docSummaryData,
+      // docSummaryData,
       siteName,
       docNoData,
       docStatus,
@@ -564,13 +564,13 @@ class Header extends PureComponent {
       handleEditModeToggle,
       plugins,
       indicator,
-      hasComments,
+      // hasComments,
     } = this.props;
 
     const {
       isSubheaderShow,
       isSideListShow,
-      menuOverlay,
+      // menuOverlay,
       isInboxOpen,
       scrolled,
       isMenuOverlayShow,
@@ -610,10 +610,31 @@ class Header extends PureComponent {
               </div>
               <div className="header-left-side">
                 {/* custom design */}
-                <div className="float-left header-tab">DASHBOARD</div>
+                <div
+                  className="float-left header-tab"
+                  onClick={() => {
+                    window.location = '/';
+                  }}
+                >
+                  DASHBOARD
+                </div>
                 <div className="float-left header-tab">SUCHE</div>
-                <div className="float-left header-tab">TOOLS & RESOURCEN</div>
-                <div className="float-left header-tab">SYSTEM-ADMINISTRATION</div>
+                <div
+                  className="float-left header-tab"
+                  onClick={() => {
+                    window.location = '/sitemap';
+                  }}
+                >
+                  TOOLS & RESOURCEN
+                </div>
+                <div
+                  className="float-left header-tab"
+                  onClick={() => {
+                    window.location = '/window/53100/100';
+                  }}
+                >
+                  SYSTEM-ADMINISTRATION
+                </div>
 
                 {/* <div
                   onClick={() => this.closeOverlays('isSubheaderShow')}
