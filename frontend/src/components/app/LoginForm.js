@@ -368,7 +368,7 @@ class LoginForm extends Component {
         )}
         <div className="mt-2">
           <button
-            className="btn btn-sm btn-block btn-meta-success"
+            className="btn btn-sm btn-block btn-meta-success btn_lvl1_primary_enabled"
             onClick={this.handleLogin}
             disabled={pending}
           >
