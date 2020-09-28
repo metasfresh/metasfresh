@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import de.metas.organization.ClientAndOrgId;
@@ -154,7 +155,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 	{
 		final List<I_M_HU> hus = streamReceiptSchedulesToReceive()
 				.map(this::createPlanningVHU)
-				.filter(hu -> hu != null)
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableList());
 
 		openHUsToReceive(hus);
