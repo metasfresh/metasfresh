@@ -601,6 +601,13 @@ class Header extends PureComponent {
         >
           <div className="container-fluid">
             <div className="header-container">
+            <div className="js-not-unselect custom-logo">
+                <img
+                  src={logo}
+                  className="header-logo pointer"
+                  onClick={this.handleDashboardLink}
+                />
+              </div>
               <div className="header-left-side">
                 <div
                   onClick={() => this.closeOverlays('isSubheaderShow')}
@@ -650,13 +657,7 @@ class Header extends PureComponent {
                   openModal={this.openModal}
                 />
               </div>
-              <div className="header-center js-not-unselect">
-                <img
-                  src={logo}
-                  className="header-logo pointer"
-                  onClick={this.handleDashboardLink}
-                />
-              </div>
+
               <div className="header-right-side">
                 {docStatus && (
                   <div
