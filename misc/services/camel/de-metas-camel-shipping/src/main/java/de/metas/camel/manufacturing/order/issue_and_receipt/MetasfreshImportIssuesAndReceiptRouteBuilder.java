@@ -8,12 +8,12 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.component.jackson.JacksonDataFormat;
-import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import de.metas.camel.util.ErrorHandlingUtils;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import lombok.NonNull;
@@ -55,14 +55,16 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 	@VisibleForTesting
 	static final String XML_TO_JSON_PROCESSOR_ID = "xml-to-json-id";
 
+	@VisibleForTesting
+	static final String ERRORFILE_FOLDER = "{{siro.ftp.retrieve.manufacturing-orders.errorLogFolder}}";
+
 	@Override
 	public void configure()
 	{
-		errorHandler(defaultErrorHandler());
-		onException(HttpOperationFailedException.class)
-				.process(this::handleHttpOperationFailedException);
-
 		RouteBuilderCommonUtil.setupProperties(getContext());
+
+		errorHandler(defaultErrorHandler());
+		ErrorHandlingUtils.setupWriteErrorLogFile(this, ERRORFILE_FOLDER);
 
 		//@formatter:off
 		from(SIRO_FTP_PATH)
@@ -81,7 +83,7 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.to(METASFRESH_EP_REPORT)
 						.unmarshal(jsonDataFormat(JsonResponseManufacturingOrdersReport.class))
-						.process(new JsonResponseManufacturingOrdersReportProcessor())
+						.process(this::handleJsonResponseManufacturingOrdersReport)
 					.end();
 		//@formatter:on
 	}
@@ -96,22 +98,10 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 		return RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 	}
 
-	private void handleHttpOperationFailedException(final Exchange exchange)
+	private void handleJsonResponseManufacturingOrdersReport(final Exchange exchange)
 	{
-		final var request = exchange.getIn().getBody(String.class);
-		final var exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, HttpOperationFailedException.class);
-		if (exception == null)
-		{
-			log.warn("Got unkown error on exchange=" + exchange);
-			return;
-		}
-
-		log.warn("Failed processing request: " + request
-				+ "\n\t Error: " + exception.getMessage()
-				+ "\n\t HTTP Code: " + exception.getStatusCode()
-				+ "\n\t URI: " + exception.getUri()
-				+ "\n\t From Filename: " + exchange.getIn().getHeader(Exchange.FILE_NAME)
-				+ "\n\t Response body: " + exception.getResponseBody()
-				+ "\n\t Response headers: " + exception.getResponseHeaders());
+		final JsonResponseManufacturingOrdersReport response = exchange.getIn().getBody(JsonResponseManufacturingOrdersReport.class);
+		log.info("Successfully processed: " + response);
 	}
+
 }

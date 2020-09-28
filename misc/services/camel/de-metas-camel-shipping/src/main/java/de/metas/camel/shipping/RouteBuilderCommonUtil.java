@@ -22,11 +22,8 @@
 
 package de.metas.camel.shipping;
 
-import de.metas.common.filemaker.ConfiguredXmlMapper;
-import de.metas.common.filemaker.FMPXMLRESULT;
-import de.metas.common.shipping.ConfiguredJsonMapper;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.RuntimeCamelException;
@@ -35,7 +32,11 @@ import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
-import javax.annotation.Nullable;
+import de.metas.common.filemaker.ConfiguredXmlMapper;
+import de.metas.common.filemaker.FMPXMLRESULT;
+import de.metas.common.shipping.ConfiguredJsonMapper;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class RouteBuilderCommonUtil
@@ -78,7 +79,7 @@ public class RouteBuilderCommonUtil
 	 */
 	public void setupFileMakerUploadRoute(@NonNull final EndpointRouteBuilder routeBuilder, @NonNull final String routeId, @NonNull final String uploadURI)
 	{
-		final var maximumRedeliveries = resolveProperty(routeBuilder.getContext(),"siro.ftp.upload.deliver.retries", "0");
+		final var maximumRedeliveries = resolveProperty(routeBuilder.getContext(), "siro.ftp.upload.deliver.retries", "0");
 
 		routeBuilder
 				.from(routeBuilder.direct(routeId))
@@ -87,8 +88,7 @@ public class RouteBuilderCommonUtil
 						.maximumRedeliveries(Integer.parseInt(maximumRedeliveries))
 						.redeliveryDelay(10000)
 						.logHandled(true)
-						.retryAttemptedLogLevel(LoggingLevel.INFO)
-				)
+						.retryAttemptedLogLevel(LoggingLevel.INFO))
 				.to(uploadURI);
 	}
 
@@ -109,5 +109,13 @@ public class RouteBuilderCommonUtil
 		{
 			return propertyOpt.orElseThrow(() -> new RuntimeCamelException("Missing property " + property));
 		}
+	}
+
+	@NonNull
+	public String parseUri(
+			@NonNull final CamelContext context,
+			@NonNull final String uri)
+	{
+		return context.getPropertiesComponent().parseUri(uri);
 	}
 }

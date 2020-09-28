@@ -101,6 +101,10 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 					advice.interceptSendToEndpoint(MetasfreshImportIssuesAndReceiptRouteBuilder.METASFRESH_EP_REPORT)
 							.skipSendToOriginalEndpoint()
 							.process(toMetasfresh);
+
+					advice.interceptSendToEndpoint(MetasfreshImportIssuesAndReceiptRouteBuilder.ERRORFILE_FOLDER)
+							.skipSendToOriginalEndpoint()
+							.process(new DoNothing());
 				});
 	}
 
