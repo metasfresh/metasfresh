@@ -215,6 +215,8 @@ public class WEBUI_PP_Order_Receipt
 
 		newReceiptCandidatesProducer()
 				.packUsingLUTUConfiguration(lutuConfig)
+				.bestBeforeDate(computeBestBeforeDate())
+				// .lotNumber()v  // TODO tbp: i cannot set the lot number sincei don't already know it. has to be don in AbstractPPOrderReceiptHUProducer
 				.createDraftReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;
@@ -230,7 +232,25 @@ public class WEBUI_PP_Order_Receipt
 		getViewsRepo().notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
 	}
 
-	private final IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
+	@Nullable
+	LocalDate computeBestBeforeDate()
+	{
+		final PPOrderLineRow row = getSingleSelectedRow();
+		final I_PP_Order ppOrderPO = huPPOrderBL.getById(row.getOrderId());
+		final LocalDate datePromised = TimeUtil.asLocalDate(ppOrderPO.getDatePromised());
+
+		final ProductId productId = row.getProductId();
+		final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
+
+		if (guaranteeDaysMin <= 0)
+		{
+			return null;
+		}
+
+		return datePromised.plusDays(guaranteeDaysMin);
+	}
+
+	private IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
 	{
 		final PPOrderLineRow row = getSingleSelectedRow();
 
