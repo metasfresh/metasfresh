@@ -38,11 +38,22 @@ class ElementGroup extends PureComponent {
   }
 
   renderElementsLinesArray = (elementsLinesLayoutArray) => {
-    const { windowId, tabId, rowId, dataId } = this.props;
-    const { data } = this.props;
-    const { shouldBeFocused, tabIndex } = this.props;
-    const { isModal, isAdvanced, isFullScreen } = this.props;
-    const { addRefToWidgets, onBlurWidget } = this.props;
+    const {
+      windowId,
+      tabId,
+      rowId,
+      dataId,
+      shouldBeFocused,
+      tabIndex,
+      isModal,
+      isAdvanced,
+      isFullScreen,
+      addRefToWidgets,
+      onBlurWidget,
+      elementGroupIndex,
+      sectionIndex,
+      columnIndex,
+    } = this.props;
 
     return elementsLinesLayoutArray.map(
       (elementsLineLayout, elementsLineIndex) => {
@@ -52,20 +63,19 @@ class ElementGroup extends PureComponent {
           <ElementsLine
             key={'line' + elementsLineIndex}
             elementsLineLayout={elementsLineLayout}
-            //
+            elementsLineIndex={elementsLineIndex}
+            elementGroupIndex={elementGroupIndex}
+            columnIndex={columnIndex}
+            sectionIndex={sectionIndex}
             windowId={windowId}
             tabId={tabId}
             rowId={rowId}
             dataId={dataId}
-            //
-            data={data}
-            //
             isFocused={isFocused}
             tabIndex={tabIndex}
             isModal={isModal}
             isAdvanced={isAdvanced}
             isFullScreen={isFullScreen}
-            //
             onBlurWidget={onBlurWidget}
             addRefToWidgets={addRefToWidgets}
           />
@@ -77,20 +87,18 @@ class ElementGroup extends PureComponent {
 
 ElementGroup.propTypes = {
   elementGroupLayout: PropTypes.object.isRequired,
-  //
+  elementGroupIndex: PropTypes.number,
+  columnIndex: PropTypes.number,
+  sectionIndex: PropTypes.number,
   windowId: PropTypes.string.isRequired,
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   dataId: PropTypes.string,
-  //
-  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
-  //
   shouldBeFocused: PropTypes.bool,
   tabIndex: PropTypes.number,
   isModal: PropTypes.bool,
   isAdvanced: PropTypes.bool,
   isFullScreen: PropTypes.bool,
-  //
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
   requestElementGroupFocus: PropTypes.func.isRequired,

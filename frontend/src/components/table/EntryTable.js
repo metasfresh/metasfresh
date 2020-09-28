@@ -4,6 +4,11 @@ import classnames from 'classnames';
 import { connect } from 'react-redux';
 
 import { getTableId, getTable } from '../../reducers/tables';
+import {
+  openModal,
+  patch,
+  updatePropertyValue,
+} from '../../actions/WindowActions';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
@@ -60,6 +65,9 @@ class EntryTable extends PureComponent {
       documentId,
       tabIndex,
       isFullScreen,
+      openModal,
+      patch,
+      updatePropertyValue,
     } = this.props;
     const { tooltipToggled } = this.state;
     const renderedArray = [];
@@ -103,7 +111,7 @@ class EntryTable extends PureComponent {
               <MasterWidget
                 ref={addRefToWidgets}
                 entity="window"
-                windowType={windowId}
+                windowId={windowId}
                 dataId={documentId}
                 dataEntry={true}
                 fieldName={fieldName}
@@ -116,6 +124,9 @@ class EntryTable extends PureComponent {
                 tabIndex={tabIndex}
                 fullScreen={isFullScreen}
                 onBlurWidget={onBlurWidget}
+                openModal={openModal}
+                patch={patch}
+                updatePropertyValue={updatePropertyValue}
                 {...elem}
               />
               {tooltipWidget && (
@@ -161,19 +172,18 @@ class EntryTable extends PureComponent {
 EntryTable.propTypes = {
   columns: PropTypes.array.isRequired,
   rows: PropTypes.array.isRequired,
-  //
   windowId: PropTypes.string.isRequired,
   documentId: PropTypes.string,
   tabId: PropTypes.string,
-  //
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   extendedData: PropTypes.any,
-  //
   tabIndex: PropTypes.any,
   isFullScreen: PropTypes.bool,
-  //
   addRefToWidgets: PropTypes.func.isRequired,
   onBlurWidget: PropTypes.func.isRequired,
+  updatePropertyValue: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  patch: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
@@ -184,4 +194,11 @@ const mapStateToProps = (state, props) => {
   return { rows: table.rows };
 };
 
-export default connect(mapStateToProps)(EntryTable);
+export default connect(
+  mapStateToProps,
+  {
+    openModal,
+    patch,
+    updatePropertyValue,
+  }
+)(EntryTable);

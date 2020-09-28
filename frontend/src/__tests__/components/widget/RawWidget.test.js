@@ -8,8 +8,11 @@ const createDummyProps = function(props) {
   return {
     dispatch: jest.fn(),
     modalVisible: false,
+    timeZone: 'Europe/Berlin',
     entity: "window",
     dataId: "1001282",
+    allowShortcut: jest.fn(),
+    disableShortcut: jest.fn(),
     ...props,
   };
 };

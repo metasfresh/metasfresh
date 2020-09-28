@@ -263,7 +263,7 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case types.DESELECT_TABLE_ITEMS: {
+    case types.DESELECT_TABLE_ROWS: {
       const { id, selection } = action.payload;
       const rows = original(draftState[id].rows);
 

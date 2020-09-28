@@ -296,26 +296,8 @@ export default class MasterWindow extends PureComponent {
       introSteps,
       introHints,
     } = this.state;
-    const { docActionElement, documentSummaryElement } = master.layout;
-
-    // TODO: Do we need to have docId and dataId ?
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
-    let activeTab;
-
-    if (master.layout) {
-      activeTab = master.layout.activeTab;
-    }
-
-    // TODO: it'd be better to have flags instead of using fields for status
-    const docStatusData = {
-      status: master.data.DocStatus || -1,
-      action: master.data.DocAction || -1,
-      displayed: true,
-    };
-    const docSummaryData =
-      documentSummaryElement &&
-      master.data[documentSummaryElement.fields[0].field];
 
     // valid status for unsaved items with errors does not
     // have initialValue set, but does have the error message
@@ -333,8 +315,6 @@ export default class MasterWindow extends PureComponent {
       <Container
         entity="window"
         dropzoneFocused={dropzoneFocused}
-        docStatusData={docStatusData}
-        docSummaryData={docSummaryData}
         modal={modal}
         dataId={dataId}
         breadcrumb={breadcrumb}
@@ -345,10 +325,8 @@ export default class MasterWindow extends PureComponent {
         modalTitle={modalTitle}
         includedView={includedView}
         processStatus={processStatus}
-        activeTab={activeTab}
         closeModalCallback={this.closeModalCallback}
         setModalTitle={this.setModalTitle}
-        docActionElem={docActionElement}
         windowId={params.windowType}
         docId={params.docId}
         showSidelist
