@@ -1,0 +1,14 @@
+{
+  "lines": [
+    {
+      "warehouseValue": null,
+      "locatorValue": "locatorValue",
+      "inventoryDate": "2020-09-24",
+      "productValue": "productSearchKey",
+      "qtyCount": 0,
+      "externalLineId": null,
+      "bestbeforeDate": "2024-05-27",
+      "lotNumber": "cp-lot-no-1"
+    }
+  ]
+}

@@ -7,7 +7,6 @@ import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternal
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.shipping.ShipperId;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
 import java.util.List;
@@ -41,8 +40,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(CalculateShippingDateRule calculateShippingDateType);
 
 	IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo);
-
-	IInOutProducerFromShipmentScheduleWithHU setShipperId(ShipperId shipperId);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 }

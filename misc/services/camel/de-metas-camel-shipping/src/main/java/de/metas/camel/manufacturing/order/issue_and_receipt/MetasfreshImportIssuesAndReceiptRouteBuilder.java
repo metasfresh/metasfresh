@@ -13,6 +13,7 @@ import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
+import de.metas.camel.util.ErrorHandlingUtils;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import lombok.NonNull;
@@ -54,12 +55,16 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 	@VisibleForTesting
 	static final String XML_TO_JSON_PROCESSOR_ID = "xml-to-json-id";
 
+	@VisibleForTesting
+	static final String ERRORFILE_FOLDER = "{{siro.ftp.retrieve.manufacturing-orders.errorLogFolder}}";
+
 	@Override
 	public void configure()
 	{
-		errorHandler(defaultErrorHandler());
-
 		RouteBuilderCommonUtil.setupProperties(getContext());
+
+		errorHandler(defaultErrorHandler());
+		ErrorHandlingUtils.setupWriteErrorLogFile(this, ERRORFILE_FOLDER);
 
 		//@formatter:off
 		from(SIRO_FTP_PATH)
@@ -70,15 +75,15 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 				.process(new XmlToJsonRequestManufacturingOrdersReportProcessor()).id(XML_TO_JSON_PROCESSOR_ID)
 				.choice()
 					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isLessThanOrEqualTo(0))
-						.log(LoggingLevel.INFO, "Nothing to do! no issues/receipts were found in file:" + header(Exchange.FILE_NAME))
+						.log(LoggingLevel.INFO, "Nothing to do! no issues/receipts were found in file: ${header." + Exchange.FILE_NAME+"}")
 					.otherwise()
-						.log(LoggingLevel.INFO, "Posting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " manufacturing issues and receipts to metasfresh.")
+						.log(LoggingLevel.INFO, "Posting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} manufacturing issues and receipts to metasfresh.")
 						.marshal(jsonDataFormat(JsonRequestManufacturingOrdersReport.class))
 						.setHeader(AUTHORIZATION, simple(AUTHORIZATION_TOKEN))
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.to(METASFRESH_EP_REPORT)
 						.unmarshal(jsonDataFormat(JsonResponseManufacturingOrdersReport.class))
-						.process(new JsonResponseManufacturingOrdersReportProcessor())
+						.process(this::handleJsonResponseManufacturingOrdersReport)
 					.end();
 		//@formatter:on
 	}
@@ -92,4 +97,11 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilder extends EndpointRouteB
 	{
 		return RouteBuilderCommonUtil.setupFileMakerFormat(getContext());
 	}
+
+	private void handleJsonResponseManufacturingOrdersReport(final Exchange exchange)
+	{
+		final JsonResponseManufacturingOrdersReport response = exchange.getIn().getBody(JsonResponseManufacturingOrdersReport.class);
+		log.info("Successfully processed: " + response);
+	}
+
 }

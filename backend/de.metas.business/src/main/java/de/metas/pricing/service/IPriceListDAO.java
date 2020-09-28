@@ -24,7 +24,6 @@ package de.metas.pricing.service;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;

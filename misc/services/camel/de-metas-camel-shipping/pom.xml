@@ -81,6 +81,11 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-ftp</artifactId>
         </dependency>
+        
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-csv</artifactId>
+		</dependency>
 
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -239,7 +244,7 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.11</version>
         </dependency>
-
+        
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -292,22 +297,20 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <source>14</source>
                     <target>14</target>
-<!--                    <annotationProcessorPaths>-->
-<!--                        <annotationProcessorPath>-->
-<!--                            <groupId>org.projectlombok</groupId>-->
-<!--                            <artifactId>lombok</artifactId>-->
-<!--                            <version>1.18.8</version>-->
-<!--                        </annotationProcessorPath>-->
-<!--                    </annotationProcessorPaths>-->
-<!--                    <annotationProcessors>-->
-<!--                        <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</annotationProcessor>-->
-<!--                    </annotationProcessors>-->
                 </configuration>
             </plugin>
 
@@ -318,7 +321,7 @@
                 <version>3.4.0</version>
                 <configuration>
                     <logClasspath>true</logClasspath>
-                    <mainClass>de.metas.camel.shipping.MainApp</mainClass>
+                    <mainClass>de.metas.camel.MainApp</mainClass>
                 </configuration>
             </plugin>
 

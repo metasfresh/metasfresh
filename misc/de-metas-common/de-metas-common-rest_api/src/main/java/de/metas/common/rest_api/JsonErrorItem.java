@@ -26,20 +26,26 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 @ApiModel(description = "Error informations")
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonDeserialize(builder = JsonErrorItem.JsonErrorItemBuilder.class)
 public class JsonErrorItem
 {
 	String message;
@@ -68,9 +74,9 @@ public class JsonErrorItem
 			@JsonProperty("message") @Nullable final String message,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
-			@JsonProperty("parameters") @Nullable final Map<String, String> parameters,
+			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
 			@JsonProperty("adIssueId") @Nullable final JsonMetasfreshId adIssueId,
-			@JsonProperty("throwable") @Nullable final Throwable throwable)
+			@Nullable final Throwable throwable)
 	{
 		this.message = message;
 		this.detail = detail;
@@ -78,5 +84,10 @@ public class JsonErrorItem
 		this.parameters = CoalesceUtil.coalesce(parameters, ImmutableMap.of());
 		this.adIssueId = adIssueId;
 		this.throwable = throwable;
+	}
+
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonErrorItemBuilder
+	{
 	}
 }

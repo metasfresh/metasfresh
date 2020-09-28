@@ -53,6 +53,8 @@ public class JsonProduct
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String commodityNumberValue;
 
+	boolean stocked;
+
 	@JsonCreator
 	@Builder
 	private JsonProduct(
@@ -61,6 +63,7 @@ public class JsonProduct
 			@JsonProperty("description") @Nullable final String description,
 			@JsonProperty("packageSize") @Nullable final String packageSize,
 			@JsonProperty("weight") @Nullable final BigDecimal weight,
+			@JsonProperty("stocked") @NonNull final Boolean stocked,
 			@JsonProperty("documentNote") @Nullable final String documentNote,
 			@JsonProperty("commodityNumberValue") @Nullable final String commodityNumberValue)
 	{
@@ -69,6 +72,7 @@ public class JsonProduct
 		this.description = description;
 		this.packageSize = packageSize;
 		this.weight = weight;
+		this.stocked = stocked;
 		this.documentNote = documentNote;
 		this.commodityNumberValue = commodityNumberValue;
 	}

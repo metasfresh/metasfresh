@@ -22,15 +22,17 @@
 
 package de.metas.rest_api.shipping;
 
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
+import de.metas.location.CountryId;
+import de.metas.product.ProductRepository;
+import de.metas.util.time.SystemTime;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -47,17 +49,15 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.business.BusinessTestHelper;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
-import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
-import de.metas.location.CountryId;
-import de.metas.product.ProductRepository;
-import de.metas.util.time.SystemTime;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentCandidateAPIServiceTest
 {
@@ -166,6 +166,9 @@ class ShipmentCandidateAPIServiceTest
 		record.setM_Product_ID(product.getM_Product_ID());
 		record.setCanBeExportedFrom(TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
 		record.setExportStatus(APIExportStatus.Pending.getCode());
+		record.setQtyOrdered(new BigDecimal("10"));
+		record.setQtyDelivered(new BigDecimal("9"));
+		record.setQtyToDeliver(new BigDecimal("8"));
 		saveRecord(record);
 
 		return record;

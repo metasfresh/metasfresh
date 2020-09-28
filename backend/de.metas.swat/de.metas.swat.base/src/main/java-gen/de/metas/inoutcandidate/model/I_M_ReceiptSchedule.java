@@ -575,6 +575,31 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
+	 * Set Filtered-Count with order.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setFilteredItemsWithSameC_Order_ID (int FilteredItemsWithSameC_Order_ID);
+
+	/**
+	 * Get Filtered-Count with order.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getFilteredItemsWithSameC_Order_ID();
+
+    /** Column definition for FilteredItemsWithSameC_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_FilteredItemsWithSameC_Order_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "FilteredItemsWithSameC_Order_ID", null);
+    /** Column name FilteredItemsWithSameC_Order_ID */
+    public static final String COLUMNNAME_FilteredItemsWithSameC_Order_ID = "FilteredItemsWithSameC_Order_ID";
+
+	/**
 	 * Set Kopf-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String
@@ -1317,4 +1342,27 @@ public interface I_M_ReceiptSchedule
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set External resource URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalResourceURL (java.lang.String ExternalResourceURL);
+
+	/**
+	 * Get External resource URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalResourceURL();
+
+	/** Column definition for ExternalResourceURL */
+	public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalResourceURL = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "ExternalResourceURL", null);
+	/** Column name ExternalResourceURL */
+	public static final String COLUMNNAME_ExternalResourceURL = "ExternalResourceURL";
 }

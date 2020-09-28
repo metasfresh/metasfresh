@@ -22,15 +22,11 @@
 
 package de.metas.rest_api.shipping;
 
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,7 +43,4 @@ class GenerateShipmentsRequest
 
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
-
-	@Nullable
-	ShipperId shipperId;
 }
