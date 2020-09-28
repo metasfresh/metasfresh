@@ -601,7 +601,7 @@ class Header extends PureComponent {
         >
           <div className="container-fluid">
             <div className="header-container">
-            <div className="js-not-unselect custom-logo">
+              <div className="js-not-unselect custom-logo">
                 <img
                   src={logo}
                   className="header-logo pointer"
