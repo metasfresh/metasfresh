@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.inventory.JsonInventory;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
+import de.metas.common.util.time.SystemTime;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
@@ -35,6 +36,8 @@ import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static de.metas.camel.inventory.InventoryXmlToMetasfreshRouteBuilder.ROUTE_ID_FROM_JSON;
 import static de.metas.camel.shipping.RouteBuilderCommonUtil.NUMBER_OF_ITEMS;
@@ -71,6 +74,7 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 	void validFile_test() throws Exception
 	{
 		//given
+		SystemTime.setFixedTimeSource(ZonedDateTime.of(2020,9,24, 12,0,0,0, ZoneId.of("Europe/Paris")));
 		//set up shipping route
 		final MockEmptyProcessor localStorageEndpoint = new MockEmptyProcessor();
 		final MockEmptyProcessor importInventoryLinesEndpoint = new MockEmptyProcessor();
