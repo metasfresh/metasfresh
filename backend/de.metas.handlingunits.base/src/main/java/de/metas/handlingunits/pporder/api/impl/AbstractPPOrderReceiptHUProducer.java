@@ -336,17 +336,8 @@ import lombok.Value;
 			{
 				final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
 
-				if (lotNumber != null
-						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
-				{
-					huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
-				}
-
-				if (bestBeforeDate != null
-						&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
-				{
-					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-				}
+				setLotNumberAttribute(hu, huAttributes);
+				setBestBeforeDateAttribute(huAttributes);
 
 				huAttributes.saveChangesIfNeeded();
 			}
@@ -355,6 +346,25 @@ import lombok.Value;
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine
 		setAssignedHUs(hus);
+	}
+
+	private void setLotNumberAttribute(final I_M_HU hu, final IAttributeStorage huAttributes)
+	{
+		final String lotNumberToSet = CoalesceUtil.coalesce(lotNumber, hu.getValue());
+
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
+		}
+	}
+
+	private void setBestBeforeDateAttribute(final IAttributeStorage huAttributes)
+	{
+		if (bestBeforeDate != null
+				&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+		}
 	}
 
 	@Override

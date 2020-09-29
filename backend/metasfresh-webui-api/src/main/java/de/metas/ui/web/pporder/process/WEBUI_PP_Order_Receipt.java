@@ -216,7 +216,7 @@ public class WEBUI_PP_Order_Receipt
 		newReceiptCandidatesProducer()
 				.packUsingLUTUConfiguration(lutuConfig)
 				.bestBeforeDate(computeBestBeforeDate())
-				// .lotNumber()v  // TODO tbp: i cannot set the lot number sincei don't already know it. has to be don in AbstractPPOrderReceiptHUProducer
+				// .lotNumber()v  // TODO tbp: i cannot set the lot number since i don't already know it. has to be done in AbstractPPOrderReceiptHUProducer (ie. after the HU is created)
 				.createDraftReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;
