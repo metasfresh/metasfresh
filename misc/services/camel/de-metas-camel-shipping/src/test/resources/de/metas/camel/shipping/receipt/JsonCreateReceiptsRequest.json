@@ -4,14 +4,14 @@
       "externalId": "123",
       "receiptScheduleId": 1,
       "productSearchKey": "productSearchKey",
-      "movementQuantity": 10,
-      "dateReceived": "2020-05-27T15:20:03.000Z",
-      "movementDate": "2020-05-27",
+      "movementQuantity": 10.0,
+      "dateReceived":"2020-05-27T15:20:03.000Z",
+      "movementDate":"2020-05-27",
       "externalResourceURL": "receipt_externalResourceURL",
       "attributes": [
         {
-          "attributeName": "HU_ExpiryDate",
-          "attributeCode": "HU_ExpiryDate",
+          "attributeName": "HU_BestBeforeDate",
+          "attributeCode": "HU_BestBeforeDate",
           "valueStr": null,
           "valueNumber": null,
           "valueDate": "2024-05-27"
@@ -37,8 +37,8 @@
     {
       "attributes": [
         {
-          "attributeName": "HU_ExpiryDate",
-          "attributeCode": "HU_ExpiryDate",
+          "attributeName": "HU_BestBeforeDate",
+          "attributeCode": "HU_BestBeforeDate",
           "valueStr": null,
           "valueNumber": null,
           "valueDate": "2024-05-27"
@@ -62,7 +62,7 @@
       "movementDate":"2020-05-27",
       "externalId": "123",
       "externalResourceURL": "externalResourceURL",
-      "movementQuantity": 10,
+      "movementQuantity": 10.0,
       "orgCode": "001",
       "productSearchKey": "productSearchKey",
       "returnedGoodsWarehouseType": "Quarantine",

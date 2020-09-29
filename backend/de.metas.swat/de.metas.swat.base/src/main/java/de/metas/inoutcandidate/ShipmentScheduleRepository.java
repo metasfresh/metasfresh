@@ -149,7 +149,8 @@ public class ShipmentScheduleRepository
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record))
 				.orderedQuantity(shipmentScheduleBL.getQtyOrdered(record))
-				.deliveredQty(shipmentScheduleBL.getQtyDelivered(record))
+				.numberOfItemsForSameShipment(record.getFilteredItemsWithSameHeaderAggregationKey())
+				.deliveredQuantity(shipmentScheduleBL.getQtyDelivered(record))
 				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()));
 
 		if (record.getDateOrdered() != null)

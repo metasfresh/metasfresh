@@ -33,4 +33,6 @@ public interface IShipperDAO extends ISingletonService
 	Optional<ShipperId> getShipperIdByValue(String value, OrgId orgId);
 
 	Map<ShipperId,I_M_Shipper> getByIds(Set<ShipperId> shipperIds);
+
+	Map<String,I_M_Shipper> getByInternalName(Set<String> internalNameSet);
 }

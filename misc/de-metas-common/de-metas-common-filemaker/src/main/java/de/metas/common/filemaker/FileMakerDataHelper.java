@@ -26,7 +26,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 public class FileMakerDataHelper
@@ -51,29 +50,6 @@ public class FileMakerDataHelper
 		}
 
 		return col.getData().getValue();
-	}
-
-	public static BigDecimal getBigDecimalValue(@NonNull final GetValueRequest request)
-	{
-		final String valueStr = getValue(request);
-
-		if (valueStr == null || valueStr.trim().isEmpty())
-		{
-			return null;
-		}
-
-		BigDecimal valueBigDecimal;
-
-		try
-		{
-			valueBigDecimal = new BigDecimal(valueStr);
-		}
-		catch (final Exception e)
-		{
-			valueBigDecimal = null;
-		}
-
-		return valueBigDecimal;
 	}
 
 	@Builder

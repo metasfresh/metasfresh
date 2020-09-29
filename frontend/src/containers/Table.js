@@ -7,7 +7,7 @@ import { getTableId, getTable } from '../reducers/tables';
 
 import {
   updateTableSelection,
-  deselectTableItems,
+  deselectTableRows,
   collapseTableRow,
   setActiveSort,
 } from '../actions/TableActions';
@@ -81,7 +81,7 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const { deselectTableItems, windowId, viewId, selected } = this.props;
+    const { deselectTableRows, windowId, viewId, selected } = this.props;
     const tableId = getTableId({ windowId, viewId });
     const index = selected.indexOf(id);
 
@@ -90,18 +90,18 @@ class TableContainer extends PureComponent {
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
     if (!newSelected.length) {
-      deselectTableItems(tableId, [id]);
+      deselectTableRows(tableId, [id]);
     }
 
     return newSelected;
   };
 
   handleDeselectAll = (callback) => {
-    const { deselectTableItems, windowId, viewId, docId, tabId } = this.props;
+    const { deselectTableRows, windowId, viewId, docId, tabId } = this.props;
 
     callback && callback();
 
-    deselectTableItems(getTableId({ windowId, viewId, docId, tabId }), []);
+    deselectTableRows(getTableId({ windowId, viewId, docId, tabId }), []);
   };
 
   // TODO: This reallydoesn't do anything. Check if it's still a valid solution
@@ -272,7 +272,7 @@ export default connect(
   mapStateToProps,
   {
     collapseTableRow,
-    deselectTableItems,
+    deselectTableRows,
     openModal,
     updateTableSelection,
     updatePropertyValue,

@@ -14,7 +14,7 @@ import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit.ManufacturingOrderExportAuditBuilder;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
@@ -83,7 +83,7 @@ final class ManufacturingOrdersExportCommand
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
-	private final ManufacturingOrderAuditRepository orderAuditRepo;
+	private final ManufacturingOrderExportAuditRepository orderAuditRepo;
 	private final ProductRepository productRepo;
 
 	// params
@@ -97,7 +97,7 @@ final class ManufacturingOrdersExportCommand
 
 	@Builder
 	private ManufacturingOrdersExportCommand(
-			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
+			@NonNull final ManufacturingOrderExportAuditRepository orderAuditRepo,
 			@NonNull final ProductRepository productRepo,
 			//
 			@NonNull final Instant canBeExportedFrom,
@@ -118,7 +118,7 @@ final class ManufacturingOrdersExportCommand
 
 	public JsonResponseManufacturingOrdersBulk execute()
 	{
-		final ExportTransactionId transactionKey = ExportTransactionId.random();
+		final APITransactionId transactionKey = APITransactionId.random();
 		try (final MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey.toJson()))
 		{
 			final List<I_PP_Order> orders = getOrders();
@@ -202,6 +202,7 @@ final class ManufacturingOrdersExportCommand
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight())
+				.stocked(product.isStocked())
 				.build();
 	}
 

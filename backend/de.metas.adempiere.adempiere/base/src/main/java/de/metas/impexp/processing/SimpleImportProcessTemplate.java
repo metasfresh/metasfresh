@@ -5,8 +5,10 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 
+import de.metas.impexp.processing.SimpleImportProcessTemplate.RecordIdGroupKey;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,17 +32,25 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class SimpleImportProcessTemplate<ImportRecordType> extends ImportProcessTemplate<ImportRecordType>
+public abstract class SimpleImportProcessTemplate<ImportRecordType>
+		extends ImportProcessTemplate<ImportRecordType, RecordIdGroupKey>
 {
+	@Value(staticConstructor = "of")
+	public static class RecordIdGroupKey
+	{
+		int recordId;
+	}
+
 	@Override
-	protected final ImportGroupKey extractImportGroupKey(final ImportRecordType importRecord)
+	protected final RecordIdGroupKey extractImportGroupKey(final ImportRecordType importRecord)
 	{
 		final int recordId = InterfaceWrapperHelper.getId(importRecord);
-		return ImportGroupKey.of("importRecordId", recordId);
+		return RecordIdGroupKey.of(recordId);
 	}
 
 	@Override
 	protected final ImportGroupResult importRecords(
+			final RecordIdGroupKey groupKey,
 			final List<ImportRecordType> importRecords,
 			final IMutable<Object> stateHolder) throws Exception
 	{

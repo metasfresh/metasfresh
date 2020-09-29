@@ -600,6 +600,11 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			receiptSchedule.setM_AttributeSetInstance_ID(newAttributeSetInstanceId.getRepoId());
 		}
 
+		if (Check.isNotBlank(applyReceiptScheduleChangesRequest.getExternalResourceURL()))
+		{
+			receiptSchedule.setExternalResourceURL(applyReceiptScheduleChangesRequest.getExternalResourceURL());
+		}
+
 		InterfaceWrapperHelper.saveRecord(receiptSchedule);
 	}
 

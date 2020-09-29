@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1131484261L;
+	private static final long serialVersionUID = -2055768680L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -604,6 +604,17 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getExportStatus() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExportStatus);
+	}
+
+	@Override
+	public void setFilteredItemsWithSameHeaderAggregationKey (int FilteredItemsWithSameHeaderAggregationKey)
+	{
+		throw new IllegalArgumentException ("FilteredItemsWithSameHeaderAggregationKey is virtual column");	}
+
+	@Override
+	public int getFilteredItemsWithSameHeaderAggregationKey() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FilteredItemsWithSameHeaderAggregationKey);
 	}
 
 	@Override

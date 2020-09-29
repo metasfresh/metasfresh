@@ -9,9 +9,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.TimeUtil;
 
-import de.metas.impexp.processing.product.ProductPriceCreateRequest;
-import de.metas.impexp.processing.product.ProductPriceImporter;
 import de.metas.location.ICountryDAO;
+import de.metas.pricing.service.ProductPriceCreateRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.tax.api.ITaxDAO;

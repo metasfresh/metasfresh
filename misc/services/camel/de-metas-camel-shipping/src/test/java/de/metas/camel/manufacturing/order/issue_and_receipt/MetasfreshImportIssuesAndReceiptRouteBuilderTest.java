@@ -25,7 +25,6 @@ import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
-import de.metas.common.manufacturing.Outcome;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
 import lombok.Builder;
@@ -102,6 +101,10 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 					advice.interceptSendToEndpoint(MetasfreshImportIssuesAndReceiptRouteBuilder.METASFRESH_EP_REPORT)
 							.skipSendToOriginalEndpoint()
 							.process(toMetasfresh);
+
+					advice.interceptSendToEndpoint(MetasfreshImportIssuesAndReceiptRouteBuilder.ERRORFILE_FOLDER)
+							.skipSendToOriginalEndpoint()
+							.process(new DoNothing());
 				});
 	}
 
@@ -115,14 +118,14 @@ public class MetasfreshImportIssuesAndReceiptRouteBuilderTest extends CamelTestS
 		final var toMetasfresh = new CaptureLastMessage()
 				.andThen(SingleResult.ofJson(JsonResponseManufacturingOrdersReport.builder()
 						.transactionKey("trx1")
-						.receipt(JsonResponseReceiveFromManufacturingOrder.builder().requestId("1").outcome(Outcome.OK).build())
-						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("2").outcome(Outcome.OK).build())
-						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("3").outcome(Outcome.OK).build())
-						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("4").outcome(Outcome.OK).build())
-						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("5").outcome(Outcome.OK).build())
-						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("6").outcome(Outcome.OK).build())
-						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("7").outcome(Outcome.OK).build())
-						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("8").outcome(Outcome.OK).build())
+						.receipt(JsonResponseReceiveFromManufacturingOrder.builder().requestId("1").build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("2").build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("3").build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("4").build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("5").build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("6").build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("7").build())
+						.issue(JsonResponseIssueToManufacturingOrder.builder().requestId("8").build())
 						.build()));
 
 		adviceRoute()

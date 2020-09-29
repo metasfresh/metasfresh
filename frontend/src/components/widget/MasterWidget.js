@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 
 import { getZoomIntoWindow } from '../../api';
@@ -11,11 +10,6 @@ import {
 } from '../../utils/widgetHelper';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 import { getTableId } from '../../reducers/tables';
-import {
-  openModal,
-  patch,
-  updatePropertyValue,
-} from '../../actions/WindowActions';
 
 import RawWidget from './RawWidget';
 
@@ -29,13 +23,13 @@ const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
 class MasterWidget extends PureComponent {
   constructor(props) {
     super(props);
-    const { data, widgetData, clearValue } = this.props;
+    const { value, widgetData, clearValue } = this.props;
     // `clearValue` removes current field value for the widget. This is used when user
     // focuses on table cell and starts typing without pressing {enter} first
     this.state = {
       updated: false,
       edited: false,
-      data: data || (clearValue ? '' : widgetData[0].value),
+      value: value || (clearValue ? '' : widgetData[0].value),
       widgetData: props.widgetData, // this is used for comparison in the getDerivedStateFromProps lifecycle
     };
   }
@@ -52,7 +46,7 @@ class MasterWidget extends PureComponent {
     let hasNewData = widgetData[0] && !_.isEqual(widgetData[0].value, next);
 
     if (!edited && hasNewData) {
-      return { updated: true, data: next, widgetData: nextProps.widgetData };
+      return { updated: true, value: next, widgetData: nextProps.widgetData };
     }
     return null;
   }
@@ -78,7 +72,7 @@ class MasterWidget extends PureComponent {
       isModal,
       widgetType,
       dataId,
-      windowType,
+      windowId,
       patch,
       rowId,
       tabId,
@@ -95,15 +89,16 @@ class MasterWidget extends PureComponent {
     let ret = null;
     let isEdit = viewId ? true : false;
     const tableId = getTableId({
-      windowId: windowType,
+      windowId,
       viewId,
     });
 
-    // TODO: Leaving this for now in case this is used in some edga cases
+    // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
     // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
     // Attributes component so that it won't need it anymore. Or add better guards
     // to be sure it's not called if not needed.
+    // https://github.com/metasfresh/me03/issues/5384
     widgetType !== 'Button' &&
       !dataId &&
       (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
@@ -119,7 +114,7 @@ class MasterWidget extends PureComponent {
 
     ret = patch(
       entity,
-      windowType,
+      windowId,
       dataId,
       tabId,
       currRowId,
@@ -155,14 +150,14 @@ class MasterWidget extends PureComponent {
       entity,
       viewId,
       dataId,
-      windowType,
+      windowId,
       widgetData,
     } = this.props;
 
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
     let fieldName = widgetData[0] ? widgetData[0].field : '';
-    this.setState({ edited: true, data: val }, () => {
+    this.setState({ edited: true, value: val }, () => {
       if (
         !dateParse.includes(widgetType) &&
         !validatePrecision({
@@ -176,7 +171,7 @@ class MasterWidget extends PureComponent {
       }
       const currRowId = rowId === 'NEW' ? relativeDocId : rowId;
       const tableId = getTableId({
-        windowId: windowType,
+        windowId,
         docId: dataId,
         tabId,
         viewId,
@@ -214,9 +209,9 @@ class MasterWidget extends PureComponent {
    * @param {*} field
    */
   handleZoomInto = (field) => {
-    const { dataId, windowType, tabId, rowId } = this.props;
+    const { dataId, windowId, tabId, rowId } = this.props;
 
-    getZoomIntoWindow('window', windowType, dataId, tabId, rowId, field).then(
+    getZoomIntoWindow('window', windowId, dataId, tabId, rowId, field).then(
       (res) => {
         const url = `/window/${res.data.documentPath.windowId}/${
           res.data.documentPath.documentId
@@ -242,15 +237,16 @@ class MasterWidget extends PureComponent {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { handleBackdropLock, onClickOutside } = this.props;
-    const { updated, data } = this.state;
+    const { handleBackdropLock, onClickOutside, windowId } = this.props;
+    const { updated, value } = this.state;
     const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 
     return (
       <RawWidget
         {...this.props}
+        windowType={windowId}
         updated={updated}
-        data={data}
+        data={value}
         handleFocus={() => handleFocusFn(true)}
         handleBlur={() => handleFocusFn(false)}
         onClickOutside={onClickOutside}
@@ -271,6 +267,11 @@ class MasterWidget extends PureComponent {
  * @prop {func} openModal
  */
 MasterWidget.propTypes = {
+  dataId: PropTypes.string,
+  windowId: PropTypes.string,
+  viewId: PropTypes.string,
+  rowId: PropTypes.string,
+  tabId: PropTypes.string,
   isModal: PropTypes.bool,
   dataEntry: PropTypes.bool,
   fieldName: PropTypes.string,
@@ -280,30 +281,16 @@ MasterWidget.propTypes = {
   handleBackdropLock: PropTypes.func,
   updatePropertyValue: PropTypes.func,
   openModal: PropTypes.func.isRequired,
-  data: PropTypes.object,
+  value: PropTypes.object,
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
-  dataId: PropTypes.string,
-  windowType: PropTypes.string,
   patch: PropTypes.func,
-  rowId: PropTypes.string,
-  tabId: PropTypes.string,
   onChange: PropTypes.func,
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
-  viewId: PropTypes.string,
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
 };
 
-export default connect(
-  null,
-  {
-    openModal,
-    patch,
-    updatePropertyValue,
-  },
-  null,
-  { forwardRef: true }
-)(MasterWidget);
+export default MasterWidget;

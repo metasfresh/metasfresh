@@ -41,19 +41,22 @@ import lombok.NonNull;
 @Service
 class ManufacturingOrderAPIService
 {
-	private final ManufacturingOrderAuditRepository orderAuditRepo;
+	private final ManufacturingOrderExportAuditRepository orderExportAuditRepo;
+	private final ManufacturingOrderReportAuditRepository orderReportAuditRepo;
 	private final ProductRepository productRepo;
 	private final ObjectMapper jsonObjectMapper;
 	private final HUReservationService huReservationService;
 
 	@Builder
 	public ManufacturingOrderAPIService(
-			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
+			@NonNull final ManufacturingOrderExportAuditRepository orderExportAuditRepo,
+			@NonNull final ManufacturingOrderReportAuditRepository orderReportAuditRepo,
 			@NonNull final ProductRepository productRepo,
 			@NonNull final ObjectMapper jsonObjectMapper,
 			@NonNull final HUReservationService huReservationService)
 	{
-		this.orderAuditRepo = orderAuditRepo;
+		this.orderExportAuditRepo = orderExportAuditRepo;
+		this.orderReportAuditRepo = orderReportAuditRepo;
 		this.productRepo = productRepo;
 		this.jsonObjectMapper = jsonObjectMapper;
 		this.huReservationService = huReservationService;
@@ -65,7 +68,7 @@ class ManufacturingOrderAPIService
 			@NonNull final String adLanguage)
 	{
 		final ManufacturingOrdersExportCommand command = ManufacturingOrdersExportCommand.builder()
-				.orderAuditRepo(orderAuditRepo)
+				.orderAuditRepo(orderExportAuditRepo)
 				.productRepo(productRepo)
 				//
 				.canBeExportedFrom(canBeExportedFrom)
@@ -80,7 +83,7 @@ class ManufacturingOrderAPIService
 	public void setExportStatus(@NonNull final JsonRequestSetOrdersExportStatusBulk request)
 	{
 		final ManufacturingOrdersSetExportStatusCommand command = ManufacturingOrdersSetExportStatusCommand.builder()
-				.orderAuditRepo(orderAuditRepo)
+				.orderAuditRepo(orderExportAuditRepo)
 				.jsonObjectMapper(jsonObjectMapper)
 				//
 				.request(request)
@@ -94,6 +97,8 @@ class ManufacturingOrderAPIService
 	{
 		final ManufacturingOrderReportProcessCommand command = ManufacturingOrderReportProcessCommand.builder()
 				.huReservationService(huReservationService)
+				.auditRepository(orderReportAuditRepo)
+				.jsonObjectMapper(jsonObjectMapper)
 				//
 				.request(request)
 				//

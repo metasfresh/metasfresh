@@ -52,7 +52,7 @@ import lombok.NonNull;
 
 class JsonResponseManufacturingOrdersToXmlProcessor implements Processor
 {
-	private static final String XML_FILENAME_PREFIX = "vorkonfektioniertist";
+	private static final String XML_FILENAME_PREFIX = "stueckliste";
 
 	/** version 3 */
 	private static final METADATA METADATA = de.metas.common.filemaker.METADATA.builder()

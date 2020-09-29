@@ -47,12 +47,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static de.metas.camel.CommonConstants.VALUE_TRUE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.ARTICLE_FLAVOR;
+import static de.metas.camel.shipping.receipt.ReceiptReturnField.BEST_BEFORE_DATE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.DATE_RECEIVED;
-import static de.metas.camel.shipping.receipt.ReceiptReturnField.EXPIRY_DATE;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.EXTERNAL_ID;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.IS_RETURN;
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.LOT_NUMBER;
@@ -66,7 +68,6 @@ import static de.metas.camel.shipping.receipt.ReceiptReturnField.SHIPMENT_DOCUME
 import static de.metas.camel.shipping.receipt.ReceiptReturnField.SHIPMENT_SCHEDULE_ID;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.DATE_RECEIVED_PATTERNS;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.EXPIRY_DATE_PATTERNS;
-import static de.metas.camel.shipping.receipt.SiroReceiptConstants.IS_RETURN_VALUE_TRUE;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.MOVEMENT_DATE_PATTERNS;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.ORG_PREFIX_TOKEN;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.ORG_PREFIX_TO_ORG_CODE_PROPERTY_PATTERN;
@@ -90,7 +91,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 		final List<JsonCreateReceiptInfo> createReceiptInfos = resultset.getRows()
 				.stream()
 				.filter(row -> !isReturn(row, name2Index))
-				.map(row -> createReceiptInfo(row, name2Index))
+				.map(row -> createReceiptInfo(row, name2Index, propertiesComponent))
 				.collect(Collectors.toList());
 
 		final List<JsonCreateCustomerReturnInfo> customerReturnInfos = resultset.getRows()
@@ -120,11 +121,11 @@ public class ReceiptXmlToJsonProcessor implements Processor
 			return false;
 		}
 
-		return IS_RETURN_VALUE_TRUE.equals(isReturn);
+		return VALUE_TRUE.equalsIgnoreCase(isReturn);
 	}
 
 	@NonNull
-	private JsonCreateReceiptInfo createReceiptInfo(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private JsonCreateReceiptInfo createReceiptInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
@@ -144,7 +145,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 				//
 				.productSearchKey(getProductSearchKey(getValueRequest.fieldName(PRODUCT_SEARCH_KEY.getName()).build()))
 				//
-				.movementQuantity(FileMakerDataHelper.getBigDecimalValue(getValueRequest.fieldName(MOVEMENT_QUANTITY.getName()).build()))
+				.movementQuantity(getMovementQty(row, name2Index, propertiesComponent))
 				//
 				.attributes(buildAttributeInstanceList(row, name2Index))
 				//
@@ -156,8 +157,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 				.build();
 	}
 
-
-	private JsonCreateCustomerReturnInfo createCustomerReturnInfo(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
+	private JsonCreateCustomerReturnInfo createCustomerReturnInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
@@ -170,7 +170,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 			throw new RuntimeException("Missing mandatory filed: productSearchKey! mapping for " + PRODUCT_SEARCH_KEY.getName() + " !");
 		}
 
-		final BigDecimal returnedQty = FileMakerDataHelper.getBigDecimalValue(getValueRequest.fieldName(MOVEMENT_QUANTITY.getName()).build());
+		final BigDecimal returnedQty = getMovementQty(row, name2Index, propertiesComponent);
 
 		if (returnedQty == null)
 		{
@@ -193,23 +193,22 @@ public class ReceiptXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private LocalDate getMovementDate(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private LocalDate getMovementDate(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
 	{
 		final FileMakerDataHelper.GetValueRequest request =
 				FileMakerDataHelper.GetValueRequest.builder()
-				.row(row)
-				.fieldName2Index(name2Index)
-				.fieldName(MOVEMENT_DATE.getName())
-				.build();
+						.row(row)
+						.fieldName2Index(name2Index)
+						.fieldName(MOVEMENT_DATE.getName())
+						.build();
 
 		final String value = FileMakerDataHelper.getValue(request);
 
 		return XmlToJsonProcessorUtil.asLocalDate(value, MOVEMENT_DATE_PATTERNS, MOVEMENT_DATE.getName()).orElse(null);
-
 	}
 
 	@Nullable
-	private LocalDateTime getDateReceived(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private LocalDateTime getDateReceived(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
 	{
 		final FileMakerDataHelper.GetValueRequest request =
 				FileMakerDataHelper.GetValueRequest.builder()
@@ -231,13 +230,13 @@ public class ReceiptXmlToJsonProcessor implements Processor
 		final FileMakerDataHelper.GetValueRequest getExpiryDateReq = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
 				.fieldName2Index(fieldName2Index)
-				.fieldName(EXPIRY_DATE.getName())
+				.fieldName(BEST_BEFORE_DATE.getName())
 				.build();
 
 		final String expiryDateStr = FileMakerDataHelper.getValue(getExpiryDateReq);
 
-		XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, EXPIRY_DATE.getName())
-				.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.EXPIRY_DATE, expiryDate))
+		XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, BEST_BEFORE_DATE.getName())
+				.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.BEST_BEFORE_DATE, expiryDate))
 				.map(jsonAttributeInstances::add);
 
 		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
@@ -280,7 +279,7 @@ public class ReceiptXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private JsonMetasfreshId getShipmentScheduleId(@NonNull final ROW row,@NonNull final Map<String, Integer> name2Index)
+	private JsonMetasfreshId getShipmentScheduleId(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index)
 	{
 		final FileMakerDataHelper.GetValueRequest request =
 				FileMakerDataHelper.GetValueRequest.builder()
@@ -325,8 +324,24 @@ public class ReceiptXmlToJsonProcessor implements Processor
 		final String orgPrefix2CodeProperty = ORG_PREFIX_TO_ORG_CODE_PROPERTY_PATTERN.replace(ORG_PREFIX_TOKEN, orgPrefix);
 
 		final String orgCode = propertiesComponent.resolveProperty(orgPrefix2CodeProperty)
-				.orElseThrow( () -> new RuntimeException("Missing property: " + orgPrefix2CodeProperty + "!"));
+				.orElseThrow(() -> new RuntimeException("Missing property: " + orgPrefix2CodeProperty + "!"));
 
 		return orgCode;
+	}
+
+	@Nullable
+	private BigDecimal getMovementQty(@NonNull final ROW row, @NonNull final Map<String, Integer> name2Index, @NonNull final PropertiesComponent propertiesComponent)
+	{
+		final FileMakerDataHelper.GetValueRequest getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
+				.row(row)
+				.fieldName2Index(name2Index)
+				.fieldName(MOVEMENT_QUANTITY.getName())
+				.build();
+
+		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
+
+		final String movementQtyStr = FileMakerDataHelper.getValue(getValueRequest);
+
+		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQtyStr, locale);
 	}
 }

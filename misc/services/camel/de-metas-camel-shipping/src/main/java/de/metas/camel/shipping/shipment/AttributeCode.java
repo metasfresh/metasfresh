@@ -12,7 +12,7 @@ public enum AttributeCode
 {
 	LOT_NUMBER("Lot-Nummer",STRING),
 	ARTICLE_FLAVOR("Article_Flavor", STRING),
-	EXPIRY_DATE("HU_ExpiryDate", DATE);
+	BEST_BEFORE_DATE("HU_BestBeforeDate", DATE);
 
 	private final String attributeCode;
 	private final AttributeValueType attributeValueType;

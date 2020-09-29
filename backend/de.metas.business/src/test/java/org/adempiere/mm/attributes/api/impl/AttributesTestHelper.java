@@ -78,6 +78,7 @@ public class AttributesTestHelper
 	public I_M_AttributeSet createM_AttributeSet(final I_M_Attribute... attributes)
 	{
 		final I_M_AttributeSet as = InterfaceWrapperHelper.create(ctx, I_M_AttributeSet.class, ITrx.TRXNAME_None);
+		as.setIsInstanceAttribute(true);
 		save(as);
 
 		for (final I_M_Attribute attribute : attributes)

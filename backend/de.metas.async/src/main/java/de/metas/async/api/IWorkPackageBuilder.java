@@ -27,14 +27,17 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.user.UserId;
+import lombok.NonNull;
 
 public interface IWorkPackageBuilder
 {
@@ -46,6 +49,13 @@ public interface IWorkPackageBuilder
 	 * If a locker was specified (see {@link #setElementsLocker(ILockCommand)}) all elements will be locked.
 	 */
 	I_C_Queue_WorkPackage build();
+
+	@NonNull
+	default QueueWorkPackageId buildAndGetId()
+	{
+		final I_C_Queue_WorkPackage workpackage = build();
+		return QueueWorkPackageId.ofRepoId(workpackage.getC_Queue_WorkPackage_ID());
+	}
 
 	/**
 	 * This is the sibling of {@link #build()}, but it doesn't build/enqueue the work package. Instead it discards it.
@@ -72,6 +82,12 @@ public interface IWorkPackageBuilder
 	IWorkPackageParamsBuilder parameters();
 
 	default IWorkPackageBuilder parameters(final Map<String, ? extends Object> parameters)
+	{
+		parameters().setParameters(parameters);
+		return this;
+	}
+
+	default IWorkPackageBuilder parameters(final IParams parameters)
 	{
 		parameters().setParameters(parameters);
 		return this;
