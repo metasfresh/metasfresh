@@ -135,6 +135,7 @@ public final class DocumentFilter
 		return new DocumentFilter(this, id);
 	}
 
+	@Nullable
 	public String getCaption(@Nullable final String adLanguage)
 	{
 		return caption != null ? caption.translate(adLanguage) : null;
@@ -165,6 +166,7 @@ public final class DocumentFilter
 		return parameter;
 	}
 
+	@Nullable
 	public DocumentFilterParam getParameterOrNull(@NonNull final String parameterName)
 	{
 		return parametersByName.get(parameterName);
@@ -239,7 +241,8 @@ public final class DocumentFilter
 		return param.getValueAsLocalDateOr(defaultValue);
 	}
 
-	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull IntFunction<T> repoIdMapper)
+	@Nullable
+	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull final IntFunction<T> repoIdMapper)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
 		if (param == null)
@@ -250,6 +253,7 @@ public final class DocumentFilter
 		return param.getValueAsRepoIdOrNull(repoIdMapper);
 	}
 
+	@Nullable
 	public <T> T getParameterValueAs(@NonNull final String parameterName)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
