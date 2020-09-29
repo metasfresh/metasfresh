@@ -85,7 +85,6 @@ public class WEBUI_PP_Order_Receipt
 
 	/**
 	 * Makes sure that an instance exists and is in sync with this processe's parameters.
-	 *
 	 */
 	private PackingInfoProcessParams getPackingInfoParams()
 	{
@@ -198,7 +197,6 @@ public class WEBUI_PP_Order_Receipt
 
 	/**
 	 * For the currently selected pip this method loads att
-	 *
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, dependsOn = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
 	public LookupValuesList getM_HU_PI_Item_IDs()
