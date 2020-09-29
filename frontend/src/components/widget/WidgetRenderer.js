@@ -1,6 +1,7 @@
-import React, { PureComponent } from 'react';
+import React, { ForwardRef, PureComponent } from 'react';
 import Moment from 'moment';
 import classnames from 'classnames';
+import { get } from 'lodash';
 
 import {
   DATE_FORMAT,
@@ -36,7 +37,6 @@ class WidgetRenderer extends PureComponent {
     const {
       handleChange,
       updated,
-      // modalVisible,
       isModal,
       filterWidget,
       filterId,
@@ -65,7 +65,6 @@ class WidgetRenderer extends PureComponent {
       onShow,
       caption,
       viewId,
-      // data,
       listenOnKeys,
       listenOnKeysFalse,
       closeTableField,
@@ -73,7 +72,6 @@ class WidgetRenderer extends PureComponent {
       attribute,
       allowShowPassword,
       onBlurWidget,
-      // defaultValue,
       isOpenDatePicker,
       dateFormat,
       initialFocus,
@@ -90,16 +88,14 @@ class WidgetRenderer extends PureComponent {
       selectedValue,
       showErrorBorder,
       isFocused,
+      charsTyped,
       readonly,
-
       onPatch,
       onFocus,
       onBlur,
     } = this.props;
-    const {
-      tabIndex,
-      value: { widgetValue },
-    } = widgetProperties;
+    const { tabIndex } = widgetProperties;
+    const widgetValue = get(widgetProperties, ['value'], null);
 
     switch (widgetType) {
       case 'Date':
@@ -476,7 +472,7 @@ class WidgetRenderer extends PureComponent {
                 }
               )}
             >
-              <input {...widgetProperties} type="password" ref={this.setRef} />
+              <input {...widgetProperties} type="password" ref={this.props.innerRef} />
               {icon && <i className="meta-icon-edit input-icon-right" />}
             </div>
             {allowShowPassword && (
@@ -561,7 +557,7 @@ class WidgetRenderer extends PureComponent {
               'input-table': rowId && !isModal,
             })}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={this.props.innerRef}
             onKeyDown={(e) => {
               e.key === ' ' &&
                 onPatch(widgetField, !widgetData[0].value, id);
@@ -586,7 +582,7 @@ class WidgetRenderer extends PureComponent {
               [`text-${gridAlign}`]: gridAlign,
             })}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={this.props.innerRef}
           >
             {widgetData[0].value}
           </div>
@@ -601,7 +597,7 @@ class WidgetRenderer extends PureComponent {
             }
             onClick={() => onPatch(widgetField)}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={this.props.innerRef}
           >
             {widgetData[0].value &&
               widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
@@ -617,7 +613,7 @@ class WidgetRenderer extends PureComponent {
             }
             onClick={this.handleProcess}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={this.props.innerRef}
           >
             {caption}
           </button>
@@ -634,7 +630,7 @@ class WidgetRenderer extends PureComponent {
             onChange={(option) => onPatch(fields[1].field, option)}
             tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}
-            ref={this.setRef}
+            ref={this.props.innerRef}
           />
         );
       case 'ProductAttributes':
@@ -700,7 +696,7 @@ class WidgetRenderer extends PureComponent {
             }
             onClick={() => handleZoomInto(fields[0].field)}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={this.props.innerRef}
           >
             {caption}
           </button>
@@ -741,4 +737,6 @@ class WidgetRenderer extends PureComponent {
   }
 }
 
-export default WidgetRenderer;
+export default React.forwardRef((props, ref) =>
+  <WidgetRenderer innerRef={ref} {...props} />
+);

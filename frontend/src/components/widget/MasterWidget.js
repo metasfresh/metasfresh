@@ -7,7 +7,7 @@ import { formatDateWithZeros } from '../../utils/documentListHelper';
 import {
   validatePrecision,
   formatValueByWidgetType,
-} from '../../utils/widgetHelper';
+} from '../../utils/widgetHelpers';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 import { getTableId } from '../../reducers/tables';
 

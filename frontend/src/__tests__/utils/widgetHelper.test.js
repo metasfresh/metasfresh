@@ -2,7 +2,7 @@ import {
   isNumberField,
   formatValueByWidgetType,
   validatePrecision,
-} from '../../utils/widgetHelper';
+} from '../../utils/widgetHelpers';
 
 describe('Widget helpers', () => {
   describe('is NumberField function', () => {

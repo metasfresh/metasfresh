@@ -498,12 +498,11 @@ export class RawWidget extends Component {
           selectedValue,
           showErrorBorder,
           isFocused,
+          charsTyped,
         }}
-
-            onFocus={this.focus}
-            onBlur={this.handleBlurWithParams}
-            setRef
-
+        ref={this.setRef}
+        onFocus={this.focus}
+        onBlur={this.handleBlurWithParams}
         onPatch={this.handlePatch}
       />
     );
