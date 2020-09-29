@@ -133,7 +133,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 			return;
 		}
 
-		final PIAttributes piAttributes = piAttributesDAO.retrievePIAttributes(HuPackingInstructionsVersionId.VIRTUAL);
+		final PIAttributes piAttributes = piAttributesDAO.retrievePIAttributes(HuPackingInstructionsVersionId.TEMPLATE);
 
 		for (final AttributeId attributeId : attributeSet.getAttributeIds())
 		{
