@@ -150,7 +150,7 @@ public class XmlToJsonProcessorUtil
 		return new Locale(localeParts[0], localeParts[1]);
 	}
 
-	public static BigDecimal toBigDecimalOrNull(final String valueStr, final Locale locale)
+	public static BigDecimal toBigDecimalOrNull(@Nullable final String valueStr, final Locale locale)
 	{
 		if (valueStr == null || valueStr.trim().isEmpty())
 		{

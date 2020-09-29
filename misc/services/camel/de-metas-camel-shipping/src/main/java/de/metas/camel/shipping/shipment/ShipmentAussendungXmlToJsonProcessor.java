@@ -15,6 +15,7 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipment.JsonLocation;
+import de.metas.common.shipment.JsonPackage;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -30,8 +31,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.camel.shipping.shipment.ShipmentField.ARTICLE_FLAVOR;
 import static de.metas.camel.shipping.shipment.ShipmentField.BEST_BEFORE_DATE;
@@ -43,21 +46,25 @@ import static de.metas.camel.shipping.shipment.ShipmentField.DELIVERY_DATE;
 import static de.metas.camel.shipping.shipment.ShipmentField.DOCUMENT_NO;
 import static de.metas.camel.shipping.shipment.ShipmentField.HOUSE_NO;
 import static de.metas.camel.shipping.shipment.ShipmentField.LOT_NUMBER;
+import static de.metas.camel.shipping.shipment.ShipmentField.PACKAGE_WEIGHT;
 import static de.metas.camel.shipping.shipment.ShipmentField.POSTAL_CODE;
 import static de.metas.camel.shipping.shipment.ShipmentField.PRODUCT_VALUE;
 import static de.metas.camel.shipping.shipment.ShipmentField.SHIPMENT_SCHEDULE_ID;
 import static de.metas.camel.shipping.shipment.ShipmentField.SHIPPER_INTERNAL_NAME_SEG_1;
 import static de.metas.camel.shipping.shipment.ShipmentField.SHIPPER_INTERNAL_NAME_SEG_2;
 import static de.metas.camel.shipping.shipment.ShipmentField.STREET;
+import static de.metas.camel.shipping.shipment.ShipmentField.TRACKING_NUMBERS;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.DEFAULT_DELIVERY_RULE_FORCE;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.DELIVERY_DATE_PATTERN;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EMPTY_FIELD;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EXPIRY_DATE_PATTERNS;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.PACKAGE_WEIGHT_SEPARATOR;
 import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.TRACKING_NUMBERS_SEPARATOR;
 
-public class ShipmentXmlToJsonProcessor implements Processor
+public class ShipmentAussendungXmlToJsonProcessor implements Processor
 {
-	private final static Log log = LogFactory.getLog(ShipmentXmlToJsonProcessor.class);
+	private final static Log log = LogFactory.getLog(ShipmentAussendungXmlToJsonProcessor.class);
 
 	@Override public void process(final Exchange exchange)
 	{
@@ -82,12 +89,12 @@ public class ShipmentXmlToJsonProcessor implements Processor
 		}
 
 		final JsonCreateShipmentInfo createShipmentInfo = JsonCreateShipmentInfo.builder()
-				.deliveryRule(DEFAULT_DELIVERY_RULE_FORCE) // this is what was shipped, no mapper what metasfresh might think at this point
+				.deliveryRule(DEFAULT_DELIVERY_RULE_FORCE)
 				.shipmentScheduleId(JsonMetasfreshId.of(Integer.parseInt(shipmentScheduleId)))
 				.shipToLocation(getLocation(row, fieldName2Index, shipmentScheduleId))
 				.attributes(getAttributes(row, fieldName2Index))
 				.movementDate(getDeliveryDate(row, fieldName2Index))
-				//.packages(getPackages(row, fieldName2Index, propertiesComponent)) packages (shipped weights&tracking numbers are included in the aussendung files)
+				.packages(getPackages(row, fieldName2Index, propertiesComponent))
 				.movementQuantity(getMovementQty(row, fieldName2Index, propertiesComponent))
 				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, DOCUMENT_NO)))
 				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, PRODUCT_VALUE))))
@@ -211,6 +218,58 @@ public class ShipmentXmlToJsonProcessor implements Processor
 		final String movementQty = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(DELIVERED_QTY.getName()).build());
 
 		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQty, locale);
+	}
+
+	@Nullable
+	private List<JsonPackage> getPackages(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
+	{
+		final String trackingNumbersStr = getValueByName(row, fieldName2Index, TRACKING_NUMBERS);
+
+		if (StringUtils.isBlank(trackingNumbersStr))
+		{
+			return null;//skip creating packages if there are no tracking numbers
+		}
+
+		final String trackingNumbersSeparator = propertiesComponent.resolveProperty(TRACKING_NUMBERS_SEPARATOR)
+				.orElseThrow(() -> new RuntimeException("Missing property:" + TRACKING_NUMBERS_SEPARATOR + "!"));
+
+		final String packageWeightSeparator = propertiesComponent.resolveProperty(PACKAGE_WEIGHT_SEPARATOR)
+				.orElseThrow(() -> new RuntimeException("Missing property:" + PACKAGE_WEIGHT_SEPARATOR + "!"));
+
+		final List<String> trackingNumbers = Stream.of(trackingNumbersStr.split(trackingNumbersSeparator))
+				.filter(StringUtils::isNotBlank)
+				.map(String::trim)
+				.collect(ImmutableList.toImmutableList());
+
+		final String packageWeightStr = getValueByName(row, fieldName2Index, PACKAGE_WEIGHT);
+
+		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
+
+		final List<BigDecimal> packageWeightList = StringUtils.isBlank(packageWeightStr)
+				? ImmutableList.of()
+				: Stream.of(packageWeightStr.split(packageWeightSeparator))
+				  	.filter(StringUtils::isNotBlank)
+				    .map(weight -> XmlToJsonProcessorUtil.toBigDecimalOrNull(weight, locale))
+					.filter(Objects::nonNull)
+				    .collect(ImmutableList.toImmutableList());
+
+		final ImmutableList.Builder<JsonPackage> packageListBuilder = ImmutableList.builder();
+
+		for (int index = 0; index < trackingNumbers.size(); index++)
+		{
+			final BigDecimal packageWeight = packageWeightList.size() > index
+					? packageWeightList.get(index)
+					: null;
+
+			final JsonPackage jsonPackage = JsonPackage.builder()
+					.trackingCode(trackingNumbers.get(index))
+					.weight(packageWeight)
+					.build();
+
+			packageListBuilder.add(jsonPackage);
+		}
+
+		return packageListBuilder.build();
 	}
 
 	@Nullable

@@ -49,8 +49,8 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_FROM_ENDPOINT = "direct:mockInput";
 	private static final String MOCK_XML_TO_JSON_ENDPOINT = "mock:xmlToJsonResult";
 	private static final String MOCK_XML_TO_JSON_INVENTORY_ENDPOINT = "mock:xmlToJsonInventoryResult";
-	private static final String CREATE_SHIPMENT_VALID_XML_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/SiroCreateShipment.xml";
-	private static final String CREATE_SHIPMENT_EMPTY_XML_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/SiroCreateShipment_empty.xml";
+	private static final String CREATE_SHIPMENT_VALID_XML_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/Siro_aussendungen.xml";
+	private static final String CREATE_SHIPMENT_EMPTY_XML_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/Siro_aussendungen_empty.xml";
 	private static final String CREATE_SHIPMENT_RESPONSE_JSON_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/JsonCreateShipmentResponse.json";
 	private static final String CREATE_SHIPMENT_REQUEST_JSON_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/JsonCreateShipmentRequest.json";
 	private static final String CORRECT_INVENTORY_JSON_REQUEST_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/inventory/JsonInventory.json";
