@@ -298,7 +298,7 @@ public class StockCandidateService
 		}
 		else
 		{
-			// ..on the other hand, if materialDescriptor has *no* bpartner or that partner is just for info, then the respective change in qty is related to everybody
+			// ..on the other hand, if materialDescriptor has *no* bpartner or that partner is just for info, then the respective change in ATP is for everybody
 			builder.customer(BPartnerClassifier.any());
 		}
 
