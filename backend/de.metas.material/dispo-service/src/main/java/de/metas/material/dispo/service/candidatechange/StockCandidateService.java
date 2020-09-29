@@ -118,7 +118,7 @@ public class StockCandidateService
 			candidateBuilder.materialDescriptor(materialDescriptor);
 		}
 		else
-		{ // our stock candidate's quantity shall not be bound to a particular customer, so don't propagate it
+		{ // our stock candidate's quantity shall not be bound to a particular customer, so don't propagate the costomer-id to the stock record
 			candidateBuilder.materialDescriptor(materialDescriptor.withCustomerId(null));
 		}
 
