@@ -1,26 +1,7 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.MimeType;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
@@ -52,6 +33,23 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -352,9 +350,11 @@ public class ADProcessPostProcessService
 			final ViewId parentViewId = parentViewIdStr != null ? ViewId.ofViewIdString(parentViewIdStr) : null;
 			final CreateViewRequest viewRequest = createViewRequest(recordsToOpen, referencingDocumentPaths, parentViewId);
 			final IView view = viewsRepo.createView(viewRequest);
+			final boolean openInNewTab = recordsToOpen.isOpenInNewTab();
 
 			return OpenViewAction.builder()
 					.viewId(view.getViewId())
+					.openInNewTab(openInNewTab)
 					.build();
 		}
 		//
@@ -399,9 +399,12 @@ public class ADProcessPostProcessService
 		else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocument)
 		{
 			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
+			final boolean openInNewTab = recordsToOpen.isOpenInNewTab();
+
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
 					.modal(false)
+					.openInNewTab(openInNewTab)
 					.build();
 		}
 		//
