@@ -1,7 +1,31 @@
-package de.metas.camel.shipping.shipment;
+/*
+ * #%L
+ * de-metas-camel-shipping
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.camel.shipping.shipment.aussendung;
 
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import de.metas.camel.shipping.shipment.inventory.InventoryCorrectionXmlToJsonProcessor;
+import de.metas.camel.shipping.shipment.kommissionierung.ShipmentResponseProcessor;
+import de.metas.camel.shipping.shipment.kommissionierung.ShipmentXmlToJsonProcessor;
+import de.metas.camel.shipping.shipment.kommissionierung.inventory.InventoryCorrectionXmlToJsonProcessor;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipment.JsonCreateShipmentResponse;
 import org.apache.camel.Exchange;
@@ -12,15 +36,15 @@ import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 import static de.metas.camel.inventory.InventoryXmlToMetasfreshRouteBuilder.ROUTE_ID_FROM_JSON;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.CREATE_SHIPMENT_MF_URL;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.LOCAL_STORAGE_URL;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPMENT_XML_TO_JSON_PROCESSOR;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_FTP_PATH;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION_TOKEN;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.CREATE_SHIPMENT_MF_URL;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.LOCAL_STORAGE_URL;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.SHIPMENT_XML_TO_JSON_PROCESSOR;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.SIRO_FTP_PATH;
 
-public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
+public class ShipmentAussendungXmlToJsonRouteBuilder extends EndpointRouteBuilder
 {
 
 	static final String MF_SHIPMENT_FILEMAKER_XML_TO_JSON = "MF-FM-To-Json-Shipment";

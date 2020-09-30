@@ -22,7 +22,7 @@
 
 package de.metas.camel.shipping;
 
-import de.metas.camel.shipping.shipment.AttributeCode;
+import de.metas.camel.shipping.shipment.kommissionierung.AttributeCode;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import lombok.NonNull;
 import org.apache.commons.logging.Log;

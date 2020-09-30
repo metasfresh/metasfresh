@@ -25,8 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.LOCALE_COUNTRY_LANGUAGE_SEPARATOR;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_LOCALE_PROPERTY;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.LOCALE_COUNTRY_LANGUAGE_SEPARATOR;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.SIRO_LOCALE_PROPERTY;
 
 @UtilityClass
 public class XmlToJsonProcessorUtil

@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-shipping
+  ~ %%
+  ~ Copyright (C) 2020 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<!-- No Lot & Bestbefore in this file; note that the shipment's recipient is still in aussendungen, not here -->
+<FMPXMLRESULT xmlns="http://www.filemaker.com/fmpxmlresult">
+    <ERRORCODE>0</ERRORCODE>
+    <PRODUCT BUILD="09-05-2019" NAME="FileMaker" VERSION="ProAdvanced 18.0.3"/>
+    <DATABASE DATEFORMAT="D.m.yyyy" LAYOUT="" NAME="siro.fmp12" RECORDS="1157" TIMEFORMAT="k:mm:ss "/>
+    <METADATA>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_bezeichnung" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_geschmacksrichtung" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_gewicht_1_stueck" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_hinweistext" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_ist_lagerhaltig" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_menge" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_nummer_gesellchen" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_preis" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_verpackungsgroesse" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_webshop_menge" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_webshop_preis" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_webshop_restmenge_noch_offen" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_aussendungen_mhd_ablauf_datum" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_aussendungen_mhd_charge" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_aussendungen_siro_warenkorb_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_datum" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_id" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_position_id" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_positionszahl" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_referenz" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_zeitstempel" TYPE="TIMESTAMP"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_fuer_zoll_artikel_herkunftsland" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_fuer_zoll_artikel_intrastat_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_kommissionierung_counter" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_kommissionierung_datum" TYPE="DATE"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_kommissionierung_id" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_kommissionierung_sortierer" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_kommissionierung_zeitstempel" TYPE="TIMESTAMP"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_korrektur_artikel_menge" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_korrektur_artikel_preis" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_korrektur_lagerplatz_out_of_stock" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_korrektur_wenn_out_of_stock" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_stueckliste_id" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_vorkonfektioniert_ja_nein" TYPE="TEXT"/>
+    </METADATA>
+    <RESULTSET FOUND="5">
+        <ROW MODID="10" RECORDID="1682">
+            <COL>
+                <DATA>ProductName1</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>547</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>ja</DATA> <!-- _artikel_ist_lagerhaltig -->
+            </COL>
+            <COL>
+                <DATA>-2</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-31100821</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-31100821</DATA>
+            </COL>
+            <COL>
+                <DATA>-5040</DATA>
+            </COL>
+            <COL>
+                <DATA>6</DATA>
+            </COL>
+            <COL>
+                <DATA>2</DATA>
+            </COL>
+            <COL>
+                <DATA>50.40</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>document-no-1</DATA> <!-- _aussendungen_siro_warenkorb_nummer -->
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA>3704</DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>1191714</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1000206456</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 23:59:59</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>722311</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA> <!-- _kommissionierung_datum -->
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 16:16:59</DATA> <!-- -->
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+        </ROW>
+        <ROW MODID="10" RECORDID="1683">
+            <COL>
+                <DATA>ProductName2</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>415</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>ja</DATA>
+            </COL>
+            <COL>
+                <DATA>-1</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-11030821</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-11030821</DATA>
+            </COL>
+            <COL>
+                <DATA>-1180</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1</DATA>
+            </COL>
+            <COL>
+                <DATA>11.80</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>document-no-1</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA>3693</DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>1191713</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1000206456</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 23:59:59</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>722312</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 15:26:28</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+        </ROW>
+        <ROW MODID="10" RECORDID="1684">
+            <COL>
+                <DATA>ProductName3</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>526</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>ja</DATA>
+            </COL>
+            <COL>
+                <DATA>-1</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-11010821</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-11010821</DATA>
+            </COL>
+            <COL>
+                <DATA>-2170</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1</DATA>
+            </COL>
+            <COL>
+                <DATA>21.70</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>document-no-1</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA>3696</DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>1191717</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1000206456</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 23:59:59</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>722313</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 15:26:52</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+        </ROW>
+        <ROW MODID="10" RECORDID="1685">
+            <COL>
+                <DATA>ProductName4</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>520</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>ja</DATA>
+            </COL>
+            <COL>
+                <DATA>-1</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-11011021</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-11011021</DATA>
+            </COL>
+            <COL>
+                <DATA>-2170</DATA>
+            </COL>
+            <COL>
+                <DATA>6</DATA>
+            </COL>
+            <COL>
+                <DATA>1</DATA>
+            </COL>
+            <COL>
+                <DATA>21.70</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>document-no-1</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA>3695</DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>1191716</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1000206456</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 23:59:59</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>722314</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 15:27:29</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+        </ROW>
+        <ROW MODID="10" RECORDID="1686">
+            <COL>
+                <DATA>ProductName5</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>47</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>ja</DATA>
+            </COL>
+            <COL>
+                <DATA>-5</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-12060521</DATA>
+            </COL>
+            <COL>
+                <DATA>abc-12060521</DATA>
+            </COL>
+            <COL>
+                <DATA>-810</DATA>
+            </COL>
+            <COL>
+                <DATA>25</DATA>
+            </COL>
+            <COL>
+                <DATA>5</DATA>
+            </COL>
+            <COL>
+                <DATA>8.10</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>document-no-1</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA>3694</DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>1191715</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1000206456</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 23:59:59</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>722315</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>43323</DATA>
+            </COL>
+            <COL>
+                <DATA>29.09.2020 15:28:32</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+        </ROW>
+    </RESULTSET>
+</FMPXMLRESULT>

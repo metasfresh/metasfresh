@@ -31,20 +31,7 @@
         "countryCode": "countryCode",
         "zipCode": "12"
       },
-      "packages": [
-        {
-          "trackingCode": "cp-test-trk-no-c1",
-          "weight": 1.0
-        },
-        {
-          "trackingCode": "cp-test-trk-no-c2",
-          "weight": 2.25
-        },
-        {
-          "trackingCode": "cp-test-trk-no-c3",
-          "weight": 1003.5
-        }
-      ],
+      "packages": null,
       "shipperInternalName":"shipper.InternalName_Seg1_shipper.InternalName_Seg2"
     }
   ]
