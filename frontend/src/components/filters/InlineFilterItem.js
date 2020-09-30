@@ -161,12 +161,12 @@ const mapStateToProps = (state) => {
 };
 
 InlineFilterItem.propTypes = {
-  active: PropTypes.bool,
+  active: PropTypes.array,
   data: PropTypes.object,
   parentFilter: PropTypes.object,
   onShow: PropTypes.func,
   onHide: PropTypes.func,
-  viewId: PropTypes.number,
+  viewId: PropTypes.string,
   id: PropTypes.number,
   applyFilters: PropTypes.func,
   clearFilters: PropTypes.func,
