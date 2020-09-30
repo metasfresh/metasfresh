@@ -896,7 +896,7 @@ public final class DefaultView implements IEditableView
 		 */
 		private boolean isNotDuplicateDocumentFilter(@NonNull final DocumentFilter filterToAdd)
 		{
-			return _addedFiltersNoDuplicates.add(filterToAdd.withId("1"));
+			return _addedFiltersNoDuplicates.add(filterToAdd.withId("AvoidDuplicateFiltersThatOnlyDifferInTheirId"));
 		}
 
 		public Builder addStickyFilters(final DocumentFilterList stickyFilters)
