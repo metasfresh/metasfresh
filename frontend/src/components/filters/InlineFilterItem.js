@@ -1,22 +1,17 @@
 /**
  * Filter element displayed inline for frequent filters
+ * To see how this should behave look at https://github.com/metasfresh/metasfresh-webui-frontend-legacy/issues/1387
+ * It seems this is not in use any more (checked that at the time of refactoring the filters Sep, 2020)
  **/
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-
 import RawWidget from '../widget/RawWidget';
+import { convertDateToReadable } from '../../utils/dateHelpers';
 
 class InlineFilterItem extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      filter: props.parentFilter,
-    };
-  }
+  state = { filter: this.props.parentFilter };
 
   UNSAFE_componentWillMount() {
     this.init();
