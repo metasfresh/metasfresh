@@ -32,11 +32,13 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
@@ -350,7 +352,15 @@ import lombok.Value;
 
 	private void setLotNumberAttribute(final I_M_HU hu, final IAttributeStorage huAttributes)
 	{
-		final String lotNumberToSet = CoalesceUtil.coalesce(lotNumber, hu.getValue());
+		final String lotNumberToSet;
+		if (Services.get(ISysConfigBL.class).getBooleanValue(HUAttributeConstants.SYSCONFIG_AutomaticallySetLotNumber, false))
+		{
+			lotNumberToSet = CoalesceUtil.coalesce(lotNumber, hu.getValue());
+		}
+		else
+		{
+			lotNumberToSet = lotNumber;
+		}
 
 		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 		{

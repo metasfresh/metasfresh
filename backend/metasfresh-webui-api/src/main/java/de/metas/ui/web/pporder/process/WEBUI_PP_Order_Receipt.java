@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.pporder.process;
 
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -49,6 +50,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -64,6 +66,7 @@ public class WEBUI_PP_Order_Receipt
 	// services
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -214,7 +217,6 @@ public class WEBUI_PP_Order_Receipt
 		newReceiptCandidatesProducer()
 				.packUsingLUTUConfiguration(lutuConfig)
 				.bestBeforeDate(computeBestBeforeDate())
-				// .lotNumber()v  // TODO tbp: i cannot set the lot number since i don't already know it. has to be done in AbstractPPOrderReceiptHUProducer (ie. after the HU is created)
 				.createDraftReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;
@@ -233,19 +235,26 @@ public class WEBUI_PP_Order_Receipt
 	@Nullable
 	LocalDate computeBestBeforeDate()
 	{
-		final PPOrderLineRow row = getSingleSelectedRow();
-		final I_PP_Order ppOrderPO = huPPOrderBL.getById(row.getOrderId());
-		final LocalDate datePromised = TimeUtil.asLocalDate(ppOrderPO.getDatePromised());
+		if (sysConfigBL.getBooleanValue(HUAttributeConstants.SYSCONFIG_AutomaticallySetBestBeforeDate, false))
+		{
+			final PPOrderLineRow row = getSingleSelectedRow();
+			final I_PP_Order ppOrderPO = huPPOrderBL.getById(row.getOrderId());
+			final LocalDate datePromised = TimeUtil.asLocalDate(ppOrderPO.getDatePromised());
 
-		final ProductId productId = row.getProductId();
-		final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
+			final ProductId productId = row.getProductId();
+			final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
 
-		if (guaranteeDaysMin <= 0)
+			if (guaranteeDaysMin <= 0)
+			{
+				return null;
+			}
+
+			return datePromised.plusDays(guaranteeDaysMin);
+		}
+		else
 		{
 			return null;
 		}
-
-		return datePromised.plusDays(guaranteeDaysMin);
 	}
 
 	private IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
