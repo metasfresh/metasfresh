@@ -11,12 +11,9 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
-import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -60,7 +57,6 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	IHUPIAttributesDAO piAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	HuForInventoryLineFactory huForInventoryLineFactory;
 
 	WarehouseId warehouseId;
@@ -127,22 +123,17 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 
 	private void appendAttributeFilters(final IHUQueryBuilder huQueryBuilder)
 	{
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
-		if (attributeSet.isEmpty())
+		final ImmutableAttributeSet storageRelevantAttributes = attributeDAO.getImmutableAttributeSetById(asiId)
+				.filterOnlyStorageRelevantAttributes();
+		if (storageRelevantAttributes.isEmpty())
 		{
 			return;
 		}
 
-		final PIAttributes piAttributes = piAttributesDAO.retrievePIAttributes(HuPackingInstructionsVersionId.TEMPLATE);
-
-		for (final AttributeId attributeId : attributeSet.getAttributeIds())
+		for (final AttributeId attributeId : storageRelevantAttributes.getAttributeIds())
 		{
-			if (piAttributes.hasActiveAttribute(attributeId)
-					&& piAttributes.isUseInASI(attributeId))
-			{
-				final Object value = attributeSet.getValue(attributeId);
-				huQueryBuilder.addOnlyWithAttribute(attributeId, value);
-			}
+			final Object value = storageRelevantAttributes.getValue(attributeId);
+			huQueryBuilder.addOnlyWithAttribute(attributeId, value);
 		}
 	}
 }
