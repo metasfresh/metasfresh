@@ -71,15 +71,15 @@ public class StockCandidateService
 	 * Creates and returns <b>but does not store</b> a new stock candidate
 	 * whose quantity is the quantity of the given {@code candidate} plus the quantity from
 	 * the next-younger (not same-age!) stock candidate that has the same product, storage attributes key and warehouse.
-	 *
+	 * <p>
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
 	 * @return a candidate with
-	 *         <ul>
-	 *         <li>type = {@link CandidateType#STOCK}</li>
-	 *         <li>qty = qty of the given {@code candidate} plus the next younger candidate's quantity
-	 *         <li>groupId of the next younger-candidate (or null if there is none)
-	 *         </ul>
+	 * <ul>
+	 * <li>type = {@link CandidateType#STOCK}</li>
+	 * <li>qty = qty of the given {@code candidate} plus the next younger candidate's quantity
+	 * <li>groupId of the next younger-candidate (or null if there is none)
+	 * </ul>
 	 */
 	public SaveResult createStockCandidate(@NonNull final Candidate candidate)
 	{
@@ -107,13 +107,22 @@ public class StockCandidateService
 				? previousStockOrNull.getGroupId()
 				: null;
 
-		final Candidate stockCandidate = Candidate.builder()
+		final Candidate.CandidateBuilder candidateBuilder = Candidate.builder()
 				.type(CandidateType.STOCK)
 				.clientAndOrgId(candidate.getClientAndOrgId())
-				.materialDescriptor(materialDescriptor)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
-				.groupId(groupId)
+				.groupId(groupId);
+		if (materialDescriptor.isReservedForCustomer())
+		{
+			candidateBuilder.materialDescriptor(materialDescriptor);
+		}
+		else
+		{ // our stock candidate's quantity shall not be bound to a particular customer, so don't propagate the costomer-id to the stock record
+			candidateBuilder.materialDescriptor(materialDescriptor.withCustomerId(null));
+		}
+
+		final Candidate stockCandidate = candidateBuilder
 				.build();
 
 		return SaveResult.builder()
@@ -220,7 +229,7 @@ public class StockCandidateService
 			@NonNull final Candidate candidate)
 	{
 		final MaterialDescriptorQuery //
-		materialDescriptorQuery = createMaterialDescriptorQueryBuilder(candidate.getMaterialDescriptor())
+				materialDescriptorQuery = createMaterialDescriptorQueryBuilder(candidate.getMaterialDescriptor())
 				.timeRangeEnd(DateAndSeqNo
 						.builder()
 						.date(candidate.getDate())
@@ -262,7 +271,7 @@ public class StockCandidateService
 		}
 
 		final MaterialDescriptorQuery //
-		materialDescriptorQuery = createMaterialDescriptorQueryBuilder(saveResult.getCandidate().getMaterialDescriptor())
+				materialDescriptorQuery = createMaterialDescriptorQueryBuilder(saveResult.getCandidate().getMaterialDescriptor())
 				.timeRangeStart(rangeStart)
 				.timeRangeEnd(rangeEnd)
 				.build();
@@ -282,14 +291,14 @@ public class StockCandidateService
 				.builder()
 				.customerIdOperator(CustomerIdOperator.GIVEN_ID_OR_NULL); // want the latest, only excluding records that have a *different* customerId
 
-		if (materialDescriptor.getCustomerId() != null)
+		if (materialDescriptor.getCustomerId() != null && materialDescriptor.isReservedForCustomer())
 		{
 			// do include the bpartner in the query, because e.g. an increase for a given bpartner does a raised ATP just for that partner, and not for everyone
 			builder.customer(BPartnerClassifier.specific(materialDescriptor.getCustomerId()));
 		}
 		else
 		{
-			// ..on the other hand, if materialDescriptor has *no* bpartner, then the respective change in qty is related to everybody
+			// ..on the other hand, if materialDescriptor has *no* bpartner or that partner is just for info, then the respective change in ATP is for everybody
 			builder.customer(BPartnerClassifier.any());
 		}
 

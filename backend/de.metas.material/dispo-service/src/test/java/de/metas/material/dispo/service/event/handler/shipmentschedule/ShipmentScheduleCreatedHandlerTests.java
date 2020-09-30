@@ -136,9 +136,11 @@ public class ShipmentScheduleCreatedHandlerTests
 		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");
-		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
+		assertThat(demandRecord.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId());
+		assertThat(demandRecord.isReservedForCustomer()).isFalse();
 
-		assertThat(allRecords).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId()));
+		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
+		assertThat(stockRecord.getC_BPartner_Customer_ID()).isLessThanOrEqualTo(0); // the stock record has no bpartner, because reservedForCustomer==false
 
 		final List<I_MD_Candidate_Demand_Detail> demandDetailRecords = POJOLookupMap.get().getRecords(I_MD_Candidate_Demand_Detail.class);
 		assertThat(demandDetailRecords).hasSize(1);

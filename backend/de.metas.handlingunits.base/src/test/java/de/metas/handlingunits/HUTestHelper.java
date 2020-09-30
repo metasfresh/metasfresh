@@ -322,7 +322,7 @@ public class HUTestHelper
 	// #653
 	public I_M_Attribute attr_LotNumber;
 
-	private I_M_Attribute attr_BestBeforeDate;
+	public I_M_Attribute attr_BestBeforeDate;
 
 	/**
 	 * Mandatory in receipts
