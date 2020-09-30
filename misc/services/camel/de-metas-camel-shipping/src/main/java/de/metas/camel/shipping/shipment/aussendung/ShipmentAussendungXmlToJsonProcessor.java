@@ -1,4 +1,26 @@
-package de.metas.camel.shipping.shipment;
+/*
+ * #%L
+ * de-metas-camel-shipping
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.camel.shipping.shipment.aussendung;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -6,7 +28,9 @@ import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
-import de.metas.camel.shipping.shipment.inventory.InventoryCorrectionXmlToJsonProcessor;
+import de.metas.camel.shipping.shipment.kommissionierung.AttributeCode;
+import de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants;
+import de.metas.camel.shipping.shipment.kommissionierung.inventory.InventoryCorrectionXmlToJsonProcessor;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
@@ -36,37 +60,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.camel.shipping.shipment.ShipmentField.ARTICLE_FLAVOR;
-import static de.metas.camel.shipping.shipment.ShipmentField.BEST_BEFORE_DATE;
-import static de.metas.camel.shipping.shipment.ShipmentField.CITY;
-import static de.metas.camel.shipping.shipment.ShipmentField.COUNTRY_CODE;
-import static de.metas.camel.shipping.shipment.ShipmentField.DELIVERED_QTY;
-import static de.metas.camel.shipping.shipment.ShipmentField.DELIVERED_QTY_OVERRIDE;
-import static de.metas.camel.shipping.shipment.ShipmentField.DELIVERY_DATE;
-import static de.metas.camel.shipping.shipment.ShipmentField.DOCUMENT_NO;
-import static de.metas.camel.shipping.shipment.ShipmentField.HOUSE_NO;
-import static de.metas.camel.shipping.shipment.ShipmentField.LOT_NUMBER;
-import static de.metas.camel.shipping.shipment.ShipmentField.PACKAGE_WEIGHT;
-import static de.metas.camel.shipping.shipment.ShipmentField.POSTAL_CODE;
-import static de.metas.camel.shipping.shipment.ShipmentField.PRODUCT_VALUE;
-import static de.metas.camel.shipping.shipment.ShipmentField.SHIPMENT_SCHEDULE_ID;
-import static de.metas.camel.shipping.shipment.ShipmentField.SHIPPER_INTERNAL_NAME_SEG_1;
-import static de.metas.camel.shipping.shipment.ShipmentField.SHIPPER_INTERNAL_NAME_SEG_2;
-import static de.metas.camel.shipping.shipment.ShipmentField.STREET;
-import static de.metas.camel.shipping.shipment.ShipmentField.TRACKING_NUMBERS;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.DEFAULT_DELIVERY_RULE_FORCE;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.DELIVERY_DATE_PATTERN;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EMPTY_FIELD;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EXPIRY_DATE_PATTERNS;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.PACKAGE_WEIGHT_SEPARATOR;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.TRACKING_NUMBERS_SEPARATOR;
-
-public class ShipmentXmlToJsonProcessor implements Processor
+public class ShipmentAussendungXmlToJsonProcessor implements Processor
 {
-	private final static Log log = LogFactory.getLog(ShipmentXmlToJsonProcessor.class);
+	private final static Log log = LogFactory.getLog(ShipmentAussendungXmlToJsonProcessor.class);
 
-	@Override public void process(final Exchange exchange)
+	@Override
+	public void process(final Exchange exchange)
 	{
 		XmlToJsonProcessorUtil.processExchange(exchange, this::buildCreateShipmentsRequest);
 	}
@@ -81,7 +80,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 			return Optional.empty();//will be handled in de.metas.camel.shipping.shipment.ShipmentXmlToJsonRouteBuilder.MF_SHIPMENT_INVENTORY_CORRECTION
 		}
 
-		final String shipmentScheduleId = getValueByName(row, fieldName2Index, SHIPMENT_SCHEDULE_ID);
+		final String shipmentScheduleId = getValueByName(row, fieldName2Index, ShipmentAussendungField.SHIPMENT_SCHEDULE_ID);
 
 		if (StringUtils.isBlank(shipmentScheduleId))
 		{
@@ -89,15 +88,15 @@ public class ShipmentXmlToJsonProcessor implements Processor
 		}
 
 		final JsonCreateShipmentInfo createShipmentInfo = JsonCreateShipmentInfo.builder()
-				.deliveryRule(DEFAULT_DELIVERY_RULE_FORCE)
+				.deliveryRule(SiroShipmentConstants.DEFAULT_DELIVERY_RULE_FORCE)
 				.shipmentScheduleId(JsonMetasfreshId.of(Integer.parseInt(shipmentScheduleId)))
 				.shipToLocation(getLocation(row, fieldName2Index, shipmentScheduleId))
 				.attributes(getAttributes(row, fieldName2Index))
 				.movementDate(getDeliveryDate(row, fieldName2Index))
 				.packages(getPackages(row, fieldName2Index, propertiesComponent))
 				.movementQuantity(getMovementQty(row, fieldName2Index, propertiesComponent))
-				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, DOCUMENT_NO)))
-				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, PRODUCT_VALUE))))
+				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, ShipmentAussendungField.DOCUMENT_NO)))
+				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, ShipmentAussendungField.PRODUCT_VALUE))))
 				.shipperInternalName(getShipperInternalName(row, fieldName2Index, propertiesComponent))
 				.build();
 
@@ -122,7 +121,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	}
 
 	@Nullable
-	private String getValueByName(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final ShipmentField field)
+	private String getValueByName(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final ShipmentAussendungField field)
 	{
 		final FileMakerDataHelper.GetValueRequest getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
 				.row(row)
@@ -139,7 +138,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 			@NonNull final Map<String, Integer> fieldName2Index,
 			@NonNull final String shipmentScheduleId)
 	{
-		final String countryCode = getValueByName(row, fieldName2Index, COUNTRY_CODE);
+		final String countryCode = getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_COUNTRY_CODE);
 
 		if (StringUtils.isBlank(countryCode))
 		{
@@ -149,10 +148,10 @@ public class ShipmentXmlToJsonProcessor implements Processor
 
 		return JsonLocation.builder()
 				.countryCode(countryCode)
-				.city(getValueByName(row, fieldName2Index, CITY))
-				.street(getValueByName(row, fieldName2Index, STREET))
-				.zipCode(getValueByName(row, fieldName2Index, POSTAL_CODE))
-				.houseNo(getValueByName(row, fieldName2Index, HOUSE_NO))
+				.city(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_CITY))
+				.street(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_STREET))
+				.zipCode(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_POSTAL_CODE))
+				.houseNo(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_HOUSE_NO))
 				.build();
 	}
 
@@ -161,16 +160,16 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	{
 		final ImmutableList.Builder<JsonAttributeInstance> jsonAttributeInstances = ImmutableList.builder();
 
-		final String expiryDateStr = getValueByName(row, fieldName2Index, BEST_BEFORE_DATE);
+		final String expiryDateStr = getValueByName(row, fieldName2Index, ShipmentAussendungField.BEST_BEFORE_DATE);
 
 		if (StringUtils.isNotBlank(expiryDateStr))
 		{
-			XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, EXPIRY_DATE_PATTERNS, BEST_BEFORE_DATE.getName())
+			XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, SiroShipmentConstants.EXPIRY_DATE_PATTERNS, ShipmentAussendungField.BEST_BEFORE_DATE.getName())
 					.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.BEST_BEFORE_DATE, expiryDate))
 					.map(jsonAttributeInstances::add);
 		}
 
-		final String articleFlavor = getValueByName(row, fieldName2Index, ARTICLE_FLAVOR);
+		final String articleFlavor = getValueByName(row, fieldName2Index, ShipmentAussendungField.ARTICLE_FLAVOR);
 
 		if (StringUtils.isNotBlank(articleFlavor))
 		{
@@ -178,7 +177,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 					.map(jsonAttributeInstances::add);
 		}
 
-		final String lotNumber = getValueByName(row, fieldName2Index, LOT_NUMBER);
+		final String lotNumber = getValueByName(row, fieldName2Index, ShipmentAussendungField.LOT_NUMBER);
 
 		if (StringUtils.isNotBlank(lotNumber))
 		{
@@ -194,9 +193,12 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	@Nullable
 	private LocalDateTime getDeliveryDate(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index)
 	{
-		final String deliveryDateStr = getValueByName(row, fieldName2Index, DELIVERY_DATE);
+		final String deliveryDateStr = getValueByName(row, fieldName2Index, ShipmentAussendungField.SHIPPING_TIMESTAMP);
 
-		return XmlToJsonProcessorUtil.asLocalDateTime(deliveryDateStr, ImmutableSet.of(DELIVERY_DATE_PATTERN), DELIVERY_DATE.getName()).orElse(null);
+		return XmlToJsonProcessorUtil.asLocalDateTime(deliveryDateStr,
+				ImmutableSet.of(SiroShipmentConstants.DELIVERY_DATE_PATTERN),
+				ShipmentAussendungField.SHIPPING_TIMESTAMP.getName())
+				.orElse(null);
 	}
 
 	@Nullable
@@ -208,14 +210,14 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.row(row)
 				.fieldName2Index(fieldName2Index);
 
-		final String movementQtyOverrideStr = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(DELIVERED_QTY_OVERRIDE.getName()).build());
+		final String movementQtyOverrideStr = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(ShipmentAussendungField.DELIVERED_QTY_OVERRIDE.getName()).build());
 
 		if (StringUtils.isNotBlank(movementQtyOverrideStr))
 		{
 			return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQtyOverrideStr, locale);
 		}
 
-		final String movementQty = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(DELIVERED_QTY.getName()).build());
+		final String movementQty = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(ShipmentAussendungField.DELIVERED_QTY.getName()).build());
 
 		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQty, locale);
 	}
@@ -223,35 +225,35 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	@Nullable
 	private List<JsonPackage> getPackages(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
-		final String trackingNumbersStr = getValueByName(row, fieldName2Index, TRACKING_NUMBERS);
+		final String trackingNumbersStr = getValueByName(row, fieldName2Index, ShipmentAussendungField.TRACKING_NUMBERS);
 
 		if (StringUtils.isBlank(trackingNumbersStr))
 		{
 			return null;//skip creating packages if there are no tracking numbers
 		}
 
-		final String trackingNumbersSeparator = propertiesComponent.resolveProperty(TRACKING_NUMBERS_SEPARATOR)
-				.orElseThrow(() -> new RuntimeException("Missing property:" + TRACKING_NUMBERS_SEPARATOR + "!"));
+		final String trackingNumbersSeparator = propertiesComponent.resolveProperty(SiroShipmentConstants.TRACKING_NUMBERS_SEPARATOR)
+				.orElseThrow(() -> new RuntimeException("Missing property:" + SiroShipmentConstants.TRACKING_NUMBERS_SEPARATOR + "!"));
 
-		final String packageWeightSeparator = propertiesComponent.resolveProperty(PACKAGE_WEIGHT_SEPARATOR)
-				.orElseThrow(() -> new RuntimeException("Missing property:" + PACKAGE_WEIGHT_SEPARATOR + "!"));
+		final String packageWeightSeparator = propertiesComponent.resolveProperty(SiroShipmentConstants.PACKAGE_WEIGHT_SEPARATOR)
+				.orElseThrow(() -> new RuntimeException("Missing property:" + SiroShipmentConstants.PACKAGE_WEIGHT_SEPARATOR + "!"));
 
 		final List<String> trackingNumbers = Stream.of(trackingNumbersStr.split(trackingNumbersSeparator))
 				.filter(StringUtils::isNotBlank)
 				.map(String::trim)
 				.collect(ImmutableList.toImmutableList());
 
-		final String packageWeightStr = getValueByName(row, fieldName2Index, PACKAGE_WEIGHT);
+		final String packageWeightStr = getValueByName(row, fieldName2Index, ShipmentAussendungField.PACKAGE_WEIGHT);
 
 		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
 
 		final List<BigDecimal> packageWeightList = StringUtils.isBlank(packageWeightStr)
 				? ImmutableList.of()
 				: Stream.of(packageWeightStr.split(packageWeightSeparator))
-				  	.filter(StringUtils::isNotBlank)
-				    .map(weight -> XmlToJsonProcessorUtil.toBigDecimalOrNull(weight, locale))
-					.filter(Objects::nonNull)
-				    .collect(ImmutableList.toImmutableList());
+				.filter(StringUtils::isNotBlank)
+				.map(weight -> XmlToJsonProcessorUtil.toBigDecimalOrNull(weight, locale))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList.Builder<JsonPackage> packageListBuilder = ImmutableList.builder();
 
@@ -275,16 +277,16 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	@Nullable
 	private String getShipperInternalName(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
 	{
-		final String internalNameSeg1 = CoalesceUtil.coalesce(getValueByName(row, fieldName2Index, SHIPPER_INTERNAL_NAME_SEG_1), EMPTY_FIELD);
-		final String internalNameSeg2 = CoalesceUtil.coalesce(getValueByName(row, fieldName2Index, SHIPPER_INTERNAL_NAME_SEG_2), EMPTY_FIELD);
+		final String internalNameSeg1 = CoalesceUtil.coalesce(getValueByName(row, fieldName2Index, ShipmentAussendungField.SHIPPER_INTERNAL_NAME_SEG_1), SiroShipmentConstants.EMPTY_FIELD);
+		final String internalNameSeg2 = CoalesceUtil.coalesce(getValueByName(row, fieldName2Index, ShipmentAussendungField.SHIPPER_INTERNAL_NAME_SEG_2), SiroShipmentConstants.EMPTY_FIELD);
 
 		if (StringUtils.isBlank(internalNameSeg1) && StringUtils.isBlank(internalNameSeg2))
 		{
 			return null;
 		}
 
-		final String shipperInternalNameSeparator = propertiesComponent.resolveProperty(SHIPPER_INTERNAL_NAME_SEPARATOR_PROP)
-				.orElseThrow(() -> new RuntimeException("Missing property:" + SHIPPER_INTERNAL_NAME_SEPARATOR_PROP + "!"));
+		final String shipperInternalNameSeparator = propertiesComponent.resolveProperty(SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP)
+				.orElseThrow(() -> new RuntimeException("Missing property:" + SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP + "!"));
 
 		return StringUtils.joinWith(shipperInternalNameSeparator, internalNameSeg1, internalNameSeg2);
 	}

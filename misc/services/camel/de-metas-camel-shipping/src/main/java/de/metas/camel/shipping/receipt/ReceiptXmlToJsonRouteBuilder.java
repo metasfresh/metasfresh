@@ -36,8 +36,8 @@ import static de.metas.camel.shipping.receipt.SiroReceiptConstants.CREATE_RECEIP
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.LOCAL_STORAGE_URL;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.RECEIPT_XML_TO_JSON_PROCESSOR;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.SIRO_RECEIPTS_FTP_PATH;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION_TOKEN;
 
 public class ReceiptXmlToJsonRouteBuilder extends EndpointRouteBuilder
 {

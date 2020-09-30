@@ -52,8 +52,8 @@ import java.util.Objects;
 
 import static de.metas.camel.CommonConstants.VALUE_FALSE;
 import static de.metas.camel.CommonConstants.VALUE_TRUE;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.EMPTY_FIELD;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.EMPTY_FIELD;
+import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.SHIPPER_INTERNAL_NAME_SEPARATOR_PROP;
 
 public class ShipmentCandidateJsonToXmlProcessor implements Processor
 {

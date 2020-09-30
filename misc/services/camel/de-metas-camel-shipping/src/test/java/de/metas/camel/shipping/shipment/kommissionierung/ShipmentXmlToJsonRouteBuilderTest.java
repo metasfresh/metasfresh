@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.shipping.shipment;
+package de.metas.camel.shipping.shipment.kommissionierung;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.camel.inventory.JsonInventory;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.common.util.time.SystemTime;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
@@ -41,10 +41,6 @@ import java.time.ZonedDateTime;
 
 import static de.metas.camel.inventory.InventoryXmlToMetasfreshRouteBuilder.ROUTE_ID_FROM_JSON;
 import static de.metas.camel.shipping.RouteBuilderCommonUtil.NUMBER_OF_ITEMS;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.CREATE_SHIPMENT_MF_URL;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.LOCAL_STORAGE_URL;
-import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPMENT_XML_TO_JSON_PROCESSOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
@@ -52,11 +48,7 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_FROM_ENDPOINT = "direct:mockInput";
 	private static final String MOCK_XML_TO_JSON_ENDPOINT = "mock:xmlToJsonResult";
 	private static final String MOCK_XML_TO_JSON_INVENTORY_ENDPOINT = "mock:xmlToJsonInventoryResult";
-	private static final String CREATE_SHIPMENT_VALID_XML_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/SiroCreateShipment.xml";
-	private static final String CREATE_SHIPMENT_EMPTY_XML_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/SiroCreateShipment_empty.xml";
-	private static final String CREATE_SHIPMENT_RESPONSE_JSON_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/JsonCreateShipmentResponse.json";
-	private static final String CREATE_SHIPMENT_REQUEST_JSON_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/JsonCreateShipmentRequest.json";
-	private static final String CORRECT_INVENTORY_JSON_REQUEST_RESOURCE_PATH = "/de/metas/camel/shipping/shipment/inventory/JsonInventory.json";
+	public static final String RESOURCE_PATH = "/de/metas/camel/shipping/shipment/kommissionierung/";
 
 	@Override
 	protected RouteBuilder createRouteBuilder()
@@ -71,53 +63,12 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void validFile_test() throws Exception
-	{
-		//given
-		SystemTime.setFixedTimeSource(ZonedDateTime.of(2020,9,24, 12,0,0,0, ZoneId.of("Europe/Paris")));
-		//set up shipping route
-		final MockEmptyProcessor localStorageEndpoint = new MockEmptyProcessor();
-		final MockEmptyProcessor importInventoryLinesEndpoint = new MockEmptyProcessor();
-		final MockSuccessfullyCreatedShipmentProcessor createdShipmentEndpoint = new MockSuccessfullyCreatedShipmentProcessor();
-
-		prepareRouteForTesting(localStorageEndpoint, createdShipmentEndpoint, importInventoryLinesEndpoint);
-
-		context.start();
-
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
-
-		//set up shipment expectations
-		final InputStream expectedCreateShipmentRequest = this.getClass().getResourceAsStream(CREATE_SHIPMENT_REQUEST_JSON_RESOURCE_PATH);
-
-		final MockEndpoint createShipmentMockEP = getMockEndpoint(MOCK_XML_TO_JSON_ENDPOINT);
-		createShipmentMockEP.expectedBodiesReceived(objectMapper.readValue(expectedCreateShipmentRequest, JsonCreateShipmentRequest.class));
-
-		//set up inventory expectations
-		final InputStream expectedCorrectInventoryRequest = this.getClass().getResourceAsStream(CORRECT_INVENTORY_JSON_REQUEST_RESOURCE_PATH);
-
-		final MockEndpoint inventoryCorrectionEP = getMockEndpoint(MOCK_XML_TO_JSON_INVENTORY_ENDPOINT);
-		inventoryCorrectionEP.expectedBodiesReceived(objectMapper.readValue(expectedCorrectInventoryRequest, JsonInventory.class));
-
-		//when
-		final InputStream createShipmentFile = this.getClass().getResourceAsStream(CREATE_SHIPMENT_VALID_XML_RESOURCE_PATH);
-
-		template.sendBody(MOCK_FROM_ENDPOINT, createShipmentFile);
-
-		//then
-		assertThat(localStorageEndpoint.called).isEqualTo(1);
-		assertThat(createdShipmentEndpoint.called).isEqualTo(1);
-		assertThat(importInventoryLinesEndpoint.called).isEqualTo(1);
-
-		assertMockEndpointsSatisfied();
-	}
-
-	@Test
 	void emptyFile_test() throws Exception
 	{
 		final MockEmptyProcessor localStorageEndpoint = new MockEmptyProcessor();
 		final MockEmptyProcessor importInventoryLinesEndpoint = new MockEmptyProcessor();
-		final MockSuccessfullyCreatedShipmentProcessor createdShipmentEndpoint = new MockSuccessfullyCreatedShipmentProcessor();
+		final var mockResponse = this.getClass().getResourceAsStream(RESOURCE_PATH + "JsonCreateShipmentResponse.json");
+		final MockSuccessfullyCreatedShipmentProcessor createdShipmentEndpoint = new MockSuccessfullyCreatedShipmentProcessor(mockResponse); // acually we don't expect this mocked EP to be called
 
 		prepareRouteForTesting(localStorageEndpoint, createdShipmentEndpoint, importInventoryLinesEndpoint);
 
@@ -129,13 +80,52 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 		final MockEndpoint inventoryMockEndpoint = getMockEndpoint(MOCK_XML_TO_JSON_INVENTORY_ENDPOINT);
 		inventoryMockEndpoint.expectedHeaderReceived(NUMBER_OF_ITEMS, 0);
 
-		final InputStream createShipmentFile = this.getClass().getResourceAsStream(CREATE_SHIPMENT_EMPTY_XML_RESOURCE_PATH);
+		final InputStream createShipmentFile = this.getClass().getResourceAsStream(RESOURCE_PATH + "kommissionierung_empty.xml");
 
-		template.sendBody(MOCK_FROM_ENDPOINT,createShipmentFile);
+		template.sendBody(MOCK_FROM_ENDPOINT, createShipmentFile);
 
 		assertThat(localStorageEndpoint.called).isEqualTo(1);
 		assertThat(createdShipmentEndpoint.called).isEqualTo(0);
 		assertThat(importInventoryLinesEndpoint.called).isEqualTo(0);
+
+		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void validFile_kommissionieren_test() throws Exception
+	{
+		//given
+		SystemTime.setFixedTimeSource(ZonedDateTime.of(2020, 9, 24, 12, 0, 0, 0, ZoneId.of("Europe/Paris")));
+		//set up shipping route
+		final MockEmptyProcessor localStorageEndpoint = new MockEmptyProcessor();
+		final var mockResponse = this.getClass().getResourceAsStream(RESOURCE_PATH + "JsonCreateShipmentResponse.json");
+		final MockSuccessfullyCreatedShipmentProcessor createdShipmentEndpoint = new MockSuccessfullyCreatedShipmentProcessor(mockResponse); // be sure to fail now in case mockResponse is null
+		final MockEmptyProcessor importInventoryLinesEndpoint = new MockEmptyProcessor();
+
+		prepareRouteForTesting(localStorageEndpoint, createdShipmentEndpoint, importInventoryLinesEndpoint);
+
+		context.start();
+
+		final ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
+
+		//set up shipment expectations
+		final InputStream expectedCreateShipmentRequest = this.getClass().getResourceAsStream(RESOURCE_PATH + "kommissionierung_noBestBeforeAndLot_JsonCreateShipmentRequest.json");
+		assertThat(expectedCreateShipmentRequest).isNotNull(); //guard
+
+		final MockEndpoint createShipmentMockEP = getMockEndpoint(MOCK_XML_TO_JSON_ENDPOINT);
+		createShipmentMockEP.expectedBodiesReceived(objectMapper.readValue(expectedCreateShipmentRequest, JsonCreateShipmentRequest.class));
+
+		//when
+		final InputStream createShipmentFile = this.getClass().getResourceAsStream(RESOURCE_PATH + "kommissionierung_noBestBeforeAndLot.xml");
+		assertThat(createShipmentFile).isNotNull(); //guard
+
+		template.sendBody(MOCK_FROM_ENDPOINT, createShipmentFile);
+
+		//then
+		assertThat(localStorageEndpoint.called).isEqualTo(1);
+		assertThat(createdShipmentEndpoint.called).isEqualTo(1);
+		assertThat(importInventoryLinesEndpoint.called).isEqualTo(0); // not called, bc were have only one line which is not "out_of_stock"
 
 		assertMockEndpointsSatisfied();
 	}
@@ -148,19 +138,18 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 				advice -> {
 					advice.replaceFromWith(MOCK_FROM_ENDPOINT);
 
-					advice.interceptSendToEndpoint(LOCAL_STORAGE_URL)
+					advice.interceptSendToEndpoint(SiroShipmentConstants.LOCAL_STORAGE_URL)
 							.skipSendToOriginalEndpoint()
 							.process(localStorageEndpoint);
 				});
 
-
 		AdviceWithRouteBuilder.adviceWith(context, ShipmentXmlToJsonRouteBuilder.MF_GENERATE_SHIPMENTS,
 				advice -> {
-					advice.weaveById(SHIPMENT_XML_TO_JSON_PROCESSOR)
+					advice.weaveById(SiroShipmentConstants.SHIPMENT_XML_TO_JSON_PROCESSOR)
 							.after()
 							.to(MOCK_XML_TO_JSON_ENDPOINT);
 
-					advice.interceptSendToEndpoint("http://" + CREATE_SHIPMENT_MF_URL)
+					advice.interceptSendToEndpoint("http://" + SiroShipmentConstants.CREATE_SHIPMENT_MF_URL)
 							.skipSendToOriginalEndpoint()
 							.process(createdShipmentEndpoint);
 				});
@@ -168,7 +157,7 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 		AdviceWithRouteBuilder.adviceWith(context, ShipmentXmlToJsonRouteBuilder.MF_SHIPMENT_INVENTORY_CORRECTION,
 				advice -> {
 
-					advice.weaveById(INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR)
+					advice.weaveById(SiroShipmentConstants.INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR)
 							.after()
 							.to(MOCK_XML_TO_JSON_INVENTORY_ENDPOINT);
 
@@ -191,13 +180,18 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 
 	private static class MockSuccessfullyCreatedShipmentProcessor implements Processor
 	{
+		private final InputStream response;
 		private int called = 0;
+
+		private MockSuccessfullyCreatedShipmentProcessor(@NonNull final InputStream response)
+		{
+			this.response = response;
+		}
 
 		@Override
 		public void process(final Exchange exchange)
 		{
-			exchange.getIn().setBody(this.getClass().getResourceAsStream(CREATE_SHIPMENT_RESPONSE_JSON_RESOURCE_PATH));
-
+			exchange.getIn().setBody(response);
 			called++;
 		}
 	}

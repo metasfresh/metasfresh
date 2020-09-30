@@ -27,7 +27,7 @@ import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
-import de.metas.camel.shipping.shipment.AttributeCode;
+import de.metas.camel.shipping.shipment.kommissionierung.AttributeCode;
 import de.metas.common.customerreturns.JsonCreateCustomerReturnInfo;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
