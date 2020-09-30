@@ -476,8 +476,8 @@ class Lookup extends Component {
             } else if (
               widgetData &&
               (item.source === 'list' ||
-              item.widgetType === 'List' ||
-              (itemByProperty && itemByProperty.source === 'List'))
+                item.widgetType === 'List' ||
+                (itemByProperty && itemByProperty.source === 'List'))
             ) {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
