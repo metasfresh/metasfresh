@@ -28,6 +28,7 @@ import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
+import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.camel.shipping.shipment.kommissionierung.inventory.InventoryCorrectionXmlToJsonProcessor;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
@@ -36,7 +37,6 @@ import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -88,7 +88,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.movementDate(getDeliveryDate(row, fieldName2Index))
 				.movementQuantity(getMovementQty(row, fieldName2Index, propertiesComponent))
 				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, ShipmentField.DOCUMENT_NO)))
-				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, ShipmentField.PRODUCT_VALUE))))
+				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, ShipmentField.ARTICLE_VALUE_TEMP))))
 				.build();
 
 		return Optional.of(createShipmentInfo);

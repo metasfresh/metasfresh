@@ -28,7 +28,7 @@ import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
 import de.metas.camel.shipping.shipment.kommissionierung.ShipmentField;
-import de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants;
+import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.filemaker.ROW;
@@ -84,7 +84,7 @@ public class InventoryCorrectionXmlToJsonProcessor implements Processor
 				.fieldName2Index(fieldName2Index)
 				.row(row);
 
-		final String productAndOrg = FileMakerDataHelper.getValue(request.fieldName(ShipmentField.PRODUCT_VALUE.getName()).build());
+		final String productAndOrg = FileMakerDataHelper.getValue(request.fieldName(ShipmentField.ARTICLE_VALUE_TEMP.getName()).build());
 		final String bestBeforeDateStr = FileMakerDataHelper.getValue(request.fieldName(ShipmentField.BEST_BEFORE_DATE.getName()).build());
 
 		final LocalDate bestBeforeDate = XmlToJsonProcessorUtil.asLocalDate(bestBeforeDateStr, SiroShipmentConstants.EXPIRY_DATE_PATTERNS, ShipmentField.BEST_BEFORE_DATE.getName())

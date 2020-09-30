@@ -29,7 +29,7 @@ import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
 import de.metas.camel.shipping.shipment.kommissionierung.AttributeCode;
-import de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants;
+import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.camel.shipping.shipment.kommissionierung.inventory.InventoryCorrectionXmlToJsonProcessor;
 import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;

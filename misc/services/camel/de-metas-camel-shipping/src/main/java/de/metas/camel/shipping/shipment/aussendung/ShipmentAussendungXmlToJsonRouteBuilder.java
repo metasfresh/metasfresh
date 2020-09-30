@@ -36,13 +36,13 @@ import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JacksonXMLDataFormat;
 
 import static de.metas.camel.inventory.InventoryXmlToMetasfreshRouteBuilder.ROUTE_ID_FROM_JSON;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION_TOKEN;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.CREATE_SHIPMENT_MF_URL;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.LOCAL_STORAGE_URL;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.SHIPMENT_XML_TO_JSON_PROCESSOR;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.SIRO_FTP_PATH;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.CREATE_SHIPMENT_MF_URL;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.LOCAL_STORAGE_URL;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SHIPMENT_XML_TO_JSON_PROCESSOR;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.SIRO_FTP_PATH;
 
 public class ShipmentAussendungXmlToJsonRouteBuilder extends EndpointRouteBuilder
 {

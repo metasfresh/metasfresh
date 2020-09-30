@@ -35,7 +35,7 @@ public enum ShipmentField
 	ARTICLE_NOTE("_artikel_hinweistext"),
 	ARTICLE_IS_STOCKED("_artikel_ist_lagerhaltig"),
 	DELIVERED_QTY("_artikel_menge"),
-	PRODUCT_VALUE("_artikel_nummer"),
+	PRODUCT_VALUE_CURRENTLY_NOT_USED("_artikel_nummer"),
 	ARTICLE_VALUE_TEMP("_artikel_nummer_gesellchen"),
 	DELIVERED_NETAMT("_artikel_preis"),
 	ARTICLE_PACKAGE_SIZE("_artikel_verpackungsgroesse"),

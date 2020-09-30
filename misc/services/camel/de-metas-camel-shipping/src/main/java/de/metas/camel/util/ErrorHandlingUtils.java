@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants;
+import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

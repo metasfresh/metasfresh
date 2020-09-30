@@ -1,7 +1,7 @@
 package de.metas.camel.manufacturing.order.issue_and_receipt;
 
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION_TOKEN;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;

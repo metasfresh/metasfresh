@@ -24,6 +24,7 @@ package de.metas.camel.shipping.shipment.kommissionierung;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
