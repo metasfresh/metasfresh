@@ -86,7 +86,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 				final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
 				if (bestBeforeDate != null)
 				{
-					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, receiptSchedule);
+					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 				}
 			}
 			huAttributes.saveChangesIfNeeded();
