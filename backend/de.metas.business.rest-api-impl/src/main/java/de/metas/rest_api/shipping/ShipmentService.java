@@ -58,6 +58,7 @@ import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -453,8 +454,13 @@ public class ShipmentService
 		}
 
 		@Nullable
-		public ShipperId  getShipperId(@NonNull final String shipperInternalName)
+		public ShipperId getShipperId(@Nullable final String shipperInternalName)
 		{
+			if(Check.isBlank(shipperInternalName))
+			{
+				return null;
+			}
+
 			final I_M_Shipper shipper = shipperByInternalName.computeIfAbsent(shipperInternalName, this::loadShipper);
 
 			return shipper != null

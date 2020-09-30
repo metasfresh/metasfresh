@@ -64,7 +64,8 @@ public class ShipmentAussendungXmlToJsonProcessor implements Processor
 {
 	private final static Log log = LogFactory.getLog(ShipmentAussendungXmlToJsonProcessor.class);
 
-	@Override public void process(final Exchange exchange)
+	@Override
+	public void process(final Exchange exchange)
 	{
 		XmlToJsonProcessorUtil.processExchange(exchange, this::buildCreateShipmentsRequest);
 	}
@@ -137,7 +138,7 @@ public class ShipmentAussendungXmlToJsonProcessor implements Processor
 			@NonNull final Map<String, Integer> fieldName2Index,
 			@NonNull final String shipmentScheduleId)
 	{
-		final String countryCode = getValueByName(row, fieldName2Index, ShipmentAussendungField.COUNTRY_CODE);
+		final String countryCode = getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_COUNTRY_CODE);
 
 		if (StringUtils.isBlank(countryCode))
 		{
@@ -147,10 +148,10 @@ public class ShipmentAussendungXmlToJsonProcessor implements Processor
 
 		return JsonLocation.builder()
 				.countryCode(countryCode)
-				.city(getValueByName(row, fieldName2Index, ShipmentAussendungField.CITY))
-				.street(getValueByName(row, fieldName2Index, ShipmentAussendungField.STREET))
-				.zipCode(getValueByName(row, fieldName2Index, ShipmentAussendungField.POSTAL_CODE))
-				.houseNo(getValueByName(row, fieldName2Index, ShipmentAussendungField.HOUSE_NO))
+				.city(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_CITY))
+				.street(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_STREET))
+				.zipCode(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_POSTAL_CODE))
+				.houseNo(getValueByName(row, fieldName2Index, ShipmentAussendungField.RECIPIENT_HOUSE_NO))
 				.build();
 	}
 
@@ -192,9 +193,12 @@ public class ShipmentAussendungXmlToJsonProcessor implements Processor
 	@Nullable
 	private LocalDateTime getDeliveryDate(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index)
 	{
-		final String deliveryDateStr = getValueByName(row, fieldName2Index, ShipmentAussendungField.DELIVERY_DATE);
+		final String deliveryDateStr = getValueByName(row, fieldName2Index, ShipmentAussendungField.SHIPPING_TIMESTAMP);
 
-		return XmlToJsonProcessorUtil.asLocalDateTime(deliveryDateStr, ImmutableSet.of(SiroShipmentConstants.DELIVERY_DATE_PATTERN), ShipmentAussendungField.DELIVERY_DATE.getName()).orElse(null);
+		return XmlToJsonProcessorUtil.asLocalDateTime(deliveryDateStr,
+				ImmutableSet.of(SiroShipmentConstants.DELIVERY_DATE_PATTERN),
+				ShipmentAussendungField.SHIPPING_TIMESTAMP.getName())
+				.orElse(null);
 	}
 
 	@Nullable
@@ -246,10 +250,10 @@ public class ShipmentAussendungXmlToJsonProcessor implements Processor
 		final List<BigDecimal> packageWeightList = StringUtils.isBlank(packageWeightStr)
 				? ImmutableList.of()
 				: Stream.of(packageWeightStr.split(packageWeightSeparator))
-				  	.filter(StringUtils::isNotBlank)
-				    .map(weight -> XmlToJsonProcessorUtil.toBigDecimalOrNull(weight, locale))
-					.filter(Objects::nonNull)
-				    .collect(ImmutableList.toImmutableList());
+				.filter(StringUtils::isNotBlank)
+				.map(weight -> XmlToJsonProcessorUtil.toBigDecimalOrNull(weight, locale))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList.Builder<JsonPackage> packageListBuilder = ImmutableList.builder();
 
