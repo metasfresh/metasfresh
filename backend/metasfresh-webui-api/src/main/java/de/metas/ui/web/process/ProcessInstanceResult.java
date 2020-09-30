@@ -14,7 +14,6 @@ import lombok.Setter;
 import lombok.Value;
 import org.compiere.util.Util;
 
-import javax.annotation.Nullable;
 import java.io.File;
 
 /*
@@ -72,20 +71,6 @@ public final class ProcessInstanceResult
 			@NonNull final DocumentId instanceId,
 			final String summary,
 			final boolean error,
-			final ResultAction action)
-	{
-		this.instanceId = instanceId;
-		this.summary = summary;
-		this.error = error;
-		this.action = action;
-		this.openInNewTab = false;
-	}
-
-	@Builder
-	private ProcessInstanceResult(
-			@NonNull final DocumentId instanceId,
-			final String summary,
-			final boolean error,
 			final ResultAction action,
 			final boolean openInNewTab)
 	{
@@ -101,9 +86,7 @@ public final class ProcessInstanceResult
 		return !isError();
 	}
 
-	/**
-	 * @return action of given type; never returns null
-	 */
+	/** @return action of given type; never returns null */
 	public <T extends ResultAction> T getAction(final Class<T> actionType)
 	{
 		final ResultAction action = getAction();
@@ -115,8 +98,7 @@ public final class ProcessInstanceResult
 		{
 			throw new IllegalStateException("Action is not of type " + actionType + " but " + action.getClass());
 		}
-		@SuppressWarnings("unchecked")
-		final T actionCasted = (T)action;
+		@SuppressWarnings("unchecked") final T actionCasted = (T)action;
 		return actionCasted;
 	}
 
@@ -126,9 +108,7 @@ public final class ProcessInstanceResult
 	//
 	//
 
-	/**
-	 * Base interface for all post-process actions
-	 */
+	/** Base interface for all post-process actions */
 	public static interface ResultAction
 	{
 	}
@@ -160,10 +140,9 @@ public final class ProcessInstanceResult
 		@NonNull
 		private final ViewId viewId;
 		private final ViewProfileId profileId;
-		@Nullable
-		private final boolean openInNewTab;
 		@Builder.Default
 		private final boolean modalOverlay = true;
+		private final boolean openInNewTab;
 	}
 
 	@lombok.Value
@@ -189,8 +168,6 @@ public final class ProcessInstanceResult
 		@NonNull
 		private final DocumentPath documentPath;
 		private final boolean modal;
-
-		@Nullable
 		private final boolean openInNewTab;
 	}
 
@@ -198,18 +175,15 @@ public final class ProcessInstanceResult
 	@lombok.Builder
 	public static final class SelectViewRowsAction implements ResultAction
 	{
-		private @NonNull
-		final ViewId viewId;
-		private @NonNull
-		final DocumentIdsSelection rowIds;
+		private @NonNull final ViewId viewId;
+		private @NonNull final DocumentIdsSelection rowIds;
 	}
 
 	@lombok.Value
 	@lombok.Builder
 	public static final class DisplayQRCodeAction implements ResultAction
 	{
-		private @NonNull
-		final String code;
+		private @NonNull final String code;
 	}
 
 }

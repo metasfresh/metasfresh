@@ -848,7 +848,6 @@ public class ProcessExecutionResult
 
 		@JsonProperty("openInNewTab")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
-		@Nullable
 		boolean openInNewTab;
 
 		public enum OpenTarget
@@ -872,7 +871,7 @@ public class ProcessExecutionResult
 				@JsonProperty("records") @NonNull @Singular final List<TableRecordReference> records,
 				@JsonProperty("adWindowId") @Nullable final String adWindowId,
 				@JsonProperty("target") @Nullable final OpenTarget target,
-				@JsonProperty("openInNewTab") @Nullable final boolean openInNewTab,
+				@JsonProperty("openInNewTab") final boolean openInNewTab,
 				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths,
 				@JsonProperty("useAutoFilters") @Nullable final Boolean useAutoFilters)
 		{

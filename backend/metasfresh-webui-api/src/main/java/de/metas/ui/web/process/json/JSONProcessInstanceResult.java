@@ -100,7 +100,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		else if (resultAction instanceof OpenViewAction)
 		{
 			final OpenViewAction openViewAction = (OpenViewAction)resultAction;
-			final boolean openInNewTab = ((OpenViewAction)resultAction).isOpenInNewTab();
+			final boolean openInNewTab = openViewAction.isOpenInNewTab();
 			return new JSONOpenViewAction(openViewAction.getViewId(), openViewAction.getProfileId(), openViewAction.isModalOverlay(), openInNewTab);
 		}
 		else if (resultAction instanceof OpenIncludedViewAction)
@@ -112,7 +112,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		{
 			final OpenSingleDocument openDocumentAction = (OpenSingleDocument)resultAction;
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
-			final boolean openInNewTab = ((OpenSingleDocument)resultAction).isOpenInNewTab();
+			final boolean openInNewTab = openDocumentAction.isOpenInNewTab();
 			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.isModal(), openDocumentAction.isOpenInNewTab());
 		}
 		else if (resultAction instanceof SelectViewRowsAction)
@@ -177,16 +177,6 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final boolean modalOverlay;
 		private final boolean openInNewTab;
 
-		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId, final boolean modalOverlay)
-		{
-			super("openView");
-			this.windowId = viewId.getWindowId();
-			this.viewId = viewId.getViewId();
-			this.profileId = profileId != null ? profileId.toJson() : null;
-			this.modalOverlay = modalOverlay;
-			this.openInNewTab = false;
-		}
-
 		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId, final boolean modalOverlay, final boolean openInNewTab)
 		{
 			super("openView");
@@ -226,15 +216,6 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final boolean modal;
 		private final boolean advanced = false;
 		private final boolean openInNewTab;
-
-		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId, final boolean modal)
-		{
-			super("openDocument");
-			this.windowId = windowId;
-			this.documentId = documentId;
-			this.modal = modal;
-			this.openInNewTab = false;
-		}
 
 		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId, final boolean modal, boolean openInNewTab)
 		{
