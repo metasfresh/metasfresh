@@ -24,6 +24,7 @@ package de.metas.camel.shipping.shipment.kommissionierung;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.Streams;
 import com.google.common.io.Resources;
 import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
@@ -42,6 +43,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Scanner;
 
 import static de.metas.camel.inventory.InventoryXmlToMetasfreshRouteBuilder.ROUTE_ID_FROM_JSON;
 import static de.metas.camel.shipping.RouteBuilderCommonUtil.NUMBER_OF_ITEMS;
@@ -178,10 +180,14 @@ public class ShipmentXmlToJsonRouteBuilderTest extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 	}
 
-	private String readResourceAsString(final String fileName) throws IOException
+	private String readResourceAsString(@NonNull final String fileName)
 	{
-		final var url = this.getClass().getResource(RESOURCE_PATH + fileName);
-		return Resources.toString(url, StandardCharsets.UTF_8);
+		// thx to https://stackoverflow.com/a/35446009/1012103 !
+		final var stream = this.getClass().getResourceAsStream(fileName);
+		assertThat(stream).isNotNull(); // guard
+
+		final Scanner s = new Scanner(stream).useDelimiter("\\A");
+		return s.hasNext() ? s.next() : "";
 	}
 
 	private void prepareRouteForTesting(final MockEmptyProcessor localStorageEndpoint,

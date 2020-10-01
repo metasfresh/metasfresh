@@ -50,7 +50,7 @@ class InventoryXmlToJsonProcessor implements Processor
 
 		processExchange(exchange,
 				(rawRow, metadata) -> toJsonInventoryLine(rawRow, metadata, propertiesComponent),
-				lines -> toJsonInventory(lines));
+				InventoryXmlToJsonProcessor::toJsonInventory);
 	}
 
 	private static <T, R> void processExchange(
@@ -91,7 +91,7 @@ class InventoryXmlToJsonProcessor implements Processor
 		final InventoryXmlRowWrapper row = InventoryXmlRowWrapper.wrap(rawRow, metadata);
 
 		final var warehouseValue = CommonUtil.extractWarehouseValue(propertiesComponent, row.get_siro_kunden_id());
-		final var productValue = CommonUtil.removeOrgPrefix(row.get_artikel_nummer());
+		final var productValue = CommonUtil.convertProductValue(row.get_artikel_nummer());
 
 		return JsonInventoryLine.builder()
 				.warehouseValue(warehouseValue)

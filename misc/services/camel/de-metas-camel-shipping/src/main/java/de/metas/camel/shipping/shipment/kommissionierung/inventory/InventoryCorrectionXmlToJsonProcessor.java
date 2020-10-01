@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 public class InventoryCorrectionXmlToJsonProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		XmlToJsonProcessorUtil.processExchange(exchange, this::createInventory);
 	}
@@ -90,7 +90,7 @@ public class InventoryCorrectionXmlToJsonProcessor implements Processor
 				//
 				.inventoryDate(SystemTime.asLocalDate()) // we don't have a specific field for this
 				//
-				.productValue(CommonUtil.removeOrgPrefix(productAndOrg))
+				.productValue(CommonUtil.convertProductValue(productAndOrg))
 				//
 				.qtyCount(BigDecimal.ZERO)//out of stock
 				//

@@ -203,7 +203,7 @@ public class ReceiptXmlRowWrapper
 			return null;
 		}
 
-		return CommonUtil.removeOrgPrefix(productSearchKey);
+		return CommonUtil.convertProductValue(productSearchKey);
 	}
 
 	@Nullable
@@ -238,10 +238,9 @@ public class ReceiptXmlRowWrapper
 
 		final String orgPrefix2CodeProperty = ORG_PREFIX_TO_ORG_CODE_PROPERTY_PATTERN.replace(ORG_PREFIX_TOKEN, orgPrefix);
 
-		final String orgCode = propertiesComponent.resolveProperty(orgPrefix2CodeProperty)
+		return propertiesComponent
+				.resolveProperty(orgPrefix2CodeProperty)
 				.orElseThrow(() -> new RuntimeException("Missing property: " + orgPrefix2CodeProperty + "!"));
-
-		return orgCode;
 	}
 
 	@Nullable

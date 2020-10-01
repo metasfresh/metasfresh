@@ -27,7 +27,6 @@ import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
 import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.camel.shipping.shipment.kommissionierung.inventory.InventoryCorrectionXmlToJsonProcessor;
-import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.RESULTSET;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.shipment.JsonCreateShipmentInfo;
@@ -41,7 +40,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -77,7 +75,7 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.movementDate(rowWrapper.getDeliveryDate())
 				.movementQuantity(rowWrapper.getMovementQty(propertiesComponent))
 				.documentNo(StringUtils.trimToNull(rowWrapper.getValueByName(ShipmentField.DOCUMENT_NO)))
-				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(rowWrapper.getValueByName(ShipmentField.ARTICLE_VALUE_TEMP))))
+				.productSearchKey(StringUtils.trimToNull(CommonUtil.convertProductValue(rowWrapper.getValueByName(ShipmentField.ARTICLE_VALUE_TEMP))))
 				.build();
 
 		return Optional.of(createShipmentInfo);
