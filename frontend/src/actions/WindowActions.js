@@ -1171,13 +1171,13 @@ export function handleProcessResponse(response, type, id) {
       let keepProcessModal = false;
 
       if (action) {
+        const { windowId, viewId, documentId, openInNewTab } = action;
+
         switch (action.type) {
           case 'displayQRCode':
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
           case 'openView': {
-            const { windowId, viewId } = action;
-
             await dispatch(closeModal());
 
             if (!action.modalOverlay) {
@@ -1196,6 +1196,13 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openDocument':
             await dispatch(closeModal());
+            if (openInNewTab) {
+              let newTabBrowser = window.open(
+                `/window/${windowId}/${documentId}`,
+                '_blank'
+              );
+              newTabBrowser.focus();
+            }
 
             if (action.modal) {
               // Do not close process modal,
