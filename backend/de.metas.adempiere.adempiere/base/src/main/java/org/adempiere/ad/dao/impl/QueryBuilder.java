@@ -38,7 +38,6 @@ import org.adempiere.ad.dao.IQueryBuilderDAO;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
@@ -64,7 +63,7 @@ import lombok.NonNull;
 	private final ICompositeQueryFilter<T> filters;
 
 	private PInstanceId onlySelectionId;
-	private QueryLimit limit = QueryLimit.NO_LIMIT;
+	private int limit = IQuery.NO_LIMIT;
 
 	private Map<String, Object> options = null;
 
@@ -278,13 +277,13 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public QueryLimit getLimit()
+	public int getLimit()
 	{
 		return limit;
 	}
 
 	@Override
-	public IQueryBuilder<T> setLimit(@NonNull final QueryLimit limit)
+	public IQueryBuilder<T> setLimit(final int limit)
 	{
 		this.limit = limit;
 		return this;

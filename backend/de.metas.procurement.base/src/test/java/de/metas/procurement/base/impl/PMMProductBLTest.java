@@ -32,7 +32,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 
 /*
@@ -498,7 +497,7 @@ public class PMMProductBLTest
 		uom.setStdPrecision(3);
 		uom.setCostingPrecision(0);
 
-		uom.setX12DE355(X12DE355.KILOGRAM.getCode());
+		uom.setX12DE355("KGM");
 
 		InterfaceWrapperHelper.save(uom);
 

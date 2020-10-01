@@ -39,7 +39,6 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.context.SwingContextProvider;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -70,8 +69,6 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.IService;
 import de.metas.util.Loggables;
@@ -263,15 +260,15 @@ public class AdempiereTestHelper
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
-		allOrgs.setAD_Org_ID(OrgId.ANY.getRepoId());
+		allOrgs.setAD_Org_ID(0);
 		save(allOrgs);
 
 		final I_AD_User systemUser = newInstance(I_AD_User.class);
-		systemUser.setAD_User_ID(UserId.SYSTEM.getRepoId());
+		systemUser.setAD_User_ID(0);
 		save(systemUser);
 
 		final I_M_AttributeSetInstance noAsi = newInstance(I_M_AttributeSetInstance.class);
-		noAsi.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+		noAsi.setM_AttributeSetInstance_ID(0);
 		save(noAsi);
 
 		log("createSystemRecords", "done in " + stopwatch);

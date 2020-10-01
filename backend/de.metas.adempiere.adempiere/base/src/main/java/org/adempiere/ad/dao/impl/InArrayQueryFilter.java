@@ -1,7 +1,5 @@
 package org.adempiere.ad.dao.impl;
 
-import static org.adempiere.ad.dao.impl.CompareQueryFilter.normalizeValue;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,6 +30,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,6 +41,7 @@ import org.compiere.util.DB;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -184,6 +185,22 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		}
 
 		return false;
+	}
+
+	private static Object normalizeValue(@Nullable final Object value)
+	{
+		if (value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
+		}
+		else if (value instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)value).getCode();
+		}
+		else
+		{
+			return value;
+		}
 	}
 
 	@Override

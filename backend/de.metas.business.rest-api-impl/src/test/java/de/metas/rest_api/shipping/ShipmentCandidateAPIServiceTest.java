@@ -22,16 +22,17 @@
 
 package de.metas.rest_api.shipping;
 
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.adempiere.ad.dao.QueryLimit;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
+import de.metas.location.CountryId;
+import de.metas.product.ProductRepository;
+import de.metas.util.time.SystemTime;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
@@ -47,17 +48,14 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.business.BusinessTestHelper;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
-import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
-import de.metas.location.CountryId;
-import de.metas.product.ProductRepository;
-import de.metas.util.time.SystemTime;
+import java.util.List;
+
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentCandidateAPIServiceTest
 {
@@ -113,7 +111,7 @@ class ShipmentCandidateAPIServiceTest
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
 
 		// when
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(QueryLimit.ofInt(500));
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(500);
 
 		// then
 		assertThat(result.isHasMoreItems()).isFalse();
@@ -138,7 +136,7 @@ class ShipmentCandidateAPIServiceTest
 		saveRecord(location);
 
 		// when
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(QueryLimit.ofInt(500));
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(500);
 
 		// then
 		refresh(shipmentScheduleRecord);

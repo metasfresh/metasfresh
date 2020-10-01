@@ -22,15 +22,17 @@
 
 package de.metas.rest_api.shipping;
 
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.adempiere.ad.dao.QueryLimit;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
+import de.metas.inoutcandidate.ReceiptScheduleRepository;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.exportaudit.ReceiptScheduleAuditRepository;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_ExportAudit;
+import de.metas.location.CountryId;
+import de.metas.product.ProductRepository;
+import de.metas.util.time.SystemTime;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
@@ -46,17 +48,14 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.business.BusinessTestHelper;
-import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
-import de.metas.inoutcandidate.ReceiptScheduleRepository;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import de.metas.inoutcandidate.exportaudit.ReceiptScheduleAuditRepository;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_ExportAudit;
-import de.metas.location.CountryId;
-import de.metas.product.ProductRepository;
-import de.metas.util.time.SystemTime;
+import java.util.List;
+
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ReceiptCandidateAPIServiceTest
 {
@@ -112,7 +111,7 @@ class ReceiptCandidateAPIServiceTest
 		final I_M_ReceiptSchedule receiptScheduleRecord = createReceiptScheduleRecord();
 
 		// when
-		final JsonResponseReceiptCandidates result = receiptCandidateAPIService.exportReceiptCandidates(QueryLimit.FIVE_HUNDRED);
+		final JsonResponseReceiptCandidates result = receiptCandidateAPIService.exportReceiptCandidates(500);
 
 		// then
 		refresh(receiptScheduleRecord);

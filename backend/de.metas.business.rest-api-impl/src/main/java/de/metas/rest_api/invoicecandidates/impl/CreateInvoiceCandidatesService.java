@@ -1,26 +1,8 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.util.Check.isEmpty;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.collections4.CollectionUtils;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -29,11 +11,11 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.NewManualInvoiceCandidateBuilder;
@@ -76,11 +58,25 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static de.metas.util.Check.isEmpty;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -214,10 +210,7 @@ public class CreateInvoiceCandidatesService
 		}
 
 		// uomId
-		final UomId uomId = lookupUomId(
-				X12DE355.ofNullableCode(item.getUomCode()), 
-				productId, 
-				item);
+		final UomId uomId = lookupUomId(item.getUomCode(), productId, item);
 		candidate.invoicingUomId(uomId);
 
 		// qtyOrdered
@@ -509,10 +502,7 @@ public class CreateInvoiceCandidatesService
 
 		final CurrencyId currencyId = lookupCurrencyId(jsonPrice);
 
-		final UomId priceUomId = lookupUomId(
-				X12DE355.ofNullableCode(jsonPrice.getPriceUomCode()), 
-				productId, 
-				item);
+		final UomId priceUomId = lookupUomId(jsonPrice.getPriceUomCode(), productId, item);
 
 		final ProductPrice price = ProductPrice.builder()
 				.money(Money.of(jsonPrice.getValue(), currencyId))
@@ -533,11 +523,11 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private UomId lookupUomId(
-			@Nullable final X12DE355 uomCode,
+			@Nullable final String uomCode,
 			@NonNull final ProductId productId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		if (uomCode == null)
+		if (isEmpty(uomCode, true))
 		{
 			return productBL.getStockUOMId(productId);
 		}

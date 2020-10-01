@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -55,7 +56,7 @@ public class AttributeSetDescriptionBuilderCommandTest
 	private void createEachUOM()
 	{
 		prepareUOM()
-				.uomId(UomId.EACH)
+				.uomId(IUOMDAO.C_UOM_ID_Each)
 				.uomSymbol("Ea")
 				.precision(0)
 				.build();
@@ -63,14 +64,14 @@ public class AttributeSetDescriptionBuilderCommandTest
 
 	@Builder(builderMethodName = "prepareUOM", builderClassName = "UOMBuilder")
 	private static UomId createUOM(
-			UomId uomId,
+			int uomId,
 			@NonNull String uomSymbol,
 			int precision)
 	{
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		if (uomId != null)
+		if (uomId > 0)
 		{
-			uom.setC_UOM_ID(uomId.getRepoId());
+			uom.setC_UOM_ID(uomId);
 		}
 		uom.setName(uomSymbol);
 		uom.setUOMSymbol(uomSymbol);
@@ -131,7 +132,8 @@ public class AttributeSetDescriptionBuilderCommandTest
 		@Test
 		public void Each()
 		{
-			createNumericAttributeAndAssumeDisplayType(UomId.EACH, DisplayType.Integer);
+			final UomId uomId = UomId.ofRepoId(IUOMDAO.C_UOM_ID_Each);
+			createNumericAttributeAndAssumeDisplayType(uomId, DisplayType.Integer);
 		}
 
 		@Test
@@ -163,7 +165,7 @@ public class AttributeSetDescriptionBuilderCommandTest
 		final AttributeId attributeId = prepareAttribute()
 				.value("MonthsUntilExpiry")
 				.attributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_Number)
-				.uomId(UomId.EACH) // to advice the builder to render the attribute as Integer instead of Numeric
+				.uomId(UomId.ofRepoId(IUOMDAO.C_UOM_ID_Each)) // to advice the builder to render the attribute as Integer instead of Numeric
 				.build();
 
 		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
@@ -183,7 +185,7 @@ public class AttributeSetDescriptionBuilderCommandTest
 				.value("MonthsUntilExpiry")
 				.name("Exp")
 				.attributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_Number)
-				.uomId(UomId.EACH) // to advice the builder to render the attribute as Integer instead of Numeric
+				.uomId(UomId.ofRepoId(IUOMDAO.C_UOM_ID_Each)) // to advice the builder to render the attribute as Integer instead of Numeric
 				.descriptionPattern("@Label@: @Value@")
 				.build();
 
@@ -206,7 +208,7 @@ public class AttributeSetDescriptionBuilderCommandTest
 				.value("MonthsUntilExpiry")
 				.name("Exp")
 				.attributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_Number)
-				.uomId(UomId.EACH) // to advice the builder to render the attribute as Integer instead of Numeric
+				.uomId(UomId.ofRepoId(IUOMDAO.C_UOM_ID_Each)) // to advice the builder to render the attribute as Integer instead of Numeric
 				.descriptionPattern("@Label@: @Value@ @UOM@")
 				.build();
 

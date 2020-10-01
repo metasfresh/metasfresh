@@ -22,9 +22,28 @@
 
 package de.metas.camel.shipping.receipt;
 
-import static de.metas.camel.shipping.XmlToJsonProcessorUtil.asLocalDate;
-import static de.metas.camel.shipping.XmlToJsonProcessorUtil.asLocalDateTime;
-import static de.metas.camel.shipping.XmlToJsonProcessorUtil.processExchange;
+import com.google.common.collect.ImmutableList;
+import de.metas.camel.shipping.CommonUtil;
+import de.metas.camel.shipping.JsonAttributeInstanceHelper;
+import de.metas.camel.shipping.XmlToJsonBaseProcessor;
+import de.metas.camel.shipping.shipment.AttributeCode;
+import de.metas.common.filemaker.FileMakerDataHelper;
+import de.metas.common.filemaker.ROW;
+import de.metas.common.receipt.JsonCreateReceiptInfo;
+import de.metas.common.receipt.JsonCreateReceiptsRequest;
+import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
 import static de.metas.camel.shipping.receipt.ReceiptField.ARTICLE_FLAVOR;
 import static de.metas.camel.shipping.receipt.ReceiptField.DATE_RECEIVED;
 import static de.metas.camel.shipping.receipt.ReceiptField.EXPIRY_DATE;
@@ -38,31 +57,7 @@ import static de.metas.camel.shipping.receipt.SiroReceiptConstants.DATE_RECEIVED
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.EXPIRY_DATE_PATTERNS;
 import static de.metas.camel.shipping.receipt.SiroReceiptConstants.MOVEMENT_DATE_PATTERNS;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.camel.shipping.CommonUtil;
-import de.metas.camel.shipping.JsonAttributeInstanceHelper;
-import de.metas.camel.shipping.shipment.AttributeCode;
-import de.metas.common.filemaker.FileMakerDataHelper;
-import de.metas.common.filemaker.ROW;
-import de.metas.common.receipt.JsonCreateReceiptInfo;
-import de.metas.common.receipt.JsonCreateReceiptsRequest;
-import de.metas.common.rest_api.JsonAttributeInstance;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import lombok.NonNull;
-
-public class ReceiptXmlToJsonProcessor implements Processor
+public class ReceiptXmlToJsonProcessor extends XmlToJsonBaseProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception

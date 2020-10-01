@@ -1,10 +1,13 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.time.ZoneId;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.MetasfreshId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -27,7 +30,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.MissingPropertyException;
 import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
@@ -40,7 +42,6 @@ import de.metas.rest_api.utils.DocTypeService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -129,9 +130,9 @@ public class JsonConverters
 		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
 
 		final UomId uomId;
-		if (!Check.isBlank(request.getUomCode()))
+		if (!isEmpty(request.getUomCode(), true))
 		{
-			uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(request.getUomCode()));
+			uomId = uomDAO.getUomIdByX12DE355(request.getUomCode());
 		}
 		else
 		{

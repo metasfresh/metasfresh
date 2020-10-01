@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.SyncAdvise;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 
@@ -18,12 +19,10 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.security.PermissionService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -123,9 +122,7 @@ final class ProductMasterDataProvider
 		final SyncAdvise.IfExists ifExists = jsonProductInfo.getSyncAdvise().getIfExists();
 		if (existingProductId != null && !ifExists.isUpdate())
 		{
-			final UomId uomId = getProductUOMId(
-					existingProductId, 
-					X12DE355.ofNullableCode(jsonProductInfo.getUomCode()));
+			final UomId uomId = getProductUOMId(existingProductId, jsonProductInfo.getUomCode());
 			return ProductInfo.builder()
 					.productId(existingProductId)
 					.uomId(uomId)
@@ -167,7 +164,7 @@ final class ProductMasterDataProvider
 
 		productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
 
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(jsonProductInfo.getUomCode()));
+		final UomId uomId = uomDAO.getUomIdByX12DE355(jsonProductInfo.getUomCode());
 		productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
 
 		permissionService.assertCanCreateOrUpdate(productRecord);
@@ -222,9 +219,9 @@ final class ProductMasterDataProvider
 
 	private UomId getProductUOMId(
 			@Nullable final ProductId productId,
-			@Nullable final X12DE355 uomCode)
+			@Nullable final String uomCode)
 	{
-		if (uomCode != null)
+		if (!Check.isEmpty(uomCode, true))
 		{
 			return uomDAO.getUomIdByX12DE355(uomCode);
 		}

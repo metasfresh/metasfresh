@@ -22,10 +22,12 @@
 
 package de.metas.acct.api.impl;
 
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.IElementValueDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
@@ -33,12 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_ElementValue;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.IElementValueDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Properties;
 
 public class ElementValueDAO implements IElementValueDAO
 {
@@ -63,7 +60,7 @@ public class ElementValueDAO implements IElementValueDAO
 		final I_C_ElementValue from = queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, valueFrom + "%")
-				.setLimit(QueryLimit.ONE)
+				.setLimit(1)
 				.orderBy(I_C_ElementValue.COLUMNNAME_Value)
 				.create()
 				.first();
@@ -71,7 +68,7 @@ public class ElementValueDAO implements IElementValueDAO
 		final I_C_ElementValue to = queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, valueTo + "%")
-				.setLimit(QueryLimit.ONE)
+				.setLimit(1)
 				.orderByDescending(I_C_ElementValue.COLUMNNAME_Value)
 				.create()
 				.first();

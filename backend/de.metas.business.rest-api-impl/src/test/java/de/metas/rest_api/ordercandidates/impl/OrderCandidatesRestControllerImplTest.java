@@ -120,7 +120,6 @@ import de.metas.security.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.JSONObjectMapper;
@@ -164,7 +163,7 @@ public class OrderCandidatesRestControllerImplTest
 
 	private TestMasterdata testMasterdata;
 
-	private static final X12DE355 UOM_CODE = X12DE355.ofCode("MJ");
+	private static final String UOM_CODE = "MJ";
 	private UomId uomId;
 
 	private final CurrencyId currencyId_EUR = CurrencyId.ofRepoId(12345);
@@ -220,7 +219,7 @@ public class OrderCandidatesRestControllerImplTest
 
 			countryId_DE = BusinessTestHelper.createCountry(COUNTRY_CODE_DE);
 
-			final I_C_UOM uom = BusinessTestHelper.createUOM(UOM_CODE.getCode(), UOM_CODE);
+			final I_C_UOM uom = BusinessTestHelper.createUOM(UOM_CODE, UOM_CODE);
 			uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 			BusinessTestHelper.createProduct("ProductCode", uomId);
 
@@ -636,7 +635,7 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE.getCode())
+						.uomCode(UOM_CODE)
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
@@ -721,7 +720,7 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE.getCode())
+						.uomCode(UOM_CODE)
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
@@ -927,7 +926,7 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE.getCode())
+						.uomCode(UOM_CODE)
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
@@ -1041,7 +1040,7 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE.getCode())
+						.uomCode(UOM_CODE)
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())

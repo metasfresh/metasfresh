@@ -5,13 +5,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -30,7 +31,7 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.uom.UomId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 /*
@@ -148,7 +149,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			return false;
 		}
 
-		if (huRow.getC_UOM_ID() != UomId.EACH.getRepoId())
+		if (huRow.getC_UOM_ID() != IUOMDAO.C_UOM_ID_Each)
 		{
 			return false;
 		}
@@ -160,16 +161,21 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 	private ImmutableList<HUEditorRow> orderSelectedCUs()
 	{
 		return streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
-				.sorted((o1, o2) -> {
-					if (!isAggregateHU(o1))
+				.sorted(new Comparator<HUEditorRow>()
+				{
+					@Override
+					public int compare(final HUEditorRow o1, final HUEditorRow o2)
 					{
-						return -1;
+						if (!isAggregateHU(o1))
+						{
+							return -1;
+						}
+						if (!isAggregateHU(o2))
+						{
+							return 1;
+						}
+						return 0;
 					}
-					if (!isAggregateHU(o2))
-					{
-						return 1;
-					}
-					return 0;
 				}).collect(ImmutableList.toImmutableList());
 	}
 
