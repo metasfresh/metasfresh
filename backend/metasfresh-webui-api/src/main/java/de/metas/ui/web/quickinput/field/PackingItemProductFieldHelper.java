@@ -32,6 +32,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,9 @@ public class PackingItemProductFieldHelper
 {
 	private final IHUPIItemProductDAO huPIItemProductsRepo = Services.get(IHUPIItemProductDAO.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	
+	private static final String SYSCONFIG_EnforcePrecisePricePerHUItemProduct = "de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper.EnforcePrecisePricePerHUItemProduct";
 
 	public Optional<I_M_HU_PI_Item_Product> getDefaultPackingMaterial(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
 	{
@@ -88,6 +92,8 @@ public class PackingItemProductFieldHelper
 			return Optional.empty();
 		}
 
+		final boolean enforcePrecisePricePerHUItemProduct = sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false);
+		
 		// TODO: check ASI too
 		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
@@ -97,7 +103,10 @@ public class PackingItemProductFieldHelper
 		queryVO.setDate(defaultPackingItemCriteria.getDate());
 		queryVO.setAllowAnyProduct(false);
 		queryVO.setAllowAnyPartner(false);
-		queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
+		if (enforcePrecisePricePerHUItemProduct)
+		{
+			queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
+		}
 		final List<I_M_HU_PI_Item_Product> itemProducts = piItemProductDAO.retrieveHUItemProducts(Env.getCtx(), queryVO, ITrx.TRXNAME_ThreadInherited);
 		return itemProducts.stream().findFirst();
 	}

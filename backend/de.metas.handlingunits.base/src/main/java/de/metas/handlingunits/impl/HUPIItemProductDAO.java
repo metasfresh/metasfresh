@@ -22,6 +22,37 @@
 
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
@@ -43,42 +74,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.IQueryOrderByBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
-	private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private static final String SYSCONFIG_Enforce_M_HU_PI_Item_Product_ID = "de.metas.handlingunits.impl.HUPIItemProductDAO.Enforce_M_HU_PI_Item_Product_ID";
-
 	@Override
 	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
 	{
@@ -295,12 +293,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			}
 		}
 
-		final boolean enforceHU_PI_Item_Product = sysConfigBL.getBooleanValue(SYSCONFIG_Enforce_M_HU_PI_Item_Product_ID, false);
-		
 		//
 		// Product Price of a Price List Version has this Packing Item
 		{
-			if (enforceHU_PI_Item_Product && queryVO.getPriceListVersionId() != null)
+			if (queryVO.getPriceListVersionId() != null)
 			{
 				final IQueryFilter<I_M_PriceList_Version> plvFilter = queryBL.createCompositeQueryFilter(I_M_PriceList_Version.class)
 						.addOnlyActiveRecordsFilter()
