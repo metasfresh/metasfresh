@@ -182,11 +182,11 @@ public class ShipmentXmlToJsonProcessor implements Processor
 
 		if (StringUtils.isNotBlank(movementQtyOverrideStr))
 		{
-			return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQtyOverrideStr, locale).negate(); // qty is negative in _kommissionierung file
+			return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQtyOverrideStr, locale);
 		}
 
 		final String movementQty = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(ShipmentField.DELIVERED_QTY.getName()).build());
 
-		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQty, locale).negate(); // qty is negative in _kommissionierung file
+		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQty, locale);
 	}
 }
