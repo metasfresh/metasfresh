@@ -1207,6 +1207,7 @@ export function handleProcessResponse(response, type, id) {
                 '_blank'
               );
               newTabBrowser.focus();
+              return false;
             }
 
             if (action.modal) {
