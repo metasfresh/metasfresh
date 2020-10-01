@@ -55,6 +55,7 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_PriceList_Version;
@@ -75,6 +76,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
+	private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static final String SYSCONFIG_Enforce_M_HU_PI_Item_Product_ID = "de.metas.handlingunits.impl.HUPIItemProductDAO.Enforce_ M_HU_PI_Item_Product_ID";
+
 	@Override
 	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
 	{
@@ -291,10 +295,12 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			}
 		}
 
+		final boolean enforceHU_PI_Item_Product = sysConfigBL.getBooleanValue(SYSCONFIG_Enforce_M_HU_PI_Item_Product_ID, false);
+		
 		//
 		// Product Price of a Price List Version has this Packing Item
 		{
-			if (queryVO.getPriceListVersionId() != null)
+			if (enforceHU_PI_Item_Product && queryVO.getPriceListVersionId() != null)
 			{
 				final IQueryFilter<I_M_PriceList_Version> plvFilter = queryBL.createCompositeQueryFilter(I_M_PriceList_Version.class)
 						.addOnlyActiveRecordsFilter()
