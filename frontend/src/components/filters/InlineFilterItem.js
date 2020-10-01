@@ -77,7 +77,9 @@ class InlineFilterItem extends Component {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
               value: convertDateToReadable(param.widgetType, value),
-              valueTo: convertDateToReadable(param.widgetType, valueTo),
+              valueTo: valueTo
+                ? convertDateToReadable(param.widgetType, valueTo)
+                : null, // added safety check as deepUnfreeze crashes when valueTo is undefined
             });
           } else {
             return param;
