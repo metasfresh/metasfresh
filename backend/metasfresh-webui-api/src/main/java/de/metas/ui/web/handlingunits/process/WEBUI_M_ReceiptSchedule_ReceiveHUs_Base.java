@@ -151,8 +151,7 @@ import de.metas.util.Services;
 		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
 
 		hus.forEach(hu -> {
-			setAttributeBBD(hu, receiptSchedule);
-			setAttributeLotNumber(hu);
+			updateAttributes(hu, receiptSchedule);
 		});
 		openHUsToReceive(hus);
 

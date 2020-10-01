@@ -78,7 +78,4 @@ public final class HUAttributeConstants
 		Check.assumeNotEmpty(huIdColumnName, "huIdColumnName is not empty");
 		return "\"de.metas.handlingunits\".huBestBeforeDate(" + huIdColumnName + ")";
 	}
-
-	public static final String SYSCONFIG_AutomaticallySetLotNumber = "de.metas.handlingunits.attributes.AutomaticallySetLotNumber";
-	public static final String SYSCONFIG_AutomaticallySetBestBeforeDate = "de.metas.handlingunits.attributes.AutomaticallySetBestBeforeDate";
 }

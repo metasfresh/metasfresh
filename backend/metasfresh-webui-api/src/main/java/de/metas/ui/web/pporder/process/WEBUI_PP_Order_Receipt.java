@@ -22,7 +22,7 @@
 
 package de.metas.ui.web.pporder.process;
 
-import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -50,7 +50,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -66,7 +65,7 @@ public class WEBUI_PP_Order_Receipt
 	// services
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -235,19 +234,18 @@ public class WEBUI_PP_Order_Receipt
 	@Nullable
 	LocalDate computeBestBeforeDate()
 	{
-		if (sysConfigBL.getBooleanValue(HUAttributeConstants.SYSCONFIG_AutomaticallySetBestBeforeDate, false))
+		if (attributesBL.isAutomaticallySetBestBeforeDate())
 		{
 			final PPOrderLineRow row = getSingleSelectedRow();
-			final I_PP_Order ppOrderPO = huPPOrderBL.getById(row.getOrderId());
-			final LocalDate datePromised = TimeUtil.asLocalDate(ppOrderPO.getDatePromised());
 
-			final ProductId productId = row.getProductId();
-			final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
-
+			final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(row.getProductId());
 			if (guaranteeDaysMin <= 0)
 			{
 				return null;
 			}
+
+			final I_PP_Order ppOrderPO = huPPOrderBL.getById(row.getOrderId());
+			final LocalDate datePromised = TimeUtil.asLocalDate(ppOrderPO.getDatePromised());
 
 			return datePromised.plusDays(guaranteeDaysMin);
 		}

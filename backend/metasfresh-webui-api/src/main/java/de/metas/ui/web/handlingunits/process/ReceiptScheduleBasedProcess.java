@@ -3,7 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import java.time.LocalDate;
 import java.util.Collection;
 
-import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -14,7 +14,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -52,44 +51,47 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	private final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
 		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
 	}
 
-	protected void setAttributeLotNumber(final @NonNull I_M_HU hu)
+	protected void updateAttributes(@NonNull final I_M_HU hu, @NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (sysConfigBL.getBooleanValue(HUAttributeConstants.SYSCONFIG_AutomaticallySetLotNumber, false))
+		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
+		setAttributeLotNumber(hu, huAttributes);
+		setAttributeBBD(receiptSchedule, huAttributes);
+	}
+
+	private void setAttributeLotNumber(final @NonNull I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
+	{
+
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
+				&& Check.isBlank(huAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
+				&& huAttributesBL.isAutomaticallySetLotNumber()
+		)
 		{
 			final String lotNumberToSet = hu.getValue();
-
-			final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
-			if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
-					&& Check.isBlank(huAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber)))
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
-			}
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
 			huAttributes.saveChangesIfNeeded();
 		}
 	}
 
-	protected void setAttributeBBD(@NonNull final I_M_HU hu, @NonNull final I_M_ReceiptSchedule receiptSchedule)
+	private void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
 	{
-		if (sysConfigBL.getBooleanValue(HUAttributeConstants.SYSCONFIG_AutomaticallySetBestBeforeDate, false))
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
+				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
+				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
+		)
 		{
-			final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
-			if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-					&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null)
+			final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
+			if (bestBeforeDate != null)
 			{
-				final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
-				if (bestBeforeDate != null)
-				{
-					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-				}
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+				huAttributes.saveChangesIfNeeded();
 			}
-			huAttributes.saveChangesIfNeeded();
 		}
 	}
 

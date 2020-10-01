@@ -32,13 +32,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
@@ -338,10 +337,7 @@ import lombok.Value;
 			{
 				final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
 
-				setLotNumberAttribute(hu, huAttributes);
-				setBestBeforeDateAttribute(huAttributes);
-
-				huAttributes.saveChangesIfNeeded();
+				setAttributes(hu, huAttributes);
 			}
 		}
 
@@ -350,10 +346,23 @@ import lombok.Value;
 		setAssignedHUs(hus);
 	}
 
-	private void setLotNumberAttribute(final I_M_HU hu, final IAttributeStorage huAttributes)
+	private void setAttributes(@NonNull final I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
 	{
+		setLotNumberAttribute(hu, huAttributes);
+		setBestBeforeDateAttribute(huAttributes);
+
+		huAttributes.saveChangesIfNeeded();
+	}
+
+	private void setLotNumberAttribute(@NonNull final I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
+	{
+		if (!huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+		{
+			return;
+		}
+
 		final String lotNumberToSet;
-		if (Services.get(ISysConfigBL.class).getBooleanValue(HUAttributeConstants.SYSCONFIG_AutomaticallySetLotNumber, false))
+		if (Services.get(IHUAttributesBL.class).isAutomaticallySetLotNumber())
 		{
 			lotNumberToSet = CoalesceUtil.coalesce(lotNumber, hu.getValue());
 		}
@@ -362,10 +371,12 @@ import lombok.Value;
 			lotNumberToSet = lotNumber;
 		}
 
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+		if (lotNumberToSet == null)
 		{
-			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
+			return;
 		}
+
+		huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
 	}
 
 	private void setBestBeforeDateAttribute(final IAttributeStorage huAttributes)
