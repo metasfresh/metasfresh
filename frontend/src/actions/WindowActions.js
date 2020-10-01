@@ -1179,9 +1179,14 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openView': {
             await dispatch(closeModal());
-
+            let urlPath = `/window/${windowId}/?viewId=${viewId}`;
             if (!action.modalOverlay) {
-              window.open(`/window/${windowId}/?viewId=${viewId}`);
+              if (openInNewTab) {
+                let newTabBrowser = window.open(urlPath, '_blank');
+                newTabBrowser.focus();
+              } else {
+                window.open(urlPath);
+              }
 
               return;
             }
