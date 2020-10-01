@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -117,4 +118,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void save(I_M_ShipmentSchedule record);
 
 	ImmutableList<I_M_ShipmentSchedule> getByReferences(ImmutableList<TableRecordReference> recordRefs);
+
+	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
 }

@@ -24,7 +24,18 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.IEDIInputDataSourceBL;
+import de.metas.edi.model.I_C_BPartner;
+import de.metas.edi.model.I_C_Order;
+import de.metas.edi.model.I_EDI_Document;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.order.OrderId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -33,18 +44,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.api.IDesadvBL;
-import de.metas.edi.api.IEDIInputDataSourceBL;
-import de.metas.edi.model.I_C_BPartner;
-import de.metas.edi.model.I_C_Order;
-import de.metas.edi.model.I_EDI_Document;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Set;
 
 @Interceptor(I_C_Order.class)
 @Component
 public class C_Order
 {
+	private final IShipmentScheduleInvalidateRepository scheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
@@ -173,4 +181,13 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW}, ifColumnsChanged = I_C_Order.COLUMNNAME_POReference)
+	public void propagatePOReferenceChangeToShipmentSchedule(@NonNull final I_C_Order order)
+	{
+		//retrieve and invalidate all related shipment schedules
+		final Set<ShipmentScheduleId> shipmentScheduleIds = shipmentSchedulePA.retrieveScheduleIdsByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		//invalidate all related shipment schedules
+		scheduleInvalidateRepository.invalidateShipmentSchedules(shipmentScheduleIds);
+	}
 }
