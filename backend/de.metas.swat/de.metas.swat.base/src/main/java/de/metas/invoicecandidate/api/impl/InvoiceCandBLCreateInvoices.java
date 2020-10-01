@@ -342,7 +342,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				invoice = create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(invoiceHeader.getC_PaymentTerm_ID());
-
+				invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
 				setC_DocType(invoice, invoiceHeader);
 
 				final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
