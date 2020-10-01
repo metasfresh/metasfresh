@@ -1,11 +1,10 @@
-import React, { Component } from 'react';
+import React, { createRef, PureComponent } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
 
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
-// import { getClassNames, generateMomentObj } from '../../utils/widgetHelpers';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 
 import WidgetRenderer from './WidgetRenderer';
@@ -17,7 +16,7 @@ import Tooltips from '../tooltips/Tooltips';
  * @module RawWidget
  * @extends Component
  */
-export class RawWidget extends Component {
+export class RawWidget extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -36,6 +35,8 @@ export class RawWidget extends Component {
       }
     }
 
+    this.rawWidget = createRef(null);
+
     this.state = {
       isFocused: false,
       cachedValue,
@@ -43,21 +44,18 @@ export class RawWidget extends Component {
       tooltipToggled: false,
       clearedFieldWarning: false,
     };
-
-    // this.getClassNames = getClassNames.bind(this);
-    // this.generateMomentObj = generateMomentObj.bind(this);
   }
 
   componentDidMount() {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
 
-    if (rawWidget && autoFocus) {
-      rawWidget.focus();
+    if (rawWidget.current && autoFocus) {
+      rawWidget.current.focus();
     }
 
     if (textSelected) {
-      rawWidget.select();
+      rawWidget.current.select();
     }
   }
 
@@ -88,22 +86,18 @@ export class RawWidget extends Component {
     return null;
   }
 
-  setRef = (ref) => {
-    this.rawWidget = ref;
-  };
-
   /**
-   * @method focus
+   * @method handleListFocus
    * @summary Function used specifically for list widgets. It blocks outside clicks, which are
    * then enabled again in handleBlur. This is to avoid closing the list as it's a separate
    * DOM element outside of it's parent's tree.
    */
-  focus = () => {
+  handleListFocus = () => {
     const { handleFocus, disableOnClickOutside } = this.props;
     const { rawWidget } = this;
 
-    if (rawWidget && rawWidget.focus) {
-      rawWidget.focus();
+    if (rawWidget.current && rawWidget.current.focus) {
+      rawWidget.current.focus();
     }
 
     disableOnClickOutside && disableOnClickOutside();
@@ -200,9 +194,9 @@ export class RawWidget extends Component {
   updateTypedCharacters = (typedText) => {
     const { fieldName } = this.props;
     let existingCharsTyped = { ...this.state.charsTyped };
+
     existingCharsTyped[fieldName] = typedText.length;
     this.setState({ charsTyped: existingCharsTyped });
-    return true;
   };
 
   /**
@@ -366,6 +360,10 @@ export class RawWidget extends Component {
       handleProcess(caption, buttonProcessId, tabId, rowId, dataId, windowType);
   };
 
+  setWidgetType = (type) => {
+    this.rawWidget.type = type;
+  };
+
   /**
    * @method showErrorPopup
    * @summary shows error message on mouse over
@@ -462,10 +460,8 @@ export class RawWidget extends Component {
       widgetData[0].widgetType === 'List' && widgetData[0].multiListValue
         ? true
         : false;
-    // TODO:  ^^^^^^^^^^^^^
 
     const widgetProperties = {
-      ref: this.setRef,
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
@@ -500,10 +496,11 @@ export class RawWidget extends Component {
           isFocused,
           charsTyped,
         }}
-        ref={this.setRef}
-        onFocus={this.focus}
-        onBlur={this.handleBlurWithParams}
+        ref={this.rawWidget}
+        onListFocus={this.handleListFocus}
+        onBlurWithParams={this.handleBlurWithParams}
         onPatch={this.handlePatch}
+        onSetWidgetType={this.setWidgetType}
       />
     );
   };
@@ -516,10 +513,6 @@ export class RawWidget extends Component {
       fields,
       type,
       noLabel,
-      // TODO: We should not be using an empty object when widgetData is not defined.
-      // It's really a bad practice. No value = null ! Right now sometimes it's an
-      // array with a single empty object, sometimes [-1], other times [undefined].
-      // That's a big NO NO
       widgetData,
       rowId,
       isModal,

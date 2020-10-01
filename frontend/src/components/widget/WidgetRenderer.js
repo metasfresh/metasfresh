@@ -1,4 +1,4 @@
-import React, { ForwardRef, PureComponent } from 'react';
+import React, { PureComponent } from 'react';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { get } from 'lodash';
@@ -11,6 +11,7 @@ import {
 } from '../../constants/Constants';
 import { getClassNames, generateMomentObj } from '../../utils/widgetHelpers';
 
+import { withForwardedRef } from '../hoc/WithRouterAndRef';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -18,7 +19,6 @@ import DatePicker from './DatePicker';
 import DatetimeRange from './DatetimeRange';
 import DevicesWidget from './Devices/DevicesWidget';
 import Image from './Image';
-// import Tooltips from '../tooltips/Tooltips';
 import Labels from './Labels';
 import Link from './Link';
 import CharacterLimitInfo from './CharacterLimitInfo';
@@ -80,6 +80,10 @@ class WidgetRenderer extends PureComponent {
       maxLength,
       updateHeight,
       rowIndex,
+      onClickOutside,
+      emptyText,
+      forceFullWidth,
+      forceHeight,
 
       // from `renderWidget`
       isMultiselect,
@@ -91,11 +95,14 @@ class WidgetRenderer extends PureComponent {
       charsTyped,
       readonly,
       onPatch,
-      onFocus,
-      onBlur,
+      onListFocus,
+      onBlurWithParams,
+      onSetWidgetType,
+      forwardedRef,
     } = this.props;
-    const { tabIndex } = widgetProperties;
+    const { tabIndex, onFocus, onBlur } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
+    widgetProperties.ref = forwardedRef;
 
     switch (widgetType) {
       case 'Date':
@@ -277,10 +284,7 @@ class WidgetRenderer extends PureComponent {
       case 'Lookup':
         return (
           <Lookup
-            {...{
-              attribute,
-              // recent
-            }}
+            attribute={attribute}
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
@@ -288,11 +292,7 @@ class WidgetRenderer extends PureComponent {
             properties={fields}
             windowType={windowType}
             widgetData={widgetData}
-            placeholder={
-              this.props.emptyText
-                ? this.props.emptyText
-                : this.props.fields[0].emptyText
-            }
+            placeholder={emptyText ? emptyText : fields[0].emptyText}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
             rank={type}
@@ -309,19 +309,19 @@ class WidgetRenderer extends PureComponent {
             viewId={viewId}
             autoFocus={autoFocus}
             initialFocus={initialFocus}
-            forceFullWidth={this.props.forceFullWidth}
-            forceHeight={this.props.forceHeight}
+            forceFullWidth={forceFullWidth}
+            forceHeight={forceHeight}
             validStatus={widgetData[0].validStatus}
             newRecordCaption={fields[0].newRecordCaption}
             newRecordWindowId={fields[0].newRecordWindowId}
             listenOnKeys={listenOnKeys}
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
-            onFocus={this.focus}
-            onBlur={this.handleBlurWithParams}
+            onFocus={onListFocus}
+            onBlur={onBlurWithParams}
             onChange={onPatch}
             onBlurWidget={onBlurWidget}
-            onClickOutside={this.props.onClickOutside}
+            onClickOutside={onClickOutside}
           />
         );
       case 'List':
@@ -343,8 +343,8 @@ class WidgetRenderer extends PureComponent {
             windowType={windowType}
             rowId={rowId}
             tabId={tabId}
-            onFocus={this.focus}
-            onBlur={this.handleBlurWithParams}
+            onFocus={onListFocus}
+            onBlur={onBlurWithParams}
             onChange={onPatch}
             align={gridAlign}
             updated={updated}
@@ -379,8 +379,8 @@ class WidgetRenderer extends PureComponent {
             windowType={windowType}
             rowId={rowId}
             tabId={tabId}
-            onFocus={this.focus}
-            onBlur={this.handleBlurWithParams}
+            onFocus={onListFocus}
+            onBlur={onBlurWithParams}
             onChange={onPatch}
             align={gridAlign}
             updated={updated}
@@ -472,17 +472,13 @@ class WidgetRenderer extends PureComponent {
                 }
               )}
             >
-              <input {...widgetProperties} type="password" ref={this.props.innerRef} />
+              <input {...widgetProperties} type="password" />
               {icon && <i className="meta-icon-edit input-icon-right" />}
             </div>
             {allowShowPassword && (
               <div
-                onMouseDown={() => {
-                  this.rawWidget.type = 'text';
-                }}
-                onMouseUp={() => {
-                  this.rawWidget.type = 'password';
-                }}
+                onMouseDown={() => onSetWidgetType('text')}
+                onMouseUp={() => onSetWidgetType('password')}
                 className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
               >
                 <i className="meta-icon-show" />
@@ -557,10 +553,9 @@ class WidgetRenderer extends PureComponent {
               'input-table': rowId && !isModal,
             })}
             tabIndex={tabIndex}
-            ref={this.props.innerRef}
+            ref={forwardedRef}
             onKeyDown={(e) => {
-              e.key === ' ' &&
-                onPatch(widgetField, !widgetData[0].value, id);
+              e.key === ' ' && onPatch(widgetField, !widgetData[0].value, id);
             }}
           >
             <input
@@ -568,9 +563,7 @@ class WidgetRenderer extends PureComponent {
               checked={widgetData[0].value}
               disabled={readonly}
               tabIndex="-1"
-              onChange={(e) =>
-                onPatch(widgetField, e.target.checked, id)
-              }
+              onChange={(e) => onPatch(widgetField, e.target.checked, id)}
             />
             <div className="input-slider" />
           </label>
@@ -582,7 +575,7 @@ class WidgetRenderer extends PureComponent {
               [`text-${gridAlign}`]: gridAlign,
             })}
             tabIndex={tabIndex}
-            ref={this.props.innerRef}
+            ref={forwardedRef}
           >
             {widgetData[0].value}
           </div>
@@ -597,7 +590,7 @@ class WidgetRenderer extends PureComponent {
             }
             onClick={() => onPatch(widgetField)}
             tabIndex={tabIndex}
-            ref={this.props.innerRef}
+            ref={forwardedRef}
           >
             {widgetData[0].value &&
               widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
@@ -613,7 +606,7 @@ class WidgetRenderer extends PureComponent {
             }
             onClick={this.handleProcess}
             tabIndex={tabIndex}
-            ref={this.props.innerRef}
+            ref={forwardedRef}
           >
             {caption}
           </button>
@@ -630,7 +623,7 @@ class WidgetRenderer extends PureComponent {
             onChange={(option) => onPatch(fields[1].field, option)}
             tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}
-            ref={this.props.innerRef}
+            ref={forwardedRef}
           />
         );
       case 'ProductAttributes':
@@ -645,8 +638,8 @@ class WidgetRenderer extends PureComponent {
             tabId={tabId}
             rowId={rowId}
             viewId={viewId}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
+            onFocus={onFocus}
+            onBlur={onBlur}
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
             patch={(option) => onPatch(widgetField, option)}
@@ -696,7 +689,7 @@ class WidgetRenderer extends PureComponent {
             }
             onClick={() => handleZoomInto(fields[0].field)}
             tabIndex={tabIndex}
-            ref={this.props.innerRef}
+            ref={forwardedRef}
           >
             {caption}
           </button>
@@ -737,6 +730,4 @@ class WidgetRenderer extends PureComponent {
   }
 }
 
-export default React.forwardRef((props, ref) =>
-  <WidgetRenderer innerRef={ref} {...props} />
-);
+export default withForwardedRef(WidgetRenderer);
