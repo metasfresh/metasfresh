@@ -77,7 +77,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
 	private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private static final String SYSCONFIG_Enforce_M_HU_PI_Item_Product_ID = "de.metas.handlingunits.impl.HUPIItemProductDAO.Enforce_ M_HU_PI_Item_Product_ID";
+	private static final String SYSCONFIG_Enforce_M_HU_PI_Item_Product_ID = "de.metas.handlingunits.impl.HUPIItemProductDAO.Enforce_M_HU_PI_Item_Product_ID";
 
 	@Override
 	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
