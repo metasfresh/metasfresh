@@ -118,3 +118,7 @@ export const RawWidgetDefaultProps = {
   tabIndex: 0,
   handleZoomInto: () => {},
 };
+
+export const WidgetRendererPropTypes = {
+  
+}

@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Fragment, PureComponent } from 'react';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { get } from 'lodash';
@@ -10,8 +10,9 @@ import {
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
 import { getClassNames, generateMomentObj } from '../../utils/widgetHelpers';
-
+import { WidgetRendererPropTypes } from './PropTypes';
 import { withForwardedRef } from '../hoc/WithRouterAndRef';
+
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -89,7 +90,6 @@ class WidgetRenderer extends PureComponent {
       isMultiselect,
       widgetField,
       widgetProperties,
-      selectedValue,
       showErrorBorder,
       isFocused,
       charsTyped,
@@ -98,11 +98,77 @@ class WidgetRenderer extends PureComponent {
       onListFocus,
       onBlurWithParams,
       onSetWidgetType,
+      onHandleProcess,
       forwardedRef,
     } = this.props;
     const { tabIndex, onFocus, onBlur } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
     widgetProperties.ref = forwardedRef;
+
+    const selectedValue = widgetData[0].value
+      ? widgetData[0].value
+      : widgetData[0].defaultValue;
+
+    const listAndLookupsProps = {
+      dataId,
+      attribute,
+      entity,
+      subentity,
+      subentityId,
+      windowType,
+      readonly,
+      updated,
+      filterWidget,
+      filterId,
+      tabId,
+      rowId,
+      tabIndex,
+      viewId,
+      autoFocus,
+      onFocus: onListFocus,
+      onBlur: onBlurWithParams,
+      align: gridAlign,
+      mandatory: widgetData[0].mandatory,
+      parameterName: fields[0].parameterName,
+      validStatus: widgetData[0].validStatus,
+      onChange: onPatch,
+    };
+    const dateProps = {
+      field: widgetField,
+      key: 1,
+      handleChange,
+      handleBackdropLock,
+      inputProps: {
+        placeholder: fields[0].emptyText,
+        disabled: readonly,
+        tabIndex: tabIndex,
+      },
+      onChange: (date) => handleChange(widgetField, date),
+    };
+    const dateRangeProps = {
+      mandatory: widgetData[0].mandatory,
+      validStatus: widgetData[0].validStatus,
+      value: widgetData[0].value,
+      valueTo: widgetData[0].valueTo,
+      tabIndex,
+      onShow,
+      onHide,
+    };
+    const attributesProps = {
+      entity,
+      fields,
+      dataId,
+      widgetData: widgetData[0],
+      docType: windowType,
+      tabId,
+      rowId,
+      fieldName: widgetField,
+      handleBackdropLock,
+      patch: (option) => onPatch(widgetField, option),
+      tabIndex,
+      autoFocus,
+      readonly,
+    };
 
     switch (widgetType) {
       case 'Date':
@@ -112,6 +178,7 @@ class WidgetRenderer extends PureComponent {
           // upgrade.
           return (
             <DatetimeRange
+              {...dateRangeProps}
               onChange={(value, valueTo) =>
                 onPatch(
                   widgetField,
@@ -121,33 +188,17 @@ class WidgetRenderer extends PureComponent {
                 )
               }
               field={widgetField}
-              mandatory={widgetData[0].mandatory}
-              validStatus={widgetData[0].validStatus}
-              value={widgetData[0].value}
-              valueTo={widgetData[0].valueTo}
-              {...{
-                tabIndex,
-                onShow,
-                onHide,
-                timeZone,
-              }}
+              timeZone={timeZone}
             />
           );
         } else {
           return (
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
-                key={1}
-                field={widgetField}
+                {...dateProps}
                 timeFormat={false}
                 dateFormat={dateFormat || true}
-                inputProps={{
-                  placeholder: fields[0].emptyText,
-                  disabled: readonly,
-                  tabIndex: tabIndex,
-                }}
                 value={widgetValue || widgetData[0].value}
-                onChange={(date) => handleChange(widgetField, date)}
                 patch={(date) =>
                   onPatch(
                     widgetField,
@@ -157,9 +208,7 @@ class WidgetRenderer extends PureComponent {
                     true
                   )
                 }
-                handleChange={handleChange}
                 {...{
-                  handleBackdropLock,
                   isOpenDatePicker,
                   timeZone,
                 }}
@@ -171,18 +220,11 @@ class WidgetRenderer extends PureComponent {
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
-              key={1}
-              field={widgetField}
+              {...dateProps}
               timeFormat={true}
               dateFormat={dateFormat || true}
               hasTimeZone={true}
-              inputProps={{
-                placeholder: fields[0].emptyText,
-                disabled: readonly,
-                tabIndex: tabIndex,
-              }}
               value={widgetValue || widgetData[0].value}
-              onChange={(date) => handleChange(widgetField, date)}
               patch={(date) =>
                 onPatch(
                   widgetField,
@@ -192,9 +234,7 @@ class WidgetRenderer extends PureComponent {
                   true
                 )
               }
-              handleChange={handleChange}
               {...{
-                handleBackdropLock,
                 isOpenDatePicker,
                 timeZone,
               }}
@@ -205,16 +245,10 @@ class WidgetRenderer extends PureComponent {
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
-              field={widgetField}
+              {...dateProps}
               timeFormat={TIME_FORMAT}
               dateFormat={false}
-              inputProps={{
-                placeholder: fields[0].emptyText,
-                disabled: readonly,
-                tabIndex: tabIndex,
-              }}
               value={this.generateMomentObj(widgetValue, TIME_FORMAT)}
-              onChange={(date) => handleChange(widgetField, date)}
               patch={(date) =>
                 onPatch(
                   widgetField,
@@ -225,8 +259,6 @@ class WidgetRenderer extends PureComponent {
                 )
               }
               tabIndex={tabIndex}
-              handleChange={handleChange}
-              handleBackdropLock={handleBackdropLock}
             />
           </div>
         );
@@ -234,16 +266,10 @@ class WidgetRenderer extends PureComponent {
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
-              field={widgetField}
+              {...dateProps}
               timeFormat={false}
               dateFormat={DATE_FIELD_FORMATS[widgetType]}
-              inputProps={{
-                placeholder: fields[0].emptyText,
-                disabled: readonly,
-                tabIndex: tabIndex,
-              }}
               value={widgetValue}
-              onChange={(date) => handleChange(widgetField, date)}
               patch={(date) =>
                 onPatch(
                   widgetField,
@@ -254,14 +280,13 @@ class WidgetRenderer extends PureComponent {
                 )
               }
               tabIndex={tabIndex}
-              handleChange={handleChange}
-              handleBackdropLock={handleBackdropLock}
             />
           </div>
         );
       case 'DateRange': {
         return (
           <DatetimeRange
+            {...dateRangeProps}
             onChange={(value, valueTo) => {
               const val = Moment(value).format(DATE_FORMAT);
               const valTo = Moment(valueTo).format(DATE_FORMAT);
@@ -271,130 +296,52 @@ class WidgetRenderer extends PureComponent {
                 ...(valTo && { valueTo: valTo }),
               });
             }}
-            mandatory={widgetData[0].mandatory}
-            validStatus={widgetData[0].validStatus}
-            onShow={onShow}
-            onHide={onHide}
-            value={widgetData[0].value}
-            valueTo={widgetData[0].valueTo}
-            tabIndex={tabIndex}
           />
         );
       }
       case 'Lookup':
         return (
           <Lookup
-            attribute={attribute}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            dataId={dataId}
+            {...listAndLookupsProps}
             properties={fields}
-            windowType={windowType}
             widgetData={widgetData}
             placeholder={emptyText ? emptyText : fields[0].emptyText}
-            readonly={readonly}
-            mandatory={widgetData[0].mandatory}
             rank={type}
-            align={gridAlign}
             isModal={isModal}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
-            parameterName={fields[0].parameterName}
             selected={widgetValue}
-            tabId={tabId}
-            rowId={rowId}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
             initialFocus={initialFocus}
             forceFullWidth={forceFullWidth}
             forceHeight={forceHeight}
-            validStatus={widgetData[0].validStatus}
             newRecordCaption={fields[0].newRecordCaption}
             newRecordWindowId={fields[0].newRecordWindowId}
             listenOnKeys={listenOnKeys}
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
-            onFocus={onListFocus}
-            onBlur={onBlurWithParams}
-            onChange={onPatch}
             onBlurWidget={onBlurWidget}
             onClickOutside={onClickOutside}
           />
         );
       case 'List':
-        return (
-          <List
-            {...{
-              attribute,
-            }}
-            widgetField={widgetField}
-            dataId={dataId}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            defaultValue={fields[0].emptyText}
-            selected={selectedValue}
-            properties={fields[0]}
-            readonly={readonly}
-            mandatory={widgetData[0].mandatory}
-            windowType={windowType}
-            rowId={rowId}
-            tabId={tabId}
-            onFocus={onListFocus}
-            onBlur={onBlurWithParams}
-            onChange={onPatch}
-            align={gridAlign}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
-            parameterName={fields[0].parameterName}
-            emptyText={fields[0].emptyText}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
-            validStatus={widgetData[0].validStatus}
-            isMultiselect={isMultiselect}
-          />
-        );
+      case 'MultiListValue': {
+        const commonProps = {
+          ...listAndLookupsProps,
+          widgetField,
+          defaultValue: fields[0].emptyText,
+          properties: fields[0],
+          emptyText: fields[0].emptyText,
+        };
+        const typeProps = {};
 
-      case 'MultiListValue':
-        return (
-          <List
-            {...{
-              attribute,
-            }}
-            widgetField={widgetField}
-            dataId={dataId}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            defaultValue={fields[0].emptyText}
-            selected={widgetData[0].value || null}
-            properties={fields[0]}
-            readonly={readonly}
-            mandatory={widgetData[0].mandatory}
-            windowType={windowType}
-            rowId={rowId}
-            tabId={tabId}
-            onFocus={onListFocus}
-            onBlur={onBlurWithParams}
-            onChange={onPatch}
-            align={gridAlign}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
-            parameterName={fields[0].parameterName}
-            emptyText={fields[0].emptyText}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
-            validStatus={widgetData[0].validStatus}
-            isMultiselect={true}
-          />
-        );
+        if (widgetType === 'List') {
+          typeProps.selected = selectedValue;
+          typeProps.isMultiselect = isMultiselect;
+        } else {
+          typeProps.selected = widgetData[0].value || null;
+          typeProps.isMultiselect = true;
+        }
+
+        return <List {...commonProps} {...typeProps} />;
+      }
       case 'Link':
         return (
           <Link
@@ -410,46 +357,29 @@ class WidgetRenderer extends PureComponent {
           />
         );
       case 'Text':
-        return (
-          <div>
-            <div
-              className={classnames(
-                this.getClassNames({
-                  icon: true,
-                }),
-                {
-                  'input-focused': isFocused,
-                  'border-danger': showErrorBorder,
-                }
-              )}
-            >
+      case 'LongText': {
+        const classNameParams = { icon: true };
+        let renderContent = null;
+
+        if (widgetType === 'Text') {
+          renderContent = (
+            <Fragment>
               <input {...widgetProperties} type="text" />
               {icon && <i className="meta-icon-edit input-icon-right" />}
-            </div>
-            {charsTyped && charsTyped[fieldName] >= 0 && (
-              <CharacterLimitInfo
-                charsTyped={charsTyped[fieldName]}
-                maxLength={maxLength}
-              />
-            )}
-          </div>
-        );
-      case 'LongText':
+            </Fragment>
+          );
+        } else {
+          classNameParams.forcedPrimary = true;
+          renderContent = <textarea {...widgetProperties} />;
+        }
         return (
           <div>
             <div
-              className={classnames(
-                this.getClassNames({
-                  icon: false,
-                  forcedPrimary: true,
-                }),
-                {
-                  'input-focused': isFocused,
-                  'border-danger': showErrorBorder,
-                }
-              )}
+              className={classnames(this.getClassNames(classNameParams), {
+                'border-danger': showErrorBorder,
+              })}
             >
-              <textarea {...widgetProperties} />
+              {renderContent}
             </div>
             {charsTyped && charsTyped[fieldName] >= 0 && (
               <CharacterLimitInfo
@@ -459,6 +389,7 @@ class WidgetRenderer extends PureComponent {
             )}
           </div>
         );
+      }
       case 'Password':
         return (
           <div className="input-inner-container">
@@ -466,10 +397,7 @@ class WidgetRenderer extends PureComponent {
               className={classnames(
                 this.getClassNames({
                   icon: true,
-                }),
-                {
-                  'input-focused': isFocused,
-                }
+                })
               )}
             >
               <input {...widgetProperties} type="password" />
@@ -490,11 +418,7 @@ class WidgetRenderer extends PureComponent {
       case 'Amount':
       case 'Quantity':
         return (
-          <div
-            className={classnames(this.getClassNames(), 'number-field', {
-              'input-focused': isFocused,
-            })}
-          >
+          <div className={classnames(this.getClassNames(), 'number-field')}>
             <input
               {...widgetProperties}
               type="number"
@@ -518,11 +442,7 @@ class WidgetRenderer extends PureComponent {
       case 'Number':
       case 'CostPrice':
         return (
-          <div
-            className={classnames(this.getClassNames(), 'number-field', {
-              'input-focused': isFocused,
-            })}
-          >
+          <div className={classnames(this.getClassNames(), 'number-field')}>
             <input {...widgetProperties} type="number" />
           </div>
         );
@@ -581,36 +501,34 @@ class WidgetRenderer extends PureComponent {
           </div>
         );
       case 'Button':
+      case 'ProcessButton': {
+        let textContent = null;
+        let clickHandler = undefined;
+
+        if (widgetType === 'Button') {
+          clickHandler = () => onPatch(widgetField);
+          textContent =
+            widgetData[0].value &&
+            widgetData[0].value[Object.keys(widgetData[0].value)[0]];
+        } else {
+          clickHandler = onHandleProcess;
+          textContent = caption;
+        }
+
         return (
           <button
-            className={
-              'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
-              (readonly ? 'tag-disabled disabled ' : '')
-            }
-            onClick={() => onPatch(widgetField)}
+            className={classnames('btn btn-sm btn-meta-primary', {
+              [`text-${gridAlign}`]: gridAlign,
+              'tag-disabled disabled': readonly,
+            })}
+            onClick={clickHandler}
             tabIndex={tabIndex}
             ref={forwardedRef}
           >
-            {widgetData[0].value &&
-              widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
+            {textContent}
           </button>
         );
-      case 'ProcessButton':
-        return (
-          <button
-            className={
-              'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
-              (readonly ? 'tag-disabled disabled ' : '')
-            }
-            onClick={this.handleProcess}
-            tabIndex={tabIndex}
-            ref={forwardedRef}
-          >
-            {caption}
-          </button>
-        );
+      }
       case 'ActionButton':
         return (
           <ActionButton
@@ -629,23 +547,11 @@ class WidgetRenderer extends PureComponent {
       case 'ProductAttributes':
         return (
           <Attributes
-            entity={entity}
+            {...attributesProps}
             attributeType="pattribute"
-            fields={fields}
-            dataId={dataId}
-            widgetData={widgetData[0]}
-            docType={windowType}
-            tabId={tabId}
-            rowId={rowId}
             viewId={viewId}
             onFocus={onFocus}
             onBlur={onBlur}
-            fieldName={widgetField}
-            handleBackdropLock={handleBackdropLock}
-            patch={(option) => onPatch(widgetField, option)}
-            tabIndex={tabIndex}
-            autoFocus={autoFocus}
-            readonly={readonly}
             rowIndex={rowIndex}
             updateHeight={updateHeight}
           />
@@ -653,20 +559,8 @@ class WidgetRenderer extends PureComponent {
       case 'Address':
         return (
           <Attributes
+            {...attributesProps}
             attributeType="address"
-            entity={entity}
-            fields={fields}
-            dataId={dataId}
-            widgetData={widgetData[0]}
-            docType={windowType}
-            tabId={tabId}
-            rowId={rowId}
-            fieldName={widgetField}
-            handleBackdropLock={handleBackdropLock}
-            patch={(option) => onPatch(widgetField, option)}
-            tabIndex={tabIndex}
-            autoFocus={autoFocus}
-            readonly={readonly}
             isModal={isModal}
           />
         );
@@ -730,5 +624,7 @@ class WidgetRenderer extends PureComponent {
     }
   }
 }
+
+WidgetRenderer.propTypes = WidgetRendererPropTypes;
 
 export default withForwardedRef(WidgetRenderer);

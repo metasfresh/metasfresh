@@ -479,9 +479,6 @@ export class RawWidget extends PureComponent {
       id,
     };
     const showErrorBorder = charsTyped && charsTyped[fieldName] > maxLength;
-    let selectedValue = widgetData[0].value
-      ? widgetData[0].value
-      : widgetData[0].defaultValue;
 
     return (
       <WidgetRenderer
@@ -491,7 +488,6 @@ export class RawWidget extends PureComponent {
           isMultiselect,
           widgetField,
           widgetProperties,
-          selectedValue,
           showErrorBorder,
           isFocused,
           charsTyped,
@@ -501,6 +497,7 @@ export class RawWidget extends PureComponent {
         onBlurWithParams={this.handleBlurWithParams}
         onPatch={this.handlePatch}
         onSetWidgetType={this.setWidgetType}
+        onHandleProcess={this.handleProcess}
       />
     );
   };
