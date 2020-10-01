@@ -3,6 +3,7 @@ import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
 import { createCachedSelector } from 're-reselect';
 import merge from 'merge';
+import { get } from 'lodash';
 
 import {
   ACTIVATE_TAB,
@@ -176,7 +177,9 @@ const getProcessLayout = (state, isModal, elementIndex) =>
 
 /**
  * @method selectWidgetData
- * @summary map layout fields to widgets
+ * @summary map layout fields to widgets. If field doesn't exist in data
+ * just return an empty object (might be it's not initialized yet, but it
+ * exists in the layout)
  *
  * @param {object} data
  * @param {object} layout
@@ -185,7 +188,8 @@ const selectWidgetData = (data, layout) => {
   let widgetData = null;
 
   widgetData = layout.fields.reduce((result, item) => {
-    data[item.field] && result.push(data[item.field]);
+    const values = get(data, [`${item.field}`], {});
+    result.push(values);
 
     return result;
   }, []);

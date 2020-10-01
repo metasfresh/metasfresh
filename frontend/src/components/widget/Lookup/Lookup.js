@@ -474,14 +474,16 @@ class Lookup extends Component {
                 />
               );
             } else if (
-              item.source === 'list' ||
-              item.widgetType === 'List' ||
-              (itemByProperty && itemByProperty.source === 'List')
+              widgetData &&
+              (item.source === 'list' ||
+                item.widgetType === 'List' ||
+                (itemByProperty && itemByProperty.source === 'List'))
             ) {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
               let defaultValue = localClearing ? null : itemByProperty.value;
+
               return (
                 <div
                   key={item.field}
