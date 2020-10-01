@@ -58,6 +58,7 @@ export function getClassNames({ icon, forcedPrimary } = {}) {
   const { readonly, value, mandatory, validStatus } = widgetData[0];
 
   const ret = cx(`input-block`, {
+    'input-focused': isFocused,
     'input-icon-container': icon,
     'input-disabled': readonly,
     'input-mandatory': mandatory && (value ? value.length === 0 : value !== 0),
@@ -65,7 +66,7 @@ export function getClassNames({ icon, forcedPrimary } = {}) {
       validStatus &&
       !validStatus.valid &&
       !validStatus.initialValue &&
-      !isEdited,
+      !isFocused,
     [`text-xs-${gridAlign}`]: gridAlign,
     [`input-${
       type === 'primary' || forcedPrimary ? 'primary' : 'secondary'
