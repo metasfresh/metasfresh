@@ -48,19 +48,10 @@ public class XmlToJsonProcessorUtil
 			return; // nothing to do
 		}
 
-		final Map<String, Integer> name2Index = new HashMap<>();
-
-		final List<FIELD> fields = fmpxmlresult.getMetadata().getFields();
-
-		for (int i = 0; i < fields.size(); i++)
-		{
-			name2Index.put(fields.get(i).getName(), i);
-		}
-
 		final RESULTSET resultset = fmpxmlresult.getResultset();
 
 		final ProcessXmlToJsonRequest xmlToJsonRequest = ProcessXmlToJsonRequest.builder()
-				.name2Index(name2Index)
+				.metadata(fmpxmlresult.getMetadata())
 				.resultset(resultset)
 				.propertiesComponent(exchange.getContext().getPropertiesComponent())
 				.build();

@@ -60,14 +60,15 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 
 		// @formatter:off
 		from(SIRO_FTP_PATH)
-				.routeId(MF_SHIPMENT_FILEMAKER_XML_TO_JSON)
-				.streamCaching()
-				.to(LOCAL_STORAGE_URL)
-				.unmarshal(jacksonXMLDataFormat)
-				.multicast()
-					.stopOnException()
-					.to(direct(MF_SHIPMENT_INVENTORY_CORRECTION), direct(MF_GENERATE_SHIPMENTS))
-				.end();
+			.routeId(MF_SHIPMENT_FILEMAKER_XML_TO_JSON)
+			.streamCaching()
+			.to(LOCAL_STORAGE_URL)
+			.unmarshal(jacksonXMLDataFormat)
+			.split().method(ShipmentXMLSplitter.class, "splitIfSameShipmentScheduleId")
+			.multicast()
+				.stopOnException()
+				.to(direct(MF_SHIPMENT_INVENTORY_CORRECTION), direct(MF_GENERATE_SHIPMENTS))
+			.end();
 		// @formatter:on
 
 		buildInventoryCorrectionRoute();
@@ -99,7 +100,6 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 
 		from(direct(MF_GENERATE_SHIPMENTS))
 				.streamCaching()
-				//.tracing()
 				.routeId(MF_GENERATE_SHIPMENTS)
 				.process(new ShipmentXmlToJsonProcessor()).id(SHIPMENT_XML_TO_JSON_PROCESSOR)
 				// @formatter:off
