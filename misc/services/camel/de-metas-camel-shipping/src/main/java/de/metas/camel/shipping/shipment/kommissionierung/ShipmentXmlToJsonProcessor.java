@@ -22,21 +22,15 @@
 
 package de.metas.camel.shipping.shipment.kommissionierung;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.camel.shipping.CommonUtil;
-import de.metas.camel.shipping.JsonAttributeInstanceHelper;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
+import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.camel.shipping.shipment.kommissionierung.inventory.InventoryCorrectionXmlToJsonProcessor;
-import de.metas.common.filemaker.FileMakerDataHelper;
 import de.metas.common.filemaker.RESULTSET;
-import de.metas.common.filemaker.ROW;
-import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -45,12 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -65,30 +54,28 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<JsonCreateShipmentInfo> createShipmentInfo(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
+	private Optional<JsonCreateShipmentInfo> createShipmentInfo(
+			@NonNull final ShipmentXmlRowWrapper rowWrapper,
+			@NonNull final PropertiesComponent propertiesComponent)
 	{
-		final boolean isOutOfStockCorrectionRequired = InventoryCorrectionXmlToJsonProcessor.isOutOfStockCorrectionRequired(row, fieldName2Index, propertiesComponent);
+		final boolean isOutOfStockCorrectionRequired = InventoryCorrectionXmlToJsonProcessor.isOutOfStockCorrectionRequired(rowWrapper, propertiesComponent);
 
 		if (isOutOfStockCorrectionRequired)
 		{
 			return Optional.empty();//will be handled in de.metas.camel.shipping.shipment.ShipmentXmlToJsonRouteBuilder.MF_SHIPMENT_INVENTORY_CORRECTION
 		}
 
-		final String shipmentScheduleId = getValueByName(row, fieldName2Index, ShipmentField.SHIPMENT_SCHEDULE_ID);
+		final JsonMetasfreshId shipmentScheduleId = rowWrapper.getShipmentScheduleId();
 
-		if (StringUtils.isBlank(shipmentScheduleId))
-		{
-			throw new RuntimeException("Missing mandatory filed: ShipmentScheduleId!");
-		}
 
 		final JsonCreateShipmentInfo createShipmentInfo = JsonCreateShipmentInfo.builder()
 				.deliveryRule(SiroShipmentConstants.DEFAULT_DELIVERY_RULE_FORCE) // this is what was shipped, no mapper what metasfresh might think at this point
-				.shipmentScheduleId(JsonMetasfreshId.of(Integer.parseInt(shipmentScheduleId)))
-				.attributes(getAttributes(row, fieldName2Index))
-				.movementDate(getDeliveryDate(row, fieldName2Index))
-				.movementQuantity(getMovementQty(row, fieldName2Index, propertiesComponent))
-				.documentNo(StringUtils.trimToNull(getValueByName(row, fieldName2Index, ShipmentField.DOCUMENT_NO)))
-				.productSearchKey(StringUtils.trimToNull(CommonUtil.removeOrgPrefix(getValueByName(row, fieldName2Index, ShipmentField.PRODUCT_VALUE))))
+				.shipmentScheduleId(shipmentScheduleId)
+				.attributes(rowWrapper.getAttributes())
+				.movementDate(rowWrapper.getDeliveryDate())
+				.movementQuantity(rowWrapper.getMovementQty(propertiesComponent))
+				.documentNo(StringUtils.trimToNull(rowWrapper.getValueByName(ShipmentField.DOCUMENT_NO)))
+				.productSearchKey(StringUtils.trimToNull(CommonUtil.convertProductValue(rowWrapper.getValueByName(ShipmentField.ARTICLE_VALUE_TEMP))))
 				.build();
 
 		return Optional.of(createShipmentInfo);
@@ -97,11 +84,11 @@ public class ShipmentXmlToJsonProcessor implements Processor
 	private JsonCreateShipmentRequest buildCreateShipmentsRequest(@NonNull final ProcessXmlToJsonRequest xmlToJsonRequest)
 	{
 		final RESULTSET resultset = xmlToJsonRequest.getResultset();
-		final Map<String, Integer> name2Index = xmlToJsonRequest.getName2Index();
+		final var metadata = xmlToJsonRequest.getMetadata();
 
 		final List<JsonCreateShipmentInfo> createShipmentInfos = resultset.getRows()
 				.stream()
-				.map(row -> createShipmentInfo(row, name2Index, xmlToJsonRequest.getPropertiesComponent()))
+				.map(row -> createShipmentInfo(ShipmentXmlRowWrapper.wrap(row,metadata), xmlToJsonRequest.getPropertiesComponent()))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.collect(Collectors.toList());
@@ -111,82 +98,4 @@ public class ShipmentXmlToJsonProcessor implements Processor
 				.build();
 	}
 
-	@Nullable
-	private String getValueByName(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final ShipmentField field)
-	{
-		final FileMakerDataHelper.GetValueRequest getValueRequest = FileMakerDataHelper.GetValueRequest.builder()
-				.row(row)
-				.fieldName(field.getName())
-				.fieldName2Index(fieldName2Index)
-				.build();
-
-		return FileMakerDataHelper.getValue(getValueRequest);
-	}
-
-	@Nullable
-	private ImmutableList<JsonAttributeInstance> getAttributes(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index)
-	{
-		final ImmutableList.Builder<JsonAttributeInstance> jsonAttributeInstances = ImmutableList.builder();
-
-		final String expiryDateStr = getValueByName(row, fieldName2Index, ShipmentField.BEST_BEFORE_DATE);
-
-		if (StringUtils.isNotBlank(expiryDateStr))
-		{
-			XmlToJsonProcessorUtil.asLocalDate(expiryDateStr, SiroShipmentConstants.EXPIRY_DATE_PATTERNS, ShipmentField.BEST_BEFORE_DATE.getName())
-					.flatMap(expiryDate -> JsonAttributeInstanceHelper.buildAttribute(AttributeCode.BEST_BEFORE_DATE, expiryDate))
-					.map(jsonAttributeInstances::add);
-		}
-
-		final String articleFlavor = getValueByName(row, fieldName2Index, ShipmentField.ARTICLE_FLAVOR);
-
-		if (StringUtils.isNotBlank(articleFlavor))
-		{
-			JsonAttributeInstanceHelper.buildAttribute(AttributeCode.ARTICLE_FLAVOR, articleFlavor)
-					.map(jsonAttributeInstances::add);
-		}
-
-		final String lotNumber = getValueByName(row, fieldName2Index, ShipmentField.LOT_NUMBER);
-
-		if (StringUtils.isNotBlank(lotNumber))
-		{
-			JsonAttributeInstanceHelper.buildAttribute(AttributeCode.LOT_NUMBER, lotNumber)
-					.map(jsonAttributeInstances::add);
-		}
-
-		final ImmutableList<JsonAttributeInstance> result = jsonAttributeInstances.build();
-
-		return result.isEmpty() ? null : result;
-	}
-
-	@Nullable
-	private LocalDateTime getDeliveryDate(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index)
-	{
-		final String deliveryDateStr = getValueByName(row, fieldName2Index, ShipmentField.PICKING_TIMESTAMP);
-
-		return XmlToJsonProcessorUtil.asLocalDateTime(deliveryDateStr,
-				ImmutableSet.of(SiroShipmentConstants.DELIVERY_DATE_PATTERN),
-				ShipmentField.PICKING_TIMESTAMP.getName())
-				.orElse(null);
-	}
-
-	@Nullable
-	private BigDecimal getMovementQty(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
-	{
-		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
-
-		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder getValueRequestBuilder = FileMakerDataHelper.GetValueRequest.builder()
-				.row(row)
-				.fieldName2Index(fieldName2Index);
-
-		final String movementQtyOverrideStr = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(ShipmentField.DELIVERED_QTY_OVERRIDE.getName()).build());
-
-		if (StringUtils.isNotBlank(movementQtyOverrideStr))
-		{
-			return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQtyOverrideStr, locale).negate(); // qty is negative in _kommissionierung file
-		}
-
-		final String movementQty = FileMakerDataHelper.getValue(getValueRequestBuilder.fieldName(ShipmentField.DELIVERED_QTY.getName()).build());
-
-		return XmlToJsonProcessorUtil.toBigDecimalOrNull(movementQty, locale).negate(); // qty is negative in _kommissionierung file
-	}
 }

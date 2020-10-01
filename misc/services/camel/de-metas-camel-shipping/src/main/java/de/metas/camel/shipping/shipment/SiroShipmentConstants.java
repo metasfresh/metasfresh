@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.shipping.shipment.kommissionierung;
+package de.metas.camel.shipping.shipment;
 
 import com.google.common.collect.ImmutableSet;
 

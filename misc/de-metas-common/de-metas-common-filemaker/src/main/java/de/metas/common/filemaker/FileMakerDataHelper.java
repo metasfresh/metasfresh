@@ -22,15 +22,35 @@
 
 package de.metas.common.filemaker;
 
+
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class FileMakerDataHelper
 {
 	public static String getValue(@NonNull final GetValueRequest request)
+	{
+		final COL col = extractCOL(request);
+		if (col == null)
+		{
+			return null;
+		}
+		if (col.getData() == null)
+		{
+			return null;
+		}
+
+		return col.getData().getValue();
+	}
+
+	@Nullable
+	private static COL extractCOL(final @NonNull GetValueRequest request)
 	{
 		final ROW row = request.getRow();
 		final Map<String, Integer> fieldName2Index = request.getFieldName2Index();
@@ -42,14 +62,26 @@ public class FileMakerDataHelper
 			return null;
 		}
 
-		final COL col = row.getCols().get(index);
+		return row.getCols().get(index);
+	}
 
-		if (col.getData() == null)
+	public static ROW setValue(@NonNull final GetValueRequest request, @Nullable final String newValue)
+	{
+		final COL col = extractCOL(request);
+		if (col == null)
 		{
-			return null;
+			throw new RuntimeException("Unable to find COL for request=" + request);
 		}
 
-		return col.getData().getValue();
+		final Map<String, Integer> fieldName2Index = request.getFieldName2Index();
+		final Integer index = fieldName2Index.get(request.getFieldName());
+
+		final ROW rowToModify = request.getRow();
+
+		final ArrayList<COL> cols = new ArrayList<>(rowToModify.getCols());
+		cols.set(index, COL.of(newValue));
+
+		return rowToModify.toBuilder().clearCols().cols(cols).build();
 	}
 
 	@Builder

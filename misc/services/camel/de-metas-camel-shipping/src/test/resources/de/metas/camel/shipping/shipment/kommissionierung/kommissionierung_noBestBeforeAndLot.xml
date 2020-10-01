@@ -82,7 +82,7 @@
                 <DATA>ja</DATA> <!-- _artikel_ist_lagerhaltig -->
             </COL>
             <COL>
-                <DATA>-2</DATA>
+                <DATA>2</DATA>
             </COL>
             <COL>
                 <DATA>abc-31100821</DATA>
@@ -192,7 +192,7 @@
                 <DATA>ja</DATA>
             </COL>
             <COL>
-                <DATA>-1</DATA>
+                <DATA>1</DATA>
             </COL>
             <COL>
                 <DATA>abc-11030821</DATA>
@@ -302,13 +302,13 @@
                 <DATA>ja</DATA>
             </COL>
             <COL>
-                <DATA>-1</DATA>
+                <DATA>1</DATA>
             </COL>
             <COL>
-                <DATA>abc-11010821</DATA>
+                <DATA>abcK-11010821</DATA>
             </COL>
             <COL>
-                <DATA>abc-11010821</DATA>
+                <DATA>abcK-11010821</DATA>
             </COL>
             <COL>
                 <DATA>-2170</DATA>
@@ -412,7 +412,7 @@
                 <DATA>ja</DATA>
             </COL>
             <COL>
-                <DATA>-1</DATA>
+                <DATA>1</DATA>
             </COL>
             <COL>
                 <DATA>abc-11011021</DATA>
@@ -522,7 +522,7 @@
                 <DATA>ja</DATA>
             </COL>
             <COL>
-                <DATA>-5</DATA>
+                <DATA>5</DATA>
             </COL>
             <COL>
                 <DATA>abc-12060521</DATA>

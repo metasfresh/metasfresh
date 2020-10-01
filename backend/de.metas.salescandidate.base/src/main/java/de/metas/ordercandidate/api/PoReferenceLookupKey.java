@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shipping
+ * de.metas.salescandidate.base
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,26 +20,20 @@
  * #L%
  */
 
-package de.metas.camel.shipping;
+package de.metas.ordercandidate.api;
 
-import de.metas.common.filemaker.METADATA;
-import de.metas.common.filemaker.RESULTSET;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.apache.camel.spi.PropertiesComponent;
-
-import java.util.Map;
 
 @Value
 @Builder
-public class ProcessXmlToJsonRequest
+public class PoReferenceLookupKey
 {
 	@NonNull
-	RESULTSET resultset;
-
-	@NonNull METADATA metadata;
+	String poReference;
 
 	@NonNull
-	PropertiesComponent propertiesComponent;
+	OrgId orgId;
 }

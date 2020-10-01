@@ -27,11 +27,10 @@ import de.metas.camel.inventory.JsonInventoryLine;
 import de.metas.camel.shipping.CommonUtil;
 import de.metas.camel.shipping.ProcessXmlToJsonRequest;
 import de.metas.camel.shipping.XmlToJsonProcessorUtil;
+import de.metas.camel.shipping.shipment.SiroShipmentConstants;
 import de.metas.camel.shipping.shipment.kommissionierung.ShipmentField;
-import de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants;
-import de.metas.common.filemaker.FileMakerDataHelper;
+import de.metas.camel.shipping.shipment.kommissionierung.ShipmentXmlRowWrapper;
 import de.metas.common.filemaker.RESULTSET;
-import de.metas.common.filemaker.ROW;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -42,14 +41,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class InventoryCorrectionXmlToJsonProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		XmlToJsonProcessorUtil.processExchange(exchange, this::createInventory);
 	}
@@ -57,11 +55,11 @@ public class InventoryCorrectionXmlToJsonProcessor implements Processor
 	private JsonInventory createInventory(@NonNull final ProcessXmlToJsonRequest xmlToJsonRequest)
 	{
 		final RESULTSET resultset = xmlToJsonRequest.getResultset();
-		final Map<String, Integer> name2Index = xmlToJsonRequest.getName2Index();
+		final var metadata = xmlToJsonRequest.getMetadata();
 
 		final List<JsonInventoryLine> correctionInventoryLines = resultset.getRows()
 				.stream()
-				.map(row -> createInventoryLine(row, name2Index, xmlToJsonRequest.getPropertiesComponent()))
+				.map(row -> createInventoryLine(ShipmentXmlRowWrapper.wrap(row, metadata), xmlToJsonRequest.getPropertiesComponent()))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.collect(Collectors.toList());
@@ -71,54 +69,47 @@ public class InventoryCorrectionXmlToJsonProcessor implements Processor
 				.build();
 	}
 
-	private Optional<JsonInventoryLine> createInventoryLine(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
+	private Optional<JsonInventoryLine> createInventoryLine(@NonNull final ShipmentXmlRowWrapper rowWrapper,
+			@NonNull final PropertiesComponent propertiesComponent)
 	{
-		final boolean isOutOfStockCorrectionRequired = isOutOfStockCorrectionRequired(row, fieldName2Index, propertiesComponent);
+		final boolean isOutOfStockCorrectionRequired = isOutOfStockCorrectionRequired(rowWrapper, propertiesComponent);
 
-		if(!isOutOfStockCorrectionRequired)
+		if (!isOutOfStockCorrectionRequired)
 		{
 			return Optional.empty();
 		}
 
-		final FileMakerDataHelper.GetValueRequest.GetValueRequestBuilder request = FileMakerDataHelper.GetValueRequest.builder()
-				.fieldName2Index(fieldName2Index)
-				.row(row);
-
-		final String productAndOrg = FileMakerDataHelper.getValue(request.fieldName(ShipmentField.PRODUCT_VALUE.getName()).build());
-		final String bestBeforeDateStr = FileMakerDataHelper.getValue(request.fieldName(ShipmentField.BEST_BEFORE_DATE.getName()).build());
+		final String productAndOrg = rowWrapper.getValueByName(ShipmentField.ARTICLE_VALUE_TEMP);
+		final String bestBeforeDateStr = rowWrapper.getValueByName(ShipmentField.BEST_BEFORE_DATE);
 
 		final LocalDate bestBeforeDate = XmlToJsonProcessorUtil.asLocalDate(bestBeforeDateStr, SiroShipmentConstants.EXPIRY_DATE_PATTERNS, ShipmentField.BEST_BEFORE_DATE.getName())
 				.orElse(null);
 
 		final JsonInventoryLine inventoryLine = JsonInventoryLine.builder()
-				.locatorValue(FileMakerDataHelper.getValue(request.fieldName(ShipmentField.OUT_OF_STOCK_LOCATOR.getName()).build()))
+				.locatorValue(rowWrapper.getValueByName(ShipmentField.OUT_OF_STOCK_LOCATOR))
 				//
 				.inventoryDate(SystemTime.asLocalDate()) // we don't have a specific field for this
 				//
-				.productValue(CommonUtil.removeOrgPrefix(productAndOrg))
+				.productValue(CommonUtil.convertProductValue(productAndOrg))
 				//
 				.qtyCount(BigDecimal.ZERO)//out of stock
 				//
 				.bestbeforeDate(bestBeforeDate)
 				//
-				.lotNumber(FileMakerDataHelper.getValue(request.fieldName(ShipmentField.LOT_NUMBER.getName()).build()))
+				.lotNumber(rowWrapper.getValueByName(ShipmentField.LOT_NUMBER))
 				//
 				.build();
 
 		return Optional.of(inventoryLine);
 	}
 
-	public static boolean isOutOfStockCorrectionRequired(@NonNull final ROW row, @NonNull final Map<String, Integer> fieldName2Index, @NonNull final PropertiesComponent propertiesComponent)
+	public static boolean isOutOfStockCorrectionRequired(
+			@NonNull final ShipmentXmlRowWrapper rowWrapper,
+			@NonNull final PropertiesComponent propertiesComponent)
 	{
-		final FileMakerDataHelper.GetValueRequest request = FileMakerDataHelper.GetValueRequest.builder()
-				.row(row)
-				.fieldName2Index(fieldName2Index)
-				.fieldName(ShipmentField.IS_OUT_OF_STOCK.getName())
-				.build();
+		final String outOfStockValue = rowWrapper.getValueByName(ShipmentField.IS_OUT_OF_STOCK);
 
 		final Locale locale = XmlToJsonProcessorUtil.getLocale(propertiesComponent);
-
-		final String outOfStockValue = FileMakerDataHelper.getValue(request);
 
 		final BigDecimal outOfStockBD = XmlToJsonProcessorUtil.toBigDecimalOrNull(outOfStockValue, locale);
 

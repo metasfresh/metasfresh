@@ -1,7 +1,7 @@
 package de.metas.camel.inventory;
 
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION;
-import static de.metas.camel.shipping.shipment.kommissionierung.SiroShipmentConstants.AUTHORIZATION_TOKEN;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION;
+import static de.metas.camel.shipping.shipment.SiroShipmentConstants.AUTHORIZATION_TOKEN;
 
 import java.time.format.DateTimeFormatter;
 
