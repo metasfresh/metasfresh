@@ -54,4 +54,7 @@ public final class AttributeConstants
 	public static final AttributeCode ATTR_SerialNo = AttributeCode.ofString("SerialNo");
 	public static final AttributeCode ATTR_LotNr = AttributeCode.ofString("Lot-Nummer");
 
+	public static final String ATTR_LotNumber_String = "Lot-Nummer";
+	public static final AttributeCode ATTR_LotNumber = AttributeCode.ofString(ATTR_LotNumber_String);
+	public static final AttributeCode ATTR_LotNumberDate = AttributeCode.ofString("HU_LotNumberDate");
 }
