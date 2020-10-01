@@ -354,6 +354,7 @@ public class ADProcessPostProcessService
 
 			return OpenViewAction.builder()
 					.viewId(view.getViewId())
+					.modalOverlay(false)
 					.openInNewTab(openInNewTab)
 					.build();
 		}
