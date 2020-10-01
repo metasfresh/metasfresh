@@ -22,11 +22,13 @@
 
 package de.metas.common.filemaker;
 
-import com.sun.istack.internal.Nullable;
+
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -60,8 +62,7 @@ public class FileMakerDataHelper
 			return null;
 		}
 
-		final COL col = row.getCols().get(index);
-		return col;
+		return row.getCols().get(index);
 	}
 
 	public static ROW setValue(@NonNull final GetValueRequest request, @Nullable final String newValue)
@@ -77,7 +78,7 @@ public class FileMakerDataHelper
 
 		final ROW rowToModify = request.getRow();
 
-		final ArrayList cols = new ArrayList(rowToModify.getCols());
+		final ArrayList<COL> cols = new ArrayList<>(rowToModify.getCols());
 		cols.set(index, COL.of(newValue));
 
 		return rowToModify.toBuilder().clearCols().cols(cols).build();
