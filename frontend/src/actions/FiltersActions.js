@@ -56,7 +56,7 @@ export function updateActiveFilter({ id, data }) {
 }
 
 /**
- * @method updateWidgetShown
+ * @method updateFilterWidgetShown
  * @summary Updates the widgetShown in the store for the corresponding entity id with a boolean value
  */
 export function updateFilterWidgetShown({ id, data }) {
@@ -78,12 +78,12 @@ export function clearStaticFilters({ filterId, data }) {
 }
 
 /**
- * @method getParentFilter
+ * @method getParentFilterFromFilterData
  * @summary as the name suggests the function is retrieving the filter data by key from the filterData
  * @param {string} filterId - key identifying the filter
  * @param {array} filterData array that contains all the filters as they are retrieved from the BE
  */
-function getParentFilter({ filterId, filterData }) {
+function getParentFilterFromFilterData({ filterId, filterData }) {
   let parentFilter = {};
   filterData.forEach((filter) => {
     if (filter.filterId && filter.filterId === filterId) {
@@ -125,7 +125,7 @@ export function populateFiltersCaptions(filters) {
           if (!defaultValue && filterData) {
             // we don't want to show captions, nor show filter button as active for default values
             removeDefault[filterId] = true;
-            const parentFilter = getParentFilter({
+            const parentFilter = getParentFilterFromFilterData({
               filterId: filter.filterId, // we pass the actual key not the index
               filterData,
             });
