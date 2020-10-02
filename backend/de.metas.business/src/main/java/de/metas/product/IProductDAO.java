@@ -1,8 +1,25 @@
 package de.metas.product;
 
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -25,25 +42,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
-import de.metas.util.lang.ExternalId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 public interface IProductDAO extends ISingletonService
 {
@@ -130,6 +128,7 @@ public interface IProductDAO extends ISingletonService
 	/**
 	 * @return product category or null
 	 */
+	@Nullable
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
 
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
