@@ -34,6 +34,18 @@ class WidgetRenderer extends PureComponent {
     this.generateMomentObj = generateMomentObj.bind(this);
   }
 
+  /**
+   * @method handleDateChange
+   * @summary calls `handleChange` prop function for date fields, to avoid
+   * unnecessary anonymous functions
+   *
+   * @param {date} date - toggles between text/password
+   */
+  handleDateChange = (date) => {
+    const { widgetField, handleChange } = this.props;
+    handleChange(widgetField, date);
+  };
+
   render() {
     const {
       handleChange,
@@ -143,7 +155,7 @@ class WidgetRenderer extends PureComponent {
         disabled: readonly,
         tabIndex: tabIndex,
       },
-      onChange: (date) => handleChange(widgetField, date),
+      onChange: this.handleDateChange,
     };
     const dateRangeProps = {
       mandatory: widgetData[0].mandatory,
