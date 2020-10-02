@@ -1,13 +1,16 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
+import { get } from 'lodash';
 
-class Link extends Component {
+class Link extends PureComponent {
   handleClick = () => {
     const { widgetData } = this.props;
-    const url = widgetData[0].value;
+    const url = get(widgetData[0], ['value'], '');
 
-    window.open(url, '_blank');
+    if (url) {
+      window.open(url, '_blank');
+    }
   };
 
   render() {
