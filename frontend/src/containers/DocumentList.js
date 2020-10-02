@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, { Component, createRef } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
@@ -7,10 +6,7 @@ import currentDevice from 'current-device';
 import { get } from 'lodash';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
-import {
-  locationSearchRequest,
-  getViewRowsByIds,
-} from '../api';
+import { locationSearchRequest, getViewRowsByIds } from '../api';
 import { getTableId } from '../reducers/tables';
 
 import {
@@ -33,10 +29,7 @@ import {
   updateGridTableData,
   deselectTableRows,
 } from '../actions/TableActions';
-import {
-  filtersToMap,
-  filtersActiveContains,
-} from '../actions/FiltersActions';
+import { filtersToMap, filtersActiveContains } from '../actions/FiltersActions';
 import {
   setListId,
   setPagination as setListPagination,

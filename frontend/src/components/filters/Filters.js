@@ -26,7 +26,7 @@ import { getEntityRelatedId } from '../../reducers/filters';
 class Filters extends PureComponent {
   /**
    * @method applyFilters
-   * @summary This method should update docList
+   * @summary This method should update filters in the store and DL reacts automatically to the changes
    * @param {object} filter
    * @param {function} cb - executed if filter is valid and after it was applied
    */
