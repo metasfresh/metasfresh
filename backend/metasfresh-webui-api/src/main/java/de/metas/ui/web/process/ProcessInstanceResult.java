@@ -113,6 +113,8 @@ public final class ProcessInstanceResult
 	{
 	}
 
+
+
 	@lombok.Value
 	@lombok.Builder
 	public static final class OpenReportAction implements ResultAction
@@ -141,8 +143,7 @@ public final class ProcessInstanceResult
 		private final ViewId viewId;
 		private final ViewProfileId profileId;
 		@Builder.Default
-		private final boolean modalOverlay = true;
-		private final boolean openInNewTab;
+		private final OpenTarget openTarget = OpenTarget.SAME_TAB_OVERLAY;
 	}
 
 	@lombok.Value
@@ -167,8 +168,8 @@ public final class ProcessInstanceResult
 	{
 		@NonNull
 		private final DocumentPath documentPath;
-		private final boolean modal;
-		private final boolean openInNewTab;
+		@Builder.Default
+		private final OpenTarget openTarget = OpenTarget.NEW_TAB;
 	}
 
 	@lombok.Value

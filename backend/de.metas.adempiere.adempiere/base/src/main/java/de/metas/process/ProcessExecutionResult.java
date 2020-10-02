@@ -846,9 +846,14 @@ public class ProcessExecutionResult
 		@Nullable
 		String windowIdString;
 
-		@JsonProperty("openInNewTab")
+		public enum TargetTab
+		{
+			SAME_TAB, SAME_TAB_OVERLAY, NEW_TAB,
+		}
+
+		@JsonProperty("targetTab")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
-		boolean openInNewTab;
+		TargetTab targetTab;
 
 		public enum OpenTarget
 		{
@@ -871,7 +876,7 @@ public class ProcessExecutionResult
 				@JsonProperty("records") @NonNull @Singular final List<TableRecordReference> records,
 				@JsonProperty("adWindowId") @Nullable final String adWindowId,
 				@JsonProperty("target") @Nullable final OpenTarget target,
-				@JsonProperty("openInNewTab") final boolean openInNewTab,
+				@JsonProperty("targetTab") final TargetTab targetTab,
 				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths,
 				@JsonProperty("useAutoFilters") @Nullable final Boolean useAutoFilters)
 		{
@@ -880,7 +885,7 @@ public class ProcessExecutionResult
 			this.records = ImmutableList.copyOf(records);
 			this.windowIdString = StringUtils.trimBlankToNull(adWindowId);
 			this.target = target != null ? target : OpenTarget.GridView;
-			this.openInNewTab = openInNewTab;
+			this.targetTab = targetTab != null ? targetTab : TargetTab.SAME_TAB;
 			this.automaticallySetReferencingDocumentPaths = automaticallySetReferencingDocumentPaths != null ? automaticallySetReferencingDocumentPaths : true;
 			this.useAutoFilters = useAutoFilters != null ? useAutoFilters : true;
 		}
