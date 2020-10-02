@@ -101,7 +101,7 @@ public class ShipmentXmlRowWrapper
 
 		if (StringUtils.isBlank(shipmentScheduleId))
 		{
-			throw new RuntimeException("Missing mandatory field: " + SHIPMENT_SCHEDULE_ID + "in rowWrapper" + this);
+			throw new RuntimeException("Missing mandatory field: " + SHIPMENT_SCHEDULE_ID + " in rowWrapper" + this);
 		}
 		return JsonMetasfreshId.of(Integer.parseInt(shipmentScheduleId));
 	}
