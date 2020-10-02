@@ -50,14 +50,7 @@ class FiltersFrequent extends PureComponent {
    * @summary ToDo: Describe the method
    * @todo Write the documentation
    */
-  handleClickOutside = () => this.outsideClick();
-
-  /**
-   * @method outsideClick
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  outsideClick = () => {
+  handleClickOutside = () => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
     if (allowOutsideClick) {
       !widgetShown && this.toggleFilter(null);
