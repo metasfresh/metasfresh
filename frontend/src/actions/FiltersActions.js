@@ -59,9 +59,9 @@ export function updateActiveFilter({ id, data }) {
  * @method updateWidgetShown
  * @summary Updates the widgetShown in the store for the corresponding entity id with a boolean value
  */
-export function updateWidgetShown({ id, data }) {
+export function updateFilterWidgetShown({ id, data }) {
   return {
-    type: types.UPDATE_WIDGET_SHOWN,
+    type: types.FILTER_UPDATE_WIDGET_SHOWN,
     payload: { id, data },
   };
 }

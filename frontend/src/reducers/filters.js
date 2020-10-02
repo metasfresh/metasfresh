@@ -48,7 +48,7 @@ const reducer = produce((draftState, action) => {
       draftState[id].filtersActive = data;
       return;
     }
-    case types.UPDATE_WIDGET_SHOWN: {
+    case types.FILTER_UPDATE_WIDGET_SHOWN: {
       const { id, data } = action.payload;
       draftState[id].widgetShown = data;
       return;

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import {
-  updateWidgetShown,
+  updateFilterWidgetShown,
   setNewFiltersActive,
   updateActiveFilter,
   clearAllFilters,
@@ -76,8 +76,8 @@ class Filters extends PureComponent {
    * @param {*} value
    */
   handleShow = (value) => {
-    const { filterId, updateWidgetShown } = this.props;
-    updateWidgetShown({ id: filterId, data: value });
+    const { filterId, updateFilterWidgetShown } = this.props;
+    updateFilterWidgetShown({ id: filterId, data: value });
   };
 
   /**
@@ -217,7 +217,7 @@ Filters.propTypes = {
   allowOutsideClick: PropTypes.bool,
   modalVisible: PropTypes.bool,
   filterId: PropTypes.string,
-  updateWidgetShown: PropTypes.func,
+  updateFilterWidgetShown: PropTypes.func,
   updateActiveFilter: PropTypes.func,
   filters: PropTypes.object,
   clearAllFilters: PropTypes.func,
@@ -240,7 +240,7 @@ const mapStateToProps = (state, ownProps) => {
 export default connect(
   mapStateToProps,
   {
-    updateWidgetShown,
+    updateFilterWidgetShown,
     updateActiveFilter,
     clearAllFilters,
     updateNotValidFields,
