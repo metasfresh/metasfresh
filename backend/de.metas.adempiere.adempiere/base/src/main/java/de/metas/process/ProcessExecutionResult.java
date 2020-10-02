@@ -476,9 +476,9 @@ public class ProcessExecutionResult
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
 	}
 
-	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable boolean openInNewTab)
+	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
 	{
-		setRecordToOpen(record, String.valueOf(adWindowId), target, openInNewTab);
+		setRecordToOpen(record, String.valueOf(adWindowId), target, targetTab);
 	}
 
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target)
@@ -493,13 +493,13 @@ public class ProcessExecutionResult
 					.record(record)
 					.adWindowId(adWindowId)
 					.target(target)
-					.openInNewTab(false)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
 	}
 
-	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target, @Nullable final boolean openInNewTab)
+	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
 	{
 		if (record == null)
 		{
@@ -511,7 +511,7 @@ public class ProcessExecutionResult
 					.record(record)
 					.adWindowId(adWindowId)
 					.target(target)
-					.openInNewTab(openInNewTab)
+					.targetTab(targetTab)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}

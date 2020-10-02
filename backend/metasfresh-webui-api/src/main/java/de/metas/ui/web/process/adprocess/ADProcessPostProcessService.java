@@ -350,12 +350,10 @@ public class ADProcessPostProcessService
 			final ViewId parentViewId = parentViewIdStr != null ? ViewId.ofViewIdString(parentViewIdStr) : null;
 			final CreateViewRequest viewRequest = createViewRequest(recordsToOpen, referencingDocumentPaths, parentViewId);
 			final IView view = viewsRepo.createView(viewRequest);
-			final boolean openInNewTab = recordsToOpen.isOpenInNewTab();
 
 			return OpenViewAction.builder()
 					.viewId(view.getViewId())
-					.modalOverlay(false) // set this to false so we use openInNewTab to decide whether to open a modal or a new tab in this case.
-					.openInNewTab(openInNewTab)
+
 					.build();
 		}
 		//
@@ -378,7 +376,6 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.modalOverlay(true)
 						.build();
 			}
 			else if (ViewOpenTarget.NewBrowserTab.equals(target))
@@ -386,7 +383,6 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.modalOverlay(false)
 						.build();
 			}
 
@@ -400,12 +396,9 @@ public class ADProcessPostProcessService
 		else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocument)
 		{
 			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
-			final boolean openInNewTab = recordsToOpen.isOpenInNewTab();
 
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
-					.modal(false)
-					.openInNewTab(openInNewTab)
 					.build();
 		}
 		//
@@ -415,7 +408,7 @@ public class ADProcessPostProcessService
 			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
-					.modal(true)
+
 					.build();
 		}
 		//

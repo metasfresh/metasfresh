@@ -124,8 +124,7 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 		getResult().setRecordToOpen(
 				TableRecordReference.of(salesOrder),
 				orderWindowId.get().getRepoId(), // adWindowId
-				OpenTarget.SingleDocument,
-				true);
+				OpenTarget.SingleDocument);
 
 		return MSG_OK;
 	}

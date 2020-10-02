@@ -1,5 +1,6 @@
 package de.metas.ui.web.process;
 
+import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -143,7 +144,7 @@ public final class ProcessInstanceResult
 		private final ViewId viewId;
 		private final ViewProfileId profileId;
 		@Builder.Default
-		private final OpenTarget openTarget = OpenTarget.SAME_TAB_OVERLAY;
+		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB_OVERLAY;
 	}
 
 	@lombok.Value
@@ -169,7 +170,8 @@ public final class ProcessInstanceResult
 		@NonNull
 		private final DocumentPath documentPath;
 		@Builder.Default
-		private final OpenTarget openTarget = OpenTarget.NEW_TAB;
+		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB;
+
 	}
 
 	@lombok.Value
