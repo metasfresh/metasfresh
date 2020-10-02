@@ -84,7 +84,7 @@ class JsonSerializeDeserializeTests
 				.documentNo("dNo")
 				.movementQuantity(BigDecimal.ONE)
 				.productSearchKey("p_key")
-				.movementDate(LocalDateTime.of(2020,7,24,18,13))
+				.movementDate(LocalDateTime.of(2020, 7, 24, 18, 13))
 				.attributes(ImmutableList.of(mockAttributeInstance()))
 				.shipToLocation(location)
 				.build();
@@ -142,7 +142,13 @@ class JsonSerializeDeserializeTests
 				.orderDocumentNo("orderDocumentNo")
 				.deliveryInfo("deliveryInfo")
 				.product(createJsonProduct())
-				.customer(JsonCustomer.builder().street("street").streetNo("streetNo").postal("postal").city("city").shipmentAllocationBestBeforePolicy("E").build())
+				.customer(JsonCustomer.builder()
+						.companyName("companyName")
+						.street("street").streetNo("streetNo")
+						.addressSuffix1("addressSuffix1")
+						.addressSuffix2("addressSuffix2")
+						.addressSuffix3("addressSuffix3")
+						.postal("postal").city("city").shipmentAllocationBestBeforePolicy("E").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.ONE).uomCode("PCE").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
 				.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
@@ -269,7 +275,7 @@ class JsonSerializeDeserializeTests
 				.attributeName("name")
 				.valueStr("valueStr")
 				.valueNumber(BigDecimal.ONE)
-				.valueDate(LocalDate.of(2020,7,24))
+				.valueDate(LocalDate.of(2020, 7, 24))
 				.attributeCode("atrCode")
 				.build(); // not a real case but it's fine for testing
 	}

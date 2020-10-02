@@ -75,6 +75,9 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 			.field(FIELD.builder().name("_empfaenger_ansprechpartner").build())
 			.field(FIELD.builder().name("_empfaenger_strasse").build())
 			.field(FIELD.builder().name("_empfaenger_hausnummer").build())
+			.field(FIELD.builder().name("_empfaenger_adresszusatz_1").build())
+			.field(FIELD.builder().name("_empfaenger_adresszusatz_2").build())
+			.field(FIELD.builder().name("_empfaenger_adresszusatz_3").build())
 			.field(FIELD.builder().name("_empfaenger_zustellinfo").build())
 			.field(FIELD.builder().name("_empfaenger_plz").build())
 			.field(FIELD.builder().name("_empfaenger_ort").build())
@@ -190,6 +193,9 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(customer.getContactName())); // _empfaenger_ansprechpartner
 		row.col(COL.of(customer.getStreet())); // _empfaenger_strasse
 		row.col(COL.of(customer.getStreetNo())); // _empfaenger_hausnummer
+		row.col(COL.of(customer.getAddressSuffix1())); // _empfaenger_adresszusatz_1
+		row.col(COL.of(customer.getAddressSuffix2())); // _empfaenger_adresszusatz_2
+		row.col(COL.of(customer.getAddressSuffix3())); // _empfaenger_adresszusatz_3
 		row.col(COL.of(item.getDeliveryInfo())); // _empfaenger_zustellinfo
 		row.col(COL.of(customer.getPostal())); // _empfaenger_plz
 		row.col(COL.of(customer.getCity())); // _empfaenger_ort
@@ -217,11 +223,11 @@ public class ShipmentCandidateJsonToXmlProcessor implements Processor
 		row.col(COL.of(qtyToDeliver));//_artikel_webshop_restmenge_noch_offen
 
 		final String shipmentAllocationBestBeforePolicy = customer.getShipmentAllocationBestBeforePolicy();
-		if ("E".equals(shipmentAllocationBestBeforePolicy))
+		if ("E" .equals(shipmentAllocationBestBeforePolicy))
 		{
 			row.col(COL.of("kurz"));//_empfaenger_mhd_kurz_oder_lang
 		}
-		else if ("N".equals(shipmentAllocationBestBeforePolicy))
+		else if ("N" .equals(shipmentAllocationBestBeforePolicy))
 		{
 			row.col(COL.of("lang"));//_empfaenger_mhd_kurz_oder_lang
 		}
