@@ -1,5 +1,4 @@
 import * as types from '../constants/FilterTypes';
-// import { Map as iMap } from 'immutable';
 import deepUnfreeze from 'deep-unfreeze';
 import { fieldValueToString } from '../utils/tableHelpers';
 import _ from 'lodash';
