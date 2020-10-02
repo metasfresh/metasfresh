@@ -53,6 +53,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
+import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -96,7 +97,8 @@ public class ShipmentService
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
 	private final AttributeSetHelper attributeSetHelper;
 
-	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService, final AttributeSetHelper attributeSetHelper)
+	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
+			final AttributeSetHelper attributeSetHelper)
 	{
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 		this.attributeSetHelper = attributeSetHelper;
@@ -123,7 +125,7 @@ public class ShipmentService
 	{
 		return request.getCreateShipmentInfoList()
 				.stream()
-				.map(createShipmentInfo -> extractShipmentScheduleId(createShipmentInfo))
+				.map(ShipmentService::extractShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -166,19 +168,22 @@ public class ShipmentService
 		{
 			throw new AdempiereException("M_ShipmentSchedule was already processed!")
 					.appendParametersToMessage()
-					.setParameter("M_ShipmentSchedule", shipmentSchedule);
+					.setParameter("M_ShipmentSchedule_ID", shipmentSchedule.getM_ShipmentSchedule_ID());
 		}
 
 		if (Check.isNotBlank(createShipmentInfo.getProductSearchKey()))
 		{
-			final ProductId incomingProductId = productDAO.retrieveProductIdByValue(createShipmentInfo.getProductSearchKey());
+			final ProductQuery query = ProductQuery.builder().value(createShipmentInfo.getProductSearchKey()).orgId(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID())).build();
+			final ProductId incomingProductId = productDAO.retrieveProductIdBy(query);
 
 			if (incomingProductId == null || incomingProductId.getRepoId() != shipmentSchedule.getM_Product_ID())
 			{
 				throw new AdempiereException("Inconsistent productSearchKey!")
 						.appendParametersToMessage()
+						.setParameter("M_ShipmentSchedule_ID", shipmentSchedule.getM_ShipmentSchedule_ID())
+						.setParameter("AD_Org_ID", shipmentSchedule.getAD_Org_ID())
 						.setParameter("jsonCreateShipmentInfo.productSearchKey", createShipmentInfo.getProductSearchKey())
-						.setParameter("productSearchKey is resolved to productId", incomingProductId)
+						.setParameter("productSearchKey belongs to M_Product_ID", ProductId.toRepoId(incomingProductId))
 						.setParameter("M_ShipmentSchedule.M_Product_ID", shipmentSchedule.getM_Product_ID());
 			}
 		}
@@ -453,8 +458,13 @@ public class ShipmentService
 		}
 
 		@Nullable
-		public ShipperId  getShipperId(@NonNull final String shipperInternalName)
+		public ShipperId getShipperId(@Nullable final String shipperInternalName)
 		{
+			if(Check.isBlank(shipperInternalName))
+			{
+				return null;
+			}
+
 			final I_M_Shipper shipper = shipperByInternalName.computeIfAbsent(shipperInternalName, this::loadShipper);
 
 			return shipper != null

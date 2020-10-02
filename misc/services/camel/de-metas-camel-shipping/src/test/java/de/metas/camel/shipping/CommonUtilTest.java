@@ -22,22 +22,27 @@
 
 package de.metas.camel.shipping;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CommonUtilTest
 {
 
-	@Test
-	void removeOrgPrefix()
+	@ParameterizedTest
+	@CsvSource(
+			value = {
+					"test,test",
+					"-test,test",
+					"-test-test,test-test",
+					"t-test-test,test-test",
+					"tt-test-test,test-test",
+					"tK-test,testmhd",
+					"ttK-test,testmhd",
+					"K-test,test" })
+	void convertProductValue(final String input, final String expectedOutput)
 	{
-		assertThat(CommonUtil.removeOrgPrefix("")).isEqualTo("");
-		assertThat(CommonUtil.removeOrgPrefix("test")).isEqualTo("test");
-		assertThat(CommonUtil.removeOrgPrefix("-test")).isEqualTo("test");
-		assertThat(CommonUtil.removeOrgPrefix("-test-test")).isEqualTo("test-test");
-		assertThat(CommonUtil.removeOrgPrefix("t-test-test")).isEqualTo("test-test");
-		assertThat(CommonUtil.removeOrgPrefix("tt-test-test")).isEqualTo("test-test");
-		assertThat(CommonUtil.removeOrgPrefix("tt-")).isEqualTo("");
+		assertThat(CommonUtil.convertProductValue(input)).isEqualTo(expectedOutput);
 	}
 }

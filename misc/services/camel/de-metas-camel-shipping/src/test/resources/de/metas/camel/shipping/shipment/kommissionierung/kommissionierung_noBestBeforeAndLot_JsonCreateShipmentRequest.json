@@ -1,0 +1,54 @@
+{
+  "shipmentList": [
+    {
+      "shipmentScheduleId": 1191714,
+      "productSearchKey": "31100821",
+      "businessPartnerSearchKey": null,
+      "movementQuantity": 3.0,
+      "movementDate": "2020-09-29T16:16:59.000Z",
+      "documentNo": "document-no-1",
+      "deliveryRule": "F",
+      "attributes": null
+    },
+    {
+      "shipmentScheduleId": 1191713,
+      "productSearchKey": "11030821",
+      "businessPartnerSearchKey": null,
+      "movementQuantity": 1.0,
+      "movementDate": "2020-09-29T15:26:28.000Z",
+      "documentNo": "document-no-1",
+      "deliveryRule": "F",
+      "attributes": null
+    },
+    {
+      "shipmentScheduleId": 1191717,
+      "productSearchKey": "11010821mhd",
+      "businessPartnerSearchKey": null,
+      "movementQuantity": 1.0,
+      "movementDate": "2020-09-29T15:26:52.000Z",
+      "documentNo": "document-no-1",
+      "deliveryRule": "F",
+      "attributes": null
+    },
+    {
+      "shipmentScheduleId": 1191716,
+      "productSearchKey": "11011021",
+      "businessPartnerSearchKey": null,
+      "movementQuantity": 1.0,
+      "movementDate": "2020-09-29T15:27:29.000Z",
+      "documentNo": "document-no-1",
+      "deliveryRule": "F",
+      "attributes": null
+    },
+    {
+      "shipmentScheduleId": 1191715,
+      "productSearchKey": "12060521",
+      "businessPartnerSearchKey": null,
+      "movementQuantity": 5.0,
+      "movementDate": "2020-09-29T15:28:32.000Z",
+      "documentNo": "document-no-1",
+      "deliveryRule": "F",
+      "attributes": null
+    }
+  ]
+}

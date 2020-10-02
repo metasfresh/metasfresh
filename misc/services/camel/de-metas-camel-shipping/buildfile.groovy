@@ -32,7 +32,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         currentBuild.description = """${currentBuild.description}<p/>
 					No changes happened in EDI.
 					"""
-        echo "no changes happened in EDI; skip building EDI";
+        echo "no changes happened in shipping-camel; skip";
         return;
     }
 
@@ -47,7 +47,6 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
     final def misc = new de.metas.jenkins.Misc();
     withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
-        // some block
         // build and install
         // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
         // maven.test.failure.ignore=true: see metasfresh stage

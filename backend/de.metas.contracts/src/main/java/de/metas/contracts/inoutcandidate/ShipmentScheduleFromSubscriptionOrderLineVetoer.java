@@ -59,10 +59,6 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 	 *            the object for this the given <code>handler</code> wants to create a shipment schedule. The method
 	 *            assumes that it can obtain a {@link I_C_OrderLine} instance for model by using the
 	 *            {@link InterfaceWrapperHelper}.
-	 * @param handler
-	 *            the handler that wants to create a shipment schedule for the given <code>model</code>. The method
-	 *            assume that this handler's {@link ShipmentScheduleHandler#getSourceTable()} invocation returns
-	 *            <code>"C_OrderLine"</code>.
 	 */
 	@Override
 	public OnMissingCandidate foundModelWithoutInOutCandidate(@NonNull final Object model)
@@ -98,8 +94,8 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 				ctx,
 				o.getBill_BPartner_ID(),
 				o.getDateOrdered(),
-				productCategoryId.getRepoId(),
-				productId.getRepoId(),
+				ProductCategoryId.toRepoId(productCategoryId),
+				ProductId.toRepoId(productId),
 				ol.getC_Charge_ID(),
 				trxName);
 

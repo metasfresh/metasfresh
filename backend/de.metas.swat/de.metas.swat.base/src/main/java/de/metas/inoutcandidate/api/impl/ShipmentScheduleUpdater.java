@@ -409,8 +409,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				schedRecord.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
 			}
 
+
 			shipmentScheduleBL.updateExportStatus(schedRecord);
 			shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
+
+			schedRecord.setPOReference(olAndSched.getSalesOrderPORef());
 
 			shipmentSchedulePA.save(schedRecord);
 		}
