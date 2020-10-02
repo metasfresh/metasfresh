@@ -354,7 +354,7 @@ public class ADProcessPostProcessService
 
 			return OpenViewAction.builder()
 					.viewId(view.getViewId())
-					.modalOverlay(false)
+					.modalOverlay(false) // set this to false so we use openInNewTab to decide whether to open a modal or a new tab in this case.
 					.openInNewTab(openInNewTab)
 					.build();
 		}
