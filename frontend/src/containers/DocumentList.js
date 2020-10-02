@@ -29,7 +29,7 @@ import {
   updateGridTableData,
   deselectTableRows,
 } from '../actions/TableActions';
-import { filtersToMap, filtersActiveContains } from '../actions/FiltersActions';
+import { filtersActiveContains } from '../actions/FiltersActions';
 import {
   setListId,
   setPagination as setListPagination,
@@ -518,10 +518,6 @@ class DocumentListContainer extends Component {
           const newState = {
             pageColumnInfosByFieldName,
           };
-
-          if (response.filters) {
-            newState.filtersActive = filtersToMap(response.filters);
-          }
 
           if (
             locationAreaSearch ||

@@ -11,7 +11,6 @@ import {
   DLpropTypes,
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
-import { filtersToMap } from '../../actions/FiltersActions';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
@@ -254,7 +253,6 @@ export default class DocumentList extends Component {
                     initialValuesNulled,
                   }}
                   windowType={windowId}
-                  filterData={filtersToMap(layout.filters)}
                   updateDocList={onFilterChange}
                   resetInitialValues={onResetInitialFilters}
                 />
