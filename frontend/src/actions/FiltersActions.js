@@ -55,6 +55,17 @@ export function updateActiveFilter({ id, data }) {
 }
 
 /**
+ * @method updateInlineFilter
+ * @summary Updates the InlineFilter value in the store for the corresponding entity id
+ */
+export function updateInlineFilter({ filterId, data }) {
+  return {
+    type: types.UPDATE_INLINE_FILTER,
+    payload: { filterId, data },
+  };
+}
+
+/**
  * @method updateFilterWidgetShown
  * @summary Updates the widgetShown in the store for the corresponding entity id with a boolean value
  */

@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import RawWidget from '../widget/RawWidget';
 import { convertDateToReadable } from '../../utils/dateHelpers';
+import { updateInlineFilter } from '../../actions/FiltersActions';
 
 class InlineFilterItem extends Component {
   state = { filter: this.props.parentFilter, searchString: '' };
@@ -22,8 +23,9 @@ class InlineFilterItem extends Component {
   }
 
   setValue = (property, value, id, valueTo) => {
+    const { filterId, updateInlineFilter } = this.props;
+    updateInlineFilter({ filterId, value });
     this.setState({ searchString: value });
-
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
     // IT HAS TO BE UNIFIED
     //
@@ -57,13 +59,12 @@ class InlineFilterItem extends Component {
   };
 
   handleApply = () => {
-    const { applyFilters } = this.props;
+    const { applyFilters, clearFilters } = this.props;
     const { filter } = this.state;
-
+    clearFilters(filter);
     if (filter && !filter.parameters[0].value) {
       return this.handleClear();
     }
-
     applyFilters(filter);
   };
 
@@ -147,6 +148,8 @@ InlineFilterItem.propTypes = {
   disableShortcut: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   timeZone: PropTypes.string.isRequired,
+  filterId: PropTypes.string,
+  updateInlineFilter: PropTypes.func,
 };
 
 export default connect(
@@ -154,5 +157,6 @@ export default connect(
   {
     allowShortcut,
     disableShortcut,
+    updateInlineFilter,
   }
 )(InlineFilterItem);

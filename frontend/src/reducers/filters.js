@@ -76,6 +76,13 @@ const reducer = produce((draftState, action) => {
       draftState[filterId].staticFilterCleared = data;
       return;
     }
+    case types.UPDATE_INLINE_FILTER: {
+      const { filterId, data } = action.payload;
+      if (original(draftState[filterId].filtersActive).length) {
+        draftState[filterId].filtersActive[0].parameters[0].value = data;
+      }
+      return;
+    }
   }
 }, initialFiltersBranchState);
 

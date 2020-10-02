@@ -113,6 +113,7 @@ class Filters extends PureComponent {
       allowOutsideClick,
       modalVisible,
       filters,
+      filterId,
     } = this.props;
     const widgetShown = filters ? filters.widgetShown : false;
     const notValidFields = filters ? filters.notValidFields : false;
@@ -196,6 +197,7 @@ class Filters extends PureComponent {
                   dropdownToggled={this.dropdownToggled}
                   filtersWrapper={this.filtersWrapper}
                   key={item.filterId}
+                  filterId={filterId}
                 />
               );
             }

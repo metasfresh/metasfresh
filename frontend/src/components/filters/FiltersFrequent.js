@@ -73,6 +73,7 @@ class FiltersFrequent extends PureComponent {
       active,
       modalVisible,
       activeFiltersCaptions,
+      filterId,
     } = this.props;
     const { openFilterId } = this.state;
 
@@ -179,6 +180,7 @@ class FiltersFrequent extends PureComponent {
                     onHide={this.handleShowFalse}
                     viewId={viewId}
                     outsideClick={this.outsideClick}
+                    filterId={filterId}
                   />
                 ))}
             </div>
@@ -204,6 +206,7 @@ FiltersFrequent.propTypes = {
   clearFilters: PropTypes.any,
   widgetShown: PropTypes.any,
   dropdownToggled: PropTypes.any,
+  filterId: PropTypes.string,
 };
 
 export default onClickOutside(FiltersFrequent);
