@@ -247,7 +247,10 @@ export function setNewFiltersActive({ storeActiveFilters, filterToAdd }) {
 
 /**
  * @method foundAmongActiveFilters
- * @summary checks that the filterToAdd is found among the storeActiveFilters
+ * @summary checks that the filterToAdd is found among the active filters from the store -> storeActiveFilters
+ * @param {array} - storeActiveFilters is representing the active filters as they are found in the redux store
+ * @param {object} - filterToAdd - is the filter we are planing to add to the redux store within the active filters array
+ * @returns {boolean} indicating the presence of the filterToAdd among the active filters
  */
 function foundAmongActiveFilters({ storeActiveFilters, filterToAdd }) {
   let isPresent = false;
