@@ -64,6 +64,32 @@ body {
     color: #fff;
 }
 
+html, body{
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+html {
+    overflow: scroll;
+}
+
+body{
+    min-height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+}
+
+#root,
+#root>div,
+.root-children,
+.root-children>div {
+    height: 100%;
+}
+
 .container-fluid {
     padding-left: 3rem;
     padding-right: 3rem;
@@ -948,87 +974,6 @@ body {
     height: 100%;
 }
 
-html, body{
-    padding: 0;
-    margin: 0;
-    height: 100%;
-}
-
-html {
-    overflow: scroll;
-}
-
-body{
-    min-height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: auto;
-}
-
-#root,
-#root>div,
-.root-children,
-.root-children>div {
-    height: 100%;
-}
-
-.sort-menu {
-    width: 100%;
-    line-height: 22px;
-    vertical-align: middle;
-    position: relative;
-}
-
-.sort-menu--sortable {
-    cursor: pointer;
-}
-.sort-menu .sort-ico {
-    position: absolute;
-    right: -12px;
-    cursor: pointer;
-    color: $brand-font-color;
-    opacity: 0;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.sort-menu .sort-ico:not(.rotate-90) {
-    top: 3px;
-}
-
-.sort-menu .th-caption {
-    color: white;
-    vertical-align: middle;
-}
-
-.sort-menu .sort {
-    color: white;
-    opacity: 1;
-}
-
-.sort-menu:hover {
-    .th-caption {
-        color: $brand-font-color;
-        text-decoration: underline;
-    }
-    .sort-ico {
-        color: $brand-font-color;
-    }
-}
-
-th {
-    position: relative;
-}
-.rotate-90 {
-    transform: rotate(180deg);
-}
-
-.sort.rotate-90 {
-    text-align: left;
-}
-
 .pulse-on {
     background: $brand-pulse-effect !important;
     transition: background-color .33s;
@@ -1036,14 +981,6 @@ th {
 
 .pulse-off {
     transition: background-color 1.33s;
-}
-
-td.pulse-on input {
-    background: transparent !important;
-}
-
-td.pulse-off input {
-    background: transparent !important;
 }
 
 .filter-wrapper {
