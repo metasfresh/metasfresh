@@ -360,6 +360,12 @@ export class RawWidget extends PureComponent {
       handleProcess(caption, buttonProcessId, tabId, rowId, dataId, windowType);
   };
 
+  /**
+   * @method setWidgetType
+   * @summary used for password fields, when user wants to reveal the typed password
+   *
+   * @param {string} type - toggles between text/password
+   */
   setWidgetType = (type) => {
     this.rawWidget.type = type;
   };
@@ -386,7 +392,7 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method clearFieldWarning
-   * @summary ToDo: Describe the method.
+   * @summary Suppress showing the error message, as user already acknowledged it
    * @param {*} warning
    */
   clearFieldWarning = (warning) => {
@@ -399,8 +405,8 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method toggleTooltip
-   * @summary ToDo: Describe the method.
-   * @param {*} show
+   * @summary toggle tooltip (if it's available)
+   * @param {bool} show
    */
   toggleTooltip = (show) => {
     this.setState({
@@ -410,8 +416,8 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method renderErrorPopup
-   * @summary ToDo: Describe the method.
-   * @param {*} reason
+   * @summary this is self explanatory
+   * @param {string} reason - the cause of error
    */
   renderErrorPopup = (reason) => {
     return (
