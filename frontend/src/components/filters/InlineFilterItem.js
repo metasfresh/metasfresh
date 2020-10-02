@@ -11,52 +11,19 @@ import RawWidget from '../widget/RawWidget';
 import { convertDateToReadable } from '../../utils/dateHelpers';
 
 class InlineFilterItem extends Component {
-  state = { filter: this.props.parentFilter };
+  state = { filter: this.props.parentFilter, searchString: '' };
 
-  UNSAFE_componentWillMount() {
-    this.init();
+  static getDerivedStateFromProps(props) {
+    const { active } = props;
+    if (active.length && active[0].parameters) {
+      return { searchString: active[0].parameters[0].value };
+    }
+    return null;
   }
-
-  UNSAFE_componentWillReceiveProps(props) {
-    const { active } = this.props;
-
-    if (JSON.stringify(active) !== JSON.stringify(props.active)) {
-      this.init();
-    }
-  }
-
-  init = () => {
-    const { active, parentFilter } = this.props;
-    const { filter } = this.state;
-    let activeFilter;
-
-    if (active) {
-      activeFilter = active.find(
-        (item) => item.filterId === parentFilter.filterId
-      );
-    }
-
-    if (
-      filter.type &&
-      activeFilter &&
-      activeFilter.parameters &&
-      activeFilter.filterId === filter.filterId
-    ) {
-      activeFilter.parameters.map((item) => {
-        this.mergeData(
-          item.parameterName,
-          item.value != null ? item.value : '',
-          item.valueTo != null ? item.valueTo : ''
-        );
-      });
-    } else if (filter.parameters) {
-      filter.parameters.map((item) => {
-        this.mergeData(item.parameterName, '');
-      });
-    }
-  };
 
   setValue = (property, value, id, valueTo) => {
+    this.setState({ searchString: value });
+
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
     // IT HAS TO BE UNIFIED
     //
@@ -120,7 +87,10 @@ class InlineFilterItem extends Component {
       allowShortcut,
       disableShortcut,
     } = this.props;
-    const { filter } = this.state;
+    const { filter, searchString } = this.state;
+
+    const dataClone = { ...data };
+    dataClone.value = searchString;
 
     return (
       <RawWidget
@@ -132,7 +102,7 @@ class InlineFilterItem extends Component {
         widgetType={data.widgetType}
         fields={[{ ...data, emptyText: data.caption }]}
         type={data.type}
-        widgetData={[data]}
+        widgetData={[dataClone]}
         range={data.range}
         caption={data.caption}
         noLabel={true}
