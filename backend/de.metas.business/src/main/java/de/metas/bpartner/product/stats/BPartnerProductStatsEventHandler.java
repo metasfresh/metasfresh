@@ -27,12 +27,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.Set;
 
-@Service
+@Component
 public class BPartnerProductStatsEventHandler
 {
 	private final BPartnerProductStatsRepository statsRepo;
