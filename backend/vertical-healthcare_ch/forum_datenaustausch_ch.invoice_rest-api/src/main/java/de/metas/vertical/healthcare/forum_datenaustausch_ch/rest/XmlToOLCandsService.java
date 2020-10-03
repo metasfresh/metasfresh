@@ -666,7 +666,7 @@ public class XmlToOLCandsService
 		}
 
 		final JsonRequestContact jsonRequestContact = new JsonRequestContact();
-		jsonRequestContact.setExternalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"));
+		jsonRequestContact.setExternalId(JsonExternalId.of(billerBPartnerExternalId.getValue() + "_singlePerson"));
 		jsonRequestContact.setFirstName(name.getFirstName());
 		jsonRequestContact.setLastName(coalesce(name.getLastName(), name.getSingleStringName()));
 		jsonRequestContact.setName(name.getSingleStringName());
@@ -738,6 +738,7 @@ public class XmlToOLCandsService
 		return JsonExternalId.of(externalId.getValue());
 	}
 
+	@NonNull
 	private JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)
 	{
 		return JsonExternalId.of("EAN-" + biller.getEanParty());
@@ -780,7 +781,9 @@ public class XmlToOLCandsService
 		location.setCountryCode(coalesce(countrycode, "CH"));
 
 		location.setBillTo(true);
+		location.setBillToDefault(true);
 		location.setShipTo(true);
+		location.setShipToDefault(true);
 
 		return location;
 	}

@@ -1,17 +1,14 @@
 package de.metas.rest_api.ordercandidates.request;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.rest_api.bpartner.SwaggerDocConstants;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
@@ -22,6 +19,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -49,12 +50,11 @@ import lombok.Value;
  * Specifies a single order line candidate for be created by the system
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
-public final class JsonOLCandCreateRequest
+public class JsonOLCandCreateRequest
 {
-	private JsonOrganization org;
+	JsonOrganization org;
 
 	@ApiModelProperty( //
 			required = true, //
@@ -79,7 +79,6 @@ public final class JsonOLCandCreateRequest
 	String dataDest;
 
 	@ApiModelProperty( //
-			required = true, //
 			value = " This translates to `C_OLCand.C_BPartner_ID`, `C_OLCand.C_BPartner_Location_ID` and `C_OLCand.AD_User_ID`.\n"
 					+ "It's the business partner that places/placed the order which this candidate is about.\n"
 					+ "\n"
@@ -88,7 +87,6 @@ public final class JsonOLCandCreateRequest
 	JsonRequestBPartnerLocationAndContact bpartner;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = " This translates to `C_OLCand.Bill_BPartner_ID`.\n"
 					+ "It's the business partner that shall receive the invoice.\n"
 					+ "Optional; if empty, then `bpartner` will receive the invoice.")
@@ -96,7 +94,6 @@ public final class JsonOLCandCreateRequest
 	JsonRequestBPartnerLocationAndContact billBPartner;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = " This translates to `C_OLCand.Dropship_BPartner_ID`.\n"
 					+ "It's the business partner that shall receive the shipment.\n"
 					+ "Optional; if empty, then `bpartner` will receive the shipment.")
@@ -104,7 +101,6 @@ public final class JsonOLCandCreateRequest
 	JsonRequestBPartnerLocationAndContact dropShipBPartner;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = " This translates to `C_OLCand.HandOver_BPartner_ID`.\n"
 					+ "It's an intermediate partner that shall receive the shipment and forward it to the eventual recipient.\n"
 					+ "Optional; if empty, then `dropShipBPartner` or `bpartner` will directly receive the shipment.")
@@ -112,14 +108,12 @@ public final class JsonOLCandCreateRequest
 	JsonRequestBPartnerLocationAndContact handOverBPartner;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = "This translates to `C_OLCand.DateOrdered`.")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	LocalDate dateOrdered;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = "This translates to `C_OLCand.datePromised`.\n"
 					+ "It's the date that the external system's user would like the metasfresh user to promise for delivery.\n"
 					+ "Note: may be empty, if `dataDestInternalName='DEST.de.metas.invoicecandidate'`")
@@ -136,7 +130,7 @@ public final class JsonOLCandCreateRequest
 
 	BigDecimal qty;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "This translates to `C_UOM.X12DE355`.\n"
 					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_OLCand.C_UOM_ID`.\n"
 					+ "If not provided here, then the respective product's UOM is used instead.\n"
@@ -144,7 +138,7 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String uomCode;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "This translates to `C_OLCand.M_HU_PI_Item_Product_ID`.")
 	@JsonInclude(Include.NON_NULL)
 	MetasfreshId packingMaterialId;
@@ -158,7 +152,7 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String pricingSystemCode;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal price;
@@ -174,14 +168,15 @@ public final class JsonOLCandCreateRequest
 	BigDecimal discount;
 
 	@ApiModelProperty( //
+			required = true,
 			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	String poReference;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
 	String warehouseDestCode;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "Can be set if the invoice's document type is already known from the external system and shall be forwarded to the invoice candidate.\\n\""
 					+ "This works only if not an order line but an invoice candidate is directly created for the respective order line candidate.\n"
 					+ "Therefore, please make sure to have `dataDestInternalName='DEST.de.metas.invoicecandidate'`.\n"
@@ -192,13 +187,13 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonDocTypeInfo invoiceDocType;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "Can be set if the invoice's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	LocalDate presetDateInvoiced;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "Can be set if the shipment's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
@@ -219,12 +214,10 @@ public final class JsonOLCandCreateRequest
 	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
 	String shipper;
-	
-	
+
 	@ApiModelProperty(value = "Specifies the value or the externalId of the payment term that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
 	String paymentTerm;
-	
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -292,7 +285,7 @@ public final class JsonOLCandCreateRequest
 		this.paymentRule = paymentRule;
 		this.salesPartnerCode = salesPartnerCode;
 		this.shipper = shipper;
-		
+
 		this.paymentTerm = paymentTerm;
 	}
 
@@ -307,6 +300,10 @@ public final class JsonOLCandCreateRequest
 		Check.assumeNotNull(externalHeaderId, "externalHeaderId may not be null; this={}", this);
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
+		validateBPartner("bpartner", bpartner);
+		validateBPartner("billBPartner", billBPartner);
+		validateBPartner("handOverBPartner", handOverBPartner);
+		validateBPartner("dropShipBPartner", dropShipBPartner);
 
 		if (price != null)
 		{
@@ -315,6 +312,35 @@ public final class JsonOLCandCreateRequest
 					this);
 		}
 		return this;
+	}
+
+	private void validateBPartner(
+			@NonNull final String propertyName,
+			@Nullable final JsonRequestBPartnerLocationAndContact bpartnerLocationAndContact)
+	{
+		if (bpartnerLocationAndContact == null)
+		{
+			return;
+		}
+
+		final JsonRequestBPartner bpartner = bpartnerLocationAndContact.getBpartner();
+		if (bpartner != null && bpartner.getSyncAdvise() != null)
+		{ // note: bpartner==null can be OK to; lookup can be done via location
+			Check.assume(!bpartner.getSyncAdvise().getIfExists().isUpdateRemove(),
+					"{} has bpartner/syncAdvise/ifExists/UPDATE_REMOVE which is not allowed in OLCandCeateRequests", propertyName);
+		}
+		final JsonRequestLocation location = bpartnerLocationAndContact.getLocation();
+		if (location != null && location.getSyncAdvise() != null)
+		{
+			Check.assume(!location.getSyncAdvise().getIfExists().isUpdateRemove(),
+					"{} has location/syncAdvise/ifExists/UPDATE_REMOVE which is not allowed in OLCandCeateRequests", propertyName);
+		}
+		final JsonRequestContact contact = bpartnerLocationAndContact.getContact();
+		if (contact != null && contact.getSyncAdvise() != null)
+		{
+			Check.assume(!location.getSyncAdvise().getIfExists().isUpdateRemove(),
+					"{} has contact/syncAdvise/ifExists/UPDATE_REMOVE which is not allowed in OLCandCeateRequests", propertyName);
+		}
 	}
 
 	public JsonOLCandCreateRequest withOrgSyncAdvise(@Nullable final SyncAdvise syncAdvise)
@@ -331,7 +357,9 @@ public final class JsonOLCandCreateRequest
 		return builder.build();
 	}
 
-	/** Creates an instance with the given {@code syncAdvise} in all bPartners. */
+	/**
+	 * Creates an instance with the given {@code syncAdvise} in all bPartners.
+	 */
 	public JsonOLCandCreateRequest withBPartnersSyncAdvise(@Nullable final SyncAdvise syncAdvise)
 	{
 		if (syncAdvise == null)
