@@ -1,7 +1,11 @@
 import React from 'react';
 import { mount, shallow, render } from 'enzyme';
 
-import { RawWidget } from '../../../components/widget/RawWidget';
+import RawWidget from '../../../components/widget/RawWidget';
+import
+  WidgetRenderer,
+  { WidgetRenderer as UnwrappedWidgetRenderer }
+from '../../../components/widget/WidgetRenderer';
 import fixtures from '../../../../test_setup/fixtures/raw_widget.json';
 
 const createDummyProps = function(props) {
@@ -28,12 +32,17 @@ describe('RawWidget component', () => {
       );
  
       const wrapper = shallow(<RawWidget {...props} />);
+
+      wrapper.update();
+
       const html = wrapper.html();
 
       expect(html).toContain('form-group');
       expect(html).toContain('row');
       expect(html).toContain('input-block');
-      expect(wrapper.find('textarea').length).toBe(1);
+
+      expect(wrapper.find(WidgetRenderer).length).toBe(1);
+      expect(html).toContain('<textarea')
       expect(html).toContain(fixtures.longText.data1.value)
       expect(html).toContain(fixtures.longText.layout1.description)
     });
@@ -62,10 +71,14 @@ describe('RawWidget component', () => {
         },
       );
 
-      const wrapper = shallow(<RawWidget {...props} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spy = jest.spyOn(instance, 'handleKeyDown');
+      const textarea = wrapper.find('textarea');
 
-      wrapper.find('textarea').simulate(
+      instance.forceUpdate();
+
+      textarea.simulate(
         'keyDown',
         {
           key: 'Enter',
@@ -77,7 +90,7 @@ describe('RawWidget component', () => {
       expect(spy).toHaveBeenCalled();
       expect(handlePatchSpy).not.toHaveBeenCalled();
 
-      wrapper.find('textarea').simulate(
+      textarea.simulate(
         'keyDown',
         {
           key: 'Tab',
@@ -100,8 +113,12 @@ describe('RawWidget component', () => {
         },
       );
 
-      const wrapper = shallow(<RawWidget {...props} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spy = jest.spyOn(instance, 'handleKeyDown');
+      const textarea = wrapper.find('textarea');
+
+      instance.forceUpdate();
 
       wrapper.find('textarea').simulate(
         'keyDown',
@@ -138,8 +155,12 @@ describe('RawWidget component', () => {
         },
       );
 
-      const wrapper = shallow(<RawWidget {...props} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spy = jest.spyOn(instance, 'handleKeyDown');
+      const textarea = wrapper.find('textarea');
+
+      instance.forceUpdate();
 
       wrapper.find('textarea').simulate(
         'keyDown',
@@ -221,7 +242,7 @@ describe('RawWidget component', () => {
       expect(html).toContain('form-group');
       expect(html).toContain('row');
       expect(html).toContain('input-block');
-      expect(wrapper.find('input').length).toBe(1);
+      expect(html).toContain('<input');
       expect(html).toContain(fixtures.text.data1.value)
       expect(html).toContain(fixtures.text.layout1.description)
     });
@@ -250,8 +271,11 @@ describe('RawWidget component', () => {
         },
       );
 
-      const wrapper = shallow(<RawWidget {...props} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spy = jest.spyOn(instance, 'handleKeyDown');
+
+      instance.forceUpdate();
 
       wrapper.find('input').simulate(
         'keyDown',
@@ -287,9 +311,11 @@ describe('RawWidget component', () => {
           handlePatch: handlePatchSpy,
         },
       );
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spy = jest.spyOn(instance, 'handleKeyDown');
 
-      const wrapper = shallow(<RawWidget {...props} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+      instance.forceUpdate();
 
       wrapper.find('input').simulate(
         'keyDown',
@@ -382,7 +408,7 @@ describe('RawWidget component', () => {
       expect(html).toContain('form-group');
       expect(html).toContain('row');
       expect(html).toContain('input-block');
-      expect(wrapper.find('input').length).toBe(1);
+      expect(html).toContain('<input');
       expect(html).toContain(fixtures.integer.data1.value)
       expect(html).toContain(fixtures.integer.layout1.description)
     });
@@ -412,8 +438,11 @@ describe('RawWidget component', () => {
         },
       );
 
-      const wrapper = shallow(<RawWidget {...props} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spy = jest.spyOn(instance, 'handleKeyDown');
+
+      instance.forceUpdate();
 
       wrapper.find('input').simulate(
         'keyDown',
@@ -454,8 +483,11 @@ describe('RawWidget component', () => {
         },
       );
 
-      const wrapper = shallow(<RawWidget {...props} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spy = jest.spyOn(instance, 'handleKeyDown');
+
+      instance.forceUpdate();
 
       wrapper.find('input').simulate(
         'keyDown',
@@ -495,7 +527,10 @@ describe('RawWidget component', () => {
       },
     );
 
-    const wrapper = shallow(<RawWidget {...props} />);
+    const wrapper = mount(<RawWidget {...props} />);
+    const instance = wrapper.instance();
+
+    instance.forceUpdate();
 
     wrapper.find('input').simulate(
       'keyDown',
@@ -518,7 +553,10 @@ describe('RawWidget component', () => {
       },
     );
 
-    const wrapper = shallow(<RawWidget {...props} />);
+    const wrapper = mount(<RawWidget {...props} />);
+    const instance = wrapper.instance();
+
+    instance.forceUpdate();
 
     wrapper.find('input').simulate(
       'keyDown',
