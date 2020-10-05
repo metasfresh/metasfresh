@@ -485,6 +485,7 @@ export class RawWidget extends PureComponent {
       id,
     };
     const showErrorBorder = charsTyped && charsTyped[fieldName] > maxLength;
+    const charsTypedCount = charsTyped && charsTyped[fieldName];
 
     return (
       <WidgetRenderer
@@ -496,9 +497,9 @@ export class RawWidget extends PureComponent {
           widgetProperties,
           showErrorBorder,
           isFocused,
-          charsTyped,
         }}
         ref={this.rawWidget}
+        charsTyped={charsTypedCount}
         onListFocus={this.handleListFocus}
         onBlurWithParams={this.handleBlurWithParams}
         onPatch={this.handlePatch}

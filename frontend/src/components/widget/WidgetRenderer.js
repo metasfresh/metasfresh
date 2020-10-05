@@ -89,7 +89,6 @@ class WidgetRenderer extends PureComponent {
       dateFormat,
       initialFocus,
       timeZone,
-      fieldName,
       maxLength,
       updateHeight,
       rowIndex,
@@ -393,9 +392,9 @@ class WidgetRenderer extends PureComponent {
             >
               {renderContent}
             </div>
-            {charsTyped && charsTyped[fieldName] >= 0 && (
+            {charsTyped && charsTyped >= 0 && (
               <CharacterLimitInfo
-                charsTyped={charsTyped[fieldName]}
+                charsTyped={charsTyped}
                 maxLength={maxLength}
               />
             )}
