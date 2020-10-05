@@ -353,7 +353,7 @@ public class ADProcessPostProcessService
 
 			return OpenViewAction.builder()
 					.viewId(view.getViewId())
-
+					.targetTab(recordsToOpen.getTargetTab())
 					.build();
 		}
 		//
@@ -376,6 +376,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
+						.targetTab(recordsToOpen.getTargetTab())
 						.build();
 			}
 			else if (ViewOpenTarget.NewBrowserTab.equals(target))
@@ -383,6 +384,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
+						.targetTab(recordsToOpen.getTargetTab())
 						.build();
 			}
 
@@ -399,6 +401,7 @@ public class ADProcessPostProcessService
 
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
+					.targetTab(recordsToOpen.getTargetTab() != RecordsToOpen.TargetTab.SAME_TAB_OVERLAY ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB)
 					.build();
 		}
 		//
@@ -408,7 +411,7 @@ public class ADProcessPostProcessService
 			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
-
+					.targetTab(recordsToOpen.getTargetTab())
 					.build();
 		}
 		//
