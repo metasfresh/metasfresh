@@ -115,6 +115,7 @@ class Filters extends PureComponent {
       filters,
       filterId,
     } = this.props;
+
     const widgetShown = filters ? filters.widgetShown : false;
     const notValidFields = filters ? filters.notValidFields : false;
 
