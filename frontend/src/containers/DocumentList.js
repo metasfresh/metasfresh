@@ -111,7 +111,6 @@ class DocumentListContainer extends Component {
       viewId,
       resetView,
       deleteView,
-      //clearAllFilters,
       deleteTable,
       isModal,
       updateUri,
@@ -124,12 +123,6 @@ class DocumentListContainer extends Component {
     const included =
       includedView && includedView.windowId && includedView.viewId;
     const location = document.location;
-
-    // if (nextProps.filters.clearAll) {
-    //   this.setState({ filtersActive: iMap() }, () => {
-    //     clearAllFilters(false);
-    //   });
-    // }
 
     /*
      * This is a fix for the case when user selects the link to the current
