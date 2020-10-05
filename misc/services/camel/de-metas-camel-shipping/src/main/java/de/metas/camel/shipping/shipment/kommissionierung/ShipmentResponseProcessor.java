@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.shipping.shipment;
+package de.metas.camel.shipping.shipment.kommissionierung;
 
 import de.metas.common.shipment.JsonCreateShipmentResponse;
 import org.apache.camel.Exchange;

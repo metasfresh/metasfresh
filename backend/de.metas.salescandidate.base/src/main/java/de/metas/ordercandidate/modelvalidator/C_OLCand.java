@@ -19,6 +19,9 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -26,6 +29,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC;
@@ -288,6 +293,25 @@ public class C_OLCand
 			}
 			olCand.setHandOver_Location_Override_ID(handOverLocation.getC_BPartner_Location_ID());
 		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_POReference)
+	public void updatePOReferenceOnSalesOrder(@NonNull final I_C_OLCand olCand)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_C_Order> updateOrdersQuery = queryBL
+				.createQueryBuilder(I_C_Order_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID, olCand.getC_OLCand_ID())
+				.andCollectChildren(I_C_OrderLine.COLUMN_C_OrderLine_ID, I_C_OrderLine.class)
+				.andCollect(I_C_Order.COLUMN_C_Order_ID, I_C_Order.class);
+
+		final ICompositeQueryUpdater<I_C_Order> poReferenceUpdater = queryBL
+				.createCompositeQueryUpdater(I_C_Order.class)
+				.addSetColumnValue(I_C_Order.COLUMNNAME_POReference, olCand.getPOReference());
+
+		updateOrdersQuery.create().update(poReferenceUpdater);
 	}
 
 	@Init

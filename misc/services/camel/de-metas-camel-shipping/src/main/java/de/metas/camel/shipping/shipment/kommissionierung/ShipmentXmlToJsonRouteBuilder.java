@@ -1,7 +1,29 @@
-package de.metas.camel.shipping.shipment;
+/*
+ * #%L
+ * de-metas-camel-shipping
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.camel.shipping.shipment.kommissionierung;
 
 import de.metas.camel.shipping.RouteBuilderCommonUtil;
-import de.metas.camel.shipping.shipment.inventory.InventoryCorrectionXmlToJsonProcessor;
+import de.metas.camel.shipping.shipment.kommissionierung.inventory.InventoryCorrectionXmlToJsonProcessor;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipment.JsonCreateShipmentResponse;
 import org.apache.camel.Exchange;
@@ -38,14 +60,15 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 
 		// @formatter:off
 		from(SIRO_FTP_PATH)
-				.routeId(MF_SHIPMENT_FILEMAKER_XML_TO_JSON)
-				.to(LOCAL_STORAGE_URL)
-				.streamCaching()
-				.unmarshal(jacksonXMLDataFormat)
-				.multicast()
-					.stopOnException()
-					.to(direct(MF_SHIPMENT_INVENTORY_CORRECTION), direct(MF_GENERATE_SHIPMENTS))
-				.end();
+			.routeId(MF_SHIPMENT_FILEMAKER_XML_TO_JSON)
+			.streamCaching()
+			.to(LOCAL_STORAGE_URL)
+			.unmarshal(jacksonXMLDataFormat)
+			.split().method(ShipmentXMLSplitter.class, "splitIfSameShipmentScheduleId")
+			.multicast()
+				.stopOnException()
+				.to(direct(MF_SHIPMENT_INVENTORY_CORRECTION), direct(MF_GENERATE_SHIPMENTS))
+			.end();
 		// @formatter:on
 
 		buildInventoryCorrectionRoute();
@@ -57,6 +80,7 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 	{
 		from(direct(MF_SHIPMENT_INVENTORY_CORRECTION))
 				.routeId(MF_SHIPMENT_INVENTORY_CORRECTION)
+				.streamCaching()
 				.process(new InventoryCorrectionXmlToJsonProcessor()).id(INVENTORY_CORRECTION_XML_TO_JSON_PROCESSOR)
 				// @formatter:off
 				.choice()
@@ -75,6 +99,7 @@ public class ShipmentXmlToJsonRouteBuilder extends EndpointRouteBuilder
 		final JacksonDataFormat responseJacksonDataFormat = RouteBuilderCommonUtil.setupMetasfreshJSONFormat(getContext(), JsonCreateShipmentResponse.class);
 
 		from(direct(MF_GENERATE_SHIPMENTS))
+				.streamCaching()
 				.routeId(MF_GENERATE_SHIPMENTS)
 				.process(new ShipmentXmlToJsonProcessor()).id(SHIPMENT_XML_TO_JSON_PROCESSOR)
 				// @formatter:off

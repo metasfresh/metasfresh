@@ -63,7 +63,7 @@ public interface IProductDAO extends ISingletonService
 
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
-	 * or if there is no pendant in the given <code>org</code>.
+	 *         or if there is no pendant in the given <code>org</code>.
 	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	@Nullable
@@ -79,6 +79,10 @@ public interface IProductDAO extends ISingletonService
 	@Nullable
 	I_M_Product retrieveProductByValue(String value);
 
+	/**
+	 * @deprecated assumes that different AD_Orgs always have different {@code M_Product.Value}s. Better use {@link #retrieveProductIdBy(ProductQuery)}.
+	 */
+	@Deprecated
 	@Nullable
 	ProductId retrieveProductIdByValue(String value);
 

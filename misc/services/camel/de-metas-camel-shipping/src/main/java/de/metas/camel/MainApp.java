@@ -26,7 +26,7 @@ import org.apache.camel.main.Main;
 
 import de.metas.camel.shipping.receipt.ReceiptXmlToJsonRouteBuilder;
 import de.metas.camel.shipping.receiptcandidate.ReceiptCandidateJsonToXmlRouteBuilder;
-import de.metas.camel.shipping.shipment.ShipmentXmlToJsonRouteBuilder;
+import de.metas.camel.shipping.shipment.kommissionierung.ShipmentXmlToJsonRouteBuilder;
 import de.metas.camel.shipping.shipmentcandidate.ShipmentCandidateJsonToXmlRouteBuilder;
 
 /**
@@ -38,7 +38,7 @@ public class MainApp
 	/**
 	 * A main() so we can easily run these routing rules in our IDE
 	 */
-	public static void main(String... args) throws Exception
+	public static void main(final String... args) throws Exception
 	{
 		final Main main = new Main();
 		main.configure().addRoutesBuilder(new ShipmentCandidateJsonToXmlRouteBuilder());

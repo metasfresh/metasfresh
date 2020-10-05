@@ -590,8 +590,8 @@ public class TimeUtil
 	/**
 	 * Calculate the number of hours between start and end.
 	 *
-	 * @param start start date
-	 * @param end end date
+	 * @param date1 start date
+	 * @param date2 end date
 	 * @return number of hours (0 = same)
 	 */
 	public static long getHoursBetween(final Date date1, final Date date2)
@@ -1732,7 +1732,7 @@ public class TimeUtil
 		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
-	public static ZonedDateTime asZonedDateTime(final Object obj, @NonNull final ZoneId zoneId)
+	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
 		{

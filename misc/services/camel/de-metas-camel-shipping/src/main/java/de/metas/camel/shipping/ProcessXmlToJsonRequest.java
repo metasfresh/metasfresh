@@ -22,6 +22,7 @@
 
 package de.metas.camel.shipping;
 
+import de.metas.common.filemaker.METADATA;
 import de.metas.common.filemaker.RESULTSET;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,8 +38,7 @@ public class ProcessXmlToJsonRequest
 	@NonNull
 	RESULTSET resultset;
 
-	@NonNull
-	Map<String, Integer> name2Index;
+	@NonNull METADATA metadata;
 
 	@NonNull
 	PropertiesComponent propertiesComponent;

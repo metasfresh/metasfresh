@@ -146,7 +146,7 @@ class XmlToJsonRequestManufacturingOrdersReportProcessor implements Processor
 			@NonNull final RunningContext runningContext)
 	{
 		final String productNoWithOrgCode = row.get_artikel_nummer();
-		final String productNo = CommonUtil.removeOrgPrefix(productNoWithOrgCode);
+		final String productNo = CommonUtil.convertProductValue(productNoWithOrgCode);
 
 		return JsonRequestIssueToManufacturingOrder.builder()
 				.requestId(runningContext.nextRequestId())
