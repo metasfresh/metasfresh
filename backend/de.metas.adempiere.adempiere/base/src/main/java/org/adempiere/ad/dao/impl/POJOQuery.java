@@ -45,6 +45,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -79,7 +80,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	private POJOInSelectionQueryFilter<T> filter_notInSelection = null;
 	private IQueryOrderBy orderBy;
 	private Map<String, Object> options = null;
-	private int limit = NO_LIMIT;
+	private QueryLimit limit = QueryLimit.NO_LIMIT;
 	private int offset = NO_LIMIT;
 
 	private List<SqlQueryUnion<T>> unions;
@@ -232,7 +233,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public <ET extends T> List<ET> list(final Class<ET> clazz) throws DBException
 	{
-		if (limit > 0 && offset > 0)
+		if (limit.isLimited() && offset > 0)
 		{
 			throw new UnsupportedOperationException("Using offset option is not implemented");
 		}
@@ -252,7 +253,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final List<ET> resultCasted = new ArrayList<>(result.size());
 		for (final T model : result)
 		{
-			if (limit > 0 && resultCasted.size() >= limit)
+			if(limit.isLimitHitOrExceeded(resultCasted))
 			{
 				break;
 			}
@@ -780,14 +781,14 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public POJOQuery<T> setLimit(final int limit)
+	public POJOQuery<T> setLimit(@NonNull final QueryLimit limit)
 	{
 		this.limit = limit;
 		return this;
 	}
 
 	@Override
-	public IQuery<T> setLimit(final int limit, final int offset)
+	public IQuery<T> setLimit(@NonNull final QueryLimit limit, final int offset)
 	{
 		this.limit = limit;
 		this.offset = offset;

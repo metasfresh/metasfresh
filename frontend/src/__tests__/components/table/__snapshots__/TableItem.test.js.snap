@@ -11,6 +11,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-InsufficientQtyAvailableForSalesColor_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -38,6 +39,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-Line"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -58,6 +60,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-M_Product_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -78,6 +81,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-M_AttributeSetInstance_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -98,6 +102,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-QtyEnteredTU"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -118,6 +123,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-Qty_AvailableToPromise"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -138,6 +144,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-M_HU_PI_Item_Product_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -158,6 +165,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-QtyEntered"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -178,6 +186,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-QtyAvailableForSales"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -198,6 +207,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-C_UOM_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -218,6 +228,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-PriceEntered"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -238,6 +249,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-Price_UOM_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -258,6 +270,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-InvoicableQtyBasedOn"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -278,6 +291,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-QtyEnteredInPriceUOM"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -298,6 +312,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-Discount"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -318,6 +333,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-PriceActual"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -338,6 +354,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-LineNetAmt"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -358,6 +375,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-ProfitPriceActual"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -378,6 +396,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-ProfitPercent"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -398,6 +417,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-PriceList"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -418,6 +438,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-C_Tax_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -438,6 +459,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-Description"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -458,6 +480,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-C_Flatrate_Conditions_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -478,6 +501,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-IsGroupCompensationLine"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -500,6 +524,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-C_Order_CompensationGroup_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -520,6 +545,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-GroupCompensationType"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -540,6 +566,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-GroupCompensationAmtType"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -560,6 +587,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-GroupCompensationPercentage"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -580,6 +608,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-NoPriceConditionsColor_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -607,6 +636,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-C_PaymentTerm_Override_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -627,6 +657,7 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     data-cy="cell-PaymentDiscount"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >

@@ -1,5 +1,8 @@
 package de.metas.ui.web.view;
 
+import java.util.Set;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 
 /*
@@ -35,13 +38,22 @@ public final class NullViewHeaderPropertiesProvider implements ViewHeaderPropert
 	@Override
 	public String getAppliesOnlyToTableName()
 	{
-		//noinspection ConstantConditions
-		throw null;
+		return null;
 	}
 
 	@Override
 	public @NonNull ViewHeaderProperties computeHeaderProperties(@NonNull final IView view)
 	{
 		return ViewHeaderProperties.EMPTY;
+	}
+
+	@Override
+	public ViewHeaderPropertiesIncrementalResult computeIncrementallyOnRowsChanged(
+			@NonNull final ViewHeaderProperties currentHeaderProperties,
+			@NonNull final IView view,
+			@NonNull final Set<DocumentId> changedRowIds,
+			final boolean watchedByFrontend)
+	{
+		return ViewHeaderPropertiesIncrementalResult.computedAsEmpty();
 	}
 }

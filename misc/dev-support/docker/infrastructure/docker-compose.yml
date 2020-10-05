@@ -52,3 +52,13 @@ search:
   environment:
     - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
   restart: always
+postgrest:
+  build: postgrest
+  links:
+    - db:db
+  environment:
+    PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
+    PGRST_DB_SCHEMA: public
+    PGRST_DB_ANON_ROLE: metasfresh
+  ports:
+    - "3001:3000"

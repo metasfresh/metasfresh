@@ -68,6 +68,7 @@ public class MockedDataUtil
 		bPartner.setParentId(MetasfreshId.of(1));
 		bPartner.setPhone("bPartner.phone");
 		bPartner.setUrl("bPartner.url");
+		bPartner.setVatId("bPartner.vatId");
 
 		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
 

@@ -1,14 +1,15 @@
 package de.metas.shipping;
 
-import java.util.Optional;
-
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_M_Shipper;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_Shipper;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -31,4 +32,5 @@ public interface IShipperDAO extends ISingletonService
 
 	Optional<ShipperId> getShipperIdByValue(String value, OrgId orgId);
 
+	Map<ShipperId,I_M_Shipper> getByIds(Set<ShipperId> shipperIds);
 }

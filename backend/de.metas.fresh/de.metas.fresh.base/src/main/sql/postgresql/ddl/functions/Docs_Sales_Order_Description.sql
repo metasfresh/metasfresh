@@ -8,7 +8,8 @@ RETURNS TABLE
 	documentno character varying(30),
 	dateordered timestamp without time zone,
 	reference text,
-	isoffer text,
+	isoffer character(1),
+	isprepay character(1),
 	offervaliddate timestamp without time zone,
 	offervaliddays numeric(10,0),
 	bp_value character varying(40),
@@ -35,6 +36,10 @@ SELECT
 		THEN 'Y'
 		ELSE 'N'
 	END AS isoffer,
+	CASE WHEN dt.docbasetype = 'SOO' AND dt.docsubtype ='PR'
+		THEN 'Y'
+		ELSE 'N'
+	END AS isprepay,
 	o.offervaliddate,
 	o.offervaliddays,
 	bp.value	as bp_value,

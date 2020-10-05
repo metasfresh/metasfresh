@@ -111,6 +111,16 @@ class TableCell extends PureComponent {
   };
 
   /**
+   * @method handleFocus
+   * @summary Function called when the cell is focused and that further calls the parent handler
+   * function to handleFocusAction
+   */
+  handleFocus = () => {
+    const { property, handleFocusAction, supportFieldEdit } = this.props;
+    handleFocusAction({ fieldName: property, supportFieldEdit });
+  };
+
+  /**
    * @method onDoubleClick
    * @summary Function called on double click that retrieves widget data and
    * further calls the parent handler function to handleDounbleClick
@@ -262,6 +272,7 @@ class TableCell extends PureComponent {
         onDoubleClick={this.onDoubleClick}
         onKeyDown={this.handleKeyDown}
         onContextMenu={this.handleRightClick}
+        onFocus={this.handleFocus}
         className={classnames(
           'table-cell',
           {
@@ -379,6 +390,7 @@ TableCell.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   hasComments: PropTypes.bool,
+  handleFocusAction: PropTypes.func,
 };
 
 export default TableCell;

@@ -1,6 +1,12 @@
 package de.metas.impex.api;
 
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.impl.InputDataSourceQuery;
+import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.util.ISingletonService;
+
 import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -23,13 +29,6 @@ import java.util.Optional;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.Properties;
-
-import de.metas.impex.InputDataSourceId;
-import de.metas.impex.api.impl.InputDataSourceQuery;
-import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.util.ISingletonService;
 
 public interface IInputDataSourceDAO extends ISingletonService
 {

@@ -317,7 +317,8 @@ public class SyncInventoryQtyToHUsCommand
 
 			final Quantity qtyDiff = inventoryLine.getMovementQty().negate();
 
-			final IAllocationSource source = createHUListAllocationSourceDestination(singleHuId);
+			final IAllocationSource source = createHUListAllocationSourceDestination(singleHuId)
+					.setDestroyEmptyHUs(true);
 			final IAllocationDestination destination = createInventoryLineAllocationSourceOrDestination(inventoryLineRecord);
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()

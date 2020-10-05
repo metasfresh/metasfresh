@@ -154,6 +154,9 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
+		
+		bpartnerRecord.setVATaxID(bpartner.getVatId());
+		
 		if (!Check.isEmpty(bpartner.getValue(), true))
 		{
 			bpartnerRecord.setValue(bpartner.getValue());

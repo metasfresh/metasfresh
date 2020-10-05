@@ -45,6 +45,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 import de.metas.product.IProductPA;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -55,10 +56,10 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	// Constants
 	private static final CurrencyCode CURRENCY_ISO = CurrencyCode.CHF;
 	public final static String M_PRODUCT_SCRAP_VALUE = "MT_Scrap_Erdbesatz";
-	public final static String C_UOM_SCRAP_X12DE355 = "KGM";
+	public final static X12DE355 C_UOM_SCRAP_X12DE355 = X12DE355.KILOGRAM;
 	public final static String M_PRODUCT_WITHHOLDING_VALUE = "MT_Witholding_Akonto";
 	public final static String M_PRODUCT_REGULAR_PP_ORDER_VALUE = "MT_RegularPPOrder";
-	public final static String C_UOM_FEE_X12DE355 = "KGM";
+	public final static X12DE355 C_UOM_FEE_X12DE355 = X12DE355.KILOGRAM;
 	public final static String M_PRODUCT_SORTING_OUT_FEE_VALUE = "P000360"; // TODO: cleanup MT_Fee_Futterkarotten
 	public final static String M_PRODUCT_BASICLINE_FEE_VALUE = "MT_Fee_BasicLine";
 	public final static String M_PRODUCT_PROMOTION_FEE_VALUE = "MT_Fee_Promotion";
@@ -117,7 +118,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 				M_PRODUCT_SCRAP_VALUE,
 				true, // throwExIfProductNotFound
 				ctxAware.getTrxName());
-		scrapUOM = uomDAO.retrieveByX12DE355(ctxAware.getCtx(), C_UOM_SCRAP_X12DE355);
+		scrapUOM = uomDAO.getByX12DE355(C_UOM_SCRAP_X12DE355);
 		Check.assumeNotNull(scrapUOM, "scrapUOM not null");
 	}
 
@@ -141,7 +142,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 				M_PRODUCT_WITHHOLDING_VALUE,
 				true, // throwExIfProductNotFound
 				ctxAware.getTrxName());
-		final I_C_UOM withholdingUOM = uomDAO.retrieveByX12DE355(ctxAware.getCtx(), C_UOM_FEE_X12DE355);
+		final I_C_UOM withholdingUOM = uomDAO.getByX12DE355(C_UOM_FEE_X12DE355);
 
 		return qualityBasedInvoicingBL.createPlainInvoicingItem(
 				withholdingProduct,
@@ -168,12 +169,12 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 		result.add(qualityBasedInvoicingBL.createPlainInvoicingItem(
 				productPA.retrieveProduct(ctxAware.getCtx(), M_PRODUCT_BASICLINE_FEE_VALUE, throwExIfProductNotFound, ctxAware.getTrxName()),
 				BigDecimal.ONE,
-				uomDAO.retrieveByX12DE355(ctxAware.getCtx(), C_UOM_FEE_X12DE355)));
+				uomDAO.getByX12DE355(C_UOM_FEE_X12DE355)));
 
 		result.add(qualityBasedInvoicingBL.createPlainInvoicingItem(
 				productPA.retrieveProduct(ctxAware.getCtx(), M_PRODUCT_PROMOTION_FEE_VALUE, throwExIfProductNotFound, ctxAware.getTrxName()),
 				BigDecimal.ONE,
-				uomDAO.retrieveByX12DE355(ctxAware.getCtx(), C_UOM_FEE_X12DE355)));
+				uomDAO.getByX12DE355(C_UOM_FEE_X12DE355)));
 		return result;
 	}
 

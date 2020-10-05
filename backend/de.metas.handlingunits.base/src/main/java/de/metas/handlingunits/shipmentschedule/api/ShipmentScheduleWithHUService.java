@@ -51,16 +51,16 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
@@ -108,6 +108,7 @@ public class ShipmentScheduleWithHUService
 	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
 
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	@Value
 	@Builder
@@ -302,11 +303,17 @@ public class ShipmentScheduleWithHUService
 		boolean firstHU = true;
 
 		// if we have HUs on stock, get them now
-		final Iterator<I_M_HU> iterator = HUStorageQuery
-				.cast(storageQuery)
-				.createHUQueryBuilder()
-				.createQuery()
-				.iterate(I_M_HU.class);
+		final IHUPickingSlotBL.PickingHUsQuery pickingHUsQuery = IHUPickingSlotBL.PickingHUsQuery
+				.builder()
+				.shipmentSchedule(scheduleRecord)
+				.onlyTopLevelHUs(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
+				.build();
+
+		final List<I_M_HU> husToPick = huPickingSlotBL.retrieveAvailableHUsToPick(pickingHUsQuery);
+
+		final Iterator<I_M_HU> iterator = husToPick.iterator();
+
 		while (iterator.hasNext())
 		{
 			final I_M_HU sourceHURecord = iterator.next();

@@ -544,6 +544,13 @@ input:checked + .input-slider:before {
     font-size: 16px;
 }
 
+.input-icon-m-right {
+    margin-right: 1rem;
+}
+.input-icon-m-top-small {
+  margin-top: 0.1rem;
+}
+
 .input-dropdown-container {
     position: relative;
     cursor: pointer;

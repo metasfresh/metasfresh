@@ -22,14 +22,18 @@
 
 package de.metas.common.shipment;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+
 import lombok.Builder;
 import lombok.Value;
 
 @Value
 @Builder
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = JsonLocation.JsonLocationBuilder.class)
 public class JsonLocation
@@ -48,4 +52,9 @@ public class JsonLocation
 
 	@JsonProperty("zipCode")
 	String zipCode;
+
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonLocationBuilder
+	{
+	}
 }

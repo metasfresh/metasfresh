@@ -44,6 +44,7 @@ public class FeedbackProzessor implements Processor
 	public void process(@NonNull final Exchange exchange) throws Exception
 	{
 		final var results = exchange.getIn().getHeader(FEEDBACK_POJO, JsonRequestCandidateResults.class);
+		exchange.getIn().removeHeader(FEEDBACK_POJO); // we can't have this large header in the http-request later on
 		if (results == null)
 		{
 			return; // nothing we can do

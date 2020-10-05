@@ -1,13 +1,16 @@
 package de.metas.handlingunits.inventory.interceptor;
 
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -51,6 +54,7 @@ public class M_InventoryLine
 {
 	private final InventoryRepository inventoryLineRepository;
 	private final InventoryService inventoryLineRecordService;
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository, final InventoryService inventoryLineRecordService)
 	{
@@ -62,6 +66,13 @@ public class M_InventoryLine
 	public void registerCallout()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@CalloutMethod(columnNames = org.compiere.model.I_M_InventoryLine.COLUMNNAME_M_Product_ID)
+	public void setUOM(@NonNull final org.compiere.model.I_M_InventoryLine inventoryLine)
+	{
+		final UomId stockUOMId = inventoryLine.getM_Product_ID() > 0 ? productBL.getStockUOMId(inventoryLine.getM_Product_ID()) : null;
+		inventoryLine.setC_UOM_ID(UomId.toRepoId(stockUOMId));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_QtyCount)

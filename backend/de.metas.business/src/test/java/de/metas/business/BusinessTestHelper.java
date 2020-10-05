@@ -11,8 +11,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -42,6 +41,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -69,7 +69,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public final class BusinessTestHelper
+public class BusinessTestHelper
 {
 	/**
 	 * Default precision
@@ -79,9 +79,9 @@ public final class BusinessTestHelper
 	/**
 	 * Standard in metasfresh
 	 */
-	private static final int UOM_Precision_3 = 3;
+	private final int UOM_Precision_3 = 3;
 
-	public static CountryId createCountry(@NonNull final String countryCode)
+	public CountryId createCountry(@NonNull final String countryCode)
 	{
 		final I_C_Country record = newInstance(I_C_Country.class);
 		record.setCountryCode(countryCode);
@@ -90,25 +90,28 @@ public final class BusinessTestHelper
 		return CountryId.ofRepoId(record.getC_Country_ID());
 	}
 
-	public static I_C_UOM createUomKg()
+	public I_C_UOM createUomKg()
 	{
 		final I_C_UOM uomKg = createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_3);
-		uomKg.setX12DE355("KGM");
+		uomKg.setX12DE355(X12DE355.KILOGRAM.getCode());
 		saveRecord(uomKg);
 		return uomKg;
 	}
 
-	public static I_C_UOM createUomEach()
+	public I_C_UOM createUomEach()
 	{
-		return createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
+		final I_C_UOM uom = createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
+		uom.setX12DE355(X12DE355.EACH.getCode());
+		saveRecord(uom);
+		return uom;
 	}
 
-	public static I_C_UOM createUomPCE()
+	public I_C_UOM createUomPCE()
 	{
 		return createUOM("PCE", null, UOM_Precision_0);
 	}
 
-	public static I_C_UOM createUOM(final String name, final String uomType, final int stdPrecision)
+	public I_C_UOM createUOM(final String name, final String uomType, final int stdPrecision)
 	{
 		final I_C_UOM uom = createUOM(name, stdPrecision, 0);
 		uom.setUOMType(uomType);
@@ -117,7 +120,7 @@ public final class BusinessTestHelper
 		return uom;
 	}
 
-	public static I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
+	public I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
 	{
 		final I_C_UOM uom = createUOM(name);
 		uom.setStdPrecision(stdPrecision);
@@ -126,56 +129,56 @@ public final class BusinessTestHelper
 		return uom;
 	}
 
-	public static I_C_UOM createUOM(final String name)
+	public I_C_UOM createUOM(final String name)
 	{
-		final String x12de355 = name;
+		final X12DE355 x12de355 = X12DE355.ofCode(name);
 		return createUOM(name, x12de355);
 	}
 
-	public static I_C_UOM createUOM(final String name, final String x12de355)
+	public I_C_UOM createUOM(final String name, final X12DE355 x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
 		POJOWrapper.setInstanceName(uom, name);
 		uom.setName(name);
 		uom.setUOMSymbol(name);
-		uom.setX12DE355(x12de355);
+		uom.setX12DE355(x12de355 != null ? x12de355.getCode() : null);
 
 		saveRecord(uom);
 
 		return uom;
 	}
 
-	public static void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
+	public void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
 	{
 		final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 		uomConversionDAO.createUOMConversion(request);
 	}
 
-	public static CurrencyId getEURCurrencyId()
+	public CurrencyId getEURCurrencyId()
 	{
 		final PlainCurrencyDAO currenciesRepo = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
 	}
 
-	public static ProductId createProductId(final String name, final I_C_UOM uom)
+	public ProductId createProductId(final String name, final I_C_UOM uom)
 	{
 		final I_M_Product product = createProduct(name, uom);
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
+	public I_M_Product createProduct(final String name, final I_C_UOM uom)
 	{
 		final BigDecimal weightKg = null; // N/A
 		return createProduct(name, uom, weightKg);
 	}
 
-	public static I_M_Product createProduct(final String name, final UomId uomId)
+	public I_M_Product createProduct(final String name, final UomId uomId)
 	{
 		final BigDecimal weightKg = null; // N/A
 		return createProduct(name, uomId, weightKg);
 	}
 
-	public static I_M_Product createProduct(
+	public I_M_Product createProduct(
 			@NonNull final String name,
 			@Nullable final I_C_UOM uom,
 			@Nullable final BigDecimal weightKg)
@@ -187,7 +190,7 @@ public final class BusinessTestHelper
 	/**
 	 * @param weightKg product weight (Kg); mainly used for packing materials
 	 */
-	public static I_M_Product createProduct(
+	public I_M_Product createProduct(
 			@NonNull final String name,
 			@Nullable final UomId uomId,
 			@Nullable final BigDecimal weightKg)
@@ -212,7 +215,7 @@ public final class BusinessTestHelper
 	/**
 	 * Creates and saves a simple {@link I_C_BPartner}
 	 */
-	public static I_C_BPartner createBPartner(final String nameAndValue)
+	public I_C_BPartner createBPartner(final String nameAndValue)
 	{
 		final I_C_BPartner bpartner = newInstanceOutOfTrx(I_C_BPartner.class);
 		POJOWrapper.setInstanceName(bpartner, nameAndValue);
@@ -223,7 +226,7 @@ public final class BusinessTestHelper
 		return bpartner;
 	}
 
-	public static I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
+	public I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
 	{
 		final I_C_BPartner_Location bpl = newInstance(I_C_BPartner_Location.class, bpartner);
 		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
@@ -233,7 +236,7 @@ public final class BusinessTestHelper
 		return bpl;
 	}
 
-	public static I_C_BP_Group createBPGroup(final String name, final boolean isDefault)
+	public I_C_BP_Group createBPGroup(final String name, final boolean isDefault)
 	{
 		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
 		POJOWrapper.setInstanceName(bpGroupRecord, name);
@@ -245,7 +248,7 @@ public final class BusinessTestHelper
 		return bpGroupRecord;
 	}
 
-	public static I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)
+	public I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)
 	{
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
 		bpBankAccount.setIBAN(iban);
@@ -258,11 +261,8 @@ public final class BusinessTestHelper
 
 	/**
 	 * Calls {@link #createWarehouse(String, boolean)} with {@code isIssueWarehouse == false}
-	 *
-	 * @param name
-	 * @return
 	 */
-	public static I_M_Warehouse createWarehouse(final String name)
+	public I_M_Warehouse createWarehouse(final String name)
 	{
 		final boolean isIssueWarehouse = false;
 		return createWarehouse(name, isIssueWarehouse);
@@ -271,7 +271,7 @@ public final class BusinessTestHelper
 	/**
 	 * Creates a warehouse and one (default) locator.
 	 */
-	public static I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
+	public I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
 	{
 		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = newInstanceOutOfTrx(org.adempiere.warehouse.model.I_M_Warehouse.class);
 		POJOWrapper.setInstanceName(warehouse, name);
@@ -287,7 +287,7 @@ public final class BusinessTestHelper
 		return warehouse;
 	}
 
-	public static I_M_Locator createLocator(final String name, final I_M_Warehouse warehouse)
+	public I_M_Locator createLocator(final String name, final I_M_Warehouse warehouse)
 	{
 		final I_M_Locator locator = newInstanceOutOfTrx(I_M_Locator.class);
 		POJOWrapper.setInstanceName(locator, name);
@@ -299,7 +299,7 @@ public final class BusinessTestHelper
 		return locator;
 	}
 
-	public static void createDefaultBusinessRecords()
+	public void createDefaultBusinessRecords()
 	{
 		final I_C_TaxCategory noTaxCategoryFound = newInstanceOutOfTrx(I_C_TaxCategory.class);
 		noTaxCategoryFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
@@ -311,7 +311,7 @@ public final class BusinessTestHelper
 		saveRecord(noTaxFound);
 	}
 
-	public static I_C_Currency createCurrency(final String symbol)
+	public I_C_Currency createCurrency(final String symbol)
 	{
 		final I_C_Currency currencyRecord = newInstanceOutOfTrx(I_C_Currency.class);
 		POJOWrapper.setInstanceName(currencyRecord, symbol);
@@ -323,17 +323,13 @@ public final class BusinessTestHelper
 		return currencyRecord;
 	}
 
+	/**
+	 *
+	 * @deprecated please use {@link AdempiereTestHelper#createOrgWithTimeZone()} instead
+	 */
+	@Deprecated
 	public static OrgId createOrgWithTimeZone()
 	{
-		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
-		saveRecord(orgRecord);
-
-		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
-		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
-		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
-		orgInfoRecord.setTimeZone("Europe/Berlin");
-		saveRecord(orgInfoRecord);
-
-		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+		return AdempiereTestHelper.createOrgWithTimeZone();
 	}
 }

@@ -214,6 +214,11 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 					DisplayType.toBooleanString(booleanValue),
 					msgBL.getTranslatableMsgText(booleanValue));
 		}
+		else if (fieldValue instanceof String)
+		{
+			String stringValue = (String)fieldValue;
+			return StringLookupValue.of(stringValue, stringValue);
+		}
 		else
 		{
 			throw new AdempiereException("Value not supported: " + fieldValue + " (" + fieldValue.getClass() + ")")

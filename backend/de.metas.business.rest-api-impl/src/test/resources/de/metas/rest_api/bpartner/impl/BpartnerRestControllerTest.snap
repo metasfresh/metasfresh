@@ -66,13 +66,14 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           }
         },
         "leftToRight": true,
-        "decimalPoint": false,
-        "baseLanguage": true
+        "baseLanguage": true,
+        "decimalPoint": false
       },
       "url": "bPartner.url",
       "groupId": 15,
       "vendor": false,
       "customer": false,
+      "vatId": "bPartner.vatId",
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -401,6 +402,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -676,6 +678,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -882,6 +885,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -1088,6 +1092,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -1376,6 +1381,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
       "group": "bpGroupRecord.name",
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeInfo": {
         "createdMillis": 1561133544,
         "createdBy": 30,
@@ -1452,6 +1458,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
       "group": "bpGroupRecord.name",
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeInfo": {
         "createdMillis": 1561133544,
         "createdBy": 30,
@@ -1528,6 +1535,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
       "group": "bpGroupRecord.name",
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeInfo": {
         "createdMillis": 1561133544,
         "createdBy": 30,
@@ -1610,6 +1618,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "vatId": "VATaxID",
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 30,
@@ -1682,6 +1691,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "vatId": "VATaxID_1",
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 31,
@@ -1762,6 +1772,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "vatId": "VATaxID_2",
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 32,
@@ -1834,6 +1845,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "vatId": "VATaxID_3",
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 33,
@@ -1913,6 +1925,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "vatId": "VATaxID_4",
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 34,

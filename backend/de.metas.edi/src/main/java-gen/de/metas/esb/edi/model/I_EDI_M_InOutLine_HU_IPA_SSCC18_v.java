@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_M_InOutLine_HU_IPA_SSCC18_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_M_InOutLine_HU_IPA_SSCC18_v 
@@ -14,13 +14,6 @@ public interface I_EDI_M_InOutLine_HU_IPA_SSCC18_v
     /** AD_Table_ID=540541 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Attribute Name.
@@ -71,8 +64,8 @@ public interface I_EDI_M_InOutLine_HU_IPA_SSCC18_v
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Set Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -81,8 +74,8 @@ public interface I_EDI_M_InOutLine_HU_IPA_SSCC18_v
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
-	 * Get Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Get Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -96,8 +89,8 @@ public interface I_EDI_M_InOutLine_HU_IPA_SSCC18_v
     public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -106,8 +99,8 @@ public interface I_EDI_M_InOutLine_HU_IPA_SSCC18_v
 	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

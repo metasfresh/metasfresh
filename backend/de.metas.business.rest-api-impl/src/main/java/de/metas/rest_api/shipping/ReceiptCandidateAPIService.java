@@ -49,6 +49,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
+import de.metas.fresh.model.I_M_CommodityNumber;
 import de.metas.inoutcandidate.ReceiptSchedule;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleRepository;
@@ -64,6 +65,8 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.product.CommodityNumberId;
+import de.metas.product.ICommodityNumberDAO;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -76,6 +79,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -90,9 +94,11 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
@@ -111,6 +117,7 @@ class ReceiptCandidateAPIService
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICommodityNumberDAO commodityNumberDAO = Services.get(ICommodityNumberDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	public ReceiptCandidateAPIService(
@@ -128,7 +135,7 @@ class ReceiptCandidateAPIService
 	/**
 	 * Exports them; Flags them as "exported - don't touch"; creates an export audit table with one line per shipment schedule.
 	 */
-	public JsonResponseReceiptCandidates exportReceiptCandidates(final int limit)
+	public JsonResponseReceiptCandidates exportReceiptCandidates(final QueryLimit limit)
 	{
 		final String transactionId = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
@@ -171,7 +178,7 @@ class ReceiptCandidateAPIService
 			}
 
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
-					.hasMoreItems(receiptSchedules.size() == limit)
+					.hasMoreItems(limit.isLimitHitOrExceeded(receiptSchedules))
 					.transactionKey(transactionId);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
@@ -189,14 +196,18 @@ class ReceiptCandidateAPIService
 					bp -> bp.getBpartner().getId());
 
 			final ImmutableMap<ProductId, Product> productId2Product = Maps.uniqueIndex(productRepository.getByIds(idsRegistry.getProductIds()), Product::getId);
+			final ImmutableMap<ProductId, String> productId2CommodityNumber = getCommodityNumbersByProductId(ImmutableSet.copyOf(productId2Product.values()));
 
 			for (final ReceiptSchedule receiptSchedule : receiptSchedules)
 			{
 				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ReceiptSchedule.Table_Name, receiptSchedule.getId()))
 				{
+					final Product productInfo = productId2Product.get(receiptSchedule.getProductId());
+					final String commodityNumber = productId2CommodityNumber.get(receiptSchedule.getProductId());
+
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(receiptSchedule, attributesForASIs);
 					final JsonVendor vendor = createJsonVendor(receiptSchedule, bpartnerIdToBPartner);
-					final JsonProduct product = createJsonProduct(receiptSchedule, vendor.getLanguage(), productId2Product);
+					final JsonProduct jsonProduct = createJsonProduct(receiptSchedule, vendor.getLanguage(), productInfo, commodityNumber);
 					final I_C_Order orderRecord = orderIdToOrderRecord.get(receiptSchedule.getOrderId());
 					final Quantity quantity = receiptSchedule.getQuantityToDeliver();
 					final List<JsonQuantity> quantities = createJsonQuantities(quantity);
@@ -204,7 +215,7 @@ class ReceiptCandidateAPIService
 					final JsonResponseReceiptCandidateBuilder itemBuilder = JsonResponseReceiptCandidate.builder()
 							.id(JsonMetasfreshId.of(receiptSchedule.getId().getRepoId()))
 							.orgCode(orgDAO.retrieveOrgValue(receiptSchedule.getOrgId()))
-							.product(product)
+							.product(jsonProduct)
 							.attributeSetInstance(jsonAttributeSetInstance)
 							.quantities(quantities)
 							.dateOrdered(receiptSchedule.getDateOrdered());
@@ -234,7 +245,10 @@ class ReceiptCandidateAPIService
 	@NonNull
 	private ImmutableList<JsonQuantity> createJsonQuantities(@NonNull final Quantity quantity)
 	{
-		return ImmutableList.of(JsonQuantity.builder().qty(quantity.toBigDecimal()).uomCode(quantity.getUOMSymbol()).build());
+		return ImmutableList.of(JsonQuantity.builder()
+				.qty(quantity.toBigDecimal())
+				.uomCode(quantity.getX12DE355().getCode())
+				.build());
 	}
 
 	private JsonVendor createJsonVendor(
@@ -257,19 +271,22 @@ class ReceiptCandidateAPIService
 	private JsonProduct createJsonProduct(
 			@NonNull final ReceiptSchedule receiptSchedule,
 			@NonNull final String adLanguage,
-			@NonNull final ImmutableMap<ProductId, Product> productId2Product)
+			@NonNull final Product product,
+			@Nullable final String commodityNumber)
 	{
-		final Product product = productId2Product.get(receiptSchedule.getProductId());
-
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
 				.productNo(product.getProductNo())
 				.name(product.getName().translate(adLanguage))
+				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight());
+				.weight(product.getWeight())
+				.commodityNumberValue(commodityNumber);
+
 		if (product.getDescription() != null)
 		{
 			productBuilder.description(product.getDescription().translate(adLanguage));
 		}
+
 		return productBuilder.build();
 	}
 
@@ -440,5 +457,33 @@ class ReceiptCandidateAPIService
 		{
 			super(message);
 		}
+	}
+
+	private ImmutableMap<ProductId, String> getCommodityNumbersByProductId(@NonNull final Set<Product> products)
+	{
+		final Set<CommodityNumberId> commodityNumberIds = products.stream()
+				.map(Product::getCommodityNumberId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+		final List<I_M_CommodityNumber> commodityNumbers = commodityNumberDAO.getByIds(commodityNumberIds);
+
+		final Map<Integer, I_M_CommodityNumber> commodityNumberById = Maps.uniqueIndex(commodityNumbers, I_M_CommodityNumber::getM_CommodityNumber_ID);
+
+		final ImmutableMap.Builder<ProductId, String> commodityNumberByProductId = ImmutableMap.builder();
+
+		products.stream()
+				.filter(product -> product.getCommodityNumberId() != null)
+				.forEach(product ->
+				{
+					final I_M_CommodityNumber commodityNumber = commodityNumberById.get(product.getCommodityNumberId().getRepoId());
+
+					if (commodityNumber != null)
+					{
+						commodityNumberByProductId.put(product.getId(), commodityNumber.getValue());
+					}
+				});
+
+		return commodityNumberByProductId.build();
 	}
 }

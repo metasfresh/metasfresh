@@ -2,16 +2,18 @@ package de.metas.ui.web.view;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -104,5 +106,38 @@ public class CompositeViewHeaderPropertiesProvider implements ViewHeaderProperti
 		}
 
 		return result;
+	}
+
+	@Override
+	public ViewHeaderPropertiesIncrementalResult computeIncrementallyOnRowsChanged(
+			@NonNull final ViewHeaderProperties currentHeaderProperties,
+			@NonNull final IView view,
+			@NonNull final Set<DocumentId> changedRowIds,
+			final boolean watchedByFrontend)
+	{
+		ViewHeaderProperties computedHeaderProperties = currentHeaderProperties;
+		for (final ViewHeaderPropertiesProvider provider : providers)
+		{
+			final ViewHeaderPropertiesIncrementalResult partialResult = provider.computeIncrementallyOnRowsChanged(
+					computedHeaderProperties,
+					view,
+					changedRowIds,
+					watchedByFrontend);
+
+			if (partialResult.isComputed())
+			{
+				computedHeaderProperties = partialResult.getComputeHeaderProperties();
+			}
+			else if (partialResult.isFullRecomputeRequired())
+			{
+				return ViewHeaderPropertiesIncrementalResult.fullRecomputeRequired();
+			}
+			else
+			{
+				throw new AdempiereException("Unknow partial result type: " + partialResult);
+			}
+		}
+
+		return ViewHeaderPropertiesIncrementalResult.computed(computedHeaderProperties);
 	}
 }

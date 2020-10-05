@@ -1,28 +1,8 @@
 package de.metas.handlingunits.trace;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.lang.IPair;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Movement;
-import org.compiere.model.I_M_MovementLine;
-import org.eevolution.api.CostCollectorType;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -44,6 +24,24 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.util.lang.IPair;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_MovementLine;
+import org.eevolution.api.CostCollectorType;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -235,6 +233,33 @@ public class HUTraceEventsService
 
 			huTraceRepository.addEvent(builder.build());
 		}
+	}
+
+	public void createAndAddFor(@NonNull final HUTraceForReturnedQtyRequest returnedQtyRequest)
+	{
+
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(returnedQtyRequest.getOrgId())
+				.eventTime(returnedQtyRequest.getEventTime())
+				.docStatus(returnedQtyRequest.getDocStatus())
+				.inOutId(returnedQtyRequest.getCustomerReturnId().getRepoId())
+				.type(HUTraceType.MATERIAL_RECEIPT)
+				.topLevelHuId(returnedQtyRequest.getTopLevelReturnedHUId())
+				.vhuId(HuId.ofRepoId(returnedQtyRequest.getReturnedVirtualHU().getM_HU_ID()))
+				.topLevelHuId(returnedQtyRequest.getTopLevelReturnedHUId())
+				.qty(returnedQtyRequest.getQty())
+				.productId(returnedQtyRequest.getProductId())
+				.vhuStatus(returnedQtyRequest.getReturnedVirtualHU().getHUStatus());
+
+		setSourceVHUAndAddEvent(returnedQtyRequest.getSourceShippedVHUIds(), builder);
+	}
+
+	private void setSourceVHUAndAddEvent(@NonNull final Set<HuId> sourceShippedVHUIds, @NonNull HUTraceEventBuilder huTraceEventBuilder)
+	{
+		sourceShippedVHUIds.stream()
+				.map(huTraceEventBuilder::vhuSourceId)
+				.map(HUTraceEventBuilder::build)
+				.forEach(huTraceRepository::addEvent);
 	}
 
 	/**

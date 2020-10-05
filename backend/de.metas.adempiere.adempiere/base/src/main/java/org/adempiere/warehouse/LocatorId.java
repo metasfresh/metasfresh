@@ -48,6 +48,12 @@ public class LocatorId implements RepoIdAware
 		return new LocatorId(repoId, warehouseId);
 	}
 
+	public static LocatorId ofRepoId(final int warehouseRepoId, final int repoId)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouseRepoId);
+		return ofRepoId(warehouseId, repoId);
+	}
+
 	public static LocatorId ofRepoIdOrNull(@Nullable final WarehouseId warehouseId, final int repoId)
 	{
 		if (repoId <= 0)

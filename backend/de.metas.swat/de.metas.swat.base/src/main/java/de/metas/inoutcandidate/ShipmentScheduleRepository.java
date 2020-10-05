@@ -34,9 +34,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
-import de.metas.order.OrderId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,6 +45,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
@@ -107,7 +109,7 @@ public class ShipmentScheduleRepository
 		{
 			queryBuilder.addCompareFilter(COLUMN_QtyToDeliver, GREATER, BigDecimal.ZERO);
 		}
-		if (query.getLimit() > 0)
+		if (query.getLimit().isLimited())
 		{
 			queryBuilder.setLimit(query.getLimit());
 		}
@@ -131,17 +133,25 @@ public class ShipmentScheduleRepository
 		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 
+		final OrderAndLineId orderAndLineId = record.getC_Order_ID() > 0 && record.getC_OrderLine_ID() > 0
+				? OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID())
+				: null;
+
 		final ShipmentSchedule.ShipmentScheduleBuilder shipmentScheduleBuilder = ShipmentSchedule.builder()
 				.id(shipmentScheduleId)
 				.orgId(orgId)
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
 				.locationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
 				.contactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
-				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.orderAndLineId(orderAndLineId)
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record))
+				.orderedQuantity(shipmentScheduleBL.getQtyOrdered(record))
+				.deliveredQty(shipmentScheduleBL.getQtyDelivered(record))
 				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()));
+
 		if (record.getDateOrdered() != null)
 		{
 			shipmentScheduleBuilder.dateOrdered(record.getDateOrdered().toLocalDateTime());
@@ -181,7 +191,7 @@ public class ShipmentScheduleRepository
 	private void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule record = load(shipmentSchedule.getId(), I_M_ShipmentSchedule.class);
-		record.setExportStatus(shipmentSchedule.getExportStatus().getCode());
+		record.setExportStatus(shipmentSchedule.getExportStatus().getCode()); // right now this is the only mutable property
 		saveRecord(record);
 	}
 
@@ -200,7 +210,9 @@ public class ShipmentScheduleRepository
 	@Builder
 	public static class ShipmentScheduleQuery
 	{
-		int limit;
+		@NonNull
+		@Builder.Default
+		QueryLimit limit = QueryLimit.NO_LIMIT;
 
 		Instant canBeExportedFrom;
 

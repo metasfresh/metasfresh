@@ -35,13 +35,13 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -486,7 +486,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				}
 				else
 				{
-					bankInTransitFactLine.setAmtSource(lineRef.getTrxAmt().toBigDecimal(), null);
+					bankInTransitFactLine.setAmtSource(lineRef.getTrxAmt().toBigDecimal().negate(), null);
 				}
 
 				bankInTransitFactLine.buildAndAdd();

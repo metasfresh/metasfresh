@@ -1,15 +1,17 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -84,8 +86,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -811,6 +811,16 @@ public class JsonPersisterService
 		else if (isUpdateRemove)
 		{
 			bpartner.setUrl3(null);
+		}
+
+		// VAT ID
+		if (jsonBPartner.isVatIdSet())
+		{
+			bpartner.setVatId(StringUtils.trim(jsonBPartner.getVatId()));
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setVatId(null);
 		}
 
 		return BooleanWithReason.TRUE;

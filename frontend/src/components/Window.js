@@ -187,6 +187,7 @@ class Window extends PureComponent {
         queryOnActivate,
         supportQuickInput,
         defaultOrderBys,
+        orderBy,
         singleRowDetailView,
       } = elem;
       elem.tabIndex = this.tabIndex.tabs;
@@ -264,7 +265,7 @@ class Window extends PureComponent {
             toggleFullScreen={this.toggleTableFullScreen}
             entity="window"
             key={tabId}
-            orderBy={defaultOrderBys}
+            orderBy={orderBy || defaultOrderBys}
             docId={dataId}
             tabIndex={this.tabIndex.tabs}
             queryOnActivate={queryOnActivate}

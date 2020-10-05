@@ -46,7 +46,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -186,7 +188,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -307,7 +311,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -447,7 +453,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -568,7 +576,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -708,7 +718,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -829,7 +841,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -969,7 +983,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1090,7 +1106,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1230,7 +1248,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1351,7 +1371,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1491,7 +1513,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1612,7 +1636,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1752,7 +1778,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1873,7 +1901,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2013,7 +2043,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2134,7 +2166,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2274,7 +2308,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2395,7 +2431,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2535,7 +2573,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2656,7 +2696,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2796,7 +2838,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2917,7 +2961,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3057,7 +3103,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3178,7 +3226,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3318,7 +3368,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3439,7 +3491,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3579,7 +3633,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3700,7 +3756,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3840,7 +3898,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3961,7 +4021,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -4101,7 +4163,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -4222,7 +4286,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -4362,7 +4428,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -4483,7 +4551,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -4623,7 +4693,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -4744,7 +4816,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -4884,7 +4958,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -5005,7 +5081,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -5145,7 +5223,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -5266,7 +5346,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -5406,7 +5488,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -5532,7 +5616,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -5672,7 +5758,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -5793,7 +5881,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -5933,7 +6023,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -6054,7 +6146,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -6194,7 +6288,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -6315,7 +6411,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -6455,7 +6553,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -6576,7 +6676,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -6716,7 +6818,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -6837,7 +6941,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -6977,7 +7083,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -7098,7 +7206,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -7238,7 +7348,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -7359,7 +7471,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -7499,7 +7613,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -7620,7 +7736,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -7760,7 +7878,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -7881,7 +8001,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -8021,7 +8143,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -8142,7 +8266,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -8282,7 +8408,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -8403,7 +8531,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -8543,7 +8673,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -8664,7 +8796,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -8804,7 +8938,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -8925,7 +9061,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -9065,7 +9203,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -9186,7 +9326,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -9326,7 +9468,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -9447,7 +9591,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -9587,7 +9733,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -9708,7 +9856,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -9848,7 +9998,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -9969,7 +10121,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -10109,7 +10263,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -10230,7 +10386,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -10370,7 +10528,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -10491,7 +10651,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -10631,7 +10793,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -10752,7 +10916,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "globalId" : null,
           "globalIdset" : false,
           "syncAdvise" : null,
-          "syncAdviseSet" : false
+          "syncAdviseSet" : false,
+          "vatId" : null,
+          "vatIdSet" : false
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -10892,7 +11058,9 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "globalId" : null,
         "globalIdset" : false,
         "syncAdvise" : null,
-        "syncAdviseSet" : false
+        "syncAdviseSet" : false,
+        "vatId" : null,
+        "vatIdSet" : false
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",

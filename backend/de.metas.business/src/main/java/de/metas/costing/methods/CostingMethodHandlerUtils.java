@@ -14,11 +14,13 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.MoveCostsRequest;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
@@ -98,14 +100,28 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.extractCostSegmentAndElement(request);
 	}
 
-	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	public CostSegmentAndElement extractOutboundCostSegmentAndElement(@NonNull final MoveCostsRequest request)
+	{
+		return costDetailsService.extractOutboundCostSegmentAndElement(request);
+	}
+
+	public CostSegmentAndElement extractInboundCostSegmentAndElement(@NonNull final MoveCostsRequest request)
+	{
+		return costDetailsService.extractInboundCostSegmentAndElement(request);
+	}
+
+	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts previousCosts)
 	{
 		return costDetailsService.createCostDetailRecordWithChangedCosts(request, previousCosts);
 	}
 
-	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
+	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts currentCosts)
 	{
-		return costDetailsService.createCostDetailRecordNoCostsChanged(request);
+		return costDetailsService.createCostDetailRecordNoCostsChanged(request, currentCosts);
 	}
 
 	public CostDetailCreateResult toCostDetailCreateResult(final CostDetail costDetail)

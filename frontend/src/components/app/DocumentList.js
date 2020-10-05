@@ -311,7 +311,7 @@ export default class DocumentList extends Component {
                     ? {
                         viewId: includedView.viewId,
                         viewSelectedIds: childSelected,
-                        windowType: includedView.windowType,
+                        windowType: includedView.windowId,
                       }
                     : NO_VIEW
                 }

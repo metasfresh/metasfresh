@@ -1,20 +1,13 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -24,6 +17,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.ProductId;
@@ -38,6 +32,17 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -65,6 +70,9 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 {
 	// services
 	protected final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
+	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	public final PickingSlotsClearingView getPickingSlotsClearingView()
 	{
@@ -231,5 +239,32 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 			lutuProducer.setTUPI(targetHUPI);
 		}
 		return lutuProducer;
+	}
+
+	protected void moveToAfterPickingLocator(@NonNull final I_M_HU hu)
+	{
+		final String huStatus = hu.getHUStatus();
+
+		// Move the HU to an after picking locator
+		final I_M_Locator afterPickingLocator = huWarehouseDAO.suggestAfterPickingLocator(hu.getM_Locator_ID());
+		if(afterPickingLocator == null)
+		{
+			throw new AdempiereException("No after picking locator found for locatorId=" + hu.getM_Locator_ID());
+		}
+		if (afterPickingLocator.getM_Locator_ID() != hu.getM_Locator_ID())
+		{
+			huMovementBL.moveHUsToLocator(ImmutableList.of(hu), afterPickingLocator);
+
+			//
+			// FIXME: workaround to restore HU's HUStatus (i.e. which was changed from Picked to Active by the moveHUsToLocator() method, indirectly).
+			// See https://github.com/metasfresh/metasfresh-webui-api/issues/678#issuecomment-344876035, that's the stacktrace where the HU status was set to Active.
+			InterfaceWrapperHelper.refresh(hu, ITrx.TRXNAME_ThreadInherited);
+			if (!Objects.equal(huStatus, hu.getHUStatus()))
+			{
+				final IHUContext huContext = huContextFactory.createMutableHUContext();
+				huStatusBL.setHUStatus(huContext, hu, huStatus);
+				save(hu);
+			}
+		}
 	}
 }

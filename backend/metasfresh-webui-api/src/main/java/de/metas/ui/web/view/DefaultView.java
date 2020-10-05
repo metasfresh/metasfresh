@@ -1,8 +1,30 @@
 package de.metas.ui.web.view;
 
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.SynchronizedMutable;
+import org.adempiere.util.lang.SynchronizedMutable.OldAndNewValues;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.common.util.CoalesceUtil;
@@ -39,25 +61,6 @@ import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.val;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -113,7 +116,8 @@ public final class DefaultView implements IEditableView
 	@Getter
 	private final ViewProfileId profileId;
 
-	private ExtendedMemorizingSupplier<ViewHeaderProperties> headerProperties;
+	private ViewHeaderPropertiesProvider headerPropertiesProvider;
+	private SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder;
 
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
@@ -163,8 +167,8 @@ public final class DefaultView implements IEditableView
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		profileId = builder.getProfileId();
-		final ViewHeaderPropertiesProvider propertiesProvider = CoalesceUtil.coalesce(builder.headerPropertiesProvider, NullViewHeaderPropertiesProvider.instance);
-		headerProperties = ExtendedMemorizingSupplier.of(() -> propertiesProvider.computeHeaderProperties(this));
+		headerPropertiesProvider = CoalesceUtil.coalesce(builder.headerPropertiesProvider, NullViewHeaderPropertiesProvider.instance);
+		headerPropertiesHolder = SynchronizedMutable.of(null);
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
@@ -193,7 +197,7 @@ public final class DefaultView implements IEditableView
 
 		//
 		// Cache
-		cache_rowsById = CCache.<DocumentId, IViewRow>builder()
+		cache_rowsById = CCache.<DocumentId, IViewRow> builder()
 				.cacheMapType(CacheMapType.LRU)
 				.cacheName("ViewRows#" + viewId)
 				.additionalTableNameToResetFor(viewDataRepository.getTableName())
@@ -232,7 +236,7 @@ public final class DefaultView implements IEditableView
 	@Override
 	public ViewHeaderProperties getHeaderProperties()
 	{
-		return headerProperties.get();
+		return headerPropertiesHolder.computeIfNull(() -> headerPropertiesProvider.computeHeaderProperties(this));
 	}
 
 	/**
@@ -305,21 +309,21 @@ public final class DefaultView implements IEditableView
 	public void invalidateAll()
 	{
 		cache_rowsById.reset();
-		headerProperties.forget();
+		headerPropertiesHolder.setValue(null);
 	}
 
 	@Override
 	public void invalidateRowById(final DocumentId rowId)
 	{
 		cache_rowsById.remove(rowId);
-		headerProperties.forget();
+		headerPropertiesHolder.setValue(null);
 	}
 
 	@Override
 	public void invalidateSelection()
 	{
 		selectionsRef.forgetCurrentSelections();
-		headerProperties.forget();
+		headerPropertiesHolder.setValue(null);
 
 		invalidateAll();
 
@@ -506,7 +510,7 @@ public final class DefaultView implements IEditableView
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
 
-			return IteratorUtils.<IViewRow>newPagedIterator()
+			return IteratorUtils.<IViewRow> newPagedIterator()
 					.firstRow(0)
 					.maxRows(1000) // MAX rows to fetch
 					.pageSize(100) // fetch 100items/chunk
@@ -561,11 +565,7 @@ public final class DefaultView implements IEditableView
 		// Invalidate local rowsById cache
 		cache_rowsById.removeAll(rowIds);
 
-		final boolean headerPropertiesChanged = headerProperties.forget() != null;
-		if (headerPropertiesChanged)
-		{
-			ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(this);
-		}
+		checkCollectHeaderPropertiesChanged(rowIds, watchedByFrontend);
 
 		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
 		// TODO: introduce a SysConfig to be able to disable this feature
@@ -589,6 +589,37 @@ public final class DefaultView implements IEditableView
 		else
 		{
 			ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
+		}
+	}
+
+	private void checkCollectHeaderPropertiesChanged(
+			@NonNull final Set<DocumentId> rowIds,
+			final boolean watchedByFrontend)
+	{
+		final OldAndNewValues<ViewHeaderProperties> oldAndNewHeaderProperties = headerPropertiesHolder
+				.computeIfNotNullReturningOldAndNew(currentHeaderProperties -> {
+					final ViewHeaderPropertiesIncrementalResult newHeaderPropertiesResult = headerPropertiesProvider.computeIncrementallyOnRowsChanged(
+							currentHeaderProperties,
+							this,
+							rowIds,
+							watchedByFrontend);
+					if (newHeaderPropertiesResult.isComputed())
+					{
+						return newHeaderPropertiesResult.getComputeHeaderProperties();
+					}
+					else if (newHeaderPropertiesResult.isFullRecomputeRequired())
+					{
+						return null; // reset
+					}
+					else
+					{
+						throw new AdempiereException("Unknown result type: " + newHeaderPropertiesResult);
+					}
+				});
+
+		if (oldAndNewHeaderProperties.isValueChanged())
+		{
+			ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(this);
 		}
 	}
 

@@ -177,6 +177,16 @@ public class CostDetailCreateRequest
 		return toBuilder().productId(productId).qty(qty).build();
 	}
 
+	public CostDetailCreateRequest withQty(@NonNull final Quantity qty)
+	{
+		if (Objects.equals(this.qty, qty))
+		{
+			return this;
+		}
+
+		return toBuilder().qty(qty).build();
+	}
+
 	public CostDetailBuilder toCostDetailBuilder()
 	{
 		final CostDetailBuilder costDetail = CostDetail.builder()

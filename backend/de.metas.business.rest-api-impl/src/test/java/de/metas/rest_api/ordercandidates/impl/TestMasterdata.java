@@ -98,7 +98,8 @@ final class TestMasterdata
 			@Nullable final PricingSystemId salesPricingSystemId,
 			@NonNull final CountryId countryId,
 			@Nullable final GLN gln,
-			@Nullable final String bpLocationExternalId)
+			@Nullable final String bpLocationExternalId,
+			@Nullable final String vatId)
 	{
 
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
@@ -115,6 +116,7 @@ final class TestMasterdata
 		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
 		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
+		bpRecord.setVATaxID(vatId);
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()

@@ -22,15 +22,7 @@
 
 package de.metas.ui.web.pickingslotsClearing;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.picking.api.PickingSlotQuery;
@@ -47,6 +39,7 @@ import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingVi
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU;
+import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -59,6 +52,11 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Browse Picking slots
@@ -151,7 +149,8 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU.class),
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU.class),
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU.class),
-				createProcessDescriptor(de.metas.ui.web.process.adprocess.WEBUI_TestParentChildViewParams.class));
+				createProcessDescriptor(de.metas.ui.web.process.adprocess.WEBUI_TestParentChildViewParams.class),
+				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs.class));
 	}
 
 	private RelatedProcessDescriptor createProcessDescriptor(final Class<?> processClass)

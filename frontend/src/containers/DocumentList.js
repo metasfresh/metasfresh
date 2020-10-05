@@ -24,6 +24,8 @@ import {
   resetView,
   deleteView,
   showIncludedView,
+  setIncludedView,
+  unsetIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
@@ -33,13 +35,12 @@ import {
 } from '../actions/TableActions';
 import { clearAllFilters } from '../actions/FiltersActions';
 import {
-  closeListIncludedView,
-  setListIncludedView,
   setListId,
   setPagination as setListPagination,
   setSorting as setListSorting,
 } from '../actions/ListActions';
 import { updateRawModal, indicatorState } from '../actions/WindowActions';
+import { setBreadcrumb } from '../actions/MenuActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 
 import {
@@ -102,6 +103,7 @@ class DocumentListContainer extends Component {
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
       windowId: nextWindowId,
+      queryViewId: nextQueryViewId,
     } = nextProps;
     const {
       includedView,
@@ -109,18 +111,21 @@ class DocumentListContainer extends Component {
       windowId,
       refDocumentId,
       referenceId,
-      closeListIncludedView,
+      unsetIncludedView,
       viewId,
       resetView,
       deleteView,
       clearAllFilters,
       deleteTable,
       isModal,
+      updateUri,
+      page,
+      sort,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
     const included =
-      includedView && includedView.windowType && includedView.viewId;
+      includedView && includedView.windowId && includedView.viewId;
     const location = document.location;
 
     if (nextProps.filters.clearAll) {
@@ -128,6 +133,22 @@ class DocumentListContainer extends Component {
         clearAllFilters(false);
       });
     }
+
+    /*
+     * This is a fix for the case when user selects the link to the current
+     * view from the menu. Without this the `viewId` would disappear from the
+     * url, as react-router is not aware of it's existence.
+     */
+    if (viewId === nextViewId && !nextQueryViewId && updateUri) {
+      const updateQuery = {
+        viewId,
+        page,
+        sort,
+      };
+
+      updateUri(updateQuery);
+    }
+
     /*
      * If we browse list of docs, changing type of Document
      * does not re-construct component, so we need to
@@ -171,7 +192,7 @@ class DocumentListContainer extends Component {
           // TODO: Check if we can just call `showIncludedView` to hide
           // it in the resetView Action Creator
           if (included) {
-            closeListIncludedView(includedView);
+            unsetIncludedView(includedView);
           }
           this.fetchLayoutAndData();
         }
@@ -415,7 +436,7 @@ class DocumentListContainer extends Component {
       isIncluded,
       sort,
       viewId,
-      setListIncludedView,
+      setIncludedView,
       setModalDescription,
       filterView,
       isModal,
@@ -443,7 +464,7 @@ class DocumentListContainer extends Component {
         }
 
         if (isIncluded) {
-          setListIncludedView({ windowType: windowId, viewId: newViewId });
+          setIncludedView({ windowId, viewId: newViewId });
         }
 
         if (isModal) {
@@ -477,9 +498,13 @@ class DocumentListContainer extends Component {
     indicatorState('pending');
 
     if (updateUri) {
-      id && updateUri('viewId', id);
-      page && updateUri('page', page);
-      sortingQuery && updateUri('sort', sortingQuery);
+      const updateQuery = {
+        viewId: id,
+        page,
+        sort: sortingQuery,
+      };
+
+      updateUri(updateQuery);
     }
 
     return fetchDocument({
@@ -728,7 +753,7 @@ class DocumentListContainer extends Component {
             id: identifier,
             showIncludedView: item.supportIncludedViews,
             windowId: item.supportIncludedViews
-              ? item.includedView.windowType || item.includedView.windowId
+              ? item.includedView.windowId || item.includedView.windowId
               : null,
             viewId: item.supportIncludedViews ? item.includedView.viewId : '',
             isModal,
@@ -750,7 +775,7 @@ class DocumentListContainer extends Component {
       layout &&
       layout.includedView &&
       includedView &&
-      includedView.windowType &&
+      includedView.windowId &&
       includedView.viewId;
     const triggerSpinner = layout.supportAttributes
       ? layoutPending
@@ -798,8 +823,8 @@ export default connect(
     filterView,
     deleteTable,
     indicatorState,
-    closeListIncludedView,
-    setListIncludedView,
+    unsetIncludedView,
+    setIncludedView,
     setListPagination,
     setListSorting,
     setListId,
@@ -812,6 +837,7 @@ export default connect(
     clearAllFilters,
     updateGridTableData,
     fetchHeaderProperties,
+    setBreadcrumb,
   },
   null,
   { forwardRef: true }

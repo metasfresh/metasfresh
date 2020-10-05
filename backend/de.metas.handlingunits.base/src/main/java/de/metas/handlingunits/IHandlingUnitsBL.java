@@ -79,6 +79,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU> getVHUs(I_M_HU hu);
 
+	IHUQueryBuilder createHUQueryBuilder();
+
 	/**
 	 * @return default storage factory
 	 */
@@ -545,6 +547,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	}
 
 	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
+
+	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
 }

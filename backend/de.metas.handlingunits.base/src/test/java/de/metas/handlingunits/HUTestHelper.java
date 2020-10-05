@@ -1,7 +1,73 @@
 package de.metas.handlingunits;
 
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createUOMConversion;
+import static de.metas.business.BusinessTestHelper.createUomEach;
+import static de.metas.business.BusinessTestHelper.createUomKg;
+import static de.metas.business.BusinessTestHelper.createUomPCE;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_Test;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.util.DDNetworkBuilder;
+import org.eevolution.util.ProductBOMBuilder;
+import org.junit.Assert;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -79,70 +145,6 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_Test;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.util.DDNetworkBuilder;
-import org.eevolution.util.ProductBOMBuilder;
-import org.junit.Assert;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createProduct;
-import static de.metas.business.BusinessTestHelper.createUOMConversion;
-import static de.metas.business.BusinessTestHelper.createUomEach;
-import static de.metas.business.BusinessTestHelper.createUomKg;
-import static de.metas.business.BusinessTestHelper.createUomPCE;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -320,6 +322,8 @@ public class HUTestHelper
 	// #653
 	public I_M_Attribute attr_LotNumber;
 
+	private I_M_Attribute attr_BestBeforeDate;
+
 	/**
 	 * Mandatory in receipts
 	 */
@@ -415,7 +419,6 @@ public class HUTestHelper
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
-
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -617,8 +620,10 @@ public class HUTestHelper
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		
+		attr_BestBeforeDate = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
@@ -852,6 +857,20 @@ public class HUTestHelper
 			piAttr_LotNumber.setSeqNo(piAttrSeqNo);
 			piAttr_LotNumber.setUseInASI(true);
 			InterfaceWrapperHelper.save(piAttr_LotNumber);
+			piAttrSeqNo += 10;
+		}
+
+		{
+			final I_M_HU_PI_Attribute piAttr_BestBeforeDate = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_BestBeforeDate)
+					.setM_HU_PI(huDefNone)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
+					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
+					.setAggregationStrategyClass(NullAggregationStrategy.class)
+					.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class));
+			piAttr_BestBeforeDate.setIsReadOnly(false);
+			piAttr_BestBeforeDate.setSeqNo(piAttrSeqNo);
+			piAttr_BestBeforeDate.setUseInASI(true);
+			InterfaceWrapperHelper.save(piAttr_BestBeforeDate);
 			piAttrSeqNo += 10;
 		}
 
@@ -2049,5 +2068,18 @@ public class HUTestHelper
 		}
 
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("HUs", hus)));
+	}
+
+	public I_DIM_Dimension_Spec createDimensionSpec_PP_Order_ProductAttribute_To_Transfer()
+	{
+		return createDimensionSpec(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
+	}
+
+	public I_DIM_Dimension_Spec createDimensionSpec(final String internalName)
+	{
+		final I_DIM_Dimension_Spec dim = InterfaceWrapperHelper.newInstance(I_DIM_Dimension_Spec.class);
+		dim.setInternalName(internalName);
+		InterfaceWrapperHelper.save(dim);
+		return dim;
 	}
 }

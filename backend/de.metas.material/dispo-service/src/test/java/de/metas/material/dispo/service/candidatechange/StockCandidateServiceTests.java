@@ -1,5 +1,29 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.event.commons.MaterialDescriptor;
+import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
@@ -14,31 +38,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
-import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.commons.MaterialDescriptor;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -109,7 +108,9 @@ public class StockCandidateServiceTests
 		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
 
-	/** creates a stock candidate at a certain time and then adds an earlier one */
+	/**
+	 * creates a stock candidate at a certain time and then adds an earlier one
+	 */
 	@Test
 	public void createStockCandidate_before_existing()
 	{
@@ -135,7 +136,9 @@ public class StockCandidateServiceTests
 		assertThat(result.getPreviousQty()).isNull();
 	}
 
-	/** creates a stock candidate at a certain time and then adds a later one */
+	/**
+	 * creates a stock candidate at a certain time and then adds a later one
+	 */
 	@Test
 	public void createStockCandidate_after_existing()
 	{
@@ -164,14 +167,16 @@ public class StockCandidateServiceTests
 	@Test
 	public void updateQuantity_error_if_missing_candidate_record()
 	{
-		final CandidateBuilder candidateBuilder = Candidate.builder()
+		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
+				.clearTransactionDetails()
 				.materialDescriptor(createMaterialDescriptor())
-				.id(CandidateId.ofRepoId(23));
+				.id(CandidateId.ofRepoId(23))
+				.build();
 
-		assertThatThrownBy(() -> candidateBuilder.build())
-				.isInstanceOf(NullPointerException.class)
-				.hasMessageStartingWith("clientAndOrgId");
+		assertThatThrownBy(() -> stockCandidateService.updateQtyAndDate(candidate))
+				.isInstanceOf(RuntimeException.class);
 	}
 
 	@Test
@@ -266,7 +271,7 @@ public class StockCandidateServiceTests
 	}
 
 	/**
-	 * Similar to {@link #testUpdateStockDifferentTimes()}, but two invocations have the same timestamp.
+	 * Similar to {@link #addOrUpdateStock_simple_case()}, but two invocations have the same timestamp.
 	 */
 	@Test
 	// @Ignore("stockCandidateService can't do this thing alone as of now. It needs to be driven my demandCandidateHandler and supplyCandidateHandler")
@@ -438,7 +443,6 @@ public class StockCandidateServiceTests
 	}
 
 	/**
-	 * @param date
 	 * @param qty qty to be "injected into the stock. System needs to create a new stock record or update an exiting one
 	 * @return the parameter that this method passed to {@link StockCandidateService#applyDeltaToMatchingLaterStockCandidates(SaveResult)}
 	 */

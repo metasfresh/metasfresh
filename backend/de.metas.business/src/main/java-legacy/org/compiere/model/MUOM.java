@@ -29,9 +29,9 @@ import org.compiere.util.Ini;
 import de.metas.cache.CCache;
 import de.metas.security.permissions.Access;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 
 /**
@@ -40,6 +40,7 @@ import de.metas.util.Services;
  * @author Jorg Janke
  * @version $Id: MUOM.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
  */
+@Deprecated
 public class MUOM extends X_C_UOM
 {
 	/**
@@ -69,7 +70,7 @@ public class MUOM extends X_C_UOM
 		}
 		// Server
 		String sql = "SELECT C_UOM_ID FROM C_UOM WHERE IsActive='Y' AND X12DE355=?";
-		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql, UOMConstants.X12_MINUTE);
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql, X12DE355.MINUTE.getCode());
 	}	// getMinute_UOM_ID
 
 	/**
@@ -103,11 +104,15 @@ public class MUOM extends X_C_UOM
 	public static MUOM get(Properties ctx, int C_UOM_ID)
 	{
 		if (s_cache.size() == 0)
+		{
 			loadUOMs(ctx);
+		}
 		//
 		MUOM uom = s_cache.get(C_UOM_ID);
 		if (uom != null)
+		{
 			return uom;
+		}
 		//
 		uom = new MUOM(ctx, C_UOM_ID, null);
 		s_cache.put(C_UOM_ID, uom);

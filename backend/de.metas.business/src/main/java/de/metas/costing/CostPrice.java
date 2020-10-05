@@ -1,16 +1,18 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.temporal.TemporalUnit;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
+import java.util.Objects;
 
 /*
  * #%L
@@ -64,7 +66,16 @@ public class CostPrice
 			@NonNull final CostAmount ownCostPrice,
 			@NonNull final CostAmount componentsCostPrice)
 	{
-		Check.assumeEquals(ownCostPrice.getCurrencyId(), componentsCostPrice.getCurrencyId());
+		if (!Objects.equals(ownCostPrice.getCurrencyId(), componentsCostPrice.getCurrencyId()))
+		{
+			throw new AdempiereException("ownCostPrice has C_Currency_ID="
+					+ CurrencyId.toRepoId(ownCostPrice.getCurrencyId())
+					+ ", but componentsCostPrice has  C_Currency_ID="
+					+ CurrencyId.toRepoId(componentsCostPrice.getCurrencyId()))
+					.appendParametersToMessage()
+					.setParameter("ownCostPrice", ownCostPrice)
+					.setParameter("componentsCostPrice", componentsCostPrice);
+		}
 
 		currenyId = ownCostPrice.getCurrencyId();
 
@@ -75,6 +86,12 @@ public class CostPrice
 	public CostAmount toCostAmount()
 	{
 		return getOwnCostPrice().add(getComponentsCostPrice());
+	}
+
+	@VisibleForTesting
+	public BigDecimal toBigDecimal()
+	{
+		return toCostAmount().getValue();
 	}
 
 	public CostPrice addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)
@@ -119,7 +136,7 @@ public class CostPrice
 		return toBuilder().componentsCostPrice(componentsCostPrice).build();
 	}
 
-	public CostPrice add(final CostPrice costPrice)
+	public CostPrice add(@NonNull final CostPrice costPrice)
 	{
 		return builder()
 				.ownCostPrice(getOwnCostPrice().add(costPrice.getOwnCostPrice()))

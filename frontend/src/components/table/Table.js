@@ -151,9 +151,7 @@ export default class Table extends PureComponent {
         id: identifier,
         showIncludedView: item.supportIncludedViews,
         forceClose: false,
-        windowId: item.supportIncludedViews
-          ? item.includedView.windowType || item.includedView.windowId
-          : null,
+        windowId: item.supportIncludedViews ? item.includedView.windowId : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
         isModal,
       });
@@ -330,6 +328,10 @@ export default class Table extends PureComponent {
       collapsedParentRows,
       onRightClick,
       rowRefs,
+      handleFocusAction,
+      updatePropertyValue,
+      tableId,
+      onFastInlineEdit,
     } = this.props;
 
     if (!rows.length || !columns.length) {
@@ -368,6 +370,8 @@ export default class Table extends PureComponent {
           modalVisible,
           isGerman,
           activeSort,
+          updatePropertyValue,
+          tableId,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
@@ -391,8 +395,10 @@ export default class Table extends PureComponent {
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
+        onFastInlineEdit={onFastInlineEdit}
         onClick={this.handleClick}
         handleRightClick={onRightClick}
+        handleFocusAction={handleFocusAction}
         changeListenOnTrue={this.setListenTrue}
         changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}

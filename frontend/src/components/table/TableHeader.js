@@ -6,22 +6,28 @@ import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
 export default class TableHeader extends PureComponent {
-  UNSAFE_componentWillMount() {
-    this.setInitialState();
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      fields: {},
+    };
   }
 
-  setInitialState() {
-    const { orderBy } = this.props;
+  static getDerivedStateFromProps(props) {
+    if (props.orderBy) {
+      const fields = {};
+      props.orderBy &&
+        props.orderBy.map((item) => {
+          fields[item.fieldName] = item.ascending;
+        });
 
-    let fields = {};
-    orderBy &&
-      orderBy.map((item) => {
-        fields[item.fieldName] = item.ascending;
-      });
+      return {
+        fields,
+      };
+    }
 
-    this.setState({
-      fields,
-    });
+    return null;
   }
 
   handleClick = (field, sortable) => {
@@ -135,7 +141,7 @@ export default class TableHeader extends PureComponent {
 
 TableHeader.propTypes = {
   orderBy: PropTypes.array,
-  onSortTable: PropTypes.func.isRequired,
+  onSortTable: PropTypes.func,
   tabId: PropTypes.any,
   windowType: PropTypes.string,
   docId: PropTypes.string,

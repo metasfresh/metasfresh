@@ -38,6 +38,7 @@ import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
@@ -60,7 +61,9 @@ import de.metas.security.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.user.UserRepository;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
@@ -144,15 +147,13 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			LocalDate.parse("2020-03-16")
 					.atTime(LocalTime.parse("23:07:16.193"))
 					.atZone(ZoneId.of("Europe/Berlin")));
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
 	private TestMasterdata testMasterdata;
 
-	private static final String UOM_CODE = "MJ";
+	private static final X12DE355 UOM_CODE = X12DE355.ofCode("MJ");
 	private UomId uomId;
 
 	private final CurrencyId currencyId_EUR = CurrencyId.ofRepoId(12345);
@@ -208,7 +209,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 			countryId_DE = BusinessTestHelper.createCountry(COUNTRY_CODE_DE);
 
-			final I_C_UOM uom = BusinessTestHelper.createUOM(UOM_CODE, UOM_CODE);
+			final I_C_UOM uom = BusinessTestHelper.createUOM(UOM_CODE.getCode(), UOM_CODE);
 			uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 			BusinessTestHelper.createProduct("ProductCode", uomId);
 
@@ -404,6 +405,92 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getDateOrdered()).isEqualTo(dateOrdered);
 	}
 
+	@Nested
+	public class import_VatID
+	{
+		@Test
+		public void notSpecified()
+		{
+			final JsonOLCand olCand = importOLCandWithVatId("currentVatId", null);
+			final JsonResponseBPartner bpartner = olCand.getBpartner().getBpartner();
+			assertThat(bpartner.getVatId()).isEqualTo("currentVatId");
+		}
+
+		@Test
+		public void setToNull()
+		{
+			final JsonOLCand olCand = importOLCandWithVatId("currentVatId", Optional.empty());
+			final JsonResponseBPartner bpartner = olCand.getBpartner().getBpartner();
+			assertThat(bpartner.getVatId()).isNull();
+		}
+
+		@Test
+		public void changeIt()
+		{
+			final JsonOLCand olCand = importOLCandWithVatId("currentVatId", Optional.of("newVatId"));
+			final JsonResponseBPartner bpartner = olCand.getBpartner().getBpartner();
+			assertThat(bpartner.getVatId()).isEqualTo("newVatId");
+		}
+
+		private JsonOLCand importOLCandWithVatId(
+				final String currentVatId,
+				final Optional<String> newVatId)
+		{
+			testMasterdata.prepareBPartnerAndLocation()
+					.bpValue("bpCode")
+					.countryId(countryId_DE)
+					.vatId(currentVatId)
+					.build();
+
+			testMasterdata.createProduct("productCode", uomId);
+
+			final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+			bpartner.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+			bpartner.setCode("bpCode");
+			if (newVatId != null)
+			{
+				bpartner.setVatId(newVatId.orElse(null));
+			}
+
+			final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+					.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+					.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
+					.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 1))
+					.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
+					.qty(new BigDecimal("66"))
+					.externalHeaderId("externalHeaderId")
+					.externalLineId("externalLineId")
+					.poReference("poRef")
+					.product(JsonProductInfo.builder()
+							.code("productCode")
+							.build())
+					.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+							.bpartner(bpartner)
+							.build())
+					.invoiceDocType(JsonDocTypeInfo.builder()
+							.docBaseType("ARI")
+							.docSubType("KV")
+							.build())
+					.shipper("val-DPD")
+					.salesPartnerCode("SalesRep")
+					.paymentRule(JSONPaymentRule.Paypal)
+					.paymentTerm("val-paymentTermValue")
+					.orderDocType(OrderDocType.PrepayOrder)
+					.shipper("val-DPD")
+					.build());
+
+			final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
+					.createOrderLineCandidates(request)
+					.getBody();
+
+			final List<JsonOLCand> olCands = response.getResult();
+			assertThat(olCands).hasSize(1);
+
+			final JsonOLCand olCand = olCands.get(0);
+			return olCand;
+		}
+	}
+
 	@Test
 	void error_NoBPartnerFound()
 	{
@@ -485,7 +572,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE)
+						.uomCode(UOM_CODE.getCode())
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
@@ -570,7 +657,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE)
+						.uomCode(UOM_CODE.getCode())
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
@@ -776,7 +863,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE)
+						.uomCode(UOM_CODE.getCode())
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
@@ -890,7 +977,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 						.code("productCode")
 						.name("productName")
 						.type(Type.ITEM)
-						.uomCode(UOM_CODE)
+						.uomCode(UOM_CODE.getCode())
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())

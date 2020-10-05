@@ -1,9 +1,12 @@
 package org.adempiere.util.lang;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -86,6 +89,39 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 		}
 
 		return this.value;
+	}
+
+	@Value
+	@Builder
+	public static class OldAndNewValues<T>
+	{
+		T oldValue;
+		T newValue;
+
+		public boolean isValueChanged()
+		{
+			return !Objects.equals(oldValue, newValue);
+		}
+	}
+
+	public synchronized OldAndNewValues<T> computeIfNotNullReturningOldAndNew(@NonNull final UnaryOperator<T> remappingFunction)
+	{
+		if (value != null)
+		{
+			final T oldValue = this.value;
+			this.value = remappingFunction.apply(oldValue);
+			return OldAndNewValues.<T> builder()
+					.oldValue(oldValue)
+					.newValue(this.value)
+					.build();
+		}
+		else
+		{
+			return OldAndNewValues.<T> builder()
+					.oldValue(this.value)
+					.newValue(this.value)
+					.build();
+		}
 	}
 
 }

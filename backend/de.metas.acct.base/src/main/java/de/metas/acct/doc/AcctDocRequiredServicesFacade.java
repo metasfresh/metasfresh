@@ -44,6 +44,8 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
@@ -274,6 +276,11 @@ public class AcctDocRequiredServicesFacade
 	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return costingService.createCostDetail(request);
+	}
+
+	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
+	{
+		return costingService.moveCosts(request);
 	}
 
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)

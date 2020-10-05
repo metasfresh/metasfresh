@@ -50,12 +50,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
@@ -788,6 +788,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
 				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
+				0, // default
 				sched.getAD_Client_ID(),
 				sched.getAD_Org_ID());
 		if (canBeExportedAfterSeconds >= 0)
@@ -798,26 +799,52 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	private void addAttributes(@NonNull final I_M_ShipmentSchedule shipmentSchedule,final List<CreateAttributeInstanceReq> attributeInstanceBasicInfos)
+	private void addAttributes(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final List<CreateAttributeInstanceReq> attributeInstanceBasicInfos)
 	{
-		final AttributeSetInstanceId oldAsiId = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
-		final AttributeSetInstanceId asiId;
+		final AttributeSetInstanceId existingAttributeSetOrNone = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
 
-		if (oldAsiId.isNone())
+		final AddAttributesRequest addAttributesRequest = AddAttributesRequest.builder()
+				.existingAttributeSetIdOrNone(existingAttributeSetOrNone)
+				.attributeInstanceBasicInfos(attributeInstanceBasicInfos)
+				.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
+				.build();
+
+		final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.addAttributes(addAttributesRequest);
+
+		shipmentSchedule.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
+	}
+
+	@Override
+	@NonNull
+	public Quantity getQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentScheduleRecord);
+
+		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
+
+		if (qtyOrdered == null)
 		{
-			final I_M_AttributeSetInstance asiNew = attributeSetInstanceBL.createASI(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
-			asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
+			return Quantity.zero(uom);
 		}
-		else
+
+		return Quantity.of(qtyOrdered, uom);
+	}
+
+	@Override
+	@NonNull
+	public Quantity getQtyDelivered(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final BigDecimal qtyDelivered = shipmentScheduleRecord.getQtyDelivered();
+
+		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
+
+		if (qtyDelivered == null)
 		{
-			final I_M_AttributeSetInstance asiCopy = ASICopy.newInstance(oldAsiId).copy();
-			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
+			return Quantity.zero(uom);
 		}
 
-		shipmentSchedule.setM_AttributeSetInstance_ID(asiId.getRepoId());
-
-		attributeInstanceBasicInfos.forEach(attributeValue -> {
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue() );
-		});
+		return Quantity.of(qtyDelivered, uom);
 	}
 }

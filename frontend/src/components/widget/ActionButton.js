@@ -140,7 +140,7 @@ class ActionButton extends PureComponent {
   handleChangeStatus = (status) => {
     const prompt = { ...this.state.prompt };
     const promptOpenClone = { ...prompt.isOpen };
-    if (status.hasOwnProperty('validationInformation')) {
+    if (Object.prototype.hasOwnProperty.call(status, 'validationInformation')) {
       promptOpenClone[status.key] = true;
       this.setState({
         prompt: {
@@ -260,7 +260,7 @@ class ActionButton extends PureComponent {
   };
 
   handleSubmit = () => {
-    const { list } = this.state;
+    const { list, prompt } = this.state;
 
     let activePrompt = null;
     list.forEach((listItem) => {
@@ -272,7 +272,7 @@ class ActionButton extends PureComponent {
     this.processStatus(
       list.find(
         (elem) =>
-          elem.hasOwnProperty('validationInformation') &&
+          Object.prototype.hasOwnProperty.call(elem, 'validationInformation') &&
           elem.key === activePrompt
       ),
       true

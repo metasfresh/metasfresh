@@ -13,11 +13,6 @@ export const initialState = {
     id: '',
     windowType: null,
   },
-  includedView: {
-    viewId: '',
-    windowType: null,
-    viewProfileId: null,
-  },
 };
 
 export default function listHandler(state = initialState, action) {
@@ -51,43 +46,6 @@ export default function listHandler(state = initialState, action) {
           windowType: action.windowType,
         }),
       });
-
-    case types.SET_LIST_INCLUDED_VIEW: {
-      const { windowType, viewId, viewProfileId } = action.payload;
-
-      return Object.assign({}, state, {
-        includedView: Object.assign({}, state.includedView, {
-          viewId,
-          windowType,
-          viewProfileId,
-        }),
-      });
-    }
-
-    case types.CLOSE_LIST_INCLUDED_VIEW: {
-      const { windowType, viewId } = state.includedView;
-      const {
-        windowType: newWindowType,
-        viewId: newViewId,
-        forceClose,
-      } = action.payload;
-
-      if (
-        forceClose ||
-        (windowType === newWindowType && viewId === newViewId)
-      ) {
-        // only close includedView if it hasn't changed since
-        return Object.assign({}, state, {
-          includedView: Object.assign({}, state.includedView, {
-            viewId: '',
-            windowType: null,
-            viewProfileId: null,
-          }),
-        });
-      } else {
-        return state;
-      }
-    }
 
     default:
       return state;

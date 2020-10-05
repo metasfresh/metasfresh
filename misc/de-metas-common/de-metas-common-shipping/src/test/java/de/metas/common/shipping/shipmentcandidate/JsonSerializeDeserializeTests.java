@@ -24,6 +24,8 @@ package de.metas.common.shipping.shipmentcandidate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.receipt.JsonCreateReceiptInfo;
+import de.metas.common.receipt.JsonCreateReceiptsRequest;
 import de.metas.common.rest_api.JsonAttributeInstance;
 import de.metas.common.rest_api.JsonAttributeSetInstance;
 import de.metas.common.rest_api.JsonError;
@@ -43,16 +45,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static de.metas.common.shipping.JsonRequestCandidateResult.*;
+import static de.metas.common.shipping.JsonRequestCandidateResult.builder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests
 {
+	private static final String SHIPMENT_SCHEDULE_JSON_FILE = "/de/metas/common/shipping/shipmentcandidate/BigShipmentScheduleJSON.json";
+
 	@BeforeEach
 	public void beforeEach()
 	{
@@ -72,14 +77,6 @@ class JsonSerializeDeserializeTests
 				.zipCode("151212")
 				.build();
 
-		final JsonAttributeInstance attributeInstance = JsonAttributeInstance.builder()
-				.attributeName("name")
-				.valueStr("valueStr")
-				.valueNumber(BigDecimal.ONE)
-				.valueDate(LocalDate.of(2020,7,24))
-				.attributeCode("atrCode")
-				.build(); // not a real case but it's fine for testing
-
 		final JsonCreateShipmentInfo jsonCreateShipmentInfo = JsonCreateShipmentInfo.builder()
 				.shipmentScheduleId(JsonMetasfreshId.of(1))
 				.businessPartnerSearchKey("bp_key")
@@ -89,7 +86,7 @@ class JsonSerializeDeserializeTests
 				.productSearchKey("p_key")
 				.trackingNumbers(ImmutableList.of("tr-no1"))
 				.movementDate(LocalDateTime.of(2020,7,24,18,13))
-				.attributes(ImmutableList.of(attributeInstance))
+				.attributes(ImmutableList.of(mockAttributeInstance()))
 				.shipToLocation(location)
 				.build();
 
@@ -146,13 +143,17 @@ class JsonSerializeDeserializeTests
 				.poReference("poReference")
 				.orderDocumentNo("orderDocumentNo")
 				.product(createJsonProduct())
-				.customer(JsonCustomer.builder().street("street").streetNo("streetNo").postal("postal").city("city").build())
+				.customer(JsonCustomer.builder().street("street").streetNo("streetNo").postal("postal").city("city").shipmentAllocationBestBeforePolicy("E").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.ONE).uomCode("PCE").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
+				.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 				.attributeSetInstance(JsonAttributeSetInstance.builder()
 						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_1").attributeCode("attributeCode_1").valueNumber(BigDecimal.TEN).build())
 						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_2").attributeCode("attributeCode_2").valueStr("valueStr").build())
 						.build())
+				.shipperInternalSearchKey("shipperInternalSearchKey")
+				.deliveredQtyNetPrice(BigDecimal.ZERO)
+				.orderedQtyNetPrice(BigDecimal.TEN)
 				.build();
 
 		assertOK(scheduleOrig, JsonResponseShipmentCandidate.class);
@@ -176,8 +177,9 @@ class JsonSerializeDeserializeTests
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 1))
 						.poReference("poReference_1")
 						.orderDocumentNo("orderDocumentNo_1")
-						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").build())
-						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").build())
+						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").documentNote("documentNote_1").build())
+						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
+						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").shipmentAllocationBestBeforePolicy("E").build())
 						.build())
 				.item(JsonResponseShipmentCandidate.builder()
 						.id(JsonMetasfreshId.of(20))
@@ -186,7 +188,8 @@ class JsonSerializeDeserializeTests
 						.poReference("poReference_2")
 						.orderDocumentNo("orderDocumentNo_2")
 						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").build())
-						.customer(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").build())
+						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
+						.customer(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").shipmentAllocationBestBeforePolicy("E").build())
 						.build())
 				.build();
 
@@ -221,314 +224,45 @@ class JsonSerializeDeserializeTests
 	@Test
 	void deserializeBigJson() throws IOException
 	{
-		final String jsonString = "{\n"
-				+ "    \"transactionKey\": \"d7c3f93d-6eab-4360-8bf4-f45d1a66cd4d\",\n"
-				+ "    \"items\": [\n"
-				+ "        {\n"
-				+ "            \"id\": 1000000,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0001\",\n"
-				+ "            \"dateOrdered\": \"2020-06-23T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000001,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0002\",\n"
-				+ "            \"dateOrdered\": \"2020-06-23T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000002,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0003\",\n"
-				+ "            \"dateOrdered\": \"2020-06-23T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000003,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0004\",\n"
-				+ "            \"dateOrdered\": \"2020-06-23T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000004,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0005\",\n"
-				+ "            \"dateOrdered\": \"2020-06-23T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000005,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0006\",\n"
-				+ "            \"dateOrdered\": \"2020-06-23T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000006,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0007\",\n"
-				+ "            \"dateOrdered\": \"2020-06-25T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000007,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0008\",\n"
-				+ "            \"dateOrdered\": \"2020-06-25T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000008,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0009\",\n"
-				+ "            \"dateOrdered\": \"2020-06-25T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000009,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0010\",\n"
-				+ "            \"dateOrdered\": \"2020-06-25T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 12,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "            \"id\": 1000011,\n"
-				+ "            \"orgCode\": \"001\",\n"
-				+ "            \"orderDocumentNo\": \"0012\",\n"
-				+ "            \"dateOrdered\": \"2020-07-17T00:00:00\",\n"
-				+ "            \"product\": {\n"
-				+ "                \"productNo\": \"P002737\",\n"
-				+ "                \"name\": \"Convenience Salat 250g\",\n"
-				+ "                \"description\": \"\",\n"
-				+ "                \"weight\": 0.250000000000\n"
-				+ "            },\n"
-				+ "            \"customer\": {\n"
-				+ "                \"companyName\": \"Testkunde Kunde 1\",\n"
-				+ "                \"street\": \"teststraße\",\n"
-				+ "                \"streetNo\": \"996\",\n"
-				+ "                \"postal\": \"45678\",\n"
-				+ "                \"city\": \"teststadt 3\",\n"
-				+ "                \"countryCode\": \"DE\",\n"
-				+ "                \"language\": \"de_DE\"\n"
-				+ "            },\n"
-				+ "            \"quantities\": [\n"
-				+ "                {\n"
-				+ "                    \"qty\": 21,\n"
-				+ "                    \"uomCode\": \"Stk\"\n"
-				+ "                }\n"
-				+ "            ]\n"
-				+ "        }\n"
-				+ "    ],\n"
-				+ "    \"hasMoreItems\": false\n"
-				+ "}";
+		final InputStream bigJson = getClass().getResourceAsStream(SHIPMENT_SCHEDULE_JSON_FILE);
 
 		// when
-		final JsonResponseShipmentCandidates result = ConfiguredJsonMapper.get().readValue(jsonString, JsonResponseShipmentCandidates.class);
+		final JsonResponseShipmentCandidates result = ConfiguredJsonMapper.get().readValue(bigJson, JsonResponseShipmentCandidates.class);
 
 		// then
 		assertThat(result.getTransactionKey()).isEqualTo("d7c3f93d-6eab-4360-8bf4-f45d1a66cd4d");
+	}
+
+	@Test
+	void jsonCreateReceiptRequest() throws IOException
+	{
+
+		final JsonCreateReceiptInfo jsonCreateReceiptInfo = JsonCreateReceiptInfo.builder()
+				.receiptScheduleId(JsonMetasfreshId.of(1))
+				.productSearchKey("productSearchKey")
+				.externalId("externalId")
+				.movementQuantity(BigDecimal.ONE)
+				.movementDate(LocalDate.now())
+				.attributes(ImmutableList.of(mockAttributeInstance()))
+				.dateReceived(LocalDateTime.now())
+				.build();
+
+		final JsonCreateReceiptsRequest jsonCreateReceiptsRequest = JsonCreateReceiptsRequest
+				.builder()
+				.jsonCreateReceiptInfoList(ImmutableList.of(jsonCreateReceiptInfo))
+				.build();
+
+		assertOK(jsonCreateReceiptsRequest, JsonCreateReceiptsRequest.class);
+	}
+
+	public JsonAttributeInstance mockAttributeInstance()
+	{
+		return JsonAttributeInstance.builder()
+				.attributeName("name")
+				.valueStr("valueStr")
+				.valueNumber(BigDecimal.ONE)
+				.valueDate(LocalDate.of(2020,7,24))
+				.attributeCode("atrCode")
+				.build(); // not a real case but it's fine for testing
 	}
 }

@@ -1287,7 +1287,7 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
-	public static Timestamp asTimestamp(final Object obj)
+	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1349,13 +1349,9 @@ public class TimeUtil
 	/**
 	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
 	 */
-	public static Timestamp asTimestamp(final Instant instant)
+	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
-		if (instant == null)
-		{
-			return null;
-		}
-		return new Timestamp(Date.from(instant).getTime());
+		return instant != null ? Timestamp.from(instant) : null;
 	}
 
 	/**
