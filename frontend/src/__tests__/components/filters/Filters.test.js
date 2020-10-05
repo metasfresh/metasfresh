@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Immutable from 'immutable';
-import { mount, shallow, render } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
