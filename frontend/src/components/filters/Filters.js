@@ -119,7 +119,7 @@ class Filters extends PureComponent {
     const widgetShown = filters ? filters.widgetShown : false;
     const notValidFields = filters ? filters.notValidFields : false;
 
-    if (!filters || !viewId) return false;
+    if (!filters || !viewId || !filters.filterData) return false;
     const { filtersActive, filtersCaptions: activeFiltersCaptions } = filters;
 
     const allFilters = annotateFilters({
