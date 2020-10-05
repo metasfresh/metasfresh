@@ -22,36 +22,6 @@
 
 package de.metas.ui.web.payment_allocation.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_InvoiceProcessingServiceCompany;
-import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate;
@@ -63,8 +33,10 @@ import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.model.I_C_BPartner;
@@ -76,6 +48,7 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingService
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -83,6 +56,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
@@ -92,6 +66,37 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.data.Percentage;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_InvoiceProcessingServiceCompany;
+import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
@@ -107,6 +112,8 @@ public class PaymentsViewAllocateCommandTest
 	private IAllocationDAO allocationDAO;
 
 	private CurrencyId euroCurrencyId;
+	private CurrencyId chfCurrencyId;
+
 	private BPartnerId bpartnerId;
 
 	@BeforeEach
@@ -116,7 +123,7 @@ public class PaymentsViewAllocateCommandTest
 
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(currencyRepo);
-		
+
 		moneyService = new MoneyService(currencyRepo);
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(
 				new InvoiceProcessingServiceCompanyConfigRepository(),
@@ -125,6 +132,7 @@ public class PaymentsViewAllocateCommandTest
 		allocationDAO = Services.get(IAllocationDAO.class);
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		chfCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
 		bpartnerId = createBPartnerId();
 
@@ -141,6 +149,11 @@ public class PaymentsViewAllocateCommandTest
 	private Amount euro(final int amount)
 	{
 		return Amount.of(amount, CurrencyCode.EUR);
+	}
+
+	private Amount chf(final double amount)
+	{
+		return Amount.of(BigDecimal.valueOf(amount), CurrencyCode.CHF);
 	}
 
 	private TableRecordReference toRecordRef(final PaymentRow paymentRow)
@@ -172,6 +185,8 @@ public class PaymentsViewAllocateCommandTest
 			@Nullable final LocalDate paymentDateTrxOverride)
 	{
 		final I_C_Payment paymentRecord = newInstance(I_C_Payment.class);
+		paymentRecord.setC_Currency_ID(moneyService.getCurrencyIdByCurrencyCode(payAmt.getCurrencyCode()).getRepoId());
+		paymentRecord.setPayAmt(payAmt.getAsBigDecimal());
 		saveRecord(paymentRecord);
 		final PaymentId paymentId = PaymentId.ofRepoId(paymentRecord.getC_Payment_ID());
 
@@ -225,6 +240,29 @@ public class PaymentsViewAllocateCommandTest
 						? Amount.of(serviceFeeAmt, openAmt.getCurrencyCode())
 						: Amount.zero(openAmt.getCurrencyCode()))
 				.build();
+	}
+
+	private void createConversionRates(final double euroToChfRate, final double chfToEuroRate)
+	{
+		final CurrencyConversionTypeId conversionType = Services.get(ICurrencyDAO.class).getConversionTypeId(ConversionTypeMethod.Spot);
+
+		final I_C_Conversion_Rate euroChfRate = newInstance(I_C_Conversion_Rate.class);
+		euroChfRate.setC_ConversionType_ID(conversionType.getRepoId());
+		euroChfRate.setC_Currency_ID(euroCurrencyId.getRepoId());
+		euroChfRate.setC_Currency_ID_To(chfCurrencyId.getRepoId());
+		euroChfRate.setMultiplyRate(BigDecimal.valueOf(euroToChfRate));
+		euroChfRate.setValidFrom(TimeUtil.asTimestamp(dateInvoiced.minusYears(5))); // using +- 5 years because there are different dates used when creating the Invoices and Payments
+		euroChfRate.setValidTo(TimeUtil.asTimestamp(dateInvoiced.plusYears(5)));
+		InterfaceWrapperHelper.save(euroChfRate);
+
+		final I_C_Conversion_Rate chfEuroRate = newInstance(I_C_Conversion_Rate.class);
+		chfEuroRate.setC_ConversionType_ID(conversionType.getRepoId());
+		chfEuroRate.setC_Currency_ID(chfCurrencyId.getRepoId());
+		chfEuroRate.setC_Currency_ID_To(euroCurrencyId.getRepoId());
+		chfEuroRate.setMultiplyRate(BigDecimal.valueOf(chfToEuroRate));
+		chfEuroRate.setValidFrom(TimeUtil.asTimestamp(dateInvoiced.minusYears(5)));
+		chfEuroRate.setValidTo(TimeUtil.asTimestamp(dateInvoiced.plusYears(5)));
+		InterfaceWrapperHelper.save(chfEuroRate);
 	}
 
 	@Nested
@@ -524,6 +562,68 @@ public class PaymentsViewAllocateCommandTest
 									.payAmt(Money.of("100", euroCurrencyId))
 									.build())
 							.build());
+		}
+
+		/**
+		 * I believe, the problem is that when we check `PaymentBL.testAllocation()`, we don't use the same conversion rate as the one for Allocation Line, hence the mismatch.
+		 * <p>
+		 * Is the correct solution here to store the conversion rate on the `I_C_AllocationLine`?
+		 * <p>
+		 * The calculation fails because `PaymentDAO.getAllocatedAmt` uses a different conversion rate than the one used when calculating the allocation lines.
+		 * Because of this `PaymentBL.testAllocation()` does not set `Payment.IsAllocated = true`.
+		 * <p>
+		 * Example:
+		 * Payment currency = Eur
+		 * Invoice currency = Chf
+		 * <p>
+		 * - During allocation, 		conversion rate E->C is 1E = 10C 	=> 1C = 0.1E
+		 * - When testing allocation, 	conversion rate C->E is 1C = 0.2E 	=> 1E = 5C
+		 * As the allocated amount uses invoice currency, `PaymentDAO.getAllocatedAmt` has to do a conversion From InvoiceCurrency To PaymentCurrency, which returns an amount != Payment's original amount.
+		 */
+		@Test
+		public void singleCustomerInvoice_to_singleInboundPayment_DifferentCurrencies()
+		{
+			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(5257)).build();
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(chf(5699.65)).build();
+
+			createConversionRates(1.0765, 0.9312); // the 2 rates are not equivalent
+
+			assertInvoiceAllocatedAmt(invoiceRow.getInvoiceId(), "0");
+
+			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
+					.moneyService(moneyService)
+					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentRow(paymentRow)
+					.invoiceRow(invoiceRow)
+					.allowPurchaseSalesInvoiceCompensation(false)
+					.dateTrx(LocalDate.parse("2020-02-29"))
+					.build()
+					.run();
+
+			assertThat(result.isOK()).isTrue();
+			assertThat(result.getCandidates()).hasSize(1);
+			assertThat(result.getCandidates().get(0))
+					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+							.type(AllocationLineCandidateType.InvoiceToPayment)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(paymentRow))
+							.dateTrx(LocalDate.parse("2020-02-29"))
+							.dateAcct(LocalDate.parse("2020-02-29"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("5659.16", chfCurrencyId))
+									.build())
+							.payableOverUnderAmt(Money.of("40.49", chfCurrencyId))
+							.paymentOverUnderAmt(Money.of(0, chfCurrencyId))
+							.build());
+
+			assertInvoiceAllocatedAmt(invoiceRow.getInvoiceId(), "5659.16");
+			final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+			final I_C_Payment paymentPO = paymentDAO.getById(paymentRow.getPaymentId());
+
+			assertThat(paymentDAO.getAllocatedAmt(paymentPO)).isCloseTo(BigDecimal.valueOf(5257), Percentage.withPercentage(0));
+			assertThat(paymentPO.isAllocated()).isTrue();
 		}
 
 		@Test
