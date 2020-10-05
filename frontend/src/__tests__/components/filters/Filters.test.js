@@ -15,7 +15,7 @@ import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../test_setup/fixtures/keymap.json';
 import filterData from '../../../../test_setup/fixtures/filters/filterData.json';
 import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive.json';
-import filtersStore from '../../../../test_setup/fixtures/filters/filtersStore.json';
+import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
 
 const mockStore = configureStore([]);
 
@@ -54,20 +54,18 @@ const createInitialProps = function(
   };
 };
 
-const initialState = createStore({
-  windowHandler: {
-    allowShortcut: true,
-    modal: {
-      visible: false,
-    },
-  },
-  filters: filtersStore,
-});
-
 describe('Filters tests', () => {
   it('renders without errors', () => {
     const dummyProps = createInitialProps();
-
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreOne,
+    });
     const store = mockStore(initialState);
     const wrapper = shallow(
       <Provider store={store}>
@@ -86,6 +84,15 @@ describe('Filters tests', () => {
     const dummyProps = createInitialProps(undefined, {
       filtersActive: filtersFixtures.filtersActive1,
     });
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreOne,
+    });
     const store = mockStore(initialState);
     const wrapper = shallow(
       <Provider store={store}>
@@ -100,6 +107,15 @@ describe('Filters tests', () => {
 
   it('opens dropdown and filter details', () => {
     const dummyProps = createInitialProps();
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreOne,
+    });
     const store = mockStore(initialState);
     const wrapper = mount(
       <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
@@ -128,7 +144,15 @@ describe('Filters tests', () => {
       const dummyProps = createInitialProps(undefined, {
         filtersActive: filtersFixtures.filtersActive2,
       });
-
+      const initialState = createStore({
+        windowHandler: {
+          allowShortcut: true,
+          modal: {
+            visible: false,
+          },
+        },
+        filters: filtersStoreOne,
+      });
       const store = mockStore(initialState);
       const wrapper = mount(
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
