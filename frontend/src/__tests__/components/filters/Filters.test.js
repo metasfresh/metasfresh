@@ -112,9 +112,10 @@ describe('Filters tests', () => {
     );
 
     wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+    expect(wrapper.find('.filter-menu').length).toBe(1);
     expect(wrapper.find('.filters-overlay').length).toBe(1);
 
-    wrapper.find('.filter-option-default').simulate('click');
+    wrapper.find('.filter-active').simulate('click');
     expect(wrapper.find('.filter-widget .filter-default').length).toBe(1);
   });
 
@@ -122,7 +123,7 @@ describe('Filters tests', () => {
   // for now it doesn't make sense to write targeted unit tests for Filter descendant components
   // as the widgets need an architecture overhaul, and filters should be moved to redux state
   describe('Temporary bloated filter tests', () => {
-    // https://github.com/metasfresh/me03/issues/3649
+    // // https://github.com/metasfresh/me03/issues/3649
     it('clears list filters and applies without error', () => {
       const dummyProps = createInitialProps(undefined, {
         filtersActive: filtersFixtures.filtersActive2,
@@ -145,13 +146,7 @@ describe('Filters tests', () => {
 
       expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
 
-      wrapper
-        .find('.form-field-C_DocType_ID .meta-icon-close-alt')
-        .simulate('click');
-      wrapper.update();
-      wrapper
-        .find('.form-field-DocStatus .meta-icon-close-alt')
-        .simulate('click');
+      wrapper.find('.meta-icon-close-alt').simulate('click');
       wrapper.update();
 
       expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
@@ -163,67 +158,67 @@ describe('Filters tests', () => {
       expect(wrapper.find('.filters-overlay').length).toBe(0);
     });
 
-    // it('supports `false` values for checkbox widgets', () => {
-    //   const updateDocListListener = jest.fn();
-    //   const dummyProps = createInitialProps(filtersFixtures.data2, {
-    //     filtersActive: filtersFixtures.filtersActive3,
-    //     updateDocList: updateDocListListener,
-    //   });
+//     it('supports `false` values for checkbox widgets', () => {
+//       const updateDocListListener = jest.fn();
+//       const dummyProps = createInitialProps(filtersFixtures.data2, {
+//         filtersActive: filtersFixtures.filtersActive3,
+//         updateDocList: updateDocListListener,
+//       });
 
-    //   const store = mockStore(initialState);
-    //   const wrapper = mount(
-    //     <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-    //       <Provider store={store}>
-    //         <div className="document-lists-wrapper">
-    //           <Filters {...dummyProps} />
-    //         </div>
-    //       </Provider>
-    //     </ShortcutProvider>
-    //   );
+//       const store = mockStore(initialState);
+//       const wrapper = mount(
+//         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+//           <Provider store={store}>
+//             <div className="document-lists-wrapper">
+//               <Filters {...dummyProps} />
+//             </div>
+//           </Provider>
+//         </ShortcutProvider>
+//       );
+// console.log(wrapper.debug())
+//       wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+//       expect(wrapper.find('.filters-overlay').length).toBe(1);
+//       expect(wrapper.find('.filter-option-default').length).toBe(0);
+//       expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+//       expect(
+//         wrapper.find('.form-field-Processed .input-checkbox-tick.checked')
+//           .length
+//       ).toBe(1);
 
-    //   wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
-    //   expect(wrapper.find('.filters-overlay').length).toBe(1);
-    //   expect(wrapper.find('.filter-option-default').length).toBe(0);
-    //   expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
-    //   expect(
-    //     wrapper.find('.form-field-Processed .input-checkbox-tick.checked')
-    //       .length
-    //   ).toBe(1);
+//       wrapper
+//         .find('.form-field-Processed input[type="checkbox"]')
+//         .simulate('change', { target: { checked: false } });
+//       wrapper.update();
 
-    //   wrapper
-    //     .find('.form-field-Processed input[type="checkbox"]')
-    //     .simulate('change', { target: { checked: false } });
-    //   wrapper.update();
+//       expect(
+//         wrapper.find(
+//           '.form-field-Processed .input-checkbox-tick.input-state-false'
+//         ).length
+//       ).toBe(1);
+//       expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+//       wrapper
+//         .find('.filter-widget .filter-btn-wrapper .applyBtn')
+//         .simulate('click');
+//       wrapper.update();
 
-    //   expect(
-    //     wrapper.find(
-    //       '.form-field-Processed .input-checkbox-tick.input-state-false'
-    //     ).length
-    //   ).toBe(1);
-    //   expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
-    //   wrapper
-    //     .find('.filter-widget .filter-btn-wrapper .applyBtn')
-    //     .simulate('click');
-    //   wrapper.update();
+//       const filterResult = Immutable.Map({
+//         default: {
+//           defaultVal: false,
+//           filterId: 'default',
+//           parameters: [
+//             {
+//               parameterName: 'Processed',
+//               value: false,
+//               valueTo: '',
+//               defaultValue: null,
+//               defaultValueTo: null,
+//             },
+//           ],
+//         },
+//       });
 
-    //   const filterResult = Immutable.Map({
-    //     default: {
-    //       defaultVal: false,
-    //       filterId: 'default',
-    //       parameters: [
-    //         {
-    //           parameterName: 'Processed',
-    //           value: false,
-    //           valueTo: '',
-    //           defaultValue: null,
-    //           defaultValueTo: null,
-    //         },
-    //       ],
-    //     },
-    //   });
-
-    //   expect(updateDocListListener).toBeCalledWith(filterResult);
-    // });
+//       expect(updateDocListListener).toBeCalledWith(filterResult);
+//     });
 
     // it('supports filters without parameters', () => {
     //   const updateDocListListener = jest.fn();
