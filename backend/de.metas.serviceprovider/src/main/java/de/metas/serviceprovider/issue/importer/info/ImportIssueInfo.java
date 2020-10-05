@@ -108,6 +108,10 @@ public class ImportIssueInfo
 	@NonNull
 	ImmutableList<IssueLabel> issueLabels;
 
+	@Nullable
+	LocalDate deliveredDate;
+
+
 	public String getSearchKey()
 	{
 		return externalIssueNo != null

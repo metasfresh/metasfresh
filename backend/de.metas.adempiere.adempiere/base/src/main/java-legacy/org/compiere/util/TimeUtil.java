@@ -16,15 +16,14 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static java.util.concurrent.TimeUnit.DAYS;
-import static java.util.concurrent.TimeUnit.HOURS;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import com.google.common.base.Stopwatch;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,16 +45,14 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.base.Stopwatch;
-
-import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Time Utilities
@@ -1613,7 +1610,7 @@ public class TimeUtil
 		return localDate;
 	}
 
-	public static LocalDate asLocalDate(final Timestamp ts)
+	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
 		return ts != null
 				? ts.toLocalDateTime().toLocalDate()
