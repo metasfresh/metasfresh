@@ -63,7 +63,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.user.UserRepository;
-import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
@@ -82,10 +81,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -340,8 +339,8 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final I_M_Product productRecord = load(olCand.getProductId(), I_M_Product.class);
 			assertThat(productRecord.getValue()).isEqualTo(request.getProduct().getCode());
 
-			final String x12DE355 = uomDAO.getX12DE355ById(UomId.ofRepoId(productRecord.getC_UOM_ID()));
-			assertThat(x12DE355).isEqualTo(request.getProduct().getUomCode());
+			final X12DE355 x12DE355 = uomDAO.getX12DE355ById(UomId.ofRepoId(productRecord.getC_UOM_ID()));
+			assertThat(x12DE355.getCode()).isEqualTo(request.getProduct().getUomCode());
 		}
 		expect(olCands).toMatchSnapshot();
 	}
