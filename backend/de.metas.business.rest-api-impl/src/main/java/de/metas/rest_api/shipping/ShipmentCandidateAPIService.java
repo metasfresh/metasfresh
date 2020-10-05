@@ -281,10 +281,13 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
-				.companyName(CoalesceUtil.coalesce(bpartner.getCompanyName(), bpartner.getName()))
+				.companyName(CoalesceUtil.coalesce(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
 				.street(splitStreetAndHouseNumber.getLeft())
 				.streetNo(splitStreetAndHouseNumber.getRight())
+				.addressSuffix1(location.getAddress2())
+				.addressSuffix2(location.getAddress3())
+				.addressSuffix3(location.getAddress4())
 				.postal(postal)
 				.city(city)
 				.countryCode(location.getCountryCode())
