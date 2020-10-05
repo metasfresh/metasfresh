@@ -16,7 +16,7 @@ const mainFilterClasses = `btn btn-filter btn-meta-outline-secondary btn-sm togg
  * @module FiltersFrequent
  * @extends PureComponent
  */
-class FiltersFrequent extends PureComponent {
+class FiltersNotIncluded extends PureComponent {
   state = { openFilterId: null };
   deviceType = null;
 
@@ -35,9 +35,8 @@ class FiltersFrequent extends PureComponent {
 
   /**
    * @method findActiveFilter
-   * @summary ToDo: Describe the method
+   * @summary Returns the active object filter from the array of active filters by the given id passed as parameter
    * @param {*} id
-   * @todo Write the documentation
    */
   findActiveFilter = (id) => {
     const { active } = this.props;
@@ -47,8 +46,7 @@ class FiltersFrequent extends PureComponent {
 
   /**
    * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary closes the dropdown in case some click outside event happen
    */
   handleClickOutside = () => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
@@ -191,7 +189,7 @@ class FiltersFrequent extends PureComponent {
   }
 }
 
-FiltersFrequent.propTypes = {
+FiltersNotIncluded.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
@@ -209,4 +207,4 @@ FiltersFrequent.propTypes = {
   filterId: PropTypes.string,
 };
 
-export default onClickOutside(FiltersFrequent);
+export default onClickOutside(FiltersNotIncluded);

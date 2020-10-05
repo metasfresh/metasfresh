@@ -5,15 +5,16 @@ import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
 
-import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
-import { initialState as appHandlerState } from '../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../reducers/windowHandler';
-import { filtersToMap } from '../../actions/FiltersActions';
+import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import { initialState as appHandlerState } from '../../../reducers/appHandler';
+import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 
-import Filters from '../../components/filters/Filters';
-import filtersFixtures from '../../../test_setup/fixtures/filters.json';
-import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../test_setup/fixtures/keymap.json';
+import Filters from '../../../components/filters/Filters';
+import filtersFixtures from '../../../../test_setup/fixtures/filters.json';
+import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
+import keymap from '../../../../test_setup/fixtures/keymap.json';
+import filterData from '../../../../test_setup/fixtures/filters/filterData.json';
+import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive.json';
 
 const mockStore = configureStore([]);
 
@@ -37,12 +38,6 @@ const createInitialProps = function(
   basicFixtures = filtersFixtures.data1,
   additionalProps = {}
 ) {
-  const filterData = additionalProps.filters
-    ? additionalProps.filters
-    : basicFixtures.filters;
-  const filtersActive = additionalProps.filtersActive
-    ? additionalProps.filtersActive
-    : basicFixtures.filtersActive;
   const initialValuesNulled = additionalProps.initialValuesNulled
     ? additionalProps.initialValuesNulled
     : basicFixtures.initialValuesNulled;
@@ -52,8 +47,8 @@ const createInitialProps = function(
     resetInitialValues: jest.fn(),
     updateDocList: jest.fn(),
     ...additionalProps,
-    filterData: filtersToMap(filterData),
-    filtersActive: filtersToMap(filtersActive),
+    filterData,
+    filtersActive,
     initialValuesNulled: Immutable.Map(initialValuesNulled),
   };
 };

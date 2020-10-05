@@ -13,8 +13,8 @@ import {
   parseToPatch,
 } from '../../actions/FiltersActions';
 
-import FiltersFrequent from './FiltersFrequent';
-import FiltersNotFrequent from './FiltersNotFrequent';
+import FiltersNotIcluded from './FiltersNotIncluded';
+import FiltersIncluded from './FiltersIncluded';
 import deepUnfreeze from 'deep-unfreeze';
 import { getEntityRelatedId } from '../../reducers/filters';
 
@@ -155,7 +155,7 @@ class Filters extends PureComponent {
               // we are rendering FiltersFrequent layout. Note: this is adaptation over previous
               // funtionality that used the 'frequent' flag (was ditched in favour of this one).
               return (
-                <FiltersNotFrequent
+                <FiltersIncluded
                   key={item.caption}
                   {...{
                     activeFiltersCaptions,
@@ -179,7 +179,7 @@ class Filters extends PureComponent {
             }
             if (!item.includedFilters) {
               return (
-                <FiltersFrequent
+                <FiltersNotIcluded
                   {...{
                     activeFiltersCaptions,
                     windowType,

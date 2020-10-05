@@ -8,10 +8,10 @@ import FiltersItem from './FiltersItem';
 
 /**
  * @file Class based component.
- * @module FiltersNotFrequent
+ * @module FiltersIncluded
  * @extends Component
  */
-class FiltersNotFrequent extends PureComponent {
+class FiltersIncluded extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -188,7 +188,7 @@ class FiltersNotFrequent extends PureComponent {
   }
 }
 
-FiltersNotFrequent.propTypes = {
+FiltersIncluded.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
@@ -206,4 +206,4 @@ FiltersNotFrequent.propTypes = {
   dropdownToggled: PropTypes.any,
 };
 
-export default onClickOutside(FiltersNotFrequent);
+export default onClickOutside(FiltersIncluded);
