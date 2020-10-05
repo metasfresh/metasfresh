@@ -16,6 +16,7 @@ import keymap from '../../../../test_setup/fixtures/keymap.json';
 import filterData from '../../../../test_setup/fixtures/filters/filterData.json';
 import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive.json';
 import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
+import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
 
 const mockStore = configureStore([]);
 
@@ -182,67 +183,75 @@ describe('Filters tests', () => {
       expect(wrapper.find('.filters-overlay').length).toBe(0);
     });
 
-//     it('supports `false` values for checkbox widgets', () => {
-//       const updateDocListListener = jest.fn();
-//       const dummyProps = createInitialProps(filtersFixtures.data2, {
-//         filtersActive: filtersFixtures.filtersActive3,
-//         updateDocList: updateDocListListener,
-//       });
-
-//       const store = mockStore(initialState);
-//       const wrapper = mount(
-//         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-//           <Provider store={store}>
-//             <div className="document-lists-wrapper">
-//               <Filters {...dummyProps} />
-//             </div>
-//           </Provider>
-//         </ShortcutProvider>
-//       );
+    it('supports `false` values for checkbox widgets', () => {
+      const updateDocListListener = jest.fn();
+      const dummyProps = createInitialProps(undefined, {
+        filtersActive: filtersFixtures.filtersActive3,
+        updateDocList: updateDocListListener,
+      });
+      const initialState = createStore({
+        windowHandler: {
+          allowShortcut: true,
+          modal: {
+            visible: false,
+          },
+        },
+        filters: filtersStoreTwo,
+      });
+      const store = mockStore(initialState);
+      const wrapper = mount(
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+          <Provider store={store}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
 // console.log(wrapper.debug())
-//       wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
-//       expect(wrapper.find('.filters-overlay').length).toBe(1);
-//       expect(wrapper.find('.filter-option-default').length).toBe(0);
-//       expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
-//       expect(
-//         wrapper.find('.form-field-Processed .input-checkbox-tick.checked')
-//           .length
-//       ).toBe(1);
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+      expect(wrapper.find('.filters-overlay').length).toBe(1);
+      expect(wrapper.find('.filter-option-default').length).toBe(0);
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+      expect(
+        wrapper.find('.form-field-Processed .input-checkbox-tick.checked')
+          .length
+      ).toBe(1);
 
-//       wrapper
-//         .find('.form-field-Processed input[type="checkbox"]')
-//         .simulate('change', { target: { checked: false } });
-//       wrapper.update();
+      wrapper
+        .find('.form-field-Processed input[type="checkbox"]')
+        .simulate('change', { target: { checked: false } });
+      wrapper.update();
 
-//       expect(
-//         wrapper.find(
-//           '.form-field-Processed .input-checkbox-tick.input-state-false'
-//         ).length
-//       ).toBe(1);
-//       expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
-//       wrapper
-//         .find('.filter-widget .filter-btn-wrapper .applyBtn')
-//         .simulate('click');
-//       wrapper.update();
+      expect(
+        wrapper.find(
+          '.form-field-Processed .input-checkbox-tick.input-state-false'
+        ).length
+      ).toBe(1);
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+      wrapper
+        .find('.filter-widget .filter-btn-wrapper .applyBtn')
+        .simulate('click');
+      wrapper.update();
 
-//       const filterResult = Immutable.Map({
-//         default: {
-//           defaultVal: false,
-//           filterId: 'default',
-//           parameters: [
-//             {
-//               parameterName: 'Processed',
-//               value: false,
-//               valueTo: '',
-//               defaultValue: null,
-//               defaultValueTo: null,
-//             },
-//           ],
-//         },
-//       });
+      const filterResult = Immutable.Map({
+        default: {
+          defaultVal: false,
+          filterId: 'default',
+          parameters: [
+            {
+              parameterName: 'Processed',
+              value: false,
+              valueTo: '',
+              defaultValue: null,
+              defaultValueTo: null,
+            },
+          ],
+        },
+      });
 
-//       expect(updateDocListListener).toBeCalledWith(filterResult);
-//     });
+      expect(updateDocListListener).toBeCalledWith(filterResult);
+    });
 
     // it('supports filters without parameters', () => {
     //   const updateDocListListener = jest.fn();
