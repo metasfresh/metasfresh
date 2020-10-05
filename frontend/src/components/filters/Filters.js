@@ -129,7 +129,7 @@ class Filters extends PureComponent {
 
     const flatActiveFilterIds =
       filtersActive !== null ? filtersActive.map((item) => item.filterId) : [];
-console.log(flatActiveFilterIds)
+
     return (
       <div
         className="filter-wrapper js-not-unselect"
