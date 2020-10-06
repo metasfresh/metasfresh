@@ -18,6 +18,7 @@ import {
 } from '../../actions/FiltersActions';
 import * as ACTION_TYPES from '../../constants/FilterTypes';
 import filtersData from '../../../test_setup/fixtures/filters/filtersActionsMock.json';
+import filtersDataClearAll from '../../../test_setup/fixtures/filters/filtersDataClearAllMock.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -41,6 +42,21 @@ describe('FiltersActions general', () => {
 
     const store = mockStore();
     store.dispatch(createFilter({ id: '540092_540092-FF', data: filtersData }));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  it(`dispatches 'CLEAR_ALL_FILTERS' action when clearing the filters`, () => {
+    const expectedActions = [
+      {
+        type: ACTION_TYPES.CLEAR_ALL_FILTERS,
+        payload: { id: '143_143-E', data: filtersDataClearAll },
+      },
+    ];
+
+    const store = mockStore();
+    store.dispatch(
+      clearAllFilters({ id: '143_143-E', data: filtersDataClearAll })
+    );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 });
