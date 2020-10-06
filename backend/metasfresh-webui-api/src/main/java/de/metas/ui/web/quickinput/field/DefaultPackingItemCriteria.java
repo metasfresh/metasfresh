@@ -32,6 +32,8 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+
+import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -61,6 +63,9 @@ public class DefaultPackingItemCriteria
 
 	@Nullable
 	private SOTrx soTrx;
+	
+	@NonNull
+	private ClientId clientId;
 
 	public static Optional<DefaultPackingItemCriteria> of(final I_C_Order order, final ProductId productId)
 	{
@@ -68,6 +73,7 @@ public class DefaultPackingItemCriteria
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(order.getDatePromised());
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
 
 		final boolean anyNull = Stream.of(bpartnerLocationId, pricingSystemId, date, productId).anyMatch(Objects::isNull);
 
@@ -82,6 +88,7 @@ public class DefaultPackingItemCriteria
 						.pricingSystemId(pricingSystemId)
 						.date(date)
 						.soTrx(soTrx)
+						.clientId(clientId)
 						.build() );
 	}
 
@@ -90,7 +97,8 @@ public class DefaultPackingItemCriteria
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(invoice.getDateInvoiced());
-
+		final ClientId clientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
+		
 		final boolean anyNull = Stream.of(bpartnerLocationId,priceListId,date, productId).anyMatch(Objects::isNull);
 
 		if (anyNull) {
@@ -103,6 +111,7 @@ public class DefaultPackingItemCriteria
 						.priceListId(priceListId)
 						.date(date)
 						.bPartnerLocationId(bpartnerLocationId)
+						.clientId(clientId)
 						.build());
 	}
 }
