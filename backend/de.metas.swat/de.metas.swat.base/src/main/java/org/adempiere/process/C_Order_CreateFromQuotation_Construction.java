@@ -11,6 +11,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -124,7 +125,8 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 		getResult().setRecordToOpen(
 				TableRecordReference.of(salesOrder),
 				orderWindowId.get().getRepoId(), // adWindowId
-				OpenTarget.SingleDocument);
+				OpenTarget.SingleDocument,
+				ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB);
 
 		return MSG_OK;
 	}
