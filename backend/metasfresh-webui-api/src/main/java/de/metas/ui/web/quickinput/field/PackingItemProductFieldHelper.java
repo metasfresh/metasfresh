@@ -92,7 +92,7 @@ public class PackingItemProductFieldHelper
 			return Optional.empty();
 		}
 
-		final boolean enforcePrecisePricePerHUItemProduct = sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false);
+		final boolean enforcePrecisePricePerHUItemProduct = sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false, Env.getAD_Client_ID());
 		
 		// TODO: check ASI too
 		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
