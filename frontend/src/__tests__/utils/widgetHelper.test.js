@@ -6,6 +6,7 @@ import {
   validatePrecision,
   getFormatForDateField,
   getFormattedDate,
+  getClassNames,
 } from '../../utils/widgetHelpers';
 import {
   DATE_FORMAT,
@@ -14,6 +15,66 @@ import {
 } from '../../constants/Constants';
 
 describe('Widget helpers', () => {
+  describe('getClassNames', () => {
+    class Widget {
+      constructor(props) {
+        this.props = props;
+
+        this.getClassNames = getClassNames.bind(this);
+      }
+    }
+
+    it(`returns default values`, () => {
+      const widget = new Widget({ widgetData: [{}] });
+      const classnames = widget.getClassNames();
+
+      expect(classnames).toEqual('input-block input-secondary pulse-off');
+    });
+
+    it(`handles icon/forcedPrimary parameters`, () => {
+      const widget = new Widget({ widgetData: [{}] });
+      const classnames = widget.getClassNames({ icon: true, forcedPrimary: true });
+
+      expect(classnames).toContain('input-icon-container');
+      expect(classnames).toContain('input-primary');
+    });
+
+    it(`return proper values from props`, () => {
+      const props = {
+        widgetData: [{
+          value: '',
+          readonly: true,
+          mandatory: true,
+          validStatus: {
+            valid: false,
+          },
+        }],
+        isFocused: true,
+        gridAlign: 'foo',
+        type: 'primary',
+        updated: true,
+        rowId: 1,
+        isModal: false,
+      }
+      const widget = new Widget(props);
+      const classnames = widget.getClassNames();
+      const expected = [
+        'input-block',
+        'input-focused',
+        'input-disabled',
+        'input-mandatory',
+        'text-xs-foo',
+        'input-primary',
+        'pulse-on',
+        'input-table',
+      ];
+
+      expect(classnames.split(' ')).toEqual(
+        expect.arrayContaining(expected),
+      );
+    });
+  });
+
   describe('getFormatForDateField', () => {
     it(`returns default format`, () => {
       const widgetType = 'Text';
@@ -62,7 +123,7 @@ describe('Widget helpers', () => {
     });
   });
 
-  describe('is NumberField function', () => {
+  describe('isNumberField function', () => {
     it('createAmmount works correctly', () => {
       const resultToCheckOne = isNumberField('Integer');
       expect(resultToCheckOne).toBe(true);
