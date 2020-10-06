@@ -208,14 +208,14 @@ describe('Filters tests', () => {
           </Provider>
         </ShortcutProvider>
       );
-// console.log(wrapper.debug())
+
       wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
       expect(wrapper.find('.filters-overlay').length).toBe(1);
       expect(wrapper.find('.filter-option-default').length).toBe(0);
       expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+
       expect(
-        wrapper.find('.form-field-Processed .input-checkbox-tick.checked')
-          .length
+        wrapper.find('.form-field-Processed input[type="checkbox"]').length
       ).toBe(1);
 
       wrapper
@@ -224,32 +224,33 @@ describe('Filters tests', () => {
       wrapper.update();
 
       expect(
-        wrapper.find(
-          '.form-field-Processed .input-checkbox-tick.input-state-false'
-        ).length
-      ).toBe(1);
+        wrapper.find('.form-field-Processed input[type="checkbox"]').checked
+      ).toBe(undefined);
+
       expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
       wrapper
         .find('.filter-widget .filter-btn-wrapper .applyBtn')
         .simulate('click');
       wrapper.update();
 
-      const filterResult = Immutable.Map({
-        default: {
-          defaultVal: false,
+      const filterResult = [
+        {
           filterId: 'default',
           parameters: [
             {
-              parameterName: 'Processed',
-              value: false,
-              valueTo: '',
+              parameterName: 'C_BPartner_ID',
+              value: {
+                key: '2156429',
+                caption: '1000003_TestVendor',
+                description: '1000003_TestVendor',
+              },
+              valueTo: null,
               defaultValue: null,
               defaultValueTo: null,
             },
           ],
         },
-      });
-
+      ];
       expect(updateDocListListener).toBeCalledWith(filterResult);
     });
 
