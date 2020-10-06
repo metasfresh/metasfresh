@@ -7,14 +7,10 @@ import {
   deleteFilter,
   updateNotValidFields,
   updateActiveFilter,
-  // updateInlineFilter, - there is an issue on BE side and cannot use Product Proposals to be able to write the test for this
+  updateInlineFilter,
   updateFilterWidgetShown,
   clearStaticFilters,
 } from '../../actions/FiltersActions';
-
-/**
- * TODO: Also write test for updateInlineFilter
- */
 
 import * as ACTION_TYPES from '../../constants/FilterTypes';
 import filtersData from '../../../test_setup/fixtures/filters/filtersActionsMock.json';
@@ -155,6 +151,22 @@ describe('FiltersActions general', () => {
       expect(store.getActions()[1].payload).toEqual({
         filterId: '500221_500221-G',
         data: true,
+      });
+    });
+  });
+
+  it(`dispatches 'UPDATE_INLINE_FILTER' action `, () => {
+    const store = mockStore();
+    store.dispatch(createFilter({ id: '500221_500221-F', data: filtersData }));
+
+    Promise.all([
+      store.dispatch(
+        updateInlineFilter({ filterId: '500221_500221-F', data: {} })
+      ),
+    ]).then(() => {
+      expect(store.getActions()[1].payload).toEqual({
+        filterId: '500221_500221-F',
+        data: {},
       });
     });
   });
