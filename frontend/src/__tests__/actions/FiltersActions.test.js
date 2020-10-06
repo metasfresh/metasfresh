@@ -1,10 +1,5 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
-import produce from 'immer';
-import merge from 'merge';
-
-import tablesHandler, { tableState, getTableId } from '../../reducers/tables';
-import viewHandler from '../../reducers/viewHandler';
 
 import {
   clearAllFilters,
@@ -16,6 +11,7 @@ import {
   updateFilterWidgetShown,
   clearStaticFilters,
 } from '../../actions/FiltersActions';
+
 import * as ACTION_TYPES from '../../constants/FilterTypes';
 import filtersData from '../../../test_setup/fixtures/filters/filtersActionsMock.json';
 import filtersDataClearAll from '../../../test_setup/fixtures/filters/filtersDataClearAllMock.json';
@@ -58,5 +54,60 @@ describe('FiltersActions general', () => {
       clearAllFilters({ id: '143_143-E', data: filtersDataClearAll })
     );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  it(`dispatches 'UPDATE_FLAG_NOTVALIDFIELDS' action `, () => {
+    const store = mockStore();
+    store.dispatch(
+      updateNotValidFields({ id: '540092_540092-FF', data: filtersData })
+    );
+    expect(store.getActions()[0].payload.filterId).toEqual(undefined);
+    expect(store.getActions()[0].type).toEqual(
+      ACTION_TYPES.UPDATE_FLAG_NOTVALIDFIELDS
+    );
+  });
+
+  it(`dispatches 'UPDATE_ACTIVE_FILTER' action when creating the filters`, () => {
+    const expectedActionsOnCreation = [
+      {
+        type: ACTION_TYPES.CREATE_FILTER,
+        payload: { id: '540092_540092-FF', data: filtersData },
+      },
+    ];
+
+    const store = mockStore();
+    store.dispatch(createFilter({ id: '540092_540092-FF', data: filtersData }));
+    expect(store.getActions()).toEqual(
+      expect.arrayContaining(expectedActionsOnCreation)
+    );
+
+    const activeFilter = [
+      {
+        filterId: 'default',
+        parameters: [
+          {
+            parameterName: 'C_BPartner_ID',
+            value: {
+              key: '2156429',
+              caption: '1000003_TestVendor',
+              description: '1000003_TestVendor',
+            },
+            valueTo: '',
+            defaultValue: null,
+            defaultValueTo: null,
+          },
+        ],
+      },
+    ];
+    store.dispatch(
+      updateActiveFilter({ id: '540092_540092-FF', data: activeFilter })
+    );
+    expect(store.getActions()[1].type).toEqual(
+      ACTION_TYPES.UPDATE_ACTIVE_FILTER
+    );
+    expect(store.getActions()[1].payload).toEqual({
+      id: '540092_540092-FF',
+      data: activeFilter,
+    });
   });
 });
