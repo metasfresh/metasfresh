@@ -178,7 +178,7 @@ public final class ProductsProposalRowsLoader
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
 						.thenComparing(ProductsProposalRow::getProductName))
-				.filter(p -> Services.get(IProductDAO.class).getById(p.getProductId()).isDiscontinued())
+				.filter(p -> !Services.get(IProductDAO.class).getById(p.getProductId()).isDiscontinued())
 				.collect(ImmutableList.toImmutableList());
 	}
 
