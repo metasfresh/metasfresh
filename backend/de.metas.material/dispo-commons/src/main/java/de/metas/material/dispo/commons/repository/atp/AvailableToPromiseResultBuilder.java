@@ -1,19 +1,17 @@
 package de.metas.material.dispo.commons.repository.atp;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.material.commons.attributes.AttributesKeyMatcher;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -105,24 +103,7 @@ final class AvailableToPromiseResultBuilder
 
 	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
-		boolean addedToAtLeastOneGroup = false;
-		for (final AvailableToPromiseResultBucket bucket : buckets)
-		{
-			if (bucket.addQtyToAllMatchingGroups(request))
-			{
-				addedToAtLeastOneGroup = true;
-			}
-		}
-
-		if (!addedToAtLeastOneGroup)
-		{
-			throw new AdempiereException("No matching group found for AddToResultGroupRequest")
-					.appendParametersToMessage()
-					.setParameter("request", request)
-					.setParameter("buckets", buckets)
-					.setParameter("this", this);
-		}
-
+		buckets.forEach(bucket -> bucket.addQtyToAllMatchingGroups(request));
 	}
 
 	public void addToNewGroupIfFeasible(@NonNull final AddToResultGroupRequest request)
