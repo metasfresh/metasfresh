@@ -142,4 +142,20 @@ describe('FiltersActions general', () => {
       });
     });
   });
+
+  it(`dispatches 'CLEAR_STATIC_FILTERS' action `, () => {
+    const store = mockStore();
+    store.dispatch(createFilter({ id: '500221_500221-G', data: filtersData }));
+
+    Promise.all([
+      store.dispatch(
+        clearStaticFilters({ filterId: '500221_500221-G', data: true })
+      ),
+    ]).then(() => {
+      expect(store.getActions()[1].payload).toEqual({
+        filterId: '500221_500221-G',
+        data: true,
+      });
+    });
+  });
 });
