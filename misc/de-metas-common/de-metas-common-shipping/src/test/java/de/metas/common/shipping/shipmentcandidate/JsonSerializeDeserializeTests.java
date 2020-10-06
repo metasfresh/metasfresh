@@ -84,15 +84,13 @@ class JsonSerializeDeserializeTests
 				.documentNo("dNo")
 				.movementQuantity(BigDecimal.ONE)
 				.productSearchKey("p_key")
-				.trackingNumbers(ImmutableList.of("tr-no1"))
-				.movementDate(LocalDateTime.of(2020,7,24,18,13))
+				.movementDate(LocalDateTime.of(2020, 7, 24, 18, 13))
 				.attributes(ImmutableList.of(mockAttributeInstance()))
 				.shipToLocation(location)
 				.build();
 
 		final JsonCreateShipmentRequest jsonCreateShipmentRequest = JsonCreateShipmentRequest
 				.builder()
-				.shipperCode("shippercode")
 				.createShipmentInfoList(ImmutableList.of(jsonCreateShipmentInfo))
 				.build();
 
@@ -112,7 +110,7 @@ class JsonSerializeDeserializeTests
 	@Test
 	void product() throws IOException
 	{
-		final JsonProduct productOrig = JsonProduct.builder().productNo("productNo").name("name").build();
+		final JsonProduct productOrig = JsonProduct.builder().productNo("productNo").name("name").stocked(true).build();
 
 		assertOK(productOrig, JsonProduct.class);
 	}
@@ -142,8 +140,15 @@ class JsonSerializeDeserializeTests
 				.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 48))
 				.poReference("poReference")
 				.orderDocumentNo("orderDocumentNo")
+				.deliveryInfo("deliveryInfo")
 				.product(createJsonProduct())
-				.customer(JsonCustomer.builder().street("street").streetNo("streetNo").postal("postal").city("city").shipmentAllocationBestBeforePolicy("E").build())
+				.customer(JsonCustomer.builder()
+						.companyName("companyName")
+						.street("street").streetNo("streetNo")
+						.addressSuffix1("addressSuffix1")
+						.addressSuffix2("addressSuffix2")
+						.addressSuffix3("addressSuffix3")
+						.postal("postal").city("city").shipmentAllocationBestBeforePolicy("E").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.ONE).uomCode("PCE").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
 				.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
@@ -153,6 +158,7 @@ class JsonSerializeDeserializeTests
 						.build())
 				.shipperInternalSearchKey("shipperInternalSearchKey")
 				.deliveredQtyNetPrice(BigDecimal.ZERO)
+				.qtyToDeliverNetPrice(BigDecimal.TEN)
 				.orderedQtyNetPrice(BigDecimal.TEN)
 				.build();
 
@@ -161,7 +167,7 @@ class JsonSerializeDeserializeTests
 
 	private JsonProduct createJsonProduct()
 	{
-		return JsonProduct.builder().productNo("productNo").name("name").build();
+		return JsonProduct.builder().productNo("productNo").name("name").stocked(true).build();
 	}
 
 	@Test
@@ -177,9 +183,13 @@ class JsonSerializeDeserializeTests
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 1))
 						.poReference("poReference_1")
 						.orderDocumentNo("orderDocumentNo_1")
-						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").documentNote("documentNote_1").build())
+						.deliveryInfo("deliveryInfo")
+						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").stocked(true).documentNote("documentNote_1").build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").shipmentAllocationBestBeforePolicy("E").build())
+						.orderedQtyNetPrice(BigDecimal.ONE)
+						.qtyToDeliverNetPrice(BigDecimal.ONE)
+						.deliveredQtyNetPrice(BigDecimal.TEN)
 						.build())
 				.item(JsonResponseShipmentCandidate.builder()
 						.id(JsonMetasfreshId.of(20))
@@ -187,9 +197,13 @@ class JsonSerializeDeserializeTests
 						.dateOrdered(LocalDateTime.of(2020, Month.JULY, 14, 5, 2))
 						.poReference("poReference_2")
 						.orderDocumentNo("orderDocumentNo_2")
-						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").build())
+						.deliveryInfo("deliveryInfo")
+						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").stocked(true).build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 						.customer(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").shipmentAllocationBestBeforePolicy("E").build())
+						.orderedQtyNetPrice(BigDecimal.ONE)
+						.qtyToDeliverNetPrice(BigDecimal.ONE)
+						.deliveredQtyNetPrice(BigDecimal.TEN)
 						.build())
 				.build();
 
@@ -261,7 +275,7 @@ class JsonSerializeDeserializeTests
 				.attributeName("name")
 				.valueStr("valueStr")
 				.valueNumber(BigDecimal.ONE)
-				.valueDate(LocalDate.of(2020,7,24))
+				.valueDate(LocalDate.of(2020, 7, 24))
 				.attributeCode("atrCode")
 				.build(); // not a real case but it's fine for testing
 	}

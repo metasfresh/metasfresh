@@ -12,9 +12,8 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.IImportProcess;
-import de.metas.impexp.processing.product.ProductPriceCreateRequest;
-import de.metas.impexp.processing.product.ProductPriceImporter;
 import de.metas.location.ICountryDAO;
+import de.metas.pricing.service.ProductPriceCreateRequest;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery.VATType;

@@ -1,26 +1,8 @@
 package de.metas.manufacturing.rest_api;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
-import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.ManufacturingOrderQuery;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.common.manufacturing.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
@@ -32,7 +14,7 @@ import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit.ManufacturingOrderExportAuditBuilder;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
@@ -50,6 +32,23 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 /*
  * #%L
@@ -84,7 +83,7 @@ final class ManufacturingOrdersExportCommand
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
-	private final ManufacturingOrderAuditRepository orderAuditRepo;
+	private final ManufacturingOrderExportAuditRepository orderAuditRepo;
 	private final ProductRepository productRepo;
 
 	// params
@@ -98,7 +97,7 @@ final class ManufacturingOrdersExportCommand
 
 	@Builder
 	private ManufacturingOrdersExportCommand(
-			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
+			@NonNull final ManufacturingOrderExportAuditRepository orderAuditRepo,
 			@NonNull final ProductRepository productRepo,
 			//
 			@NonNull final Instant canBeExportedFrom,
@@ -112,14 +111,15 @@ final class ManufacturingOrdersExportCommand
 				.limit(limit)
 				.canBeExportedFrom(canBeExportedFrom)
 				.exportStatus(APIExportStatus.Pending)
+				.onlyCompleted(true)
 				.build();
 		this.adLanguage = adLanguage;
 	}
 
 	public JsonResponseManufacturingOrdersBulk execute()
 	{
-		final ExportTransactionId transactionKey = ExportTransactionId.random();
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey.toJson()))
+		final APITransactionId transactionKey = APITransactionId.random();
+		try (final MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey.toJson()))
 		{
 			final List<I_PP_Order> orders = getOrders();
 			if (orders.isEmpty())
@@ -202,6 +202,7 @@ final class ManufacturingOrdersExportCommand
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight())
+				.stocked(product.isStocked())
 				.build();
 	}
 

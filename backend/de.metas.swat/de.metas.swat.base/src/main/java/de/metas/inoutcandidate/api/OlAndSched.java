@@ -22,17 +22,8 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.document.engine.DocStatus;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.ProductId;
@@ -40,6 +31,14 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * 
@@ -50,16 +49,19 @@ public final class OlAndSched
 {
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private final Optional<I_C_OrderLine> salesOrderLine;
+	private final Optional<I_C_Order> salesOrder;
 	private final IDeliverRequest deliverRequest;
 	private final BigDecimal initialSchedQtyDelivered;
 
 	@Builder
 	private OlAndSched(
 			@Nullable final org.compiere.model.I_C_OrderLine orderLineOrNull,
+			@Nullable final org.compiere.model.I_C_Order orderOrNull,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@Nullable final IDeliverRequest deliverRequest)
 	{
 		this.salesOrderLine = Optional.ofNullable(InterfaceWrapperHelper.create(orderLineOrNull, I_C_OrderLine.class));
+		this.salesOrder = Optional.ofNullable(InterfaceWrapperHelper.create(orderOrNull, I_C_Order.class));
 
 		this.shipmentSchedule = shipmentSchedule;
 
@@ -153,5 +155,11 @@ public final class OlAndSched
 	public void setShipmentScheduleLineNetAmt(final BigDecimal lineNetAmt)
 	{
 		shipmentSchedule.setLineNetAmt(lineNetAmt);
+	}
+
+	@Nullable
+	public String getSalesOrderPORef()
+	{
+		return salesOrder.map(I_C_Order::getPOReference).orElse(null);
 	}
 }

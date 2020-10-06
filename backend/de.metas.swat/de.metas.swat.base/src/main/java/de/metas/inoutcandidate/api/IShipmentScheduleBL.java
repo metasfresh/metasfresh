@@ -176,7 +176,9 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	void closePartiallyShipped_ShipmentSchedules(I_M_InOut inoutRecord);
 
-	void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched);
+	void updateExportStatus(@NonNull I_M_ShipmentSchedule schedRecord);
+
+	void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule schedRecord);
 
 	Quantity getQtyOrdered(I_M_ShipmentSchedule shipmentScheduleRecord);
 

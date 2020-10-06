@@ -49,6 +49,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -80,7 +81,6 @@ import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -161,9 +161,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	@NonNull
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
-
-	@Nullable
-	private ShipperId shipperId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -695,13 +692,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU setShipperId(@Nullable final ShipperId shipperId)
-	{
-		this.shipperId = shipperId;
-		return this;
-	}
-
-	@Override
 	public String toString()
 	{
 		return "InOutProducerFromShipmentSchedule [result=" + result
@@ -711,27 +701,34 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", lastItem=" + lastItem + "]";
 	}
 
+	/**
+	 *  Adding the tracking codes will be skipped
+	 *  if no shipperId was provided or a ShipperTransportation order was already created
+	 *  as it means the tracking codes would be added/or not by whoever created the shipper transportation
+	 *  and the corresponding packages.
+	 *
+	 *  Also note that, if they made it so far, all the candidates have the same shipperId as it's part of the aggregation key
+	 * @see ShipmentScheduleKeyValueHandler#getValues(de.metas.inoutcandidate.model.I_M_ShipmentSchedule)
+	 */
 	private void addTrackingCodes()
 	{
-		// adding the tracking codes will be skipped
-		// if no shipperId was provided or a ShipperTransportation order was already created
-		// as it means the tracking codes would be added/or not by whoever created the shipper transportation
-		// and the corresponding packages.
+		final ShipperId shipperId = currentCandidates.get(0).getShipperId();
+
 		if (shipperId == null || currentShipment.getM_ShipperTransportation_ID() > 0)
 		{
 			return;
 		}
 
-		final List<String> trackingCodes = currentCandidates
+		final List<PackageInfo> packageInfos = currentCandidates
 				.stream()
 				.map(candidate -> scheduleId2ExternalInfo.get(candidate.getShipmentScheduleId()))
 				.filter(Objects::nonNull)
-				.map(ShipmentScheduleExternalInfo::getTrackingNumbers)
+				.map(ShipmentScheduleExternalInfo::getPackageInfoList)
 				.filter(Objects::nonNull)
 				.flatMap(Collection::stream)
 				.collect(Collectors.toList());
 
-		if (trackingCodes.isEmpty())
+		if (packageInfos.isEmpty())
 		{
 			return;
 		}
@@ -739,10 +736,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(currentShipment.getAD_Org_ID()));
 
 		final AddTrackingCodesForInOutWithoutHUReq addTrackingCodesForInOutWithoutHUReq = AddTrackingCodesForInOutWithoutHUReq.builder()
-				.inOutId(InOutId.ofRepoId(currentShipment.getM_InOut_ID()))
 				.shipperId(shipperId)
-				.trackingCodes(trackingCodes)
+				.inOutId(InOutId.ofRepoId(currentShipment.getM_InOut_ID()))
 				.shipDate(TimeUtil.asZonedDateTime(currentShipment.getMovementDate(), timeZone))
+				.packageInfos(packageInfos)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId =
@@ -752,7 +749,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			final I_M_ShipperTransportation shipperTransportation = huShipperTransportationBL.getById(shipperTransportationId);
 
-			docActionBL.processEx(shipperTransportation, IDocument.ACTION_Complete, null);
+			docActionBL.processEx(shipperTransportation, IDocument.ACTION_Complete);
 		}
 	}
 

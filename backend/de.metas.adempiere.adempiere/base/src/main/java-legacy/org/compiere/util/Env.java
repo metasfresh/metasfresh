@@ -1178,7 +1178,7 @@ public final class Env
 		if (timestamp == null)
 		{
 			final Timestamp sysDate = SystemTime.asTimestamp();
-			if(!Adempiere.isUnitTestMode())
+			if (!Adempiere.isUnitTestMode())
 			{
 				// metas: tsa: added a dummy exception to be able to track it quickly
 				s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
@@ -2321,7 +2321,7 @@ public final class Env
 	 */
 	public static Timestamp parseTimestamp(@Nullable final String timestampStr)
 	{
-		if (Check.isEmpty(timestampStr, true) || isPropertyValueNull(timestampStr))
+		if (Check.isBlank(timestampStr) || isPropertyValueNull(timestampStr))
 		{
 			return null;
 		}
@@ -2342,7 +2342,10 @@ public final class Env
 			// ignore exception
 		}
 
-		throw new AdempiereException("Failed converting '" + timestampStr + "' to " + Timestamp.class);
+		throw new AdempiereException("Failed converting `" + timestampStr + "` to " + Timestamp.class + "."
+				+ "\nExpected following formats:"
+				+ "\n1. JDBC format"
+				+ "\n2. ISO8601 format: `" + DATE_PATTEN + "`, e.g. " + SystemTime.asZonedDateTime().format(DATE_FORMAT));
 	}
 
 	private static Timestamp parseTimestampUsingJDBCFormatOrNull(@NonNull final String timestampStr)

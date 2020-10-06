@@ -210,7 +210,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public ProductCategoryId getDefaultProductCategoryId()
+	public @NonNull ProductCategoryId getDefaultProductCategoryId()
 	{
 		return defaultProductCategoryCache.getOrLoad(0, this::retrieveDefaultProductCategoryId);
 	}

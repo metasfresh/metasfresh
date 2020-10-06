@@ -61,7 +61,7 @@ public class BOMCostElementPrice
 		setCostPrice(getCostPrice().withZeroComponentsCostPrice());
 	}
 
-	public void setComponentsCostPrice(CostAmount componentsCostPrice)
+	public void setComponentsCostPrice(@NonNull final CostAmount componentsCostPrice)
 	{
 		setCostPrice(getCostPrice().withComponentsCostPrice(componentsCostPrice));
 	}

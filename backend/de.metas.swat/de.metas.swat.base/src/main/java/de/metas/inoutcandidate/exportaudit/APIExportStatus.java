@@ -22,16 +22,15 @@
 
 package de.metas.inoutcandidate.exportaudit;
 
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public enum APIExportStatus implements ReferenceListAwareEnum
 {
@@ -73,7 +72,7 @@ public enum APIExportStatus implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static String toCodeOrNull(final APIExportStatus type)
+	public static String toCodeOrNull(@Nullable final APIExportStatus type)
 	{
 		return type != null ? type.getCode() : null;
 	}

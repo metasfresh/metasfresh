@@ -3069,4 +3069,28 @@ public interface I_C_Order
 	 * Column name Weight
 	 */
 	public static final String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set Delivery info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDeliveryInfo (java.lang.String DeliveryInfo);
+
+	/**
+	 * Get Delivery info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDeliveryInfo();
+
+	/** Column definition for DeliveryInfo */
+	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DeliveryInfo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DeliveryInfo", null);
+	/** Column name DeliveryInfo */
+	public static final String COLUMNNAME_DeliveryInfo = "DeliveryInfo";
+
 }

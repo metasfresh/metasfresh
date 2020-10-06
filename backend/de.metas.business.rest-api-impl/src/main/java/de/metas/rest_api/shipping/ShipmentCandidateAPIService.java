@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.shipping;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -78,9 +79,11 @@ import de.metas.rest_api.utils.RestApiUtils;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -101,7 +104,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -203,7 +205,8 @@ class ShipmentCandidateAPIService
 							.attributeSetInstance(jsonAttributeSetInstance)
 							.quantities(quantityToDeliver)
 							.orderedQty(orderedQty)
-							.dateOrdered(shipmentSchedule.getDateOrdered());
+							.dateOrdered(shipmentSchedule.getDateOrdered())
+							.numberOfItemsForSameShipment(shipmentSchedule.getNumberOfItemsForSameShipment());
 
 					setOrderReferences(itemBuilder, shipmentSchedule, orderIdToOrderRecord);
 
@@ -278,10 +281,13 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
-				.companyName(CoalesceUtil.coalesce(bpartner.getCompanyName(), bpartner.getName()))
+				.companyName(CoalesceUtil.coalesce(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
 				.street(splitStreetAndHouseNumber.getLeft())
 				.streetNo(splitStreetAndHouseNumber.getRight())
+				.addressSuffix1(location.getAddress2())
+				.addressSuffix2(location.getAddress3())
+				.addressSuffix3(location.getAddress4())
 				.postal(postal)
 				.city(city)
 				.countryCode(location.getCountryCode())
@@ -314,7 +320,8 @@ class ShipmentCandidateAPIService
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight());
+				.weight(product.getWeight())
+				.stocked(product.isStocked());
 		if (product.getDescription() != null)
 		{
 			productBuilder.description(product.getDescription().translate(adLanguage));
@@ -489,7 +496,7 @@ class ShipmentCandidateAPIService
 	private void setNetPrices(
 			@NonNull final JsonResponseShipmentCandidateBuilder candidateBuilder,
 			@NonNull final ShipmentSchedule shipmentSchedule,
-			@NonNull final Map<OrderAndLineId,I_C_OrderLine> ids2OrderLines)
+			@NonNull final Map<OrderAndLineId, I_C_OrderLine> ids2OrderLines)
 	{
 		if (shipmentSchedule.getOrderAndLineId() == null)
 		{
@@ -505,9 +512,11 @@ class ShipmentCandidateAPIService
 		}
 
 		final BigDecimal orderedQtyNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, shipmentSchedule.getOrderedQuantity());
-		final BigDecimal deliveredQtyNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, shipmentSchedule.getDeliveredQty());
+		final BigDecimal qtyToDeliverNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, shipmentSchedule.getQuantityToDeliver());
+		final BigDecimal deliveredQtyNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, shipmentSchedule.getDeliveredQuantity());
 
 		candidateBuilder.orderedQtyNetPrice(orderedQtyNetPrice);
+		candidateBuilder.qtyToDeliverNetPrice(qtyToDeliverNetPrice);
 		candidateBuilder.deliveredQtyNetPrice(deliveredQtyNetPrice);
 	}
 
@@ -536,7 +545,6 @@ class ShipmentCandidateAPIService
 
 		return orderIdToOrderRecord;
 	}
-
 
 	@NonNull
 	private ImmutableMap<OrderAndLineId, I_C_OrderLine> loadOrdersLinesById(@NonNull final IdsRegistry idsRegistry)
@@ -600,8 +608,9 @@ class ShipmentCandidateAPIService
 	{
 		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
 				.limit(limit)
-				.canBeExportedFrom(Instant.now())
+				.canBeExportedFrom(SystemTime.asInstant())
 				.exportStatus(APIExportStatus.Pending)
+				.includeWithQtyToDeliverZero(true)
 				.build();
 
 		return shipmentScheduleRepository.getBy(shipmentScheduleQuery);
@@ -624,7 +633,7 @@ class ShipmentCandidateAPIService
 	private void setShipperInternalName(
 			@NonNull final JsonResponseShipmentCandidateBuilder candidateBuilder,
 			@NonNull final ShipmentSchedule shipmentSchedule,
-			@NonNull final Map<ShipperId,String> shipperId2InternalName)
+			@NonNull final Map<ShipperId, String> shipperId2InternalName)
 	{
 		final ShipperId shipperId = shipmentSchedule.getShipperId();
 
@@ -639,7 +648,7 @@ class ShipmentCandidateAPIService
 	private void setOrderReferences(
 			@NonNull final JsonResponseShipmentCandidateBuilder candidateBuilder,
 			@NonNull final ShipmentSchedule shipmentSchedule,
-			@NonNull final Map<OrderId,I_C_Order> id2Order)
+			@NonNull final Map<OrderId, I_C_Order> id2Order)
 	{
 		final OrderId orderId = shipmentSchedule.getOrderAndLineId() != null
 				? shipmentSchedule.getOrderAndLineId().getOrderId()
@@ -654,14 +663,14 @@ class ShipmentCandidateAPIService
 
 		if (orderRecord == null)
 		{
-			logger.warn("*** WARNING: No I_C_Order was found in id2Order: {} for orderId: {}!", id2Order, orderId);
+			Loggables.withLogger(logger, Level.WARN).addLog("*** WARNING: No I_C_Order was found in id2Order: {} for orderId: {}!", id2Order, orderId);
 			return;
 		}
 
 		candidateBuilder.orderDocumentNo(orderRecord.getDocumentNo());
 		candidateBuilder.poReference(orderRecord.getPOReference());
+		candidateBuilder.deliveryInfo(orderRecord.getDeliveryInfo());
 	}
-
 
 	private static class ShipmentCandidateExportException extends AdempiereException
 	{

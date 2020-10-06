@@ -22,16 +22,18 @@ package de.metas.inoutcandidate.agg.key.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.compiere.util.Util.ArrayKey.SEPARATOR;
 
 /**
  * AggregationKey value handler for Invoice Candidates in Material Tracking
@@ -59,6 +61,14 @@ public class ReceiptScheduleKeyValueHandler implements IAggregationKeyValueHandl
 		values.add(rs.getAD_Org_ID());
 		values.add(rs.getDateOrdered());
 		values.add(rs.getC_Order_ID());
+
+		if (Check.isNotBlank(rs.getExternalResourceURL()))
+		{
+			//remove any `org.compiere.util.Util.ArrayKey.SEPARATOR` that may be present in the URL
+			final String externalResourceURL = rs.getExternalResourceURL().replaceAll(SEPARATOR, "");
+
+			values.add(externalResourceURL);
+		}
 
 		return values;
 	}

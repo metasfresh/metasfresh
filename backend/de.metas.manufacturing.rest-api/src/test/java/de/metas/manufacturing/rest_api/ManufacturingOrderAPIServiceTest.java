@@ -13,6 +13,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -26,6 +27,7 @@ import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -34,6 +36,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.JsonObjectMapperHolder;
 import de.metas.business.BusinessTestHelper;
@@ -44,6 +49,7 @@ import de.metas.common.manufacturing.JsonRequestReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
+import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrderDetail;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
@@ -51,8 +57,10 @@ import de.metas.common.manufacturing.Outcome;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonQuantity;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.document.engine.DocStatus;
+import de.metas.error.AdIssueId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.HuId;
@@ -71,8 +79,10 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
+import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAudit;
+import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditItem;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -111,10 +121,12 @@ import lombok.NonNull;
 public class ManufacturingOrderAPIServiceTest
 {
 	// Services under test:
-	private ManufacturingOrderAuditRepository auditRepo;
+	private ManufacturingOrderExportAuditRepository orderExportAuditRepo;
+	private ManufacturingOrderReportAuditRepository orderReportAuditRepo;
 	private ManufacturingOrderAPIService apiService;
 
 	// Supporting services:
+	private ObjectMapper jsonObjectMapper;
 	private IProductBL productBL;
 	private IWarehouseBL warehouseBL;
 	private IPPCostCollectorDAO costCollectorDAO;
@@ -127,6 +139,7 @@ public class ManufacturingOrderAPIServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		productBL = Services.get(IProductBL.class);
 		warehouseBL = Services.get(IWarehouseBL.class);
 		costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
@@ -134,13 +147,27 @@ public class ManufacturingOrderAPIServiceTest
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		huReservationService = new HUReservationService(new HUReservationRepository());
 
-		auditRepo = new ManufacturingOrderAuditRepository();
+		orderExportAuditRepo = new ManufacturingOrderExportAuditRepository();
+		orderReportAuditRepo = new ManufacturingOrderReportAuditRepository();
 		apiService = ManufacturingOrderAPIService.builder()
-				.orderAuditRepo(auditRepo)
+				.orderExportAuditRepo(orderExportAuditRepo)
+				.orderReportAuditRepo(orderReportAuditRepo)
 				.productRepo(new ProductRepository())
 				.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
 				.huReservationService(huReservationService)
 				.build();
+	}
+
+	private String toJsonString(final Object obj)
+	{
+		try
+		{
+			return jsonObjectMapper.writeValueAsString(obj);
+		}
+		catch (JsonProcessingException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
 	@Builder(builderMethodName = "manufacturingOrder", builderClassName = "ManufacturingOrderBuilder")
@@ -334,8 +361,8 @@ public class ManufacturingOrderAPIServiceTest
 				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isTrue();
 
-				final ExportTransactionId transactionKey = ExportTransactionId.ofString(result.getTransactionKey());
-				final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(transactionKey);
+				final APITransactionId transactionKey = APITransactionId.ofString(result.getTransactionKey());
+				final ManufacturingOrderExportAudit audit = orderExportAuditRepo.getByTransactionId(transactionKey);
 				assertAllOrdersWereExported(audit);
 			}
 
@@ -468,7 +495,7 @@ public class ManufacturingOrderAPIServiceTest
 			final I_PP_Order orderRecord = getOrderRecord(orderId);
 			assertThat(orderRecord.getExportStatus()).isEqualTo(APIExportStatus.ExportedAndForwarded.getCode());
 
-			final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(ExportTransactionId.ofString("trx1"));
+			final ManufacturingOrderExportAudit audit = orderExportAuditRepo.getByTransactionId(APITransactionId.ofString("trx1"));
 			assertThat(audit.getItems()).hasSize(1);
 			assertThat(audit.getItems().get(0).getExportStatus()).isEqualTo(APIExportStatus.ExportedAndForwarded);
 			assertThat(audit.getItems().get(0).getIssueId()).isNull();
@@ -493,7 +520,7 @@ public class ManufacturingOrderAPIServiceTest
 			final I_PP_Order orderRecord = getOrderRecord(orderId);
 			assertThat(orderRecord.getExportStatus()).isEqualTo(APIExportStatus.ExportedAndError.getCode());
 
-			final ManufacturingOrderExportAudit audit = auditRepo.getByTransactionId(ExportTransactionId.ofString("trx1"));
+			final ManufacturingOrderExportAudit audit = orderExportAuditRepo.getByTransactionId(APITransactionId.ofString("trx1"));
 			assertThat(audit.getItems()).hasSize(1);
 			assertThat(audit.getItems().get(0).getExportStatus()).isEqualTo(APIExportStatus.ExportedAndError);
 			assertThat(audit.getItems().get(0).getIssueId()).isNotNull();
@@ -591,24 +618,27 @@ public class ManufacturingOrderAPIServiceTest
 					.salesOrderLineId(salesOrderLineId)
 					.build();
 
-			final JsonResponseManufacturingOrdersReport result = apiService.report(
-					JsonRequestManufacturingOrdersReport.builder()
-							.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
-									.requestId("req1")
-									.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-									.date(SystemTime.asZonedDateTime())
-									.qtyToReceiveInStockUOM(new BigDecimal("10"))
-									.lotNumber("lot123")
-									.bestBeforeDate(LocalDate.parse("2027-06-07"))
-									.build())
-							.build());
+			final JsonRequestManufacturingOrdersReport request = JsonRequestManufacturingOrdersReport.builder()
+					.receipt(JsonRequestReceiveFromManufacturingOrder.builder()
+							.requestId("req1")
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
+							.qtyToReceiveInStockUOM(new BigDecimal("10"))
+							.lotNumber("lot123")
+							.bestBeforeDate(LocalDate.parse("2027-06-07"))
+							.build())
+					.build();
+			final JsonResponseManufacturingOrdersReport result = apiService.report(request);
 
 			//
 			// Check result
 			assertThat(result.getIssues()).isEmpty();
 			assertThat(result.getReceipts())
 					.containsExactly(
-							JsonResponseReceiveFromManufacturingOrder.builder().requestId("req1").outcome(Outcome.OK).build());
+							JsonResponseReceiveFromManufacturingOrder.builder()
+									.requestId("req1")
+									.costCollectorIds(result.getReceipts().get(0).getCostCollectorIds()) // could not check
+									.build());
 
 			//
 			// Check cost collector
@@ -618,6 +648,7 @@ public class ManufacturingOrderAPIServiceTest
 			assertThat(costCollector.getCostCollectorType()).isEqualTo(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt);
 			assertThat(costCollector.getMovementQty()).isEqualTo("10");
 			assertThat(costCollector.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+			final PPCostCollectorId costCollectorId = PPCostCollectorId.ofRepoId(costCollector.getPP_Cost_Collector_ID());
 
 			//
 			// Check HU
@@ -643,6 +674,26 @@ public class ManufacturingOrderAPIServiceTest
 			// Check HU reservation
 			assertThat(huReservationService.isVhuIdReservedToSalesOrderLineId(HuId.ofRepoId(hu.getM_HU_ID()), salesOrderLineId))
 					.isTrue();
+
+			//
+			// Check audit
+			final APITransactionId transactionId = APITransactionId.ofString(result.getTransactionKey());
+			final ManufacturingOrderReportAudit audit = orderReportAuditRepo.getByTransactionId(transactionId);
+			assertThat(audit)
+					.usingRecursiveComparison()
+					.isEqualTo(ManufacturingOrderReportAudit.builder()
+							.transactionId(transactionId)
+							.jsonRequest(toJsonString(request))
+							.jsonResponse(toJsonString(result))
+							.importStatus(ManufacturingOrderReportAudit.ImportStatus.SUCCESS)
+							.item(ManufacturingOrderReportAuditItem.builder()
+									.orderId(orderId)
+									.costCollectorId(costCollectorId)
+									.jsonRequest(toJsonString(request.getReceipts().get(0)))
+									.jsonResponse(toJsonString(result.getReceipts().get(0)))
+									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS)
+									.build())
+							.build());
 		}
 
 		@Test
@@ -668,27 +719,37 @@ public class ManufacturingOrderAPIServiceTest
 					.bestBeforeDate("2022-02-02")
 					.build();
 
-			final JsonResponseManufacturingOrdersReport result = apiService.report(
-					JsonRequestManufacturingOrdersReport.builder()
-							.issue(JsonRequestIssueToManufacturingOrder.builder()
-									.requestId("req1")
-									.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-									.date(SystemTime.asZonedDateTime())
-									.qtyToIssueInStockUOM(new BigDecimal("2"))
-									.productNo("product")
-									.handlingUnit(JsonRequestHULookup.builder()
-											.lotNumber("lot1")
-											.bestBeforeDate(LocalDate.parse("2022-02-02"))
-											.build())
+			final JsonRequestManufacturingOrdersReport request = JsonRequestManufacturingOrdersReport.builder()
+					.issue(JsonRequestIssueToManufacturingOrder.builder()
+							.requestId("req1")
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
+							.qtyToIssueInStockUOM(new BigDecimal("2"))
+							.productNo("product")
+							.handlingUnit(JsonRequestHULookup.builder()
+									.lotNumber("lot1")
+									.bestBeforeDate(LocalDate.parse("2022-02-02"))
 									.build())
-							.build());
+							.build())
+					.build();
+			final JsonResponseManufacturingOrdersReport result = apiService.report(request);
 
 			//
 			// Check result
 			assertThat(result.getReceipts()).isEmpty();
 			assertThat(result.getIssues())
 					.containsExactly(
-							JsonResponseIssueToManufacturingOrder.builder().requestId("req1").outcome(Outcome.OK).build());
+							JsonResponseIssueToManufacturingOrder.builder()
+									.requestId("req1")
+									.detail(JsonResponseIssueToManufacturingOrderDetail.builder()
+											.costCollectorId(result.getIssues().get(0).getDetails().get(0).getCostCollectorId()) // could not check
+											.huId(JsonMetasfreshId.of(vhuId.getRepoId()))
+											.qty(JsonQuantity.builder()
+													.qty(new BigDecimal("2"))
+													.uomCode("PCE")
+													.build())
+											.build())
+									.build());
 
 			//
 			// Check HU
@@ -697,6 +758,26 @@ public class ManufacturingOrderAPIServiceTest
 				final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(vhu);
 				assertThat(huStorage.getQty(componentId, uomEach)).isEqualByComparingTo("38");
 			}
+
+			//
+			// Check audit
+			final APITransactionId transactionId = APITransactionId.ofString(result.getTransactionKey());
+			final ManufacturingOrderReportAudit audit = orderReportAuditRepo.getByTransactionId(transactionId);
+			assertThat(audit)
+					.usingRecursiveComparison()
+					.isEqualTo(ManufacturingOrderReportAudit.builder()
+							.transactionId(transactionId)
+							.jsonRequest(toJsonString(request))
+							.jsonResponse(toJsonString(result))
+							.importStatus(ManufacturingOrderReportAudit.ImportStatus.SUCCESS)
+							.item(ManufacturingOrderReportAuditItem.builder()
+									.orderId(orderId)
+									.costCollectorId(audit.getItems().get(0).getCostCollectorId()) // cannot check
+									.jsonRequest(toJsonString(request.getIssues().get(0)))
+									.jsonResponse(toJsonString(result.getIssues().get(0)))
+									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS)
+									.build())
+							.build());
 		}
 
 		@Test
@@ -716,33 +797,136 @@ public class ManufacturingOrderAPIServiceTest
 					//
 					.build();
 
-			final JsonResponseManufacturingOrdersReport result = apiService.report(
-					JsonRequestManufacturingOrdersReport.builder()
-							.issue(JsonRequestIssueToManufacturingOrder.builder()
-									.requestId("req1")
-									.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-									.date(SystemTime.asZonedDateTime())
-									.qtyToIssueInStockUOM(new BigDecimal("2"))
-									.productNo("product")
-									.handlingUnit(JsonRequestHULookup.builder()
-											.lotNumber("missing-lot")
-											.bestBeforeDate(LocalDate.parse("2022-02-02"))
-											.build())
+			final JsonRequestManufacturingOrdersReport request = JsonRequestManufacturingOrdersReport.builder()
+					.issue(JsonRequestIssueToManufacturingOrder.builder()
+							.requestId("req1")
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
+							.qtyToIssueInStockUOM(new BigDecimal("2"))
+							.productNo("product")
+							.handlingUnit(JsonRequestHULookup.builder()
+									.lotNumber("missing-lot")
+									.bestBeforeDate(LocalDate.parse("2022-02-02"))
 									.build())
-							.build());
+							.build())
+					.build();
+			final JsonResponseManufacturingOrdersReport result = apiService.report(request);
 
 			//
 			// Check result
+			assertThat(result.isOK()).isFalse();
 			assertThat(result.getReceipts()).isEmpty();
-			assertThat(result.getIssues()).hasSize(1);
+			assertThat(result.getIssues()).isEmpty();
 
-			final JsonResponseIssueToManufacturingOrder issueResponse = result.getIssues().get(0);
-			assertThat(issueResponse.getRequestId()).isEqualTo("req1");
-			assertThat(issueResponse.getOutcome()).isEqualTo(Outcome.ERROR);
-
-			final JsonErrorItem jsonErrorItem = issueResponse.getError().getErrors().get(0);
+			final JsonErrorItem jsonErrorItem = result.getError().getErrors().get(0);
 			assertThat(jsonErrorItem.getMessage()).startsWith("No HU found ");
 			assertThat(jsonErrorItem.getAdIssueId()).isNotNull();
+
+			//
+			// Check audit
+			final APITransactionId transactionId = APITransactionId.ofString(result.getTransactionKey());
+			final ManufacturingOrderReportAudit audit = orderReportAuditRepo.getByTransactionId(transactionId);
+			assertThat(audit)
+					.usingRecursiveComparison()
+					.isEqualTo(ManufacturingOrderReportAudit.builder()
+							.transactionId(transactionId)
+							.jsonRequest(toJsonString(request))
+							.jsonResponse(toJsonString(result))
+							.importStatus(ManufacturingOrderReportAudit.ImportStatus.FAILED)
+							.errorMsg(jsonErrorItem.getMessage())
+							.adIssueId(AdIssueId.ofRepoId(jsonErrorItem.getAdIssueId().getValue()))
+							.item(ManufacturingOrderReportAuditItem.builder()
+									.orderId(orderId)
+									.costCollectorId(null)
+									.jsonRequest(toJsonString(request.getIssues().get(0)))
+									.jsonResponse(null)
+									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.FAILED)
+									.errorMsg(jsonErrorItem.getMessage())
+									.adIssueId(AdIssueId.ofRepoId(jsonErrorItem.getAdIssueId().getValue()))
+									.build())
+							.build());
 		}
+
+		@Test
+		public void twoIssuesOneWithError()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("product", uomEach);
+			final ProductId componentId = BusinessTestHelper.createProductId("component1", uomEach);
+
+			final PPOrderId orderId = manufacturingOrder()
+					.productId(productId)
+					.qtyOrdered("100")
+					.locatorId(locatorId)
+					.plantId(plantId)
+					//
+					.bomLine_componentId(componentId)
+					.bomLine_qtyRequired("10")
+					//
+					.build();
+
+			vhu().productId(componentId).qty("40").lotNumber("lot1").bestBeforeDate("2022-02-02").build();
+
+			final JsonRequestManufacturingOrdersReport request = JsonRequestManufacturingOrdersReport.builder()
+					.issue(JsonRequestIssueToManufacturingOrder.builder()
+							.requestId("req1")
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
+							.qtyToIssueInStockUOM(new BigDecimal("2"))
+							.productNo("product")
+							.handlingUnit(JsonRequestHULookup.builder().lotNumber("lot1").bestBeforeDate(LocalDate.parse("2022-02-02")).build())
+							.build())
+					.issue(JsonRequestIssueToManufacturingOrder.builder()
+							.requestId("req1")
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
+							.qtyToIssueInStockUOM(new BigDecimal("3"))
+							.productNo("product")
+							.handlingUnit(JsonRequestHULookup.builder().lotNumber("missing-lot").bestBeforeDate(LocalDate.parse("2022-02-02")).build())
+							.build())
+					.build();
+			final JsonResponseManufacturingOrdersReport result = apiService.report(request);
+
+			//
+			// Check result
+			assertThat(result.isOK()).isFalse();
+			assertThat(result.getReceipts()).isEmpty();
+			assertThat(result.getIssues()).isEmpty();
+
+			final JsonErrorItem jsonErrorItem = result.getError().getErrors().get(0);
+			assertThat(jsonErrorItem.getMessage()).startsWith("No HU found ");
+			assertThat(jsonErrorItem.getAdIssueId()).isNotNull();
+
+			//
+			// Check audit
+			final APITransactionId transactionId = APITransactionId.ofString(result.getTransactionKey());
+			final ManufacturingOrderReportAudit audit = orderReportAuditRepo.getByTransactionId(transactionId);
+			assertThat(audit)
+					.usingRecursiveComparison()
+					.isEqualTo(ManufacturingOrderReportAudit.builder()
+							.transactionId(transactionId)
+							.jsonRequest(toJsonString(request))
+							.jsonResponse(toJsonString(result))
+							.importStatus(ManufacturingOrderReportAudit.ImportStatus.FAILED)
+							.errorMsg(jsonErrorItem.getMessage())
+							.adIssueId(AdIssueId.ofRepoId(jsonErrorItem.getAdIssueId().getValue()))
+							.item(ManufacturingOrderReportAuditItem.builder()
+									.orderId(orderId)
+									.costCollectorId(audit.getItems().get(0).getCostCollectorId()) // cannot check
+									.jsonRequest(toJsonString(request.getIssues().get(0)))
+									.jsonResponse(audit.getItems().get(0).getJsonResponse()) // cannot check
+									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS_BUT_ROLLED_BACK)
+									.build())
+							.item(ManufacturingOrderReportAuditItem.builder()
+									.orderId(orderId)
+									.costCollectorId(null)
+									.jsonRequest(toJsonString(request.getIssues().get(1)))
+									.jsonResponse(null)
+									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.FAILED)
+									.errorMsg(jsonErrorItem.getMessage())
+									.adIssueId(AdIssueId.ofRepoId(jsonErrorItem.getAdIssueId().getValue()))
+									.build())
+							.build());
+		}
+
 	}
 }
