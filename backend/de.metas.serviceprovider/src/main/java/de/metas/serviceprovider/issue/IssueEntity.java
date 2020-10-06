@@ -120,6 +120,12 @@ public class IssueEntity
 
 	private boolean processed;
 
+	@Nullable
+	private LocalDate deliveredDate;
+
+	@Nullable
+	private  Instant processedTimestamp;
+
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if ( this.estimatedEffort == null || this.estimatedEffort.signum() == 0 )

@@ -238,6 +238,7 @@ public class IssueImporterService
 				.status(importIssueInfo.getStatus())
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
+				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.build();
 	}
 
@@ -260,6 +261,7 @@ public class IssueImporterService
 
 		final IssueEntity mergedIssueEntity = existingEffortIssue
 				.toBuilder()
+				.name(importIssueInfo.getName())
 				.parentIssueId(parentIssueId)
 				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
@@ -273,6 +275,7 @@ public class IssueImporterService
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.roughEstimation(importIssueInfo.getRoughEstimation())
+				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.build();
 
 		mergedIssueEntity.setBudgetedEffortIfNotSet(importIssueInfo.getBudget());
