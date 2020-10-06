@@ -22,6 +22,18 @@
 
 package de.metas.ui.web.quickinput.field;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -31,15 +43,6 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 @Component
 public class PackingItemProductFieldHelper
@@ -92,8 +95,8 @@ public class PackingItemProductFieldHelper
 			return Optional.empty();
 		}
 
-		final int clientId = defaultPackingItemCriteria.getClientId().getRepoId();
-		final boolean enforcePrecisePricePerHUItemProduct = sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false, clientId);
+		final ClientId clientId = defaultPackingItemCriteria.getClientId();
+		final boolean enforcePrecisePricePerHUItemProduct = sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false, clientId.getRepoId());
 		
 		// TODO: check ASI too
 		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
