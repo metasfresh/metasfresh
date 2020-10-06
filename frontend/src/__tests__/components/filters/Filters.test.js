@@ -17,7 +17,7 @@ import filterData from '../../../../test_setup/fixtures/filters/filterData.json'
 import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive.json';
 import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
 import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
-
+import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
 const mockStore = configureStore([]);
 
 const createStore = function(state = {}) {
@@ -254,47 +254,71 @@ describe('Filters tests', () => {
       expect(updateDocListListener).toBeCalledWith(filterResult);
     });
 
-    // it('supports filters without parameters', () => {
-    //   const updateDocListListener = jest.fn();
-    //   const dummyProps = createInitialProps(filtersFixtures.data3, {
-    //     updateDocList: updateDocListListener,
-    //   });
+    it('supports filters without parameters', () => {
+      const updateDocListListener = jest.fn();
+      const dummyProps = createInitialProps(undefined, {
+        updateDocList: updateDocListListener,
+      });
+      const initialState = createStore({
+        windowHandler: {
+          allowShortcut: true,
+          modal: {
+            visible: false,
+          },
+        },
+        filters: filtersStoreThree,
+      });
+      const store = mockStore(initialState);
+      const wrapper = mount(
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+          <Provider store={store}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
 
-    //   const store = mockStore(initialState);
-    //   const wrapper = mount(
-    //     <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-    //       <Provider store={store}>
-    //         <div className="document-lists-wrapper">
-    //           <Filters {...dummyProps} />
-    //         </div>
-    //       </Provider>
-    //     </ShortcutProvider>
-    //   );
-    //   wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
-    //   expect(wrapper.find('.filters-overlay').length).toBe(1);
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+      expect(wrapper.find('.filters-overlay').length).toBe(1);
 
-    //   wrapper
-    //     .find('.filters-overlay .filter-option-userquery-540024')
-    //     .simulate('click');
-    //   expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
+      wrapper
+        .find('.filters-overlay .filter-option-userquery-540024')
+        .simulate('click');
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
 
-    //   wrapper
-    //     .find('.filter-widget .filter-btn-wrapper .applyBtn')
-    //     .simulate('click');
-    //   wrapper.update();
+      wrapper
+        .find('.filter-widget .filter-btn-wrapper .applyBtn')
+        .simulate('click');
+      wrapper.update();
 
-    //   const filterResult = Immutable.Map({
-    //     'userquery-540024': {
-    //       filterId: 'userquery-540024',
-    //       caption: 'Abrechnung_offen_normal',
-    //       frequent: false,
-    //       inlineRenderMode: 'button',
-    //       parametersLayoutType: 'panel',
-    //       debugProperties: {},
-    //     },
-    //   });
+      const filterResult = [
+        {
+          filterId: 'default',
+          parameters: [
+            {
+              parameterName: 'C_BPartner_ID',
+              value: {
+                key: '2156429',
+                caption: '1000003_TestVendor',
+                description: '1000003_TestVendor',
+              },
+              valueTo: null,
+            },
+          ],
+        },
+        {
+          filterId: 'userquery-540024',
+          caption: 'Abrechnung_offen_normal',
+          frequent: false,
+          inlineRenderMode: 'button',
+          parametersLayoutType: 'panel',
+          debugProperties: {},
+          isActive: false,
+        },
+      ];
 
-    //   expect(updateDocListListener).toBeCalledWith(filterResult);
-    // });
+      expect(updateDocListListener).toBeCalledWith(filterResult);
+    });
   });
 });
