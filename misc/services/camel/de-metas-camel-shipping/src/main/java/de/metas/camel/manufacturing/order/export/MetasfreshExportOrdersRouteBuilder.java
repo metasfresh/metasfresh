@@ -40,7 +40,7 @@ public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 {
 	@VisibleForTesting
 	static final String ROUTE_ID = "manufacturingOrdersExport";
-	
+
 	@VisibleForTesting
 	static final String UPLOAD_ROUTE = "FM-upload-manufacturing-orders";
 	private static final String UPLOAD_URI = "{{siro.ftp.upload.manufacturing-orders.uri}}";
@@ -49,7 +49,6 @@ public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 	@VisibleForTesting
 	static final String FEEDBACK_ROUTE = "metasfreshExportOrders-feedback";
 
-
 	private static final String METASFRESH_EP_GET_ORDERS = "http://{{metasfresh.api.baseurl}}/manufacturing/orders";
 	private static final String METASFRESH_EP_POST_EXPORT_STATUS = "http://{{metasfresh.api.baseurl}}/manufacturing/orders/exportStatus";
 
@@ -57,7 +56,7 @@ public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 	public void configure()
 	{
 		final String pollInterval = RouteBuilderCommonUtil.resolveProperty(getContext(), "metasfresh.manufacturing-orders.pollInterval", "5s");
-		
+
 		errorHandler(defaultErrorHandler());
 		onException(GenericFileOperationFailedException.class)
 				.handled(true)
@@ -85,7 +84,7 @@ public class MetasfreshExportOrdersRouteBuilder extends EndpointRouteBuilder
 
 				.choice()
 					.when(header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS).isGreaterThan(0))
-					.log(LoggingLevel.INFO, "Converting " + header(RouteBuilderCommonUtil.NUMBER_OF_ITEMS) + " manufacturing orders to file " + Exchange.FILE_NAME)
+					.log(LoggingLevel.INFO, "Converting ${header." + RouteBuilderCommonUtil.NUMBER_OF_ITEMS + "} manufacturing orders to file ${header." + Exchange.FILE_NAME+"}")
 					.marshal(jacksonXMLDataFormat)
 					.multicast() // store the file both locally and send it to the remote folder
 						.stopOnException()

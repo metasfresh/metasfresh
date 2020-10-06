@@ -1,18 +1,5 @@
 package de.metas.camel.manufacturing.order.export;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-
-import org.apache.camel.Processor;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit5.CamelTestSupport;
-import org.junit.jupiter.api.Test;
-
 import de.metas.camel.test.endpoints.CaptureLastMessage;
 import de.metas.camel.test.endpoints.FailOnCall;
 import de.metas.camel.test.endpoints.SingleResult;
@@ -26,6 +13,18 @@ import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import lombok.Builder;
 import lombok.NonNull;
+import org.apache.camel.Processor;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -133,6 +132,7 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 								.description("product description")
 								.packageSize("packageSize")
 								.weight(new BigDecimal("1"))
+								.stocked(true)
 								.documentNote("product document note")
 								.build())
 						.qtyToProduce(JsonQuantity.builder()
@@ -200,6 +200,7 @@ public class MetasfreshExportOrdersRouteBuilderTest extends CamelTestSupport
 								.description("product description")
 								.packageSize("packageSize")
 								.weight(new BigDecimal("1"))
+								.stocked(true)
 								.documentNote("product document note")
 								.build())
 						.qtyToProduce(JsonQuantity.builder()

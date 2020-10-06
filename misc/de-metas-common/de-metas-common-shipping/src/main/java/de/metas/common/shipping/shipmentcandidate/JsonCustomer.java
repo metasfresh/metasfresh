@@ -50,6 +50,10 @@ public class JsonCustomer
 
 	String streetNo;
 
+	String addressSuffix1;
+	String addressSuffix2;
+	String addressSuffix3;
+
 	String postal;
 
 	String city;
@@ -75,6 +79,9 @@ public class JsonCustomer
 			@JsonProperty("contactPhone") @Nullable final String contactPhone,
 			@JsonProperty("street") @NonNull final String street,
 			@JsonProperty("streetNo") @NonNull final String streetNo,
+			@JsonProperty("addressSuffix1") final String addressSuffix1,
+			@JsonProperty("addressSuffix2") final String addressSuffix2,
+			@JsonProperty("addressSuffix3") final String addressSuffix3,
 			@JsonProperty("postal") @NonNull final String postal,
 			@JsonProperty("city") @NonNull final String city,
 			@JsonProperty("countryCode") @Nullable final String countryCode,
@@ -89,6 +96,9 @@ public class JsonCustomer
 		this.contactPhone = contactPhone;
 		this.street = street;
 		this.streetNo = streetNo;
+		this.addressSuffix1 = addressSuffix1;
+		this.addressSuffix2 = addressSuffix2;
+		this.addressSuffix3 = addressSuffix3;
 		this.postal = postal;
 		this.city = city;
 		this.countryCode = countryCode;

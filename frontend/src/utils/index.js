@@ -169,3 +169,12 @@ export function preFormatPostDATA({ target, postData }) {
   }
   return dataToSend;
 }
+
+/**
+ * Opens the url given as param in a new window and focuses on that window
+ * @param {string} urlPath
+ */
+export function openInNewTab(urlPath) {
+  let newTabBrowser = window.open(urlPath, '_blank');
+  newTabBrowser.focus();
+}

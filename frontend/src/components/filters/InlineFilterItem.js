@@ -3,8 +3,11 @@
  **/
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import RawWidget from '../widget/RawWidget';
+import { connect } from 'react-redux';
 
+import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
+
+import RawWidget from '../widget/RawWidget';
 import { parseDateToReadable } from './Filters';
 
 class InlineFilterItem extends Component {
@@ -109,7 +112,18 @@ class InlineFilterItem extends Component {
   };
 
   render() {
-    const { data, id, windowType, onShow, onHide, viewId } = this.props;
+    const {
+      data,
+      id,
+      windowType,
+      onShow,
+      onHide,
+      viewId,
+      modalVisible,
+      timeZone,
+      allowShortcut,
+      disableShortcut,
+    } = this.props;
     const { filter } = this.state;
 
     return (
@@ -123,21 +137,34 @@ class InlineFilterItem extends Component {
         fields={[{ ...data, emptyText: data.caption }]}
         type={data.type}
         widgetData={[data]}
-        id={id}
         range={data.range}
         caption={data.caption}
         noLabel={true}
         filterWidget={true}
         {...{
+          id,
           viewId,
           windowType,
           onShow,
           onHide,
+          modalVisible,
+          timeZone,
+          allowShortcut,
+          disableShortcut,
         }}
       />
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  const { appHandler, windowHandler } = state;
+
+  return {
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
+};
 
 InlineFilterItem.propTypes = {
   active: PropTypes.bool,
@@ -150,6 +177,16 @@ InlineFilterItem.propTypes = {
   applyFilters: PropTypes.func,
   clearFilters: PropTypes.func,
   windowType: PropTypes.string,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
 };
 
-export default InlineFilterItem;
+export default connect(
+  mapStateToProps,
+  {
+    allowShortcut,
+    disableShortcut,
+  }
+)(InlineFilterItem);

@@ -12,6 +12,7 @@
         "name": "Convenience Salat 250g",
         "description": "",
         "weight": 0.250000000000,
+        "stocked": true,
         "documentNote": "documentNote-Salat"
       },
       "customer": {
@@ -37,7 +38,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000001,
@@ -47,6 +49,7 @@
       "product": {
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
+        "stocked": true,
         "documentNote": "documentNote-Salat2",
         "description": "",
         "weight": 0.250000000000
@@ -74,7 +77,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000002,
@@ -86,7 +90,7 @@
         "name": "Convenience Salat 250g",
         "description": "",
         "weight": 0.250000000000,
-
+        "stocked": true,
         "documentNote": "documentNote-Salat3"
       },
       "customer": {
@@ -112,7 +116,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000003,
@@ -123,7 +128,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -148,7 +154,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000004,
@@ -159,7 +166,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -184,7 +192,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000005,
@@ -195,7 +204,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -220,7 +230,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000006,
@@ -231,7 +242,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -256,7 +268,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000007,
@@ -267,7 +280,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -292,7 +306,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000008,
@@ -303,7 +318,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -328,7 +344,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000009,
@@ -339,7 +356,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -364,7 +382,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     },
     {
       "id": 1000011,
@@ -375,7 +394,8 @@
         "productNo": "P002737",
         "name": "Convenience Salat 250g",
         "description": "",
-        "weight": 0.250000000000
+        "weight": 0.250000000000,
+        "stocked": true
       },
       "customer": {
         "companyName": "Testkunde Kunde 1",
@@ -400,7 +420,8 @@
         }
       ],
       "deliveredQtyNetPrice": 0,
-      "orderedQtyNetPrice": 42
+      "orderedQtyNetPrice": 42,
+      "numberOfItemsForSameShipment": 2
     }
   ],
   "hasMoreItems": false

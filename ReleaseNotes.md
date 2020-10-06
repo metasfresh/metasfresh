@@ -9,6 +9,24 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.154
+## Features
+* metasfresh
+  * [#9971](https://github.com/metasfresh/metasfresh/issues/9971) Allow 'Issue'ing of 'By-Product' and 'Co-Product' created HUs in manufacturing
+  * [#9982](https://github.com/metasfresh/metasfresh/issues/9982) Create shipments REST-API adjustments
+  * [#9984](https://github.com/metasfresh/metasfresh/pull/9984) Store the data in the redux store instead of local state
+
+## Fixes
+* metasfresh
+  * [#9975](https://github.com/metasfresh/metasfresh/issues/9975) Browser Back stops at Dashboard
+  * [#9980](https://github.com/metasfresh/metasfresh/issues/9980) Order indicator vanished after switching detail view back to grid view
+  * [#9988](https://github.com/metasfresh/metasfresh/issues/9988) Avoid duplicate records in AD_TreeBar
+  * [#9993](https://github.com/metasfresh/metasfresh/issues/9993) Use a nonce in Convert methods
+  * [#9999](https://github.com/metasfresh/metasfresh/issues/9999) Documents cannot be voided
+  * [#10000](https://github.com/metasfresh/metasfresh/pull/10000) Add missing prompt from the state
+  * [#10005](https://github.com/metasfresh/metasfresh/issues/10005) Allocating entries in Allocate Payments overlay only works once
+  * [#10007](https://github.com/metasfresh/metasfresh/pull/10007) Fixes for Dashboard breadcrumbs path
+
 # metasfresh 5.153
 ## Features
 * metasfresh

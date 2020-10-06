@@ -94,6 +94,8 @@ public class ManufacturingOrderRestController
 	public ResponseEntity<JsonResponseManufacturingOrdersReport> report(@RequestBody @NonNull final JsonRequestManufacturingOrdersReport request)
 	{
 		final JsonResponseManufacturingOrdersReport response = manufacturingOrderAPIService.report(request);
-		return ResponseEntity.ok(response);
+		return response.isOK()
+				? ResponseEntity.ok(response)
+				: ResponseEntity.unprocessableEntity().body(response);
 	}
 }

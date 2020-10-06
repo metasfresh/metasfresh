@@ -22,15 +22,6 @@
 
 package de.metas.camel.shipping;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.spi.PropertiesComponent;
-
 import de.metas.common.filemaker.DATABASE;
 import de.metas.common.filemaker.FMPXMLRESULT;
 import de.metas.common.filemaker.FMPXMLRESULT.FMPXMLRESULTBuilder;
@@ -40,11 +31,18 @@ import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.shipping.JsonProduct;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.spi.PropertiesComponent;
+
+import javax.annotation.Nullable;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class CommonUtil
 {
-	private final static String PRODUCT_AND_ORG_PREFIX_PATTERN = "([^-]*-)?(.*)";
+	private final static Pattern PRODUCT_AND_ORG_PREFIX_PATTERN = Pattern.compile("([^-]*)?(-)?(.*)");
 
 	public FMPXMLRESULTBuilder createFmpxmlresultBuilder(
 			final String databaseName,
@@ -60,12 +58,23 @@ public class CommonUtil
 	}
 
 	@NonNull
+	public String extractWarehouseValue(
+			@NonNull final PropertiesComponent propertiesComponent,
+			@NonNull final String _siro_kunden_id)
+	{
+		final var propertyKey = "_siro_kunden_id." + _siro_kunden_id + ".warehouseValue";
+		return propertiesComponent
+				.resolveProperty(propertyKey)
+				.orElseThrow(() -> new RuntimeCamelException("Unexpected _siro_kunden_id=" + _siro_kunden_id + "; fix it in metasfresh or add '" + propertyKey + "' to the properties file"));
+	}
+
+	@NonNull
 	public String extractProductNo(
 			@NonNull final PropertiesComponent propertiesComponent,
 			@NonNull final JsonProduct product,
 			@NonNull final String orgCode)
 	{
-		final var artikelNummerPrefix = CommonUtil.extractOrgPrefix(propertiesComponent, orgCode);
+		final var artikelNummerPrefix = extractOrgPrefix(propertiesComponent, orgCode);
 		return artikelNummerPrefix + product.getProductNo();
 	}
 
@@ -84,20 +93,30 @@ public class CommonUtil
 	}
 
 	@Nullable
-	public String removeOrgPrefix(@Nullable final String productValueWithOrgCode)
+	public String convertProductValue(@Nullable final String productValueWithPrefix)
 	{
-		if (productValueWithOrgCode == null || productValueWithOrgCode.isBlank())
+		if (productValueWithPrefix == null || productValueWithPrefix.isBlank())
 		{
-			return productValueWithOrgCode;
+			return productValueWithPrefix;
 		}
 
-		final var prefix = Pattern.compile(PRODUCT_AND_ORG_PREFIX_PATTERN);
-		final var matcher = prefix.matcher(productValueWithOrgCode);
-		if (!matcher.matches())
+		final var strings = productValueWithPrefix.split("-");
+		if (strings.length == 1)
 		{
-			return productValueWithOrgCode;
+			return productValueWithPrefix; // no prefix after all; just return what we got
 		}
-		return matcher.group(2);
+
+		final var prefix = strings[0];
+		final var appendMDHSuffix = prefix.length() > 1 && prefix.endsWith("K");
+
+		// get the substring without the prfix and the first '-'
+		final var valueWithoutPrefix = productValueWithPrefix.substring(prefix.length() + 1);
+
+		if (appendMDHSuffix)
+		{
+			return valueWithoutPrefix + "mhd";
+		}
+		return valueWithoutPrefix;
 	}
 
 	@Nullable
@@ -108,13 +127,12 @@ public class CommonUtil
 			return null;
 		}
 
-		final var prefix = Pattern.compile(PRODUCT_AND_ORG_PREFIX_PATTERN);
-		final var matcher = prefix.matcher(productValueWithOrgCode);
+		final var matcher = PRODUCT_AND_ORG_PREFIX_PATTERN.matcher(productValueWithOrgCode);
 		if (!matcher.matches())
 		{
 			return null;
 		}
-		return matcher.group(1).replaceAll("-","");
+		return matcher.group(1).replaceAll("-", "");
 	}
 
 	public JsonError createJsonError(@NonNull final Throwable throwable)

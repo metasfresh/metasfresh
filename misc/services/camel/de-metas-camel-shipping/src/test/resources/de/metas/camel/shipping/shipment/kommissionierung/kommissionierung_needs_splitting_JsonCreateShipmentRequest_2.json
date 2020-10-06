@@ -1,0 +1,14 @@
+{
+  "shipmentList": [
+    {
+      "shipmentScheduleId": 1191714,
+      "productSearchKey": "31100821",
+      "businessPartnerSearchKey": null,
+      "movementQuantity": 1.0,
+      "movementDate": "2020-09-29T15:26:28.000Z",
+      "documentNo": "document-no-2",
+      "deliveryRule": "F",
+      "attributes": null
+    }
+  ]
+}

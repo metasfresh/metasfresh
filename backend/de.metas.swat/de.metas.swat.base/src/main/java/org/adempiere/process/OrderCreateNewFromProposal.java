@@ -96,7 +96,9 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		getResult().setRecordToOpen(
 				TableRecordReference.of(newOrder),
 				orderWindowId.get().getRepoId(), // adWindowId
-				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument);
+				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument,
+				ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB
+		);
 
 		return newOrder.getDocumentNo();
 	}

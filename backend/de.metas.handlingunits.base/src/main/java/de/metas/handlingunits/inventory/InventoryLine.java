@@ -116,6 +116,11 @@ public class InventoryLine
 		inventoryType = extractInventoryType(inventoryLineHUs, InventoryType.PHYSICAL);
 		this.counted = counted;
 		this.inventoryLineHUs = inventoryLineHUs;
+
+		if (HUAggregationType.SINGLE_HU.equals(huAggregationType) && inventoryLineHUs.size() > 1)
+		{
+			throw new AdempiereException("Only one HU shall be assigned when huAggregatioType=" + huAggregationType);
+		}
 	}
 
 	private static InventoryType extractInventoryType(
@@ -155,6 +160,15 @@ public class InventoryLine
 			final Quantity qtyBook = getQtyBook();
 			return qtyCount.subtract(qtyBook);
 		}
+	}
+
+	public Quantity getQtyCountMinusBooked()
+	{
+		return getInventoryLineHUs()
+				.stream()
+				.map(InventoryLineHU::getQtyCountMinusBooked)
+				.reduce(Quantity::add)
+				.get();
 	}
 
 	public Quantity getQtyInternalUse()
@@ -223,9 +237,14 @@ public class InventoryLine
 			}
 		}
 
+		return withInventoryLineHUs(newInventoryLineHUs);
+	}
+
+	public InventoryLine withInventoryLineHUs(@NonNull final List<InventoryLineHU> inventoryLineHUs)
+	{
 		return toBuilder()
 				.clearInventoryLineHUs()
-				.inventoryLineHUs(newInventoryLineHUs)
+				.inventoryLineHUs(inventoryLineHUs)
 				.build();
 	}
 }

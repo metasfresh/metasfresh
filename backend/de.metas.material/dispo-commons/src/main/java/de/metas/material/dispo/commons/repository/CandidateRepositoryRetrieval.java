@@ -46,6 +46,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -81,9 +82,6 @@ public class CandidateRepositoryRetrieval
 {
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
-	 *
-	 * @param parentId
-	 * @return
 	 */
 	public Optional<Candidate> retrieveSingleChild(@NonNull final CandidateId parentId)
 	{
@@ -164,6 +162,7 @@ public class CandidateRepositoryRetrieval
 		return Optional.of(builder.build());
 	}
 
+	@Nullable
 	private CandidateBusinessCase getBusinesCaseOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		CandidateBusinessCase subType = null;
@@ -193,6 +192,7 @@ public class CandidateRepositoryRetrieval
 				.quantity(candidateRecord.getQty())
 				.warehouseId(WarehouseId.ofRepoId(candidateRecord.getM_Warehouse_ID()))
 				.customerId(BPartnerId.ofRepoIdOrNull(candidateRecord.getC_BPartner_Customer_ID()))
+				.reservedForCustomer(candidateRecord.isReservedForCustomer())
 
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(TimeUtil.asInstant(dateProjected))
@@ -235,6 +235,7 @@ public class CandidateRepositoryRetrieval
 		return attributesKey;
 	}
 
+	@Nullable
 	private static ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Prod_Detail //
@@ -258,6 +259,7 @@ public class CandidateRepositoryRetrieval
 				.build();
 	}
 
+	@Nullable
 	private static DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Dist_Detail distributionDetail = //
@@ -270,6 +272,7 @@ public class CandidateRepositoryRetrieval
 		return DistributionDetail.forDistributionDetailRecord(distributionDetail);
 	}
 
+	@Nullable
 	private static DemandDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = //
@@ -307,6 +310,7 @@ public class CandidateRepositoryRetrieval
 		return result.build();
 	}
 
+	@Nullable
 	public Candidate retrieveLatestMatchOrNull(@NonNull final CandidatesQuery query)
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);

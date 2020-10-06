@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FMPXMLRESULT xmlns="http://www.filemaker.com/fmpxmlresult">
+    <ERRORCODE>0</ERRORCODE>
+    <PRODUCT BUILD="04-29-2019" NAME="FileMaker" VERSION="ProAdvanced 18.0.1"/>
+    <DATABASE DATEFORMAT="D.m.yyyy" LAYOUT="" NAME="siro.fmp12" RECORDS="4953" TIMEFORMAT="k:mm:ss "/>
+    <METADATA>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_siro_lagerscan_sortierer" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_siro_lagerscan_counter" TYPE="NUMBER"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_siro_kunde_kurz4" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_siro_kunden_id" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_datum" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_id" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_lagerplatz" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_zeitstempel" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_mhd_ja_nein" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_mhd_ablauf_datum" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_mhd_charge" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_lagerscan_mhd_tage_bis_ablauf" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_anlieferung_datum" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_anlieferung_mhd_ablauf_datum" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_anlieferung_mhd_charge" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_anlieferung_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_anlieferung_position_id" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_anlieferung_zeitstempel" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_bezeichnung" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_geschmacksrichtung" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_gewicht_1_stueck" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_hinweistext" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_menge_gesamt_nach_kommissionieren" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_menge_lagerplatz" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_artikel_verpackungsgroesse" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_bestellung_position_id" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_fuer_zoll_artikel_herkunftsland" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_fuer_zoll_artikel_intrastat_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_wareneingang_datum" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_wareneingang_nummer" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_wareneingang_zeitstempel" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_stueckliste_id" TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES" MAXREPEAT="1" NAME="_vorkonfektioniertist_id" TYPE="TEXT"/>
+    </METADATA>
+    <RESULTSET FOUND="35">
+        <ROW MODID="0" RECORDID="36673">
+            <COL>
+                <DATA>37623</DATA>
+            </COL>
+            <COL>
+                <DATA>1</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>1234</DATA>
+            </COL>
+            <COL>
+                <DATA>23.09.2020</DATA>
+            </COL>
+            <COL>
+                <DATA>37623</DATA>
+            </COL>
+            <COL>
+                <DATA>H68-01-01</DATA>
+            </COL>
+            <COL>
+                <DATA>23.09.2020 00:10:51</DATA>
+            </COL>
+            <COL>
+                <DATA>nein</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>Product without bestbeforedate</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA>5100</DATA>
+            </COL>
+            <COL>
+                <DATA>5100</DATA>
+            </COL>
+            <COL>
+                <DATA>3-123456</DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+            <COL>
+                <DATA></DATA>
+            </COL>
+        </ROW>
+    </RESULTSET>
+</FMPXMLRESULT>

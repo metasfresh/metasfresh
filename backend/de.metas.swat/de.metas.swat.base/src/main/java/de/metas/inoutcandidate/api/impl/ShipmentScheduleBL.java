@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -494,7 +495,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public Map<ShipmentScheduleId,I_M_ShipmentSchedule> getByIds(@NonNull final Set<ShipmentScheduleId> ids)
+	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(@NonNull final Set<ShipmentScheduleId> ids)
 	{
 		return shipmentSchedulePA.getByIds(ids);
 	}
@@ -763,6 +764,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			addAttributes(shipmentSchedule, request.getAttributes());
 		}
 
+		if (request.getShipperId() != null)
+		{
+			shipmentSchedule.setM_Shipper_ID(request.getShipperId().getRepoId());
+		}
+
 		saveRecord(shipmentSchedule);
 	}
 
@@ -775,27 +781,47 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
+	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule schedRecord)
 	{
 		// we see "not-yet-set" as equivalent to "pending"
-		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(sched.getExportStatus(), APIExportStatus.Pending);
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(schedRecord.getExportStatus(), APIExportStatus.Pending);
 		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
 		{
-			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
-			sched.setCanBeExportedFrom(Env.MAX_DATE);
+			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", schedRecord.getExportStatus(), Env.MAX_DATE);
+			schedRecord.setCanBeExportedFrom(Env.MAX_DATE);
 			return;
 		}
 
 		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
 				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
 				0, // default
-				sched.getAD_Client_ID(),
-				sched.getAD_Org_ID());
+				schedRecord.getAD_Client_ID(),
+				schedRecord.getAD_Org_ID());
 		if (canBeExportedAfterSeconds >= 0)
 		{
-			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
-			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
-			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
+			final Instant instant = SystemTime.asInstant().plusSeconds(canBeExportedAfterSeconds);
+			schedRecord.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
+			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, schedRecord.getCanBeExportedFrom());
+		}
+	}
+
+	@Override
+	public void updateExportStatus(final @NonNull I_M_ShipmentSchedule schedRecord)
+	{
+		final APIExportStatus currentExportStatus = APIExportStatus.ofNullableCode(schedRecord.getExportStatus());
+
+		// if it's not "DontExport" and not "Pending" already, we *might* set them back to "Pending".
+		final boolean maybeSetBackToPending = !(Objects.equals(currentExportStatus, APIExportStatus.Pending) || Objects.equals(currentExportStatus, APIExportStatus.DontExport));
+		if (maybeSetBackToPending)
+		{
+			final I_M_ShipmentSchedule oldSchedRecord = createOld(schedRecord, I_M_ShipmentSchedule.class);
+			final boolean qtyToDeliverWasIncreased = oldSchedRecord.getQtyToDeliver().compareTo(schedRecord.getQtyToDeliver()) < 0;
+			if (qtyToDeliverWasIncreased)
+			{
+				logger.debug("currentExportStatus={} and qtyToDeliverWasIncreased from {} to {}; -> set export status to {}",
+						APIExportStatus.toCodeOrNull(currentExportStatus), oldSchedRecord.getQtyToDeliver(), schedRecord.getQtyToDeliver(), APIExportStatus.Pending.getCode());
+				schedRecord.setExportStatus(APIExportStatus.Pending.getCode());
+			}
 		}
 	}
 
