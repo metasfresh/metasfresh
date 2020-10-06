@@ -22,6 +22,18 @@
 
 package de.metas.ui.web.quickinput.field;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -31,20 +43,15 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 @Component
 public class PackingItemProductFieldHelper
 {
 	private final IHUPIItemProductDAO huPIItemProductsRepo = Services.get(IHUPIItemProductDAO.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	
+	private static final String SYSCONFIG_EnforcePrecisePricePerHUItemProduct = "de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper.EnforcePrecisePricePerHUItemProduct";
 
 	public Optional<I_M_HU_PI_Item_Product> getDefaultPackingMaterial(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
 	{
@@ -88,6 +95,9 @@ public class PackingItemProductFieldHelper
 			return Optional.empty();
 		}
 
+		final ClientId clientId = defaultPackingItemCriteria.getClientId();
+		final boolean enforcePrecisePricePerHUItemProduct = sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false, clientId.getRepoId());
+		
 		// TODO: check ASI too
 		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
@@ -97,7 +107,10 @@ public class PackingItemProductFieldHelper
 		queryVO.setDate(defaultPackingItemCriteria.getDate());
 		queryVO.setAllowAnyProduct(false);
 		queryVO.setAllowAnyPartner(false);
-		queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
+		if (enforcePrecisePricePerHUItemProduct)
+		{
+			queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
+		}
 		final List<I_M_HU_PI_Item_Product> itemProducts = piItemProductDAO.retrieveHUItemProducts(Env.getCtx(), queryVO, ITrx.TRXNAME_ThreadInherited);
 		return itemProducts.stream().findFirst();
 	}
