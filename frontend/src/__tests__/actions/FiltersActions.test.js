@@ -7,10 +7,14 @@ import {
   deleteFilter,
   updateNotValidFields,
   updateActiveFilter,
-  updateInlineFilter,
+  // updateInlineFilter, - there is an issue on BE side and cannot use Product Proposals to be able to write the test for this
   updateFilterWidgetShown,
   clearStaticFilters,
 } from '../../actions/FiltersActions';
+
+/**
+ * TODO: Also write test for updateInlineFilter
+ */
 
 import * as ACTION_TYPES from '../../constants/FilterTypes';
 import filtersData from '../../../test_setup/fixtures/filters/filtersActionsMock.json';
@@ -108,6 +112,34 @@ describe('FiltersActions general', () => {
     expect(store.getActions()[1].payload).toEqual({
       id: '540092_540092-FF',
       data: activeFilter,
+    });
+  });
+
+  it(`dispatches 'FILTER_UPDATE_WIDGET_SHOWN' action `, () => {
+    const store = mockStore();
+    store.dispatch(createFilter({ id: '540092_540092-FF', data: filtersData }));
+    // after we have in the store the filter we will set the flag to either `false` or `true` via the updateFilterWidgetShown action
+
+    Promise.all([
+      store.dispatch(
+        updateFilterWidgetShown({ id: '540092_540092-FF', data: true })
+      ),
+    ]).then(() => {
+      expect(store.getActions()[1].payload).toEqual({
+        id: '540092_540092-FF',
+        data: true,
+      });
+    });
+
+    Promise.all([
+      store.dispatch(
+        updateFilterWidgetShown({ id: '540092_540092-FF', data: false })
+      ),
+    ]).then(() => {
+      expect(store.getActions()[2].payload).toEqual({
+        id: '540092_540092-FF',
+        data: false,
+      });
     });
   });
 });
