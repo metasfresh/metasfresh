@@ -234,15 +234,16 @@ const mapStateToProps = (state, ownProps) => {
       ? state.filters[filterId]
       : null;
 
-  const allFilters = stateFilter
-    ? annotateFilters({
-        unannotatedFilters: stateFilter.filterData,
-        filtersActive: stateFilter.filtersActive,
-      })
-    : [];
+  const allFilters =
+    stateFilter && stateFilter.filterData
+      ? annotateFilters({
+          unannotatedFilters: stateFilter.filterData,
+          filtersActive: stateFilter.filtersActive,
+        })
+      : [];
 
   const flatActiveFilterIds =
-    stateFilter && stateFilter.filtersActive !== null
+    stateFilter && stateFilter.filtersActive
       ? stateFilter.filtersActive.map((item) => item.filterId)
       : [];
 

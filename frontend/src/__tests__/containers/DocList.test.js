@@ -343,6 +343,7 @@ describe('DocList', () => {
         expect(html).toContain('document-list-is-included');
       }, 4000);
 
+      
       await waitFor(() => {
         expect(
           store.getState().windowHandler.quickActions[
