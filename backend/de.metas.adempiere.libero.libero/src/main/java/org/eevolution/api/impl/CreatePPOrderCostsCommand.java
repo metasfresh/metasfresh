@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -15,6 +16,8 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -22,8 +25,12 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -32,7 +39,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
@@ -83,9 +91,12 @@ final class CreatePPOrderCostsCommand
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	//
-	private final ICurrentCostsRepository currentCostsRepository = Adempiere.getBean(ICurrentCostsRepository.class);
-	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
+	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+	private final ICurrentCostsRepository currentCostsRepository = SpringContextHolder.instance.getBean(ICurrentCostsRepository.class);
+	private final ICostElementRepository costElementsRepo = SpringContextHolder.instance.getBean(ICostElementRepository.class);
 
 	// parameters
 	private final PPOrderId ppOrderId;
@@ -184,6 +195,7 @@ final class CreatePPOrderCostsCommand
 				.costSegment(prepareCostSegment(mainProductId)
 						.attributeSetInstanceId(mainProductAsiId)
 						.build())
+				.uomId(mainProductQty.getUomId())
 				.build();
 	}
 
@@ -222,6 +234,7 @@ final class CreatePPOrderCostsCommand
 						.attributeSetInstanceId(asiId)
 						.build())
 				.coProductCostDistributionPercent(coProductCostDistributionPercent)
+				.uomId(UomId.ofRepoId(bomLine.getC_UOM_ID()))
 				.build();
 	}
 
@@ -240,11 +253,13 @@ final class CreatePPOrderCostsCommand
 		final ResourceId resourceId = activity.getResourceId();
 		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId);
 
+		final UomId durationUomId = uomDAO.getUomIdByTemporalUnit(activity.getDurationUnit());
 		return PPOrderCostCandidate.builder()
 				.trxType(PPOrderCostTrxType.ResourceUtilization)
 				.costSegment(prepareCostSegment(resourceProductId)
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 						.build())
+				.uomId(durationUomId)
 				.build();
 	}
 
@@ -273,34 +288,61 @@ final class CreatePPOrderCostsCommand
 				zeroOrderCosts);
 	}
 
-	private static PPOrderCost createPPOrderCost(
+	private PPOrderCost createPPOrderCost(
 			final PPOrderCostCandidate candidate,
 			final CurrentCost currentCost)
 	{
 		final PPOrderCostTrxType trxType = candidate.getTrxType();
 		final CostSegment costSegment = candidate.getCostSegment();
 
+		final UomId uomId = candidate.getUomId();
+		final I_C_UOM uom = uomDAO.getById(uomId);
+
+		final CostPrice costPrice = convertCostPrice(currentCost.getCostPrice(), costSegment.getProductId(), uomId);
+
 		return PPOrderCost.builder()
 				.trxType(trxType)
 				.costSegmentAndElement(costSegment.withCostElementId(currentCost.getCostElementId()))
-				.price(currentCost.getCostPrice())
+				.price(costPrice)
+				.accumulatedQty(Quantity.zero(uom))
 				.build();
 	}
 
-	private static PPOrderCost createZeroPPOrderCost(
+	private CostPrice convertCostPrice(
+			@NonNull final CostPrice costPrice,
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUomId)
+	{
+		final UomId uomId = costPrice.getUomId();
+		final CurrencyPrecision costingPrecision = currencyRepository.getCostingPrecision(costPrice.getCurrencyId());
+
+		return costPrice.convertAmounts(costAmount -> {
+			final ProductPrice productPrice = ProductPrice.builder()
+					.productId(productId)
+					.uomId(uomId)
+					.money(costAmount.toMoney())
+					.build();
+			final ProductPrice productPriceConv = uomConversionBL.convertProductPriceToUom(productPrice, targetUomId, costingPrecision);
+			return CostAmount.ofProductPrice(productPriceConv);
+		});
+	}
+
+	private PPOrderCost createZeroPPOrderCost(
 			final PPOrderCostCandidate candidate,
 			final CostElementId costElementId,
 			final CurrencyId currencyId)
 	{
 		final PPOrderCostTrxType trxType = candidate.getTrxType();
 		final CostSegmentAndElement costSegmentAndElement = candidate.getCostSegment().withCostElementId(costElementId);
-		final CostPrice zeroPrice = CostPrice.zero(currencyId);
 		final Percent coProductCostDistributionPercent = candidate.getCoProductCostDistributionPercent();
+		final I_C_UOM uom = uomDAO.getById(candidate.getUomId());
+
 		return PPOrderCost.builder()
 				.trxType(trxType)
 				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.costSegmentAndElement(costSegmentAndElement)
-				.price(zeroPrice)
+				.price(CostPrice.zero(currencyId, candidate.getUomId()))
+				.accumulatedQty(Quantity.zero(uom))
 				.build();
 	}
 
@@ -321,5 +363,7 @@ final class CreatePPOrderCostsCommand
 		PPOrderCostTrxType trxType;
 		@Nullable
 		Percent coProductCostDistributionPercent;
+		@NonNull
+		UomId uomId;
 	}
 }

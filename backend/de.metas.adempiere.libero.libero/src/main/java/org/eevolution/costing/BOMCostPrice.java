@@ -1,14 +1,9 @@
 package org.eevolution.costing;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.stream.Stream;
-
-import java.util.Objects;
-
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
@@ -16,6 +11,12 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -42,21 +43,28 @@ import lombok.ToString;
 @ToString
 public class BOMCostPrice
 {
-	public static BOMCostPrice empty(@NonNull final ProductId productId)
-	{
-		return builder().productId(productId).build();
-	}
-
 	@Getter
 	private final ProductId productId;
+	@Getter
+	private final UomId uomId;
 	private final HashMap<CostElementId, BOMCostElementPrice> pricesByElementId;
 
 	@Builder
 	private BOMCostPrice(
 			@NonNull final ProductId productId,
+			@NonNull final UomId uomId,
 			@NonNull @Singular final Collection<BOMCostElementPrice> costElementPrices)
 	{
+		if (!costElementPrices.isEmpty())
+		{
+			final UomId priceUomId = BOMCostElementPrice.extractUniqueUomId(costElementPrices);
+			if (!UomId.equals(uomId, priceUomId))
+			{
+				throw new AdempiereException("Expected " + uomId + " to " + costElementPrices);
+			}
+		}
 		this.productId = productId;
+		this.uomId = uomId;
 		pricesByElementId = costElementPrices
 				.stream()
 				.collect(GuavaCollectors.toHashMapByKey(BOMCostElementPrice::getCostElementId));
@@ -81,9 +89,11 @@ public class BOMCostPrice
 		}
 	}
 
-	public void setComponentsCostPrice(@NonNull final CostAmount costPrice, @NonNull final CostElementId costElementId)
+	public void setComponentsCostPrice(
+			@NonNull final CostAmount costPrice,
+			@NonNull final CostElementId costElementId)
 	{
-		pricesByElementId.computeIfAbsent(costElementId, k -> BOMCostElementPrice.zero(costElementId, costPrice.getCurrencyId()))
+		pricesByElementId.computeIfAbsent(costElementId, k -> BOMCostElementPrice.zero(costElementId, costPrice.getCurrencyId(), uomId))
 				.setComponentsCostPrice(costPrice);
 	}
 

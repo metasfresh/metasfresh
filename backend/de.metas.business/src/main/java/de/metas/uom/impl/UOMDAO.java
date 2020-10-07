@@ -106,14 +106,19 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public I_C_UOM retrieveByX12DE355(final Properties ctx, final String x12de355)
+	public I_C_UOM retrieveByX12DE355(
+			final Properties ctx,
+			final String x12de355)
 	{
 		final boolean throwExIfNull = true;
 		return retrieveByX12DE355(ctx, x12de355, throwExIfNull);
 	}
 
 	@Override
-	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355, final boolean throwExIfNull)
+	public I_C_UOM retrieveByX12DE355(
+			@CacheCtx final Properties ctx,
+			final String x12de355,
+			final boolean throwExIfNull)
 	{
 		final UomId uomId = retrieveUomIdByX12DE355(ctx, x12de355, throwExIfNull);
 		if (uomId == null)
@@ -167,6 +172,13 @@ public class UOMDAO implements IUOMDAO
 	{
 		final I_C_UOM uom = getById(uomId);
 		return UOMUtil.toTemporalUnit(uom);
+	}
+
+	@Override
+	public UomId getUomIdByTemporalUnit(@NonNull final TemporalUnit temporalUnit)
+	{
+		final String x12de355 = UOMUtil.toX12DE355(temporalUnit);
+		return getUomIdByX12DE355(x12de355);
 	}
 
 	@Override

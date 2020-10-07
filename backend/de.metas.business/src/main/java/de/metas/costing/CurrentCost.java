@@ -1,10 +1,5 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
@@ -15,6 +10,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -86,6 +85,7 @@ public final class CurrentCost
 		this.costPrice = CostPrice.builder()
 				.ownCostPrice(ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId))
 				.componentsCostPrice(componentsCostPrice != null ? CostAmount.of(componentsCostPrice, currencyId) : CostAmount.zero(currencyId))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.build();
 		this.currentQty = currentQty != null ? Quantity.of(currentQty, uom) : Quantity.zero(uom);
 		this.cumulatedAmt = cumulatedAmt != null ? CostAmount.of(cumulatedAmt, currencyId) : CostAmount.zero(currencyId);
@@ -141,7 +141,7 @@ public final class CurrentCost
 	/**
 	 * Add Amt/Qty and calculate weighted average.
 	 * ((OldAvg*OldQty)+(Price*Qty)) / (OldQty+Qty).
-	 * 
+	 * <p>
 	 * Also calls {@link #addCumulatedAmtAndQty(CostAmount, Quantity)}.
 	 *
 	 * @param amt total amt (price * qty)
@@ -153,10 +153,10 @@ public final class CurrentCost
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		assertCostCurrency(amt);
-		
-		if(qty.signum() == 0 && amt.signum() != 0)
+
+		if (qty.signum() == 0 && amt.signum() != 0)
 		{
-			throw new AdempiereException("Qty shall not be zero when amount is non zero: "+amt);
+			throw new AdempiereException("Qty shall not be zero when amount is non zero: " + amt);
 		}
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
@@ -174,7 +174,9 @@ public final class CurrentCost
 		addCumulatedAmtAndQty(amt, qtyConv);
 	}
 
-	private void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	private void addCumulatedAmtAndQty(
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
 

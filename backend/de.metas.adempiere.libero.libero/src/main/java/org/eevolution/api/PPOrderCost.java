@@ -1,17 +1,12 @@
 package org.eevolution.api;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,6 +16,9 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -32,12 +30,12 @@ import lombok.experimental.NonFinal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,6 +49,7 @@ import lombok.experimental.NonFinal;
 public class PPOrderCost
 {
 	@NonFinal
+	@Nullable
 	PPOrderCostId id;
 
 	PPOrderCostTrxType trxType;
@@ -60,7 +59,7 @@ public class PPOrderCost
 	CostPrice price;
 
 	CostAmount accumulatedAmount;
-	BigDecimal accumulatedQty;
+	Quantity accumulatedQty;
 
 	private Percent coProductCostDistributionPercent;
 
@@ -74,16 +73,21 @@ public class PPOrderCost
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final CostPrice price,
 			@Nullable final CostAmount accumulatedAmount,
-			@Nullable BigDecimal accumulatedQty,
-			@Nullable Percent coProductCostDistributionPercent,
-			@Nullable CostAmount postCalculationAmount)
+			@NonNull final Quantity accumulatedQty,
+			@Nullable final Percent coProductCostDistributionPercent,
+			@Nullable final CostAmount postCalculationAmount)
 	{
+		if (!UomId.equals(price.getUomId(), accumulatedQty.getUomId()))
+		{
+			throw new AdempiereException("UOM not matching: " + price+", "+ accumulatedQty);
+		}
+
 		this.id = id;
 		this.trxType = trxType;
 		this.costSegmentAndElement = costSegmentAndElement;
 		this.price = price;
 		this.accumulatedAmount = accumulatedAmount != null ? accumulatedAmount : CostAmount.zero(price.getCurrencyId());
-		this.accumulatedQty = accumulatedQty != null ? accumulatedQty : BigDecimal.ZERO;
+		this.accumulatedQty = accumulatedQty;
 		this.postCalculationAmount = postCalculationAmount != null ? postCalculationAmount : CostAmount.zero(price.getCurrencyId());
 
 		if (trxType.isCoProduct())
@@ -101,7 +105,9 @@ public class PPOrderCost
 		}
 	}
 
-	/** DON'T call it directly. It's called only by API */
+	/**
+	 * DON'T call it directly. It's called only by API
+	 */
 	public void setId(@NonNull final PPOrderCostId id)
 	{
 		this.id = id;
@@ -137,7 +143,9 @@ public class PPOrderCost
 		return getTrxType() == PPOrderCostTrxType.ByProduct;
 	}
 
-	public PPOrderCost addingAccumulatedAmountAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	public PPOrderCost addingAccumulatedAmountAndQty(
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty)
 	{
 		if (amt.isZero() && qty.isZero())
 		{
@@ -157,7 +165,9 @@ public class PPOrderCost
 				.build();
 	}
 
-	public PPOrderCost subtractingAccumulatedAmountAndQty(final CostAmount amt, final Quantity qty)
+	public PPOrderCost subtractingAccumulatedAmountAndQty(
+			final CostAmount amt,
+			final Quantity qty)
 	{
 		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate());
 	}
@@ -177,7 +187,7 @@ public class PPOrderCost
 		this.postCalculationAmount = postCalculationAmount;
 	}
 
-	/* package */void setPostCalculationAmountAsAccumulatedAmtr()
+	/* package */void setPostCalculationAmountAsAccumulatedAmt()
 	{
 		setPostCalculationAmount(getAccumulatedAmount());
 	}

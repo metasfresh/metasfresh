@@ -1,31 +1,30 @@
 package org.eevolution.costing;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -49,30 +48,49 @@ import lombok.Value;
  * #L%
  */
 
-/** BOM from costing point of view */
-@Builder
+/**
+ * BOM from costing point of view
+ */
 @Value
-public final class BOM
+public class BOM
 {
 	@NonNull
 	ProductId productId;
-	@NonNull
-	@Default
-	final AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 
 	@NonNull
-	@Default
-	final BigDecimal qty = BigDecimal.ONE;
+	AttributeSetInstanceId asiId;
 
 	@NonNull
-	@Singular
+	Quantity qty;
+
+	@NonNull
 	ImmutableList<BOMLine> lines;
 
 	@NonNull
 	@Getter(AccessLevel.PACKAGE)
-	final BOMCostPrice costPrice;
+	BOMCostPrice costPrice;
 
-	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(4); // FIXME: hardcoded precision
+	CurrencyPrecision precision = CurrencyPrecision.ofInt(4); // FIXME: hardcoded precision
+
+	@Builder
+	private BOM(
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId asiId,
+			@NonNull final Quantity qty,
+			@Singular @NonNull final ImmutableList<BOMLine> lines,
+			@NonNull final BOMCostPrice costPrice)
+	{
+		if (!UomId.equals(qty.getUomId(), costPrice.getUomId()))
+		{
+			throw new AdempiereException("UOM not matching: " + qty + ", " + costPrice);
+		}
+
+		this.productId = productId;
+		this.asiId = CoalesceUtil.coalesce(asiId, AttributeSetInstanceId.NONE);
+		this.qty = qty;
+		this.lines = lines;
+		this.costPrice = costPrice;
+	}
 
 	public void rollupCosts()
 	{
@@ -110,7 +128,9 @@ public final class BOM
 		return componentsTotalAmt.map(amt -> amt.divide(qty, precision));
 	}
 
-	private CostAmount distributeToCoProductBOMLines(@Nullable CostAmount bomCostPrice, @NonNull final CostElementId costElementId)
+	private CostAmount distributeToCoProductBOMLines(
+			@Nullable final CostAmount bomCostPrice,
+			@NonNull final CostElementId costElementId)
 	{
 		CostAmount bomCostPriceWithoutCoProducts = bomCostPrice;
 

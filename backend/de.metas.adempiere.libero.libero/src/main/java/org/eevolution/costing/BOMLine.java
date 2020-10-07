@@ -1,21 +1,22 @@
 package org.eevolution.costing;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.eevolution.api.BOMComponentType;
-
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.eevolution.api.BOMComponentType;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -39,7 +40,9 @@ import lombok.Value;
  * #L%
  */
 
-/** BOM line from costing point of view */
+/**
+ * BOM line from costing point of view
+ */
 @Value
 public final class BOMLine
 {
@@ -67,6 +70,11 @@ public final class BOMLine
 			@NonNull final BOMCostPrice costPrice,
 			@Nullable final Percent coProductCostDistributionPercent)
 	{
+		if (!UomId.equals(qty.getUomId(), costPrice.getUomId()))
+		{
+			throw new AdempiereException("UOM not matching: " + qty + ", " + costPrice);
+		}
+
 		this.componentType = componentType;
 		this.componentId = componentId;
 		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
@@ -80,7 +88,7 @@ public final class BOMLine
 			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
 			{
 				//TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
-//				throw new AdempiereException("coProductCostDistributionPercent shall be positive for " + this);
+				//				throw new AdempiereException("coProductCostDistributionPercent shall be positive for " + this);
 			}
 		}
 		else
@@ -138,7 +146,9 @@ public final class BOMLine
 		return componentCostAmount;
 	}
 
-	void setComponentsCostPrice(@NonNull final CostAmount elementCostPrice, @NonNull final CostElementId costElementId)
+	void setComponentsCostPrice(
+			@NonNull final CostAmount elementCostPrice,
+			@NonNull final CostElementId costElementId)
 	{
 		getCostPrice().setComponentsCostPrice(elementCostPrice, costElementId);
 	}

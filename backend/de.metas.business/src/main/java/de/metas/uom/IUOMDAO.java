@@ -75,6 +75,8 @@ public interface IUOMDAO extends ISingletonService
 
 	TemporalUnit getTemporalUnitByUomId(UomId uomId);
 
+	UomId getUomIdByTemporalUnit(@NonNull TemporalUnit temporalUnit);
+
 	UOMPrecision getStandardPrecision(UomId uomId);
 
 	/**

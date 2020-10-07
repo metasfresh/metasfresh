@@ -13,6 +13,8 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -21,6 +23,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPOrderCost;
@@ -62,6 +65,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IPPOrderCostBL orderCostBL = Services.get(IPPOrderCostBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final PPOrderId orderId;
 	private final ProductId mainProductId;
@@ -125,9 +129,9 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		return BOM.builder()
 				.productId(mainProductId)
 				.asiId(mainProductAsiId)
-				.qty(mainProductQty.toBigDecimal())
+				.qty(mainProductQty)
 				.lines(bomLines)
-				.costPrice(getProductCostPrice(mainProductId, orderCosts))
+				.costPrice(getProductCostPrice(mainProductId, orderCosts, mainProductQty.getUOM()))
 				.build();
 	}
 
@@ -164,15 +168,16 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 				.asiId(asiId)
 				.qty(qty)
 				.scrapPercent(scrapPercent)
-				.costPrice(getProductCostPrice(productId, orderCosts))
+				.costPrice(getProductCostPrice(productId, orderCosts, qty.getUOM()))
 				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
 
 	}
 
 	private BOMCostPrice getProductCostPrice(
-			final ProductId productId,
-			final PPOrderCosts orderCosts)
+			@NonNull final ProductId productId,
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final I_C_UOM targetUOM)
 	{
 		final List<BOMCostElementPrice> costElementPrices = orderCosts.getByProductAndCostElements(productId, costElementIds)
 				.stream()
@@ -181,6 +186,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 
 		return BOMCostPrice.builder()
 				.productId(productId)
+				.uomId(UomId.ofRepoId(targetUOM.getC_UOM_ID()))
 				.costElementPrices(costElementPrices)
 				.build();
 	}
@@ -203,8 +209,8 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 	}
 
 	public void changeOrderCostsFromBOM(
-			final PPOrderCosts orderCosts,
-			final BOM bom)
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final BOM bom)
 	{
 		final LinkedHashMap<CostSegmentAndElement, PPOrderCost> newOrderCosts = new LinkedHashMap<>();
 
@@ -217,10 +223,13 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 			PPOrderCost elementOrderCost = newOrderCosts.get(costSegmentAndElement);
 			if (elementOrderCost == null)
 			{
+				final I_C_UOM uom = uomDAO.getById(elementCostPrice.getCostPrice().getUomId());
+
 				elementOrderCost = PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.MainProduct)
 						.costSegmentAndElement(costSegmentAndElement)
 						.price(elementCostPrice.getCostPrice())
+						.accumulatedQty(Quantity.zero(uom))
 						.build();
 			}
 			else
@@ -247,11 +256,14 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 				PPOrderCost elementOrderCost = newOrderCosts.get(costSegmentAndElement);
 				if (elementOrderCost == null)
 				{
+					final I_C_UOM uom = uomDAO.getById(elementCostPrice.getCostPrice().getUomId());
+
 					elementOrderCost = PPOrderCost.builder()
 							.trxType(trxType)
 							.costSegmentAndElement(costSegmentAndElement)
 							.price(elementCostPrice.getCostPrice())
 							.coProductCostDistributionPercent(coProductCostDistributionPercent)
+							.accumulatedQty(Quantity.zero(uom))
 							.build();
 				}
 				else

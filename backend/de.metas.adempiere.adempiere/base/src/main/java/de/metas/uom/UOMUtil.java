@@ -1,18 +1,17 @@
 package de.metas.uom;
 
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-
+import com.google.common.collect.ImmutableBiMap;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
-import com.google.common.collect.ImmutableMap;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 
 /**
  * Utility class with more or less "trivial", but reusable for UOM-code.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class UOMUtil
 {
@@ -61,7 +60,6 @@ public class UOMUtil
 	}
 
 	/**
-	 *
 	 * WorkDay
 	 *
 	 * @param uom
@@ -122,13 +120,14 @@ public class UOMUtil
 	 * @param uom
 	 * @return true if is time UOM
 	 */
-	public static boolean isTime(final I_C_UOM uom)
+	public static boolean isTime(@NonNull final I_C_UOM uom)
 	{
 		final String x12de355 = uom.getX12DE355();
 		return temporalUnitsByX12DE355.containsKey(x12de355);
 	}
 
-	public static TemporalUnit toTemporalUnit(final I_C_UOM uom)
+	@NonNull
+	public static TemporalUnit toTemporalUnit(@NonNull final I_C_UOM uom)
 	{
 		final String x12de355 = uom.getX12DE355();
 		final TemporalUnit unit = temporalUnitsByX12DE355.get(x12de355);
@@ -139,7 +138,18 @@ public class UOMUtil
 		return unit;
 	}
 
-	private static final ImmutableMap<String, TemporalUnit> temporalUnitsByX12DE355 = ImmutableMap.<String, TemporalUnit> builder()
+	@NonNull
+	public static String toX12DE355(@NonNull final TemporalUnit temporalUnit)
+	{
+		final String x12de355 = temporalUnitsByX12DE355.inverse().get(temporalUnit);
+		if (x12de355 == null)
+		{
+			throw new AdempiereException("No X12DE355 found for temporal unit: " + temporalUnit);
+		}
+		return x12de355;
+	}
+
+	private static final ImmutableBiMap<String, TemporalUnit> temporalUnitsByX12DE355 = ImmutableBiMap.<String, TemporalUnit>builder()
 			.put(UOMConstants.X12_SECOND, ChronoUnit.SECONDS)
 			.put(UOMConstants.X12_MINUTE, ChronoUnit.MINUTES)
 			.put(UOMConstants.X12_HOUR, ChronoUnit.HOURS)

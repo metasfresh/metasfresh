@@ -212,7 +212,7 @@ public final class PPOrderCosts
 
 		//
 		// Update inbound costs and calculate total inbound costs
-		inboundCosts.forEach(cost -> cost.setPostCalculationAmountAsAccumulatedAmtr());
+		inboundCosts.forEach(cost -> cost.setPostCalculationAmountAsAccumulatedAmt());
 		final CostAmount totalInboundCostAmount = inboundCosts.stream()
 				.map(cost -> cost.getPostCalculationAmount())
 				.reduce(CostAmount::add)
