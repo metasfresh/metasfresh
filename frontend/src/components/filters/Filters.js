@@ -114,21 +114,16 @@ class Filters extends PureComponent {
       modalVisible,
       filters,
       filterId,
+      allFilters,
+      flatActiveFilterIds,
     } = this.props;
 
     const widgetShown = filters ? filters.widgetShown : false;
     const notValidFields = filters ? filters.notValidFields : false;
 
-    if (!filters || !viewId || !filters.filterData) return false;
+    if (!filters || !viewId || !filters.filterData || !allFilters.length)
+      return false;
     const { filtersActive, filtersCaptions: activeFiltersCaptions } = filters;
-
-    const allFilters = annotateFilters({
-      unannotatedFilters: filters.filterData,
-      filtersActive,
-    });
-
-    const flatActiveFilterIds =
-      filtersActive !== null ? filtersActive.map((item) => item.filterId) : [];
 
     return (
       <div
@@ -225,6 +220,8 @@ Filters.propTypes = {
   filters: PropTypes.object,
   clearAllFilters: PropTypes.func,
   updateNotValidFields: PropTypes.func,
+  allFilters: PropTypes.array,
+  flatActiveFilterIds: PropTypes.array,
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -232,11 +229,30 @@ const mapStateToProps = (state, ownProps) => {
   const { viewId, windowType: windowId } = ownProps;
   const filterId = getEntityRelatedId({ windowId, viewId });
 
+  const allFilters =
+    windowId && viewId && state.filters && state.filters[filterId]
+      ? annotateFilters({
+          unannotatedFilters: state.filters[filterId].filterData,
+          filtersActive: state.filters[filterId].filtersActive,
+        })
+      : [];
+
+  const flatActiveFilterIds =
+    windowId &&
+    viewId &&
+    state.filters &&
+    state.filters[filterId] &&
+    state.filters[filterId].filtersActive !== null
+      ? state.filters[filterId].filtersActive.map((item) => item.filterId)
+      : [];
+
   return {
     allowOutsideClick,
     modalVisible: modal.visible,
     filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
     filterId,
+    allFilters,
+    flatActiveFilterIds,
   };
 };
 
