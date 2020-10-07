@@ -3,10 +3,10 @@ import deepUnfreeze from 'deep-unfreeze';
 import { fieldValueToString } from '../utils/tableHelpers';
 import _ from 'lodash';
 
-export function clearAllFilters({ id, data }) {
+export function clearAllFilters({ filterId, data }) {
   return {
     type: types.CLEAR_ALL_FILTERS,
-    payload: { id, data },
+    payload: { id: filterId, data },
   };
 }
 
@@ -14,10 +14,10 @@ export function clearAllFilters({ id, data }) {
  * @method createFilter
  * @summary Add a new filter entry to the redux store
  */
-export function createFilter({ id, data }) {
+export function createFilter({ filterId, data }) {
   return {
     type: types.CREATE_FILTER,
-    payload: { id, data },
+    payload: { id: filterId, data },
   };
 }
 
@@ -25,10 +25,10 @@ export function createFilter({ id, data }) {
  * @method deleteFilter
  * @summary Remove the filter with specified `id` from the store
  */
-export function deleteFilter(id) {
+export function deleteFilter(filterId) {
   return {
     type: types.DELETE_FILTER,
-    payload: { id },
+    payload: { id: filterId },
   };
 }
 
@@ -47,10 +47,10 @@ export function updateNotValidFields({ filterId, data }) {
  * @method updateActiveFilter
  * @summary Updates the activeFilter in the store for the corresponding entity id
  */
-export function updateActiveFilter({ id, data }) {
+export function updateActiveFilter({ filterId, data }) {
   return {
     type: types.UPDATE_ACTIVE_FILTER,
-    payload: { id, data },
+    payload: { id: filterId, data },
   };
 }
 
@@ -69,10 +69,10 @@ export function updateInlineFilter({ filterId, data }) {
  * @method updateFilterWidgetShown
  * @summary Updates the widgetShown in the store for the corresponding entity id with a boolean value
  */
-export function updateFilterWidgetShown({ id, data }) {
+export function updateFilterWidgetShown({ filterId, data }) {
   return {
     type: types.FILTER_UPDATE_WIDGET_SHOWN,
-    payload: { id, data },
+    payload: { id: filterId, data },
   };
 }
 

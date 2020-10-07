@@ -349,7 +349,7 @@ export function fetchDocument({
         });
         dispatch(
           createFilter({
-            id: filterId,
+            filterId,
             data: {
               filterData: view.layout.filters, // set the proper layout for the filters
               filtersActive: response.data.filters,

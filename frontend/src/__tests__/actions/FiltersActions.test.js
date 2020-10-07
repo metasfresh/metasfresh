@@ -37,7 +37,9 @@ describe('FiltersActions general', () => {
     ];
 
     const store = mockStore();
-    store.dispatch(createFilter({ id: '540092_540092-FF', data: filtersData }));
+    store.dispatch(
+      createFilter({ filterId: '540092_540092-FF', data: filtersData })
+    );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
@@ -51,7 +53,7 @@ describe('FiltersActions general', () => {
 
     const store = mockStore();
     store.dispatch(
-      clearAllFilters({ id: '143_143-E', data: filtersDataClearAll })
+      clearAllFilters({ filterId: '143_143-E', data: filtersDataClearAll })
     );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
@@ -76,7 +78,9 @@ describe('FiltersActions general', () => {
     ];
 
     const store = mockStore();
-    store.dispatch(createFilter({ id: '540092_540092-FF', data: filtersData }));
+    store.dispatch(
+      createFilter({ filterId: '540092_540092-FF', data: filtersData })
+    );
     expect(store.getActions()).toEqual(
       expect.arrayContaining(expectedActionsOnCreation)
     );
@@ -100,7 +104,7 @@ describe('FiltersActions general', () => {
       },
     ];
     store.dispatch(
-      updateActiveFilter({ id: '540092_540092-FF', data: activeFilter })
+      updateActiveFilter({ filterId: '540092_540092-FF', data: activeFilter })
     );
     expect(store.getActions()[1].type).toEqual(
       ACTION_TYPES.UPDATE_ACTIVE_FILTER
@@ -113,12 +117,14 @@ describe('FiltersActions general', () => {
 
   it(`dispatches 'FILTER_UPDATE_WIDGET_SHOWN' action `, () => {
     const store = mockStore();
-    store.dispatch(createFilter({ id: '540092_540092-FF', data: filtersData }));
+    store.dispatch(
+      createFilter({ filterId: '540092_540092-FF', data: filtersData })
+    );
     // after we have in the store the filter we will set the flag to either `false` or `true` via the updateFilterWidgetShown action
 
     Promise.all([
       store.dispatch(
-        updateFilterWidgetShown({ id: '540092_540092-FF', data: true })
+        updateFilterWidgetShown({ filterId: '540092_540092-FF', data: true })
       ),
     ]).then(() => {
       expect(store.getActions()[1].payload).toEqual({
@@ -129,7 +135,7 @@ describe('FiltersActions general', () => {
 
     Promise.all([
       store.dispatch(
-        updateFilterWidgetShown({ id: '540092_540092-FF', data: false })
+        updateFilterWidgetShown({ filterId: '540092_540092-FF', data: false })
       ),
     ]).then(() => {
       expect(store.getActions()[2].payload).toEqual({
@@ -141,7 +147,9 @@ describe('FiltersActions general', () => {
 
   it(`dispatches 'CLEAR_STATIC_FILTERS' action `, () => {
     const store = mockStore();
-    store.dispatch(createFilter({ id: '500221_500221-G', data: filtersData }));
+    store.dispatch(
+      createFilter({ filterId: '500221_500221-G', data: filtersData })
+    );
 
     Promise.all([
       store.dispatch(
@@ -157,7 +165,9 @@ describe('FiltersActions general', () => {
 
   it(`dispatches 'UPDATE_INLINE_FILTER' action `, () => {
     const store = mockStore();
-    store.dispatch(createFilter({ id: '500221_500221-F', data: filtersData }));
+    store.dispatch(
+      createFilter({ filterId: '500221_500221-F', data: filtersData })
+    );
 
     Promise.all([
       store.dispatch(

@@ -65,7 +65,7 @@ class Filters extends PureComponent {
       filterToAdd,
     });
 
-    updateActiveFilter({ id: filterId, data: newFiltersActive }); // update in the store the filters
+    updateActiveFilter({ filterId, data: newFiltersActive }); // update in the store the filters
     updateDocList(newFiltersActive); // move on and update the page with the new filters via DocList
   };
 
@@ -77,7 +77,7 @@ class Filters extends PureComponent {
    */
   handleShow = (value) => {
     const { filterId, updateFilterWidgetShown } = this.props;
-    updateFilterWidgetShown({ id: filterId, data: value });
+    updateFilterWidgetShown({ filterId, data: value });
   };
 
   /**
@@ -87,7 +87,7 @@ class Filters extends PureComponent {
    */
   clearFilters = (filterToClear) => {
     const { filterId, clearAllFilters, filters, updateDocList } = this.props;
-    clearAllFilters({ id: filterId, data: filterToClear });
+    clearAllFilters({ filterId, data: filterToClear });
     // fetch again the doc content after filters were updated into the store
     updateDocList(filters.filtersActive);
   };
