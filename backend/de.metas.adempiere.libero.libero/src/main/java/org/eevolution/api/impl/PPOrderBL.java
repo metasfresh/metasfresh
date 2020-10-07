@@ -85,7 +85,13 @@ public class PPOrderBL implements IPPOrderBL
 {
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMBL orderBOMService = Services.get(IPPOrderBOMBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IPPRoutingRepository routingRepo = Services.get(IPPRoutingRepository.class);
+	private final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 
 	@Override
 	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
@@ -148,7 +154,6 @@ public class PPOrderBL implements IPPOrderBL
 				return;
 			}
 
-			final IPPRoutingRepository routingRepo = SpringContextHolder.instance.getBean(IPPRoutingRepository.class);
 			final PPRouting routing = routingRepo.getById(routingId);
 
 			qtyBatchSize = routing.getQtyPerBatch().setScale(0, RoundingMode.UP);
@@ -180,7 +185,6 @@ public class PPOrderBL implements IPPOrderBL
 
 		//
 		// Routing
-		final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		return orderRouting.isSomethingProcessed();
@@ -245,8 +249,6 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void updateBOMOrderLinesWarehouseAndLocator(final I_PP_Order ppOrder)
 	{
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-
 		for (final I_PP_Order_BOMLine orderBOMLine : ppOrderBOMsRepo.retrieveOrderBOMLines(ppOrder))
 		{
 			PPOrderUtil.updateBOMLineWarehouseAndLocatorFromOrder(orderBOMLine, ppOrder);
@@ -260,8 +262,6 @@ public class PPOrderBL implements IPPOrderBL
 			@NonNull final String docBaseType,
 			@Nullable final String docSubType)
 	{
-		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
-
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docBaseType)
 				.docSubType(docSubType)
@@ -276,8 +276,6 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void closeOrder(@NonNull final PPOrderId ppOrderId)
 	{
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
 		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 
 		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
@@ -303,7 +301,7 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void changeScheduling(@NonNull final PPOrderScheduleChangeRequest request)
 	{
-		Services.get(IPPOrderRoutingRepository.class).changeActivitiesScheduling(request.getOrderId(), request.getActivityChangeRequests());
+		orderRoutingRepo.changeActivitiesScheduling(request.getOrderId(), request.getActivityChangeRequests());
 		ppOrdersRepo.changeOrderScheduling(request.getOrderId(), request.getScheduledStartDate(), request.getScheduledEndDate());
 	}
 
@@ -318,8 +316,7 @@ public class PPOrderBL implements IPPOrderBL
 				.build()
 				.execute();
 
-		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-		orderRoutingsRepo.save(orderRouting);
+		orderRoutingRepo.save(orderRouting);
 
 		copyAttachmentsFromTemplates(orderRouting);
 	}
@@ -364,8 +361,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		reportQtyToProcessOnNotStartedActivities(orderId);
 
-		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-		final PPOrderRouting orderRouting = orderRoutingsRepo.getByOrderId(orderId);
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
@@ -377,15 +373,12 @@ public class PPOrderBL implements IPPOrderBL
 			}
 		}
 
-		orderRoutingsRepo.save(orderRouting);
+		orderRoutingRepo.save(orderRouting);
 	}
 
 	private void reportQtyToProcessOnNotStartedActivities(final PPOrderId orderId)
 	{
-		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-		final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
-
-		final PPOrderRouting orderRouting = orderRoutingsRepo.getByOrderId(orderId);
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
 		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
 

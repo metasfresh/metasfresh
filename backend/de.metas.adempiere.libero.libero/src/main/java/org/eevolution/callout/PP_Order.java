@@ -50,12 +50,19 @@ public class PP_Order extends CalloutEngine
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory = Services.get(IDocumentNoBuilderFactory.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IPPRoutingRepository routingRepo = Services.get(IPPRoutingRepository.class);
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+
+	public PP_Order(
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
+	{
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
+	}
+
 
 	/**
 	 * When document type (target) is changed, update the DocumentNo.
