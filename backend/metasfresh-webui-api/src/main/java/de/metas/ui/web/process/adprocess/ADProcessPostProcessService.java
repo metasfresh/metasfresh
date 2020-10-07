@@ -376,7 +376,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.targetTab(recordsToOpen.getTargetTab())
+						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 						.build();
 			}
 			else if (ViewOpenTarget.NewBrowserTab.equals(target))
@@ -384,7 +384,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.targetTab(recordsToOpen.getTargetTab())
+						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 						.build();
 			}
 
