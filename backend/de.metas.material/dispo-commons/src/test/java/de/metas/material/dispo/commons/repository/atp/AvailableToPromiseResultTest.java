@@ -18,7 +18,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -359,8 +358,11 @@ public class AvailableToPromiseResultTest
 					.seqNo(1)
 					.build();
 
-			assertThatThrownBy(() -> result.addQtyToAllMatchingGroups(request))
-					.hasMessageStartingWith("No matching group found for ");
+			result.addQtyToAllMatchingGroups(request);
+
+			final AvailableToPromiseResult availableToPromiseResult = result.build();
+
+			assertThat(availableToPromiseResult.getResultGroups()).isEmpty();
 		}
 
 		@Test
