@@ -229,21 +229,21 @@ const mapStateToProps = (state, ownProps) => {
   const { viewId, windowType: windowId } = ownProps;
   const filterId = getEntityRelatedId({ windowId, viewId });
 
-  const allFilters =
+  const stateFilter =
     windowId && viewId && state.filters && state.filters[filterId]
-      ? annotateFilters({
-          unannotatedFilters: state.filters[filterId].filterData,
-          filtersActive: state.filters[filterId].filtersActive,
-        })
-      : [];
+      ? state.filters[filterId]
+      : null;
+
+  const allFilters = stateFilter
+    ? annotateFilters({
+        unannotatedFilters: stateFilter.filterData,
+        filtersActive: stateFilter.filtersActive,
+      })
+    : [];
 
   const flatActiveFilterIds =
-    windowId &&
-    viewId &&
-    state.filters &&
-    state.filters[filterId] &&
-    state.filters[filterId].filtersActive !== null
-      ? state.filters[filterId].filtersActive.map((item) => item.filterId)
+    stateFilter && stateFilter.filtersActive !== null
+      ? stateFilter.filtersActive.map((item) => item.filterId)
       : [];
 
   return {
