@@ -173,7 +173,10 @@ public class ShipmentService
 
 		if (Check.isNotBlank(createShipmentInfo.getProductSearchKey()))
 		{
-			final ProductQuery query = ProductQuery.builder().value(createShipmentInfo.getProductSearchKey()).orgId(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID())).build();
+			final ProductQuery query = ProductQuery.builder().value(createShipmentInfo.getProductSearchKey())
+					.orgId(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()))
+					.includeAnyOrg(true) // include articles with org=*
+					.build();
 			final ProductId incomingProductId = productDAO.retrieveProductIdBy(query);
 
 			if (incomingProductId == null || incomingProductId.getRepoId() != shipmentSchedule.getM_Product_ID())
