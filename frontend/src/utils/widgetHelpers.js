@@ -26,12 +26,12 @@ export function getFormatForDateField(widgetType) {
 }
 
 /*
- * Helper function to turn date value into a Moment object and optionally format it.
+ * Helper function to turn date value into a Moment object format it.
  *
  * @param {object} value
  * @param {string} [FORMAT]
  */
-export function generateMomentObj(value, FORMAT) {
+export function getFormattedDate(value, FORMAT) {
   if (Moment.isMoment(value)) {
     return value.format(FORMAT);
   }
