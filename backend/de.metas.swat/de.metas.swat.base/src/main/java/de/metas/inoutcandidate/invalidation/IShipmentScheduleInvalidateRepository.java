@@ -41,7 +41,8 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
 
 	/**
-	 * Sets the {@link I_M_ShipmentSchedule#COLUMNNAME_IsValid} column to <code>'N'</code> for all shipment schedule entries whose order line has the given product id.
+	 * Invalidate all shipment schedules for give product.
+	 *
 	 * @deprecated please be more selective with the invalidation, using storage segments
 	 */
 	@Deprecated
@@ -49,15 +50,11 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 
 	/**
 	 * Invalidates all shipment schedules which have one of the given <code>headerAggregationKeys</code>.
-	 *
-	 * @param headerAggregationKeys
 	 */
 	void invalidateForHeaderAggregationKeys(Set<String> headerAggregationKeys);
 
 	/**
 	 * Invalidate given shipment schedules, even if they are already Processed.
-	 *
-	 * @param shipmentSchedules
 	 */
 	void invalidateShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
 
@@ -66,7 +63,6 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
 	 *
-	 * @param storageSegments
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
 	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);
@@ -75,18 +71,19 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 
 	/**
 	 * Invalidate (i.e. schedule for recompute) all records from current tenant
-	 *
-	 * @param ctx
-	 * @see #invalidateForProduct(int, String)
 	 */
 	void invalidateAll(Properties ctx);
 
 	void markAllToRecomputeOutOfTrx(PInstanceId pinstanceId);
 
-	/** Delete M_ShipmentSchedule_Recompute records for given tag */
+	/**
+	 * Delete M_ShipmentSchedule_Recompute records for given tag
+	 */
 	void deleteRecomputeMarkersOutOfTrx(PInstanceId adPInstanceId);
 
-	/** Untag M_ShipmentSchedule_Recompute records which were tagged with given tag */
+	/**
+	 * Untag M_ShipmentSchedule_Recompute records which were tagged with given tag
+	 */
 	void releaseRecomputeMarkerOutOfTrx(PInstanceId adPInstanceId);
 
 	IQueryFilter<I_M_ShipmentSchedule> createInvalidShipmentSchedulesQueryFilter(PInstanceId pinstanceId);

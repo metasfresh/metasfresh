@@ -39,6 +39,8 @@ import org.compiere.util.TrxRunnable;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Transaction Manager
  *
@@ -460,7 +462,7 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * @return previous trxName (before setting this one)
 	 */
-	String setThreadInheritedTrxName(String trxName);
+	String setThreadInheritedTrxName(@Nullable String trxName);
 
 	/**
 	 * Gets current Thread's transaction name.

@@ -293,7 +293,7 @@ public class InterfaceWrapperHelper
 		return create(model, cl, useOldValues);
 	}
 
-	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -879,7 +879,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
+	 * @param modelClass
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */

@@ -41,7 +41,9 @@ import lombok.NonNull;
 
 public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverter
 {
-	/** for backward; compatibility */
+	/**
+	 * for backward; compatibility
+	 */
 	default BigDecimal convertQty(
 			ProductId productId,
 			BigDecimal qty,
@@ -78,10 +80,6 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
 
-	/**
-	 * @deprecated please consider using {@link #convertQuantityTo(Quantity, UOMConversionContext, UomId)}
-	 */
-	@Deprecated
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
 
 	/**
@@ -90,7 +88,6 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	 * The new {@link Quantity} object will have the given {@code quantity}'s properties as their source Qty/UOM.
 	 *
 	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
-	 *
 	 * @return new Quantity converted to given <code>uom</code>.
 	 */
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, UomId uomToId);
@@ -115,8 +112,8 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	/**
 	 * Convert price from <code>uomFrom</code> to <code>uomTo</code>
 	 *
-	 * @param uomFrom may not be <code>null</code>.
-	 * @param uomTo may not be <code>null</code>.
+	 * @param uomFrom        may not be <code>null</code>.
+	 * @param uomTo          may not be <code>null</code>.
 	 * @param pricePrecision precision to be used for resulting price
 	 * @return converted price using <code>pricePrecision</code>; never return NULL.
 	 */
@@ -134,9 +131,9 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	/**
 	 * Get Converted Qty from Server (no cache)
 	 *
-	 * @param qty The quantity to be converted
-	 * @param uomFrom The C_UOM of the qty
-	 * @param uomTo The targeted UOM
+	 * @param qty             The quantity to be converted
+	 * @param uomFrom         The C_UOM of the qty
+	 * @param uomTo           The targeted UOM
 	 * @param useStdPrecision if true, standard precision, if false costing precision
 	 * @return amount
 	 * @deprecated should not be used
@@ -149,8 +146,8 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	 * <p>
 	 * As a rule of thumb, if you want to get QtyEntered from QtOrdered/Moved/Invoiced/Requiered, this is your method.
 	 *
-	 * @param productId product from whose stocking UOM we want to convert
-	 * @param uomDest the UOM to which we want to convert
+	 * @param productId    product from whose stocking UOM we want to convert
+	 * @param uomDest      the UOM to which we want to convert
 	 * @param qtyToConvert the Qty in the product's stocking UOM
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>uomDest</code> and if there is no conversion rate to use.
 	 */
