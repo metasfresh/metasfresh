@@ -1,10 +1,67 @@
+import Moment from 'moment';
+
 import {
   isNumberField,
   formatValueByWidgetType,
   validatePrecision,
+  getFormatForDateField,
+  getFormattedDate,
 } from '../../utils/widgetHelpers';
+import {
+  DATE_FORMAT,
+  TIME_FORMAT,
+  DATE_TIMEZONE_FORMAT,
+} from '../../constants/Constants';
 
 describe('Widget helpers', () => {
+  describe('getFormatForDateField', () => {
+    it(`returns default format`, () => {
+      const widgetType = 'Text';
+      expect(getFormatForDateField(widgetType)).toEqual(DATE_TIMEZONE_FORMAT);
+    });
+
+    it(`returns default format`, () => {
+      const widgetType = 'Date';
+      expect(getFormatForDateField(widgetType)).toEqual(DATE_FORMAT);
+    });
+
+    it(`returns default format`, () => {
+      const widgetType = 'Time';
+      expect(getFormatForDateField(widgetType)).toEqual(TIME_FORMAT);
+    });
+  });
+
+  describe('getFormattedDate', () => {
+    const date = '2020-04-07T00:00:00+02:00';
+
+    it(`returns formatted date string if it's already a Moment object`, () => {
+      const d = Moment(date);
+      const f = DATE_FORMAT;
+
+      expect(getFormattedDate(d, f)).toEqual('2020-04-07');
+    });
+
+    it(`returns a string with default formatting if it's already a Moment object`, () => {
+      const d = Moment(date);
+
+      expect(getFormattedDate(d)).toEqual(date);
+    });    
+
+    it(`returns formatted string for date string`, () => {
+      const f = DATE_FORMAT;
+
+      expect(getFormattedDate(date, f)).toEqual('2020-04-07');
+    });
+
+    it(`returns a string with default formatting for date string`, () => {
+      expect(getFormattedDate(date)).toEqual(date);
+    });
+
+    it(`returns 'null' for no value`, () => {
+      expect(getFormattedDate()).toEqual(null);
+    });
+  });
+
   describe('is NumberField function', () => {
     it('createAmmount works correctly', () => {
       const resultToCheckOne = isNumberField('Integer');

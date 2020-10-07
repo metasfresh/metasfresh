@@ -9,7 +9,7 @@ import {
   DATE_TIMEZONE_FORMAT,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
-import { getClassNames, generateMomentObj } from '../../utils/widgetHelpers';
+import { getClassNames, getFormattedDate } from '../../utils/widgetHelpers';
 import { WidgetRendererPropTypes } from './PropTypes';
 import { withForwardedRef } from '../hoc/WithRouterAndRef';
 
@@ -31,7 +31,7 @@ class WidgetRenderer extends PureComponent {
     super(props);
 
     this.getClassNames = getClassNames.bind(this);
-    this.generateMomentObj = generateMomentObj.bind(this);
+    this.getFormattedDate = getFormattedDate.bind(this);
   }
 
   /**
@@ -213,7 +213,7 @@ class WidgetRenderer extends PureComponent {
                 patch={(date) =>
                   onPatch(
                     widgetField,
-                    this.generateMomentObj(date, DATE_FORMAT),
+                    this.getFormattedDate(date, DATE_FORMAT),
                     null,
                     null,
                     true
@@ -239,7 +239,7 @@ class WidgetRenderer extends PureComponent {
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.generateMomentObj(date, DATE_TIMEZONE_FORMAT),
+                  this.getFormattedDate(date, DATE_TIMEZONE_FORMAT),
                   null,
                   null,
                   true
@@ -259,11 +259,11 @@ class WidgetRenderer extends PureComponent {
               {...dateProps}
               timeFormat={TIME_FORMAT}
               dateFormat={false}
-              value={this.generateMomentObj(widgetValue, TIME_FORMAT)}
+              value={this.getFormattedDate(widgetValue, TIME_FORMAT)}
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.generateMomentObj(date, TIME_FORMAT),
+                  this.getFormattedDate(date, TIME_FORMAT),
                   null,
                   null,
                   true
@@ -284,7 +284,7 @@ class WidgetRenderer extends PureComponent {
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.generateMomentObj(date, `x`),
+                  this.getFormattedDate(date, `x`),
                   null,
                   null,
                   true
