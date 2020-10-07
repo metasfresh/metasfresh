@@ -1,33 +1,8 @@
 package org.eevolution.api.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.IPPOrderRoutingRepository;
-import org.eevolution.api.PPOrderCost;
-import org.eevolution.api.PPOrderCostTrxType;
-import org.eevolution.api.PPOrderCosts;
-import org.eevolution.api.PPOrderRoutingActivity;
-import org.eevolution.costing.BOM;
-import org.eevolution.costing.OrderBOMCostCalculatorRepository;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElementId;
@@ -41,6 +16,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
@@ -54,6 +30,27 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCostTrxType;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.costing.BOM;
+import org.eevolution.costing.OrderBOMCostCalculatorRepository;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -107,8 +104,8 @@ final class CreatePPOrderCostsCommand
 		mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
 
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		mainProductQty = ppOrderBL.getQtyOrdered(ppOrder);
+		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
+		mainProductQty = orderBOMBL.getQuantities(ppOrder).getQtyRequiredToProduce();
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		acctSchema = acctSchemasRepo.getByCliendAndOrg(clientId, orgId);
@@ -116,7 +113,7 @@ final class CreatePPOrderCostsCommand
 
 	public PPOrderCosts execute()
 	{
-		PPOrderCosts orderCosts = createNewOrderCosts();
+		final PPOrderCosts orderCosts = createNewOrderCosts();
 
 		for (final CostingMethod costingMethod : getCostingMethodsWhichRequiredBOMRollup())
 		{
@@ -128,7 +125,9 @@ final class CreatePPOrderCostsCommand
 		return orderCosts;
 	}
 
-	private void rollupForCostingMethod(final PPOrderCosts orderCosts, final CostingMethod costingMethod)
+	private void rollupForCostingMethod(
+			final PPOrderCosts orderCosts,
+			final CostingMethod costingMethod)
 	{
 		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
@@ -163,16 +162,15 @@ final class CreatePPOrderCostsCommand
 				.flatMap(this::createPPOrderCostsAndStream)
 				.collect(ImmutableList.toImmutableList());
 
-		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+		return PPOrderCosts.builder()
 				.orderId(ppOrderId)
 				.costs(orderCostsList)
 				.build();
-		return orderCosts;
 	}
 
 	private Set<PPOrderCostCandidate> extractCandidates()
 	{
-		return ImmutableSet.<PPOrderCostCandidate> builder()
+		return ImmutableSet.<PPOrderCostCandidate>builder()
 				.add(createCandidateFromMainProduct())
 				.addAll(createCandidatesFromBOMLines())
 				.addAll(createCandidatesFromRouting())
@@ -240,11 +238,6 @@ final class CreatePPOrderCostsCommand
 	private PPOrderCostCandidate createCostSegmentForOrderActivityOrNull(final PPOrderRoutingActivity activity)
 	{
 		final ResourceId resourceId = activity.getResourceId();
-		if (resourceId == null)
-		{
-			return null;
-		}
-
 		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId);
 
 		return PPOrderCostCandidate.builder()
@@ -280,7 +273,9 @@ final class CreatePPOrderCostsCommand
 				zeroOrderCosts);
 	}
 
-	private static PPOrderCost createPPOrderCost(final PPOrderCostCandidate candidate, final CurrentCost currentCost)
+	private static PPOrderCost createPPOrderCost(
+			final PPOrderCostCandidate candidate,
+			final CurrentCost currentCost)
 	{
 		final PPOrderCostTrxType trxType = candidate.getTrxType();
 		final CostSegment costSegment = candidate.getCostSegment();
@@ -292,7 +287,10 @@ final class CreatePPOrderCostsCommand
 				.build();
 	}
 
-	private static PPOrderCost createZeroPPOrderCost(final PPOrderCostCandidate candidate, final CostElementId costElementId, final CurrencyId currencyId)
+	private static PPOrderCost createZeroPPOrderCost(
+			final PPOrderCostCandidate candidate,
+			final CostElementId costElementId,
+			final CurrencyId currencyId)
 	{
 		final PPOrderCostTrxType trxType = candidate.getTrxType();
 		final CostSegmentAndElement costSegmentAndElement = candidate.getCostSegment().withCostElementId(costElementId);

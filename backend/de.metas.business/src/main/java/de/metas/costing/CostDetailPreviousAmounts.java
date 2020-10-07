@@ -55,6 +55,6 @@ public class CostDetailPreviousAmounts
 
 	public CurrencyId getCurrencyId()
 	{
-		return getCostPrice().getCurrenyId();
+		return getCostPrice().getCurrencyId();
 	}
 }

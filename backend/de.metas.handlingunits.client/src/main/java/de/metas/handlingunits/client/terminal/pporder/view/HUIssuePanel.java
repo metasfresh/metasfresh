@@ -25,29 +25,6 @@ package de.metas.handlingunits.client.terminal.pporder.view;
  * #L%
  */
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.apps.form.FormFrame;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.DisplayType;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.model.I_PP_Order;
-
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
@@ -95,6 +72,30 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.apps.form.FormFrame;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.DisplayType;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.model.I_PP_Order;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author cg
@@ -425,16 +426,10 @@ public class HUIssuePanel implements IHUSelectPanel
 		//
 		// Attribute set instance description
 		{
-			final I_M_AttributeSetInstance attributeSetInstance = ppOrder.getM_AttributeSetInstance();
-			final String asiDescription;
-			if (attributeSetInstance != null)
-			{
-				asiDescription = attributeSetInstance.getDescription();
-			}
-			else
-			{
-				asiDescription = null;
-			}
+			final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
+			final String asiDescription = attributeSetInstanceBL.getASIDescriptionById(asiId);
 
 			details.append("<td>")
 					.append("@").append(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID).append("@")
@@ -474,7 +469,10 @@ public class HUIssuePanel implements IHUSelectPanel
 		detailsLabel.setLabel(detailsTrl);
 	}
 
-	private IComponent createPanel(final IContainer content, final IComponent component, final Object constraints)
+	private IComponent createPanel(
+			final IContainer content,
+			final IComponent component,
+			final Object constraints)
 	{
 		content.add(component, constraints);
 
@@ -492,7 +490,9 @@ public class HUIssuePanel implements IHUSelectPanel
 	}
 
 	@Override
-	public void addPropertyChangeListener(final String propertyName, final PropertyChangeListener listener)
+	public void addPropertyChangeListener(
+			final String propertyName,
+			final PropertyChangeListener listener)
 	{
 		pcs.addPropertyChangeListener(propertyName, listener);
 	}
@@ -627,7 +627,9 @@ public class HUIssuePanel implements IHUSelectPanel
 	/**
 	 * Open HUEditor on Receipt warehouse letting the user to do further editing and move the HUs forward through DD Order Line.
 	 */
-	private void doReceiptHUEditor(final List<I_M_HU> planningHUs, final CUKey cuKey)
+	private void doReceiptHUEditor(
+			final List<I_M_HU> planningHUs,
+			final CUKey cuKey)
 	{
 		final ITerminalContext terminalContext = getTerminalContext();
 
@@ -660,7 +662,7 @@ public class HUIssuePanel implements IHUSelectPanel
 			// Activate editor dialog
 			editorDialog.activate();
 		}
-		
+
 		planningHUs.forEach(InterfaceWrapperHelper::markStaled);
 	}
 

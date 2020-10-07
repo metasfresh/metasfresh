@@ -3,13 +3,6 @@
  */
 package de.metas.manufacturing.acct;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.acct.DocLine;
-import org.compiere.model.MAccount;
-import org.compiere.util.DB;
-import org.eevolution.model.I_PP_Cost_Collector;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
@@ -24,6 +17,13 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.acct.DocLine;
+import org.compiere.model.MAccount;
+import org.compiere.util.DB;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.model.I_PP_Cost_Collector;
 
 /**
  * @author Teo Sarca, www.arhipac.ro
@@ -31,15 +31,22 @@ import de.metas.util.Services;
  */
 public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 {
-	public DocLine_CostCollector(final I_PP_Cost_Collector cc, final Doc_PPCostCollector doc)
+	public DocLine_CostCollector(
+			final I_PP_Cost_Collector cc,
+			final Doc_PPCostCollector doc)
 	{
 		super(InterfaceWrapperHelper.getPO(cc), doc);
 
-		setQty(Quantity.of(cc.getMovementQty(), getProductStockingUOM()), false);
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty();
+		setQty(movementQty, false);
+
 		setReversalLine_ID(cc.getReversal_ID());
 	}
 
-	public MAccount getAccountForCostElement(final AcctSchema as, final CostElement costElement)
+	public MAccount getAccountForCostElement(
+			final AcctSchema as,
+			final CostElement costElement)
 	{
 		final ProductAcctType acctType = getProductAcctTypeByCostElement(costElement);
 		return getAccount(acctType, as);
@@ -75,7 +82,9 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 	}
 
 	@Override
-	public MAccount getAccount(final ProductAcctType acctType, final AcctSchema as)
+	public MAccount getAccount(
+			final ProductAcctType acctType,
+			final AcctSchema as)
 	{
 		final ProductId productId = getProductId();
 		if (productId == null)

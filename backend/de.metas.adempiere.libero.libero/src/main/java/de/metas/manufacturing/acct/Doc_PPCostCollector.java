@@ -37,20 +37,7 @@ package de.metas.manufacturing.acct;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.compiere.acct.Doc;
-import org.compiere.acct.Fact;
-import org.compiere.acct.FactLine;
-import org.compiere.model.MAccount;
-import org.compiere.model.X_C_DocType;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.model.I_PP_Cost_Collector;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
@@ -59,7 +46,20 @@ import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.compiere.acct.Doc;
+import org.compiere.acct.Fact;
+import org.compiere.acct.FactLine;
+import org.compiere.model.MAccount;
+import org.compiere.model.X_C_DocType;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPCostCollectorQuantities;
+import org.eevolution.model.I_PP_Cost_Collector;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Post Cost Collector
@@ -75,7 +75,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
-	/** Pseudo Line */
+	/**
+	 * Pseudo Line
+	 */
 	protected DocLine_CostCollector _line = null;
 
 	public Doc_PPCostCollector(final AcctDocContext ctx)
@@ -116,17 +118,19 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		return ppCostCollectorBL.isFloorStock(cc);
 	}
 
-	private BigDecimal getMovementQty()
+	private Quantity getMovementQty()
 	{
-		return getPP_Cost_Collector().getMovementQty();
+		return getQuantities().getMovementQty();
 	}
 
-	private BigDecimal getScrappedQty()
+	private PPCostCollectorQuantities getQuantities()
 	{
-		return getPP_Cost_Collector().getScrappedQty();
+		return ppCostCollectorBL.getQuantities(getPP_Cost_Collector());
 	}
 
-	/** @return zero (always balanced) */
+	/**
+	 * @return zero (always balanced)
+	 */
 	@Override
 	public BigDecimal getBalance()
 	{
@@ -151,10 +155,6 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		else if (CostCollectorType.MethodChangeVariance.equals(costCollectorType))
 		{
 			fact = createFacts_Variance(as, ProductAcctType.MethodChangeVariance);
-		}
-		else if (CostCollectorType.UsageVariance.equals(costCollectorType))
-		{
-			fact = createFacts_Variance(as, ProductAcctType.UsageVariance);
 		}
 		else if (CostCollectorType.UsageVariance.equals(costCollectorType))
 		{
@@ -187,7 +187,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			final MAccount debit,
 			final MAccount credit,
 			final CostAmount cost,
-			final BigDecimal qty)
+			final Quantity qty)
 	{
 		if (debit == null || credit == null || cost == null || cost.signum() == 0)
 		{
@@ -228,9 +228,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 
 		final DocLine_CostCollector docLine = getLine();
-		final BigDecimal qtyReceived = getMovementQty();
-		final BigDecimal qtyScrapped = getScrappedQty();
-		final BigDecimal qtyTotal = qtyReceived.add(qtyScrapped);
+		final PPCostCollectorQuantities qtys = getQuantities();
+		final Quantity qtyReceived = qtys.getMovementQty();
+		final Quantity qtyScrapped = qtys.getScrappedQty();
+		final Quantity qtyTotal = qtyReceived.add(qtyScrapped);
 		if (qtyTotal.signum() == 0)
 		{
 			return fact;
@@ -275,7 +276,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final boolean isFloorStock = isFloorStock();
 
 		final DocLine_CostCollector docLine = getLine();
-		final BigDecimal qtyIssued = getMovementQty();
+		final Quantity qtyIssued = getMovementQty();
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
@@ -303,7 +304,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 
 		final DocLine_CostCollector docLine = getLine();
-		final BigDecimal qtyMoved = getMovementQty();
+		final Quantity qtyMoved = getMovementQty();
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 
@@ -333,7 +334,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final MAccount debit = docLine.getAccount(varianceAcctType, as);
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 
-		final BigDecimal qty = getMovementQty();
+		final Quantity qty = getMovementQty();
 
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
 		for (final CostElement element : costResult.getCostElements())

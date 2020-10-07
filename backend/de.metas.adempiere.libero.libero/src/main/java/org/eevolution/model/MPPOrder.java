@@ -46,6 +46,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -265,7 +266,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Copy cost records from M_Cost to PP_Order_Cost
-		Services.get(IPPOrderCostBL.class).createOrderCosts(this);
+		// IMPORTANT: cost will be copied when document will be accounted
+		// Services.get(IPPOrderCostBL.class).createOrderCosts(this);
 
 		//
 		// Create the Activity Control
@@ -314,13 +316,16 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Set QtyOrdered/QtyEntered=0 to ZERO
-		final BigDecimal qtyOrderedOld = getQtyOrdered();
-		if (qtyOrderedOld.signum() != 0)
+		final PPOrderQuantities qtysOld = orderBOMsService.getQuantities(this);
+		if (qtysOld.getQtyRequiredToProduce().signum() != 0)
 		{
-			ppOrderBL.addDescription(this, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyOrdered@ : (" + qtyOrderedOld + ")"));
+			ppOrderBL.addDescription(this, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyOrdered@ : (" + qtysOld.getQtyRequiredToProduce() + ")"));
 			setQtyEntered(BigDecimal.ZERO);
-			setQtyOrdered(BigDecimal.ZERO);
-			Services.get(IPPOrderDAO.class).save(this);
+
+			orderBOMsService.setQuantities(this, qtysOld.voidQtys());
+
+			final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+			ppOrderDAO.save(this);
 		}
 
 		//

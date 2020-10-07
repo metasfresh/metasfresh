@@ -213,7 +213,7 @@ public class HUPPOrderIssueProducer
 	{
 		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
-				.filter(line -> PPOrderUtil.isIssue(BOMComponentType.ofCode(line.getComponentType())))
+				.filter(line -> BOMComponentType.ofCode(line.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -229,7 +229,7 @@ public class HUPPOrderIssueProducer
 		//
 		// Make sure we have only issue BOM lines
 		final List<I_PP_Order_BOMLine> notIssueBOMLines = targetOrderBOMLines.stream()
-				.filter(bomLine -> !PPOrderUtil.isIssue(BOMComponentType.ofCode(bomLine.getComponentType())))
+				.filter(bomLine -> !BOMComponentType.ofCode(bomLine.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 		if (!notIssueBOMLines.isEmpty())
 		{

@@ -62,9 +62,7 @@ public class PPOrderLine
 	int ppOrderLineId;
 
 	/**
-	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.<br>
-	 * Note that this is somewhat redundant with the {@link #getComponentType()} properties, but in material-dispo
-	 * we don't want to depend on the BL to evaluate the component type.
+	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.
 	 */
 	boolean receipt;
 
@@ -72,8 +70,10 @@ public class PPOrderLine
 
 	ProductDescriptor productDescriptor;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyRequired;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyDelivered;
 
 	@JsonCreator

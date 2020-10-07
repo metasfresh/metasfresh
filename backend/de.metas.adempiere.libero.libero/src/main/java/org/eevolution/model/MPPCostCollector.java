@@ -38,15 +38,19 @@ package org.eevolution.model;
  * #L%
  */
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.temporal.TemporalUnit;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.time.DurationUtils;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,34 +68,28 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.api.PPOrderActivityProcessReport;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.temporal.TemporalUnit;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * PP Cost Collector Model
  *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- *         <li>Original contributor of Manufacturing Standard Cost
- *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
- *
+ * <li>Original contributor of Manufacturing Standard Cost
+ * <li>FR [ 2520591 ] Support multiples calendar for Org
  * @author Teo Sarca, www.arhipac.ro
  * @version $Id: MPPCostCollector.java,v 1.1 2004/06/19 02:10:34 vpj-cd Exp $
  */
@@ -106,7 +104,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-	/** Just Prepared Flag */
+	/**
+	 * Just Prepared Flag
+	 */
 	private boolean m_justPrepared = false;
 
 	public MPPCostCollector(final Properties ctx, final int PP_Cost_Collector_ID, final String trxName)
@@ -115,9 +115,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		if (is_new())
 		{
 			// setC_DocType_ID(0);
-			setDocStatus(DOCSTATUS_Drafted);	// DR
-			setDocAction(DOCACTION_Complete);	// CO
-			setMovementDate(new Timestamp(System.currentTimeMillis()));	// @#Date@
+			setDocStatus(DOCSTATUS_Drafted);    // DR
+			setDocAction(DOCACTION_Complete);    // CO
+			setMovementDate(new Timestamp(System.currentTimeMillis()));    // @#Date@
 			setIsActive(true);
 			setPosted(false);
 			setProcessing(false);
@@ -128,7 +128,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	public MPPCostCollector(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MPPCostCollector
+	}    // MPPCostCollector
 
 	@Override
 	public void setProcessed(final boolean processed)
@@ -252,7 +252,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 		else
 		{
-			 // nothing
+			// nothing
 		}
 		//
 
@@ -286,26 +286,28 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		setDocAction(DOCACTION_Close);
 		setDocStatus(DOCSTATUS_Completed);
 		return IDocument.STATUS_Completed;
-	}	// completeIt
+	}    // completeIt
 
 	private void completeIt_MaterialIssueOrReceipt()
 	{
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
 		final String mtrxMovementType;
 
 		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
-			final I_C_UOM uom = Services.get(IPPCostCollectorBL.class).getStockingUOM(this);
 			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus;
 
+			final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
 			ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
 					.orderBOMLineId(orderBOMLineId)
 					.usageVariance(false)
-					.qtyIssuedOrReceivedToAdd(Quantity.of(getMovementQty(), uom))
-					.qtyScrappedToAdd(Quantity.of(getScrappedQty(), uom))
-					.qtyRejectedToAdd(Quantity.of(getQtyReject(), uom))
-					.date(TimeUtil.asLocalDateTime(getMovementDate()))
+					.qtyIssuedOrReceivedToAdd(qtys.getMovementQty())
+					.qtyScrappedToAdd(qtys.getScrappedQty())
+					.qtyRejectedToAdd(qtys.getRejectedQty())
+					.date(TimeUtil.asZonedDateTime(getMovementDate()))
 					.asiId(AttributeSetInstanceId.ofRepoIdOrNone(getM_AttributeSetInstance_ID()))
 					.build());
 		}
@@ -313,28 +315,17 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		{
 			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderPlus;
 
-			// Update PP Order Qtys
-			final I_PP_Order order = getPP_Order();
-			order.setQtyDelivered(order.getQtyDelivered().add(getMovementQty()));
-			order.setQtyScrap(order.getQtyScrap().add(getScrappedQty()));
-			order.setQtyReject(order.getQtyReject().add(getQtyReject()));
-			order.setQtyReserved(order.getQtyReserved().subtract(getMovementQty()));
+			final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
-			//
-			// Update PP Order Dates
-			order.setDateDelivered(getMovementDate()); // overwrite=last
-			if (order.getDateStart() == null)
-			{
-				order.setDateStart(getMovementDate());
-			}
+			final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
 
-			final Quantity qtyOpen = Services.get(IPPOrderBL.class).getQtyOpen(order);
-			if (qtyOpen.signum() <= 0)
-			{
-				order.setDateFinish(getDateFinish());
-			}
-
-			Services.get(IPPOrderDAO.class).save(order);
+			ppOrderBL.addQty(OrderQtyChangeRequest.builder()
+					.ppOrderId(PPOrderId.ofRepoId(getPP_Order_ID()))
+					.qtyReceivedToAdd(qtys.getMovementQty())
+					.qtyScrappedToAdd(qtys.getScrappedQty())
+					.qtyRejectedToAdd(qtys.getRejectedQty())
+					.date(TimeUtil.asZonedDateTime(this.getMovementDate()))
+					.build());
 		}
 		else
 		{
@@ -342,13 +333,14 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 
 		//
+		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this);
 		final MTransaction mtrx = new MTransaction(getCtx(),
 				getAD_Org_ID(),
 				mtrxMovementType,
 				getM_Locator_ID(),
 				getM_Product_ID(),
 				getM_AttributeSetInstance_ID(),
-				getMovementQty(),
+				movementQtyInStockingUOM.toBigDecimal(),
 				getMovementDate(),
 				get_TrxName());
 		mtrx.setPP_Cost_Collector_ID(getPP_Cost_Collector_ID());
@@ -358,6 +350,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	private void completeIt_ActivityControl()
 	{
 		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 		if (isReversal())
 		{
@@ -375,15 +368,15 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			throw new AdempiereException("Sub-contracting not supported");
 		}
 
-		final I_C_UOM uom = getProductStockingUOM();
+		final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
 		final TemporalUnit durationUnit = activity.getDurationUnit();
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activity.getId())
 				.finishDate(TimeUtil.asLocalDateTime(getMovementDate()))
-				.qtyProcessed(Quantity.of(getMovementQty(), uom))
-				.qtyScrapped(Quantity.of(getScrappedQty(), uom))
-				.qtyRejected(Quantity.of(getQtyReject(), uom))
+				.qtyProcessed(qtys.getMovementQty())
+				.qtyScrapped(qtys.getScrappedQty())
+				.qtyRejected(qtys.getRejectedQty())
 				.duration(DurationUtils.toDuration(getDurationReal(), durationUnit))
 				.setupTime(DurationUtils.toDuration(getSetupTimeReal(), durationUnit))
 				.build());
@@ -397,15 +390,17 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 	private void completeIt_MaterialUsageVariance()
 	{
-		final I_C_UOM uom = Services.get(IPPCostCollectorBL.class).getStockingUOM(this);
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+
+		final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
 
 		ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
 				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(getPP_Order_BOMLine_ID()))
 				.usageVariance(true)
-				.qtyIssuedOrReceivedToAdd(Quantity.of(getMovementQty(), uom))
-				.qtyScrappedToAdd(Quantity.of(getScrappedQty(), uom))
-				.qtyRejectedToAdd(Quantity.of(getQtyReject(), uom))
-				.date(TimeUtil.asLocalDateTime(getMovementDate()))
+				.qtyIssuedOrReceivedToAdd(qtys.getMovementQty())
+				.qtyScrappedToAdd(qtys.getScrappedQty())
+				.qtyRejectedToAdd(qtys.getRejectedQty())
+				.date(TimeUtil.asZonedDateTime(getMovementDate()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(getM_AttributeSetInstance_ID()))
 				.build());
 	}
@@ -449,14 +444,14 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	public boolean voidIt()
 	{
 		throw new UnsupportedOperationException();
-	}	// voidIt
+	}    // voidIt
 
 	@Override
 	public boolean closeIt()
 	{
 		setDocAction(DOCACTION_None);
 		return true;
-	}	// closeIt
+	}    // closeIt
 
 	@Override
 	public boolean reverseCorrectIt()
@@ -481,9 +476,10 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		// Create reversal cost collector
 		final I_PP_Cost_Collector reversal = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, this);
 		InterfaceWrapperHelper.copyValues(this, reversal, true); // honorIsCalculated=true
-		reversal.setMovementQty(getMovementQty().negate());
-		reversal.setScrappedQty(getScrappedQty().negate());
-		reversal.setQtyReject(getQtyReject().negate());
+
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+		costCollectorBL.setQuantities(reversal, costCollectorBL.getQuantities(this).negate());
+
 		reversal.setProcessed(false);
 		reversal.setProcessing(false);
 		reversal.setReversal(this);
@@ -540,9 +536,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	@Override
 	public String getSummary()
 	{
-		final StringBuffer sb = new StringBuffer();
-		sb.append(getDescription());
-		return sb.toString();
+		return getDescription();
 	}
 
 	@Override
@@ -600,14 +594,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		return PPOrderRoutingActivityId.ofRepoId(orderId, getPP_Order_Node_ID());
-	}
-
-	/**
-	 * @return Activity Control Report End Date
-	 */
-	private Timestamp getDateFinish()
-	{
-		return getMovementDate();
 	}
 
 	private I_C_UOM getProductStockingUOM()

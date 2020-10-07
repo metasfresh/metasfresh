@@ -56,7 +56,7 @@ final class PackingInfo
 	/** NO Packing constructor */
 	private PackingInfo()
 	{
-		this.description = null;
+		this.description = "";
 		this.qtyCUsPerTU = BigDecimal.ONE;
 	}
 

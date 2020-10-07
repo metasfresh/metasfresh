@@ -1,5 +1,6 @@
 package org.eevolution.api;
 
+import lombok.NonNull;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.planning.pporder.PPOrderId;
@@ -14,6 +15,8 @@ public interface IPPOrderCostBL extends ISingletonService
 	 * These costs will be used for calculating standard costs variances.
 	 */
 	void createOrderCosts(I_PP_Order ppOrder);
+
+	boolean hasPPOrderCosts(@NonNull PPOrderId orderId);
 
 	PPOrderCosts getByOrderId(PPOrderId orderId);
 

@@ -732,32 +732,6 @@ public class MRPTestHelper
 		return documentModelsCompleted;
 	}
 
-	/**
-	 * Simulate receiving from an manufacturing order
-	 *
-	 * @param ppOrder
-	 * @param qtyToReceive
-	 */
-	public void receiveFromPPOrder(final I_PP_Order ppOrder, final BigDecimal qtyToReceive)
-	{
-		//
-		// Receive from MO: i.e. increase QtyDelivered
-		final BigDecimal qtyDeliveredOld = ppOrder.getQtyDelivered();
-		final BigDecimal qtyDelivered = qtyDeliveredOld.add(qtyToReceive);
-		ppOrder.setQtyDelivered(qtyDelivered);
-		InterfaceWrapperHelper.save(ppOrder);
-
-		//
-		// Add received qty to QtyOnHand
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
-
-		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-
-		mrpDAO.addQtyOnHand(warehouse, product, qtyToReceive);
-	}
-
 	public I_DD_Order retrieveSingleForwardDDOrder(final I_PP_Order ppOrder)
 	{
 		return Services.get(IDDOrderDAO.class)

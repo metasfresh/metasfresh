@@ -57,7 +57,7 @@ public class CostPrice
 				.build();
 	}
 
-	CurrencyId currenyId;
+	CurrencyId currencyId;
 	CostAmount ownCostPrice;
 	CostAmount componentsCostPrice;
 
@@ -68,7 +68,7 @@ public class CostPrice
 	{
 		Check.assumeEquals(ownCostPrice.getCurrencyId(), componentsCostPrice.getCurrencyId());
 
-		currenyId = ownCostPrice.getCurrencyId();
+		currencyId = ownCostPrice.getCurrencyId();
 
 		this.ownCostPrice = ownCostPrice;
 		this.componentsCostPrice = componentsCostPrice;

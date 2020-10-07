@@ -131,7 +131,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
 			final BOMComponentType componentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
-			if (PPOrderUtil.isReceipt(componentType))
+			if (componentType.isReceipt())
 			{
 				continue;
 			}

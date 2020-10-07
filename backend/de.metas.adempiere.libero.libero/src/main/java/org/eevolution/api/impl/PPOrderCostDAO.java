@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -22,6 +23,7 @@ import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order_Cost;
 
 import java.util.Objects;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -44,6 +46,16 @@ import lombok.NonNull;
 
 public class PPOrderCostDAO implements IPPOrderCostDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public boolean hasPPOrderCosts(@NonNull final PPOrderId orderId)
+	{
+		return retrieveAllOrderCostsQuery(orderId)
+				.create()
+				.anyMatch();
+	}
+
 	@Override
 	public PPOrderCosts getByOrderId(@NonNull final PPOrderId orderId)
 	{
@@ -53,6 +65,11 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				.stream()
 				.map(this::toPPOrderCost)
 				.collect(ImmutableList.toImmutableList());
+
+		if (costs.isEmpty())
+		{
+			throw new AdempiereException("Order costs were not created yet for " + orderId);
+		}
 
 		return PPOrderCosts.builder()
 				.orderId(orderId)
@@ -70,11 +87,11 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 
 	private IQueryBuilder<I_PP_Order_Cost> retrieveAllOrderCostsQuery(@NonNull final PPOrderId ppOrderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_Cost.class)
 				.addEqualsFilter(I_PP_Order_Cost.COLUMNNAME_PP_Order_ID, ppOrderId)
-		// .addOnlyActiveRecordsFilter() // NOTE: we need to retrieve ALL costs
-		;
+				// .addOnlyActiveRecordsFilter() // NOTE: we need to retrieve ALL costs
+				;
 	}
 
 	@Override

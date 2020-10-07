@@ -82,9 +82,9 @@ public class PPOrderCost
 		this.trxType = trxType;
 		this.costSegmentAndElement = costSegmentAndElement;
 		this.price = price;
-		this.accumulatedAmount = accumulatedAmount != null ? accumulatedAmount : CostAmount.zero(price.getCurrenyId());
+		this.accumulatedAmount = accumulatedAmount != null ? accumulatedAmount : CostAmount.zero(price.getCurrencyId());
 		this.accumulatedQty = accumulatedQty != null ? accumulatedQty : BigDecimal.ZERO;
-		this.postCalculationAmount = postCalculationAmount != null ? postCalculationAmount : CostAmount.zero(price.getCurrenyId());
+		this.postCalculationAmount = postCalculationAmount != null ? postCalculationAmount : CostAmount.zero(price.getCurrencyId());
 
 		if (trxType.isCoProduct())
 		{

@@ -1,23 +1,7 @@
 package org.eevolution.costing;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.PPOrderCost;
-import org.eevolution.api.PPOrderCostTrxType;
-import org.eevolution.api.PPOrderCosts;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegmentAndElement;
@@ -34,6 +18,20 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCostTrxType;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -133,7 +131,9 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 				.build();
 	}
 
-	private BOMLine toCostingBOMLine(final I_PP_Order_BOMLine orderBOMLineRecord, final PPOrderCosts orderCosts)
+	private BOMLine toCostingBOMLine(
+			final I_PP_Order_BOMLine orderBOMLineRecord,
+			final PPOrderCosts orderCosts)
 	{
 		final ProductId productId = ProductId.ofRepoId(orderBOMLineRecord.getM_Product_ID());
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderBOMLineRecord.getM_AttributeSetInstance_ID());
@@ -170,7 +170,9 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 
 	}
 
-	private BOMCostPrice getProductCostPrice(final ProductId productId, final PPOrderCosts orderCosts)
+	private BOMCostPrice getProductCostPrice(
+			final ProductId productId,
+			final PPOrderCosts orderCosts)
 	{
 		final List<BOMCostElementPrice> costElementPrices = orderCosts.getByProductAndCostElements(productId, costElementIds)
 				.stream()
@@ -200,7 +202,9 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		orderCostBL.save(orderCosts);
 	}
 
-	public void changeOrderCostsFromBOM(final PPOrderCosts orderCosts, final BOM bom)
+	public void changeOrderCostsFromBOM(
+			final PPOrderCosts orderCosts,
+			final BOM bom)
 	{
 		final LinkedHashMap<CostSegmentAndElement, PPOrderCost> newOrderCosts = new LinkedHashMap<>();
 

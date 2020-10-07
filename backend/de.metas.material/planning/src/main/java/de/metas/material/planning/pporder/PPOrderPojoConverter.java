@@ -1,26 +1,6 @@
 package de.metas.material.planning.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.compiere.util.TimeUtil.asInstant;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -28,10 +8,27 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.compiere.util.TimeUtil.asInstant;
 
 /*
  * #%L
@@ -58,11 +55,12 @@ import lombok.NonNull;
 public class PPOrderPojoConverter
 {
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	private static final ModelDynAttributeAccessor<I_PP_Order, MaterialDispoGroupId> //
 			ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public PPOrderPojoConverter(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
@@ -80,10 +78,10 @@ public class PPOrderPojoConverter
 
 	public PPOrder toPPOrder(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		final UomId uomId = UomId.ofRepoId(ppOrderRecord.getC_UOM_ID());
 		final ProductId productId = ProductId.ofRepoId(ppOrderRecord.getM_Product_ID());
-		final Quantity qtyRequired = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderRecord.getQtyOrdered(), uomId), productId);
-		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderRecord.getQtyDelivered(), uomId), productId);
+		final PPOrderQuantities qtys = ppOrderBOMBL.getQuantities(ppOrderRecord);
+		final Quantity qtyRequired = uomConversionBL.convertToProductUOM(qtys.getQtyRequiredToProduce(), productId);
+		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(qtys.getQtyReceived(), productId);
 
 		return PPOrder.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
@@ -117,24 +115,27 @@ public class PPOrderPojoConverter
 		return lines;
 	}
 
-	private PPOrderLine toPPOrderLine(@NonNull final I_PP_Order_BOMLine ppOrderLineRecord, @NonNull final I_PP_Order ppOrderRecord)
+	private PPOrderLine toPPOrderLine(
+			@NonNull final I_PP_Order_BOMLine ppOrderLineRecord,
+			@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderLineRecord.getComponentType());
-		final boolean receipt = PPOrderUtil.isReceipt(componentType);
+		final boolean receipt = componentType.isReceipt();
 		final Instant issueOrReceiveDate = asInstant(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule());
 
-		final UomId lineUomId = UomId.ofRepoId(ppOrderLineRecord.getC_UOM_ID());
 		final ProductId lineProductId = ProductId.ofRepoId(ppOrderLineRecord.getM_Product_ID());
-		final Quantity qtyRequired = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderLineRecord.getQtyRequiered(), lineUomId), lineProductId);
-		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderLineRecord.getQtyDelivered(), lineUomId), lineProductId);
+
+		final OrderBOMLineQuantities bomLineQuantities = ppOrderBOMBL.getQuantities(ppOrderLineRecord);
+		final Quantity qtyRequiredInStockingUOM = uomConversionBL.convertToProductUOM(bomLineQuantities.getQtyRequired(), lineProductId);
+		final Quantity qtyDeliveredInStockingUOM = uomConversionBL.convertToProductUOM(bomLineQuantities.getQtyIssuedOrReceived(), lineProductId);
 
 		return PPOrderLine.builder()
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
 				.description(ppOrderLineRecord.getDescription())
 				.ppOrderLineId(ppOrderLineRecord.getPP_Order_BOMLine_ID())
 				.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
-				.qtyRequired(qtyRequired.toBigDecimal())
-				.qtyDelivered(qtyDelivered.toBigDecimal())
+				.qtyRequired(qtyRequiredInStockingUOM.toBigDecimal())
+				.qtyDelivered(qtyDeliveredInStockingUOM.toBigDecimal())
 				.issueOrReceiveDate(issueOrReceiveDate)
 				.receipt(receipt)
 				.build();
@@ -146,7 +147,9 @@ public class PPOrderPojoConverter
 		return ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord);
 	}
 
-	public static void setMaterialDispoGroupId(@NonNull final I_PP_Order ppOrderRecord, final MaterialDispoGroupId materialDispoGroupId)
+	public static void setMaterialDispoGroupId(
+			@NonNull final I_PP_Order ppOrderRecord,
+			final MaterialDispoGroupId materialDispoGroupId)
 	{
 		ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, materialDispoGroupId);
 	}
