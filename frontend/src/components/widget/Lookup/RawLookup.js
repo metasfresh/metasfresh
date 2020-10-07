@@ -355,7 +355,7 @@ export class RawLookup extends Component {
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
     const {
-      recent,
+      // recent,
       handleInputEmptyStatus,
       enableAutofocus,
       isOpen,
@@ -394,7 +394,8 @@ export class RawLookup extends Component {
       this.setState({
         isInputEmpty: true,
         query: inputValue,
-        list: recent,
+        // list: recent,
+        list: [],
       });
 
       handleInputEmptyStatus && handleInputEmptyStatus(true);

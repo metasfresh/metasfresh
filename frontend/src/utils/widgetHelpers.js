@@ -5,7 +5,7 @@ import {
   DATE_FORMAT,
   TIME_FORMAT,
   DATE_TIMEZONE_FORMAT,
-} from '../../constants/Constants';
+} from '../constants/Constants';
 
 /*
  * Helper function returning proper date field formatting depending on the
