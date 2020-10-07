@@ -4,21 +4,19 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import currentDevice from 'current-device';
-
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
 import InlineFilterItem from './InlineFilterItem';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 
-const classes = `btn btn-filter
-btn-meta-outline-secondary btn-sm toggle-filters`;
+const mainFilterClasses = `btn btn-filter btn-meta-outline-secondary btn-sm toggle-filters`;
 
 /**
  * @file Class based component.
  * @module FiltersFrequent
  * @extends PureComponent
  */
-class FiltersFrequent extends PureComponent {
+class FiltersNotIncluded extends PureComponent {
   state = { openFilterId: null };
   deviceType = null;
 
@@ -30,21 +28,15 @@ class FiltersFrequent extends PureComponent {
 
   /**
    * @method toggleFilter
-   * @summary ToDo: Describe the method
-   * @param {*} index
-   * @todo Write the documentation
+   * @summary Updates in the state the openFilterId with the given filter index (matched from the filtersActive)
+   * @param {integer} index - position that corresponds to a filter in the filtersActive
    */
-  toggleFilter = (index) => {
-    this.setState({
-      openFilterId: index,
-    });
-  };
+  toggleFilter = (index) => this.setState({ openFilterId: index });
 
   /**
    * @method findActiveFilter
-   * @summary ToDo: Describe the method
+   * @summary Returns the active object filter from the array of active filters by the given id passed as parameter
    * @param {*} id
-   * @todo Write the documentation
    */
   findActiveFilter = (id) => {
     const { active } = this.props;
@@ -54,19 +46,9 @@ class FiltersFrequent extends PureComponent {
 
   /**
    * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary closes the dropdown in case some click outside event happen
    */
   handleClickOutside = () => {
-    this.outsideClick();
-  };
-
-  /**
-   * @method outsideClick
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  outsideClick = () => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
     if (allowOutsideClick) {
       !widgetShown && this.toggleFilter(null);
@@ -78,11 +60,6 @@ class FiltersFrequent extends PureComponent {
   handleShowTrue = () => this.props.handleShow(true);
   handleShowFalse = () => this.props.handleShow(false);
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const {
       data,
@@ -94,6 +71,7 @@ class FiltersFrequent extends PureComponent {
       active,
       modalVisible,
       activeFiltersCaptions,
+      filterId,
     } = this.props;
     const { openFilterId } = this.state;
 
@@ -132,7 +110,7 @@ class FiltersFrequent extends PureComponent {
 
                 <button
                   onClick={() => this.toggleFilter(item.filterId)}
-                  className={cx(classes, {
+                  className={cx(mainFilterClasses, {
                     ['btn-select']: openFilterId === index,
                     ['btn-active']: isActive,
                     ['btn-distance']: !dateStepper,
@@ -200,6 +178,7 @@ class FiltersFrequent extends PureComponent {
                     onHide={this.handleShowFalse}
                     viewId={viewId}
                     outsideClick={this.outsideClick}
+                    filterId={filterId}
                   />
                 ))}
             </div>
@@ -210,25 +189,7 @@ class FiltersFrequent extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {bool} allowOutsideClick
- * @prop {bool} modalVisible
- * @prop {array} [active]
- * @prop {*} [filtersWrapper]
- * @prop {object} [activeFiltersCaptions]
- * @prop {*} data
- * @prop {*} windowType
- * @prop {*} notValidFields
- * @prop {*} viewId
- * @prop {*} handleShow
- * @prop {*} applyFilters
- * @prop {*} clearFilters
- * @prop {*} widgetShown
- * @prop {*} dropdownToggled
- * @todo Check props. Which proptype? Required or optional?
- */
-FiltersFrequent.propTypes = {
+FiltersNotIncluded.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
@@ -243,6 +204,7 @@ FiltersFrequent.propTypes = {
   clearFilters: PropTypes.any,
   widgetShown: PropTypes.any,
   dropdownToggled: PropTypes.any,
+  filterId: PropTypes.string,
 };
 
-export default onClickOutside(FiltersFrequent);
+export default onClickOutside(FiltersNotIncluded);

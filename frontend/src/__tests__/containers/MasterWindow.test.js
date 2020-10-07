@@ -428,7 +428,7 @@ describe('MasterWindowContainer', () => {
           </Provider>
         );
       } catch (e) {
-          console.log('e: ', e);
+        console.log('e: ', e);
       }
 
       await waitForExpect(() => {

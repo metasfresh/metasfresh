@@ -8,7 +8,6 @@ import {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
-  filtersToMap,
   DLpropTypes,
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
@@ -142,7 +141,6 @@ export default class DocumentList extends Component {
       hasIncluded,
       onRedirectToNewDocument,
       onShowIncludedViewOnSelect,
-      onClearStaticFilters,
       onSortData,
       onShowSelectedIncludedView,
       table,
@@ -150,6 +148,7 @@ export default class DocumentList extends Component {
       parentSelected,
       onUpdateQuickActions,
       setQuickActionsComponentRef,
+      filterId,
     } = this.props;
     const {
       staticFilters,
@@ -254,7 +253,6 @@ export default class DocumentList extends Component {
                     initialValuesNulled,
                   }}
                   windowType={windowId}
-                  filterData={filtersToMap(layout.filters)}
                   updateDocList={onFilterChange}
                   resetInitialValues={onResetInitialFilters}
                 />
@@ -262,8 +260,12 @@ export default class DocumentList extends Component {
 
               {staticFilters && (
                 <FiltersStatic
+                  {...{
+                    filterId,
+                    windowId,
+                    viewId,
+                  }}
                   data={staticFilters}
-                  clearFilters={onClearStaticFilters}
                 />
               )}
             </div>
@@ -422,7 +424,6 @@ DocumentList.propTypes = {
   onChangePage: PropTypes.func,
   onFilterChange: PropTypes.func,
   onRedirectToDocument: PropTypes.func,
-  onClearStaticFilters: PropTypes.func,
   onResetInitialFilters: PropTypes.func,
   onRedirectToNewDocument: PropTypes.func,
   onUpdateQuickActions: PropTypes.func,
