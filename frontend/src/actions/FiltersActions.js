@@ -2,6 +2,7 @@ import * as types from '../constants/FilterTypes';
 import deepUnfreeze from 'deep-unfreeze';
 import { fieldValueToString } from '../utils/tableHelpers';
 import _ from 'lodash';
+import { createCachedSelector } from 're-reselect';
 
 export function clearAllFilters({ filterId, data }) {
   return {
@@ -353,3 +354,26 @@ export function parseToPatch(params) {
     return acc;
   }, []);
 }
+
+/**
+ * @method getFilterFromState
+ * @param {object} state - redux state
+ * @param {*} filterId
+ */
+export function getFilterFromState(state, filterId) {
+  return state.filters && state.filters[filterId]
+    ? state.filters[filterId]
+    : null;
+}
+
+/**
+ * @method getCachedFilter
+ * @summary cached selector for picking the filters
+ *
+ * @param {object} state - redux state
+ * @param {string} filterId - id from the filters structure
+ */
+export const getCachedFilter = createCachedSelector(
+  getFilterFromState,
+  (filters) => filters
+)((_state, filterId) => filterId);

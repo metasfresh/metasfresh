@@ -11,6 +11,7 @@ import {
   isFilterValid,
   updateNotValidFields,
   parseToPatch,
+  getCachedFilter,
 } from '../../actions/FiltersActions';
 
 import FiltersNotIcluded from './FiltersNotIncluded';
@@ -230,9 +231,7 @@ const mapStateToProps = (state, ownProps) => {
   const filterId = getEntityRelatedId({ windowId, viewId });
 
   const stateFilter =
-    windowId && viewId && state.filters && state.filters[filterId]
-      ? state.filters[filterId]
-      : null;
+    windowId && viewId ? getCachedFilter(state, filterId) : null;
 
   const allFilters =
     stateFilter && stateFilter.filterData
@@ -250,7 +249,7 @@ const mapStateToProps = (state, ownProps) => {
   return {
     allowOutsideClick,
     modalVisible: modal.visible,
-    filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
+    filters: stateFilter,
     filterId,
     allFilters,
     flatActiveFilterIds,
