@@ -128,6 +128,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final CtxName param_PricingDate;
 	private final CtxName param_AvailableStockDate;
 
+	@Getter
+	private boolean hideDiscontinued = false;
+
 	private static final CtxName param_M_PriceList_ID = CtxNames.ofNameAndDefaultValue("M_PriceList_ID", "-1");
 	private static final CtxName param_AD_Org_ID = CtxNames.ofNameAndDefaultValue(WindowConstants.FIELDNAME_AD_Org_ID, "-1");
 
@@ -148,10 +151,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String pricingDateParamName,
 			@NonNull final String availableStockDateParamName,
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
+			boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
+
+		this.hideDiscontinued = hideDiscontinued;
 
 		param_AvailableStockDate = CtxNames.ofNameAndDefaultValue(availableStockDateParamName, "NULL");
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
@@ -168,10 +174,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
+			boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
+		this.hideDiscontinued = hideDiscontinued;
 
 		param_AvailableStockDate = null;
 		availableToPromiseAdapter = null;
@@ -301,7 +309,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
 		appendFilterByIsActive(sqlWhereClause, sqlWhereClauseParams);
-		appendFilterByDiscontinued(sqlWhereClause, sqlWhereClauseParams);
+		if (this.isHideDiscontinued())
+		{
+			appendFilterByDiscontinued(sqlWhereClause, sqlWhereClauseParams);
+		}
 		appendFilterBySearchString(sqlWhereClause, sqlWhereClauseParams, evalCtx.getFilter(), isFullTextSearchEnabled());
 		appendFilterById(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByBPartner(sqlWhereClause, sqlWhereClauseParams, evalCtx);
