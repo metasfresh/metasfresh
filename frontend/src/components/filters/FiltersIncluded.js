@@ -115,7 +115,7 @@ class FiltersIncluded extends PureComponent {
             'btn-distance btn-sm',
             {
               'btn-select': isOpenDropdown,
-              'btn-active': captions.length,
+              'btn-active': activeFilter ? activeFilter.isActive : false,
             }
           )}
           title={buttonCaption}
