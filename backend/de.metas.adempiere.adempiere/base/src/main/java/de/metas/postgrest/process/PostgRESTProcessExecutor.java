@@ -24,8 +24,10 @@ package de.metas.postgrest.process;
 
 import de.metas.postgrest.client.GetRequest;
 import de.metas.postgrest.client.PostgRESTClient;
+import de.metas.postgrest.client.PostgRESTResponseFormat;
 import de.metas.postgrest.config.PostgRESTConfig;
 import de.metas.postgrest.config.PostgRESTConfigRepository;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
@@ -46,6 +48,7 @@ public class PostgRESTProcessExecutor extends JavaProcess
 	private final PostgRESTClient postgRESTClient = SpringContextHolder.instance.getBean(PostgRESTClient.class);
 	private final PostgRESTConfigRepository configRepository = SpringContextHolder.instance.getBean(PostgRESTConfigRepository.class);
 	private final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -63,6 +66,7 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 		final PostgRESTConfig config = configRepository.getConfigFor(processInfo.getOrgId());
 
+		final PostgRESTResponseFormat responseFormat = PostgRESTResponseFormat.ofCode(processDAO.getById(getProcessInfo().getAdProcessId()).getPostgrestResponseFormat());
 
 		final IStringExpression pathExpression = expressionFactory.compile(processInfo.getJsonPath().get(), IStringExpression.class);
 		final String path = pathExpression.evaluate(getEvalContext(),  IExpressionEvaluator.OnVariableNotFound.Fail);
@@ -70,6 +74,7 @@ public class PostgRESTProcessExecutor extends JavaProcess
 		final GetRequest getRequest = GetRequest
 				.builder()
 				.baseURL(config.getBaseURL() + path)
+				.responseFormat(responseFormat)
 				.build();
 
 		final String postgRESTResponse = postgRESTClient.performGet(getRequest);
