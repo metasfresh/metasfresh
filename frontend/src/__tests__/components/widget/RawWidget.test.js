@@ -7,16 +7,27 @@ import
   { WidgetRenderer as UnwrappedWidgetRenderer }
 from '../../../components/widget/WidgetRenderer';
 import fixtures from '../../../../test_setup/fixtures/raw_widget.json';
+import rawWidgetFixtures from '../../../../test_setup/fixtures/widget/raw_widget.json';
 
 const createDummyProps = function(props) {
   return {
-    dispatch: jest.fn(),
+    allowShortcut: jest.fn(),
+    disableShortcut: jest.fn(),
+    openModal: jest.fn(),
+    patch: jest.fn(),
+    updatePropertyValue: jest.fn(),
+    onBlurWidget: jest.fn(),
+    handleFocus: jest.fn(),
+    handleBlur: jest.fn(),
+    handlePatch: jest.fn(),
+    handleChange: jest.fn(),
+    handleProcess: jest.fn(),
+    handleZoomInto: jest.fn(),
+
     modalVisible: false,
     timeZone: 'Europe/Berlin',
     entity: "window",
     dataId: "1001282",
-    allowShortcut: jest.fn(),
-    disableShortcut: jest.fn(),
     ...props,
   };
 };
@@ -391,6 +402,90 @@ describe('RawWidget component', () => {
       expect(clickOutsideSpy).toHaveBeenCalled();
       expect(listenOnKeysTrueSpy).toHaveBeenCalled();
     });
+
+    it('behaves correctly when selecting, removing and typing in new value', () => {
+      const handlePatchSpy = jest.fn();
+      const handleChangeSpy = jest.fn();
+      const handleFocusSpy = jest.fn();
+      const localFixtures = rawWidgetFixtures.text;
+      const props = createDummyProps(
+        {
+          ...localFixtures.data1,
+          ...localFixtures.props1,
+          handlePatch: handlePatchSpy,
+          handleChange: handleChangeSpy,
+          handleFocus: handleFocusSpy,
+        },
+      );
+      const widgetData = props.widgetData[0];
+
+      jest.useFakeTimers();
+
+      const wrapper = mount(<RawWidget {...props} />);
+      const instance = wrapper.instance();
+      const spyKey = jest.spyOn(instance, 'handleKeyDown');
+      const spyTyped = jest.spyOn(instance, 'updateTypedCharacters');
+
+      instance.forceUpdate();
+
+      expect(wrapper.state().isFocused).toBeFalsy();
+      expect(wrapper.state().cachedValue).toEqual(widgetData.value);
+
+      wrapper.find('input').simulate('focus');
+      wrapper.find('input').simulate('dblclick');
+
+      jest.runOnlyPendingTimers();
+
+      expect(wrapper.state().isFocused).toBeTruthy();
+      expect(handleFocusSpy).toHaveBeenCalled();
+
+      wrapper.find('input').simulate(
+        'keyDown',
+        {
+          key: 'Backspace',
+          target: { value: widgetData.value },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      const changeEvent = {
+        key: 'Backspace',
+        target: { value: '' },
+        preventDefault: jest.fn(),
+      }
+      wrapper.find('input').simulate(
+        'change',
+        changeEvent,
+      );      
+
+      expect(spyTyped).toHaveBeenCalled();
+      expect(handleChangeSpy).toHaveBeenCalled();
+
+      wrapper.find('input').simulate(
+        'keyDown',
+        {
+          key: 'a',
+          target: { value: 'a' },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      expect(spyTyped).toHaveBeenCalled();
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+      expect(wrapper.state().cachedValue).toEqual(widgetData.value);
+      expect(wrapper.state().charsTyped[localFixtures.props1.fieldName]).toEqual(1);
+
+      wrapper.find('input').simulate(
+        'blur',
+        {
+          key: 'a',
+          target: { value: 'a' },
+          preventDefault: jest.fn(),
+        },
+      );     
+
+      expect(handlePatchSpy).toHaveBeenCalled();
+    });   
   });
 
   describe('generic tests using Integer widget:', () => {
