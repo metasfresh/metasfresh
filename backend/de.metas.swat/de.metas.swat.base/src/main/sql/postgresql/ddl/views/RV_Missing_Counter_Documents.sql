@@ -12,9 +12,8 @@ AS
 
 SELECT
     -- In the future, if we will add support for other documents (i.e: invoices), we will have to update the id column's logic using a case when logic.
-    -- https://github.com/metasfresh/mf15/issues/318
     CASE
-        WHEN doc.Record_ID IS NOT NULL THEN (doc.Record_ID * 10) + 1
+        WHEN doc.C_Orderline_ID IS NOT NULL THEN (doc.C_Orderline_ID * 10) + 1
         ELSE (counter_doc.Counter_Record_ID * 10) + 2 -- +2 in case counter_doc.Counter_Record_ID is equal to an already existing doc.Record_ID
     END AS RV_Missing_Counter_Document_ID,
 	doc.AD_Org_ID,
@@ -43,6 +42,7 @@ SELECT
 	
 (
 SELECT
+    ol.c_orderline_id as C_Orderline_ID,
 	o.AD_Org_ID as AD_Org_ID,
 	o.AD_Client_ID as AD_Client_ID,
 	o.Created as Created,
