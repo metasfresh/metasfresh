@@ -309,7 +309,7 @@ public final class PostingException extends AdempiereException
 	}
 
 	@Override
-	public PostingException setParameter(final String parameterName, Object parameterValue)
+	public PostingException setParameter(final @NonNull String parameterName, Object parameterValue)
 	{
 		super.setParameter(parameterName, parameterValue);
 		return this;

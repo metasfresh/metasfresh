@@ -71,7 +71,7 @@ public class HUException extends AdempiereException
 	}
 
 	@Override
-	public HUException setParameter(final String name, @Nullable final Object value)
+	public HUException setParameter(final @NonNull String name, @Nullable final Object value)
 	{
 		super.setParameter(name, value);
 		return this;

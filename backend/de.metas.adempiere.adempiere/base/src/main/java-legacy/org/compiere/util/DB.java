@@ -1270,7 +1270,7 @@ public class DB
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
-	public String getSQLValueStringEx(final String trxName, final String sql, final Object... params)
+	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
 		String retValue = null;
 		PreparedStatement pstmt = null;
