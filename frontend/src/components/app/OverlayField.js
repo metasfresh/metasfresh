@@ -212,7 +212,7 @@ class OverlayField extends Component {
     return (
       <div
         className="overlay-field"
-        onKeyDown={(e) => this.handleKeyDown(e)}
+        onKeyDown={this.handleKeyDown}
         tabIndex={-1}
       >
         {renderedContent}
