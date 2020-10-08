@@ -108,7 +108,8 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	private void adjustToUOMPrecisionWithoutRoundingIfPossible(
-			final String qtyStr, final int uomPrecision,
+			final String qtyStr,
+			final int uomPrecision,
 			final String qtyStrExpected,
 			final int uomPrecisionExpected)
 	{
