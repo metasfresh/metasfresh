@@ -456,7 +456,7 @@ describe('RawWidget component', () => {
       wrapper.find('input').simulate(
         'change',
         changeEvent,
-      );      
+      );
 
       expect(spyTyped).toHaveBeenCalled();
       expect(handleChangeSpy).toHaveBeenCalled();

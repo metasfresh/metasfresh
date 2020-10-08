@@ -47,6 +47,8 @@ class TableRow extends PureComponent {
       activeCell: '',
       activeCellName: null,
       updatedRow: false,
+      // controls if on {enter} we should edit a widget, or only submit it.
+      // if true - property will be edited. Otherwise just saved.
       listenOnKeys: true,
       multilineText,
       multilineTextLines,
