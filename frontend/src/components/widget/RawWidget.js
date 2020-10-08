@@ -106,8 +106,8 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method handleFocus
-   * @summary ToDo: Describe the method.
-   * @param {*} e
+   * @summary Focus handler. Disables keydown handler in the parent Table and
+   * duplicated focus actions in the parent TableRow
    */
   handleFocus = () => {
     const {
@@ -117,9 +117,11 @@ export class RawWidget extends PureComponent {
       widgetType,
     } = this.props;
 
-    widgetType === 'LongText' && disableShortcut(); // fix issue in Cypress with cut underscores - false positive failing tests
-    // - commented because if you focus on an item and you disable the shourtcuts you won't be able to use any shortcut
-    //   assigned to that specific item/widget - see issue https://github.com/metasfresh/metasfresh/issues/7119
+    // fix issue in Cypress with cut underscores - false positive failing tests
+    // - commented out because if you focus on an item and you disable the shourtcuts
+    // you won't be able to use any shortcut assigned to that specific item/widget
+    // - see issue https://github.com/metasfresh/metasfresh/issues/7119
+    widgetType === 'LongText' && disableShortcut();
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
@@ -260,9 +262,10 @@ export class RawWidget extends PureComponent {
       ? fields[0].parameterName
       : fields[0].field;
 
-    handleChange &&
-      this.updateTypedCharacters(e.target.value) &&
+    if (handleChange) {
+      this.updateTypedCharacters(e.target.value);
       handleChange(widgetField, e.target.value);
+    }
   };
 
   /**
