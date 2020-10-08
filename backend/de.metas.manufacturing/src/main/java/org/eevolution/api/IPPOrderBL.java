@@ -7,8 +7,10 @@ import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
+import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -106,4 +108,8 @@ public interface IPPOrderBL extends ISingletonService
 	Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(PPOrderId pickingOrderId);
 
 	void updateCanBeExportedAfter(@NonNull I_PP_Order order);
+
+	void updateCanBeExportedFrom(@NonNull I_PP_Order ppOrder);
+
+	void updateExportStatus(@NonNull APIExportStatus newExportStatus, @NonNull PInstanceId pinstanceId);
 }

@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -226,5 +227,18 @@ public class PPOrderDAO implements IPPOrderDAO
 					.addSetColumnValue(I_PP_Order.COLUMNNAME_ExportStatus, exportStatus.getCode())
 					.execute();
 		}
+	}
+
+	@Override
+	public IQueryBuilder<I_PP_Order> createQueryForPPOrderSelection(final IQueryFilter<I_PP_Order> userSelectionFilter)
+	{
+		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL
+				.createQueryBuilder(I_PP_Order.class)
+				.filter(userSelectionFilter)
+				.addNotEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, X_PP_Order.DOCSTATUS_Closed)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient();
+
+		return queryBuilder;
 	}
 }
