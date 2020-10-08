@@ -12,16 +12,16 @@ import java.util.Properties;
 public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1901519157L;
+	private static final long serialVersionUID = -134263654L;
 
     /** Standard Constructor */
-    public X_PP_Order_Cost (Properties ctx, int PP_Order_Cost_ID, String trxName)
+    public X_PP_Order_Cost (final Properties ctx, final int PP_Order_Cost_ID, final String trxName)
     {
       super (ctx, PP_Order_Cost_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_PP_Order_Cost (Properties ctx, ResultSet rs, String trxName)
+    public X_PP_Order_Cost (final Properties ctx, final ResultSet rs, final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,7 +29,7 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
@@ -41,18 +41,18 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
 	{
 		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
 	}
 
 	@Override
-	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
+	public void setC_AcctSchema_ID (final int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
 			set_Value (COLUMNNAME_C_AcctSchema_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
+			set_Value (COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID);
 	}
 
 	@Override
@@ -62,12 +62,12 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setCostDistributionPercent (java.math.BigDecimal CostDistributionPercent)
+	public void setCostDistributionPercent (final java.math.BigDecimal CostDistributionPercent)
 	{
 		set_Value (COLUMNNAME_CostDistributionPercent, CostDistributionPercent);
 	}
@@ -85,12 +85,12 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	@Override
 	public java.math.BigDecimal getCostDistributionPercent() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostDistributionPercent);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostDistributionPercent);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCumulatedAmt (java.math.BigDecimal CumulatedAmt)
+	public void setCumulatedAmt (final java.math.BigDecimal CumulatedAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedAmt, CumulatedAmt);
 	}
@@ -98,12 +98,12 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	@Override
 	public java.math.BigDecimal getCumulatedAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCumulatedQty (java.math.BigDecimal CumulatedQty)
+	public void setCumulatedQty (final java.math.BigDecimal CumulatedQty)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedQty, CumulatedQty);
 	}
@@ -111,12 +111,12 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	@Override
 	public java.math.BigDecimal getCumulatedQty() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedQty);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCurrentCostPrice (java.math.BigDecimal CurrentCostPrice)
+	public void setCurrentCostPrice (final java.math.BigDecimal CurrentCostPrice)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPrice, CurrentCostPrice);
 	}
@@ -124,12 +124,12 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	@Override
 	public java.math.BigDecimal getCurrentCostPrice() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPrice);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPrice);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCurrentCostPriceLL (java.math.BigDecimal CurrentCostPriceLL)
+	public void setCurrentCostPriceLL (final java.math.BigDecimal CurrentCostPriceLL)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPriceLL, CurrentCostPriceLL);
 	}
@@ -137,7 +137,7 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	@Override
 	public java.math.BigDecimal getCurrentCostPriceLL() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPriceLL);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPriceLL);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -148,18 +148,18 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
@@ -175,18 +175,18 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement)
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
 	{
 		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
 	}
 
 	@Override
-	public void setM_CostElement_ID (int M_CostElement_ID)
+	public void setM_CostElement_ID (final int M_CostElement_ID)
 	{
 		if (M_CostElement_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, Integer.valueOf(M_CostElement_ID));
+			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
 	}
 
 	@Override
@@ -202,18 +202,18 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setM_CostType(org.compiere.model.I_M_CostType M_CostType)
+	public void setM_CostType(final org.compiere.model.I_M_CostType M_CostType)
 	{
 		set_ValueFromPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class, M_CostType);
 	}
 
 	@Override
-	public void setM_CostType_ID (int M_CostType_ID)
+	public void setM_CostType_ID (final int M_CostType_ID)
 	{
 		if (M_CostType_ID < 1) 
 			set_Value (COLUMNNAME_M_CostType_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_CostType_ID, Integer.valueOf(M_CostType_ID));
+			set_Value (COLUMNNAME_M_CostType_ID, M_CostType_ID);
 	}
 
 	@Override
@@ -223,12 +223,12 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
@@ -238,7 +238,7 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setPostCalculationAmt (java.math.BigDecimal PostCalculationAmt)
+	public void setPostCalculationAmt (final java.math.BigDecimal PostCalculationAmt)
 	{
 		set_Value (COLUMNNAME_PostCalculationAmt, PostCalculationAmt);
 	}
@@ -246,17 +246,17 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	@Override
 	public java.math.BigDecimal getPostCalculationAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PostCalculationAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PostCalculationAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setPP_Order_Cost_ID (int PP_Order_Cost_ID)
+	public void setPP_Order_Cost_ID (final int PP_Order_Cost_ID)
 	{
 		if (PP_Order_Cost_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Order_Cost_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Cost_ID, Integer.valueOf(PP_Order_Cost_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Cost_ID, PP_Order_Cost_ID);
 	}
 
 	@Override
@@ -281,16 +281,15 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	/** CoProduct = CO */
 	public static final String PP_ORDER_COST_TRXTYPE_CoProduct = "CO";
 	@Override
-	public void setPP_Order_Cost_TrxType (java.lang.String PP_Order_Cost_TrxType)
+	public void setPP_Order_Cost_TrxType (final java.lang.String PP_Order_Cost_TrxType)
 	{
-
 		set_Value (COLUMNNAME_PP_Order_Cost_TrxType, PP_Order_Cost_TrxType);
 	}
 
 	@Override
 	public java.lang.String getPP_Order_Cost_TrxType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Cost_TrxType);
+		return get_ValueAsString(COLUMNNAME_PP_Order_Cost_TrxType);
 	}
 
 	@Override
@@ -300,18 +299,18 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
+	public void setPP_Order(final org.eevolution.model.I_PP_Order PP_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
 	}
 
 	@Override
-	public void setPP_Order_ID (int PP_Order_ID)
+	public void setPP_Order_ID (final int PP_Order_ID)
 	{
 		if (PP_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, PP_Order_ID);
 	}
 
 	@Override
