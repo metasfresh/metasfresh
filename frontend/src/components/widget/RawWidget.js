@@ -4,6 +4,7 @@ import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
 
+import { shouldPatch } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 
@@ -160,7 +161,7 @@ export class RawWidget extends PureComponent {
       () => {
         enableOnClickOutside && enableOnClickOutside();
         allowShortcut();
-        handleBlur && handleBlur(this.willPatch(widgetField, value));
+        handleBlur && handleBlur();
 
         listenOnKeysTrue && listenOnKeysTrue();
 
@@ -179,7 +180,6 @@ export class RawWidget extends PureComponent {
    */
   handleBlur = (e) => {
     const { filterWidget, fields, id } = this.props;
-
     const value = e.target.value;
     const widgetField = filterWidget
       ? fields[0].parameterName
@@ -269,42 +269,6 @@ export class RawWidget extends PureComponent {
   };
 
   /**
-   * @method willPatch
-   * @summary Checks if the value has actually changed between what was cached before.
-   * @param {*} property
-   * @param {*} value
-   * @param {*} valueTo
-   */
-  willPatch = (property, value, valueTo) => {
-    const { widgetData } = this.props;
-    const { cachedValue } = this.state;
-
-    // if there's no widget value, then nothing could've changed. Unless
-    // it's a widget for actions (think ActionButton)
-    const isValue =
-      widgetData[0].value !== undefined ||
-      (widgetData[0].status && widgetData[0].status.value !== undefined);
-    let fieldData = widgetData.find((widget) => widget.field === property);
-    if (!fieldData) {
-      fieldData = widgetData[0];
-    }
-
-    let allowPatching =
-      (isValue &&
-        (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
-          JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
-      JSON.stringify(cachedValue) != JSON.stringify(value) ||
-      // clear field that had it's cachedValue nulled before
-      (cachedValue === null && value === null);
-
-    if (cachedValue === undefined && !value) {
-      allowPatching = false;
-    }
-
-    return allowPatching;
-  };
-
-  /**
    * @method handlePatch
    * @summary Method for handling the actual patching from the widget(input), which in turn
    *          calls the parent method (usually from MasterWidget) if the requirements are met
@@ -318,8 +282,21 @@ export class RawWidget extends PureComponent {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress, widgetType, maxLength } = this.props;
-    const willPatch = this.willPatch(property, value, valueTo);
+    const {
+      handlePatch,
+      inProgress,
+      widgetType,
+      maxLength,
+      widgetData,
+    } = this.props;
+    const { cachedValue } = this.state;
+    const willPatch = shouldPatch({
+      property,
+      value,
+      valueTo,
+      cachedValue,
+      widgetData,
+    });
 
     if (widgetType === 'LongText' || widgetType === 'Text') {
       value = value.substring(0, maxLength);

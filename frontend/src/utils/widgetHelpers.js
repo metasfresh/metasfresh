@@ -142,3 +142,44 @@ export function validatePrecision({
     ? false
     : true;
 }
+
+/**
+ * @method shouldPatch
+ * @summary Checks if the value has actually changed between what was cached before.
+ * @param {string} property
+ * @param {*} value
+ * @param {*} valueTo
+ * @param {array} widgetData
+ * @param {*} cachedValue - current widget value for the `property` field
+ */
+export function shouldPatch({
+  property,
+  value,
+  valueTo,
+  widgetData,
+  cachedValue,
+}) {
+  // if there's no widget value, then nothing could've changed. Unless
+  // it's a widget for actions (think ActionButton)
+  const isValue =
+    widgetData[0].value !== undefined ||
+    (widgetData[0].status && widgetData[0].status.value !== undefined);
+  let fieldData = widgetData.find((widget) => widget.field === property);
+  if (!fieldData) {
+    fieldData = widgetData[0];
+  }
+
+  let allowPatching =
+    (isValue &&
+      (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
+        JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
+    JSON.stringify(cachedValue) != JSON.stringify(value) ||
+    // clear field that had it's cachedValue nulled before
+    (cachedValue === null && value === null);
+
+  if (cachedValue === undefined && !value) {
+    allowPatching = false;
+  }
+
+  return allowPatching;
+}
