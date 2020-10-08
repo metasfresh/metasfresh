@@ -42,6 +42,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public BigDecimal convertQty(
@@ -166,7 +167,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	{
 		// Get Product's stocking UOM
 		final ProductId productId = conversionCtx.getProductId();
-		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockUOM(productId);
+		final I_C_UOM uomTo = productBL.getStockUOM(productId);
 
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
@@ -180,7 +181,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM sourceUOM = quantity.getUOM();
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
-		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockUOM(productId);
+		final I_C_UOM uomTo = productBL.getStockUOM(productId);
 		final BigDecimal qty = convertQty(conversionCtx, sourceQty, sourceUOM, uomTo);
 		return new Quantity(qty, uomTo, sourceQty, sourceUOM);
 	}
@@ -299,7 +300,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		final UomId fromUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		final UomId fromUomId = productBL.getStockUOMId(productId);
 		final UomId toUomId = UomId.ofRepoId(uomDest.getC_UOM_ID());
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
@@ -408,7 +409,6 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		final IProductBL productBL = Services.get(IProductBL.class); // don't extract this to a field, because ProductBL itself already has IUOMConversionBL as a field
 		final UomId toUomId = productBL.getStockUOMId(productId);
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)

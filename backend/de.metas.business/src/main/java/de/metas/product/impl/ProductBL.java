@@ -58,7 +58,6 @@ public final class ProductBL implements IProductBL
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
@@ -119,7 +118,6 @@ public final class ProductBL implements IProductBL
 	}
 
 	/**
-	 * @param product
 	 * @return UOM used for Product's Weight; never return null
 	 */
 	public I_C_UOM getWeightUOM(final I_M_Product product)
@@ -146,6 +144,7 @@ public final class ProductBL implements IProductBL
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product.getM_Product_ID());
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class); // don't extract it to field because IUOMConversionBL already has IProductBL as a field
 		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, uomTo);
 
 		//
@@ -218,9 +217,7 @@ public final class ProductBL implements IProductBL
 			return AttributeSetId.NONE;
 		}
 
-		final IProductDAO productDAO = Services.get(IProductDAO.class);
-
-		final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(productCategoryId);
+		final I_M_Product_Category productCategoryRecord = productsRepo.getProductCategoryById(productCategoryId);
 		attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
 		return attributeSetId > 0 ? AttributeSetId.ofRepoId(attributeSetId) : AttributeSetId.NONE;
 	}
@@ -233,6 +230,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@Nullable
 	public I_M_AttributeSet getAttributeSetOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId(productId);
@@ -244,11 +242,12 @@ public final class ProductBL implements IProductBL
 		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
+	@Nullable
 	@Override
 	public I_M_AttributeSetInstance getCreateASI(
-			Properties ctx,
-			int M_AttributeSetInstance_ID,
-			int M_Product_ID)
+			final Properties ctx,
+			final int M_AttributeSetInstance_ID,
+			final int M_Product_ID)
 	{
 		// Load Instance if not 0
 		if (M_AttributeSetInstance_ID > 0)
@@ -377,7 +376,7 @@ public final class ProductBL implements IProductBL
 			}
 			return product.getValue() + "_" + product.getName();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("No product found for {}. Returning `<{}>`.", productId, productId, ex);
 			return "<" + productId + ">";
