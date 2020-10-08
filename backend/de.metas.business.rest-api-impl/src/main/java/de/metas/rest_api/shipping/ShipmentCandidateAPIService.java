@@ -281,7 +281,7 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
-				.companyName(CoalesceUtil.coalesce(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
+				.companyName(CoalesceUtil.firstNotEmptyTrimmed(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
 				.street(splitStreetAndHouseNumber.getLeft())
 				.streetNo(splitStreetAndHouseNumber.getRight())
@@ -303,8 +303,31 @@ class ShipmentCandidateAPIService
 			customerBuilder
 					.contactEmail(contact.getEmail())
 					.contactName(contact.getName())
-					.contactPhone(CoalesceUtil.coalesce(contact.getMobilePhone(), contact.getPhone()));
+					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", shipmentSchedule.getContactId().getRepoId());
 		}
+		else if (composite.getContacts().size() == 1)
+		{ // shipment candidate has no contact, but the bpartner has only one
+			final BPartnerContact contact = composite.getContacts().get(0);
+			customerBuilder
+					.contactEmail(contact.getEmail())
+					.contactName(contact.getName())
+					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+			logger.debug("Exporting single-contact AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
+		}
+		else
+		{ // see if we have a shipto-contact
+			final BPartnerContact contact = composite.extractContact(c -> c.getContactType().getIsShipToDefaultOr(false)).orElse(null);
+			if (contact != null)
+			{
+				customerBuilder
+						.contactEmail(contact.getEmail())
+						.contactName(contact.getName())
+						.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+				logger.debug("Exporting shipToDefault AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
+			}
+		}
+
 		return customerBuilder.build();
 	}
 

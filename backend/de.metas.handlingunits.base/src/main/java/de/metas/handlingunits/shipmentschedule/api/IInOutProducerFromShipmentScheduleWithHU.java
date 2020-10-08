@@ -12,7 +12,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 import java.util.List;
 
 /**
- * Interface responsible creating {@link I_M_InOut} shipments from {@link IShipmentScheduleWithHU}s.
+ * Interface responsible creating {@link I_M_InOut} shipments from {@link ShipmentScheduleWithHU}s.
  *
  *
  */
@@ -31,9 +31,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	 * <li>{@link IHUInOutBL#createPackingMaterialLines(org.compiere.model.I_M_InOut) createPackingMaterialLines()} will also be called when the shipment is prepared, but at that stage it is much more
 	 * complicated to delete/reset those lines.
 	 * </ul>
-	 *
-	 * @param createPackingLines
-	 * @return this instance
 	 */
 	IInOutProducerFromShipmentScheduleWithHU setCreatePackingLines(boolean createPackingLines);
 

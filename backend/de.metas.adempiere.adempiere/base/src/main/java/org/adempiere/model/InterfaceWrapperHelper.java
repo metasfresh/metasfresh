@@ -876,7 +876,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
@@ -893,7 +892,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface or null if interface has no Table_Name
 	 */
 	public static String getTableNameOrNull(final Class<?> clazz)
@@ -1376,9 +1374,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
 	 *
-	 * @param model
-	 * @param attributeName
-	 * @param value
 	 * @return old value or null
 	 */
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
@@ -1388,10 +1383,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
-	 *
-	 * @param model
-	 * @param attributeName
-	 * @return
 	 */
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
@@ -1401,8 +1392,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Check if given <code>model</code> can be casted to <code>interfaceClass</code>. NOTE: by casted we mean using create(...) methods.
 	 *
-	 * @param model
-	 * @param interfaceClass
 	 * @return true if we can cast the model to given interface.
 	 */
 	public static boolean isInstanceOf(final Object model, final Class<?> interfaceClass)

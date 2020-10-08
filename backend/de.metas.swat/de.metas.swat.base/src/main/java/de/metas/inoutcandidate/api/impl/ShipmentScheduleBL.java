@@ -47,6 +47,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -134,6 +135,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
 	private static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
+
+	private static final ModelDynAttributeAccessor<I_M_ShipmentSchedule, Boolean> DYNATTR_DoNotInvalidatedOnChange = new ModelDynAttributeAccessor<>("NotInvalidatedOnchange", Boolean.class);
 
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
@@ -685,11 +688,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
-			try (final MDCCloseable iolrecordMDC = TableRecordMDC.putTableRecordReference(iolrecord))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(iolrecord))
 			{
 				for (final I_M_ShipmentSchedule shipmentScheduleRecord : shipmentSchedulePA.retrieveForInOutLine(iolrecord))
 				{
-					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
+					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
 					{
 						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
 						{
@@ -748,7 +751,17 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentSchedule.setM_Shipper_ID(request.getShipperId().getRepoId());
 		}
 
-		saveRecord(shipmentSchedule);
+		if (request.isDoNotInvalidateOnChange())
+		{
+			try (final IAutoCloseable ignored = doNotInvalidateOnChange(shipmentSchedule))
+			{
+				saveRecord(shipmentSchedule);
+			}
+		}
+		else
+		{
+			saveRecord(shipmentSchedule);
+		}
 	}
 
 	private boolean isCloseIfPartiallyShipped(@NonNull final OrgId orgId)
@@ -757,6 +770,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				sysConfigBL.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
 
 		return isCloseIfPartiallyInvoiced;
+	}
+
+	private IAutoCloseable doNotInvalidateOnChange(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		DYNATTR_DoNotInvalidatedOnChange.setValue(sched, true);
+		return () -> DYNATTR_DoNotInvalidatedOnChange.reset(sched);
+	}
+
+	@Override
+	public boolean isDoNotInvalidateOnChange(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		return DYNATTR_DoNotInvalidatedOnChange.getValue(sched, false);
 	}
 
 	@Override

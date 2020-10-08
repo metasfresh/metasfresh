@@ -15,14 +15,15 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			<h2>misc services</h2>
 		"""
 
-		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
-				{
-					dir('camel')
-							{
-								def camelBuildFile = load('buildfile.groovy')
-								camelBuildFile.build(mvnConf, scmVars, forceBuild)
-							}
-				}
+		// we do not have "edi" there yet (in this branch), and camel_shipping is moved
+//		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+//				{
+//					dir('camel')
+//							{
+//								def camelBuildFile = load('buildfile.groovy')
+//								camelBuildFile.build(mvnConf, scmVars, forceBuild)
+//							}
+//				}
 		withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
 					dir('edi') // todo: modernize and move to camel

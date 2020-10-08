@@ -1,18 +1,13 @@
 package de.metas.bpartner.product.stats;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.product.stats.BPartnerProductStats.LastInvoiceInfo;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -57,95 +52,5 @@ public class BPartnerProductStatsService
 	public List<BPartnerProductStats> getByProductIds(@NonNull final Set<ProductId> productIds)
 	{
 		return statsRepo.getByProductIds(productIds);
-	}
-
-	public void handleInOutChangedEvent(@NonNull final InOutChangedEvent event)
-	{
-		final BPartnerId bpartnerId = event.getBpartnerId();
-		final Set<ProductId> productIds = event.getProductIds();
-
-		if (event.isReversal())
-		{
-			statsRepo.recomputeStatistics(RecomputeStatisticsRequest.builder()
-					.bpartnerId(bpartnerId)
-					.productIds(productIds)
-					.recomputeInOutStatistics(true)
-					.build());
-		}
-		else
-		{
-			final ZonedDateTime movementDate = TimeUtil.asZonedDateTime(event.getMovementDate());
-			final boolean isShipment = event.getSoTrx().isSales();
-
-			final ImmutableMap<ProductId, BPartnerProductStats> statsByProductId = statsRepo.getByPartnerAndProducts(bpartnerId, productIds);
-
-			for (final ProductId productId : productIds)
-			{
-				BPartnerProductStats stats = statsByProductId.get(productId);
-				if (stats == null)
-				{
-					stats = BPartnerProductStats.newInstance(bpartnerId, productId);
-				}
-
-				if (isShipment)
-				{
-					stats.updateLastShipmentDate(movementDate);
-				}
-				else
-				{
-					stats.updateLastReceiptDate(movementDate);
-				}
-
-				statsRepo.save(stats);
-			}
-		}
-	}
-
-	public void handleInvoiceChangedEvent(@NonNull final InvoiceChangedEvent event)
-	{
-		// NOTE: only sales invoices are supported atm
-		if (!event.getSoTrx().isSales())
-		{
-			return;
-		}
-
-		final BPartnerId bpartnerId = event.getBpartnerId();
-		final Set<ProductId> productIds = event.getProductIds();
-
-		if (event.isReversal())
-		{
-			statsRepo.recomputeStatistics(RecomputeStatisticsRequest.builder()
-					.bpartnerId(bpartnerId)
-					.productIds(productIds)
-					.recomputeInvoiceStatistics(true)
-					.build());
-		}
-		else
-		{
-			final ImmutableMap<ProductId, BPartnerProductStats> statsByProductId = statsRepo.getByPartnerAndProducts(bpartnerId, productIds);
-
-			for (final ProductId productId : productIds)
-			{
-				BPartnerProductStats stats = statsByProductId.get(productId);
-				if (stats == null)
-				{
-					stats = BPartnerProductStats.newInstance(bpartnerId, productId);
-				}
-
-				LastInvoiceInfo lastSalesInvoice = extractLastSalesInvoiceInfo(event, productId);
-				stats.updateLastSalesInvoiceInfo(lastSalesInvoice);
-
-				statsRepo.save(stats);
-			}
-		}
-	}
-
-	private static LastInvoiceInfo extractLastSalesInvoiceInfo(final InvoiceChangedEvent event, final ProductId productId)
-	{
-		return LastInvoiceInfo.builder()
-				.invoiceId(event.getInvoiceId())
-				.invoiceDate(event.getInvoiceDate())
-				.price(event.getProductPrice(productId))
-				.build();
 	}
 }
