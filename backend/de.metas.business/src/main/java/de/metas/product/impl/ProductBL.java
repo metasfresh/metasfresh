@@ -1,61 +1,8 @@
 package de.metas.product.impl;
 
-import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.MAttributeSet;
-import org.compiere.model.MProductCategory;
-import org.compiere.model.X_C_UOM;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
@@ -76,6 +23,34 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.MAttributeSet;
+import org.compiere.model.MProductCategory;
+import org.compiere.model.X_C_UOM;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public final class ProductBL implements IProductBL
 {
@@ -144,7 +119,6 @@ public final class ProductBL implements IProductBL
 	}
 
 	/**
-	 *
 	 * @param product
 	 * @return UOM used for Product's Weight; never return null
 	 */
@@ -157,7 +131,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public BigDecimal getWeight(@NonNull final I_M_Product product, @NonNull final I_C_UOM uomTo)
+	public BigDecimal getWeight(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uomTo)
 	{
 		final BigDecimal weightPerStockingUOM = product.getWeight();
 		if (weightPerStockingUOM.signum() == 0)
@@ -269,7 +245,10 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID)
+	public I_M_AttributeSetInstance getCreateASI(
+			Properties ctx,
+			int M_AttributeSetInstance_ID,
+			int M_Product_ID)
 	{
 		// Load Instance if not 0
 		if (M_AttributeSetInstance_ID > 0)
@@ -289,7 +268,7 @@ public final class ProductBL implements IProductBL
 		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(ctx, I_M_AttributeSetInstance.class, ITrx.TRXNAME_None);
 		asi.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		return asi;
-	}	// get
+	}    // get
 
 	@Override
 	public boolean isTradingProduct(final I_M_Product product)
@@ -300,7 +279,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isASIMandatory(@NonNull final I_M_Product product, final boolean isSOTrx)
+	public boolean isASIMandatory(
+			@NonNull final I_M_Product product,
+			final boolean isSOTrx)
 	{
 
 		final ClientId adClientId = ClientId.ofRepoId(product.getAD_Client_ID());
@@ -350,7 +331,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isASIMandatory(@NonNull final ProductId productId, final boolean isSOTrx)
+	public boolean isASIMandatory(
+			@NonNull final ProductId productId,
+			final boolean isSOTrx)
 	{
 		final I_M_Product product = getById(productId);
 		return isASIMandatory(product, isSOTrx);
@@ -364,7 +347,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isProductInCategory(final ProductId productId, final ProductCategoryId expectedProductCategoryId)
+	public boolean isProductInCategory(
+			final ProductId productId,
+			final ProductCategoryId expectedProductCategoryId)
 	{
 		if (productId == null || expectedProductCategoryId == null)
 		{
@@ -383,12 +368,20 @@ public final class ProductBL implements IProductBL
 			return "-";
 		}
 
-		final I_M_Product product = getById(productId);
-		if (product == null)
+		try
 		{
+			final I_M_Product product = getById(productId);
+			if (product == null)
+			{
+				return "<" + productId + ">";
+			}
+			return product.getValue() + "_" + product.getName();
+		}
+		catch (Exception ex)
+		{
+			logger.warn("No product found for {}. Returning `<{}>`.", productId, productId, ex);
 			return "<" + productId + ">";
 		}
-		return product.getValue() + "_" + product.getName();
 	}
 
 	@Override

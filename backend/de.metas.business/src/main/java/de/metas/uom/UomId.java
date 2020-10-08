@@ -44,12 +44,13 @@ public class UomId implements RepoIdAware
 		return new UomId(repoId);
 	}
 
+	@Nullable
 	public static UomId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new UomId(repoId) : null;
 	}
 
-	public static int toRepoId(final UomId uomId)
+	public static int toRepoId(@Nullable final UomId uomId)
 	{
 		return uomId != null ? uomId.getRepoId() : -1;
 	}

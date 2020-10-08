@@ -74,7 +74,7 @@ public class CostPrice
 	private CostPrice(
 			@NonNull final CostAmount ownCostPrice,
 			@NonNull final CostAmount componentsCostPrice,
-			@NonNull UomId uomId)
+			@NonNull final UomId uomId)
 	{
 		Check.assumeEquals(ownCostPrice.getCurrencyId(), componentsCostPrice.getCurrencyId());
 
@@ -170,9 +170,17 @@ public class CostPrice
 		return toCostAmount().multiply(durationBD);
 	}
 
-	public CostPrice convertAmounts(@NonNull final UnaryOperator<CostAmount> converter)
+	public CostPrice convertAmounts(
+			@NonNull final UomId toUomId,
+			@NonNull final UnaryOperator<CostAmount> converter)
 	{
+		if (UomId.equals(this.uomId, toUomId))
+		{
+			return this;
+		}
+
 		return toBuilder()
+				.uomId(toUomId)
 				.ownCostPrice(converter.apply(getOwnCostPrice()))
 				.componentsCostPrice(converter.apply(getComponentsCostPrice()))
 				.build();

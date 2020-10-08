@@ -7,6 +7,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -41,40 +42,47 @@ import java.math.RoundingMode;
 @Value
 public class CostAmount
 {
-	public static final CostAmount of(
+	public static CostAmount of(
 			@NonNull final BigDecimal value,
 			final CurrencyId currencyId)
 	{
 		return new CostAmount(value, currencyId);
 	}
 
-	public static final CostAmount of(
+	public static CostAmount of(
 			final int valueInt,
 			final CurrencyId currencyId)
 	{
 		return of(BigDecimal.valueOf(valueInt), currencyId);
 	}
 
-	public static final CostAmount ofMoney(@NonNull final Money money)
+	public static CostAmount of(
+			final String valueStr,
+			final CurrencyId currencyId)
+	{
+		return of(new BigDecimal(valueStr), currencyId);
+	}
+
+	public static CostAmount ofMoney(@NonNull final Money money)
 	{
 		return new CostAmount(money.toBigDecimal(), money.getCurrencyId());
 	}
 
-	public static final CostAmount zero(final CurrencyId currencyId)
+	public static CostAmount zero(final CurrencyId currencyId)
 	{
 		return new CostAmount(BigDecimal.ZERO, currencyId);
 	}
 
-	public static final CostAmount ofProductPrice(@NonNull final ProductPrice price)
+	public static CostAmount ofProductPrice(@NonNull final ProductPrice price)
 	{
 		return ofMoney(price.toMoney());
 	}
 
-	public static final CostAmount multiply(
+	public static CostAmount multiply(
 			@NonNull final ProductPrice price,
 			@NonNull final Quantity qty)
 	{
-		if (price.getUomId().getRepoId() != qty.getUOMId())
+		if (!UomId.equals(price.getUomId(), qty.getUomId()))
 		{
 			throw new AdempiereException("UOM does not match: " + price + ", " + qty);
 		}
@@ -93,7 +101,7 @@ public class CostAmount
 		this.currencyId = currencyId;
 	}
 
-	private final void assertCurrencyMatching(@NonNull final CostAmount amt)
+	private void assertCurrencyMatching(@NonNull final CostAmount amt)
 	{
 		if (!currencyId.equals(amt.currencyId))
 		{

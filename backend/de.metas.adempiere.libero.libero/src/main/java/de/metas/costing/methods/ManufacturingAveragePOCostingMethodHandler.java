@@ -1,20 +1,6 @@
 package de.metas.costing.methods;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.api.PPOrderCosts;
-import org.eevolution.model.I_PP_Cost_Collector;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
@@ -39,6 +25,18 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -73,7 +71,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	//
 	private final CostingMethodHandlerUtils utils;
 
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
@@ -199,7 +197,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 
 		// Accumulate to order costs
 		// NOTE: outbound amounts are negative, so we have to negate it here in order to get a positive value
-		orderCosts.accumulateOutboundCostAmount(costSegmentAndElement, requestEffective.getAmt().negate(), requestEffective.getQty().negate());
+		orderCosts.accumulateOutboundCostAmount(
+				costSegmentAndElement,
+				requestEffective.getAmt().negate(),
+				requestEffective.getQty().negate(),
+				utils.getQuantityUOMConverter());
 
 		return result;
 	}
@@ -210,7 +212,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			@NonNull final PPOrderCosts orderCosts)
 	{
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
-		
+
 		final CostDetailCreateResult result;
 		if (request.isReversal())
 		{
@@ -228,13 +230,18 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 
 		// Accumulate to order costs
-		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
-		orderCosts.accumulateInboundCostAmount(costSegmentAndElement, request.getAmt(), request.getQty());
+		orderCosts.accumulateInboundCostAmount(
+				utils.extractCostSegmentAndElement(request),
+				request.getAmt(),
+				request.getQty(),
+				utils.getQuantityUOMConverter());
 
 		return result;
 	}
 
-	private CostDetailCreateResult createActivityControl(final CostDetailCreateRequest request, final Duration totalDuration)
+	private CostDetailCreateResult createActivityControl(
+			final CostDetailCreateRequest request,
+			final Duration totalDuration)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
@@ -248,7 +255,9 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final OrderLineId orderLineId)
 	{
 		return Optional.empty();
 	}

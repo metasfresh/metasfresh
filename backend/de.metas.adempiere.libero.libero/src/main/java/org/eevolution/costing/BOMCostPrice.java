@@ -1,5 +1,6 @@
 package org.eevolution.costing;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.product.ProductId;
@@ -7,6 +8,7 @@ import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
@@ -40,6 +42,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
+@EqualsAndHashCode
 @ToString
 public class BOMCostPrice
 {
@@ -106,9 +109,9 @@ public class BOMCostPrice
 		}
 	}
 
-	Collection<BOMCostElementPrice> getElementPrices()
+	ImmutableList<BOMCostElementPrice> getElementPrices()
 	{
-		return pricesByElementId.values();
+		return ImmutableList.copyOf(pricesByElementId.values());
 	}
 
 	<T extends RepoIdAware> Stream<T> streamIds(@NonNull final Class<T> idType)

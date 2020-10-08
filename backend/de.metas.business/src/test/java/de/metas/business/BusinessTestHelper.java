@@ -1,13 +1,23 @@
 package de.metas.business;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.ProductType;
+import de.metas.product.ResourceId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -24,26 +34,15 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_UOM;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.organization.StoreCreditCardNumberMode;
-import de.metas.product.ProductId;
-import de.metas.product.ProductType;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -107,7 +106,10 @@ public class BusinessTestHelper
 		return createUOM("PCE", null, UOM_Precision_0);
 	}
 
-	public I_C_UOM createUOM(final String name, final String uomType, final int stdPrecision)
+	public I_C_UOM createUOM(
+			final String name,
+			@Nullable final String uomType,
+			final int stdPrecision)
 	{
 		final I_C_UOM uom = createUOM(name, stdPrecision, 0);
 		uom.setUOMType(uomType);
@@ -116,7 +118,10 @@ public class BusinessTestHelper
 		return uom;
 	}
 
-	public I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
+	public I_C_UOM createUOM(
+			final String name,
+			final int stdPrecision,
+			final int costingPrecission)
 	{
 		final I_C_UOM uom = createUOM(name);
 		uom.setStdPrecision(stdPrecision);
@@ -131,7 +136,9 @@ public class BusinessTestHelper
 		return createUOM(name, x12de355);
 	}
 
-	public I_C_UOM createUOM(final String name, final String x12de355)
+	public I_C_UOM createUOM(
+			final String name,
+			final String x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
 		POJOWrapper.setInstanceName(uom, name);
@@ -156,19 +163,25 @@ public class BusinessTestHelper
 		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
 	}
 
-	public ProductId createProductId(final String name, final I_C_UOM uom)
+	public ProductId createProductId(
+			final String name,
+			final I_C_UOM uom)
 	{
 		final I_M_Product product = createProduct(name, uom);
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	public I_M_Product createProduct(final String name, final I_C_UOM uom)
+	public I_M_Product createProduct(
+			final String name,
+			final I_C_UOM uom)
 	{
 		final BigDecimal weightKg = null; // N/A
 		return createProduct(name, uom, weightKg);
 	}
 
-	public I_M_Product createProduct(final String name, final UomId uomId)
+	public I_M_Product createProduct(
+			final String name,
+			final UomId uomId)
 	{
 		final BigDecimal weightKg = null; // N/A
 		return createProduct(name, uomId, weightKg);
@@ -208,6 +221,23 @@ public class BusinessTestHelper
 		return product;
 	}
 
+	public ResourceId createManufacturingResource(
+			@NonNull final String name,
+			@NonNull final I_C_UOM timeUOM)
+	{
+		final I_S_Resource resource = newInstance(I_S_Resource.class);
+		resource.setName(name);
+		resource.setIsManufacturingResource(true);
+		saveRecord(resource);
+		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
+
+		final I_M_Product product = createProduct(name, timeUOM);
+		product.setS_Resource_ID(resourceId.getRepoId());
+		saveRecord(product);
+
+		return resourceId;
+	}
+
 	/**
 	 * Creates and saves a simple {@link I_C_BPartner}
 	 */
@@ -232,7 +262,9 @@ public class BusinessTestHelper
 		return bpl;
 	}
 
-	public I_C_BP_Group createBPGroup(final String name, final boolean isDefault)
+	public I_C_BP_Group createBPGroup(
+			final String name,
+			final boolean isDefault)
 	{
 		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
 		POJOWrapper.setInstanceName(bpGroupRecord, name);
@@ -244,7 +276,10 @@ public class BusinessTestHelper
 		return bpGroupRecord;
 	}
 
-	public I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)
+	public I_C_BP_BankAccount createBpBankAccount(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final CurrencyId currencyId,
+			@Nullable final String iban)
 	{
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
 		bpBankAccount.setIBAN(iban);
@@ -267,7 +302,9 @@ public class BusinessTestHelper
 	/**
 	 * Creates a warehouse and one (default) locator.
 	 */
-	public I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
+	public I_M_Warehouse createWarehouse(
+			final String name,
+			final boolean isIssueWarehouse)
 	{
 		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = newInstanceOutOfTrx(org.adempiere.warehouse.model.I_M_Warehouse.class);
 		POJOWrapper.setInstanceName(warehouse, name);
@@ -283,7 +320,9 @@ public class BusinessTestHelper
 		return warehouse;
 	}
 
-	public I_M_Locator createLocator(final String name, final I_M_Warehouse warehouse)
+	public I_M_Locator createLocator(
+			final String name,
+			final I_M_Warehouse warehouse)
 	{
 		final I_M_Locator locator = newInstanceOutOfTrx(I_M_Locator.class);
 		POJOWrapper.setInstanceName(locator, name);
@@ -320,7 +359,6 @@ public class BusinessTestHelper
 	}
 
 	/**
-	 *
 	 * @deprecated please use {@link AdempiereTestHelper#createOrgWithTimeZone()} instead
 	 */
 	@Deprecated

@@ -6,6 +6,7 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
@@ -79,7 +80,10 @@ public class PPOrderCost
 	{
 		if (!UomId.equals(price.getUomId(), accumulatedQty.getUomId()))
 		{
-			throw new AdempiereException("UOM not matching: " + price+", "+ accumulatedQty);
+			throw new AdempiereException("UOM not matching")
+					.setParameter("price", price)
+					.setParameter("accumulatedQty", accumulatedQty)
+					.appendParametersToMessage();
 		}
 
 		this.id = id;
@@ -143,9 +147,11 @@ public class PPOrderCost
 		return getTrxType() == PPOrderCostTrxType.ByProduct;
 	}
 
+	@NonNull
 	public PPOrderCost addingAccumulatedAmountAndQty(
 			@NonNull final CostAmount amt,
-			@NonNull final Quantity qty)
+			@NonNull final Quantity qty,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		if (amt.isZero() && qty.isZero())
 		{
@@ -159,17 +165,21 @@ public class PPOrderCost
 			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
 		}
 
+		final Quantity accumulatedQty = getAccumulatedQty();
+		final Quantity qtyConv = uomConverter.convertQuantityTo(qty, getProductId(), accumulatedQty.getUomId());
+
 		return toBuilder()
 				.accumulatedAmount(getAccumulatedAmount().add(amt))
-				.accumulatedQty(getAccumulatedQty().add(qty.toBigDecimal()))
+				.accumulatedQty(accumulatedQty.add(qtyConv))
 				.build();
 	}
 
 	public PPOrderCost subtractingAccumulatedAmountAndQty(
-			final CostAmount amt,
-			final Quantity qty)
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
-		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate());
+		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate(), uomConverter);
 	}
 
 	public PPOrderCost withPrice(@NonNull final CostPrice newPrice)

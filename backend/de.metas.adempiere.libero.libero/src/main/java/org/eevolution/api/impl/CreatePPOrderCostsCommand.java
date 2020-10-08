@@ -18,6 +18,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -52,6 +53,7 @@ import org.eevolution.costing.BOM;
 import org.eevolution.costing.OrderBOMCostCalculatorRepository;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -85,6 +87,7 @@ import java.util.stream.Stream;
 final class CreatePPOrderCostsCommand
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(CreatePPOrderCostsCommand.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	//
@@ -269,10 +272,17 @@ final class CreatePPOrderCostsCommand
 		if (costElementIds.isEmpty())
 		{
 			// shall not happen!
+			logger.warn("No active costs elements found. Returning empty for {}", candidate);
 			return Stream.empty();
 		}
 
-		final Map<CostElementId, PPOrderCost> orderCostsByCostElementId = currentCostsRepository.getByCostSegmentAndCostElements(candidate.getCostSegment(), costElementIds)
+		final List<CurrentCost> currentCosts = currentCostsRepository.getByCostSegmentAndCostElements(candidate.getCostSegment(), costElementIds);
+		if (currentCosts.isEmpty())
+		{
+			logger.warn("No current costs found {} and {}", candidate.getCostSegment(), costElementIds);
+		}
+
+		final Map<CostElementId, PPOrderCost> orderCostsByCostElementId = currentCosts
 				.stream()
 				.map(currentCost -> createPPOrderCost(candidate, currentCost))
 				.collect(GuavaCollectors.toImmutableMapByKey(PPOrderCost::getCostElementId));
@@ -316,7 +326,7 @@ final class CreatePPOrderCostsCommand
 		final UomId uomId = costPrice.getUomId();
 		final CurrencyPrecision costingPrecision = currencyRepository.getCostingPrecision(costPrice.getCurrencyId());
 
-		return costPrice.convertAmounts(costAmount -> {
+		return costPrice.convertAmounts(targetUomId, costAmount -> {
 			final ProductPrice productPrice = ProductPrice.builder()
 					.productId(productId)
 					.uomId(uomId)
