@@ -313,11 +313,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	/**
-	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(ShipmentScheduleWithHU)}
-	 *
-	 * @param candidate
-	 * @param movementDate
-	 * @return shipment
+	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(ShipmentScheduleWithHU, LocalDate)}.
 	 */
 	private I_M_InOut createShipmentHeader(final ShipmentScheduleWithHU candidate, final LocalDate dateDoc)
 	{

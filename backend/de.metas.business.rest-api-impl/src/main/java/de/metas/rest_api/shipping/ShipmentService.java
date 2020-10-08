@@ -228,6 +228,7 @@ public class ShipmentService
 				.attributes(request.getAttributes())
 				.bPartnerLocationIdOverride(extractBPartnerLocationId(request, cache).orElse(null))
 				.shipperId(request.getShipperId())
+				.doNotInvalidateOnChange(true) // don't invalidate it; we don't want the update processor to interfere with us creating the shipment
 				.build();
 	}
 
