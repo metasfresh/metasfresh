@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.uom.X12DE355;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -21,7 +22,6 @@ import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.uom.IUOMDAO;
 
 /*
  * #%L
@@ -61,8 +61,8 @@ public class DesadvBLTest
 	@Test
 	void setQty_isUOMForTUs()
 	{
-		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", IUOMDAO.X12DE355_COLI);
-		final I_C_UOM eachUomRecord = BusinessTestHelper.createUOM("each", IUOMDAO.X12DE355_Each);
+		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", X12DE355.COLI);
+		final I_C_UOM eachUomRecord = BusinessTestHelper.createUOM("each", X12DE355.EACH);
 
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", eachUomRecord);
 

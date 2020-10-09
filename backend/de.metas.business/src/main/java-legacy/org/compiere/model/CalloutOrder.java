@@ -937,7 +937,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		orderLine.setM_AttributeSetInstance(null);
 		orderLine.setS_ResourceAssignment_ID(-1);
-		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
+		orderLine.setC_UOM_ID(UomId.EACH.getRepoId()); // EA
 
 		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		final Object[] sqlParams = new Object[] { C_Charge_ID };

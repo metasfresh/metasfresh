@@ -43,8 +43,8 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -121,7 +121,7 @@ public class PPOrderCostsTestHelper
 		uomBag = BusinessTestHelper.createUOM("Bag", 0, 0);
 		uomBagId = UomId.ofRepoId(uomBag.getC_UOM_ID());
 
-		uomSeconds = BusinessTestHelper.createUOM(UOMUtil.toX12DE355(ChronoUnit.SECONDS));
+		uomSeconds = BusinessTestHelper.createUOM("Second", X12DE355.ofTemporalUnit(ChronoUnit.SECONDS));
 
 		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
 	}

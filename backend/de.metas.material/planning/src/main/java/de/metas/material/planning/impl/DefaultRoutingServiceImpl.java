@@ -55,7 +55,7 @@ public class DefaultRoutingServiceImpl implements RoutingService
 	@Override
 	public WorkingTime estimateWorkingTimePerOneUnit(final PPRoutingActivity activity)
 	{
-		final I_C_UOM uomEach = Services.get(IUOMDAO.class).retrieveEachUOM(Env.getCtx());
+		final I_C_UOM uomEach = Services.get(IUOMDAO.class).getEachUOM();
 		return estimateWorkingTime(activity, Quantity.of(1, uomEach));
 	}
 
