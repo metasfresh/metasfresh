@@ -186,9 +186,9 @@ public class ModelClassGenerator
 	 *
 	 * @return set/get methods (java code)
 	 */
-	private String createColumnMethods(final ColumnInfo columnInfo)
+	private String createColumnMethods(@NonNull final ColumnInfo columnInfo)
 	{
-		final ModelInterfaceGenerator.DataTypeInfo dataTypeInfo = ModelInterfaceGenerator.getDataTypeInfo(columnInfo);
+		final DataTypeInfo dataTypeInfo = DataTypeInfo.ofColumnInfo(columnInfo);
 		final String columnName = columnInfo.getColumnName();
 
 		// Set ********
@@ -338,6 +338,8 @@ public class ModelClassGenerator
 		}
 		else if (dataTypeInfo.isBigDecimal())
 		{
+			Check.assumeEquals(dataTypeInfo.getNullableValueGetter(), NullableType.NON_NULL, "BigDecimal returning methods shall always return non null: {}", dataTypeInfo);
+
 			sb.append("final BigDecimal bd = get_ValueAsBigDecimal(").append("COLUMNNAME_").append(columnName).append(");").append(NL);
 			sb.append("\t\treturn bd != null ? bd : BigDecimal.ZERO;").append(NL);
 			addImportClass(java.math.BigDecimal.class);

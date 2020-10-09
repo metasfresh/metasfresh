@@ -1,13 +1,9 @@
 package org.adempiere.ad.persistence.modelgen;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.ClassnameScanner;
@@ -26,7 +22,6 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -226,13 +221,9 @@ public class ModelInterfaceGenerator
 		if (!SKIP_ModelGettersAndSettersForReferencedClassNames.contains(referenceClassName))
 		{
 			addImportClass(ModelColumn.class);
+
 			// e.g. ModelColumn<I_C_Invoice, I_C_BPartner>
-			final StringBuilder modelColumnClassname = new StringBuilder()
-					.append(ModelColumn.class.getSimpleName())
-					.append("<")
-					.append(modelClassname)
-					.append(", ").append(referenceClassName == null ? "Object" : referenceClassName)
-					.append(">");
+			final String modelColumnClassname = ModelColumn.class.getSimpleName() + "<" + modelClassname + ", " + (referenceClassName == null ? "Object" : referenceClassName) + ">";
 
 			sb.append("\t").append(modelColumnClassname).append(" COLUMN_").append(columnName)
 					//
@@ -263,7 +254,7 @@ public class ModelInterfaceGenerator
 	@NonNull
 	private String createColumnMethods(@NonNull final ColumnInfo columnInfo)
 	{
-		final DataTypeInfo dataTypeInfo = getDataTypeInfo(columnInfo);
+		final DataTypeInfo dataTypeInfo = DataTypeInfo.ofColumnInfo(columnInfo);
 
 		final StringBuilder sb = new StringBuilder();
 
@@ -277,17 +268,13 @@ public class ModelInterfaceGenerator
 				deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
 			}
 
-			boolean addNullableAnnotation = false;
-			if (!columnInfo.isMandatory() && !dataTypeInfo.isPrimitiveType())
-			{
-				addNullableAnnotation = true;
-				addImportClass(javax.annotation.Nullable.class);
-			}
+			final NullableType nullableType = dataTypeInfo.getNullableValueSetter();
+			addImportClasses(nullableType.getClassesToImport());
 
 			generateJavaComment(sb, columnInfo, "Set", deprecatedSetter);
 			appendDeprecatedIfNotNull(sb, deprecatedSetter);
 			sb.append("\tvoid set").append(columnInfo.getColumnName()).append(" (")
-					.append(addNullableAnnotation ? "@Nullable " : "")
+					.append(nullableType.getJavaCode())
 					.append(dataTypeInfo.getJavaCode()).append(" ").append(columnInfo.getColumnName()).append(");");
 		}
 
@@ -300,17 +287,13 @@ public class ModelInterfaceGenerator
 				deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
 			}
 
-			boolean addNullableAnnotation = false;
-			if (!columnInfo.isMandatory() && !dataTypeInfo.isPrimitiveType())
-			{
-				addNullableAnnotation = true;
-				addImportClass(javax.annotation.Nullable.class);
-			}
+			final NullableType nullableType = dataTypeInfo.getNullableValueGetter();
+			addImportClasses(nullableType.getClassesToImport());
 
 			generateJavaComment(sb, columnInfo, "Get", deprecatedGetter);
 			appendDeprecatedIfNotNull(sb, deprecatedGetter);
 			sb.append("\t")
-					.append(addNullableAnnotation ? "@Nullable " : "")
+					.append(nullableType.getJavaCode())
 					.append(dataTypeInfo.getJavaCode());
 			if (dataTypeInfo.isBoolean())
 			{
@@ -341,56 +324,45 @@ public class ModelInterfaceGenerator
 				&& !columnInfo.isKey())
 		{
 			final String fieldName = getFieldName(columnInfo.getColumnName());
+
 			//
-			if (referenceClassName != null)
+			// Model getter
 			{
-				//
-				// Model getter
+				String deprecatedGetter = null;
+				if (columnInfo.isVirtualColumn() && columnInfo.isLazyLoading())
 				{
-					String deprecatedGetter = null;
-					if (columnInfo.isVirtualColumn() && columnInfo.isLazyLoading())
-					{
-						deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
-					}
-
-					boolean addNullableAnnotation = false;
-					if (!columnInfo.isMandatory())
-					{
-						addNullableAnnotation = true;
-						addImportClass(javax.annotation.Nullable.class);
-					}
-
-					sb.append("\n");
-					appendDeprecatedIfNotNull(sb, deprecatedGetter);
-					sb.append("\t")
-							.append(addNullableAnnotation ? "@Nullable " : "")
-							.append(referenceClassName).append(" get").append(fieldName).append("();");
+					deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
 				}
 
-				//
-				// Model setter
-				if (isGenerateSetter(columnInfo.getColumnName()))
+				final NullableType nullableType = dataTypeInfo.getNullableValueObject();
+				addImportClasses(nullableType.getClassesToImport());
+
+				sb.append("\n");
+				appendDeprecatedIfNotNull(sb, deprecatedGetter);
+				sb.append("\t")
+						.append(nullableType.getJavaCode())
+						.append(referenceClassName).append(" get").append(fieldName).append("();");
+			}
+
+			//
+			// Model setter
+			if (isGenerateSetter(columnInfo.getColumnName()))
+			{
+				String deprecatedSetter = null;
+				if (columnInfo.isVirtualColumn())
 				{
-					String deprecatedSetter = null;
-					if (columnInfo.isVirtualColumn())
-					{
-						deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
-					}
-
-					boolean addNullableAnnotation = false;
-					if (!columnInfo.isMandatory())
-					{
-						addNullableAnnotation = true;
-						addImportClass(javax.annotation.Nullable.class);
-					}
-
-					sb.append("\n");
-					appendDeprecatedIfNotNull(sb, deprecatedSetter);
-					sb.append("\tvoid set").append(fieldName).append("(")
-							.append(addNullableAnnotation ? "@Nullable " : "")
-							.append(referenceClassName).append(" ").append(fieldName)
-							.append(");");
+					deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
 				}
+
+				final NullableType nullableType = dataTypeInfo.getNullableValueObject();
+				addImportClasses(nullableType.getClassesToImport());
+
+				sb.append("\n");
+				appendDeprecatedIfNotNull(sb, deprecatedSetter);
+				sb.append("\tvoid set").append(fieldName).append("(")
+						.append(nullableType.getJavaCode())
+						.append(referenceClassName).append(" ").append(fieldName)
+						.append(");");
 			}
 		}
 
@@ -555,16 +527,33 @@ public class ModelInterfaceGenerator
 		}
 		if (className.equals("byte[]"))
 		{
-			log.warn("Invalid type - " + className);
+			log.warn("Invalid type: {}", className);
 			return;
 		}
 		s_importClasses.add(className);
 	}
 
+	private void addImportClasses(@Nullable final Collection<Class<?>> classes)
+	{
+		if (classes == null || classes.isEmpty())
+		{
+			return;
+		}
+
+		for (final Class<?> clazz : classes)
+		{
+			if (clazz == null)
+			{
+				continue;
+			}
+
+			addImportClass(clazz);
+		}
+	}
+
 	/**
 	 * Add class to class import list
 	 */
-	@SuppressWarnings("unused")
 	private void addImportClass(@NonNull final Class<?> clazz)
 	{
 		Class<?> actualClass = clazz;
@@ -590,150 +579,6 @@ public class ModelInterfaceGenerator
 			sb.append("import ").append(name).append(";"); // .append(NL);
 		}
 		sb.append(NL);
-	}
-
-	/**
-	 * Get class for given display type and reference
-	 *
-	 * @return class
-	 */
-	private static Class<?> getClass(final ColumnInfo columnInfo)
-	{
-		final int displayType = columnInfo.getDisplayType();
-		final int AD_Reference_ID = columnInfo.getAdReferenceId();
-		return getClass(columnInfo, displayType, AD_Reference_ID);
-	}
-
-	private static Class<?> getClass(
-			final ColumnInfo columnInfo,
-			int displayType,
-			int AD_Reference_ID)
-	{
-		final String columnName = columnInfo.getColumnName();
-
-		// Handle Posted
-		// TODO: hardcoded
-		if (columnName.equalsIgnoreCase("Posted")
-				|| columnName.equalsIgnoreCase("Processed")
-				|| columnName.equalsIgnoreCase("Processing"))
-		{
-			return Boolean.class;
-		}
-		// Record_ID
-		// TODO: hardcoded
-		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
-		{
-			return Integer.class;
-		}
-		// Reference Table
-		else if ((DisplayType.Table == displayType || DisplayType.Search == displayType)
-				&& AD_Reference_ID > 0)
-		{
-			final Optional<TableReferenceInfo> tableReferenceInfoOrNull = columnInfo.getTableReferenceInfo();
-			if (tableReferenceInfoOrNull.isPresent())
-			{
-				final TableReferenceInfo tableReferenceInfo = tableReferenceInfoOrNull.get();
-				displayType = tableReferenceInfo.getRefDisplayType();
-				AD_Reference_ID = tableReferenceInfo.getKeyReferenceValueId();
-			}
-			else
-			{
-				throw new IllegalStateException("Not found AD_Ref_Table/AD_Column for " + columnInfo);
-			}
-			//
-			return getClass(columnInfo, displayType, AD_Reference_ID); // recursive call with new parameters
-		}
-		else
-		{
-			return DisplayType.getClass(displayType, true);
-		}
-	}
-
-	@Value
-	@Builder
-	public static class DataTypeInfo
-	{
-		@NonNull
-		String javaCode;
-		@NonNull
-		Class<?> typeClass;
-		boolean primitiveType;
-		int displayType;
-
-		public boolean isObject()
-		{
-			return "Object".equals(javaCode);
-		}
-
-		public boolean isString()
-		{
-			return String.class.equals(typeClass);
-		}
-
-		public boolean isBoolean()
-		{
-			return boolean.class.equals(typeClass)
-					|| Boolean.class.equals(typeClass);
-		}
-
-		public boolean isInteger()
-		{
-			return int.class.equals(typeClass)
-					|| Integer.class.equals(typeClass);
-		}
-
-		public boolean isBigDecimal()
-		{
-			return java.math.BigDecimal.class.equals(typeClass);
-		}
-
-		public boolean isTimestamp()
-		{
-			return java.sql.Timestamp.class.equals(typeClass);
-		}
-
-	}
-
-	public static DataTypeInfo getDataTypeInfo(final ColumnInfo columnInfo)
-	{
-		Class<?> typeClass = getClass(columnInfo);
-		String typeClassName = typeClass.getName();
-		typeClassName = typeClassName.substring(typeClassName.lastIndexOf('.') + 1);
-
-		final int displayType = columnInfo.getDisplayType();
-		final String javaCode;
-		final boolean primitive;
-		if (typeClassName.equals("Boolean"))
-		{
-			typeClass = boolean.class;
-			javaCode = "boolean";
-			primitive = true;
-		}
-		else if (typeClassName.equals("Integer"))
-		{
-			typeClass = int.class;
-			javaCode = "int";
-			primitive = true;
-		}
-		else if (displayType == DisplayType.Binary
-				|| displayType == DisplayType.Image)
-		{
-			typeClass = byte[].class;
-			javaCode = "byte[]";
-			primitive = true;
-		}
-		else
-		{
-			javaCode = typeClass.getName(); // metas: always use FQ names
-			primitive = false;
-		}
-
-		return DataTypeInfo.builder()
-				.javaCode(javaCode)
-				.typeClass(typeClass)
-				.primitiveType(primitive)
-				.displayType(displayType)
-				.build();
 	}
 
 	/**
