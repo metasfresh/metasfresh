@@ -178,7 +178,18 @@ public class UOMDAO implements IUOMDAO
 	public UomId getUomIdByTemporalUnit(@NonNull final TemporalUnit temporalUnit)
 	{
 		final String x12de355 = UOMUtil.toX12DE355(temporalUnit);
-		return getUomIdByX12DE355(x12de355);
+		try
+		{
+			return getUomIdByX12DE355(x12de355);
+		}
+		catch(Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("temporalUnit", temporalUnit)
+					.setParameter("x12de355", x12de355)
+					.setParameter("Suggestion", "Create an UOM for that X12DE355 code or activate it if already exists.")
+					.appendParametersToMessage();
+		}
 	}
 
 	@Override
