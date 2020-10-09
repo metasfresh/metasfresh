@@ -81,9 +81,7 @@ public class PostgRESTProcessExecutor extends JavaProcess
 				.build();
 
 		final String postgRESTResponse = postgRESTClient.performGet(getRequest);
-
-		processInfo.getResult().setStringResult(postgRESTResponse);
-		processInfo.getResult().setStringResultContentType(responseFormat.getContentType());
+		processInfo.getResult().setStringResult(postgRESTResponse, responseFormat.getContentType());
 
 		return MSG_OK;
 	}

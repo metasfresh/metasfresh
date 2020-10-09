@@ -163,12 +163,10 @@ public class ProcessExecutionResult
 	private String webuiViewId = null;
 
 	@Getter
-	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String stringResult = null;
 
 	@Getter
-	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String stringResultContentType = null;
 
@@ -355,6 +353,12 @@ public class ProcessExecutionResult
 	{
 		Check.assumeNotNull(showProcessLogsPolicy, "showProcessLogsPolicy not null");
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
+	}
+
+	public void setStringResult(@Nullable final String result, @NonNull final String contentType)
+	{
+		this.stringResult = result;
+		this.stringResultContentType = contentType;
 	}
 
 	/**
