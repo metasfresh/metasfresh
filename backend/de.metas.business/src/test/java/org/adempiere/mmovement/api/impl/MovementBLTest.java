@@ -1,8 +1,11 @@
 package org.adempiere.mmovement.api.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.product.IProductActivityProvider;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.util.Services;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -16,19 +19,17 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.acct.AcctSchemaTestHelper;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.product.IProductActivityProvider;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.util.Services;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MovementBLTest
 {
-	/** Service under test */
+	/**
+	 * Service under test
+	 */
 	private MovementBL movementBL;
 
 	private IContextAware context;
@@ -36,25 +37,23 @@ public class MovementBLTest
 
 	private Map<ProductId, ActivityId> productActivities;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		context = PlainContextAware.newOutOfTrx();
 
+		productActivities = new HashMap<>();
 		final IProductActivityProvider productActivityProvider = (clientId, orgId, productId) -> productActivities.get(productId);
 		Services.registerService(IProductActivityProvider.class, productActivityProvider);
+
+		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		acctSchemaId = AcctSchemaId.ofRepoId(1);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 
 		//
 		// Service under test
 		movementBL = (MovementBL)Services.get(IMovementBL.class);
-
-		//
-		// Master data
-		productActivities = new HashMap<>();
-		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
-		acctSchemaId = AcctSchemaId.ofRepoId(1);
-		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 	}
 
 	/**
@@ -138,7 +137,10 @@ public class MovementBLTest
 		return product;
 	}
 
-	private I_M_MovementLine createMovementLine(final I_M_Product product, final I_M_Locator locatorFrom, final I_M_Locator locatorTo)
+	private I_M_MovementLine createMovementLine(
+			final I_M_Product product,
+			final I_M_Locator locatorFrom,
+			final I_M_Locator locatorTo)
 	{
 		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, context);
 		InterfaceWrapperHelper.save(org);
