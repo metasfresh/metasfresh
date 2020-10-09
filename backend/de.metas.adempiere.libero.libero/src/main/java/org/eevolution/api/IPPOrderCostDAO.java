@@ -8,9 +8,10 @@ public interface IPPOrderCostDAO extends ISingletonService
 {
 	boolean hasPPOrderCosts(@NonNull PPOrderId orderId);
 
-	PPOrderCosts getByOrderId(PPOrderId orderId);
+	@NonNull
+	PPOrderCosts getByOrderId(@NonNull PPOrderId orderId);
 
-	void deleteByOrderId(PPOrderId ppOrderId);
+	void deleteByOrderId(@NonNull PPOrderId ppOrderId);
 
-	void save(PPOrderCosts orderCosts);
+	void save(@NonNull PPOrderCosts orderCosts);
 }

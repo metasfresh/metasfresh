@@ -58,6 +58,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 	}
 
 	@Override
+	@NonNull
 	public PPOrderCosts getByOrderId(@NonNull final PPOrderId orderId)
 	{
 		final ImmutableList<PPOrderCost> costs = retrieveAllOrderCostsQuery(orderId)

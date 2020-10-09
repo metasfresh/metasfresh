@@ -38,6 +38,7 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
@@ -175,6 +176,11 @@ final class CreatePPOrderCostsCommand
 				.stream()
 				.flatMap(this::createPPOrderCostsAndStream)
 				.collect(ImmutableList.toImmutableList());
+
+		if (orderCostsList.isEmpty())
+		{
+			throw new AdempiereException("No order costs found");
+		}
 
 		return PPOrderCosts.builder()
 				.orderId(ppOrderId)

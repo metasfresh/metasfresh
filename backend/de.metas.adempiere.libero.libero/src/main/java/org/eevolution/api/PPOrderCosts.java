@@ -65,6 +65,8 @@ public final class PPOrderCosts
 			@NonNull final PPOrderId orderId,
 			@NonNull @Singular final Collection<PPOrderCost> costs)
 	{
+		Check.assumeNotEmpty(costs, "costs shall not be empty for {}", orderId);
+
 		this.orderId = orderId;
 
 		this.costs = costs.stream()
