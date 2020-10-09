@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -134263654L;
+	private static final long serialVersionUID = -528959898L;
 
     /** Standard Constructor */
     public X_PP_Order_Cost (final Properties ctx, final int PP_Order_Cost_ID, final String trxName)
@@ -77,65 +77,65 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setCostDistributionPercent (final java.math.BigDecimal CostDistributionPercent)
+	public void setCostDistributionPercent (final BigDecimal CostDistributionPercent)
 	{
 		set_Value (COLUMNNAME_CostDistributionPercent, CostDistributionPercent);
 	}
 
 	@Override
-	public java.math.BigDecimal getCostDistributionPercent() 
+	public BigDecimal getCostDistributionPercent() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostDistributionPercent);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCumulatedAmt (final java.math.BigDecimal CumulatedAmt)
+	public void setCumulatedAmt (final BigDecimal CumulatedAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedAmt, CumulatedAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getCumulatedAmt() 
+	public BigDecimal getCumulatedAmt() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCumulatedQty (final java.math.BigDecimal CumulatedQty)
+	public void setCumulatedQty (final BigDecimal CumulatedQty)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedQty, CumulatedQty);
 	}
 
 	@Override
-	public java.math.BigDecimal getCumulatedQty() 
+	public BigDecimal getCumulatedQty() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCurrentCostPrice (final java.math.BigDecimal CurrentCostPrice)
+	public void setCurrentCostPrice (final BigDecimal CurrentCostPrice)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPrice, CurrentCostPrice);
 	}
 
 	@Override
-	public java.math.BigDecimal getCurrentCostPrice() 
+	public BigDecimal getCurrentCostPrice() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPrice);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setCurrentCostPriceLL (final java.math.BigDecimal CurrentCostPriceLL)
+	public void setCurrentCostPriceLL (final BigDecimal CurrentCostPriceLL)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPriceLL, CurrentCostPriceLL);
 	}
 
 	@Override
-	public java.math.BigDecimal getCurrentCostPriceLL() 
+	public BigDecimal getCurrentCostPriceLL() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPriceLL);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -238,13 +238,13 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public void setPostCalculationAmt (final java.math.BigDecimal PostCalculationAmt)
+	public void setPostCalculationAmt (final BigDecimal PostCalculationAmt)
 	{
 		set_Value (COLUMNNAME_PostCalculationAmt, PostCalculationAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getPostCalculationAmt() 
+	public BigDecimal getPostCalculationAmt() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PostCalculationAmt);
 		return bd != null ? bd : BigDecimal.ZERO;

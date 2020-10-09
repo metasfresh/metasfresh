@@ -3,6 +3,8 @@ package org.eevolution.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import java.math.BigDecimal;
+
 /** Generated Interface for PP_Order_Cost
  *  @author metasfresh (generated) 
  */
@@ -106,7 +108,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCostDistributionPercent (@Nullable java.math.BigDecimal CostDistributionPercent);
+	void setCostDistributionPercent (@Nullable BigDecimal CostDistributionPercent);
 
 	/**
 	 * Get Cost Distribution Percent.
@@ -115,7 +117,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.math.BigDecimal getCostDistributionPercent();
+	BigDecimal getCostDistributionPercent();
 
 	ModelColumn<I_PP_Order_Cost, Object> COLUMN_CostDistributionPercent = new ModelColumn<>(I_PP_Order_Cost.class, "CostDistributionPercent", null);
 	String COLUMNNAME_CostDistributionPercent = "CostDistributionPercent";
@@ -153,7 +155,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCumulatedAmt (@Nullable java.math.BigDecimal CumulatedAmt);
+	void setCumulatedAmt (@Nullable BigDecimal CumulatedAmt);
 
 	/**
 	 * Get Accumulated Amt.
@@ -163,7 +165,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.math.BigDecimal getCumulatedAmt();
+	BigDecimal getCumulatedAmt();
 
 	ModelColumn<I_PP_Order_Cost, Object> COLUMN_CumulatedAmt = new ModelColumn<>(I_PP_Order_Cost.class, "CumulatedAmt", null);
 	String COLUMNNAME_CumulatedAmt = "CumulatedAmt";
@@ -176,7 +178,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCumulatedQty (@Nullable java.math.BigDecimal CumulatedQty);
+	void setCumulatedQty (@Nullable BigDecimal CumulatedQty);
 
 	/**
 	 * Get Accumulated Qty.
@@ -186,7 +188,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.math.BigDecimal getCumulatedQty();
+	BigDecimal getCumulatedQty();
 
 	ModelColumn<I_PP_Order_Cost, Object> COLUMN_CumulatedQty = new ModelColumn<>(I_PP_Order_Cost.class, "CumulatedQty", null);
 	String COLUMNNAME_CumulatedQty = "CumulatedQty";
@@ -199,7 +201,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCurrentCostPrice (@Nullable java.math.BigDecimal CurrentCostPrice);
+	void setCurrentCostPrice (@Nullable BigDecimal CurrentCostPrice);
 
 	/**
 	 * Get Gegenwärtiger Kostenpreis.
@@ -209,7 +211,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.math.BigDecimal getCurrentCostPrice();
+	BigDecimal getCurrentCostPrice();
 
 	ModelColumn<I_PP_Order_Cost, Object> COLUMN_CurrentCostPrice = new ModelColumn<>(I_PP_Order_Cost.class, "CurrentCostPrice", null);
 	String COLUMNNAME_CurrentCostPrice = "CurrentCostPrice";
@@ -222,7 +224,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCurrentCostPriceLL (@Nullable java.math.BigDecimal CurrentCostPriceLL);
+	void setCurrentCostPriceLL (@Nullable BigDecimal CurrentCostPriceLL);
 
 	/**
 	 * Get Current Cost Price Lower Level.
@@ -232,7 +234,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.math.BigDecimal getCurrentCostPriceLL();
+	BigDecimal getCurrentCostPriceLL();
 
 	ModelColumn<I_PP_Order_Cost, Object> COLUMN_CurrentCostPriceLL = new ModelColumn<>(I_PP_Order_Cost.class, "CurrentCostPriceLL", null);
 	String COLUMNNAME_CurrentCostPriceLL = "CurrentCostPriceLL";
@@ -370,7 +372,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPostCalculationAmt (java.math.BigDecimal PostCalculationAmt);
+	void setPostCalculationAmt (BigDecimal PostCalculationAmt);
 
 	/**
 	 * Get Post Calculation Amount.
@@ -379,7 +381,7 @@ public interface I_PP_Order_Cost
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.math.BigDecimal getPostCalculationAmt();
+	BigDecimal getPostCalculationAmt();
 
 	ModelColumn<I_PP_Order_Cost, Object> COLUMN_PostCalculationAmt = new ModelColumn<>(I_PP_Order_Cost.class, "PostCalculationAmt", null);
 	String COLUMNNAME_PostCalculationAmt = "PostCalculationAmt";
