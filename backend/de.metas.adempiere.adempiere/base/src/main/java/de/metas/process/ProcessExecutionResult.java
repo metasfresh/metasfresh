@@ -165,7 +165,12 @@ public class ProcessExecutionResult
 	@Getter
 	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String jsonResult = null;
+	private String stringResult = null;
+
+	@Getter
+	@Setter
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String stringResultContentType = null;
 
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
@@ -195,7 +200,8 @@ public class ProcessExecutionResult
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
 			@JsonProperty("webuiViewId") final String webuiViewId,
-			@JsonProperty("jsonResult") final String jsonResult)
+			@JsonProperty("stringResult") final String stringResult,
+			@JsonProperty("stringResultContentType") final String stringResultContentType)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
@@ -212,7 +218,8 @@ public class ProcessExecutionResult
 		this.webuiViewToOpen = webuiViewToOpen;
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
-		this.jsonResult = jsonResult;
+		this.stringResult = stringResult;
+		this.stringResultContentType = stringResultContentType;
 	}
 
 	@Override

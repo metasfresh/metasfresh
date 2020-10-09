@@ -94,18 +94,7 @@ public class PostgRESTClient
 	private HttpHeaders buildHttpHeaders(@NonNull final PostgRESTResponseFormat responseFormat)
 	{
 		final HttpHeaders headers = new HttpHeaders();
-
-		switch (responseFormat)
-		{
-			case CSV:
-				headers.setAccept(Collections.singletonList(MediaType.valueOf("text/csv")));
-				break;
-			case JSON:
-				headers.setAccept(Collections.singletonList(MediaType.valueOf("application/json")));
-				break;
-			default:
-				throw new AdempiereException("Unsupported response format " + responseFormat);
-		}
+		headers.setAccept(Collections.singletonList(MediaType.valueOf(responseFormat.getContentType())));
 
 		return headers;
 	}

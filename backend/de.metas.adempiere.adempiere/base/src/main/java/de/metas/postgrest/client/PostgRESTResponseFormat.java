@@ -34,20 +34,26 @@ import java.util.Arrays;
 
 public enum PostgRESTResponseFormat implements ReferenceListAwareEnum
 {
-	CSV(X_AD_Process.POSTGRESTRESPONSEFORMAT_Csv),
-	JSON(X_AD_Process.POSTGRESTRESPONSEFORMAT_Json);
+	CSV(X_AD_Process.POSTGRESTRESPONSEFORMAT_Csv, "text/csv"),
+	JSON(X_AD_Process.POSTGRESTRESPONSEFORMAT_Json, "application/json");
 
 	@Getter
 	private final String code;
 
-	PostgRESTResponseFormat(@NonNull final String code)
+	@Getter
+	private final String contentType;
+
+	PostgRESTResponseFormat(
+			@NonNull final String code,
+			@NonNull final String contentType)
 	{
 		this.code = code;
+		this.contentType = contentType;
 	}
 
 	public static PostgRESTResponseFormat ofCode(@NonNull final String code)
 	{
-		PostgRESTResponseFormat type = typesByCode.get(code);
+		final PostgRESTResponseFormat type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + PostgRESTResponseFormat.class + " found for code: " + code);
