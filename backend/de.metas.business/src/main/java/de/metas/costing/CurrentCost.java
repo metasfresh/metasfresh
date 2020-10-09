@@ -85,7 +85,7 @@ public final class CurrentCost
 		this.costPrice = CostPrice.builder()
 				.ownCostPrice(ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId))
 				.componentsCostPrice(componentsCostPrice != null ? CostAmount.of(componentsCostPrice, currencyId) : CostAmount.zero(currencyId))
-				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+				.uomId(uomId)
 				.build();
 		this.currentQty = currentQty != null ? Quantity.of(currentQty, uom) : Quantity.zero(uom);
 		this.cumulatedAmt = cumulatedAmt != null ? CostAmount.of(cumulatedAmt, currencyId) : CostAmount.zero(currencyId);
@@ -118,8 +118,14 @@ public final class CurrentCost
 
 	public void setFrom(final CostDetailPreviousAmounts previousAmounts)
 	{
+		assertCostCurrency(previousAmounts.getCostPrice());
+		assertCostUOM(previousAmounts.getQty());
+
+		assertCostCurrency(previousAmounts.getCumulatedAmt());
+		assertCostUOM(previousAmounts.getCumulatedQty());
+
 		this.costPrice = previousAmounts.getCostPrice();
-		this.currentQty = previousAmounts.getCumulatedQty();
+		this.currentQty = previousAmounts.getQty();
 
 		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
 		this.cumulatedQty = previousAmounts.getCumulatedQty();
@@ -130,11 +136,27 @@ public final class CurrentCost
 		return getCostElement().getId();
 	}
 
+	private void assertCostCurrency(@NonNull final CostPrice costPrice)
+	{
+		if (!costPrice.getCurrencyId().equals(getCurrencyId()))
+		{
+			throw new AdempiereException("Invalid amount currency for `" + costPrice + "`. Expected: " + getCurrencyId());
+		}
+	}
+
 	private void assertCostCurrency(@NonNull final CostAmount amt)
 	{
 		if (!amt.getCurrencyId().equals(getCurrencyId()))
 		{
 			throw new AdempiereException("Invalid amount currency for `" + amt + "`. Expected: " + getCurrencyId());
+		}
+	}
+
+	private void assertCostUOM(final Quantity qty)
+	{
+		if (!UomId.equals(qty.getUomId(), getUomId()))
+		{
+			throw new AdempiereException("Invalid UOM for `" + qty + "`. Expected: " + getUomId());
 		}
 	}
 
@@ -179,6 +201,7 @@ public final class CurrentCost
 			@NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
+		assertCostUOM(qty);
 
 		cumulatedAmt = cumulatedAmt.add(amt);
 		cumulatedQty = cumulatedQty.add(qty);
