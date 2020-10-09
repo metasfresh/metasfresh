@@ -34,7 +34,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.impl.AddTrackingCodesForInOutWithoutHUReq;
+import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -729,17 +729,14 @@ public class InOutProducerFromShipmentScheduleWithHU
 			return;
 		}
 
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(currentShipment.getAD_Org_ID()));
-
-		final AddTrackingCodesForInOutWithoutHUReq addTrackingCodesForInOutWithoutHUReq = AddTrackingCodesForInOutWithoutHUReq.builder()
+		final AddTrackingInfosForInOutWithoutHUReq addTrackingInfosForInOutWithoutHUReq = AddTrackingInfosForInOutWithoutHUReq.builder()
 				.shipperId(shipperId)
 				.inOutId(InOutId.ofRepoId(currentShipment.getM_InOut_ID()))
-				.shipDate(TimeUtil.asZonedDateTime(currentShipment.getMovementDate(), timeZone))
 				.packageInfos(packageInfos)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId =
-				huShipperTransportationBL.addTrackingCodesForInOutWithoutHU(addTrackingCodesForInOutWithoutHUReq);
+				huShipperTransportationBL.addTrackingInfosForInOutWithoutHU(addTrackingInfosForInOutWithoutHUReq);
 
 		if (processShipments)
 		{
