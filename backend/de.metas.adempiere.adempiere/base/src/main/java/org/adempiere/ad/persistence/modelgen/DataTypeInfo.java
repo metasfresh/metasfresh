@@ -81,7 +81,7 @@ public class DataTypeInfo
 			primitive = true;
 			nullableValueSetter = NullableType.DOES_NOT_APPLY;
 			nullableValueGetter = NullableType.DOES_NOT_APPLY;
-			nullableValueObject = NullableType.DOES_NOT_APPLY;
+			//nullableValueObject = NullableType.DOES_NOT_APPLY;
 		}
 		else if (typeClassName.equals("BigDecimal"))
 		{
