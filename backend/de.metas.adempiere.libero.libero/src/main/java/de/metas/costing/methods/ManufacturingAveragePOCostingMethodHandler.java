@@ -246,14 +246,14 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final Duration totalDuration)
 	{
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Computing activity costs is not yet supported");
+		throw new AdempiereException("Computing activity costs is not yet supported");
 	}
 
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
 		// TODO
-		throw new UnsupportedOperationException("Voiding costs is not yet supported");
+		throw new AdempiereException("Voiding costs is not yet supported");
 	}
 
 	@Override

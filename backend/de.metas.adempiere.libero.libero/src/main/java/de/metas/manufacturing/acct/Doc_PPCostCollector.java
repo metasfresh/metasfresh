@@ -1,18 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
- * Contributor(s): Victor Perez www.e-evolution.com *
- *****************************************************************************/
 package de.metas.manufacturing.acct;
 
 /*
@@ -48,6 +33,7 @@ import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
@@ -58,7 +44,9 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.model.I_PP_Cost_Collector;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -142,35 +130,36 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final Fact fact;
+		final ArrayList<Fact> facts = new ArrayList<>();
+
 		final CostCollectorType costCollectorType = getCostCollectorType();
 		if (CostCollectorType.MaterialReceipt.equals(costCollectorType))
 		{
-			fact = createFacts_MaterialReceipt(as);
+			facts.addAll(createFacts_MaterialReceipt(as));
 		}
 		else if (CostCollectorType.ComponentIssue.equals(costCollectorType))
 		{
-			fact = createFacts_ComponentIssue(as);
+			facts.addAll(createFacts_ComponentIssue(as));
 		}
 		else if (CostCollectorType.MethodChangeVariance.equals(costCollectorType))
 		{
-			fact = createFacts_Variance(as, ProductAcctType.MethodChangeVariance);
+			facts.addAll(createFacts_Variance(as, ProductAcctType.MethodChangeVariance));
 		}
 		else if (CostCollectorType.UsageVariance.equals(costCollectorType))
 		{
-			fact = createFacts_Variance(as, ProductAcctType.UsageVariance);
+			facts.addAll(createFacts_Variance(as, ProductAcctType.UsageVariance));
 		}
 		else if (CostCollectorType.RateVariance.equals(costCollectorType))
 		{
-			fact = createFacts_Variance(as, ProductAcctType.RateVariance);
+			facts.addAll(createFacts_Variance(as, ProductAcctType.RateVariance));
 		}
 		else if (CostCollectorType.MixVariance.equals(costCollectorType))
 		{
-			fact = createFacts_Variance(as, ProductAcctType.MixVariance);
+			facts.addAll(createFacts_Variance(as, ProductAcctType.MixVariance));
 		}
 		else if (CostCollectorType.ActivityControl.equals(costCollectorType))
 		{
-			fact = createFacts_ActivityControl(as);
+			facts.addAll(createFacts_ActivityControl(as));
 		}
 		else
 		{
@@ -178,29 +167,30 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		//
-		return ImmutableList.of(fact);
+		return facts;
 	}
 
-	private void createFactLines(
-			final CostElement costElement,
-			final Fact fact,
-			final MAccount debit,
-			final MAccount credit,
-			final CostAmount cost,
-			final Quantity qty)
+	@Nullable
+	private Fact createFactLines(
+			@NonNull final AcctSchema as,
+			@NonNull final CostElement costElement,
+			@NonNull final MAccount debit,
+			@NonNull final MAccount credit,
+			@NonNull final CostAmount cost,
+			@NonNull final Quantity qty)
 	{
-		if (debit == null || credit == null || cost == null || cost.signum() == 0)
+		if (cost.signum() == 0)
 		{
-			return;
+			return null;
 		}
 
 		final DocLine_CostCollector docLine = getLine();
-
-		final String desc = costElement.getName();
+		final String description = costElement.getName();
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 
 		final FactLine dr = fact.createLine(docLine, debit, cost.getCurrencyId(), cost.getValue(), null);
 		dr.setQty(qty);
-		dr.addDescription(desc);
+		dr.addDescription(description);
 		dr.setC_Project_ID(docLine.getC_Project_ID());
 		dr.setC_Activity_ID(docLine.getActivityId());
 		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
@@ -208,11 +198,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
 		cr.setQty(qty);
-		cr.addDescription(desc);
+		cr.addDescription(description);
 		cr.setC_Project_ID(docLine.getC_Project_ID());
 		cr.setC_Activity_ID(docLine.getActivityId());
 		cr.setC_Campaign_ID(docLine.getC_Campaign_ID());
 		cr.setM_Locator_ID(docLine.getM_Locator_ID());
+
+		return fact;
 	}
 
 	/**
@@ -223,10 +215,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Scrap(expense)     DR
 	 * </pre>
 	 */
-	protected Fact createFacts_MaterialReceipt(final AcctSchema as)
+	private List<Fact> createFacts_MaterialReceipt(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-
 		final DocLine_CostCollector docLine = getLine();
 		final PPCostCollectorQuantities qtys = getQuantities();
 		final Quantity qtyReceived = qtys.getMovementQty();
@@ -234,12 +224,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final Quantity qtyTotal = qtyReceived.add(qtyScrapped);
 		if (qtyTotal.signum() == 0)
 		{
-			return fact;
+			return ImmutableList.of();
 		}
 
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
-
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+
+		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
@@ -251,16 +242,25 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			if (costsReceived.signum() != 0)
 			{
 				final MAccount debit = docLine.getAccount(ProductAcctType.Asset, as);
-				createFactLines(element, fact, debit, credit, costsReceived, qtyReceived);
+				final Fact fact = createFactLines(as, element, debit, credit, costsReceived, qtyReceived);
+				if (fact != null)
+				{
+					facts.add(fact);
+				}
 			}
 
 			if (costsScrapped.signum() != 0)
 			{
 				final MAccount debit = docLine.getAccount(ProductAcctType.Scrap, as);
-				createFactLines(element, fact, debit, credit, costsScrapped, qtyScrapped);
+				final Fact fact = createFactLines(as, element, debit, credit, costsScrapped, qtyScrapped);
+				if (fact != null)
+				{
+					facts.add(fact);
+				}
 			}
 		}
-		return fact;
+
+		return facts;
 	}
 
 	/**
@@ -270,9 +270,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Product Asset / Floor Stock               CR
 	 * </pre>
 	 */
-	private Fact createFacts_ComponentIssue(final AcctSchema as)
+	private List<Fact> createFacts_ComponentIssue(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
 		final boolean isFloorStock = isFloorStock();
 
 		final DocLine_CostCollector docLine = getLine();
@@ -280,15 +279,20 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
-
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+
+		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
-			createFactLines(element, fact, debit, credit, costs, qtyIssued);
+			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
+			if (fact != null)
+			{
+				facts.add(fact);
+			}
 		}
 
-		return fact;
+		return facts;
 	}
 
 	/**
@@ -299,24 +303,27 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Burden/Overhead
 	 * </pre>
 	 */
-	private Fact createFacts_ActivityControl(final AcctSchema as)
+	private List<Fact> createFacts_ActivityControl(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-
 		final DocLine_CostCollector docLine = getLine();
 		final Quantity qtyMoved = getMovementQty();
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
-
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+
+		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
 			final MAccount credit = docLine.getAccountForCostElement(as, element);
-			createFactLines(element, fact, debit, credit, costs, qtyMoved);
+			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved);
+			if (fact != null)
+			{
+				facts.add(fact);
+			}
 		}
 
-		return fact;
+		return facts;
 	}
 
 	/**
@@ -326,22 +333,27 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Method/Usage/Rate/Mix Variance    DR
 	 * </pre>
 	 */
-	private Fact createFacts_Variance(final AcctSchema as, final ProductAcctType varianceAcctType)
+	private List<Fact> createFacts_Variance(
+			final AcctSchema as,
+			final ProductAcctType varianceAcctType)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-
 		final DocLine_CostCollector docLine = getLine();
 		final MAccount debit = docLine.getAccount(varianceAcctType, as);
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
-
 		final Quantity qty = getMovementQty();
-
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+
+		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
-			createFactLines(element, fact, debit, credit, costs.negate(), qty.negate());
+			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate());
+			if (fact != null)
+			{
+				facts.add(fact);
+			}
 		}
-		return fact;
+
+		return facts;
 	}
 }

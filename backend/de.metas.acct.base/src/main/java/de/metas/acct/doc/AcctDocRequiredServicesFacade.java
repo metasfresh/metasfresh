@@ -170,6 +170,7 @@ public class AcctDocRequiredServicesFacade
 		return msgBL.getTranslatableMsgText(adMessage);
 	}
 
+	@NonNull
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
