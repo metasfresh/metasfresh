@@ -181,17 +181,14 @@ public class PaymentBL implements IPaymentBL
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			CurrencyRate = currencyBL.getRate(
+			CurrencyRate = currencyBL.getCurrencyRate(
 					invoiceCurrencyId,
 					currencyId,
 					ConvDate,
 					conversionTypeId,
 					clientId,
-					orgId);
-			if (CurrencyRate == null || CurrencyRate.compareTo(ZERO) == 0)
-			{
-				throw new AdempiereException("NoCurrencyConversion");
-			}
+					orgId)
+					.getConversionRate();
 
 			//
 			final CurrencyPrecision precision = currencyDAO.getStdPrecision(currencyId);
@@ -305,22 +302,14 @@ public class PaymentBL implements IPaymentBL
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			currencyRate = currencyBL.getRate(
+			currencyRate = currencyBL.getCurrencyRate(
 					invoiceCurrencyId,
 					currencyId,
 					convDate,
 					conversionTypeId,
 					clientId,
-					orgId);
-			if (currencyRate == null || currencyRate.signum() == 0)
-			{
-				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-						convDate,
-						conversionTypeId,
-						clientId,
-						orgId);
-				throw new NoCurrencyRateFoundException(conversionCtx, invoiceCurrencyId, currencyId);
-			}
+					orgId)
+					.getConversionRate();
 		}
 
 		BigDecimal PayAmt = payment.getPayAmt();
