@@ -37,16 +37,20 @@ package org.eevolution.model;
  * #L%
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -62,26 +66,20 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.pporder.PPOrderChangedEvent;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * PP Order Model.
@@ -93,7 +91,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
 
-	public MPPOrder(final Properties ctx, final int PP_Order_ID, final String trxName)
+	public MPPOrder(
+			final Properties ctx,
+			final int PP_Order_ID,
+			final String trxName)
 	{
 		super(ctx, PP_Order_ID, trxName);
 		if (is_new())
@@ -102,7 +103,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 	}
 
-	public MPPOrder(final Properties ctx, final ResultSet rs, final String trxName)
+	public MPPOrder(
+			final Properties ctx,
+			final ResultSet rs,
+			final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -134,7 +138,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
-	/** Just Prepared Flag */
+	/**
+	 * Just Prepared Flag
+	 */
 	private boolean m_justPrepared = false;
 
 	@Override
@@ -155,6 +161,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public String prepareIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
+
+		if (getQtyOrdered().signum() <= 0)
+		{
+			throw new AdempiereException("@QtyOrdered@ <= 0");
+		}
 
 		//
 		// Validate BOM Lines

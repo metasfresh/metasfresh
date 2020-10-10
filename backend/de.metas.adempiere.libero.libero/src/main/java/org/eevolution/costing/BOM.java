@@ -84,6 +84,10 @@ public class BOM
 		{
 			throw new AdempiereException("UOM not matching: " + qty + ", " + costPrice);
 		}
+		if (qty.signum() <= 0)
+		{
+			throw new AdempiereException("Qty of finished goods to produce shall be greater than zero");
+		}
 
 		this.productId = productId;
 		this.asiId = CoalesceUtil.coalesce(asiId, AttributeSetInstanceId.NONE);

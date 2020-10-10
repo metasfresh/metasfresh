@@ -196,6 +196,11 @@ public class CostAmount
 			@NonNull final BigDecimal divisor,
 			@NonNull final CurrencyPrecision precision)
 	{
+		if (divisor.signum() == 0)
+		{
+			throw new AdempiereException("Diving " + this + " by ZERO is not allowed");
+		}
+
 		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), RoundingMode.HALF_UP);
 		return new CostAmount(valueNew, currencyId);
 	}

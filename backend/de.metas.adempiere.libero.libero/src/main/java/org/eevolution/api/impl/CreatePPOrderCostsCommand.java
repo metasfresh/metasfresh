@@ -121,6 +121,10 @@ final class CreatePPOrderCostsCommand
 
 		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 		mainProductQty = orderBOMBL.getQuantities(ppOrder).getQtyRequiredToProduce();
+		if (mainProductQty.signum() <= 0)
+		{
+			throw new AdempiereException("Qty of finished goods to produce shall be greater than zero for " + ppOrder);
+		}
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		acctSchema = acctSchemasRepo.getByCliendAndOrg(clientId, orgId);
