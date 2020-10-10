@@ -509,6 +509,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@VisibleForTesting
+	@Nullable
 	BigDecimal getTimeConversionRateAsBigDecimal(
 			@NonNull final I_C_UOM fromTimeUom,
 			@NonNull final I_C_UOM toTimeUom)
@@ -525,31 +526,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 60.0);
+				return BigDecimal.valueOf(1.0 / 60.0);
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 1440.0); // 24 * 60
+				return BigDecimal.valueOf(1.0 / 1440.0); // 24 * 60
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 480.0); // 8 * 60
+				return BigDecimal.valueOf(1.0 / 480.0); // 8 * 60
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 10080.0); // 7 * 24 * 60
+				return BigDecimal.valueOf(1.0 / 10080.0); // 7 * 24 * 60
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 43200.0); // 30 * 24 * 60
+				return BigDecimal.valueOf(1.0 / 43200.0); // 30 * 24 * 60
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 9600.0); // 4 * 5 * 8 * 60
+				return BigDecimal.valueOf(1.0 / 9600.0); // 4 * 5 * 8 * 60
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 525600.0); // 365 * 24 * 60
+				return BigDecimal.valueOf(1.0 / 525600.0); // 365 * 24 * 60
 			}
 		}
 
@@ -558,31 +559,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return new BigDecimal(60.0);
+				return new BigDecimal("60.0");
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 24.0);
+				return BigDecimal.valueOf(1.0 / 24.0);
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 8.0);
+				return BigDecimal.valueOf(1.0 / 8.0);
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 168.0); // 7 * 24
+				return BigDecimal.valueOf(1.0 / 168.0); // 7 * 24
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 720.0); // 30 * 24
+				return BigDecimal.valueOf(1.0 / 720.0); // 30 * 24
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 160.0); // 4 * 5 * 8
+				return BigDecimal.valueOf(1.0 / 160.0); // 4 * 5 * 8
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 8760.0); // 365 * 24
+				return BigDecimal.valueOf(1.0 / 8760.0); // 365 * 24
 			}
 		}
 
@@ -591,31 +592,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return new BigDecimal(1440.0); // 24 * 60
+				return new BigDecimal("1440.0"); // 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return new BigDecimal(24.0);
+				return new BigDecimal("24.0");
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return new BigDecimal(3.0); // 24 / 8
+				return new BigDecimal("3.0"); // 24 / 8
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 7.0); // 7
+				return BigDecimal.valueOf(1.0 / 7.0); // 7
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 30.0); // 30
+				return BigDecimal.valueOf(1.0 / 30.0); // 30
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 20.0); // 4 * 5
+				return BigDecimal.valueOf(1.0 / 20.0); // 4 * 5
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 365.0); // 365
+				return BigDecimal.valueOf(1.0 / 365.0); // 365
 			}
 		}
 
@@ -624,31 +625,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return new BigDecimal(480.0); // 8 * 60
+				return new BigDecimal("480.0"); // 8 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return new BigDecimal(8.0); // 8
+				return new BigDecimal("8.0"); // 8
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 3.0); // 24 / 8
+				return BigDecimal.valueOf(1.0 / 3.0); // 24 / 8
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 5); // 5
+				return BigDecimal.valueOf(1.0 / 5); // 5
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 20.0); // 4 * 5
+				return BigDecimal.valueOf(1.0 / 20.0); // 4 * 5
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 20.0); // 4 * 5
+				return BigDecimal.valueOf(1.0 / 20.0); // 4 * 5
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 240.0); // 4 * 5 * 12
+				return BigDecimal.valueOf(1.0 / 240.0); // 4 * 5 * 12
 			}
 		}
 
@@ -657,31 +658,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return new BigDecimal(10080.0); // 7 * 24 * 60
+				return new BigDecimal("10080.0"); // 7 * 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return new BigDecimal(168.0); // 7 * 24
+				return new BigDecimal("168.0"); // 7 * 24
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return new BigDecimal(7.0);
+				return new BigDecimal("7.0");
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return new BigDecimal(5.0);
+				return new BigDecimal("5.0");
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 4.0); // 4
+				return BigDecimal.valueOf(1.0 / 4.0); // 4
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 4.0); // 4
+				return BigDecimal.valueOf(1.0 / 4.0); // 4
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 50.0); // 50
+				return BigDecimal.valueOf(1.0 / 50.0); // 50
 			}
 		}
 
@@ -690,31 +691,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return new BigDecimal(43200.0); // 30 * 24 * 60
+				return new BigDecimal("43200.0"); // 30 * 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return new BigDecimal(720.0); // 30 * 24
+				return new BigDecimal("720.0"); // 30 * 24
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return new BigDecimal(30.0); // 30
+				return new BigDecimal("30.0"); // 30
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return new BigDecimal(20.0); // 4 * 5
+				return new BigDecimal("20.0"); // 4 * 5
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return new BigDecimal(4.0); // 4
+				return new BigDecimal("4.0"); // 4
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return new BigDecimal(1.5); // 30 / 20
+				return new BigDecimal("1.5"); // 30 / 20
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 12.0); // 12
+				return BigDecimal.valueOf(1.0 / 12.0); // 12
 			}
 		}
 
@@ -723,31 +724,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return new BigDecimal(9600.0); // 4 * 5 * 8 * 60
+				return new BigDecimal("9600.0"); // 4 * 5 * 8 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return new BigDecimal(160.0); // 4 * 5 * 8
+				return new BigDecimal("160.0"); // 4 * 5 * 8
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return new BigDecimal(20.0); // 4 * 5
+				return new BigDecimal("20.0"); // 4 * 5
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return new BigDecimal(20.0); // 4 * 5
+				return new BigDecimal("20.0"); // 4 * 5
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return new BigDecimal(4.0); // 4
+				return new BigDecimal("4.0"); // 4
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return new BigDecimal(20.0 / 30.0); // 20 / 30
+				return BigDecimal.valueOf(20.0 / 30.0); // 20 / 30
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return new BigDecimal(1.0 / 12.0); // 12
+				return BigDecimal.valueOf(1.0 / 12.0); // 12
 			}
 		}
 
@@ -757,31 +758,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return new BigDecimal(518400.0); // 12 * 30 * 24 * 60
+				return new BigDecimal("518400.0"); // 12 * 30 * 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return new BigDecimal(8640.0); // 12 * 30 * 24
+				return new BigDecimal("8640.0"); // 12 * 30 * 24
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return new BigDecimal(365.0); // 365
+				return new BigDecimal("365.0"); // 365
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return new BigDecimal(240.0); // 12 * 4 * 5
+				return new BigDecimal("240.0"); // 12 * 4 * 5
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return new BigDecimal(50.0); // 52
+				return new BigDecimal("50.0"); // 52
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return new BigDecimal(12.0); // 12
+				return new BigDecimal("12.0"); // 12
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return new BigDecimal(12.0); // 12
+				return new BigDecimal("12.0"); // 12
 			}
 		}
 
