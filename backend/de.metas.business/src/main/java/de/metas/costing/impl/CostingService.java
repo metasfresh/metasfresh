@@ -173,7 +173,18 @@ public class CostingService implements ICostingService
 		final CostElement costElement = request.getCostElement();
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
-				.map(handler -> handler.createOrUpdateCost(request))
+				.map(handler -> {
+					try
+					{
+						return handler.createOrUpdateCost(request);
+					}
+					catch (final Exception ex)
+					{
+						throw AdempiereException.wrapIfNeeded(ex)
+								.setParameter("request", request)
+								.appendParametersToMessage();
+					}
+				})
 				.filter(Optional::isPresent)
 				.map(Optional::get);
 	}

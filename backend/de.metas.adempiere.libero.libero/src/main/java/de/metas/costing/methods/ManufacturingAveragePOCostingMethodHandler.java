@@ -23,6 +23,7 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -182,9 +183,9 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
 					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
 
-			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCost.getPrecision());
-
-			requestEffective = request.withAmount(amt);
+			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
+			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			requestEffective = request.withAmountAndQty(amt, qty);
 		}
 		else
 		{
@@ -222,11 +223,12 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
-			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
+			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
+			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			final CostDetailCreateRequest requestEffective = request.withAmountAndQty(amt, qty);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
-			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt(), utils.getQuantityUOMConverter());
+			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs

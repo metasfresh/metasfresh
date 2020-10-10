@@ -213,10 +213,16 @@ public final class CurrentCost
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		final Quantity qtyToAddConv = uomConverter.convertQuantityTo(qtyToAdd, costSegment.getProductId(), uomId);
+		addToCurrentQtyAndCumulate(qtyToAddConv, amt);
+	}
 
-		currentQty = currentQty.add(qtyToAddConv).toZeroIfNegative();
+	public void addToCurrentQtyAndCumulate(
+			@NonNull final Quantity qtyToAdd,
+			@NonNull final CostAmount amt)
+	{
+		currentQty = currentQty.add(qtyToAdd).toZeroIfNegative();
 
-		addCumulatedAmtAndQty(amt, qtyToAddConv);
+		addCumulatedAmtAndQty(amt, qtyToAdd);
 	}
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
