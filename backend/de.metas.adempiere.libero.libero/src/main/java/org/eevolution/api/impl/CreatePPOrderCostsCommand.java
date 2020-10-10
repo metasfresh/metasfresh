@@ -289,7 +289,7 @@ final class CreatePPOrderCostsCommand
 		final List<CurrentCost> currentCosts = currentCostsRepository.getByCostSegmentAndCostElements(candidate.getCostSegment(), costElementIds);
 		if (currentCosts.isEmpty())
 		{
-			logger.warn("No current costs found {} and {}", candidate.getCostSegment(), costElementIds);
+			logger.debug("No current costs found {} and {}", candidate.getCostSegment(), costElementIds);
 		}
 
 		final Map<CostElementId, PPOrderCost> orderCostsByCostElementId = currentCosts
