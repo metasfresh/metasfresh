@@ -1,6 +1,3 @@
-DROP VIEW IF EXISTS M_Packageable_V
-;
-
 CREATE OR REPLACE VIEW M_Packageable_V AS
 SELECT p.*
 
@@ -134,9 +131,7 @@ FROM (
            AND s.Processed = 'N'
            AND s.IsActive = 'Y'
            AND s.QtyToDeliver > 0
-           AND s.isclosed = 'N'
+		   AND s.isclosed = 'N'
            AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
      ) p
 ;
-
-
