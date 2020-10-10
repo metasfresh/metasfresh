@@ -27,6 +27,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.time.temporal.TemporalUnit;
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +38,7 @@ public interface IUOMDAO extends ISingletonService
 
 	I_C_UOM getById(int uomId);
 
+	@Nullable
 	I_C_UOM getByIdOrNull(int uomId);
 
 	I_C_UOM getById(UomId uomId);
