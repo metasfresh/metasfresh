@@ -22,12 +22,14 @@ package de.metas.currency.exceptions;
  * #L%
  */
 
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import org.adempiere.exceptions.AdempiereException;
+
+import java.time.LocalDate;
 
 /**
  * Exception thrown when there was no currency rate found.
@@ -39,22 +41,25 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	private static final AdMessageKey MSG = AdMessageKey.of("NoCurrencyConversion");
 
 	public NoCurrencyRateFoundException(
-			final CurrencyConversionContext conversionCtx,
 			final CurrencyCode currencyFrom,
-			final CurrencyCode currencyTo)
+			final CurrencyCode currencyTo,
+			final LocalDate conversionDate,
+			final ConversionTypeMethod conversionTypeMethod)
 	{
-		super(buildMsg(conversionCtx, currencyFrom, currencyTo));
+		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod));
 	}
 
 	private static ITranslatableString buildMsg(
-			final CurrencyConversionContext conversionCtx,
 			final CurrencyCode currencyFrom,
-			final CurrencyCode currencyTo)
+			final CurrencyCode currencyTo,
+			final LocalDate conversionDate,
+			final ConversionTypeMethod conversionTypeMethod)
 	{
 		return TranslatableStrings.builder()
 				.appendADMessage(MSG).append(" ")
 				.appendObj(currencyFrom).appendObj("->").appendObj(currencyTo)
-				.append(" (").appendObj(conversionCtx).appendObj(")")
+				.append(", ").appendADElement("ConversionDate").append(": ").appendDate(conversionDate, "?")
+				.append(", ").appendADElement("C_ConversionType_ID").append(": ").append(conversionTypeMethod != null ? conversionTypeMethod.name() : "?")
 				.build();
 	}
 }

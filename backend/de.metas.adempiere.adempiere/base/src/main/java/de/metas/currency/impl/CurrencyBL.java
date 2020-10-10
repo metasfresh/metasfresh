@@ -244,7 +244,7 @@ public class CurrencyBL implements ICurrencyBL
 
 	@Override
 	public final CurrencyConversionContext createCurrencyConversionContext(
-			@NonNull final LocalDate convDate,
+			@NonNull final LocalDate conversionDate,
 			@Nullable final ConversionTypeMethod conversionType,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
@@ -253,7 +253,7 @@ public class CurrencyBL implements ICurrencyBL
 		final ConversionTypeMethod conversionTypeEffective = conversionType != null ? conversionType : ConversionTypeMethod.Spot;
 		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(conversionTypeEffective);
 
-		return createCurrencyConversionContext(convDate, conversionTypeId, clientId, orgId);
+		return createCurrencyConversionContext(conversionDate, conversionTypeId, clientId, orgId);
 	}
 
 	private CurrencyConversionTypeId getDefaultConversionTypeId(
@@ -332,8 +332,18 @@ public class CurrencyBL implements ICurrencyBL
 		{
 			final CurrencyCode currencyFrom = currencyDAO.getCurrencyCodeById(currencyFromId);
 			final CurrencyCode currencyTo = currencyDAO.getCurrencyCodeById(currencyToId);
-			throw new NoCurrencyRateFoundException(conversionCtx, currencyFrom, currencyTo);
+			final ConversionTypeMethod conversionTypeMethod = conversionCtx.getConversionTypeId() != null
+					? currencyDAO.getConversionTypeMethodById(conversionCtx.getConversionTypeId())
+					: null;
+
+			throw new NoCurrencyRateFoundException(
+					currencyFrom,
+					currencyTo,
+					conversionCtx.getConversionDate(),
+					conversionTypeMethod)
+					.setParameter("conversionCtx", conversionCtx);
 		}
+
 		return currencyRate;
 	}
 

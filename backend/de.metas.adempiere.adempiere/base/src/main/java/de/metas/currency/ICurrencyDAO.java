@@ -6,6 +6,7 @@ package de.metas.currency;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
 import de.metas.money.CurrencyConversionTypeId;
@@ -61,6 +62,8 @@ public interface ICurrencyDAO extends ISingletonService
 	CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
+
+	@NonNull ConversionTypeMethod getConversionTypeMethodById(@NonNull CurrencyConversionTypeId id);
 
 	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }
