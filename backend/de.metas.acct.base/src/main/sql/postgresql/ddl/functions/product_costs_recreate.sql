@@ -1,4 +1,7 @@
-DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(numeric, char(1), numeric);
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(numeric)
+;
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate(numeric, char(1), numeric)
+;
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate(p_M_Product_ID  numeric = NULL,
                                                                   p_ReorderDocs   char(1) = 'Y',
@@ -26,17 +29,30 @@ BEGIN
 
     v_result := v_result || array_length(v_productIds, 1) || ' products; ';
 
-    UPDATE m_cost
-    SET currentcostprice=0, currentqty=0, cumulatedamt=0, cumulatedqty=0
-    WHERE m_product_id = ANY (v_productIds);
+    DELETE
+    FROM m_cost c
+    WHERE c.m_product_id = ANY (v_productIds)
+    -- AND NOT exists(SELECT 1 FROM m_costelement ce WHERE ce.m_costelement_id = c.m_costelement_id AND ce.costingmethod = 'S') -- exclude standard costing
+    ;
     GET DIAGNOSTICS rowcount = ROW_COUNT;
-    v_result := v_result || rowcount || ' M_Cost(s) set to ZERO; ';
+    v_result := v_result || rowcount || ' M_Cost(s) deleted; ';
 
     DELETE
     FROM m_costdetail
     WHERE m_product_id = ANY (v_productIds);
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     v_result := v_result || rowcount || ' M_CostDetail(s) deleted; ';
+
+    DELETE
+    FROM pp_order_cost poc
+    WHERE exists(
+                  SELECT 1
+                  FROM pp_order o
+                  WHERE o.pp_order_id = poc.pp_order_id
+                    AND o.m_product_id = ANY (v_productIds)
+              );
+    GET DIAGNOSTICS rowcount = ROW_COUNT;
+    v_result := v_result || rowcount || ' PP_Order_Cost(s) deleted; ';
 
 
     SELECT count(1)
@@ -70,4 +86,5 @@ BEGIN
 END;
 $BODY$
     LANGUAGE plpgsql VOLATILE
-                     COST 100;
+                     COST 100
+;
