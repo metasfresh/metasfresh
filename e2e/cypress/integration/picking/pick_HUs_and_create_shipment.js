@@ -75,7 +75,8 @@ describe('Pick the SO', function() {
 
   it('Select first row and run action Pick', function() {
     cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
-    cy.executeQuickAction('WEBUI_Picking_Launcher');
+
+    cy.executeQuickAction('WEBUI_Picking_Launcher', false, false);
   });
 
   it('Pick first HU', function() {
@@ -88,7 +89,7 @@ describe('Pick the SO', function() {
       cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
     });
 
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, false);
   });
 
   it('Pick second HU', function() {
@@ -101,7 +102,7 @@ describe('Pick the SO', function() {
       cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
     });
 
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, false);
   });
 
   it('Confirm Picks', function() {
@@ -111,7 +112,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue2 }, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, false);
     cy.waitForSaveIndicator();
 
     cy.selectLeftTable().within(() => {
@@ -120,7 +121,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue1 }, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, false);
     cy.waitForSaveIndicator();
   });
 });
