@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.process.ProcessExecutionResult;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -93,7 +94,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 				.createDraftOrderHeader();
 
 		final String adWindowId = null; // auto
-		getResult().setRecordToOpen(TableRecordReference.of(draftOrder), adWindowId, OpenTarget.SingleDocument);
+		getResult().setRecordToOpen(TableRecordReference.of(draftOrder), adWindowId, OpenTarget.SingleDocument, ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB);
 
 		return MSG_OK;
 	}
