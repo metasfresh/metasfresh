@@ -412,6 +412,7 @@ describe('RawWidget component', () => {
         {
           ...localFixtures.data1,
           ...localFixtures.props1,
+          widgetData: [{ ...fixtures.text.data1 }],
           handlePatch: handlePatchSpy,
           handleChange: handleChangeSpy,
           handleFocus: handleFocusSpy,
