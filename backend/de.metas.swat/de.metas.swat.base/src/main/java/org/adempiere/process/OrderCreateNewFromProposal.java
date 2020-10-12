@@ -70,6 +70,8 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		childCRS.copyRecord(sourceOrder, get_TrxName());
 
 		
+		newOrder.setDatePromised(sourceOrder.getDatePromised());
+		newOrder.setPreparationDate(sourceOrder.getPreparationDate());
 		newOrder.setDocStatus(DocStatus.Drafted.getCode());
 		newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 		InterfaceWrapperHelper.save(newOrder);
