@@ -309,6 +309,7 @@ class DesadvBL_addInOutLine_Test
 		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", X12DE355.COLI);
 
 		desadvLine.setC_UOM_ID(coliUomRecord.getC_UOM_ID());
+		desadvLine.setQtyItemCapacity(TEN);
 		saveRecord(desadvLine);
 	}
 
