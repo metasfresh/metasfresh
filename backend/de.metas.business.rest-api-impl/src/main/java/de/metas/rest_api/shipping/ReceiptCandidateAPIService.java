@@ -113,6 +113,7 @@ class ReceiptCandidateAPIService
 	private final ReceiptScheduleRepository receiptScheduleRepository;
 	private final BPartnerCompositeRepository bPartnerCompositeRepository;
 	private final ProductRepository productRepository;
+	private final ReceiptCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -124,12 +125,14 @@ class ReceiptCandidateAPIService
 			@NonNull final ReceiptScheduleAuditRepository receiptScheduleAuditRepository,
 			@NonNull final ReceiptScheduleRepository receiptScheduleRepository,
 			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository,
-			@NonNull final ProductRepository productRepository)
+			@NonNull final ProductRepository productRepository,
+			@NonNull final ReceiptCandidateExportSequenceNumberProvider exportSequenceNumberProvider)
 	{
 		this.receiptScheduleAuditRepository = receiptScheduleAuditRepository;
 		this.receiptScheduleRepository = receiptScheduleRepository;
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 		this.productRepository = productRepository;
+		this.exportSequenceNumberProvider = exportSequenceNumberProvider;
 	}
 
 	/**
@@ -155,6 +158,8 @@ class ReceiptCandidateAPIService
 				return JsonResponseReceiptCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
 			}
 
+			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextReceiptCandidateSeqNo();
+
 			final IdsRegistry.IdsRegistryBuilder idsRegistryBuilder = IdsRegistry.builder();
 			for (final ReceiptSchedule receiptSchedule : receiptSchedules)
 			{
@@ -179,6 +184,7 @@ class ReceiptCandidateAPIService
 
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
 					.hasMoreItems(limit.isLimitHitOrExceeded(receiptSchedules))
+					.exportSequenceNumber(exportSequenceNumber)
 					.transactionKey(transactionId);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)

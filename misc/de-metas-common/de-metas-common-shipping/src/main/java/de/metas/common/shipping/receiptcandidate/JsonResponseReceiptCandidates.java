@@ -36,6 +36,8 @@ public class JsonResponseReceiptCandidates
 {
 	String transactionKey;
 
+	Integer exportSequenceNumber;
+
 	List<JsonResponseReceiptCandidate> items;
 
 	boolean hasMoreItems;
@@ -44,10 +46,12 @@ public class JsonResponseReceiptCandidates
 	@JsonCreator
 	private JsonResponseReceiptCandidates(
 			@JsonProperty("transactionKey") @NonNull final String transactionKey,
+			@JsonProperty("exportSequenceNumber") @NonNull final Integer exportSequenceNumber,
 			@JsonProperty("items") @Singular @NonNull final List<JsonResponseReceiptCandidate> items,
 			@JsonProperty("hasMoreItems") @NonNull final Boolean hasMoreItems)
 	{
 		this.transactionKey = transactionKey;
+		this.exportSequenceNumber = exportSequenceNumber;
 		this.items = items;
 		this.hasMoreItems = hasMoreItems;
 	}
