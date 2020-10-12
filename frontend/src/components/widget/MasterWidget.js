@@ -25,7 +25,9 @@ class MasterWidget extends PureComponent {
     super(props);
     const { value, widgetData, clearValue } = this.props;
     // `clearValue` removes current field value for the widget. This is used when user
-    // focuses on table cell and starts typing without pressing {enter} first
+    // focuses on table cell and starts typing without pressing {enter} first. `value` is
+    // only used by the `BarcodeScanner` to force formatting of the visible value, so there's
+    // no collision possible here
     this.state = {
       updated: false,
       edited: false,
@@ -245,7 +247,7 @@ class MasterWidget extends PureComponent {
   };
 
   render() {
-    const { onClickOutside, windowId } = this.props;
+    const { windowId } = this.props;
     const { updated, value } = this.state;
 
     return (
@@ -256,7 +258,6 @@ class MasterWidget extends PureComponent {
         data={value}
         handleFocus={this.handleFocus}
         handleBlur={this.handleBlur}
-        onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
