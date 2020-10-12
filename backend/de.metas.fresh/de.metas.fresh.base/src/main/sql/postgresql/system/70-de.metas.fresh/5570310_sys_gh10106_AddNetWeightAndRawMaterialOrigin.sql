@@ -61,3 +61,13 @@ UPDATE AD_Column SET AD_Reference_ID=19,Updated=TO_TIMESTAMP('2019-01-23 18:41:5
 ;
 
 
+-- 2020-10-12T15:04:08.426Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=12,Updated=TO_TIMESTAMP('2020-10-12 18:04:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=563992
+;
+
+-- 2020-10-12T15:04:28.998Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2020-10-12 18:04:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=563892
+;
+
