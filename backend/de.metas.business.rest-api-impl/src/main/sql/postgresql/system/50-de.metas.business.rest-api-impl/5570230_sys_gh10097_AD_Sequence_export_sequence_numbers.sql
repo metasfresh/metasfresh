@@ -45,3 +45,5 @@ UPDATE AD_Sequence SET Description='Each invocation of the receiptCandidates RES
 UPDATE AD_Sequence SET Description='Each invocation of the shipmentCandidates REST API that exports any candidates will get a number from this sequence',Updated=TO_TIMESTAMP('2020-10-12 07:20:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555209
 ;
 
+UPDATE AD_Sequence SET Name='ShipmentCandidate_Export_SeqNo' WHERE Name='ShipmentCandidate_Export_Id';
+UPDATE AD_Sequence SET Name='ReceiptCandidate_Export_SeqNo' WHERE Name='ReceiptCandidate_Export_Id';

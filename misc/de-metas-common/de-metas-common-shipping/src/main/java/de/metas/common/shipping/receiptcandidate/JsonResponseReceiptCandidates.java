@@ -55,4 +55,11 @@ public class JsonResponseReceiptCandidates
 		this.items = items;
 		this.hasMoreItems = hasMoreItems;
 	}
+
+	public static JsonResponseReceiptCandidates empty(@NonNull final String transactionKey)
+	{
+		return builder().transactionKey(transactionKey).hasMoreItems(false)
+				.exportSequenceNumber(0) // no data is exported, so there is no sequence number
+				.build();
+	}
 }

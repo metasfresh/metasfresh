@@ -140,12 +140,12 @@ class ReceiptCandidateAPIService
 	 */
 	public JsonResponseReceiptCandidates exportReceiptCandidates(@NonNull final QueryLimit limit)
 	{
-		final String transactionId = UUID.randomUUID().toString();
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
+		final String transactionKey = UUID.randomUUID().toString();
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey))
 		{
 			final APIExportAuditBuilder<ReceiptScheduleExportAuditItem> auditBuilder = APIExportAudit
 					.<ReceiptScheduleExportAuditItem>builder()
-					.transactionId(transactionId);
+					.transactionId(transactionKey);
 
 			final ReceiptScheduleQuery receiptScheduleQuery = ReceiptScheduleQuery.builder()
 					.limit(limit)
@@ -155,7 +155,7 @@ class ReceiptCandidateAPIService
 			final List<ReceiptSchedule> receiptSchedules = receiptScheduleRepository.getBy(receiptScheduleQuery);
 			if (receiptSchedules.isEmpty())
 			{ // return empty result and call it a day
-				return JsonResponseReceiptCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
+				return JsonResponseReceiptCandidates.empty(transactionKey);
 			}
 
 			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextReceiptCandidateSeqNo();
@@ -185,7 +185,7 @@ class ReceiptCandidateAPIService
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
 					.hasMoreItems(limit.isLimitHitOrExceeded(receiptSchedules))
 					.exportSequenceNumber(exportSequenceNumber)
-					.transactionKey(transactionId);
+					.transactionKey(transactionKey);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
