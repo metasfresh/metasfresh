@@ -6,7 +6,12 @@
 
 
 UPDATE pp_order_cost oc
-SET c_uom_id=(SELECT DISTINCT bl.c_uom_id FROM pp_order_bomline bl WHERE bl.pp_order_id = oc.pp_order_id AND bl.m_product_id = oc.m_product_id)
+SET c_uom_id=(SELECT bl.c_uom_id
+              FROM pp_order_bomline bl
+              WHERE bl.pp_order_id = oc.pp_order_id
+                AND bl.m_product_id = oc.m_product_id
+              ORDER BY bl.pp_order_bomline_id ASC
+              LIMIT 1)
 WHERE c_uom_id IS NULL
 ;
 
