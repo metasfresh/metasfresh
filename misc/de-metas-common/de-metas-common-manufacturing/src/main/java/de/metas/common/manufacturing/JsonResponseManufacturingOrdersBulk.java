@@ -58,6 +58,8 @@ public class JsonResponseManufacturingOrdersBulk
 
 	public static JsonResponseManufacturingOrdersBulk empty(@NonNull final String transactionKey)
 	{
-		return builder().transactionKey(transactionKey).hasMoreItems(false).build();
+		return builder().transactionKey(transactionKey).hasMoreItems(false)
+				.exportSequenceNumber(0) // no data is exported, so there is no sequence number
+				.build();
 	}
 }
