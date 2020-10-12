@@ -48,65 +48,64 @@ public class JsonResponseShipmentCandidate
 	@ApiModelProperty(position = 10, required = true)
 	JsonMetasfreshId id;
 
-	@ApiModelProperty(position = 15, required = true)
+	@ApiModelProperty(position = 30, required = true)
 	String orgCode;
 
-	@ApiModelProperty(position = 20,
+	@ApiModelProperty(position = 40,
 			value = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String orderDocumentNo;
 
-	@ApiModelProperty(position = 30)
+	@ApiModelProperty(position = 50)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
 
-	@ApiModelProperty(position = 40)
+	@ApiModelProperty(position = 60)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
 
-	@ApiModelProperty(position = 45,
+	@ApiModelProperty(position = 70,
 			value = "This is the number of overall exportable items that would end up in the same shipment.\n"
 					+ "Useful if due to `limit`, not all items of one shipment are exported in one invocation.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer numberOfItemsForSameShipment;
 
-	@ApiModelProperty(position = 50, required = true)
+	@ApiModelProperty(position = 80, required = true)
 	JsonProduct product;
 
-	@ApiModelProperty(position = 60)
+	@ApiModelProperty(position = 90)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@ApiModelProperty(position = 70, required = true)
+	@ApiModelProperty(position = 100, required = true)
 	JsonCustomer customer;
 
-	@ApiModelProperty(position = 80, required = true,
+	@ApiModelProperty(position = 110, required = true,
 			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
 	List<JsonQuantity> quantities;
 
-	@ApiModelProperty(position = 90, required = true,
+	@ApiModelProperty(position = 120, required = true,
 			value = "The shipment schedule's ordered quantity, possibly in different UOMs")
 	List<JsonQuantity> orderedQty;
 
-	@ApiModelProperty(position = 100,
+	@ApiModelProperty(position = 130,
 			value = "The internal search key of the assigned shipper")
 	String shipperInternalSearchKey;
 
-	@ApiModelProperty(position = 110,
+	@ApiModelProperty(position = 140,
 			value = "The net price of the ordered quantity")
 	BigDecimal orderedQtyNetPrice;
 
-	@ApiModelProperty(position = 115,
+	@ApiModelProperty(position = 150,
 			value = "The net price of the quantity currently to deliver")
 	@Nullable
-	private final BigDecimal qtyToDeliverNetPrice;
+	BigDecimal qtyToDeliverNetPrice;
 
-	@ApiModelProperty(position = 120,
+	@ApiModelProperty(position = 160,
 			value = "The net price of the delivered quantity ")
 	BigDecimal deliveredQtyNetPrice;
 
-
-	@ApiModelProperty(position = 130,
+	@ApiModelProperty(position = 170,
 			value = "Delivery information")
 	String deliveryInfo;
 

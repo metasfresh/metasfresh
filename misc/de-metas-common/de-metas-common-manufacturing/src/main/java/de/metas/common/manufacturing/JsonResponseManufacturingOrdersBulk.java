@@ -1,16 +1,15 @@
 package de.metas.common.manufacturing;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -44,6 +43,9 @@ public class JsonResponseManufacturingOrdersBulk
 	String transactionKey;
 
 	@NonNull
+	Integer exportSequenceNumber;
+
+	@NonNull
 	@Singular
 	List<JsonResponseManufacturingOrder> items;
 
@@ -56,6 +58,8 @@ public class JsonResponseManufacturingOrdersBulk
 
 	public static JsonResponseManufacturingOrdersBulk empty(@NonNull final String transactionKey)
 	{
-		return builder().transactionKey(transactionKey).hasMoreItems(false).build();
+		return builder().transactionKey(transactionKey).hasMoreItems(false)
+				.exportSequenceNumber(0) // no data is exported, so there is no sequence number
+				.build();
 	}
 }
