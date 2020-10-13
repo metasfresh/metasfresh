@@ -429,6 +429,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -449,6 +450,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -466,6 +468,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(null)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -884,7 +887,7 @@ public class ProcessExecutionResult
 			this.records = ImmutableList.copyOf(records);
 			this.windowIdString = StringUtils.trimBlankToNull(adWindowId);
 			this.target = target != null ? target : OpenTarget.GridView;
-			this.targetTab = targetTab != null ? targetTab : target == OpenTarget.GridView ? TargetTab.SAME_TAB_OVERLAY : TargetTab.SAME_TAB;
+			this.targetTab = targetTab != null ? targetTab : TargetTab.SAME_TAB;
 			this.automaticallySetReferencingDocumentPaths = automaticallySetReferencingDocumentPaths != null ? automaticallySetReferencingDocumentPaths : true;
 			this.useAutoFilters = useAutoFilters != null ? useAutoFilters : true;
 		}
