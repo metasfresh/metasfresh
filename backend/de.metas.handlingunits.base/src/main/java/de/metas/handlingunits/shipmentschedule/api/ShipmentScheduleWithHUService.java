@@ -346,6 +346,9 @@ public class ShipmentScheduleWithHUService
 					.newInstance(huContext)
 					.husToNewCUs(request);
 
+			// we stumbled over HUs with null-trx, which caused some trouble down the line
+			InterfaceWrapperHelper.setThreadInheritedTrxName(newHURecords);
+
 			for (final I_M_HU newHURecord : newHURecords)
 			{
 				final Quantity qtyOfNewHU = extractQtyOfHU(newHURecord, productId, uomRecord);
@@ -737,7 +740,7 @@ public class ShipmentScheduleWithHUService
 		}
 
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-		try (final MDC.MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putShipmentScheduleId(shipmentScheduleId))
+		try (final MDC.MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(shipmentScheduleId))
 		{
 			final CreateCandidatesRequest request = requestBuilder
 					.shipmentScheduleId(shipmentScheduleId)

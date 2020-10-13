@@ -102,7 +102,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	}
 
 	/**
-	 * Retrieves the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
+	 * Retrieves the {@link ShipmentScheduleWithHU}s for which we will create the shipment(s).
 	 *
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
