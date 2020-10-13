@@ -278,3 +278,7 @@ UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from M_InOut io join M_In
 UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from C_Order o join C_OrderLine ol on ol.C_Order_ID = o.C_Order_ID join C_Project p on ol.C_Project_ID = p.C_Project_ID where p.C_Project_ID=@C_Project_ID/-1@ and C_Order.C_Order_ID = ol.C_Order_ID and o.isSOTrx=''N'')',Updated=TO_TIMESTAMP('2020-10-12 15:55:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541212
 ;
 
+-- 2020-10-13T10:25:00.215Z
+-- description fields
+UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from C_Invoice i join C_InvoiceLine il on il.C_Invoice_ID = i.C_Invoice_ID join C_Project p on il.C_Project_ID = p.C_Project_ID where p.C_Project_ID=@C_Project_ID/-1@ and C_Invoice.C_Invoice_ID = il.C_Invoice_ID and i.isSOTrx=''N'')',Updated=TO_TIMESTAMP('2020-10-13 13:25:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541214
+;
