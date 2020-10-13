@@ -3,6 +3,7 @@ import counterpart from 'counterpart';
 import { push, replace } from 'react-router-redux';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
+import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
@@ -1171,23 +1172,28 @@ export function handleProcessResponse(response, type, id) {
       let keepProcessModal = false;
 
       if (action) {
+        const { windowId, viewId, documentId, targetTab } = action;
+        let urlPath;
+
         switch (action.type) {
           case 'displayQRCode':
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
           case 'openView': {
-            const { windowId, viewId } = action;
-
             await dispatch(closeModal());
-
-            if (!action.modalOverlay) {
-              window.open(`/window/${windowId}/?viewId=${viewId}`);
-
+            urlPath = `/window/${windowId}/?viewId=${viewId}`;
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab(urlPath);
+              return;
+            }
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
               return;
             }
 
-            await dispatch(openRawModal(windowId, viewId, action.profileId));
-
+            if (targetTab === 'SAME_TAB_OVERLAY') {
+              await dispatch(openRawModal(windowId, viewId, action.profileId));
+            }
             break;
           }
           case 'openReport':
@@ -1196,8 +1202,19 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openDocument':
             await dispatch(closeModal());
+            urlPath = `/window/${windowId}/${documentId}`;
 
-            if (action.modal) {
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab(urlPath);
+              return false;
+            }
+
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
+              return false;
+            }
+
+            if (action.modal || targetTab === 'SAME_TAB_OVERLAY') {
               // Do not close process modal,
               // since it will be re-used with document view
               keepProcessModal = true;
