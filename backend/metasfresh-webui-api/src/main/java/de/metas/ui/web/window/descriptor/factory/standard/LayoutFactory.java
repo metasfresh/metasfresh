@@ -279,7 +279,8 @@ public class LayoutFactory
 		final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder()
 				.setInternalName(uiSection.toString())
 				.setCaption(uiSectionTrls.getColumnTrl(I_AD_UI_Section.COLUMNNAME_Name, uiSection.getName()))
-				.setDescription(uiSectionTrls.getColumnTrl(I_AD_UI_Section.COLUMNNAME_Description, uiSection.getDescription()));
+				.setDescription(uiSectionTrls.getColumnTrl(I_AD_UI_Section.COLUMNNAME_Description, uiSection.getDescription()))
+				.setUIStyle(uiSection.getUIStyle());
 
 		if (!uiSection.isActive())
 		{
