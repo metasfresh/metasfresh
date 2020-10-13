@@ -496,6 +496,7 @@ public class ProcessExecutionResult
 					.record(record)
 					.adWindowId(adWindowId)
 					.target(target)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
