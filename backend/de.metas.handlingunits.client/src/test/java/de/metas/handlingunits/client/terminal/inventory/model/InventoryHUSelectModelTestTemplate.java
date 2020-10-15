@@ -22,22 +22,23 @@ package de.metas.handlingunits.client.terminal.inventory.model;
  * #L%
  */
 
-
-import java.util.Arrays;
-
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.handlingunits.client.terminal.POSTerminalTestHelper;
+import de.metas.handlingunits.client.terminal.select.api.IPOSFiltering;
+import de.metas.handlingunits.client.terminal.select.api.impl.InventoryHUFiltering;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.X_M_HU;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 
-import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.client.terminal.POSTerminalTestHelper;
-import de.metas.handlingunits.client.terminal.select.api.IPOSFiltering;
-import de.metas.handlingunits.client.terminal.select.api.impl.InventoryHUFiltering;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.model.X_M_HU;
+import java.util.Arrays;
 
 /**
  * Template class for testing {@link InventoryHUSelectModel} related things.
@@ -84,6 +85,8 @@ public abstract class InventoryHUSelectModelTestTemplate
 		final ITerminalContext terminalContext = helper.getTerminalContext();
 		terminalContext.registerService(IPOSFiltering.class, new InventoryHUFiltering());
 
+		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
+		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		//
 		// Master data
 		bpartner01 = helper.createBPartner("BP1");

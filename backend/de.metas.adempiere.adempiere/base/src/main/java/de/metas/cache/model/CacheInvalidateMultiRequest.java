@@ -148,6 +148,19 @@ public class CacheInvalidateMultiRequest
 		return of(requests);
 	}
 
+	public static CacheInvalidateMultiRequest fromTableNameAndRepoIdAwares(
+			@NonNull final String tableName,
+			@NonNull final Collection<? extends RepoIdAware> recordIds)
+	{
+		final ImmutableSet<CacheInvalidateRequest> requests = recordIds.stream()
+				.distinct()
+				.filter(Objects::nonNull)
+				.map(recordId -> CacheInvalidateRequest.rootRecord(tableName, recordId.getRepoId()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return of(requests);
+	}
+
 	private static final CacheInvalidateMultiRequest ALL = new CacheInvalidateMultiRequest(ImmutableSet.of(CacheInvalidateRequest.all()));
 
 	@JsonProperty("requests")

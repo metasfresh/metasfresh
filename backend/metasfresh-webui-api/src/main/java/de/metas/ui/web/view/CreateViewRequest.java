@@ -205,29 +205,6 @@ public final class CreateViewRequest
 		applySecurityRestrictions = builder.isApplySecurityRestrictions();
 	}
 
-	private CreateViewRequest(@NonNull final CreateViewRequest from, @NonNull final WrappedDocumentFilterList filters)
-	{
-		viewId = from.viewId;
-		viewType = from.viewType;
-		profileId = from.profileId;
-
-		parentViewId = from.parentViewId;
-		parentRowId = from.parentRowId;
-
-		referencingDocumentPaths = from.referencingDocumentPaths;
-		documentReferenceId = from.documentReferenceId;
-		filterOnlyIds = from.filterOnlyIds;
-		this.filters = filters;
-		stickyFilters = from.stickyFilters;
-		useAutoFilters = from.useAutoFilters;
-
-		actions = from.actions;
-		additionalRelatedProcessDescriptors = from.additionalRelatedProcessDescriptors;
-
-		parameters = from.parameters;
-
-		applySecurityRestrictions = from.applySecurityRestrictions;
-	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
 	{
@@ -443,6 +420,7 @@ public final class CreateViewRequest
 			return filters != null ? filters : WrappedDocumentFilterList.EMPTY;
 		}
 
+		@Deprecated
 		public Builder setFilterOnlyIds(final Collection<Integer> filterOnlyIds)
 		{
 			if (this.filterOnlyIds == null)
@@ -453,6 +431,7 @@ public final class CreateViewRequest
 			return this;
 		}
 
+		@Deprecated
 		public Builder addFilterOnlyId(final int filterOnlyId)
 		{
 			if (filterOnlyIds == null)
@@ -463,6 +442,7 @@ public final class CreateViewRequest
 			return this;
 		}
 
+		@Deprecated
 		private ImmutableSet<Integer> getFilterOnlyIds()
 		{
 			return filterOnlyIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(filterOnlyIds);

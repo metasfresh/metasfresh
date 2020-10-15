@@ -22,17 +22,24 @@
 
 package org.adempiere.model;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -63,25 +70,15 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.model.IModelCacheService;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
@@ -293,7 +290,7 @@ public class InterfaceWrapperHelper
 		return create(model, cl, useOldValues);
 	}
 
-	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -879,7 +876,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
@@ -896,7 +892,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface or null if interface has no Table_Name
 	 */
 	public static String getTableNameOrNull(final Class<?> clazz)
@@ -1379,9 +1374,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
 	 *
-	 * @param model
-	 * @param attributeName
-	 * @param value
 	 * @return old value or null
 	 */
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
@@ -1391,10 +1383,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
-	 *
-	 * @param model
-	 * @param attributeName
-	 * @return
 	 */
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
@@ -1404,8 +1392,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Check if given <code>model</code> can be casted to <code>interfaceClass</code>. NOTE: by casted we mean using create(...) methods.
 	 *
-	 * @param model
-	 * @param interfaceClass
 	 * @return true if we can cast the model to given interface.
 	 */
 	public static boolean isInstanceOf(final Object model, final Class<?> interfaceClass)

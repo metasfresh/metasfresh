@@ -40,13 +40,17 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 
 public class UOMConversionBLTest extends UOMTestBase
 {
+	private static final X12DE355 X12_Meter = X12DE355.ofCode("MTR");
+	private static final X12DE355 X12_Millimeter = X12DE355.ofCode("mm");
+	private static final X12DE355 X12_Rolle = X12DE355.ofCode("RL");
+
 	/** Service under test */
 	private UOMConversionBL conversionBL;
 
@@ -134,8 +138,8 @@ public class UOMConversionBLTest extends UOMTestBase
 		// Multiply Rate = 1500000.000000000000;
 		// Divide Rate = 0.000000666667
 
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
 
 		final ProductId folieId = createProduct("Folie", rolle);
 
@@ -162,12 +166,12 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convertQty_NoProductInConversion()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
 
 		final ProductId folieProductId = createProduct("Folie", rolle);
 
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
-		final UomId meter = uomConversionHelper.createUOMId("meter", 2, 0, "MTR");
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
+		final UomId meter = uomConversionHelper.createUOMId("meter", 2, 0, X12_Meter);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(meter)
@@ -188,8 +192,8 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convert_GeneralConversion()
 	{
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
-		final UomId meter = uomConversionHelper.createUOMId("Meter", 2, 0, "MTR");
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
+		final UomId meter = uomConversionHelper.createUOMId("Meter", 2, 0, X12_Meter);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(meter)
@@ -210,9 +214,9 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convertQty_GeneralConversion()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
 		final ProductId folieId = createProduct("Folie", rolle);
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(null)
 				.fromUomId(rolle)
@@ -229,8 +233,8 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convert_GeneralConversion_UseStdPrecision()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, "mm");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, X12_Millimeter);
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(rolle)
 				.toUomId(millimeter)
@@ -251,8 +255,8 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convert_GeneralConversion_DoNotUseStdPrecision()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, "mm");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, X12_Millimeter);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(rolle)
@@ -278,37 +282,37 @@ public class UOMConversionBLTest extends UOMTestBase
 				"Minute",
 				1,
 				0,
-				UOMConstants.X12_MINUTE);
+				X12DE355.MINUTE);
 
 		final I_C_UOM hour = uomConversionHelper.createUOM(
 				"Hour",
 				1,
 				0,
-				UOMConstants.X12_HOUR);
+				X12DE355.HOUR);
 
 		final I_C_UOM day = uomConversionHelper.createUOM(
 				"Day",
 				1,
 				0,
-				UOMConstants.X12_DAY);
+				X12DE355.DAY);
 
 		final I_C_UOM week = uomConversionHelper.createUOM(
 				"Week",
 				1,
 				0,
-				UOMConstants.X12_WEEK);
+				X12DE355.WEEK);
 
 		final I_C_UOM month = uomConversionHelper.createUOM(
 				"Month",
 				1,
 				0,
-				UOMConstants.X12_MONTH);
+				X12DE355.MONTH);
 
 		final I_C_UOM year = uomConversionHelper.createUOM(
 				"Year",
 				1,
 				0,
-				UOMConstants.X12_YEAR);
+				X12DE355.YEAR);
 
 		{
 			final BigDecimal minutesPerDay = new BigDecimal(60 * 24);
@@ -430,13 +434,13 @@ public class UOMConversionBLTest extends UOMTestBase
 					"Minute",
 					1,
 					0,
-					UOMConstants.X12_MINUTE);
+					X12DE355.MINUTE);
 
 			final UomId hour = uomConversionHelper.createUOMId(
 					"Hour",
 					1,
 					0,
-					UOMConstants.X12_HOUR);
+					X12DE355.HOUR);
 
 			uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 					.fromUomId(minute)

@@ -22,19 +22,18 @@ package de.metas.inoutcandidate.agg.key.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.metas.bpartner.BPartnerContactId;
-import lombok.NonNull;
-import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
+import org.adempiere.util.lang.ObjectUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * AggregationKey value handler for shipment schedules.
@@ -70,6 +69,11 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 			values.add(BPartnerContactId.toRepoId(adUserID));
 		}
 		values.add(sched.getAD_Org_ID());
+
+		if (sched.getM_Shipper_ID() > 0)
+		{
+			values.add(sched.getM_Shipper_ID());
+		}
 
 		return values;
 	}

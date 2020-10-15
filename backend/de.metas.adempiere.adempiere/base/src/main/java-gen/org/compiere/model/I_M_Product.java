@@ -1789,4 +1789,27 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Weight = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Weight", null);
     /** Column name Weight */
     public static final String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set Commodity Number.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_CommodityNumber_ID (int M_CommodityNumber_ID);
+
+	/**
+	 * Get Commodity Number.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_CommodityNumber_ID();
+
+	/** Column definition for M_CommodityNumber_ID */
+	public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_M_CommodityNumber_ID = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "M_CommodityNumber_ID", null);
+	/** Column name M_CommodityNumber_ID */
+	public static final String COLUMNNAME_M_CommodityNumber_ID = "M_CommodityNumber_ID";
 }

@@ -238,13 +238,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	// task 08927
 	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS = new ModelDynAttributeAccessor<>(Boolean.class);
 
-	/**
-	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
-	 *
-	 * @task 08451
-	 */
-	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
-
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -258,11 +251,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	/**
 	 * Sets the given IC's <code>DateToInvoice</code> value:
 	 * <ul>
-	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_NachLieferung} or {@link X_C_Invoice_Candidate#INVOICERULE_NachLieferungAuftrag}: <code>DeliveryDate</code> or {@link #DATE_TO_INVOICE_MAX_DATE} if
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_AfterDelivery} or {@link X_C_Invoice_Candidate#INVOICERULE_AfterOrderDelivered}: <code>DeliveryDate</code> or {@link Env#MAX_DATE} if
 	 * there was no delivery yet
-	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_KundenintervallNachLieferung}: basically the result of {@link #mkDateToInvoiceForInvoiceSchedule(I_C_InvoiceSchedule, Timestamp)} or or
-	 * {@link #DATE_TO_INVOICE_MAX_DATE} if there was no delivery yet
-	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_Sofort} : <code>DateOrdered</code>
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_CustomerScheduleAfterDelivery}: basically the result of {@link InvoiceSchedule#calculateNextDateToInvoice(LocalDate)} or
+	 * {@link Env#MAX_DATE} if there was no delivery yet
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_Immediate} : <code>DateOrdered</code>
 	 * <li>else (which should not happen, unless a new invoice rule is introduced): <code>Created</code>
 	 * </ul>
 	 *
@@ -292,7 +285,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			case CustomerScheduleAfterDelivery:
 				if (icRecord.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
 				{
-					return DATE_TO_INVOICE_MAX_DATE;
+					return Env.MAX_DATE;
 				}
 				else
 				{
@@ -300,7 +293,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					if (deliveryDate == null)
 					{
 						// task 08451: we have an invoice schedule, but no delivery yet. Set the date to the far future
-						return DATE_TO_INVOICE_MAX_DATE;
+						return Env.MAX_DATE;
 					}
 					else
 					{
@@ -334,8 +327,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		// if there is no delivery yet, then we set the date to the far future
-		logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is stocked; -> return {} as dateToInvoice", productId.getRepoId(), DATE_TO_INVOICE_MAX_DATE);
-		return deliveryDate != null ? deliveryDate : DATE_TO_INVOICE_MAX_DATE;
+		logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is stocked; -> return {} as dateToInvoice", productId.getRepoId(), Env.MAX_DATE);
+		return deliveryDate != null ? deliveryDate : Env.MAX_DATE;
 	}
 
 	void setInvoiceScheduleAmtStatus(final Properties ctx, final I_C_Invoice_Candidate ic)

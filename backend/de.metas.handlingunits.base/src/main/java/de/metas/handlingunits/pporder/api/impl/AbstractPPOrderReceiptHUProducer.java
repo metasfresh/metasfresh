@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /*
@@ -26,6 +27,7 @@ import java.time.ZonedDateTime;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -34,14 +36,17 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
+import org.eevolution.api.PPCostCollectorId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -55,6 +60,8 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -62,6 +69,7 @@ import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -78,7 +86,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -101,11 +109,14 @@ import lombok.Value;
 	private ZonedDateTime _movementDate;
 	private LocatorId locatorId;
 	private PickingCandidateId pickingCandidateId;
+	private String lotNumber;
+	private LocalDate bestBeforeDate;
 	//
 	@Deprecated
 	private boolean skipCreatingReceiptCandidates;
 	private boolean processReceiptCandidates;
 	private boolean receiveOneVHU;
+	private LinkedHashSet<PPCostCollectorId> createdCostCollectorIds = new LinkedHashSet<>();
 
 	//
 	// Abstract methods
@@ -159,7 +170,7 @@ import lombok.Value;
 		this.processReceiptCandidates = true;
 		this.receiveOneVHU = true;
 
-		final List<I_M_HU> vhus = trxManager.callInNewTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
+		final List<I_M_HU> vhus = trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
 
 		if (vhus.isEmpty())
 		{
@@ -214,7 +225,7 @@ import lombok.Value;
 		//
 		// Update received HUs
 		InterfaceWrapperHelper.setThreadInheritedTrxName(planningHUs); // just to be sure
-		updateReceivedHUs(planningHUs);
+		updateReceivedHUs(huContext, planningHUs);
 
 		//
 		// Create receipt candidates
@@ -243,9 +254,13 @@ import lombok.Value;
 		{
 			// Process the receipt candidates we just created
 			// => HU will be activated, a receipt cost collector will be generated,
-			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+			final List<I_PP_Cost_Collector> costCollectors = HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
 					.setCandidatesToProcess(receiptCandidates)
 					.process();
+
+			costCollectors.stream()
+					.map(costCollector -> PPCostCollectorId.ofRepoId(costCollector.getPP_Cost_Collector_ID()))
+					.forEach(createdCostCollectorIds::add);
 		}
 	}
 
@@ -296,7 +311,7 @@ import lombok.Value;
 			}
 
 			//
-			updateReceivedHUs(ImmutableSet.of(planningHU));
+			updateReceivedHUs(huContext, ImmutableSet.of(planningHU));
 		});
 	}
 
@@ -310,11 +325,38 @@ import lombok.Value;
 				.build();
 	}
 
-	private void updateReceivedHUs(final Collection<I_M_HU> hus)
+	private void updateReceivedHUs(
+			final IHUContext huContext,
+			final Collection<I_M_HU> hus)
 	{
 		//
 		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
 		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId());
+
+		if (lotNumber != null
+				|| bestBeforeDate != null)
+		{
+			final IAttributeStorageFactory huAttributeStorageFactory = huContext.getHUAttributeStorageFactory();
+
+			for (final I_M_HU hu : hus)
+			{
+				final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
+
+				if (lotNumber != null
+						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+				}
+
+				if (bestBeforeDate != null
+						&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+				}
+
+				huAttributes.saveChangesIfNeeded();
+			}
+		}
 
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine
@@ -368,7 +410,8 @@ import lombok.Value;
 	{
 		if (receiveOneVHU)
 		{
-			return HUProducerDestination.ofVirtualPI();
+			return HUProducerDestination.ofVirtualPI()
+					.setLocatorId(getLocatorId());
 		}
 		else
 		{
@@ -406,6 +449,26 @@ import lombok.Value;
 	protected final PickingCandidateId getPickingCandidateId()
 	{
 		return pickingCandidateId;
+	}
+
+	@Override
+	public IPPOrderReceiptHUProducer lotNumber(final String lotNumber)
+	{
+		this.lotNumber = StringUtils.trimBlankToNull(lotNumber);
+		return this;
+	}
+
+	@Override
+	public IPPOrderReceiptHUProducer bestBeforeDate(final LocalDate bestBeforeDate)
+	{
+		this.bestBeforeDate = bestBeforeDate;
+		return this;
+	}
+
+	@Override
+	public ImmutableSet<PPCostCollectorId> getCreatedCostCollectorIds()
+	{
+		return ImmutableSet.copyOf(createdCostCollectorIds);
 	}
 
 	//

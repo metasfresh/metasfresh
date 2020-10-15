@@ -1,15 +1,7 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryLineId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -20,7 +12,17 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
+import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -80,7 +82,9 @@ public class M_InventoryLine
 					.toInventoryLine(inventoryLineRecord)
 					.distributeQtyCountToHUs(qtyCount);
 
-			inventoryLineRepository.saveInventoryLineHURecords(inventoryLine);
+			final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLineRecord.getM_Inventory_ID());
+
+			inventoryLineRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
 		}
 	}
 

@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.model;
 
 
 /** Generated Interface for M_ShipmentSchedule_Recompute
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_ShipmentSchedule_Recompute 
@@ -14,17 +14,10 @@ public interface I_M_ShipmentSchedule_Recompute
     /** AD_Table_ID=541488 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Prozess-Instanz.
-	 * Instanz eines Prozesses
+	 * Set Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -33,8 +26,8 @@ public interface I_M_ShipmentSchedule_Recompute
 	public void setAD_PInstance_ID (int AD_PInstance_ID);
 
 	/**
-	 * Get Prozess-Instanz.
-	 * Instanz eines Prozesses
+	 * Get Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -52,7 +45,7 @@ public interface I_M_ShipmentSchedule_Recompute
     public static final String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
-	 * Set Lieferdisposition.
+	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -61,7 +54,7 @@ public interface I_M_ShipmentSchedule_Recompute
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Lieferdisposition.
+	 * Get Shipment Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

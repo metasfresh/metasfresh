@@ -58,7 +58,7 @@ import lombok.NonNull;
 
 /**
  * Immutable {@link IAttributeSet} implementation.
- *
+ * <p>
  * To get your instance for an {@link AttributeSetInstanceId},
  * you can use {@link IAttributeDAO#getImmutableAttributeSetById(AttributeSetInstanceId)}.
  */
@@ -90,7 +90,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			@NonNull final IAttributeSet attributeSet,
 			@NonNull final Predicate<I_M_Attribute> filter)
 	{
-
 		final Builder builder = builder();
 		attributeSet.getAttributes()
 				.stream()
@@ -467,6 +466,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public boolean isNew(final I_M_Attribute attribute)
 	{
 		return false;
+	}
+
+	public ImmutableAttributeSet filterOnlyStorageRelevantAttributes()
+	{
+		return createSubSet(this, I_M_Attribute::isStorageRelevant);
 	}
 
 	//

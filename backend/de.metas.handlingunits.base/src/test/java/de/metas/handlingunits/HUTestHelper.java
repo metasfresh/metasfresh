@@ -10,28 +10,6 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -59,7 +37,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
@@ -89,6 +66,8 @@ import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assert;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -131,6 +110,7 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -165,6 +145,28 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  * This class sets up basic master data like attributes and HU-items.
@@ -320,6 +322,8 @@ public class HUTestHelper
 	// #653
 	public I_M_Attribute attr_LotNumber;
 
+	public I_M_Attribute attr_BestBeforeDate;
+
 	/**
 	 * Mandatory in receipts
 	 */
@@ -413,6 +417,8 @@ public class HUTestHelper
 		}
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
+		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
+		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -614,8 +620,10 @@ public class HUTestHelper
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		
+		attr_BestBeforeDate = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
@@ -849,6 +857,20 @@ public class HUTestHelper
 			piAttr_LotNumber.setSeqNo(piAttrSeqNo);
 			piAttr_LotNumber.setUseInASI(true);
 			InterfaceWrapperHelper.save(piAttr_LotNumber);
+			piAttrSeqNo += 10;
+		}
+
+		{
+			final I_M_HU_PI_Attribute piAttr_BestBeforeDate = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_BestBeforeDate)
+					.setM_HU_PI(huDefNone)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
+					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
+					.setAggregationStrategyClass(NullAggregationStrategy.class)
+					.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class));
+			piAttr_BestBeforeDate.setIsReadOnly(false);
+			piAttr_BestBeforeDate.setSeqNo(piAttrSeqNo);
+			piAttr_BestBeforeDate.setUseInASI(true);
+			InterfaceWrapperHelper.save(piAttr_BestBeforeDate);
 			piAttrSeqNo += 10;
 		}
 
@@ -2046,5 +2068,18 @@ public class HUTestHelper
 		}
 
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("HUs", hus)));
+	}
+
+	public I_DIM_Dimension_Spec createDimensionSpec_PP_Order_ProductAttribute_To_Transfer()
+	{
+		return createDimensionSpec(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
+	}
+
+	public I_DIM_Dimension_Spec createDimensionSpec(final String internalName)
+	{
+		final I_DIM_Dimension_Spec dim = InterfaceWrapperHelper.newInstance(I_DIM_Dimension_Spec.class);
+		dim.setInternalName(internalName);
+		InterfaceWrapperHelper.save(dim);
+		return dim;
 	}
 }

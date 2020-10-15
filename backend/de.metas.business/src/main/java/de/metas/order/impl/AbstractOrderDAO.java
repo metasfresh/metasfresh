@@ -1,9 +1,43 @@
 package de.metas.order.impl;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.engine.DocStatus;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.user.UserId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-
-import java.util.Collection;
 
 /*
  * #%L
@@ -27,39 +61,6 @@ import java.util.Collection;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.engine.DocStatus;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.user.UserId;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
 	@Override
@@ -71,6 +72,44 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			throw new AdempiereException("@NotFound@: " + orderId);
 		}
 		return order;
+	}
+
+	@Nullable
+	private I_C_Order getByExternalId(@Nullable final ExternalId externalId)
+	{
+		final I_C_Order order = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
+				.create()
+				.first();
+
+		return order;
+	}
+
+	private List<I_C_Order> getOrdersByExternalIds(@NonNull final List<ExternalId> externalIds)
+	{
+		final List<String> externalIdsAsStrings = externalIds.stream().map(ExternalId::getValue).collect(Collectors.toList());
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_ExternalId, externalIdsAsStrings)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds)
+	{
+		Map<ExternalId, OrderId> externalIdOrderIdMap = new HashMap<ExternalId, OrderId>();
+		final List<I_C_Order> ordersWithExternalIds = getOrdersByExternalIds(externalIds);
+		for (final I_C_Order order : ordersWithExternalIds)
+		{
+			if (order != null && order.getExternalId() != null)
+			{
+				externalIdOrderIdMap.put(ExternalId.of(order.getExternalId()), OrderId.ofRepoId(order.getC_Order_ID()));
+			}
+		}
+		return externalIdOrderIdMap;
 	}
 
 	@Override

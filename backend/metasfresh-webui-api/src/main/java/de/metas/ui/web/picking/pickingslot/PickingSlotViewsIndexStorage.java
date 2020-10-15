@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.packageable.PackageableRow;
 import de.metas.ui.web.picking.packageable.PackageableView;

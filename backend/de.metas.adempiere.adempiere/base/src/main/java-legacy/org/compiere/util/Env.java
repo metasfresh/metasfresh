@@ -1131,7 +1131,7 @@ public final class Env
 	 *
 	 * @param ctx context
 	 * @param WindowNo window no
-	 * @return true if {@link CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link CTXNAME_IsSOTrx} is not set.
+	 * @return true if {@link #CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link #CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link #CTXNAME_IsSOTrx} is not set.
 	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
 	 */
 	@Deprecated
@@ -1178,7 +1178,7 @@ public final class Env
 		if (timestamp == null)
 		{
 			final Timestamp sysDate = SystemTime.asTimestamp();
-			if(!Adempiere.isUnitTestMode())
+			if (!Adempiere.isUnitTestMode())
 			{
 				// metas: tsa: added a dummy exception to be able to track it quickly
 				s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
@@ -1391,7 +1391,6 @@ public final class Env
 	 * </pre>
 	 *
 	 * @param ctx context
-	 * @param AD_Window_ID window no
 	 * @param context Entity to search
 	 * @param system System level preferences (vs. user defined)
 	 * @return preference value
@@ -2017,6 +2016,13 @@ public final class Env
 	public static final int WINDOW_None = -100;
 	public static final int TAB_None = -100;
 
+	/**
+	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
+	 *
+	 * @task 08451
+	 */
+	public static final Timestamp MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
+
 	// /* package */ static final String NoValue = "";
 
 	/** Marker used to flag a NULL ID */
@@ -2281,7 +2287,6 @@ public final class Env
 	/**
 	 * Convert given timestamp to string.
 	 *
-	 * @param timestamp
 	 * @return timestamp as string (JDBC Format 2005-05-09 00:00:00, without nanos) or <code>null</code> if timestamp was null
 	 * @see #parseTimestamp(String)
 	 */
@@ -2313,11 +2318,10 @@ public final class Env
 	 *
 	 * @param timestampStr Timestamp string representation (JDBC format)
 	 * @return Timestamp or <code>null</code> if value is empty
-	 * @see #toString(Timestamp)
 	 */
 	public static Timestamp parseTimestamp(@Nullable final String timestampStr)
 	{
-		if (Check.isEmpty(timestampStr, true) || isPropertyValueNull(timestampStr))
+		if (Check.isBlank(timestampStr) || isPropertyValueNull(timestampStr))
 		{
 			return null;
 		}
@@ -2338,7 +2342,10 @@ public final class Env
 			// ignore exception
 		}
 
-		throw new AdempiereException("Failed converting '" + timestampStr + "' to " + Timestamp.class);
+		throw new AdempiereException("Failed converting `" + timestampStr + "` to " + Timestamp.class + "."
+				+ "\nExpected following formats:"
+				+ "\n1. JDBC format"
+				+ "\n2. ISO8601 format: `" + DATE_PATTEN + "`, e.g. " + SystemTime.asZonedDateTime().format(DATE_FORMAT));
 	}
 
 	private static Timestamp parseTimestampUsingJDBCFormatOrNull(@NonNull final String timestampStr)

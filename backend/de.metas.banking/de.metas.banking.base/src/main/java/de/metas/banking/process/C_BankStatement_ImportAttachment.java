@@ -97,7 +97,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
 
-		dataImportService.importData(DataImportRequest.builder()
+		dataImportService.importDataFromResource(DataImportRequest.builder()
 				.data(data)
 				.dataImportConfigId(HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID)
 				.clientId(getClientId())

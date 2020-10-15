@@ -46,15 +46,10 @@ import lombok.NonNull;
  * Workpackage processor used to update all invalid {@link I_C_Invoice_Candidate}s.<br>
  * Important notes:
  * <ul>
- * <li>to schedule an invoice candidates update please use {@link #schedule(Properties, String)}.
+ * <li>to schedule an invoice candidates update please use {@link #schedule(IInvoiceCandUpdateSchedulerRequest)}.
  * <li>you can set the maximum number of invalid ICs to update per run, by using <code>AD_Sysconfig</code> {@value #SYSCONFIG_MaxInvoiceCandidatesToUpdate}. If there are more invalid ICs than this
  * specified maximum, then the work package processor will schedule another workpackage for the remainder.
  * </ul>
- *
- *
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -90,7 +85,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		trxManager.assertTrxNameNull(localTrxName);
 

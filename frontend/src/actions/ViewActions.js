@@ -282,7 +282,8 @@ export function fetchDocument({
 
         dispatch(updateGridTable(tableId, tableData));
 
-        const view = getView(getState(), windowId, isModal);
+        const state = getState();
+        const view = getView(state, windowId, isModal);
         const openIncludedViewOnSelect =
           view.layout &&
           view.layout.includedView &&
@@ -294,15 +295,21 @@ export function fetchDocument({
           response.data.result.length
         ) {
           const row = response.data.result[0];
+          const includedWindowId = row.supportIncludedViews
+            ? state.listHandler.includedView.windowType ||
+              row.includedView.windowType ||
+              row.includedView.windowId
+            : null;
+          const includedViewId = row.supportIncludedViews
+            ? state.listHandler.includedView.viewId || row.includedView.viewId
+            : null;
 
           dispatch(
             showIncludedView({
               id: windowId,
               showIncludedView: row.supportIncludedViews,
-              windowId: row.supportIncludedViews
-                ? row.includedView.windowType || row.includedView.windowId
-                : null,
-              viewId: row.supportIncludedViews ? row.includedView.viewId : '',
+              windowId: includedWindowId,
+              viewId: includedViewId,
               isModal,
             })
           );

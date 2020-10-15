@@ -45,7 +45,9 @@ import de.metas.util.Services;
  */
 public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	private List<I_M_HU> husToReturn = null;
+	private final IHUInOutBL inoutBL = Services.get(IHUInOutBL.class);
+
+	private List<I_M_HU> husMoved = null;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -66,23 +68,24 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected String doIt()
 	{
-		husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		final ImmutableList<I_M_HU> husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
 		if (husToReturn.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		Services.get(IHUInOutBL.class).createCustomerReturnInOutForHUs(husToReturn);
+		inoutBL.createCustomerReturnInOutForHUs(husToReturn);
+		husMoved = husToReturn;
+
 		return MSG_OK;
 	}
 
 	@Override
 	protected void postProcess(final boolean success)
 	{
-		if (husToReturn != null && !husToReturn.isEmpty())
+		if (husMoved != null && !husMoved.isEmpty())
 		{
-			getView().removeHUsAndInvalidate(husToReturn);
+			getView().removeHUsAndInvalidate(husMoved);
 		}
 	}
-
 }

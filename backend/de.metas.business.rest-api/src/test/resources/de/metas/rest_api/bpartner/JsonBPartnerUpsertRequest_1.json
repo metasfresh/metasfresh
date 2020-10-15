@@ -11,7 +11,8 @@
         "phone" : "bPartner.phone",
         "language" : "bPartner.de_CH",
         "url" : "bPartner.url",
-        "group" : "bpGroupRecord.name"
+        "group" : "bpGroupRecord.name",
+        "vatId" : "bPartner.vatId"
       },
       "locations" : {
         "requestItems" : [ {

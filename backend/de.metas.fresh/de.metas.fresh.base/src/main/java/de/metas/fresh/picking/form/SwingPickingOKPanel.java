@@ -66,7 +66,7 @@ import de.metas.fresh.picking.PackingDetailsModel;
 import de.metas.fresh.picking.form.SwingPickingTerminalPanel.ResetFilters;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;

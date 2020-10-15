@@ -6,27 +6,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for MD_Candidate_Transaction_Detail
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO implements I_MD_Candidate_Transaction_Detail, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1925944509L;
+	private static final long serialVersionUID = 1329603514L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Transaction_Detail (Properties ctx, int MD_Candidate_Transaction_Detail_ID, String trxName)
     {
       super (ctx, MD_Candidate_Transaction_Detail_ID, trxName);
-      /** if (MD_Candidate_Transaction_Detail_ID == 0)
-        {
-			setMD_Candidate_ID (0);
-			setMD_Candidate_Transaction_Detail_ID (0);
-			setMovementQty (BigDecimal.ZERO);
-        } */
     }
 
     /** Load Constructor */
@@ -36,13 +27,12 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_PInstance getAD_PInstance_ResetStock()
@@ -56,8 +46,6 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		set_ValueFromPO(COLUMNNAME_AD_PInstance_ResetStock_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance_ResetStock);
 	}
 
-	/** Set Prozesslauf "Lagerbestand zurücksetzen".
-		@param AD_PInstance_ResetStock_ID Prozesslauf "Lagerbestand zurücksetzen"	  */
 	@Override
 	public void setAD_PInstance_ResetStock_ID (int AD_PInstance_ResetStock_ID)
 	{
@@ -67,15 +55,10 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 			set_Value (COLUMNNAME_AD_PInstance_ResetStock_ID, Integer.valueOf(AD_PInstance_ResetStock_ID));
 	}
 
-	/** Get Prozesslauf "Lagerbestand zurücksetzen".
-		@return Prozesslauf "Lagerbestand zurücksetzen"	  */
 	@Override
-	public int getAD_PInstance_ResetStock_ID () 
+	public int getAD_PInstance_ResetStock_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ResetStock_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ResetStock_ID);
 	}
 
 	@Override
@@ -90,8 +73,6 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		set_ValueFromPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class, MD_Candidate);
 	}
 
-	/** Set Dispositionskandidat.
-		@param MD_Candidate_ID Dispositionskandidat	  */
 	@Override
 	public void setMD_Candidate_ID (int MD_Candidate_ID)
 	{
@@ -101,19 +82,12 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, Integer.valueOf(MD_Candidate_ID));
 	}
 
-	/** Get Dispositionskandidat.
-		@return Dispositionskandidat	  */
 	@Override
-	public int getMD_Candidate_ID () 
+	public int getMD_Candidate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_MD_Candidate_ID);
 	}
 
-	/** Set Dispo-Transaktionsdetail.
-		@param MD_Candidate_Transaction_Detail_ID Dispo-Transaktionsdetail	  */
 	@Override
 	public void setMD_Candidate_Transaction_Detail_ID (int MD_Candidate_Transaction_Detail_ID)
 	{
@@ -123,19 +97,12 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Transaction_Detail_ID, Integer.valueOf(MD_Candidate_Transaction_Detail_ID));
 	}
 
-	/** Get Dispo-Transaktionsdetail.
-		@return Dispo-Transaktionsdetail	  */
 	@Override
-	public int getMD_Candidate_Transaction_Detail_ID () 
+	public int getMD_Candidate_Transaction_Detail_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_Transaction_Detail_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_MD_Candidate_Transaction_Detail_ID);
 	}
 
-	/** Set Bestand.
-		@param MD_Stock_ID Bestand	  */
 	@Override
 	public void setMD_Stock_ID (int MD_Stock_ID)
 	{
@@ -145,15 +112,10 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 			set_Value (COLUMNNAME_MD_Stock_ID, Integer.valueOf(MD_Stock_ID));
 	}
 
-	/** Get Bestand.
-		@return Bestand	  */
 	@Override
-	public int getMD_Stock_ID () 
+	public int getMD_Stock_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Stock_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_MD_Stock_ID);
 	}
 
 	@Override
@@ -168,47 +130,28 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
 	}
 
-	/** Set Versand-/Wareneingangsposition.
-		@param M_InOutLine_ID 
-		Position auf Versand- oder Wareneingangsbeleg
-	  */
 	@Override
 	public void setM_InOutLine_ID (int M_InOutLine_ID)
 	{
 		throw new IllegalArgumentException ("M_InOutLine_ID is virtual column");	}
 
-	/** Get Versand-/Wareneingangsposition.
-		@return Position auf Versand- oder Wareneingangsbeleg
-	  */
 	@Override
-	public int getM_InOutLine_ID () 
+	public int getM_InOutLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOutLine_ID);
 	}
 
-	/** Set Bewegungs-Menge.
-		@param MovementQty 
-		Menge eines bewegten Produktes.
-	  */
 	@Override
 	public void setMovementQty (java.math.BigDecimal MovementQty)
 	{
 		set_Value (COLUMNNAME_MovementQty, MovementQty);
 	}
 
-	/** Get Bewegungs-Menge.
-		@return Menge eines bewegten Produktes.
-	  */
 	@Override
-	public java.math.BigDecimal getMovementQty () 
+	public java.math.BigDecimal getMovementQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -223,8 +166,6 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		set_ValueFromPO(COLUMNNAME_M_Transaction_ID, org.compiere.model.I_M_Transaction.class, M_Transaction);
 	}
 
-	/** Set Bestands-Transaktion.
-		@param M_Transaction_ID Bestands-Transaktion	  */
 	@Override
 	public void setM_Transaction_ID (int M_Transaction_ID)
 	{
@@ -234,30 +175,21 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 			set_Value (COLUMNNAME_M_Transaction_ID, Integer.valueOf(M_Transaction_ID));
 	}
 
-	/** Get Bestands-Transaktion.
-		@return Bestands-Transaktion	  */
 	@Override
-	public int getM_Transaction_ID () 
+	public int getM_Transaction_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Transaction_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Transaction_ID);
 	}
 
-	/** Set Transaktionsdatum.
-		@param TransactionDate Transaktionsdatum	  */
 	@Override
 	public void setTransactionDate (java.sql.Timestamp TransactionDate)
 	{
 		set_Value (COLUMNNAME_TransactionDate, TransactionDate);
 	}
 
-	/** Get Transaktionsdatum.
-		@return Transaktionsdatum	  */
 	@Override
-	public java.sql.Timestamp getTransactionDate () 
+	public java.sql.Timestamp getTransactionDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_TransactionDate);
+		return get_ValueAsTimestamp(COLUMNNAME_TransactionDate);
 	}
 }

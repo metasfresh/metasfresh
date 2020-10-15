@@ -834,13 +834,17 @@ public class ProcessExecutionResult
 		@JsonProperty("automaticallySetReferencingDocumentPaths")
 		boolean automaticallySetReferencingDocumentPaths;
 
+		@JsonProperty("useAutoFilters")
+		boolean useAutoFilters;
+
 		@JsonCreator
 		@Builder
 		private RecordsToOpen(
 				@JsonProperty("records") @NonNull @Singular final List<TableRecordReference> records,
 				@JsonProperty("adWindowId") @Nullable final String adWindowId,
 				@JsonProperty("target") @Nullable final OpenTarget target,
-				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths)
+				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths,
+				@JsonProperty("useAutoFilters") @Nullable final Boolean useAutoFilters)
 		{
 			Check.assumeNotEmpty(records, "records is not empty");
 
@@ -848,6 +852,7 @@ public class ProcessExecutionResult
 			this.windowIdString = StringUtils.trimBlankToNull(adWindowId);
 			this.target = target != null ? target : OpenTarget.GridView;
 			this.automaticallySetReferencingDocumentPaths = automaticallySetReferencingDocumentPaths != null ? automaticallySetReferencingDocumentPaths : true;
+			this.useAutoFilters = useAutoFilters != null ? useAutoFilters : true;
 		}
 
 		@Override

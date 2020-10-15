@@ -42,6 +42,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {

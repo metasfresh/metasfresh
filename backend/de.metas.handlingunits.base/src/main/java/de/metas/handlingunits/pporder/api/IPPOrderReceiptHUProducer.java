@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /*
@@ -25,8 +26,10 @@ import java.time.ZonedDateTime;
  */
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPCostCollectorId;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -83,4 +86,10 @@ public interface IPPOrderReceiptHUProducer
 	IPPOrderReceiptHUProducer packUsingLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	IPPOrderReceiptHUProducer pickingCandidateId(PickingCandidateId pickingCandidateId);
+
+	IPPOrderReceiptHUProducer lotNumber(String lotNumber);
+
+	IPPOrderReceiptHUProducer bestBeforeDate(LocalDate bestBeforeDate);
+
+	Set<PPCostCollectorId> getCreatedCostCollectorIds();
 }

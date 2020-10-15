@@ -193,7 +193,7 @@ public class BankStatementImportProcessTest
 
 			@Override
 			protected void markAsError(
-					@NonNull final ImportGroup<I_I_BankStatement> importGroup,
+					@NonNull final ImportGroup<RecordIdGroupKey, I_I_BankStatement> importGroup,
 					@NonNull final Throwable exception)
 			{
 				throw AdempiereException.wrapIfNeeded(exception)

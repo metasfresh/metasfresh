@@ -22,37 +22,38 @@
 
 package de.metas.uom.impl;
 
-import de.metas.cache.annotation.CacheCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+
+import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMType;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
-
-import java.time.temporal.TemporalUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class UOMDAO implements IUOMDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final CCache<X12DE355, Optional<UomId>> uomIdsByX12DE355 = CCache.<X12DE355, Optional<UomId>> builder()
+			.tableName(I_C_UOM.Table_Name)
+			.build();
 
 	@Override
 	public I_C_UOM getById(final int uomId)
@@ -92,74 +93,56 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public UomId getUomIdByX12DE355(final String x12de355)
+	public UomId getUomIdByX12DE355(@NonNull final X12DE355 x12de355)
 	{
-		final boolean throwExIfNull = true;
-		return retrieveUomIdByX12DE355(Env.getCtx(), x12de355, throwExIfNull);
+		return getUomIdByX12DE355IfExists(x12de355)
+				.orElseThrow(() -> new AdempiereException("No UOM found for X12DE355=" + x12de355));
 	}
 
-	@Override
-	public String getX12DE355ById(@NonNull final UomId uomId)
+	private Optional<UomId> getUomIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
 	{
-		I_C_UOM uom = getById(uomId);
-		return uom.getX12DE355();
+		return uomIdsByX12DE355.getOrLoad(x12de355, this::retrieveUomIdByX12DE355);
 	}
 
-	@Override
-	public I_C_UOM retrieveByX12DE355(final Properties ctx, final String x12de355)
+	private Optional<UomId> retrieveUomIdByX12DE355(@NonNull final X12DE355 x12de355)
 	{
-		final boolean throwExIfNull = true;
-		return retrieveByX12DE355(ctx, x12de355, throwExIfNull);
-	}
-
-	@Override
-	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355, final boolean throwExIfNull)
-	{
-		final UomId uomId = retrieveUomIdByX12DE355(ctx, x12de355, throwExIfNull);
-		if (uomId == null)
-		{
-			return null;
-		}
-		else
-		{
-			return getById(uomId);
-		}
-	}
-
-	@Cached(cacheName = I_C_UOM.Table_Name
-			+ "#by"
-			+ "#" + I_C_UOM.COLUMNNAME_X12DE355
-			+ "#" + I_C_UOM.COLUMNNAME_IsDefault
-			+ "#" + I_C_UOM.COLUMNNAME_AD_Client_ID)
-	public UomId retrieveUomIdByX12DE355(
-			@CacheCtx final Properties ctx,
-			@NonNull final String x12de355,
-			final boolean throwExIfNull)
-	{
-		final int uomId = queryBL
-				.createQueryBuilder(I_C_UOM.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyContextClientOrSystem()
+		final UomId uomId = queryBL
+				.createQueryBuilderOutOfTrx(I_C_UOM.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, x12de355)
-				.orderBy()
-				.addColumn(I_C_UOM.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_C_UOM.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
-				.endOrderBy()
+				.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, x12de355.getCode())
+				.orderByDescending(I_C_UOM.COLUMNNAME_AD_Client_ID)
+				.orderByDescending(I_C_UOM.COLUMNNAME_IsDefault)
 				.create()
-				.firstId();
+				.firstId(UomId::ofRepoIdOrNull);
 
-		if (uomId <= 0 && throwExIfNull)
-		{
-			throw new AdempiereException("@NotFound@ @C_UOM_ID@ (@X12DE355@: " + x12de355 + ")");
-		}
-
-		return UomId.ofRepoIdOrNull(uomId);
+		return Optional.ofNullable(uomId);
 	}
 
 	@Override
-	public I_C_UOM retrieveEachUOM(final Properties ctx)
+	public X12DE355 getX12DE355ById(@NonNull final UomId uomId)
 	{
-		return retrieveByX12DE355(ctx, X12DE355_Each);
+		final I_C_UOM uom = getById(uomId);
+		return X12DE355.ofCode(uom.getX12DE355());
+	}
+
+	@Override
+	public I_C_UOM getByX12DE355(@NonNull final X12DE355 x12de355)
+	{
+		return getByX12DE355IfExists(x12de355)
+				.orElseThrow(() -> new AdempiereException("No UOM found for X12DE355=" + x12de355));
+	}
+
+	@Override
+	public Optional<I_C_UOM> getByX12DE355IfExists(@NonNull final X12DE355 x12de355)
+	{
+		return getUomIdByX12DE355IfExists(x12de355)
+				.map(this::getById);
+	}
+
+	@Override
+	public I_C_UOM getEachUOM()
+	{
+		return getByX12DE355(X12DE355.EACH);
 	}
 
 	@Override
@@ -185,8 +168,8 @@ public class UOMDAO implements IUOMDAO
 	@Override
 	public boolean isUOMForTUs(@NonNull final UomId uomId)
 	{
-		final String x12de355 = getX12DE355ById(uomId);
-		return X12DE355_COLI.equals(x12de355) || X12DE355_TU.equals(x12de355);
+		final X12DE355 x12de355 = getX12DE355ById(uomId);
+		return X12DE355.COLI.equals(x12de355) || X12DE355.TU.equals(x12de355);
 	}
 
 	@Override

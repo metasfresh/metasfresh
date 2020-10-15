@@ -45,7 +45,7 @@ public class C_Async_Batch
 		if (asyncBatch.isProcessed()
 				&& LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
 		{
-			runPrintingProcess(asyncBatch);
+			runPrintingProcess(asyncBatch); 
 		}
 	}
 

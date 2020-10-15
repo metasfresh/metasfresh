@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1822918291L;
+	private static final long serialVersionUID = -521904266L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -580,7 +580,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public java.lang.String getPOReference() 
+	public java.lang.String getPOReference()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}

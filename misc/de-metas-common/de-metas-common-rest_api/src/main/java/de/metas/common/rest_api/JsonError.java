@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -43,7 +44,7 @@ public class JsonError
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular @NonNull final List<JsonErrorItem> errors)
+	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
 	{
 		this.errors = errors;
 	}

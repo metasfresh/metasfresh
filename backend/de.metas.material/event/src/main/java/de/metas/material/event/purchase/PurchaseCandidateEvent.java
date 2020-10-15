@@ -3,11 +3,14 @@ package de.metas.material.event.purchase;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -39,15 +42,19 @@ public abstract class PurchaseCandidateEvent implements MaterialEvent
 	private final EventDescriptor eventDescriptor;
 	private final int purchaseCandidateRepoId;
 	private final MaterialDescriptor purchaseMaterialDescriptor;
+	@Nullable
+	private final MinMaxDescriptor minMaxDescriptor;
 	private final int vendorId;
 
 	protected PurchaseCandidateEvent(
 			@NonNull final MaterialDescriptor purchaseMaterialDescriptor,
+			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			@NonNull final EventDescriptor eventDescriptor,
 			final int purchaseCandidateRepoId,
 			final int vendorId)
 	{
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 		this.eventDescriptor = eventDescriptor;
 		this.purchaseCandidateRepoId = Check.assumeGreaterThanZero(purchaseCandidateRepoId, "purchaseCandidateRepoId");
 		this.vendorId = Check.assumeGreaterThanZero(vendorId, "vendorId");

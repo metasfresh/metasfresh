@@ -1,23 +1,24 @@
 package de.metas.material.event.pporder;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 
 /*
  * #%L
@@ -130,6 +131,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 
 		ProductDescriptor productDescriptor;
 
+		MinMaxDescriptor minMaxDescriptor;
+
 		Instant issueOrReceiveDate;
 
 		BigDecimal oldQtyRequired;
@@ -154,6 +157,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 				@JsonProperty("oldPPOrderLineId") final int oldPPOrderLineId,
 				@JsonProperty("newPPOrderLineId") final int newPPOrderLineId,
 				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+				@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 				@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 				@JsonProperty("oldQtyRequired") @NonNull final BigDecimal oldQtyRequired,
 				@JsonProperty("newQtyRequired") @NonNull final BigDecimal newQtyRequired,
@@ -163,6 +167,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 			this.oldPPOrderLineId = Check.assumeGreaterThanZero(oldPPOrderLineId, "oldPPOrderLineId");
 			this.newPPOrderLineId = Check.assumeGreaterThanZero(newPPOrderLineId, "newPPOrderLineId");
 			this.productDescriptor = productDescriptor;
+			this.minMaxDescriptor = minMaxDescriptor;
 			this.issueOrReceiveDate = issueOrReceiveDate;
 			this.oldQtyRequired = oldQtyRequired;
 			this.newQtyRequired = newQtyRequired;

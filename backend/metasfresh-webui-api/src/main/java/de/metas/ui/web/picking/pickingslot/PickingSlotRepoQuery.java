@@ -28,7 +28,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

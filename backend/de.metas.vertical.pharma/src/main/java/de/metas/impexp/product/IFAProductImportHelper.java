@@ -7,12 +7,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_I_Product;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.impexp.processing.product.ProductPriceCreateRequest;
-import de.metas.impexp.processing.product.ProductPriceImporter;
 import de.metas.location.ICountryDAO;
+import de.metas.pricing.service.ProductPriceCreateRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.tax.api.ITaxDAO;
@@ -85,7 +83,7 @@ import lombok.experimental.UtilityClass;
 		setPharmaFields(importRecord, product);
 
 		product.setProductType(X_I_Product.PRODUCTTYPE_Item);
-		product.setC_UOM_ID(Services.get(IUOMDAO.class).retrieveEachUOM(Env.getCtx()).getC_UOM_ID());
+		product.setC_UOM_ID(Services.get(IUOMDAO.class).getEachUOM().getC_UOM_ID());
 		if (importRecord.getM_Product_Category_ID() > 0)
 		{
 			product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());

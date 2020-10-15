@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.ViewId;

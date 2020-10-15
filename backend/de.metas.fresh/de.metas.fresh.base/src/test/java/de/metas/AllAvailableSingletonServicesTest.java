@@ -1,11 +1,14 @@
 package de.metas;
 
 import com.google.common.base.Stopwatch;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -86,6 +89,9 @@ public class AllAvailableSingletonServicesTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
+		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 	}
 
 	@ParameterizedTest

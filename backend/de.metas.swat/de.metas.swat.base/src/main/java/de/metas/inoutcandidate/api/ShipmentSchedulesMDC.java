@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api;
 
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;

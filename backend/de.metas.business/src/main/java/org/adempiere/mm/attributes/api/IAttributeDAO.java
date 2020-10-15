@@ -229,7 +229,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 
-	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds, Set<AttributeId> attributeIds);
+	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds);
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
 

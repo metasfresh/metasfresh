@@ -37,7 +37,7 @@ import lombok.Value;
  * #L%
  */
 @Value
-final public class DDOrder
+public class DDOrder
 {
 
 	/**
@@ -48,7 +48,6 @@ final public class DDOrder
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
-
 	int plantId;
 
 	int productPlanningId;

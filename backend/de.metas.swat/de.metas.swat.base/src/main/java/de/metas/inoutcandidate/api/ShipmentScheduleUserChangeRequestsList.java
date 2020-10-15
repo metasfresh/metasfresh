@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.api;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;

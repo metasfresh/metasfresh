@@ -1,5 +1,28 @@
 package de.metas.handlingunits.ddorder.api.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_MovementLine;
+import org.eevolution.api.IDDOrderBL;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.api.IDDOrderMovementBuilder;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_DD_OrderLine_Alternative;
+import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
+import org.slf4j.Logger;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,12 +46,14 @@ package de.metas.handlingunits.ddorder.api.impl;
  */
 
 import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -37,28 +62,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_MovementLine;
-import org.eevolution.api.IDDOrderBL;
-import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.api.IDDOrderMovementBuilder;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_DD_OrderLine_Alternative;
-import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
-import org.slf4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Allocate {@link IHUProductStorage}s to a set of given {@link I_DD_OrderLine_Alternative}s and generate material movements.
@@ -80,12 +83,14 @@ public class DDOrderLinesAllocator
 	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	// Parameters
 	private final Date movementDate = SystemTime.asDayTimestamp();
 	private int locatorToIdOverride = -1;
 	private boolean failIfCannotAllocate = false; // default=false for backward compatibility
 	private boolean doDirectMovements = false;
+	private boolean skipCompletingDDOrder = false;
 
 	// State
 	private ImmutableList<DDOrderLineToAllocate> _ddOrderLinesToAllocate;
@@ -93,6 +98,8 @@ public class DDOrderLinesAllocator
 	private final Map<Integer, IDDOrderMovementBuilder> ddOrderId2ReceiptMovementBuilder = new HashMap<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedShipment = new HashSet<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedReceipt = new HashSet<>();
+	
+	private static final AdMessageKey MSG_DD_Order_NoLine_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product");
 
 	private DDOrderLinesAllocator()
 	{
@@ -182,6 +189,12 @@ public class DDOrderLinesAllocator
 		return this;
 	}
 
+	public DDOrderLinesAllocator setSkipCompletingDDOrder(final boolean skipCompletingDDOrder)
+	{
+		this.skipCompletingDDOrder = skipCompletingDDOrder;
+		return this;
+	}
+
 	/**
 	 * Process allocations and create material movement documents
 	 */
@@ -190,7 +203,7 @@ public class DDOrderLinesAllocator
 		Services.get(ITrxManager.class).runInNewTrx(localTrx -> process());
 	}
 
-	private void process()
+	public void process()
 	{
 		// Clean previous state
 		ddOrderId2ShipmentMovementBuilder.clear();
@@ -243,7 +256,10 @@ public class DDOrderLinesAllocator
 
 		//
 		// Make sure DD Order is completed
-		ddOrderBL.completeDDOrderIfNeeded(ddOrderLine);
+		if (!skipCompletingDDOrder)
+		{
+			ddOrderBL.completeDDOrderIfNeeded(ddOrderLine);
+		}
 
 		//
 		// Make sure given HUs are no longer assigned to this DD Order Line
@@ -339,14 +355,13 @@ public class DDOrderLinesAllocator
 		final ImmutableList<DDOrderLineToAllocate> ddOrderLinesToAllocate = getDDOrderLinesForProduct(productId);
 
 		// No DD Order Lines were found for our Product
-		// Shall not happen, but ignore it for now.
+		// Shall not happen
 		if (ddOrderLinesToAllocate.isEmpty())
 		{
-			new HUException("No DD Order Lines where found for our product"
-					+ "\n @M_Product_ID@: " + Services.get(IProductBL.class).getProductValueAndName(huProductStorage.getProductId())
-					+ "\n HUProductStorage: " + huProductStorage)
-							.throwOrLogWarning(failIfCannotAllocate, logger);
-			return this;
+			throw new HUException(MSG_DD_Order_NoLine_for_product)
+					.appendParametersToMessage()
+					.setParameter("Product", productBL.getProductValueAndName(huProductStorage.getProductId()))
+					.setParameter("HUProductStorage", huProductStorage);
 		}
 
 		final I_M_HU hu = huProductStorage.getM_HU();

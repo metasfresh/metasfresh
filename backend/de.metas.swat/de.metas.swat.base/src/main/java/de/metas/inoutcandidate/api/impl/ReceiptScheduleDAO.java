@@ -1,6 +1,39 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.document.engine.IDocument;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_InOut;
+
+import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -24,37 +57,9 @@ import java.util.Collections;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_InOut;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.document.engine.IDocument;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query)
@@ -280,5 +285,49 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.andCollect(I_M_ReceiptSchedule_Alloc.COLUMN_M_ReceiptSchedule_ID)
 				.create()
 				.list();
+	}
+
+	@Override
+	public IQueryBuilder<I_M_ReceiptSchedule> createQueryForShipmentScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter)
+	{
+		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
+				.filter(userSelectionFilter)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient();
+
+		return queryBuilder;
+	}
+
+	@Override
+	public boolean existsExportedReceiptScheduleForOrder(final @NonNull OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTED_STATES)
+				.create()
+				.anyMatch();
+	}
+
+	@NonNull
+	public Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(@NonNull final ImmutableSet<ReceiptScheduleId> receiptScheduleIds)
+	{
+		final List<I_M_ReceiptSchedule> receiptSchedules = InterfaceWrapperHelper.loadByRepoIdAwares(receiptScheduleIds, I_M_ReceiptSchedule.class);
+
+		if (Check.isEmpty(receiptSchedules))
+		{
+			return ImmutableMap.of();
+		}
+
+		return Maps.uniqueIndex(receiptSchedules, (receiptSchedule) -> ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID()));
+	}
+
+	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId receiptScheduleId)
+	{
+		return InterfaceWrapperHelper.load(receiptScheduleId, I_M_ReceiptSchedule.class);
 	}
 }

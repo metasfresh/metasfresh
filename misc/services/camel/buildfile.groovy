@@ -8,12 +8,12 @@ import de.metas.jenkins.MvnConf
 
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
-    final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
+    final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.8.1'
 
     // stage('Build edi')  // too many stages clutter the build info
     //{
     currentBuild.description = """${currentBuild.description}<p/>
-			<h3>shipment-schedule-adapter</h3>
+			<h4>de-metas-camel-shipping</h4>
 		"""
 
     def anyFileChanged
@@ -32,7 +32,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         currentBuild.description = """${currentBuild.description}<p/>
 					No changes happened in EDI.
 					"""
-        echo "no changes happened in EDI; skip building EDI";
+        echo "no changes happened in shipping-camel; skip";
         return;
     }
 
@@ -42,25 +42,24 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // set the artifact version of everything below de.metas.esb/pom.xml
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set"
 
-    // Set the metasfresh.version property from 10.0.0 to our current build version
-    // From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is too much in the eye of the beholder
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
+    final String metasfreshCommonUpdatePropertyParam="-Dproperty=metasfresh-common.version -DallowDowngrade=true"
+    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshCommonUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
     final def misc = new de.metas.jenkins.Misc();
     withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
-        // some block
         // build and install
         // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
         // maven.test.failure.ignore=true: see metasfresh stage
         sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
     }
 
-    final def dockerInfo = readJSON file: 'de-metas-camel-shipmentschedule/target/jib-image.json'
+    final def dockerInfo = readJSON file: 'de-metas-camel-shipping/target/jib-image.json'
 
     currentBuild.description = """${currentBuild.description}<p/>
 		This build's main artifact (if not yet cleaned up) is
 <ul>
-<li>a docker image with name <code>${dockerInfo.image}:${dockerInfo.tags.first()}</code></li>
+<li>a docker image with name<br>
+<code>${dockerInfo.image}</code></li>
 <li>Alternative tag: <code>${dockerInfo.tags.last()}</code></li>
 <li>Image-Id: <code>${dockerInfo.imageId}</code></li>
 </ul>
@@ -69,8 +68,8 @@ Example: to connect a debugger on port 8793, you can run the docker image like t
 docker run --rm\\<br/>
  -p 8793:8793 \\<br/>
  -e "JAVA_TOOL_OPTIONS='agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8793'"\\<br/>
- ${dockerInfo.image}:${dockerInfo.tags.first()}
-</code>
+ ${dockerInfo.image}
+</code><br/>
 If will run with it's local <code>application.properties</code> and <code>log4j2.properties</code> that probably make no sense for you.
 To run with your own instead, include something as <code>-v /tmp/my-own-resources:/app/resources</code> in the <code>docker run</code>.
 <p/>
