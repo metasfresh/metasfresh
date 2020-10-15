@@ -1,19 +1,8 @@
 package de.metas.ui.web.mail;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.UnaryOperator;
-
-import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -24,10 +13,22 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -71,6 +72,7 @@ public class WebuiMailRepository
 				.setCtxTableName(null)
 				.setCtxColumnName(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
 				.setDisplayType(DisplayType.Search)
+				.addValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(I_AD_User.COLUMNNAME_EMail+" IS NOT NULL"))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildForDefaultScope();
 

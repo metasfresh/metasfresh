@@ -86,6 +86,8 @@ class OverlayField extends Component {
       openModal,
       patch,
       updatePropertyValue,
+      allowShortcut,
+      disableShortcut,
     } = this.props;
     const elements = layout.elements;
 
@@ -113,6 +115,8 @@ class OverlayField extends Component {
           openModal={openModal}
           patch={patch}
           updatePropertyValue={updatePropertyValue}
+          allowShortcut={allowShortcut}
+          disableShortcut={disableShortcut}
           {...elem}
         />
       );

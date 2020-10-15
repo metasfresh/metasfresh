@@ -8,6 +8,8 @@ import {
   openModal,
   patch,
   updatePropertyValue,
+  allowShortcut,
+  disableShortcut,
 } from '../../actions/WindowActions';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
@@ -68,6 +70,10 @@ class EntryTable extends PureComponent {
       openModal,
       patch,
       updatePropertyValue,
+      allowShortcut,
+      disableShortcut,
+      modalVisible,
+      timeZone,
     } = this.props;
     const { tooltipToggled } = this.state;
     const renderedArray = [];
@@ -127,6 +133,10 @@ class EntryTable extends PureComponent {
                 openModal={openModal}
                 patch={patch}
                 updatePropertyValue={updatePropertyValue}
+                allowShortcut={allowShortcut}
+                disableShortcut={disableShortcut}
+                modalVisible={modalVisible}
+                timeZone={timeZone}
                 {...elem}
               />
               {tooltipWidget && (
@@ -184,14 +194,23 @@ EntryTable.propTypes = {
   updatePropertyValue: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
   patch: PropTypes.func.isRequired,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  timeZone: PropTypes.string.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
+  const { appHandler, windowHandler } = state;
   const { windowId, documentId, tabId } = props;
   const tableId = getTableId({ windowId, tabId, docId: documentId });
   const table = getTable(state, tableId);
 
-  return { rows: table.rows };
+  return {
+    rows: table.rows,
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
 };
 
 export default connect(
@@ -200,5 +219,7 @@ export default connect(
     openModal,
     patch,
     updatePropertyValue,
+    allowShortcut,
+    disableShortcut,
   }
 )(EntryTable);

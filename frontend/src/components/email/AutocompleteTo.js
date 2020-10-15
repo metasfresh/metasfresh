@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import 'react-tagsinput/react-tagsinput.css';
 
 import { autocompleteRequest } from '../../actions/GenericActions';
+import { patchRequest } from '../../api';
 
 class AutocompleteTo extends Component {
   static propTypes = {
@@ -16,11 +17,13 @@ class AutocompleteTo extends Component {
 
   constructor(props) {
     super(props);
+    const { to } = props;
 
     this.state = {
       value: '',
       suggestions: [],
       tags: this.getTags(),
+      toSend: to ? to : [],
     };
   }
 
@@ -31,11 +34,32 @@ class AutocompleteTo extends Component {
     to.map((item) => {
       tagsUpdated.push(item.caption);
     });
+
     return tagsUpdated;
   };
 
   handleTagChange = (tags) => {
     this.setState({ tags });
+  };
+
+  // update the state items and also do a patch after the update
+  patchTo = (toItem) => {
+    const { emailId } = this.props;
+    const { toSend } = this.state;
+    const foundInToItems = toSend.some((element) => element.key === toItem.key);
+    // if element does not exist in the state array we add it
+    if (!foundInToItems) {
+      const toUpdate = [toItem, ...toSend];
+      this.setState({ toSend: toUpdate }, () => {
+        // after state update perform the patching
+        patchRequest({
+          entity: 'mail',
+          docType: emailId,
+          property: 'to',
+          value: toUpdate,
+        });
+      });
+    }
   };
 
   suggestionsFetch = ({ value }) => {
@@ -90,6 +114,7 @@ class AutocompleteTo extends Component {
         inputProps={{ ...props, onChange: handleOnChange }}
         onSuggestionSelected={(e, { suggestion }) => {
           addTag(suggestion.caption);
+          this.patchTo(suggestion);
         }}
         onSuggestionsFetchRequested={this.suggestionsFetch}
         onSuggestionsClearRequested={() => this.setState({ suggestions: [] })}
