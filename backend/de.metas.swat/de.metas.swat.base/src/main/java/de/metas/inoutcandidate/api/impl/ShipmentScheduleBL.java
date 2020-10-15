@@ -29,6 +29,7 @@ import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -135,6 +136,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
 	private static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
+	private static final String SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedIfQtyToDeliverIsIncreased";
 
 	private static final ModelDynAttributeAccessor<I_M_ShipmentSchedule, Boolean> DYNATTR_DoNotInvalidatedOnChange = new ModelDynAttributeAccessor<>("NotInvalidatedOnchange", Boolean.class);
 
@@ -144,6 +146,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
@@ -191,11 +194,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
-		final I_C_BPartner_Location location = shipmentScheduleEffectiveValuesBL.getBPartnerLocation(sched);
-		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getBPartnerContact(sched);
+		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
+		final I_C_BPartner_Location location = shipmentScheduleEffectiveBL.getBPartnerLocation(sched);
+		final I_AD_User user = shipmentScheduleEffectiveBL.getBPartnerContact(sched);
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String address = bPartnerBL.mkFullAddress(
@@ -212,7 +213,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final BigDecimal oldQtyOrdered = shipmentSchedule.getQtyOrdered(); // going to return it in the end
 
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BigDecimal newQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 
 		shipmentSchedule.setQtyOrdered(newQtyOrdered);
@@ -239,7 +239,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
 		if (!bpAllowsConsolidate)
@@ -335,7 +334,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			@NonNull final I_M_ShipmentSchedule sched,
 			final boolean considerAttributes)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		// Create storage query
@@ -378,7 +376,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
 		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 		return Quantity.of(qtyToDeliverBD, uom);
@@ -502,21 +499,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
 	}
 
 	@Override
 	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		return shipmentScheduleEffectiveBL.getWarehouseId(schedule);
 	}
 
 	@Override
 	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		return shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 	}
 
@@ -812,10 +806,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updateExportStatus(final @NonNull I_M_ShipmentSchedule schedRecord)
 	{
+		final boolean canBeSetBackToPending = sysConfigBL.getBooleanValue(SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED, false, schedRecord.getAD_Client_ID(), schedRecord.getAD_Org_ID());
+		if(!canBeSetBackToPending)
+		{
+			return;
+		}
+
 		final APIExportStatus currentExportStatus = APIExportStatus.ofNullableCode(schedRecord.getExportStatus());
+		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(schedRecord);
 
 		// if it's not "DontExport" and not "Pending" already, we *might* set them back to "Pending".
-		final boolean maybeSetBackToPending = !(Objects.equals(currentExportStatus, APIExportStatus.Pending) || Objects.equals(currentExportStatus, APIExportStatus.DontExport));
+		final boolean maybeSetBackToPending = !Objects.equals(currentExportStatus, APIExportStatus.Pending)
+				&& !Objects.equals(currentExportStatus, APIExportStatus.DontExport);
 		if (maybeSetBackToPending)
 		{
 			final I_M_ShipmentSchedule oldSchedRecord = createOld(schedRecord, I_M_ShipmentSchedule.class);
@@ -848,7 +850,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@NonNull
 	public Quantity getQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = this.shipmentScheduleEffectiveBL;
 
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentScheduleRecord);
 

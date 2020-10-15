@@ -749,9 +749,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	/**
-	 * @param sched
-	 * @return
-	 * @task 08336
+	 * task 08336
 	 */
 	@VisibleForTesting
 	void updateProcessedFlag(@NonNull final I_M_ShipmentSchedule sched)
