@@ -196,6 +196,8 @@ EntryTable.propTypes = {
   patch: PropTypes.func.isRequired,
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
+  timeZone: PropTypes.string.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
