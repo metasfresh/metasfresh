@@ -1,45 +1,7 @@
 package de.metas.manufacturing.rest_api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_S_Resource;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.api.PPOrderPlanningStatus;
-import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order_BOM;
-import org.eevolution.model.X_PP_Cost_Collector;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.metas.JsonObjectMapperHolder;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.manufacturing.JsonRequestHULookup;
@@ -94,6 +56,42 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_S_Resource;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order_BOM;
+import org.eevolution.model.X_PP_Cost_Collector;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -105,12 +103,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -147,6 +145,9 @@ public class ManufacturingOrderAPIServiceTest
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		huReservationService = new HUReservationService(new HUReservationRepository());
 
+		final ExportSequenceNumberProvider exportSequenceNumberProvider = Mockito.mock(ExportSequenceNumberProvider.class);
+		Mockito.doReturn(1).when(exportSequenceNumberProvider).provideNextExportSequenceNumber();
+
 		orderExportAuditRepo = new ManufacturingOrderExportAuditRepository();
 		orderReportAuditRepo = new ManufacturingOrderReportAuditRepository();
 		apiService = ManufacturingOrderAPIService.builder()
@@ -155,6 +156,7 @@ public class ManufacturingOrderAPIServiceTest
 				.productRepo(new ProductRepository())
 				.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
 				.huReservationService(huReservationService)
+				.exportSequenceNumberProvider(exportSequenceNumberProvider)
 				.build();
 	}
 
@@ -304,7 +306,7 @@ public class ManufacturingOrderAPIServiceTest
 					.exportStatus(APIExportStatus.Pending)
 					.productId(productId)
 					.dateOrdered(SystemTime.asInstant()) // does not matter
-			;
+					;
 			orderId1 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-07T00:00:00.00Z")).qtyOrdered("10").build();
 			orderId2 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-08T00:00:00.00Z")).qtyOrdered("11").build();
 			orderId3 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-09T00:00:00.00Z")).qtyOrdered("12").build();

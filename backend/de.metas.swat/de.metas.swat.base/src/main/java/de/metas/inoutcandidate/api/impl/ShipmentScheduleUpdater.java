@@ -123,8 +123,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				pickingBOMService);
 	}
 
-	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleUpdater.class.getName() + "#ProcessedByBackgroundProcess";
-
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
@@ -332,8 +330,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, secondRun);
 
-			markAsChangedByUpdateProcess(schedRecord);
-
 			updateProcessedFlag(schedRecord);
 			if (schedRecord.isProcessed())
 			{
@@ -408,7 +404,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				schedRecord.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
 				schedRecord.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
 			}
-
 
 			shipmentScheduleBL.updateExportStatus(schedRecord);
 			shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
@@ -754,9 +749,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	/**
-	 * @param sched
-	 * @return
-	 * @task 08336
+	 * task 08336
 	 */
 	@VisibleForTesting
 	void updateProcessedFlag(@NonNull final I_M_ShipmentSchedule sched)
@@ -870,18 +863,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
 
 		sched.setCatch_UOM_ID(catchUomRepoId);
-	}
-
-	@Override
-	public boolean isChangedByUpdateProcess(final I_M_ShipmentSchedule sched)
-	{
-		final Boolean isUpdateProcess = InterfaceWrapperHelper.getDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess);
-		return isUpdateProcess == null ? false : isUpdateProcess.booleanValue();
-	}
-
-	private void markAsChangedByUpdateProcess(final I_M_ShipmentSchedule sched)
-	{
-		InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 	}
 
 	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)

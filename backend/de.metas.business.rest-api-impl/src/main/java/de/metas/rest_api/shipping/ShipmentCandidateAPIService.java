@@ -124,6 +124,7 @@ class ShipmentCandidateAPIService
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
 	private final BPartnerCompositeRepository bPartnerCompositeRepository;
 	private final ProductRepository productRepository;
+	private final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -137,12 +138,14 @@ class ShipmentCandidateAPIService
 			@NonNull final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
 			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository,
-			@NonNull final ProductRepository productRepository)
+			@NonNull final ProductRepository productRepository,
+			@NonNull final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider)
 	{
 		this.shipmentScheduleAuditRepository = shipmentScheduleAuditRepository;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 		this.productRepository = productRepository;
+		this.exportSequenceNumberProvider = exportSequenceNumberProvider;
 	}
 
 	/**
@@ -150,19 +153,19 @@ class ShipmentCandidateAPIService
 	 */
 	public JsonResponseShipmentCandidates exportShipmentCandidates(@NonNull final QueryLimit limit)
 	{
-		final String transactionId = UUID.randomUUID().toString();
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
+		final String transactionKey = UUID.randomUUID().toString();
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey))
 		{
 			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
 					APIExportAudit
 							.<ShipmentScheduleExportAuditItem>builder()
-							.transactionId(transactionId);
+							.transactionId(transactionKey);
 
 			final List<ShipmentSchedule> shipmentSchedules = loadShipmentSchedulesToExport(limit);
 
 			if (shipmentSchedules.isEmpty())
 			{ // return empty result and call it a day
-				return JsonResponseShipmentCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
+				return JsonResponseShipmentCandidates.empty(transactionKey);
 			}
 
 			final IdsRegistry idsRegistry = buildIdsRegistry(shipmentSchedules);
@@ -177,9 +180,12 @@ class ShipmentCandidateAPIService
 
 			final ImmutableMap<ShipperId, String> shipperId2InternalName = loadShipperInternalNameByIds(idsRegistry);
 
+			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextShipmentCandidateSeqNo();
+
 			final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
 					.hasMoreItems(limit.isLimitHitOrExceeded(shipmentSchedules))
-					.transactionKey(transactionId);
+					.transactionKey(transactionKey)
+					.exportSequenceNumber(exportSequenceNumber);
 
 			final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner = Maps.uniqueIndex(
 					bPartnerCompositeRepository.getByIds(idsRegistry.getBPartnerIds()),
@@ -281,7 +287,7 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
-				.companyName(CoalesceUtil.coalesce(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
+				.companyName(CoalesceUtil.firstNotEmptyTrimmed(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
 				.street(splitStreetAndHouseNumber.getLeft())
 				.streetNo(splitStreetAndHouseNumber.getRight())
@@ -303,8 +309,31 @@ class ShipmentCandidateAPIService
 			customerBuilder
 					.contactEmail(contact.getEmail())
 					.contactName(contact.getName())
-					.contactPhone(CoalesceUtil.coalesce(contact.getMobilePhone(), contact.getPhone()));
+					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", shipmentSchedule.getContactId().getRepoId());
 		}
+		else if (composite.getContacts().size() == 1)
+		{ // shipment candidate has no contact, but the bpartner has only one
+			final BPartnerContact contact = composite.getContacts().get(0);
+			customerBuilder
+					.contactEmail(contact.getEmail())
+					.contactName(contact.getName())
+					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+			logger.debug("Exporting single-contact AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
+		}
+		else
+		{ // see if we have a shipto-contact
+			final BPartnerContact contact = composite.extractContact(c -> c.getContactType().getIsShipToDefaultOr(false)).orElse(null);
+			if (contact != null)
+			{
+				customerBuilder
+						.contactEmail(contact.getEmail())
+						.contactName(contact.getName())
+						.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+				logger.debug("Exporting shipToDefault AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
+			}
+		}
+
 		return customerBuilder.build();
 	}
 

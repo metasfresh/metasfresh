@@ -48,36 +48,36 @@ public class JsonResponseReceiptCandidate
 	@ApiModelProperty(position = 10, required = true)
 	JsonMetasfreshId id;
 
-	@ApiModelProperty(position = 15, required = true)
+	@ApiModelProperty(position = 30, required = true)
 	String orgCode;
 
-	@ApiModelProperty(position = 20,
+	@ApiModelProperty(position = 40,
 			value = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String orderDocumentNo;
 
-	@ApiModelProperty(position = 30)
+	@ApiModelProperty(position = 50)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
 
-	@ApiModelProperty(position = 35,
+	@ApiModelProperty(position = 60,
 			value = "If there is a purchase order, then this is the number of overall exportable items from that order.\n"
 					+ "Useful if due to `limit`, not all items of one order are exported in one invocation.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer numberOfItemsWithSameOrderId;
 
-	@ApiModelProperty(position = 40)
+	@ApiModelProperty(position = 70)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
 
-	@ApiModelProperty(position = 50, required = true)
+	@ApiModelProperty(position = 80, required = true)
 	JsonProduct product;
 
-	@ApiModelProperty(position = 60)
+	@ApiModelProperty(position = 90)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@ApiModelProperty(position = 80, required = true,
+	@ApiModelProperty(position = 100, required = true,
 			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
 	List<JsonQuantity> quantities;
 

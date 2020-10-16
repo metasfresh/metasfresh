@@ -38,24 +38,16 @@ public interface IHUStatusBL extends ISingletonService
 	/**
 	 * Tell if the storages of HUs with the given {@code huStatus} shall be considered when computing the on hand quantity.<br>
 	 * E.g. planned HUs have a storage, but shall not be considered.
-	 *
-	 * @param huStatus
-	 * @return
 	 */
 	boolean isQtyOnHand(String huStatus);
 
 	/**
 	 * See {@link #isQtyOnHand(String)} to get the idea.
-	 *
-	 * @return
 	 */
 	List<String> getQtyOnHandStatuses();
 
 	/**
 	 * Tell if the packing materials of empty HUs with the given status can be moved to the dedicated empties warehouse.
-	 *
-	 * @param huStatus
-	 * @return
 	 */
 	boolean isMovePackagingToEmptiesWarehouse(String huStatus);
 

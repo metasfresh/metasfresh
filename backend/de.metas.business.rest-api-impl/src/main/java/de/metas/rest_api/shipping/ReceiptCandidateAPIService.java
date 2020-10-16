@@ -113,6 +113,7 @@ class ReceiptCandidateAPIService
 	private final ReceiptScheduleRepository receiptScheduleRepository;
 	private final BPartnerCompositeRepository bPartnerCompositeRepository;
 	private final ProductRepository productRepository;
+	private final ReceiptCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -124,12 +125,14 @@ class ReceiptCandidateAPIService
 			@NonNull final ReceiptScheduleAuditRepository receiptScheduleAuditRepository,
 			@NonNull final ReceiptScheduleRepository receiptScheduleRepository,
 			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository,
-			@NonNull final ProductRepository productRepository)
+			@NonNull final ProductRepository productRepository,
+			@NonNull final ReceiptCandidateExportSequenceNumberProvider exportSequenceNumberProvider)
 	{
 		this.receiptScheduleAuditRepository = receiptScheduleAuditRepository;
 		this.receiptScheduleRepository = receiptScheduleRepository;
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 		this.productRepository = productRepository;
+		this.exportSequenceNumberProvider = exportSequenceNumberProvider;
 	}
 
 	/**
@@ -137,12 +140,12 @@ class ReceiptCandidateAPIService
 	 */
 	public JsonResponseReceiptCandidates exportReceiptCandidates(@NonNull final QueryLimit limit)
 	{
-		final String transactionId = UUID.randomUUID().toString();
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
+		final String transactionKey = UUID.randomUUID().toString();
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey))
 		{
 			final APIExportAuditBuilder<ReceiptScheduleExportAuditItem> auditBuilder = APIExportAudit
 					.<ReceiptScheduleExportAuditItem>builder()
-					.transactionId(transactionId);
+					.transactionId(transactionKey);
 
 			final ReceiptScheduleQuery receiptScheduleQuery = ReceiptScheduleQuery.builder()
 					.limit(limit)
@@ -152,8 +155,10 @@ class ReceiptCandidateAPIService
 			final List<ReceiptSchedule> receiptSchedules = receiptScheduleRepository.getBy(receiptScheduleQuery);
 			if (receiptSchedules.isEmpty())
 			{ // return empty result and call it a day
-				return JsonResponseReceiptCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
+				return JsonResponseReceiptCandidates.empty(transactionKey);
 			}
+
+			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextReceiptCandidateSeqNo();
 
 			final IdsRegistry.IdsRegistryBuilder idsRegistryBuilder = IdsRegistry.builder();
 			for (final ReceiptSchedule receiptSchedule : receiptSchedules)
@@ -179,7 +184,8 @@ class ReceiptCandidateAPIService
 
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
 					.hasMoreItems(limit.isLimitHitOrExceeded(receiptSchedules))
-					.transactionKey(transactionId);
+					.exportSequenceNumber(exportSequenceNumber)
+					.transactionKey(transactionKey);
 
 			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()

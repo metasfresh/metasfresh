@@ -82,7 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
- * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
+ * Aggregates given {@link ShipmentScheduleWithHU}s (see {@link #add(ShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
  */
 /* package */class ShipmentLineBuilder
 {
@@ -182,9 +182,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	}
 
 	/**
-	 * Checks if we can append given <code>candidate</code> to {@link #currentShipmentLine}.
-	 *
-	 * @param candidate
 	 * @return true if we can append to current shipment line
 	 */
 	boolean canAdd(final ShipmentScheduleWithHU candidate)
@@ -235,8 +232,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 	/**
 	 * Initialize shipment line's fields (without Qtys and UOM)
-	 *
-	 * @param candidate
 	 */
 	private void init(@NonNull final ShipmentScheduleWithHU candidate)
 	{
