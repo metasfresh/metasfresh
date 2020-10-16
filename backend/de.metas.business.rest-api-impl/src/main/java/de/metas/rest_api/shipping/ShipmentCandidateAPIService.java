@@ -22,11 +22,42 @@
 
 package de.metas.rest_api.shipping;
 
-import ch.qos.logback.classic.Level;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.util.lang.IPair;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -88,32 +119,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.lang.IPair;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 
 @Service
 class ShipmentCandidateAPIService
@@ -156,10 +161,9 @@ class ShipmentCandidateAPIService
 		final String transactionKey = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey))
 		{
-			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
-					APIExportAudit
-							.<ShipmentScheduleExportAuditItem>builder()
-							.transactionId(transactionKey);
+			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder = APIExportAudit
+					.<ShipmentScheduleExportAuditItem> builder()
+					.transactionId(transactionKey);
 
 			final List<ShipmentSchedule> shipmentSchedules = loadShipmentSchedulesToExport(limit);
 
@@ -529,7 +533,7 @@ class ShipmentCandidateAPIService
 	{
 		if (shipmentSchedule.getOrderAndLineId() == null)
 		{
-			return;//nothing to do
+			return;// nothing to do
 		}
 
 		final I_C_OrderLine orderLine = ids2OrderLines.get(shipmentSchedule.getOrderAndLineId());
@@ -569,8 +573,7 @@ class ShipmentCandidateAPIService
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						orderRecord -> OrderId.ofRepoId(orderRecord.getC_Order_ID()),
-						Function.identity()
-				));
+						Function.identity()));
 
 		return orderIdToOrderRecord;
 	}
@@ -587,8 +590,7 @@ class ShipmentCandidateAPIService
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						(orderLine) -> OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()),
-						Function.identity()
-				));
+						Function.identity()));
 	}
 
 	@NonNull
@@ -636,13 +638,55 @@ class ShipmentCandidateAPIService
 	private List<ShipmentSchedule> loadShipmentSchedulesToExport(@NonNull final QueryLimit limit)
 	{
 		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
-				.limit(limit)
+				// .limit(limit)
 				.canBeExportedFrom(SystemTime.asInstant())
 				.exportStatus(APIExportStatus.Pending)
 				.includeWithQtyToDeliverZero(true)
+				.fromCompleteOrderOrNullOrder(true)
+				.orderByOrderId(true)
 				.build();
 
-		return shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+		final List<ShipmentSchedule> shipmentSchedulesOrderedByOrderId = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+		List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
+
+		int counter = 0;
+		for (ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
+		{
+			if (schedule.getOrderAndLineId() == null && counter < limit.toInt() - 1)
+			{
+				schedulesToBeExported.add(schedule);
+				counter++;
+			}
+		}
+
+		if (counter == limit.toInt())
+		{
+			return schedulesToBeExported;
+		}
+
+		final List<ShipmentSchedule> nonNullOrderShipmentSchedules = shipmentSchedulesOrderedByOrderId.stream()
+				.filter(sched -> sched.getOrderAndLineId() != null)
+				.collect(ImmutableList.toImmutableList());;
+
+		final ImmutableList<OrderId> orderIds = nonNullOrderShipmentSchedules.stream()
+				.map(sched -> sched.getOrderAndLineId().getOrderId())
+				.limit(limit.toInt() - counter)
+				.collect(ImmutableList.toImmutableList());
+
+		final int limitOrders = Integer.min(limit.toInt() - counter, orderIds.size());
+
+		for (int i = 0; i < limitOrders; i++)
+		{
+
+			final OrderId orderid = orderIds.get(i);
+
+			schedulesToBeExported.addAll(nonNullOrderShipmentSchedules.stream()
+					.filter(sched -> Objects.equals(orderid, sched.getOrderAndLineId().getOrderId()))
+					.collect(ImmutableList.toImmutableList()));
+		}
+		return schedulesToBeExported;
+
+		// return shipmentScheduleRepository.getBy(shipmentScheduleQuery);
 	}
 
 	private ImmutableMap<ShipperId, String> loadShipperInternalNameByIds(@NonNull final IdsRegistry idsRegistry)
@@ -668,7 +712,7 @@ class ShipmentCandidateAPIService
 
 		if (shipperId == null)
 		{
-			return;//nothing to do
+			return;// nothing to do
 		}
 
 		candidateBuilder.shipperInternalSearchKey(shipperId2InternalName.get(shipperId));
@@ -685,7 +729,7 @@ class ShipmentCandidateAPIService
 
 		if (orderId == null)
 		{
-			return; //nothing to do
+			return; // nothing to do
 		}
 
 		final I_C_Order orderRecord = id2Order.get(orderId);
