@@ -189,6 +189,11 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<version>${xmlunit.version}</version>
 				<scope>test</scope>
 			</dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.14</version>
+            </dependency>
 
 			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
