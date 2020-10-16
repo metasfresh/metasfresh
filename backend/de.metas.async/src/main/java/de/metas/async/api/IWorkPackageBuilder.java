@@ -39,6 +39,8 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.user.UserId;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public interface IWorkPackageBuilder
 {
 	/**
@@ -117,7 +119,7 @@ public interface IWorkPackageBuilder
 	 * Sets workpackage's user in charge.
 	 * This will be the user which will be notified in case the workpackage processing fails.
 	 */
-	IWorkPackageBuilder setUserInChargeId(UserId userInChargeId);
+	IWorkPackageBuilder setUserInChargeId(@Nullable UserId userInChargeId);
 
 	/**
 	 * Adds given model to workpackage elements.

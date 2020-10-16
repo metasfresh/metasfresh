@@ -44,7 +44,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	/**
 	 * Creates and saves a new "empty" ASI based on the given product's attribute set.
 	 *
-	 * @param product
 	 * @return newly created and saved ASI; never return null
 	 */
 	I_M_AttributeSetInstance createASI(ProductId productId);
@@ -54,7 +53,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 *
 	 * In case a new ASI is created, it will be saved and also set to ASI aware ({@link IAttributeSetInstanceAware#setM_AttributeSetInstance(I_M_AttributeSetInstance)}).
 	 *
-	 * @param asiAware
 	 * @return existing ASI/newly created ASI
 	 */
 	I_M_AttributeSetInstance getCreateASI(IAttributeSetInstanceAware asiAware);
@@ -80,8 +78,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * <p>
 	 * Note that <code>to</code> itself is not saved. Also note that any existing ASI which might already be referenced by <code>to</code> is discarded/ignored.
 	 *
-	 * @param to
-	 * @param from
 	 * @see IAttributeSetInstanceAwareFactoryService#createOrNull(Object)
 	 */
 	void cloneASI(Object to, Object from);
