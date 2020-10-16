@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import { connect } from 'react-redux';
 
 import { getTableId, getTable } from '../../reducers/tables';
+import { updateTabTableData } from '../../actions/TableActions';
 import {
   openModal,
   patch,
@@ -46,6 +47,16 @@ class EntryTable extends PureComponent {
 
     this.setState({
       tooltipToggled: newVal,
+    });
+  };
+
+  handleChange = (response) => {
+    const { windowId, tabId, documentId, updateTabTableData } = this.props;
+
+    response.then((rows) => {
+      const tableId = getTableId({ windowId, docId: documentId, tabId });
+
+      updateTabTableData(tableId, rows);
     });
   };
 
@@ -137,6 +148,7 @@ class EntryTable extends PureComponent {
                 disableShortcut={disableShortcut}
                 modalVisible={modalVisible}
                 timeZone={timeZone}
+                onChange={this.handleChange}
                 {...elem}
               />
               {tooltipWidget && (
@@ -185,6 +197,8 @@ EntryTable.propTypes = {
   windowId: PropTypes.string.isRequired,
   documentId: PropTypes.string,
   tabId: PropTypes.string,
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   extendedData: PropTypes.any,
   tabIndex: PropTypes.any,
@@ -196,6 +210,7 @@ EntryTable.propTypes = {
   patch: PropTypes.func.isRequired,
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
+  updateTabTableData: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
@@ -219,5 +234,6 @@ export default connect(
     updatePropertyValue,
     allowShortcut,
     disableShortcut,
+    updateTabTableData,
   }
 )(EntryTable);
