@@ -1971,4 +1971,28 @@ public interface I_C_Invoice
     public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_UserFlag = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "UserFlag", null);
     /** Column name UserFlag */
     public static final String COLUMNNAME_UserFlag = "UserFlag";
+    
+    /**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_ID();
+
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";	
+	
 }
