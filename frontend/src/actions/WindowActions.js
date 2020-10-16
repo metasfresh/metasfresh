@@ -46,8 +46,11 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
+  UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
+import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 import {
   getData,
@@ -58,7 +61,9 @@ import {
   getTabRequest,
   startProcess,
   formatParentUrl,
+  getTabLayoutRequest,
 } from '../api';
+
 import { getTableId } from '../reducers/tables';
 import {
   addNotification,
@@ -81,8 +86,6 @@ import {
   updateTableSelection,
   updateTableRowProperty,
 } from './TableActions';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 /*
  * Action creator called when quick actions are successfully fetched
@@ -226,6 +229,17 @@ export function unselectTab(scope) {
   return {
     type: UNSELECT_TAB,
     scope,
+  };
+}
+
+/**
+ * @method setUpdatedTabLayout
+ * @summary Action creator to update tab's layout data in the store
+ */
+function setUpdatedTabLayout(tabId, layoutData) {
+  return {
+    type: UPDATE_TAB_LAYOUT,
+    payload: { tabId, layoutData },
   };
 }
 
@@ -398,8 +412,6 @@ export function updateModal(rowId, dataId) {
   };
 }
 
-// INDICATOR ACTIONS
-
 export function indicatorState(state) {
   return {
     type: CHANGE_INDICATOR_STATE,
@@ -426,6 +438,24 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       })
       .catch((error) => {
         //show error message ?
+        return Promise.reject(error);
+      });
+  };
+}
+
+/*
+ * @method updateTabLayout
+ * @summary Action creator for fetching and updating single tab's layout
+ */
+export function updateTabLayout(windowId, tabId) {
+  return (dispatch) => {
+    return getTabLayoutRequest(windowId, tabId)
+      .then(({ data }) => {
+        dispatch(setUpdatedTabLayout(tabId, data));
+
+        return Promise.resolve(tabId);
+      })
+      .catch((error) => {
         return Promise.reject(error);
       });
   };
