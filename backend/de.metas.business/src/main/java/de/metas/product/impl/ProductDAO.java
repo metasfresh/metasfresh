@@ -473,4 +473,20 @@ public class ProductDAO implements IProductDAO
 
 		saveRecord(product);
 	}
+
+	@Override
+	public int getProductGuaranteeDaysMinFallbackProductCategory(final @NonNull ProductId productId)
+	{
+		final I_M_Product productRecord = getById(productId);
+		if (productRecord.getGuaranteeDaysMin() > 0)
+		{
+			return productRecord.getGuaranteeDaysMin();
+		}
+		else
+		{
+			final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+			final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
+			return productCategoryRecord.getGuaranteeDaysMin();
+		}
+	}
 }
