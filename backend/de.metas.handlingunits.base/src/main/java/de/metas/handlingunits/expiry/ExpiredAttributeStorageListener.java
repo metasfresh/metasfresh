@@ -53,6 +53,7 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 	{
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}
+	final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
 	public void onAttributeValueChanged(
@@ -111,7 +112,6 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 				.getProductStorages();
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final IProductDAO productDAO = Services.get(IProductDAO.class);
 			final I_M_Product productRecord = productDAO.getById(productStorage.getProductId());
 			final int currentDays;
 			if (productRecord.getGuaranteeDaysMin() > 0)

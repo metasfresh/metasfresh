@@ -1130,6 +1130,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 		for (final MOrderLine line : getLinesRequery())
 		{
+			line.setC_Order_CompensationGroup_ID(-1);
 			line.deleteEx(true);
 		}
 

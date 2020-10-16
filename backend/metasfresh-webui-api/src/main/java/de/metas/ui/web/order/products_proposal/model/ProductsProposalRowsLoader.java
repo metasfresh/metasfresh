@@ -42,6 +42,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
@@ -181,6 +182,7 @@ public final class ProductsProposalRowsLoader
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
 						.thenComparing(ProductsProposalRow::getProductName))
+				.filter(p -> !Services.get(IProductDAO.class).getById(p.getProductId()).isDiscontinued())
 				.collect(ImmutableList.toImmutableList());
 	}
 

@@ -30,6 +30,7 @@ import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -48,6 +49,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -157,6 +159,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
 	private static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
+	private static final String SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedIfQtyToDeliverIsIncreased";
+
+	private static final ModelDynAttributeAccessor<I_M_ShipmentSchedule, Boolean> DYNATTR_DoNotInvalidatedOnChange = new ModelDynAttributeAccessor<>("NotInvalidatedOnchange", Boolean.class);
 
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
@@ -165,6 +170,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
@@ -212,9 +218,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		final I_C_BPartner bpartner = scheduleEffectiveBL.getBPartner(sched);
-		final I_C_BPartner_Location location = scheduleEffectiveBL.getBPartnerLocation(sched);
-		final I_AD_User user = scheduleEffectiveBL.getBPartnerContact(sched);
+		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
+		final I_C_BPartner_Location location = shipmentScheduleEffectiveBL.getBPartnerLocation(sched);
+		final I_AD_User user = shipmentScheduleEffectiveBL.getBPartnerContact(sched);
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String address = bPartnerBL.mkFullAddress(
@@ -517,13 +523,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return scheduleEffectiveBL.getBPartnerId(schedule);
+		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
 	}
 
 	@Override
 	public BPartnerLocationId getBPartnerLocationId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return scheduleEffectiveBL.getBPartnerLocationId(schedule);
+		return shipmentScheduleEffectiveBL.getBPartnerLocationId(schedule);
 	}
 
 	@Override
@@ -706,11 +712,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
-			try (final MDCCloseable iolrecordMDC = TableRecordMDC.putTableRecordReference(iolrecord))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(iolrecord))
 			{
 				for (final I_M_ShipmentSchedule shipmentScheduleRecord : shipmentSchedulePA.retrieveForInOutLine(iolrecord))
 				{
-					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
+					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
 					{
 						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
 						{
@@ -769,7 +775,17 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentSchedule.setM_Shipper_ID(request.getShipperId().getRepoId());
 		}
 
-		saveRecord(shipmentSchedule);
+		if (request.isDoNotInvalidateOnChange())
+		{
+			try (final IAutoCloseable ignored = doNotInvalidateOnChange(shipmentSchedule))
+			{
+				saveRecord(shipmentSchedule);
+			}
+		}
+		else
+		{
+			saveRecord(shipmentSchedule);
+		}
 	}
 
 	private boolean isCloseIfPartiallyShipped(@NonNull final OrgId orgId)
@@ -778,6 +794,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				sysConfigBL.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
 
 		return isCloseIfPartiallyInvoiced;
+	}
+
+	private IAutoCloseable doNotInvalidateOnChange(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		DYNATTR_DoNotInvalidatedOnChange.setValue(sched, true);
+		return () -> DYNATTR_DoNotInvalidatedOnChange.reset(sched);
+	}
+
+	@Override
+	public boolean isDoNotInvalidateOnChange(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		return DYNATTR_DoNotInvalidatedOnChange.getValue(sched, false);
 	}
 
 	@Override
@@ -808,10 +836,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updateExportStatus(final @NonNull I_M_ShipmentSchedule schedRecord)
 	{
+		final boolean canBeSetBackToPending = sysConfigBL.getBooleanValue(SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED, false, schedRecord.getAD_Client_ID(), schedRecord.getAD_Org_ID());
+		if(!canBeSetBackToPending)
+		{
+			return;
+		}
+
 		final APIExportStatus currentExportStatus = APIExportStatus.ofNullableCode(schedRecord.getExportStatus());
+		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(schedRecord);
 
 		// if it's not "DontExport" and not "Pending" already, we *might* set them back to "Pending".
-		final boolean maybeSetBackToPending = !(Objects.equals(currentExportStatus, APIExportStatus.Pending) || Objects.equals(currentExportStatus, APIExportStatus.DontExport));
+		final boolean maybeSetBackToPending = !Objects.equals(currentExportStatus, APIExportStatus.Pending)
+				&& !Objects.equals(currentExportStatus, APIExportStatus.DontExport);
 		if (maybeSetBackToPending)
 		{
 			final I_M_ShipmentSchedule oldSchedRecord = createOld(schedRecord, I_M_ShipmentSchedule.class);
@@ -844,7 +880,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@NonNull
 	public Quantity getQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = this.shipmentScheduleEffectiveBL;
 
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentScheduleRecord);
 

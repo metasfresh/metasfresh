@@ -76,12 +76,15 @@ final class ManufacturingOrdersExportCommand
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ManufacturingOrdersExportCommand.class);
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+
+	private final ExportSequenceNumberProvider exportSequenceNumberProvider;
 
 	private final ManufacturingOrderExportAuditRepository orderAuditRepo;
 	private final ProductRepository productRepo;
@@ -99,6 +102,7 @@ final class ManufacturingOrdersExportCommand
 	private ManufacturingOrdersExportCommand(
 			@NonNull final ManufacturingOrderExportAuditRepository orderAuditRepo,
 			@NonNull final ProductRepository productRepo,
+			@NonNull final ExportSequenceNumberProvider exportSequenceNumberProvider,
 			//
 			@NonNull final Instant canBeExportedFrom,
 			@NonNull final QueryLimit limit,
@@ -106,6 +110,7 @@ final class ManufacturingOrdersExportCommand
 	{
 		this.orderAuditRepo = orderAuditRepo;
 		this.productRepo = productRepo;
+		this.exportSequenceNumberProvider = exportSequenceNumberProvider;
 
 		this.query = ManufacturingOrderQuery.builder()
 				.limit(limit)
@@ -148,8 +153,11 @@ final class ManufacturingOrdersExportCommand
 			orderAuditRepo.save(audit);
 			ppOrderDAO.exportStatusMassUpdate(audit.getExportStatusesByOrderId());
 
+			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextExportSequenceNumber();
+
 			return JsonResponseManufacturingOrdersBulk.builder()
 					.transactionKey(transactionKey.toJson())
+					.exportSequenceNumber(exportSequenceNumber)
 					.items(jsonOrders)
 					.hasMoreItems(query.getLimit().isLimitHitOrExceeded(jsonOrders))
 					.build();

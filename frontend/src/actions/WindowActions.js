@@ -1112,7 +1112,13 @@ export function createProcess({
 }) {
   let pid = null;
 
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    // creation of processes can be done only if there isn't any pending process https://github.com/metasfresh/metasfresh/issues/10116
+    const { processStatus } = getState().appHandler;
+    if (processStatus === 'pending') {
+      return false;
+    }
+
     await dispatch(setProcessPending());
 
     let response;

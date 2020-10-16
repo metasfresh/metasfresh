@@ -89,7 +89,7 @@ describe('Pick the SO', function() {
       cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
     });
 
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Pick second HU', function() {
@@ -102,7 +102,7 @@ describe('Pick the SO', function() {
       cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
     });
 
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Confirm Picks', function() {

@@ -62,6 +62,12 @@ public class ApplyShipmentScheduleChangesRequest
 	@Nullable
 	ShipperId shipperId;
 
+	/**
+	 * If true, then don't invalidate the shipment candidate record when it's saved
+	 */
+	@Builder.Default
+	boolean doNotInvalidateOnChange = false;
+
 	public boolean isEmptyRequest()
 	{
 		return bPartnerLocationIdOverride == null
