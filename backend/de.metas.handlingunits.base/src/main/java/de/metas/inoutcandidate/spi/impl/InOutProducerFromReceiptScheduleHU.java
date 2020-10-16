@@ -55,6 +55,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -471,6 +472,12 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		receiptLine.setQualityDiscountPercent(qualityDiscountPercent.toBigDecimal());
 		receiptLine.setQualityNote(qualityNote);
 		receiptLine.setIsInDispute(isInDispute);
+
+		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
+		if (orderLine != null)
+		{
+			receiptLine.setC_Project_ID(orderLine.getC_Project_ID());
+		}
 
 		//
 		// Save and return

@@ -1,14 +1,8 @@
-package de.metas.product;
-
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +20,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  * #L%
  */
 
+package de.metas.product;
+
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isEmpty;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -60,6 +61,12 @@ public interface IProductDAO extends ISingletonService
 	 */
 	@NonNull
 	ProductCategoryId getDefaultProductCategoryId();
+
+
+	/**
+	 * @return All the active products with the given product planning schema selector
+	 */
+	Set<ImmutablePair<ProductId, OrgId>> retrieveProductsAndOrgsForSchemaSelector(@NonNull ProductPlanningSchemaSelector productPlanningSchemaSelector);
 
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
