@@ -532,7 +532,7 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET RawMaterialOrigin_ID =(SELECT C_Country_id FROM C_Country tf")
-				.append(" WHERE tf.AD_Client_ID=i.AD_Client_ID AND i.RawMaterialOriginCountryCode = tf.CountryCode) ")
+				.append(" WHERE i.RawMaterialOriginCountryCode = tf.CountryCode) ")
 				.append("WHERE RawMaterialOrigin_ID IS NULL AND i.RawMaterialOriginCountryCode IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
