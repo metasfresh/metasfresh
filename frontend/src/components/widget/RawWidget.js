@@ -123,6 +123,7 @@ export class RawWidget extends PureComponent {
     // you won't be able to use any shortcut assigned to that specific item/widget
     // - see issue https://github.com/metasfresh/metasfresh/issues/7119
     widgetType === 'LongText' && disableShortcut();
+
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
@@ -238,7 +239,7 @@ export class RawWidget extends PureComponent {
       closeTableField();
       e.preventDefault();
 
-      this.handleBlur();
+      this.handleBlur(e);
 
       return this.handlePatch(widgetField, value, null, null, true);
     }
@@ -247,7 +248,12 @@ export class RawWidget extends PureComponent {
       if (key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
-      return this.handlePatch(widgetField, value);
+
+      if (key === 'Tab') {
+        return this.handleBlur(e);
+      } else {
+        return this.handlePatch(widgetField, value);
+      }
     }
   };
 
