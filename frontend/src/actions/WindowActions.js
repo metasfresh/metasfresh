@@ -235,6 +235,9 @@ export function unselectTab(scope) {
 /**
  * @method setUpdatedTabLayout
  * @summary Action creator to update tab's layout data in the store
+ *
+ * @param {string} tabId
+ * @param {object} layoutData
  */
 function setUpdatedTabLayout(tabId, layoutData) {
   return {
@@ -446,6 +449,9 @@ export function fetchTab({ tabId, windowId, docId, query }) {
 /*
  * @method updateTabLayout
  * @summary Action creator for fetching and updating single tab's layout
+ *
+ * @param {number} windowId
+ * @param {string} tabId
  */
 export function updateTabLayout(windowId, tabId) {
   return (dispatch) => {
