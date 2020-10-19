@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -53,9 +52,12 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.UnmodifiableIterator;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
@@ -666,24 +668,20 @@ class ShipmentCandidateAPIService
 
 		final List<ShipmentSchedule> nonNullOrderShipmentSchedules = shipmentSchedulesOrderedByOrderId.stream()
 				.filter(sched -> sched.getOrderAndLineId() != null)
-				.collect(ImmutableList.toImmutableList());;
-
-		final ImmutableList<OrderId> orderIds = nonNullOrderShipmentSchedules.stream()
-				.map(sched -> sched.getOrderAndLineId().getOrderId())
-				.limit(limit.toInt() - counter)
 				.collect(ImmutableList.toImmutableList());
 
-		final int limitOrders = Integer.min(limit.toInt() - counter, orderIds.size());
+		final ImmutableListMultimap<OrderId, ShipmentSchedule> schedulesForOrderIds = Multimaps.index(nonNullOrderShipmentSchedules, sched -> sched.getOrderAndLineId().getOrderId());
 
-		for (int i = 0; i < limitOrders; i++)
+		int ordersLeftToExport = limit.toInt() - counter;
+
+		final UnmodifiableIterator<OrderId> orderIdIterator = schedulesForOrderIds.keySet().iterator();
+		while (orderIdIterator.hasNext() && ordersLeftToExport > 0)
 		{
-
-			final OrderId orderid = orderIds.get(i);
-
-			schedulesToBeExported.addAll(nonNullOrderShipmentSchedules.stream()
-					.filter(sched -> Objects.equals(orderid, sched.getOrderAndLineId().getOrderId()))
-					.collect(ImmutableList.toImmutableList()));
+			final OrderId currentOrderId = orderIdIterator.next();
+			schedulesToBeExported.addAll(schedulesForOrderIds.get(currentOrderId));
+			ordersLeftToExport--;
 		}
+
 		return schedulesToBeExported;
 
 		// return shipmentScheduleRepository.getBy(shipmentScheduleQuery);
