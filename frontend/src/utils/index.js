@@ -3,6 +3,7 @@ import { DATE_FORMAT } from '../constants/Constants';
 import queryString from 'query-string';
 import counterpart from 'counterpart';
 
+// TODO: Move to api ?
 export const getQueryString = (query) =>
   queryString.stringify(
     Object.keys(query).reduce((parameters, key) => {
@@ -18,6 +19,7 @@ export const getQueryString = (query) =>
     }, {})
   );
 
+// TODO: Move to api ?
 export function createPatchRequestPayload(property, value) {
   if (Array.isArray(property) && Array.isArray(value)) {
     return property.map((item, index) => ({
@@ -96,24 +98,6 @@ export function nullToEmptyStrings(fieldsByName) {
   }, {});
 }
 
-// TODO: Not used ? Kuba
-export function findRowByPropName(arr, name) {
-  let ret = -1;
-
-  if (!arr) {
-    return ret;
-  }
-
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i].field === name) {
-      ret = arr[i];
-      break;
-    }
-  }
-
-  return ret;
-}
-
 export function getItemsByProperty(arr, prop, value) {
   let ret = [];
 
@@ -151,6 +135,7 @@ export function cleanupFilter({ filterId, parameters }) {
   };
 }
 
+// TODO: Move to locale helpers
 export function translateCaption(caption) {
   const translatedString = counterpart.translate(caption);
   // show a default placeholder in case translation is missing such that the BE would know what specific key they need to add
@@ -177,4 +162,52 @@ export function preFormatPostDATA({ target, postData }) {
 export function openInNewTab(urlPath) {
   let newTabBrowser = window.open(urlPath, '_blank');
   newTabBrowser.focus();
+}
+
+/**
+ * Returns the tab with `tabId` from the data set, or null if no match
+ *
+ * @param {object} dataSet
+ * @param {string} tabId
+ */
+export function getTab(dataSet, tabId) {
+  let tab = null;
+  if (dataSet.tabs) {
+    dataSet.tabs.forEach((t) => {
+      if (t.tabs) {
+        tab = getTab(t, tabId);
+      } else if (t.tabId === tabId) {
+        tab = t;
+      }
+    });
+
+    return tab;
+  }
+
+  return null;
+}
+
+/**
+ * Updates the layout of a tab with `tabId` and creates a new copy of the data set.
+ * Works for nested (data entry) tabs too.
+ *
+ * @param {object} dataSet
+ * @param {string} tabId
+ * @param {object} updatedData - updated tab data
+ */
+export function updateTab(dataSet, tabId, updatedData) {
+  return dataSet.map((tabItem) => {
+    if (tabItem.tabId === tabId) {
+      tabItem = {
+        ...tabItem,
+        ...updatedData,
+      };
+    } else {
+      if (tabItem.tabs) {
+        tabItem.tabs = updateTab(tabItem.tabs, tabId, updatedData);
+      }
+    }
+
+    return tabItem;
+  });
 }

@@ -48,7 +48,10 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
+  UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
+
+import { updateTab } from '../utils';
 
 const initialMasterState = {
   layout: {
@@ -474,6 +477,18 @@ export default function windowHandler(state = initialState, action) {
           }),
         }),
       });
+    case UPDATE_TAB_LAYOUT: {
+      const { tabId, layoutData } = action.payload;
+      const updated = updateTab(state.master.layout.tabs, tabId, layoutData);
+
+      return update(state, {
+        master: {
+          layout: {
+            tabs: { $set: updated },
+          },
+        },
+      });
+    }
     case ACTIVATE_TAB:
       return update(state, {
         [action.scope]: {
