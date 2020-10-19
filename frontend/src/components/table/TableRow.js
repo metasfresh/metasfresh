@@ -115,6 +115,8 @@ class TableRow extends PureComponent {
   listenOnKeysTrue = () => {
     const { changeListenOnTrue } = this.props;
 
+    console.log('TableR.listenOnKeysTrue')
+
     this.setState({
       listenOnKeys: true,
     });
@@ -123,6 +125,8 @@ class TableRow extends PureComponent {
 
   listenOnKeysFalse = () => {
     const { changeListenOnFalse } = this.props;
+
+    console.log('TableR.listenOnKeysFalse')
 
     this.setState({
       listenOnKeys: false,
@@ -142,7 +146,10 @@ class TableRow extends PureComponent {
     this.selectedCell && this.selectedCell.clearValue(true);
     this.handleEditProperty({ event });
 
-    changeListenOnTrue();
+    console.log('TableR.handleClickOutside')
+
+    // changeListenOnTrue();
+    // this.listenOnKeysTrue();
   };
 
   handleDoubleClick = (e) => {
@@ -237,7 +244,10 @@ class TableRow extends PureComponent {
             onFastInlineEdit();
             return false;
           }
-          this.listenOnKeysTrue();
+
+          console.log('TableR.keydown')
+
+          // this.listenOnKeysTrue();
 
           this.handleEditProperty({
             event: e,
@@ -301,6 +311,7 @@ class TableRow extends PureComponent {
             )[0];
 
             if (elem) {
+              console.log('TableRow._editProperty.focus')
               mark && elem.select();
               elem.focus();
             }
@@ -313,10 +324,12 @@ class TableRow extends PureComponent {
             );
 
             if (disabled || readonly) {
-              this.listenOnKeysTrue();
+              console.log('TableR._editRoperty true')
+              !this.state.listenOnKeys && this.listenOnKeysTrue();
               this.handleEditProperty({ event });
             } else {
-              this.listenOnKeysFalse();
+              console.log('TableR._editProperty false')
+              // this.listenOnKeysFalse();
             }
           }
         }
@@ -369,7 +382,10 @@ class TableRow extends PureComponent {
     const { activeCell } = this.state;
 
     this.handleEditProperty({ event: e });
-    this.listenOnKeysTrue();
+
+    console.log('TableR.closeTableField')
+
+    // this.listenOnKeysTrue();
 
     activeCell && activeCell.focus();
   };
