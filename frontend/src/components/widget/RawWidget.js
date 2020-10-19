@@ -124,6 +124,8 @@ export class RawWidget extends PureComponent {
     // - see issue https://github.com/metasfresh/metasfresh/issues/7119
     widgetType === 'LongText' && disableShortcut();
 
+    console.log('RW.handleFocus')
+
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
@@ -163,6 +165,8 @@ export class RawWidget extends PureComponent {
         enableOnClickOutside && enableOnClickOutside();
         allowShortcut();
         handleBlur && handleBlur();
+
+        console.log('RW.handleBlur')
 
         listenOnKeysTrue && listenOnKeysTrue();
 
@@ -239,7 +243,9 @@ export class RawWidget extends PureComponent {
       closeTableField();
       e.preventDefault();
 
-      this.handleBlur(e);
+      console.log('RW.keydown')
+
+      // this.handleBlur(e);
 
       return this.handlePatch(widgetField, value, null, null, true);
     }
