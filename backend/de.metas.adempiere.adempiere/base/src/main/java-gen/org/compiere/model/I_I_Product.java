@@ -1721,21 +1721,21 @@ public interface I_I_Product
 	 * Set Weight.
 	 * Weight of a product
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWeight (int Weight);
+	public void setWeight (java.math.BigDecimal Weight);
 
 	/**
 	 * Get Weight.
 	 * Weight of a product
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getWeight();
+	public java.math.BigDecimal getWeight();
 
     /** Column definition for Weight */
     public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_Weight = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "Weight", null);

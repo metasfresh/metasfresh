@@ -438,3 +438,13 @@ UPDATE AD_UI_Element SET SeqNo=800,Updated=TO_TIMESTAMP('2020-10-15 18:13:28','Y
 UPDATE AD_UI_Element SET SeqNo=810,Updated=TO_TIMESTAMP('2020-10-15 18:13:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551620
 ;
 
+-- 2020-10-19T07:30:43.583Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=12,Updated=TO_TIMESTAMP('2020-10-19 10:30:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=7832
+;
+
+-- 2020-10-19T07:30:45.876Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('i_product','Weight','NUMERIC',null,null)
+;
+;

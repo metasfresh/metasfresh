@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -639649721L;
+	private static final long serialVersionUID = 1888192132L;
 
     /** Standard Constructor */
     public X_I_Product (Properties ctx, int I_Product_ID, String trxName)
@@ -955,15 +955,16 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
-	public void setWeight (int Weight)
+	public void setWeight (java.math.BigDecimal Weight)
 	{
-		set_Value (COLUMNNAME_Weight, Integer.valueOf(Weight));
+		set_Value (COLUMNNAME_Weight, Weight);
 	}
 
 	@Override
-	public int getWeight() 
+	public java.math.BigDecimal getWeight() 
 	{
-		return get_ValueAsInt(COLUMNNAME_Weight);
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
