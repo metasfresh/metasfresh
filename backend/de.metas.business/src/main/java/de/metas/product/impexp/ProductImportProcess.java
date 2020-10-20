@@ -158,15 +158,17 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 					+ "SET (Value,Name,Description,DocumentNote,Help,"
 					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
-					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
-					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy"
+					+ "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
+					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy, "
+					+ "RawMaterialOrigin_ID, M_CustomsTariff_ID"
 					+ ", " + I_I_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
 					+ ")= "
 					+ "(SELECT Value,coalesce(I_Product.Name, I_Product.Value),Description,DocumentNote,Help,"
 					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
-					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
-					+ "Discontinued,DiscontinuedBy,now(),UpdatedBy"
+					+ "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
+					+ "Discontinued,DiscontinuedBy,now(),UpdatedBy, "
+					+ "RawMaterialOrigin_ID, M_CustomsTariff_ID"
 					+ ", " + I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
 					+ " FROM I_Product WHERE I_Product_ID=" + I_Product_ID + ") "
 					+ "WHERE M_Product_ID=" + M_Product_ID);
@@ -283,6 +285,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		product.setDescriptionURL(importRecord.getDescriptionURL());
 		product.setIsSold(importRecord.isSold());
 		product.setIsStocked(importRecord.isStocked());
+		product.setNetWeight(importRecord.getNetWeight());
+		product.setWeight(importRecord.getWeight());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
 
 		return product;
