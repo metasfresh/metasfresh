@@ -230,7 +230,7 @@ export default class Attributes extends Component {
               }),
               () => {
                 cb && cb();
-                onBlur && onBlur();
+                onBlur && onBlur(prop, value, id);
               }
             );
           });
