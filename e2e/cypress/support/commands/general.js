@@ -478,8 +478,7 @@ Cypress.Commands.add('selectLeftTable', function(isModal = false) {
 
   const parentWrapperPath = isModal ? '.modal-content-wrapper' : '.document-lists-wrapper';
 
-  cy.get(`${parentWrapperPath} .document-list-included`).within(el => {
-    el = el[0];
+  cy.get(`${parentWrapperPath} .document-list-has-included`).within(el => {
     return cy.wrap(el);
   });
 });
@@ -490,8 +489,7 @@ Cypress.Commands.add('selectRightTable', function(isModal = false) {
 
   const parentWrapperPath = isModal ? '.modal-content-wrapper' : '.document-lists-wrapper';
 
-  cy.get(`${parentWrapperPath} .document-list-included`).within(el => {
-    el = el[1];
+  cy.get(`${parentWrapperPath} .document-list-is-included`).within(el => {
     return cy.wrap(el);
   });
 });
