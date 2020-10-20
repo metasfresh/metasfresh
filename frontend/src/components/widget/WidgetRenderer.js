@@ -112,7 +112,7 @@ class WidgetRenderer extends PureComponent {
       onHandleProcess,
       forwardedRef,
     } = this.props;
-    const { tabIndex, onFocus, onBlur } = widgetProperties;
+    const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
     widgetProperties.ref = forwardedRef;
 
@@ -392,12 +392,12 @@ class WidgetRenderer extends PureComponent {
             >
               {renderContent}
             </div>
-            {charsTyped && charsTyped >= 0 && (
+            {charsTyped && charsTyped >= 0 ? (
               <CharacterLimitInfo
                 charsTyped={charsTyped}
                 maxLength={maxLength}
               />
-            )}
+            ) : null}
           </div>
         );
       }
@@ -562,7 +562,7 @@ class WidgetRenderer extends PureComponent {
             attributeType="pattribute"
             viewId={viewId}
             onFocus={onFocus}
-            onBlur={onBlur}
+            onBlur={onBlurWithParams}
             rowIndex={rowIndex}
             updateHeight={updateHeight}
           />
