@@ -32,11 +32,6 @@ export default class DocumentList extends Component {
     this.state = {
       clickOutsideLock: false,
       toggleWidth: 0,
-      // in some scenarios we don't want to reload table data
-      // after edit, as it triggers request, collapses rows and looses selection
-      // TODO: This value is not really used anywhere anymore, so it's either
-      // solved elsewhere, or doesn't work
-      rowEdited: false,
     };
   }
 
@@ -64,20 +59,15 @@ export default class DocumentList extends Component {
   };
 
   /**
-   * @method setTableRowEdited
+   * @method onTableRowEdited
    * @summary ToDo: Describe the method.
    * @todo TODO: This triggers re-fetching of quickactions. We should handle that via redux
    * or in the quickactions component somehow
    */
-  setTableRowEdited = (val) => {
+  onTableRowEdited = () => {
     const { onUpdateQuickActions } = this.props;
 
-    this.setState(
-      {
-        rowEdited: val,
-      },
-      onUpdateQuickActions
-    );
+    onUpdateQuickActions();
   };
 
   /**
@@ -342,7 +332,7 @@ export default class DocumentList extends Component {
                 ref={this.setTableRef}
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
-                onRowEdited={this.setTableRowEdited}
+                onRowEdited={this.onTableRowEdited}
                 updateQuickActions={onUpdateQuickActions}
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
@@ -386,7 +376,7 @@ export default class DocumentList extends Component {
                   <DataLayoutWrapper
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
-                    onRowEdited={this.setTableRowEdited}
+                    onRowEdited={this.onTableRowEdited}
                     supportAttribute={table.supportAttribute}
                     setClickOutsideLock={this.setClickOutsideLock}
                     {...{ viewId, selected, inBackground, windowId }}

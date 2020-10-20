@@ -273,7 +273,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets top level parent of given HU (i.e. the top of hierarchy) or given HU if that HU does not have a parent.
 	 *
-	 * @param hu
 	 * @return top level parent; never return null; more preciselly:
 	 *         <ul>
 	 *         <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)

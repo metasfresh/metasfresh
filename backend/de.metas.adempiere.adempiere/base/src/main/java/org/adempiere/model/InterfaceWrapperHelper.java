@@ -557,8 +557,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Sets trxName to {@link ITrx#TRXNAME_ThreadInherited}.
-	 *
-	 * @param model
 	 */
 	public static void setThreadInheritedTrxName(final Object model)
 	{
@@ -567,8 +565,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Set current thread inerited transaction name to given models.
-	 *
-	 * @param models
 	 */
 	public static void setThreadInheritedTrxName(final Collection<?> models)
 	{

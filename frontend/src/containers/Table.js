@@ -104,7 +104,8 @@ class TableContainer extends PureComponent {
     deselectTableRows(getTableId({ windowId, viewId, docId, tabId }), []);
   };
 
-  // TODO: This reallydoesn't do anything. Check if it's still a valid solution
+  // TODO: This re-fetches quick actions on editing row. Can be cemoved once
+  // we'll properly handle quickactions in the redux store
   handleItemChange = () => {
     const { onRowEdited } = this.props;
 

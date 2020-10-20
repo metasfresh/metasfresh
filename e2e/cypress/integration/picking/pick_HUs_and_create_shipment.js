@@ -112,7 +112,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue2 }, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
 
     cy.selectLeftTable().within(() => {
@@ -121,7 +121,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue1 }, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
   });
 });
