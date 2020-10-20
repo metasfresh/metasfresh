@@ -286,6 +286,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		product.setIsSold(importRecord.isSold());
 		product.setIsStocked(importRecord.isStocked());
 		product.setNetWeight(importRecord.getNetWeight());
+		product.setM_CustomsTariff_ID(importRecord.getM_CustomsTariff_ID());
+		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
 		product.setWeight(importRecord.getWeight());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
 
