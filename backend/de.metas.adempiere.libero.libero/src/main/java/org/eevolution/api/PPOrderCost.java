@@ -122,6 +122,11 @@ public class PPOrderCost
 		return getCostSegmentAndElement().getProductId();
 	}
 
+	public UomId getUomId()
+	{
+		return getPrice().getUomId();
+	}
+
 	public CostElementId getCostElementId()
 	{
 		return getCostSegmentAndElement().getCostElementId();

@@ -37,7 +37,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.impl.CreatePPOrderCostsCommandTest;
 import org.eevolution.api.impl.PPOrderCostsTestHelper;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,15 +44,17 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-class OrderBOMCostCalculatorRepositoryTest extends CreatePPOrderCostsCommandTest
+class OrderBOMCostCalculatorRepositoryTest
 {
 	private PPOrderCostsTestHelper helper;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		helper = new PPOrderCostsTestHelper();
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
 	}
 
 	@Test
@@ -88,7 +89,7 @@ class OrderBOMCostCalculatorRepositoryTest extends CreatePPOrderCostsCommandTest
 				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
 				.componentId(componentId).componentQtyRequired("200").componentUOM(helper.uomKg) // i.e. we need 2 Kg for one finished good
 				.build();
-		Services.get(IPPOrderCostBL.class).createOrderCosts(ppOrder);
+		ppOrderCostBL.createOrderCosts(ppOrder);
 
 		//
 		// Create the repository, i.e. the class under test

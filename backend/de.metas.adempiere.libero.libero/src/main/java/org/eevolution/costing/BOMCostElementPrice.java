@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 /*
@@ -57,6 +58,13 @@ public class BOMCostElementPrice
 
 	@NonNull
 	private CostPrice costPrice;
+
+	@Nullable
+	public <ID extends RepoIdAware> ID getId(@NonNull final Class<ID> idType)
+	{
+		final RepoIdAware id = getId();
+		return id != null ? idType.cast(id) : null;
+	}
 
 	public UomId getUomId()
 	{

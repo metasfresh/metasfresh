@@ -168,7 +168,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 		final List<BOMCostElementPrice> costElementPrices = currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod)
 				.stream()
-				.map(currentCost -> toBOMCostElementPrice(currentCost, uomId))
+				.map(BatchProcessBOMCostCalculatorRepository::toBOMCostElementPrice)
 				.collect(ImmutableList.toImmutableList());
 
 		return BOMCostPrice.builder()
@@ -250,7 +250,9 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 		for (final BOMCostElementPrice elementPrice : bomCostPrice.getElementPrices())
 		{
-			CurrentCost existingCost = existingCostsByRepoId.get(elementPrice.getId());
+			final CurrentCostId currentCostId = elementPrice.getId(CurrentCostId.class);
+
+			CurrentCost existingCost = existingCostsByRepoId.get(currentCostId);
 			if (existingCost == null)
 			{
 				final CostSegmentAndElement costSegmentAndElement = createCostSegment(productId)
@@ -264,11 +266,8 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 		}
 	}
 
-	private BOMCostElementPrice toBOMCostElementPrice(
-			final CurrentCost currentCost,
-			final UomId uomId)
+	private static BOMCostElementPrice toBOMCostElementPrice(@NonNull final CurrentCost currentCost)
 	{
-		// TODO convert cost price to uomId
 		return BOMCostElementPrice.builder()
 				.id(currentCost.getId())
 				.costElementId(currentCost.getCostElementId())

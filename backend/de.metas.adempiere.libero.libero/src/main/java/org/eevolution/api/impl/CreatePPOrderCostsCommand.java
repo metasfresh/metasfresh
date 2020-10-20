@@ -228,6 +228,7 @@ final class CreatePPOrderCostsCommand
 		return orderBOMsRepo.retrieveOrderBOMLines(ppOrderId)
 				.stream()
 				.map(this::createCandidateFromBOMLine)
+				.collect(GuavaCollectors.distinctBy(PPOrderCostCandidate::getCostSegment))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

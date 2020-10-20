@@ -96,11 +96,12 @@ public class CreatePPOrderCostsCommandTest
 		{
 			final List<PPOrderCost> componentCostsList = ppOrderCosts.getByProductAndCostElements(componentId, ImmutableSet.of(helper.costElement.getId()));
 			assertThat(componentCostsList).hasSize(1);
-			assertThat(componentCostsList.get(0).getPrice()).usingRecursiveComparison().isEqualTo(CostPrice.builder()
-					.ownCostPrice(CostAmount.of("0.0667", helper.currencyId)) // = 1 EUR/Bag divided 15Kg
-					.componentsCostPrice(CostAmount.zero(helper.currencyId))
-					.uomId(helper.uomKgId)
-					.build());
+			assertThat(componentCostsList.get(0).getPrice()).usingRecursiveComparison()
+					.isEqualTo(CostPrice.builder()
+							.ownCostPrice(CostAmount.of("0.0667", helper.currencyId)) // = 1 EUR/Bag divided 15Kg
+							.componentsCostPrice(CostAmount.zero(helper.currencyId))
+							.uomId(helper.uomKgId)
+							.build());
 		}
 
 		//
@@ -108,11 +109,72 @@ public class CreatePPOrderCostsCommandTest
 		{
 			final List<PPOrderCost> finishedGoodCostsList = ppOrderCosts.getByProductAndCostElements(finishedGoodsProductId, ImmutableSet.of(helper.costElement.getId()));
 			assertThat(finishedGoodCostsList).hasSize(1);
-			assertThat(finishedGoodCostsList.get(0).getPrice()).usingRecursiveComparison().isEqualTo(CostPrice.builder()
-					.ownCostPrice(CostAmount.zero(helper.currencyId))
-					.componentsCostPrice(CostAmount.of("0.1334", helper.currencyId)) // = component cost price x 2(=200/100)
-					.uomId(helper.uomEachId)
-					.build());
+			assertThat(finishedGoodCostsList.get(0).getPrice()).usingRecursiveComparison()
+					.isEqualTo(CostPrice.builder()
+							.ownCostPrice(CostAmount.zero(helper.currencyId))
+							.componentsCostPrice(CostAmount.of("0.1334", helper.currencyId)) // = component cost price x 2(=200/100)
+							.uomId(helper.uomEachId)
+							.build());
 		}
 	}
+
+	@Test
+	public void sameProductTwice()
+	{
+		final ProductId finishedGoodsProductId = BusinessTestHelper.createProductId("finished goods", helper.uomBag);
+		final ProductId componentId = BusinessTestHelper.createProductId("component", helper.uomBag);
+
+		helper.currentCost().productId(componentId).currentCostPrice("1").uom(helper.uomBag).build();
+
+		helper.uomConversionDAO.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(componentId)
+				.fromUomId(helper.uomBagId)
+				.toUomId(helper.uomKgId)
+				.fromToMultiplier(new BigDecimal("15"))
+				.build());
+
+		// Manufacturing order
+		// IMPORTANT: remark that we have the same product twice, with 2 different UOMs
+		final I_PP_Order ppOrder = helper.order()
+				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
+				.componentId(componentId).componentQtyRequired("200").componentUOM(helper.uomBag) // i.e. we need 2 Bags for 1 Ea of finished goods
+				.componentId2(componentId).componentQtyRequired2("300").componentUOM2(helper.uomKg) // i.e. ... and another 3 Kg
+				.build();
+
+		final PPOrderCosts ppOrderCosts = new CreatePPOrderCostsCommand(ppOrder).execute();
+		ppOrderCosts.toCollection().forEach(System.out::println);
+
+		//
+		// Check order cost prices for component
+		{
+			final List<PPOrderCost> componentCostsList = ppOrderCosts.getByProductAndCostElements(componentId, ImmutableSet.of(helper.costElement.getId()));
+			assertThat(componentCostsList).hasSize(1);
+			assertThat(componentCostsList.get(0).getPrice()).usingRecursiveComparison()
+					.isEqualTo(CostPrice.ownCostPrice(CostAmount.of("1", helper.currencyId), helper.uomBagId)); // = 1 EUR/Bag
+		}
+
+		//
+		// Check order cost prices for finished good
+		// Basically, for 100 Ea of finished goods we need
+		// * 200 bags of component1 which costs 1 EUR/bag => 200 EUR
+		// * 300 kg of component1.
+		//		1bag costs 1EUR
+		//		1bag = 15kg => 1Kg=1/15bags=0.0667bags
+		//      => 1Kg costs 0.0667bags x 1 EUR/bag = 0.0667 EUR
+		//      => 300Kg costs = 300 x 0.0667 EUR/kg = 20.01 EUR
+		// So, 100 Ea of finished goods costs 200 EUR + 20.01 EUR = 220.01 EUR
+		// => 1 Ea of finished goods cost 220.01 EUR / 100 = 2.2001 EUR
+		{
+			final List<PPOrderCost> finishedGoodCostsList = ppOrderCosts.getByProductAndCostElements(finishedGoodsProductId, ImmutableSet.of(helper.costElement.getId()));
+			assertThat(finishedGoodCostsList).hasSize(1);
+			assertThat(finishedGoodCostsList).element(0).extracting(PPOrderCost::getPrice).usingRecursiveComparison()
+					.isEqualTo(CostPrice.builder()
+							.ownCostPrice(CostAmount.zero(helper.currencyId))
+							.componentsCostPrice(CostAmount.of("2.2001", helper.currencyId))
+							.uomId(helper.uomEachId)
+							.build());
+		}
+
+	}
+
 }

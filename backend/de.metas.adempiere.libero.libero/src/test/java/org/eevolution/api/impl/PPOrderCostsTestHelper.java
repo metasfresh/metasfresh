@@ -64,6 +64,7 @@ import org.eevolution.model.I_PP_Order_Workflow;
 import org.eevolution.model.X_PP_Order_Workflow;
 import org.junit.jupiter.api.Disabled;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
@@ -183,7 +184,11 @@ public class PPOrderCostsTestHelper
 			//
 			@NonNull final ProductId componentId,
 			@NonNull final String componentQtyRequired,
-			@NonNull final I_C_UOM componentUOM)
+			@NonNull final I_C_UOM componentUOM,
+			//
+			@Nullable final ProductId componentId2,
+			@Nullable final String componentQtyRequired2,
+			@Nullable final I_C_UOM componentUOM2)
 	{
 		final @NonNull I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(finishedGoodsProductId.getRepoId());
@@ -195,6 +200,11 @@ public class PPOrderCostsTestHelper
 		createDummyRouting(ppOrderId);
 
 		orderBOMLine().ppOrderId(ppOrderId).productId(componentId).qtyRequired(componentQtyRequired).uom(componentUOM).build();
+
+		if (componentId2 != null)
+		{
+			orderBOMLine().ppOrderId(ppOrderId).productId(componentId2).qtyRequired(componentQtyRequired2).uom(componentUOM2).build();
+		}
 
 		return ppOrder;
 	}

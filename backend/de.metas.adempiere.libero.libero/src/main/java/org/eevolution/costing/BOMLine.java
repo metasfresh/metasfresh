@@ -1,5 +1,6 @@
 package org.eevolution.costing;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -44,21 +45,21 @@ import javax.annotation.Nullable;
  * BOM line from costing point of view
  */
 @Value
-public final class BOMLine
+public class BOMLine
 {
-	final BOMComponentType componentType;
+	BOMComponentType componentType;
 
-	final ProductId componentId;
-	final AttributeSetInstanceId asiId;
+	ProductId componentId;
+	AttributeSetInstanceId asiId;
 
 	@Getter(AccessLevel.PRIVATE)
-	final Quantity qty;
+	Quantity qty;
 
-	final Percent scrapPercent;
+	Percent scrapPercent;
 
 	@Getter(AccessLevel.PACKAGE)
-	final BOMCostPrice costPrice;
-	final Percent coProductCostDistributionPercent;
+	BOMCostPrice costPrice;
+	Percent coProductCostDistributionPercent;
 
 	@Builder
 	private BOMLine(
@@ -123,6 +124,7 @@ public final class BOMLine
 		return getQty().add(getScrapPercent());
 	}
 
+	@Nullable
 	public CostAmount getCostAmountOrNull(final CostElementId costElementId)
 	{
 		final BOMCostElementPrice costPriceHolder = getCostPrice().getCostElementPriceOrNull(costElementId);
@@ -142,8 +144,7 @@ public final class BOMLine
 		}
 
 		final Quantity qty = getQtyIncludingScrap();
-		final CostAmount componentCostAmount = costPrice.multiply(qty);
-		return componentCostAmount;
+		return costPrice.multiply(qty);
 	}
 
 	void setComponentsCostPrice(
@@ -157,4 +158,10 @@ public final class BOMLine
 	{
 		getCostPrice().clearComponentsCostPrice(costElementId);
 	}
+
+	public ImmutableList<BOMCostElementPrice> getElementPrices()
+	{
+		return getCostPrice().getElementPrices();
+	}
+
 }

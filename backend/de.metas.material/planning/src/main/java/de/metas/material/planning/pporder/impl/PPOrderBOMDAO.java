@@ -75,11 +75,8 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		return queryBL.createQueryBuilder(orderBOMLineClass)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderId)
 				.addOnlyActiveRecordsFilter()
-				//
-				.orderBy()
-				.addColumn(I_PP_Order_BOMLine.COLUMNNAME_Line, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
-				//
+				.orderBy(I_PP_Order_BOMLine.COLUMNNAME_Line)
+				.orderBy(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID)
 				.create()
 				.list(orderBOMLineClass);
 	}

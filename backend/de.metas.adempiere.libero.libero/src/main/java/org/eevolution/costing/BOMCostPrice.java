@@ -118,8 +118,7 @@ public class BOMCostPrice
 	{
 		return getElementPrices()
 				.stream()
-				.map(BOMCostElementPrice::getId)
-				.filter(Objects::nonNull)
-				.map(idType::cast);
+				.map(elementCostPrice -> elementCostPrice.getId(idType))
+				.filter(Objects::nonNull);
 	}
 }

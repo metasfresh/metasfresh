@@ -2,7 +2,6 @@ package org.eevolution.costing;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyPrecision;
@@ -90,7 +89,7 @@ public class BOM
 		}
 
 		this.productId = productId;
-		this.asiId = CoalesceUtil.coalesce(asiId, AttributeSetInstanceId.NONE);
+		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 		this.qty = qty;
 		this.lines = lines;
 		this.costPrice = costPrice;
@@ -132,6 +131,7 @@ public class BOM
 		return componentsTotalAmt.map(amt -> amt.divide(qty, precision));
 	}
 
+	@Nullable
 	private CostAmount distributeToCoProductBOMLines(
 			@Nullable final CostAmount bomCostPrice,
 			@NonNull final CostElementId costElementId)
@@ -191,5 +191,10 @@ public class BOM
 		productIds.add(getProductId());
 		getLines().forEach(bomLine -> productIds.add(bomLine.getComponentId()));
 		return productIds.build();
+	}
+
+	public ImmutableList<BOMCostElementPrice> getElementPrices()
+	{
+		return getCostPrice().getElementPrices();
 	}
 }
