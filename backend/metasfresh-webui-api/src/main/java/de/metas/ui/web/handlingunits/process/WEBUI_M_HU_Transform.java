@@ -157,6 +157,7 @@ public class WEBUI_M_HU_Transform
 				.selectedRow(selectedRow)
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))
 				.checkExistingHUsInsideView(view.getParameterAsBoolean(PARAM_CheckExistingHUsInsideView, false))
+				.isMoveToDifferentWarehouseEnabled(isMoveToDifferentWarehouseEnabled)
 				.build();
 	}
 
@@ -373,7 +374,7 @@ public class WEBUI_M_HU_Transform
 
 		if (PARAM_Action.equals(parameterName))
 		{
-			updateShowWarehouseBasedOnAction();
+			setShowWarehouseFlag();
 		}
 	}
 
@@ -424,25 +425,13 @@ public class WEBUI_M_HU_Transform
 		}
 	}
 
-	private void updateShowWarehouseBasedOnAction()
+	private void setShowWarehouseFlag()
 	{
-		final ActionType currentActionType = ActionType.valueOf(p_Action);
+		this.showWarehouse = newParametersFiller().getShowWarehouseFlag();
 
-		switch (currentActionType)
+		if (!this.showWarehouse)
 		{
-			case CU_To_NewCU:
-			case CU_To_NewTUs:
-			case TU_To_NewLUs:
-			case TU_To_NewTUs:
-				showWarehouse = isMoveToDifferentWarehouseEnabled;
-				break;
-			default:
-				showWarehouse = false;
-		}
-
-		if (!showWarehouse)
-		{
-			moveToWarehouse = null;
+			this.moveToWarehouse = null;
 		}
 	}
 }

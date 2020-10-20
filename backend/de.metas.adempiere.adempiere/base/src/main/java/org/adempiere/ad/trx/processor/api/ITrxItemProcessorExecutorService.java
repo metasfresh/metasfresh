@@ -41,29 +41,16 @@ public interface ITrxItemProcessorExecutorService extends ISingletonService
 	/**
 	 * Creates context with <code>null</code> params.<br>
 	 * Note: instead of using this method, you can also call {@link #createExecutor()} to get a builder and then call {@link ITrxItemExecutorBuilder#setContext(Properties, String)}.
-	 *
-	 * @param ctx
-	 * @param trx
-	 * @return context
 	 */
 	ITrxItemProcessorContext createProcessorContext(Properties ctx, ITrx trx);
 
 	/**
 	 * Creates context
-	 *
-	 * @param ctx
-	 * @param trx
-	 * @param params
-	 * @return context
 	 */
 	ITrxItemProcessorContext createProcessorContext(Properties ctx, ITrx trx, IParams params);
 
 	/**
 	 * Creates executor for given <code>processor</code>, using the defaults declared in the constants of {@link ITrxItemProcessorExecutor}.
-	 *
-	 * @param processorCtx
-	 * @param processor
-	 * @return executor
 	 */
 	<IT, RT> ITrxItemProcessorExecutor<IT, RT> createExecutor(ITrxItemProcessorContext processorCtx, ITrxItemProcessor<IT, RT> processor);
 

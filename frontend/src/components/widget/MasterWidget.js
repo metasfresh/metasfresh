@@ -126,7 +126,7 @@ class MasterWidget extends PureComponent {
       isEdit
     );
     this.setState({ edited: false });
-    onChange && onChange(rowId, property, value, ret); //callback
+    onChange && onChange(ret); //callback
 
     return ret;
   };

@@ -75,7 +75,8 @@ describe('Pick the SO', function() {
 
   it('Select first row and run action Pick', function() {
     cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
-    cy.executeQuickAction('WEBUI_Picking_Launcher');
+
+    cy.executeQuickAction('WEBUI_Picking_Launcher', false, false);
   });
 
   it('Pick first HU', function() {

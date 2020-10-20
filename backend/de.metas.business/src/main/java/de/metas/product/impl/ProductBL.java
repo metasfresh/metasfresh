@@ -199,14 +199,14 @@ public final class ProductBL implements IProductBL
 	{
 		if (!product.isStocked())
 		{
-			logger.debug("M_Product_ID={} has isStocked=false; -> return false", product.getM_Product_ID());
+			logger.debug("isStocked - M_Product_ID={} has isStocked=false; -> return false", product.getM_Product_ID());
 			return false;
 		}
 
 		final ProductType productType = ProductType.ofCode(product.getProductType());
 		final boolean result = productType.isItem();
 
-		logger.debug("M_Product_ID={} is has isStocked=true and type={}; -> return {}", product.getM_Product_ID(), productType, result);
+		logger.debug("isStocked - M_Product_ID={} is has isStocked=true and type={}; -> return {}", product.getM_Product_ID(), productType, result);
 		return result;
 	}
 
@@ -215,7 +215,7 @@ public final class ProductBL implements IProductBL
 	{
 		if (productId == null)
 		{
-			logger.debug("productId=null; -> return false");
+			logger.debug("isStocked - productId=null; -> return false");
 			return false;
 		}
 

@@ -111,7 +111,7 @@ public class DataEntryWebuiTools
 	private ITranslatableString extractCreatedUpdatedInfo(@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo)
 	{
 		final User creator = userRepository.getByIdInTrx(createdUpdatedInfo.getCreatedBy());
-		final User updater = userRepository.getByIdInTrx(createdUpdatedInfo.getCreatedBy());
+		final User updater = userRepository.getByIdInTrx(createdUpdatedInfo.getUpdatedBy());
 
 		final ITranslatableString createdUpdatedInfoString = Services.get(IMsgBL.class)
 				.getTranslatableMsgText(

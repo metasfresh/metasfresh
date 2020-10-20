@@ -1,19 +1,8 @@
-package de.metas.product.impl;
-
-import static de.metas.util.Check.isEmpty;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +20,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+package de.metas.product.impl;
+
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +39,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.product.ProductPlanningSchemaSelector;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -50,6 +52,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -215,6 +218,30 @@ public class ProductDAO implements IProductDAO
 	public @NonNull ProductCategoryId getDefaultProductCategoryId()
 	{
 		return defaultProductCategoryCache.getOrLoad(0, this::retrieveDefaultProductCategoryId);
+	}
+
+
+	/**
+	 * @return All the active products with the given product planning schema selector
+	 */
+	@Override
+	public Set<ImmutablePair<ProductId, OrgId>> retrieveProductsAndOrgsForSchemaSelector(
+			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
+				.create()
+				.listColumns(I_M_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_AD_Org_ID)
+				.stream()
+				.map(pair -> {
+					final ProductId productId = ProductId.ofRepoId((int)pair.get(I_M_Product.COLUMNNAME_M_Product_ID));
+					final OrgId orgId = OrgId.ofRepoId((int)pair.get(I_M_Product.COLUMNNAME_AD_Org_ID));
+					return ImmutablePair.of(productId, orgId);
+				})
+				.collect(Collectors.toSet());
 	}
 
 	private ProductCategoryId retrieveDefaultProductCategoryId()
@@ -472,5 +499,21 @@ public class ProductDAO implements IProductDAO
 		}
 
 		saveRecord(product);
+	}
+
+	@Override
+	public int getProductGuaranteeDaysMinFallbackProductCategory(final @NonNull ProductId productId)
+	{
+		final I_M_Product productRecord = getById(productId);
+		if (productRecord.getGuaranteeDaysMin() > 0)
+		{
+			return productRecord.getGuaranteeDaysMin();
+		}
+		else
+		{
+			final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+			final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
+			return productCategoryRecord.getGuaranteeDaysMin();
+		}
 	}
 }

@@ -61,7 +61,7 @@ describe('EntryTable', () => {
     });
     const store = mockStore(initialState);
 
-    const wrapperEntryTable = mount(
+    const wrapperEntryTable = shallow(
       <Provider store={store}>
         <EntryTable {...props} />
       </Provider>

@@ -9,6 +9,31 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.155
+## Features
+* metasfresh
+  * [#9914](https://github.com/metasfresh/metasfresh/issues/9914) Create a data wrapper for the widgets
+  * [#9931](https://github.com/metasfresh/metasfresh/issues/9931) XML <-> metasfresh inventory import
+  * [#9976](https://github.com/metasfresh/metasfresh/issues/9976) Add number of exported shipment schedule items to REST-API
+  * [#10003](https://github.com/metasfresh/metasfresh/issues/10003) Increase `AD_Process.JsonPath` column size
+  * [#10009](https://github.com/metasfresh/metasfresh/issues/10009) Out-of-stock correction via camel
+  * [#10010](https://github.com/metasfresh/metasfresh/issues/10010) Reference between organisation master data and business partner
+  * [#10015](https://github.com/metasfresh/metasfresh/pull/10015) Manufacturing issue/receipt import audit
+  * [#10017](https://github.com/metasfresh/metasfresh/issues/10017) Export `Order.deliveryInfo` via camel
+  * [#10020](https://github.com/metasfresh/metasfresh/pull/10020) Camel: write error file
+  * [#10027](https://github.com/metasfresh/metasfresh/issues/10027) Drop column `R_Request.StartDate`
+  * [#10038](https://github.com/metasfresh/metasfresh/issues/10038) Open newly created documents in a new tab
+  * [#10046](https://github.com/metasfresh/metasfresh/issues/10046) Change columnsql of `FilteredItemsWithSameHeaderAggregationKey` column
+  * [#10050](https://github.com/metasfresh/metasfresh/pull/10050) Replace `Purchase Order` tab `OrderByClause` with `AD_Field.SortNo`
+  * [#10057](https://github.com/metasfresh/metasfresh/issues/10057) Service provider platform enhancements
+
+## Fixes
+* metasfresh
+  * [#10030](https://github.com/metasfresh/metasfresh/issues/10030) Do not add duplicate filters to a view
+  * [#10037](https://github.com/metasfresh/metasfresh/pull/10037) HU matching fixes
+  * [#10041](https://github.com/metasfresh/metasfresh/issues/10041) Don't crash the app when widget exists in layout but not data
+  * [#10051](https://github.com/metasfresh/metasfresh/issues/10051) Invoice DocType is taken from login Org instead of the invoice candidates' one
+
 # metasfresh 5.154
 ## Features
 * metasfresh

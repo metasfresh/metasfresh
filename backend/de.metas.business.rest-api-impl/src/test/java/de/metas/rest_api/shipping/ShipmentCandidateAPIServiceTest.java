@@ -48,6 +48,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -99,11 +100,16 @@ class ShipmentCandidateAPIServiceTest
 		uom = BusinessTestHelper.createUOM("stockUOM");
 		product = BusinessTestHelper.createProduct("product", uom);
 
-		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
-				new ShipmentScheduleAuditRepository(),
-				new ShipmentScheduleRepository(),
-				new BPartnerCompositeRepository(new MockLogEntriesRepository()),
-				new ProductRepository());
+		final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider = Mockito.mock(ShipmentCandidateExportSequenceNumberProvider.class);
+		Mockito.doReturn(1).when(exportSequenceNumberProvider).provideNextShipmentCandidateSeqNo();
+
+		shipmentCandidateAPIService =
+				new ShipmentCandidateAPIService(
+						new ShipmentScheduleAuditRepository(),
+						new ShipmentScheduleRepository(),
+						new BPartnerCompositeRepository(new MockLogEntriesRepository()),
+						new ProductRepository(),
+						exportSequenceNumberProvider);
 	}
 
 	@Test

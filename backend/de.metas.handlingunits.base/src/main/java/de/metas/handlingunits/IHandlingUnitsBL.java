@@ -409,6 +409,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isAggregateHU(I_M_HU hu);
 
+	QtyTU getTUsCount(final I_M_HU tuOrAggregatedTU);
+
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 

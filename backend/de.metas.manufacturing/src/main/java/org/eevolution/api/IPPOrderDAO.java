@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
@@ -79,4 +81,6 @@ public interface IPPOrderDAO extends ISingletonService
 	void saveAll(Collection<I_PP_Order> orders);
 
 	void exportStatusMassUpdate(@NonNull final Map<PPOrderId, APIExportStatus> exportStatuses);
+
+	IQueryBuilder<I_PP_Order> createQueryForPPOrderSelection(IQueryFilter<I_PP_Order> userSelectionFilter);
 }
