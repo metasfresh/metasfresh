@@ -22,7 +22,6 @@ export class RawWidget extends PureComponent {
     super(props);
 
     const { widgetData } = props;
-    // TODO: We should use `null` instead
     let cachedValue = undefined;
 
     if (widgetData && widgetData[0]) {
@@ -124,8 +123,6 @@ export class RawWidget extends PureComponent {
     // - see issue https://github.com/metasfresh/metasfresh/issues/7119
     widgetType === 'LongText' && disableShortcut();
 
-    console.log('RW.handleFocus')
-
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
@@ -165,9 +162,6 @@ export class RawWidget extends PureComponent {
         enableOnClickOutside && enableOnClickOutside();
         allowShortcut();
         handleBlur && handleBlur();
-
-        console.log('RW.handleBlur')
-
         listenOnKeysTrue && listenOnKeysTrue();
 
         if (widgetField) {
@@ -242,10 +236,6 @@ export class RawWidget extends PureComponent {
     ) {
       closeTableField();
       e.preventDefault();
-
-      console.log('RW.keydown')
-
-      // this.handleBlur(e);
 
       return this.handlePatch(widgetField, value, null, null, true);
     }

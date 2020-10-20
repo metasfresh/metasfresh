@@ -115,8 +115,6 @@ class TableRow extends PureComponent {
   listenOnKeysTrue = () => {
     const { changeListenOnTrue } = this.props;
 
-    console.log('TableR.listenOnKeysTrue')
-
     this.setState({
       listenOnKeys: true,
     });
@@ -125,8 +123,6 @@ class TableRow extends PureComponent {
 
   listenOnKeysFalse = () => {
     const { changeListenOnFalse } = this.props;
-
-    console.log('TableR.listenOnKeysFalse')
 
     this.setState({
       listenOnKeys: false,
@@ -141,15 +137,8 @@ class TableRow extends PureComponent {
   };
 
   handleClickOutside = (event) => {
-    const { changeListenOnTrue } = this.props;
-
     this.selectedCell && this.selectedCell.clearValue(true);
     this.handleEditProperty({ event });
-
-    console.log('TableR.handleClickOutside')
-
-    // changeListenOnTrue();
-    // this.listenOnKeysTrue();
   };
 
   handleDoubleClick = (e) => {
@@ -245,10 +234,6 @@ class TableRow extends PureComponent {
             return false;
           }
 
-          console.log('TableR.keydown')
-
-          // this.listenOnKeysTrue();
-
           this.handleEditProperty({
             event: e,
             property,
@@ -311,7 +296,6 @@ class TableRow extends PureComponent {
             )[0];
 
             if (elem) {
-              console.log('TableRow._editProperty.focus')
               mark && elem.select();
               elem.focus();
             }
@@ -324,12 +308,8 @@ class TableRow extends PureComponent {
             );
 
             if (disabled || readonly) {
-              console.log('TableR._editRoperty true')
               !this.state.listenOnKeys && this.listenOnKeysTrue();
               this.handleEditProperty({ event });
-            } else {
-              console.log('TableR._editProperty false')
-              // this.listenOnKeysFalse();
             }
           }
         }
@@ -383,10 +363,6 @@ class TableRow extends PureComponent {
 
     this.handleEditProperty({ event: e });
 
-    console.log('TableR.closeTableField')
-
-    // this.listenOnKeysTrue();
-
     activeCell && activeCell.focus();
   };
 
@@ -418,22 +394,21 @@ class TableRow extends PureComponent {
    * @param {function} [cb] - callback function
    */
   _focusCell = (property, cb) => {
-    const { activeCell } = this.state;
+    const { activeCell, activeCellName } = this.state;
     const elem = document.activeElement;
 
-    if (
-      (activeCell !== elem && !elem.className.includes('js-input-field')) ||
-      cb
-    ) {
-      this.setState(
-        {
-          activeCell: elem,
-          activeCellName: property,
-        },
-        () => {
-          cb && cb();
-        }
-      );
+    if (property !== activeCellName || cb) {
+      const newState = {
+        activeCellName: property,
+      };
+
+      if (activeCell !== elem && !elem.className.includes('js-input-field')) {
+        newState.activeCell = elem;
+      }
+
+      this.setState(newState, () => {
+        cb && cb();
+      });
     } else {
       cb && cb();
     }
