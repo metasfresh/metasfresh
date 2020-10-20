@@ -448,3 +448,16 @@ UPDATE AD_Column SET AD_Reference_ID=12,Updated=TO_TIMESTAMP('2020-10-19 10:30:4
 INSERT INTO t_alter_column values('i_product','Weight','NUMERIC',null,null)
 ;
 ;
+
+
+-- 2019-01-23T18:41:37.719
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Product','ALTER TABLE public.I_Product ADD COLUMN RawMaterialOrigin_ID NUMERIC(10)')
+;
+
+-- 2019-01-23T18:41:38.991
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE I_Product ADD CONSTRAINT RawMaterialOrigin_MProduct FOREIGN KEY (RawMaterialOrigin_ID) REFERENCES public.C_Country DEFERRABLE INITIALLY DEFERRED
+;
+
+
