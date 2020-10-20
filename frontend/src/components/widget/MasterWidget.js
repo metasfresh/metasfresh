@@ -36,6 +36,14 @@ class MasterWidget extends PureComponent {
     };
   }
 
+  componentDidMount = () => {
+    this.mounted = true;
+  };
+
+  componentWillUnmount = () => {
+    this.mounted = false;
+  };
+
   /**
    * @method getDerivedStateFromProps
    * @summary is invoked right before calling the render method, both on the initial mount and on subsequent updates
@@ -59,7 +67,9 @@ class MasterWidget extends PureComponent {
   componentDidUpdate() {
     const { updated } = this.state;
     if (updated) {
-      this.timeout = setTimeout(() => this.setState({ updated: false }), 1000);
+      this.timeout = setTimeout(() => {
+        this.mounted && this.setState({ updated: false });
+      }, 1000);
     }
   }
 
