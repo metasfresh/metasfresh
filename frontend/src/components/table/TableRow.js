@@ -202,8 +202,10 @@ class TableRow extends PureComponent {
             tableId,
           });
         }
-        e.stopPropagation();
-        this.handleEditProperty(e);
+        if (edited === property) {
+          e.stopPropagation();
+          this.handleEditProperty(e);
+        }
 
         break;
       case 'Escape':
