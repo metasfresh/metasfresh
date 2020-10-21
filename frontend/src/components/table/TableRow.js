@@ -224,8 +224,11 @@ class TableRow extends PureComponent {
         }
         break;
       default: {
-        valueBeforeEditing === null &&
+        // for disabled fields/fields without value, we don't get the field data
+        // from the backend
+        if (valueBeforeEditing === null && fieldsByName[property]) {
           this.setState({ valueBeforeEditing: fieldsByName[property].value });
+        }
 
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {

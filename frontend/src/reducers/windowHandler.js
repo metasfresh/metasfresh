@@ -536,16 +536,7 @@ export default function windowHandler(state = initialState, action) {
       } else {
         const currentVal = state[scope] ? state[scope][property] : {};
 
-        // because some fields can have added/removed fields when there's
-        // a change and we don't want the leftovers in the store
-        if (property === 'data') {
-          newValue = {
-            ...currentVal,
-            ...value,
-          };
-        } else {
-          newValue = merge.recursive(true, currentVal, value);
-        }
+        newValue = merge.recursive(true, currentVal, value);
       }
 
       return update(state, {
