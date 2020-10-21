@@ -10,21 +10,22 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.quantity.Quantity;
 import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
@@ -45,6 +46,7 @@ import lombok.NonNull;
 {
 	// services
 	private final IHandlingUnitsInfoFactory handlingUnitsInfoFactory = Services.get(IHandlingUnitsInfoFactory.class);
+	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 	private final I_PP_Order_BOMLine ppOrderBOMLine;
 	private final boolean isCoOrByProduct;
@@ -86,19 +88,20 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQty()
 	{
-		BigDecimal qtyDelivered = ppOrderBOMLine.getQtyDeliveredActual();
+		Quantity qtyDelivered = orderBOMBL.getQuantities(ppOrderBOMLine)
+				.getQtyIssuedOrReceivedActual();
 		if (isCoOrByProduct)
 		{
 			qtyDelivered = qtyDelivered.negate();
 		}
 
-		return qtyDelivered;
+		return qtyDelivered.toBigDecimal();
 	}
 
 	@Override
 	public final I_C_UOM getC_UOM()
 	{
-		return ppOrderBOMLine.getC_UOM();
+		return orderBOMBL.getBOMLineUOM(ppOrderBOMLine);
 	}
 
 	@Override

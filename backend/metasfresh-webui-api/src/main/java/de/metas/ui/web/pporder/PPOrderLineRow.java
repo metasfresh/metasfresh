@@ -1,21 +1,11 @@
 package de.metas.ui.web.pporder;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_UOM;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductDAO;
@@ -39,6 +29,14 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -100,7 +98,7 @@ public class PPOrderLineRow implements IViewRow
 	private final String packingInfo;
 
 	@ViewColumn(captionKey = "QtyPlan", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50))
-	private final BigDecimal qtyPlan;
+	private final Quantity qtyPlan;
 
 	@ViewColumn(captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60))
 	private final BigDecimal qty;
@@ -195,7 +193,9 @@ public class PPOrderLineRow implements IViewRow
 		this.topLevelHU = false;
 		this.huStatus = null;
 
-		this.qtyPlan = ppOrder.getQtyOrdered();
+		this.qtyPlan = Services.get(IPPOrderBOMBL.class)
+				.getQuantities(ppOrder)
+				.getQtyRequiredToProduce();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
 				rowId.toDocumentId(),
@@ -219,7 +219,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final PPOrderLineType type,
 			@Nullable final String packingInfoOrNull,
 			@NonNull final Boolean processed,
-			@NonNull final BigDecimal qtyPlan,
+			@NonNull final Quantity qtyPlan,
 			@NonNull final IViewRowAttributesProvider attributesProvider,
 			@NonNull final List<PPOrderLineRow> includedRows)
 	{
@@ -235,7 +235,7 @@ public class PPOrderLineRow implements IViewRow
 		this.processed = processed;
 
 		this.product = JSONLookupValueTool.createProductLookupValue(ppOrderBomLine.getM_Product());
-		this.uom = JSONLookupValueTool.createUOMLookupValue(ppOrderBomLine.getC_UOM());
+		this.uom = JSONLookupValueTool.createUOMLookupValue(qtyPlan.getUOM());
 
 		this.packingInfo = packingInfoOrNull;
 		this.code = null;
@@ -439,7 +439,7 @@ public class PPOrderLineRow implements IViewRow
 
 	public BigDecimal getQtyPlan()
 	{
-		return qtyPlan;
+		return qtyPlan != null ? qtyPlan.toBigDecimal() : null;
 	}
 
 	public boolean isReceipt()
