@@ -56,8 +56,6 @@ public class JSONDocumentOptions
 	private Predicate<IDocumentFieldView> _documentFieldFilter; // lazy
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
 
-	@Getter
-	private final boolean doNotFetchIncludedTabs;
 	private final boolean showAdvancedFields;
 
 	private final Supplier<JSONDocumentPermissions> documentPermissionsSupplier;
@@ -70,13 +68,11 @@ public class JSONDocumentOptions
 	private JSONDocumentOptions(
 			@NonNull final UserSession userSession,
 			@Nullable final String showOnlyFieldsListStr,
-			final boolean showAdvancedFields,
-			final boolean doNotFetchIncludedTabs)
+			final boolean showAdvancedFields)
 	{
 		this.jsonOpts = JSONOptions.of(userSession);
 		this.showOnlyFieldsListStr = showOnlyFieldsListStr;
 		this.showAdvancedFields = showAdvancedFields;
-		this.doNotFetchIncludedTabs = doNotFetchIncludedTabs;
 		this.documentPermissionsSupplier = createPermissionsSupplier(userSession);
 	}
 
@@ -159,7 +155,7 @@ public class JSONDocumentOptions
 		public String toString()
 		{
 			return "basic public fields";
-		};
+		}
 
 		@Override
 		public boolean test(final IDocumentFieldView field)
@@ -174,7 +170,7 @@ public class JSONDocumentOptions
 		public String toString()
 		{
 			return "basic public fields";
-		};
+		}
 
 		@Override
 		public boolean test(final DocumentFieldChange field)
@@ -189,7 +185,7 @@ public class JSONDocumentOptions
 		public String toString()
 		{
 			return "all public fields";
-		};
+		}
 
 		@Override
 		public boolean test(final IDocumentFieldView field)
@@ -204,7 +200,7 @@ public class JSONDocumentOptions
 		public String toString()
 		{
 			return "all public fields";
-		};
+		}
 
 		@Override
 		public boolean test(final DocumentFieldChange field)
