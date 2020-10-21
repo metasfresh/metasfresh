@@ -1,11 +1,16 @@
 package de.metas.material.planning.pporder.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.logging.LogManager;
+import de.metas.material.planning.exception.BOMExpiredException;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.OrderBOMLineQuantities;
+import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
@@ -16,16 +21,8 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.material.planning.exception.BOMExpiredException;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -52,7 +49,6 @@ import lombok.NonNull;
 final class PPOrderBOMCreateCommand
 {
 	private static final Logger logger = LogManager.getLogger(PPOrderBOMCreateCommand.class);
-	private final IProductBL productsBL = Services.get(IProductBL.class);
 	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 	private final IProductBOMBL productBOMsBL = Services.get(IProductBOMBL.class);
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
@@ -96,7 +92,7 @@ final class PPOrderBOMCreateCommand
 		{
 			if (!productBOMsBL.isValidFromTo(productBOMLine, dateStartSchedule))
 			{
-				logger.debug("BOM Line skiped - {}", productBOMLine);
+				logger.debug("BOM Line skipped - {}", productBOMLine);
 				continue;
 			}
 
@@ -104,7 +100,9 @@ final class PPOrderBOMCreateCommand
 		}
 	}
 
-	private I_PP_Order_BOM createOrderBOM(final I_PP_Order ppOrder, final I_PP_Product_BOM bom)
+	private I_PP_Order_BOM createOrderBOM(
+			final I_PP_Order ppOrder,
+			final I_PP_Product_BOM bom)
 	{
 		final I_PP_Order_BOM orderBOM = InterfaceWrapperHelper.newInstance(I_PP_Order_BOM.class, ppOrder);
 		orderBOM.setAD_Org_ID(ppOrder.getAD_Org_ID());
@@ -118,34 +116,28 @@ final class PPOrderBOMCreateCommand
 		orderBOM.setHelp(bom.getHelp());
 		orderBOM.setDescription(bom.getDescription());
 		orderBOM.setM_AttributeSetInstance_ID(bom.getM_AttributeSetInstance_ID());
-		orderBOM.setM_Product_ID(bom.getM_Product_ID());  // the bom's M_Product_ID is also the ppOrder's M_Product_ID (enforced by PPOrderPojoSupplier.retriveAndVerifyBOM())
+		orderBOM.setM_Product_ID(bom.getM_Product_ID());  // the bom's M_Product_ID is also the ppOrder's M_Product_ID
 		orderBOM.setName(bom.getName());
 		orderBOM.setRevision(bom.getRevision());
 		orderBOM.setValidFrom(bom.getValidFrom());
 		orderBOM.setValidTo(bom.getValidTo());
 		orderBOM.setValue(bom.getValue());
 		orderBOM.setDocumentNo(bom.getDocumentNo());
-		orderBOM.setC_UOM_ID(bom.getC_UOM_ID()); // the bom's C_UOM_ID
+		orderBOM.setC_UOM_ID(bom.getC_UOM_ID()); // the BOM's C_UOM_ID
 		orderBOM.setSerialNo_Sequence_ID(bom.getSerialNo_Sequence_ID());
 
 		ppOrderBOMsRepo.save(orderBOM);
 		return orderBOM;
 	}
 
-	private void createOrderBOMLine(final I_PP_Order_BOM orderBOM, final I_PP_Product_BOMLine bomLine)
+	private void createOrderBOMLine(
+			final I_PP_Order_BOM orderBOM,
+			final I_PP_Product_BOMLine bomLine)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, ppOrder);
 
 		// Set Defaults
 		orderBOMLine.setDescription("");
-		orderBOMLine.setQtyDelivered(BigDecimal.ZERO);
-		orderBOMLine.setQtyDeliveredActual(BigDecimal.ZERO);
-		orderBOMLine.setQtyUsageVariance(BigDecimal.ZERO);
-		orderBOMLine.setQtyPost(BigDecimal.ZERO);
-		orderBOMLine.setQtyReject(BigDecimal.ZERO);
-		orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
-		orderBOMLine.setQtyReserved(BigDecimal.ZERO);
-		orderBOMLine.setQtyScrap(BigDecimal.ZERO);
 
 		//
 		// Update from PP_Product BOM Line
@@ -163,23 +155,12 @@ final class PPOrderBOMCreateCommand
 
 		//
 		// Set Qtys
-		ppOrderBOMsBL.setQtyRequired(orderBOMLine, getQtyOrdered(ppOrder));
+		final Quantity qtyFinishedGood = ppOrderBOMsBL.getQuantities(ppOrder).getQtyRequiredToProduce();
+		final Quantity qtyRequired = ppOrderBOMsBL.computeQtyRequiredByQtyOfFinishedGoods(orderBOMLine, qtyFinishedGood);
+		PPOrderBOMBL.setQuantities(orderBOMLine, OrderBOMLineQuantities.ofQtyRequired(qtyRequired));
 
 		//
 		// Save & return
 		ppOrderBOMsRepo.save(orderBOMLine);
 	}
-
-	private Quantity getQtyOrdered(final I_PP_Order ppOrderRecord)
-	{
-		final I_C_UOM mainProductUOM = getMainProductStockingUOM(ppOrderRecord);
-		return Quantity.of(ppOrderRecord.getQtyOrdered(), mainProductUOM);
-	}
-
-	private I_C_UOM getMainProductStockingUOM(final I_PP_Order ppOrder)
-	{
-		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		return productsBL.getStockUOM(mainProductId);
-	}
-
 }

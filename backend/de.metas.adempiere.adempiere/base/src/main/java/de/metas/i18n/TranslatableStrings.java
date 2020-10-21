@@ -151,7 +151,7 @@ public class TranslatableStrings
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public ITranslatableString constant(final String value)
+	public ITranslatableString constant(@Nullable final String value)
 	{
 		return ConstantTranslatableString.of(value);
 	}

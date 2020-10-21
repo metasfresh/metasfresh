@@ -354,34 +354,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		logger.warn("Diff={} - LineNetAmt={} -> {} - {}", diff, lineNetAmtOld, m_LineNetAmt, this);
 	}
 
-	public final LocalDate getDateAcct()
-	{
-		if (m_DateAcct == null)
-		{
-			m_DateAcct = CoalesceUtil.coalesceSuppliers(
-					() -> getValueAsLocalDateOrNull("DateAcct"),
-					() -> getDoc().getDateAcct());
-		}
-		return m_DateAcct;
-	}
-
-	protected final void setDateDoc(final LocalDate dateDoc)
-	{
-		m_DateDoc = dateDoc;
-	}   // setDateDoc
-
-	public final LocalDate getDateDoc()
-	{
-		if (m_DateDoc == null)
-		{
-			m_DateDoc = CoalesceUtil.coalesceSuppliers(
-					() -> getValueAsLocalDateOrNull("DateDoc"),
-					() -> getValueAsLocalDateOrNull("DateTrx"),
-					() -> getDoc().getDateAcct());
-		}
-		return m_DateDoc;
-	}
-
 	/**
 	 * Line Account from Product (or Charge).
 	 *
@@ -389,8 +361,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @param as       Accounting schema
 	 * @return Requested Product Account
 	 */
+	@NonNull
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(final ProductAcctType acctType, final AcctSchema as)
+	public MAccount getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
 	{
 		//
 		// Charge account
@@ -419,6 +392,35 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 	}
 
+	public final LocalDate getDateAcct()
+	{
+		if (m_DateAcct == null)
+		{
+			m_DateAcct = CoalesceUtil.coalesceSuppliers(
+					() -> getValueAsLocalDateOrNull("DateAcct"),
+					() -> getDoc().getDateAcct());
+		}
+		return m_DateAcct;
+	}
+
+	protected final void setDateDoc(final LocalDate dateDoc)
+	{
+		m_DateDoc = dateDoc;
+	}   // setDateDoc
+
+	public final LocalDate getDateDoc()
+	{
+		if (m_DateDoc == null)
+		{
+			m_DateDoc = CoalesceUtil.coalesceSuppliers(
+					() -> getValueAsLocalDateOrNull("DateDoc"),
+					() -> getValueAsLocalDateOrNull("DateTrx"),
+					() -> getDoc().getDateAcct());
+		}
+		return m_DateDoc;
+	}
+
+	@NonNull
 	private MAccount getProductAccount(final ProductAcctType acctType, final AcctSchema as)
 	{
 		//

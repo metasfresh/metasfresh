@@ -20,7 +20,7 @@ public class PlainCurrencyBL extends CurrencyBL
 	}
 
 	@Override
-	public CurrencyId getBaseCurrencyId(final ClientId adClientId, final OrgId adOrgId)
+	public CurrencyId getBaseCurrencyId(final @NonNull ClientId adClientId, final @NonNull OrgId adOrgId)
 	{
 		Adempiere.assertUnitTestMode();
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
+import de.metas.currency.CurrencyRate;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.service.ClientId;
@@ -102,24 +103,22 @@ public class GL_Journal
 
 		//
 		// Calculate currency rate
-		BigDecimal currencyRate;
+		final BigDecimal currencyRate;
 		if (acctSchema != null)
 		{
-			currencyRate = Services.get(ICurrencyBL.class).getRate(
+			currencyRate = Services.get(ICurrencyBL.class).getCurrencyRateIfExists(
 					currencyId,
 					acctSchema.getCurrencyId(),
 					dateAcct,
 					conversionTypeId,
 					adClientId,
-					adOrgId);
+					adOrgId)
+					.map(CurrencyRate::getConversionRate)
+					.orElse(BigDecimal.ZERO);
 		}
 		else
 		{
 			currencyRate = BigDecimal.ONE;
-		}
-		if (currencyRate == null)
-		{
-			currencyRate = BigDecimal.ZERO;
 		}
 
 		//

@@ -1,8 +1,31 @@
+package org.eevolution.api;
+
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegmentAndElement;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
- * de.metas.manufacturing
+ * de.metas.adempiere.libero.libero
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,30 +43,6 @@
  * #L%
  */
 
-package org.eevolution.api;
-
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostElementId;
-import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegmentAndElement;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.util.lang.Percent;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @Getter
 @EqualsAndHashCode(doNotUseGetters = true)
@@ -51,6 +50,7 @@ import lombok.experimental.NonFinal;
 public class PPOrderCost
 {
 	@NonFinal
+	@Nullable
 	PPOrderCostId id;
 
 	PPOrderCostTrxType trxType;
@@ -60,7 +60,7 @@ public class PPOrderCost
 	CostPrice price;
 
 	CostAmount accumulatedAmount;
-	BigDecimal accumulatedQty;
+	Quantity accumulatedQty;
 
 	private Percent coProductCostDistributionPercent;
 
@@ -74,29 +74,33 @@ public class PPOrderCost
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final CostPrice price,
 			@Nullable final CostAmount accumulatedAmount,
-			@Nullable BigDecimal accumulatedQty,
-			@Nullable Percent coProductCostDistributionPercent,
-			@Nullable CostAmount postCalculationAmount)
+			@NonNull final Quantity accumulatedQty,
+			@Nullable final Percent coProductCostDistributionPercent,
+			@Nullable final CostAmount postCalculationAmount)
 	{
+		if (!UomId.equals(price.getUomId(), accumulatedQty.getUomId()))
+		{
+			throw new AdempiereException("UOM not matching")
+					.setParameter("price", price)
+					.setParameter("accumulatedQty", accumulatedQty)
+					.appendParametersToMessage();
+		}
+
 		this.id = id;
 		this.trxType = trxType;
 		this.costSegmentAndElement = costSegmentAndElement;
 		this.price = price;
-		this.accumulatedAmount = accumulatedAmount != null ? accumulatedAmount : CostAmount.zero(price.getCurrenyId());
-		this.accumulatedQty = accumulatedQty != null ? accumulatedQty : BigDecimal.ZERO;
-		this.postCalculationAmount = postCalculationAmount != null ? postCalculationAmount : CostAmount.zero(price.getCurrenyId());
+		this.accumulatedAmount = accumulatedAmount != null ? accumulatedAmount : CostAmount.zero(price.getCurrencyId());
+		this.accumulatedQty = accumulatedQty;
+		this.postCalculationAmount = postCalculationAmount != null ? postCalculationAmount : CostAmount.zero(price.getCurrencyId());
 
 		if (trxType.isCoProduct())
 		{
+			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
 			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
 			{
-				this.coProductCostDistributionPercent = Percent.ZERO;
 				// TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
 				// throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
-			}
-			else
-			{
-				this.coProductCostDistributionPercent = coProductCostDistributionPercent;
 			}
 		}
 		else
@@ -116,6 +120,11 @@ public class PPOrderCost
 	public ProductId getProductId()
 	{
 		return getCostSegmentAndElement().getProductId();
+	}
+
+	public UomId getUomId()
+	{
+		return getPrice().getUomId();
 	}
 
 	public CostElementId getCostElementId()
@@ -143,7 +152,11 @@ public class PPOrderCost
 		return getTrxType() == PPOrderCostTrxType.ByProduct;
 	}
 
-	public PPOrderCost addingAccumulatedAmountAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	@NonNull
+	public PPOrderCost addingAccumulatedAmountAndQty(
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		if (amt.isZero() && qty.isZero())
 		{
@@ -157,15 +170,21 @@ public class PPOrderCost
 			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
 		}
 
+		final Quantity accumulatedQty = getAccumulatedQty();
+		final Quantity qtyConv = uomConverter.convertQuantityTo(qty, getProductId(), accumulatedQty.getUomId());
+
 		return toBuilder()
 				.accumulatedAmount(getAccumulatedAmount().add(amt))
-				.accumulatedQty(getAccumulatedQty().add(qty.toBigDecimal()))
+				.accumulatedQty(accumulatedQty.add(qtyConv))
 				.build();
 	}
 
-	public PPOrderCost subtractingAccumulatedAmountAndQty(final CostAmount amt, final Quantity qty)
+	public PPOrderCost subtractingAccumulatedAmountAndQty(
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
-		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate());
+		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate(), uomConverter);
 	}
 
 	public PPOrderCost withPrice(@NonNull final CostPrice newPrice)
@@ -183,7 +202,7 @@ public class PPOrderCost
 		this.postCalculationAmount = postCalculationAmount;
 	}
 
-	/* package */void setPostCalculationAmountAsAccumulatedAmtr()
+	/* package */void setPostCalculationAmountAsAccumulatedAmt()
 	{
 		setPostCalculationAmount(getAccumulatedAmount());
 	}

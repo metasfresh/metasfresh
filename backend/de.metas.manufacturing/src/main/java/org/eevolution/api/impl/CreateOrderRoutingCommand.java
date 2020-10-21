@@ -51,8 +51,6 @@ import lombok.NonNull;
 
 final class CreateOrderRoutingCommand
 {
-	private final IPPRoutingRepository routingsRepo = Services.get(IPPRoutingRepository.class);
-
 	private final PPRouting routing;
 	private final PPOrderId ppOrderId;
 	private final LocalDateTime dateStartSchedule;
@@ -66,6 +64,7 @@ final class CreateOrderRoutingCommand
 			@NonNull final Quantity qtyOrdered,
 			@NonNull final LocalDateTime dateStartSchedule)
 	{
+		final IPPRoutingRepository routingsRepo = Services.get(IPPRoutingRepository.class);
 		routing = routingsRepo.getById(routingId);
 		this.ppOrderId = ppOrderId;
 
@@ -154,7 +153,7 @@ final class CreateOrderRoutingCommand
 		final Duration durationRequired = WorkingTime.builder()
 				.durationPerOneUnit(durationPerOneUnit)
 				.unitsPerCycle(unitsPerCycle)
-				.qty(qtyOrdered.toBigDecimal())
+				.qty(qtyOrdered)
 				.activityTimeUnit(durationUnit)
 				.build()
 				.getDuration();

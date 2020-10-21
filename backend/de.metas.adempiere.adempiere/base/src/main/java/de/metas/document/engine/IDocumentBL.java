@@ -10,6 +10,8 @@ import org.compiere.model.I_C_DocType;
 
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IDocumentBL extends ISingletonService
 {
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
@@ -48,7 +50,7 @@ public interface IDocumentBL extends ISingletonService
 	 * @throws IllegalArgumentException if document is not a valid {@link IDocument}
 	 * @throws AdempiereException if processing fails or document does not have expected DocStatus
 	 */
-	void processEx(Object document, String docAction, String expectedDocStatus);
+	void processEx(Object document, String docAction, @Nullable String expectedDocStatus);
 
 	default void processEx(final Object document, final String docAction)
 	{

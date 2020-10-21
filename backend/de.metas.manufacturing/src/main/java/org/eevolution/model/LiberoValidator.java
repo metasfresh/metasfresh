@@ -24,6 +24,7 @@ package org.eevolution.model;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
@@ -53,19 +54,23 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 
 	public LiberoValidator()
 	{
 		this(SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
-				SpringContextHolder.instance.getBean(PostMaterialEventService.class));
+				SpringContextHolder.instance.getBean(PostMaterialEventService.class),
+				SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class));
 	}
 
 	public LiberoValidator(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
-			@NonNull final PostMaterialEventService materialEventService)
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
 	}
 
 	@Override
@@ -78,8 +83,11 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning());
 
 		// PP_Order related
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(ppOrderConverter, materialEventService));
-		engine.addModelValidator(new PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(
+				ppOrderConverter,
+				materialEventService,
+				documentNoBuilderFactory));
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product());
@@ -114,7 +122,10 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
+	public void onUserLogin(
+			final int AD_Org_ID,
+			final int AD_Role_ID,
+			final int AD_User_ID)
 	{
 		Env.setContext(Env.getCtx(), CTX_IsLiberoEnabled, true);
 	}

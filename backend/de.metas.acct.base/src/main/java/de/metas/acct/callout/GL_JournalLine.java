@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
+import de.metas.currency.CurrencyRate;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.exceptions.AdempiereException;
@@ -91,17 +92,15 @@ public class GL_JournalLine
 
 		//
 		// Calculate currency rate
-		BigDecimal currencyRate = Services.get(ICurrencyBL.class).getRate(
+		final BigDecimal currencyRate = Services.get(ICurrencyBL.class).getCurrencyRateIfExists(
 				currencyId,
 				acctSchema.getCurrencyId(),
 				dateAcct,
 				conversionTypeId,
 				adClientId,
-				adOrgId);
-		if (currencyRate == null)
-		{
-			currencyRate = BigDecimal.ZERO;
-		}
+				adOrgId)
+				.map(CurrencyRate::getConversionRate)
+				.orElse(BigDecimal.ZERO);
 
 		//
 		glJournalLine.setCurrencyRate(currencyRate);
@@ -134,7 +133,7 @@ public class GL_JournalLine
 		{
 			Services.get(IGLJournalLineBL.class).checkValidSplitAcctTrxFlag(glJournalLine);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			// put the flag back
 			final I_GL_JournalLine glJournalLineOld = InterfaceWrapperHelper.createOld(glJournalLine, I_GL_JournalLine.class);
