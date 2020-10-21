@@ -38,6 +38,8 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -186,6 +188,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
+	@NonNull
 	public CurrencyConversionTypeId getDefaultConversionTypeId(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
@@ -220,6 +223,7 @@ public class CurrencyDAO implements ICurrencyDAO
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID, currencyFromId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID_To, currencyToId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
@@ -239,7 +243,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
-	public BigDecimal retrieveRateOrNull(
+	public @Nullable BigDecimal retrieveRateOrNull(
 			final CurrencyConversionContext conversionCtx,
 			final CurrencyId currencyFromId,
 			final CurrencyId currencyToId)

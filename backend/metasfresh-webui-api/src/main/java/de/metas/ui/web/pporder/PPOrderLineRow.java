@@ -123,11 +123,9 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final I_PP_Order_Qty ppOrderQty,
 			@NonNull final Boolean processed,
 			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
-			@Nullable final String code,
-			// can be null if type=HU_Storage
+			@Nullable final String code, // can be null if type=HU_Storage
 			@Nullable final JSONLookupValue product,
-			@Nullable final String packingInfo,
-			// can be null if type=HU_Storage
+			@Nullable final String packingInfo,  // can be null if type=HU_Storage
 			@NonNull final Quantity quantity,
 			@NonNull final List<PPOrderLineRow> includedRows,
 			@NonNull final Boolean topLevelHU,

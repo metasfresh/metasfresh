@@ -1,14 +1,14 @@
 package de.metas.material.planning.event;
 
-import java.time.Instant;
-
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ import lombok.experimental.Wither;
 
 @Value
 @Builder
-@Wither
+@With
 public class MaterialRequest implements IMaterialRequest
 {
 	Quantity qtyToSupply;

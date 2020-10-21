@@ -14,6 +14,8 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -59,11 +61,12 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 
-	CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
+	@NonNull CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 
 	@NonNull ConversionTypeMethod getConversionTypeMethodById(@NonNull CurrencyConversionTypeId id);
 
+	@Nullable
 	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

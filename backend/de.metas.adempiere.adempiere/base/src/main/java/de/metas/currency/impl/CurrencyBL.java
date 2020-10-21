@@ -4,7 +4,7 @@ package de.metas.currency.impl;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -223,6 +223,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable final LocalDate conversionDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
@@ -243,6 +244,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull final LocalDate conversionDate,
 			@Nullable final ConversionTypeMethod conversionType,
@@ -291,14 +293,15 @@ public class CurrencyBL implements ICurrencyBL
 			}
 		}
 
-		final CurrencyPrecision currencyPrecision = conversionCtx.getPrecision()
-				.orElseGet(() -> getStdPrecision(currencyToId));
+		final CurrencyPrecision toCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyToId));
+		final CurrencyPrecision fromCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyFromId));
 
 		return CurrencyRate.builder()
 				.conversionRate(conversionRate)
 				.fromCurrencyId(currencyFromId)
 				.toCurrencyId(currencyToId)
-				.currencyPrecision(currencyPrecision)
+				.toCurrencyPrecision(toCurrencyPrecision)
+				.fromCurrencyPrecision(fromCurrencyPrecision)
 				.conversionTypeId(conversionTypeId)
 				.conversionDate(conversionDate)
 				.build();

@@ -4,7 +4,7 @@ package de.metas.currency;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,13 +44,13 @@ import java.util.Properties;
  */
 public interface ICurrencyBL extends ISingletonService
 {
-	CurrencyConversionContext createCurrencyConversionContext(
+	@NonNull CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable LocalDate convDate,
 			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
-	CurrencyConversionContext createCurrencyConversionContext(
+	@NonNull CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull LocalDate convDate,
 			@Nullable ConversionTypeMethod conversionType,
 			@NonNull ClientId clientId,

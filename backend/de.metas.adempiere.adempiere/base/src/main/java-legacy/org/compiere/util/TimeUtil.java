@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import com.google.common.base.Stopwatch;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -586,8 +587,8 @@ public class TimeUtil
 	/**
 	 * Calculate the number of hours between start and end.
 	 *
-	 * @param start start date
-	 * @param end end date
+	 * @param date1 start date
+	 * @param date2 end date
 	 * @return number of hours (0 = same)
 	 */
 	public static long getHoursBetween(final Date date1, final Date date2)
@@ -1347,13 +1348,9 @@ public class TimeUtil
 	/**
 	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
 	 */
-	public static Timestamp asTimestamp(final Instant instant)
+	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
-		if (instant == null)
-		{
-			return null;
-		}
-		return new Timestamp(Date.from(instant).getTime());
+		return instant != null ? Timestamp.from(instant) : null;
 	}
 
 	/**
@@ -1613,7 +1610,7 @@ public class TimeUtil
 		return localDate;
 	}
 
-	public static LocalDate asLocalDate(final Timestamp ts)
+	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
 		return ts != null
 				? ts.toLocalDateTime().toLocalDate()
@@ -1732,7 +1729,7 @@ public class TimeUtil
 		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
-	public static ZonedDateTime asZonedDateTime(final Object obj, @NonNull final ZoneId zoneId)
+	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1947,5 +1944,11 @@ public class TimeUtil
 			throw new AdempiereException("The 'nanos' part of the given instant string can't be parsed as long", e).appendParametersToMessage().setParameter("instant-string", instant);
 		}
 		return Instant.ofEpochSecond(seconds, nanos);
+	}
+	
+	@NonNull
+	public static Duration toDuration(@NonNull final Stopwatch stopwatch)
+	{
+		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 }	// TimeUtil
