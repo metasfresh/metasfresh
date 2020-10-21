@@ -25,7 +25,8 @@ class Label extends Component {
    * @summary ToDo: Describe the method
    * @todo Write the documentation
    */
-  handleRemove = () => {
+  handleRemove = (e) => {
+    e.stopPropagation();
     const { onRemove, label } = this.props;
 
     onRemove(label);
