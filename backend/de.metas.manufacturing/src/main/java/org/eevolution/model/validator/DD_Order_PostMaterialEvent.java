@@ -37,7 +37,7 @@ import lombok.NonNull;
  *
  */
 @Interceptor(I_DD_Order.class)
-public class DD_OrderFireMaterialEvent
+public class DD_Order_PostMaterialEvent
 {
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
