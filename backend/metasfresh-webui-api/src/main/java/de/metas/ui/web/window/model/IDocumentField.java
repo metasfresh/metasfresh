@@ -33,7 +33,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 {
 	public static enum FieldInitializationMode
 	{
-		NewDocument, Refresh, Load,
+		NewDocument, Refresh, Load, RefreshDataEntries
 	}
 
 	Document getDocument();

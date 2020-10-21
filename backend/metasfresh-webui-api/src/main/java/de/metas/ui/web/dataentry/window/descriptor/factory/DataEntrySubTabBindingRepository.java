@@ -228,7 +228,7 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(
 				dataEntryRecord.get(),
 				dataEntryWebuiTools);
-		document.refreshFromSupplier(documentValuesSupplier);
+		document.refreshDataEntryFromSupplier(documentValuesSupplier);
 	}
 
 	@Override

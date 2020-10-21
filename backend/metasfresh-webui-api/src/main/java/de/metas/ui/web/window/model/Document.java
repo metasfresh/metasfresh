@@ -444,7 +444,7 @@ public final class Document
 				// don't call the callouts on load
 				// we shall have the document as it is
 			}
-			else if (FieldInitializationMode.Refresh == mode)
+			else if (FieldInitializationMode.Refresh == mode || FieldInitializationMode.RefreshDataEntries == mode)
 			{
 				documentCallout.onRefresh(asCalloutRecord());
 			}
@@ -469,7 +469,8 @@ public final class Document
 				setSaveStatusAndReturn(DocumentSaveStatus.notSavedJustCreated());
 			}
 			else if (mode == FieldInitializationMode.Load
-					|| mode == FieldInitializationMode.Refresh)
+					|| mode == FieldInitializationMode.Refresh
+					|| mode == FieldInitializationMode.RefreshDataEntries)
 			{
 				setSaveStatusAndReturn(DocumentSaveStatus.savedJustLoaded());
 			}
@@ -556,6 +557,10 @@ public final class Document
 			{
 				changesCollector.collectValueIfChanged(documentField, valueOld, REASON_Value_Refreshing);
 			}
+		}
+		else if (FieldInitializationMode.RefreshDataEntries == mode)
+		{
+			changesCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
 		}
 	}
 
@@ -822,6 +827,11 @@ public final class Document
 		initializeFields(FieldInitializationMode.Refresh, documentValuesSupplier);
 	}
 
+	public void refreshDataEntryFromSupplier(final DocumentValuesSupplier documentValuesSupplier)
+	{
+		initializeFields(FieldInitializationMode.RefreshDataEntries, documentValuesSupplier);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -1029,6 +1039,11 @@ public final class Document
 
 	private DocumentId getDocumentIdOrNull()
 	{
+		if (idFields == null)
+		{
+			return null;
+		}
+
 		// TODO handle NO ID field or composed PK
 		if (idFields.size() != 1)
 		{
