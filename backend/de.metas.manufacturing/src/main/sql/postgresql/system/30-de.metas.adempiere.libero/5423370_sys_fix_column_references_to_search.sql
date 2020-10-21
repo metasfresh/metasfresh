@@ -1,0 +1,36 @@
+
+-- 05.08.2015 16:18
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-08-05 16:18:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=55311
+;
+
+-- 05.08.2015 16:19
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-08-05 16:19:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53842
+;
+
+-- 05.08.2015 16:19
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-08-05 16:19:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53844
+;
+
+-- 05.08.2015 16:19
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-08-05 16:19:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53824
+;
+
+-- 05.08.2015 16:19
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-08-05 16:19:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53829
+;
+
+-- 05.08.2015 16:20
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-08-05 16:20:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53831
+;
+
+-- 05.08.2015 16:20
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2015-08-05 16:20:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53832
+;
+

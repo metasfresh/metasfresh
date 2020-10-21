@@ -1,0 +1,20 @@
+-- 2018-07-25T17:27:59.419
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540445, SeqNo=50,Updated=TO_TIMESTAMP('2018-07-25 17:27:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544386
+;
+
+-- 2018-07-25T17:28:56.886
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540446, SeqNo=30,Updated=TO_TIMESTAMP('2018-07-25 17:28:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544386
+;
+
+-- 2018-07-25T17:29:39.756
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2018-07-25 17:29:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544432
+;
+
+-- 2018-07-25T17:29:48.445
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='N', SeqNo=20,Updated=TO_TIMESTAMP('2018-07-25 17:29:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544386
+;
+
