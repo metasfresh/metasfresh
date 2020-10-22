@@ -39,12 +39,17 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
@@ -65,6 +70,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -78,6 +84,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class ShipmentService
@@ -93,6 +100,8 @@ public class ShipmentService
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
 	private final AttributeSetHelper attributeSetHelper;
@@ -404,6 +413,48 @@ public class ShipmentService
 				)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+ 	@NonNull
+ 	public ImmutableMap<ShippedCandidateKey, InOutId> retrieveShipmentIdsByCandidateKey(@NonNull final Set<ShippedCandidateKey> shippedCandidateKeys)
+	{
+		final Set<ShipmentScheduleId> scheduleIds = shippedCandidateKeys.stream().map(ShippedCandidateKey::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
+
+		final Set<InOutLineId> inOutLineIds = scheduleId2qtyPickedRecords.values().stream()
+				.flatMap(List::stream)
+				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
+				.map(InOutLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableMap<InOutLineId, I_M_InOut> lineId2InOut = inOutDAO.retrieveInOutByLineIds(inOutLineIds);
+
+		final ImmutableMap.Builder<ShippedCandidateKey, InOutId> candidateKey2ShipmentId = ImmutableMap.builder();
+
+		for (final ShippedCandidateKey candidateKey : shippedCandidateKeys)
+		{
+			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = scheduleId2qtyPickedRecords.get(candidateKey.getShipmentScheduleId());
+
+			final InOutId targetShipmentId = qtyPickedRecords
+					.stream()
+					.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
+					.map(InOutLineId::ofRepoId)
+					.map(lineId2InOut::get)
+					.filter(shipment -> candidateKey.getShipmentDocumentNo().equals(shipment.getDocumentNo()))
+					.map(I_M_InOut::getM_InOut_ID)
+					.map(InOutId::ofRepoId)
+					.findFirst()
+					.orElseThrow( () -> new AdempiereException("No Shipment was found for the given shipment schedule ID and document number!")
+							.appendParametersToMessage()
+							.setParameter("ShipmentScheduleID", candidateKey.getShipmentScheduleId())
+							.setParameter("ShipmentDocumentNumber", candidateKey.getShipmentDocumentNo()));
+
+			candidateKey2ShipmentId.put(candidateKey, targetShipmentId);
+		}
+
+		return candidateKey2ShipmentId.build();
+	}
+
 
 	//
 	//

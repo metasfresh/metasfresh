@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,30 +20,20 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.rest_api.shipping;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.organization.OrgId;
-import de.metas.shipping.ShipperId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.LocalDate;
-
 @Value
 @Builder
-class CreateShipperTransportationRequest
+public class ShippedCandidateKey
 {
 	@NonNull
-	OrgId orgId;
+	ShipmentScheduleId shipmentScheduleId;
 
 	@NonNull
-	ShipperId shipperId;
-
-	@NonNull
-	BPartnerLocationId shipperBPartnerAndLocationId;
-
-	@NonNull
-	LocalDate shipDate;
+	String shipmentDocumentNo;
 }
