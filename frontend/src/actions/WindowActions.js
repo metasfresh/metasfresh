@@ -896,7 +896,6 @@ export function fireUpdateData({
   rowId,
   isModal,
   fetchAdvancedFields,
-  doNotFetchIncludedTabs,
 }) {
   return (dispatch) => {
     getData({
@@ -906,7 +905,6 @@ export function fireUpdateData({
       tabId: tabId,
       rowId: rowId,
       fetchAdvancedFields: fetchAdvancedFields,
-      doNotFetchIncludedTabs: doNotFetchIncludedTabs,
     }).then((response) => {
       dispatch(
         mapDataToState(
