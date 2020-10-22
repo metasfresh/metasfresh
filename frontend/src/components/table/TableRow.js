@@ -163,7 +163,7 @@ class TableRow extends PureComponent {
       fieldsByName,
       onFastInlineEdit,
     } = this.props;
-    const { listenOnKeys, edited, valueBeforeEditing } = this.state;
+    const { listenOnKeys, edited, valueBeforeEditing, activeCell } = this.state;
     const inputContent = e.target.value;
 
     switch (e.key) {
@@ -204,7 +204,7 @@ class TableRow extends PureComponent {
         }
         if (edited === property) {
           e.stopPropagation();
-          this.handleEditProperty(e);
+          this.handleEditProperty({ event: e });
         }
 
         break;
@@ -220,7 +220,12 @@ class TableRow extends PureComponent {
             tableId,
           });
           e.stopPropagation();
+
+          // we need to store the active cell to focus it after deactivating widget
+          const activeCellElement = activeCell;
+
           this.handleEditProperty({ event: e });
+          activeCellElement.focus();
           changeListenOnTrue();
           this.setState({ valueBeforeEditing: null });
         }
