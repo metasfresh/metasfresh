@@ -1225,7 +1225,7 @@ export function handleProcessResponse(response, type, id) {
             await dispatch(closeModal());
             urlPath = `/window/${windowId}/?viewId=${viewId}`;
             if (targetTab === 'NEW_TAB') {
-              openInNewTab(urlPath);
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
               return;
             }
             if (targetTab === 'SAME_TAB') {
@@ -1247,7 +1247,7 @@ export function handleProcessResponse(response, type, id) {
             urlPath = `/window/${windowId}/${documentId}`;
 
             if (targetTab === 'NEW_TAB') {
-              openInNewTab(urlPath);
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
               return false;
             }
 
