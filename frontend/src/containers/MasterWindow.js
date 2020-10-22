@@ -62,7 +62,6 @@ class MasterWindowContainer extends PureComponent {
 
     const activeTab = includedTabsInfo
       ? Object.values(includedTabsInfo).find((tabInfo) =>
-          // TODO: Why sometimes we use `tabid` and other times `tabId` ??!!
           this.isActiveTab(tabInfo.tabId)
         )
       : null;
@@ -74,7 +73,6 @@ class MasterWindowContainer extends PureComponent {
       fireUpdateData({
         windowId: params.windowType,
         documentId: params.docId,
-        doNotFetchIncludedTabs: true,
       });
     }
 

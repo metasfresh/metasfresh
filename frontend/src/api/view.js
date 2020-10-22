@@ -16,11 +16,9 @@ export function getData({
   orderBy,
   viewId,
   fetchAdvancedFields,
-  doNotFetchIncludedTabs,
 }) {
   let queryParams = getQueryString({
     advanced: fetchAdvancedFields,
-    noTabs: doNotFetchIncludedTabs,
     orderBy: orderBy,
   });
 
