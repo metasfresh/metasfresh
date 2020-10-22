@@ -158,8 +158,13 @@ export function preFormatPostDATA({ target, postData }) {
 /**
  * Opens the url given as param in a new window and focuses on that window
  * @param {string} urlPath
+ * @param {fnct} dispatch
+ * @param {fnct} function to dispatch - added this in case we need to perform custom actions when opening new tab ()
+ *               https://github.com/metasfresh/metasfresh/issues/10145 (in this case we send setProcessSaved that will
+ *               update the store flag - processStatus)
  */
-export function openInNewTab(urlPath) {
+export function openInNewTab({ urlPath, dispatch, actionName }) {
+  dispatch(actionName());
   let newTabBrowser = window.open(urlPath, '_blank');
   newTabBrowser.focus();
 }
