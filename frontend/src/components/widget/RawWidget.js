@@ -1134,6 +1134,7 @@ export class RawWidget extends Component {
             windowType={windowType}
             viewId={viewId}
             selected={values}
+            readonly={readonly}
             className={this.getClassNames()}
             onChange={(value) =>
               this.handlePatch(widgetField, {
