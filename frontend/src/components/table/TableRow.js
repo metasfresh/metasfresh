@@ -221,6 +221,10 @@ class TableRow extends PureComponent {
           });
           e.stopPropagation();
 
+          // reset the field value to the previous one, so that we won't
+          // overwrite it
+          e.target.value = valueBeforeEditing;
+
           // we need to store the active cell to focus it after deactivating widget
           const activeCellElement = activeCell;
 
