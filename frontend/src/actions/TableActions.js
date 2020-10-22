@@ -123,7 +123,7 @@ export function updateTabRowsData(id, rows) {
 
 /**
  * @method updateTableRowProperty
- * @summary Update table selection - select items
+ * @summary Update single row
  *
  * @param {string} id - table id
  * @param {number} rowId - rowId

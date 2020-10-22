@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { connect } from 'react-redux';
 
 import { getTableId, getTable } from '../../reducers/tables';
-import { updateTabTableData } from '../../actions/TableActions';
+import { updateTableRowProperty } from '../../actions/TableActions';
 import {
   openModal,
   patch,
@@ -51,12 +51,15 @@ class EntryTable extends PureComponent {
   };
 
   handleChange = (response) => {
-    const { windowId, tabId, documentId, updateTabTableData } = this.props;
+    const { windowId, tabId, documentId, updateTableRowProperty } = this.props;
 
     response.then((rows) => {
       const tableId = getTableId({ windowId, docId: documentId, tabId });
 
-      updateTabTableData(tableId, rows);
+      rows.forEach((row) => {
+        const rowId = row.rowId;
+        updateTableRowProperty({ tableId, rowId, change: row });
+      });
     });
   };
 
@@ -210,7 +213,7 @@ EntryTable.propTypes = {
   patch: PropTypes.func.isRequired,
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
-  updateTabTableData: PropTypes.func.isRequired,
+  updateTableRowProperty: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
@@ -234,6 +237,6 @@ export default connect(
     updatePropertyValue,
     allowShortcut,
     disableShortcut,
-    updateTabTableData,
+    updateTableRowProperty,
   }
 )(EntryTable);
