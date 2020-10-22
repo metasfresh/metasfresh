@@ -641,7 +641,7 @@ class ShipmentCandidateAPIService
 	{
 		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
 				.canBeExportedFrom(SystemTime.asInstant())
-				.noFutureExportOfOrder(true)
+				.onlyIfAllFromOrderExportable(true)
 				.exportStatus(APIExportStatus.Pending)
 				.includeWithQtyToDeliverZero(true)
 				.fromCompleteOrderOrNullOrder(true)
@@ -658,6 +658,10 @@ class ShipmentCandidateAPIService
 			{
 				schedulesToBeExported.add(schedule);
 				counter++;
+			}
+			else
+			{
+				break;
 			}
 		}
 

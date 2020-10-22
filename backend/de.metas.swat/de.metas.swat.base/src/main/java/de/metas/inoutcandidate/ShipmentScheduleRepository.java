@@ -100,7 +100,7 @@ public class ShipmentScheduleRepository
 		{
 			queryBuilder.addCompareFilter(COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(canBeExportedFrom));
 
-			if (query.noFutureExportOfOrder)
+			if (query.onlyIfAllFromOrderExportable)
 			{
 				final IQuery<I_C_Order> hasSchedulesForTheFuture = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 						.addCompareFilter(I_M_ShipmentSchedule.COLUMNNAME_CanBeExportedFrom, GREATER, canBeExportedFrom)
@@ -279,8 +279,12 @@ public class ShipmentScheduleRepository
 
 		@Builder.Default
 		boolean orderByOrderId = false;
+		
+		/**
+		 * Only export a shipment schedule if its order doesn't have schedules which are not yet ready to be exported.
+		 */
 		@Builder.Default
-		boolean noFutureExportOfOrder = false;
+		boolean onlyIfAllFromOrderExportable = false;
 
 	}
 }
