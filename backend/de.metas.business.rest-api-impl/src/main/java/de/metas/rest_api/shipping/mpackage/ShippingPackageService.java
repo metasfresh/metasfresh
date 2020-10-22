@@ -22,8 +22,10 @@
 
 package de.metas.rest_api.shipping.mpackage;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.shipment.JsonPackage;
 import de.metas.common.shipment.mpackage.JsonCreateShippingPackageInfo;
 import de.metas.common.shipment.mpackage.JsonCreateShippingPackagesRequest;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -35,7 +37,9 @@ import de.metas.rest_api.shipping.ShipmentService;
 import de.metas.rest_api.shipping.ShippedCandidateKey;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,9 +47,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashSet;
 
 @Service
 public class ShippingPackageService
@@ -93,17 +97,17 @@ public class ShippingPackageService
 		final ImmutableMap<String, I_M_Shipper> internalName2Shipper = shipperDAO.getByInternalName(shipperInternalNameSet);
 
 		//4. group by GenerateShippingPackagesGroupingKey
-		final HashMap<GenerateShippingPackagesGroupingKey, List<PackageInfo>> groupingKey2PackageInfoList = new HashMap<>();
+		final HashMap<GenerateShippingPackagesGroupingKey, HashSet<PackageInfo>> groupingKey2PackageInfoList = new HashMap<>();
 
 		for (final JsonCreateShippingPackageInfo createPackageInfo : request.getPackageInfos())
 		{
 			final GenerateShippingPackagesGroupingKey groupingKey = extractShippingPackagesGroupingKey(candidateKey2ShipmentId, internalName2Shipper, createPackageInfo);
 
-			final List<PackageInfo> packageInfos = extractPackageInfoMutableList(createPackageInfo, internalName2Shipper);
+			final HashSet<PackageInfo> packageInfos = extractPackageInfoMutableList(createPackageInfo, internalName2Shipper);
 
-			groupingKey2PackageInfoList.merge(groupingKey, packageInfos, (oldList, newList) -> {
-				oldList.addAll(newList);
-				return oldList;
+			groupingKey2PackageInfoList.merge(groupingKey, packageInfos, (oldSet, newSet) -> {
+				oldSet.addAll(newSet);
+				return oldSet;
 			});
 		}
 
@@ -155,32 +159,50 @@ public class ShippingPackageService
 	}
 
 	@NonNull
-	private List<PackageInfo> extractPackageInfoMutableList(
+	private HashSet<PackageInfo> extractPackageInfoMutableList(
 			@NonNull final JsonCreateShippingPackageInfo createShippingPackageInfo,
 			@NonNull final ImmutableMap<String, I_M_Shipper> internalName2Shipper)
 	{
 		final I_M_Shipper shipper = internalName2Shipper.get(createShippingPackageInfo.getShipperInternalName());
+		final String trackingBaseURL = shipper != null ? shipper.getTrackingURL() : null;
 
-		final String trackingURL = shipper != null ? shipper.getTrackingURL() : null;
+		final HashSet<PackageInfo> result = new HashSet<>();
+		for (final JsonPackage jsonPackage : createShippingPackageInfo.getPackageInfos())
+		{
+			final String trackingURLWithTrackingNumber = createTrackingURLOrNull(trackingBaseURL, jsonPackage);
 
-		return createShippingPackageInfo.getPackageInfos()
-				.stream()
-				.map(jsonPackage -> PackageInfo.builder()
-						.trackingUrl(trackingURL)
-						.trackingNumber(jsonPackage.getTrackingCode())
-						.weight(jsonPackage.getWeight())
-						.build())
-				.collect(Collectors.toList());
+			result.add(PackageInfo.builder()
+					.trackingUrl(trackingURLWithTrackingNumber)
+					.trackingNumber(jsonPackage.getTrackingCode())
+					.weight(jsonPackage.getWeight())
+					.build());
+		}
+		return result;
 	}
 
-	private void createTransportationOrderAndPackages(@NonNull final HashMap<GenerateShippingPackagesGroupingKey, List<PackageInfo>> groupingKey2PackageInfoList)
+	@Nullable
+	private String createTrackingURLOrNull(
+			@Nullable final String trackingBaseURL, @NonNull final JsonPackage jsonPackage)
+	{
+		if (Check.isNotBlank(trackingBaseURL) && Check.isNotBlank(jsonPackage.getTrackingCode()))
+		{
+			return trackingBaseURL + jsonPackage.getTrackingCode();
+		}
+		else if(Check.isNotBlank(trackingBaseURL))
+		{
+			return trackingBaseURL;
+		}
+		return null;
+	}
+
+	private void createTransportationOrderAndPackages(@NonNull final HashMap<GenerateShippingPackagesGroupingKey, HashSet<PackageInfo>> groupingKey2PackageInfoList)
 	{
 		groupingKey2PackageInfoList.entrySet()
 				.stream()
 				.map(entry -> AddTrackingInfosForInOutWithoutHUReq.builder()
 						.inOutId(entry.getKey().getInOutId())
 						.shipperId(entry.getKey().getShipperId())
-						.packageInfos(entry.getValue())
+						.packageInfos(ImmutableList.copyOf(entry.getValue()))
 						.build())
 				.map(huShipperTransportationBL::addTrackingInfosForInOutWithoutHU)
 				.forEach(huShipperTransportationBL::processShipperTransportation);
