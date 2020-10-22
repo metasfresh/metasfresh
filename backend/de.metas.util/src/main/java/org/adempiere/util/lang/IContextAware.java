@@ -29,14 +29,8 @@ import java.util.Properties;
  */
 public interface IContextAware
 {
-	/**
-	 * @return ctx
-	 */
 	Properties getCtx();
 
-	/**
-	 * @return trxName
-	 */
 	String getTrxName();
 
 	/**
@@ -50,7 +44,6 @@ public interface IContextAware
 	 * In many cases the business logic developer didn't care if the <i>really</i> wanted a null-transaction or not, and in the past,
 	 * {@link org.adempiere.model.InterfaceWrapperHelper#newInstance(Class, Object, boolean)} always assumed <code>true</code>, so a lot of business logic might rely on this behavior.
 	 *
-	 * @return
 	 * @see PlainContextAware#withOutOfTrx(Properties).
 	 */
 	default boolean isAllowThreadInherited()
