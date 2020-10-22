@@ -150,7 +150,6 @@ public class ShipmentScheduleRepository
 
 		if (query.orderByOrderId)
 		{
-
 			queryBuilder.orderBy()
 					.addColumn(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, Direction.Ascending, Nulls.First)
 					.endOrderBy();

@@ -640,7 +640,6 @@ class ShipmentCandidateAPIService
 	private List<ShipmentSchedule> loadShipmentSchedulesToExport(@NonNull final QueryLimit limit)
 	{
 		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
-				// .limit(limit)
 				.canBeExportedFrom(SystemTime.asInstant())
 				.noFutureExportOfOrder(true)
 				.exportStatus(APIExportStatus.Pending)
@@ -676,6 +675,7 @@ class ShipmentCandidateAPIService
 		int ordersLeftToExport = limit.toInt() - counter;
 
 		final UnmodifiableIterator<OrderId> orderIdIterator = schedulesForOrderIds.keySet().iterator();
+
 		while (orderIdIterator.hasNext() && ordersLeftToExport > 0)
 		{
 			final OrderId currentOrderId = orderIdIterator.next();
@@ -685,7 +685,6 @@ class ShipmentCandidateAPIService
 
 		return schedulesToBeExported;
 
-		// return shipmentScheduleRepository.getBy(shipmentScheduleQuery);
 	}
 
 	private ImmutableMap<ShipperId, String> loadShipperInternalNameByIds(@NonNull final IdsRegistry idsRegistry)
