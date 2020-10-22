@@ -460,6 +460,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
+	@Nullable
 	private AttributeListValue getOrCreateSubproducerAttributeValue(@NonNull final I_I_Inventory importRecord)
 	{
 		final String subproducerBPartnerValue = importRecord.getSubProducerBPartner_Value();
