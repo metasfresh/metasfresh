@@ -101,6 +101,9 @@ public class ChangeEDI_ExportStatusHelper
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecordReference.getRecord_ID());
 
 		ChangeEDI_ExportStatusHelper.C_InvoiceDoIt(invoiceId, targetExportStatus);
+
+		docOutboundLog.setEDI_ExportStatus(targetExportStatus.getCode());
+		ediDocOutBoundLogService.save(docOutboundLog);
 	}
 
 	public void C_InvoiceDoIt(final InvoiceId invoiceId, final EDIExportStatus targetExportStatus)
