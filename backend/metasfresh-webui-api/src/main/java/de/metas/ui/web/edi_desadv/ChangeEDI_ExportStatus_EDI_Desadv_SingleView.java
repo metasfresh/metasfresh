@@ -24,6 +24,7 @@ package de.metas.ui.web.edi_desadv;
 
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -49,6 +50,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	protected static final String PARAM_TargetExportStatus = I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus;
 	@Param(parameterName = PARAM_TargetExportStatus)
@@ -67,14 +69,13 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		// final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(context.getSingleSelectedRecordId()));
-		//
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
-		//
-		// if (getAvailableStatuses(fromExportStatus).isEmpty())
-		// {
-		// 	return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
-		// }
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(context.getSingleSelectedRecordId()));
+
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+		if (ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus).isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -82,12 +83,12 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_TargetExportStatus, numericKey = false, lookupSource = LookupSource.list)
 	private LookupValuesList getTargetExportStatusLookupValues(final LookupDataSourceContext context)
 	{
-		// final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(getRecord_ID()));
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(getRecord_ID()));
 
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
 
-		// TODO tbp: remove hardcoded
-		final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
+		// // TODO tbp: remove hardcoded
+		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
 
@@ -100,12 +101,12 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 	@Nullable
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		// final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(getRecord_ID()));
-		//
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(getRecord_ID()));
 
-		// TODO tbp: remove hardcoded
-		final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+
+		// // TODO tbp: remove hardcoded
+		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
 		if (!availableTargetStatuses.isEmpty())

@@ -65,7 +65,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		 // TODO tbp: this is N+1. how to fix?
+		// TODO tbp: this is N+1. how to fix?
 		EDIExportStatus commonFromStatus = null;
 		for (final EDIDesadvId id : desadvIds)
 		{
@@ -94,12 +94,12 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_TargetExportStatus, numericKey = false, lookupSource = LookupSource.list)
 	private LookupValuesList getTargetExportStatusLookupValues(final LookupDataSourceContext context)
 	{
-		// final I_EDI_Desadv desadv = desadvDAO.retrieveById(getSelectedEdiDesadvIds().iterator().next());
-		//
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(getSelectedEdiDesadvIds().iterator().next());
 
-		// TODO tbp: remove hardcoded
-		final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+
+		// // TODO tbp: remove hardcoded
+		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
 
@@ -112,12 +112,12 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 	@Nullable
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		// final I_EDI_Desadv desadv = desadvDAO.retrieveById(getSelectedEdiDesadvIds().iterator().next());
-		//
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(getSelectedEdiDesadvIds().iterator().next());
 
-		// TODO tbp: remove hardcoded
-		final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+
+		// // TODO tbp: remove hardcoded
+		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
 		if (!availableTargetStatuses.isEmpty())
