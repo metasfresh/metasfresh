@@ -67,7 +67,13 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(context.getSingleSelectedRecordId()));
 
-		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofNullableCode(desadv.getEDI_ExportStatus());
+
+		if (fromExportStatus == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
+		}
+
 		if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);

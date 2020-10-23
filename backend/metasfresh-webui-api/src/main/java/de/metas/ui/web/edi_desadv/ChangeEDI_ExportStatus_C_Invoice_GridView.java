@@ -69,7 +69,13 @@ public class ChangeEDI_ExportStatus_C_Invoice_GridView
 		final List<de.metas.edi.model.I_C_Invoice> invoices = (List<de.metas.edi.model.I_C_Invoice>)invoiceDAO.getByIdsInTrx(invoiceIds);
 		for (final de.metas.edi.model.I_C_Invoice invoice : invoices)
 		{
-			final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
+			final EDIExportStatus fromExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
+
+			if (fromExportStatus == null)
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("Selected record is not an EDI Invoice: " + invoice);
+			}
+
 
 			if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
 			{

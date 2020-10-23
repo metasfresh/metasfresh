@@ -67,7 +67,13 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 
 		final de.metas.edi.model.I_C_Invoice invoice = (de.metas.edi.model.I_C_Invoice)invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(context.getSingleSelectedRecordId()));
 
-		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
+
+		if (fromExportStatus == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Selected record is not an EDI Invoice: " + invoice);
+		}
+
 		if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
