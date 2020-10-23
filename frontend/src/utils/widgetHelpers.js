@@ -146,6 +146,7 @@ export function validatePrecision({
 /**
  * @method shouldPatch
  * @summary Checks if the value has actually changed between what was cached before.
+ *
  * @param {string} property
  * @param {*} value
  * @param {*} valueTo
@@ -182,4 +183,15 @@ export function shouldPatch({
   }
 
   return allowPatching;
+}
+
+/**
+ * @method getWidgetField
+ * @summary Returns name of the widget
+ *
+ * @param {boolean} filterWidget - flag if widget is a filter
+ * @param {array} fields - widget fields array
+ */
+export function getWidgetField({ filterWidget, fields }) {
+  return filterWidget ? fields[0].parameterName : fields[0].field;
 }

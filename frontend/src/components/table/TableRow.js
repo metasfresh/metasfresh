@@ -412,9 +412,7 @@ class TableRow extends PureComponent {
     const elem = document.activeElement;
 
     if (property !== activeCellName || cb) {
-      const newState = {
-        activeCellName: property,
-      };
+      const newState = { activeCellName: property };
 
       if (activeCell !== elem && !elem.className.includes('js-input-field')) {
         newState.activeCell = elem;

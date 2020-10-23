@@ -238,8 +238,6 @@ class Lookup extends Component {
   };
 
   handleListBlur = (field) => {
-    // console.log('handleListBlur: ', field)
-
     this._changeWidgetProperty(field, 'isFocused', false, () => {
       this.setState({
         isFocused: false,

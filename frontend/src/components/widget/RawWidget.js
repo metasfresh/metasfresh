@@ -4,7 +4,7 @@ import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
 
-import { shouldPatch } from '../../utils/widgetHelpers';
+import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 
@@ -180,9 +180,7 @@ export class RawWidget extends PureComponent {
   handleBlur = (e) => {
     const { filterWidget, fields, id } = this.props;
     const value = e.target.value;
-    const widgetField = filterWidget
-      ? fields[0].parameterName
-      : fields[0].field;
+    const widgetField = getWidgetField({ filterWidget, fields });
 
     this.handleBlurWithParams(widgetField, value, id);
   };
@@ -216,9 +214,7 @@ export class RawWidget extends PureComponent {
     } = this.props;
     const value = e.target.value;
     const { key } = e;
-    const widgetField = filterWidget
-      ? fields[0].parameterName
-      : fields[0].field;
+    const widgetField = getWidgetField({ filterWidget, fields });
 
     this.updateTypedCharacters(e.target.value);
 
@@ -245,11 +241,9 @@ export class RawWidget extends PureComponent {
         e.preventDefault();
       }
 
-      if (key === 'Tab') {
-        return this.handleBlur(e);
-      } else {
-        return this.handlePatch(widgetField, value);
-      }
+      return key === 'Tab'
+        ? this.handleBlur(e)
+        : this.handlePatch(widgetField, value);
     }
   };
 
@@ -260,9 +254,7 @@ export class RawWidget extends PureComponent {
    */
   handleChange = (e) => {
     const { handleChange, filterWidget, fields } = this.props;
-    const widgetField = filterWidget
-      ? fields[0].parameterName
-      : fields[0].field;
+    const widgetField = getWidgetField({ filterWidget, fields });
 
     if (handleChange) {
       this.updateTypedCharacters(e.target.value);
@@ -348,29 +340,19 @@ export class RawWidget extends PureComponent {
    *
    * @param {string} type - toggles between text/password
    */
-  setWidgetType = (type) => {
-    this.rawWidget.type = type;
-  };
+  setWidgetType = (type) => (this.rawWidget.type = type);
 
   /**
    * @method showErrorPopup
    * @summary shows error message on mouse over
    */
-  showErrorPopup = () => {
-    this.setState({
-      errorPopup: true,
-    });
-  };
+  showErrorPopup = () => this.setState({ errorPopup: true });
 
   /**
    * @method hideErrorPopup
    * @summary hides error message on mouse out
    */
-  hideErrorPopup = () => {
-    this.setState({
-      errorPopup: false,
-    });
-  };
+  hideErrorPopup = () => this.setState({ errorPopup: false });
 
   /**
    * @method clearFieldWarning
@@ -390,11 +372,7 @@ export class RawWidget extends PureComponent {
    * @summary toggle tooltip (if it's available)
    * @param {bool} show
    */
-  toggleTooltip = (show) => {
-    this.setState({
-      tooltipToggled: show,
-    });
-  };
+  toggleTooltip = (show) => this.setState({ tooltipToggled: show });
 
   /**
    * @method renderErrorPopup

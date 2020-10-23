@@ -36,13 +36,9 @@ class MasterWidget extends PureComponent {
     };
   }
 
-  componentDidMount = () => {
-    this.mounted = true;
-  };
+  componentDidMount = () => (this.mounted = true);
 
-  componentWillUnmount = () => {
-    this.mounted = false;
-  };
+  componentWillUnmount = () => (this.mounted = false);
 
   /**
    * @method getDerivedStateFromProps
@@ -251,9 +247,7 @@ class MasterWidget extends PureComponent {
   handleFocusFn = (val) => {
     const { handleBackdropLock } = this.props;
 
-    if (handleBackdropLock) {
-      handleBackdropLock(val);
-    }
+    handleBackdropLock && handleBackdropLock(val);
   };
 
   render() {
