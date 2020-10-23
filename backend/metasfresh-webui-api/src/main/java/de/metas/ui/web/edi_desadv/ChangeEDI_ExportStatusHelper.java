@@ -27,6 +27,8 @@ import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -44,6 +46,7 @@ public class ChangeEDI_ExportStatusHelper
 {
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@NonNull
 	public List<EDIExportStatus> getAvailableTargetExportStatuses(@NonNull final EDIExportStatus fromStatus)
@@ -80,6 +83,13 @@ public class ChangeEDI_ExportStatusHelper
 		edi.setEDI_ExportStatus(targetExportStatus.getCode());
 		edi.setProcessed(isProcessed);
 		desadvDAO.save(edi);
+	}
+
+	public void C_InvoiceDoIt(final InvoiceId invoiceId, final EDIExportStatus targetExportStatus)
+	{
+		final de.metas.edi.model.I_C_Invoice invoice = (de.metas.edi.model.I_C_Invoice)invoiceDAO.getByIdInTrx(invoiceId);
+		invoice.setEDI_ExportStatus(targetExportStatus.getCode());
+		invoiceDAO.save(invoice);
 	}
 
 	@NonNull
