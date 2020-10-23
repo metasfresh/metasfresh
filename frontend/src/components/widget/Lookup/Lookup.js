@@ -238,6 +238,8 @@ class Lookup extends Component {
   };
 
   handleListBlur = (field) => {
+    // console.log('handleListBlur: ', field)
+
     this._changeWidgetProperty(field, 'isFocused', false, () => {
       this.setState({
         isFocused: false,
@@ -300,7 +302,7 @@ class Lookup extends Component {
       rowId,
       tabIndex,
       validStatus,
-      recent,
+      // recent,
       onChange,
       newRecordCaption,
       properties,
@@ -453,7 +455,7 @@ class Lookup extends Component {
                     entity,
                     dataId,
                     isModal,
-                    recent,
+                    // recent,
                     rank,
                     updated,
                     filterWidget,
