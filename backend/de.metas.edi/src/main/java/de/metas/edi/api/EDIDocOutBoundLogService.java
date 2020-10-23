@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 import java.util.Optional;
 
+import de.metas.invoice.InvoiceId;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
@@ -58,5 +60,15 @@ public class EDIDocOutBoundLogService
 			logRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
 		}
 		return Optional.ofNullable(logRecord);
+	}
+
+	public I_C_Doc_Outbound_Log retreiveById(@NonNull final ArchiveId archiveId)
+	{
+		return create(docOutboundDAO.retrieveLog(archiveId), I_C_Doc_Outbound_Log.class);
+	}
+
+	public I_C_Invoice retreiveById(@NonNull final InvoiceId invoiceId)
+	{
+		return create(invoiceId, I_C_Invoice.class);
 	}
 }

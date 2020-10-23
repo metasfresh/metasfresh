@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.edi_desadv;
 
+import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.invoice.InvoiceId;
@@ -39,6 +40,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 
@@ -47,6 +49,7 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
 
 	protected static final String PARAM_TargetExportStatus = I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus;
 	@Param(parameterName = PARAM_TargetExportStatus)
@@ -65,7 +68,7 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final de.metas.edi.model.I_C_Invoice invoice = (de.metas.edi.model.I_C_Invoice)invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(context.getSingleSelectedRecordId()));
+		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(InvoiceId.ofRepoId(context.getSingleSelectedRecordId()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
 
@@ -85,7 +88,7 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_TargetExportStatus, numericKey = false, lookupSource = LookupSource.list)
 	private LookupValuesList getTargetExportStatusLookupValues(final LookupDataSourceContext context)
 	{
-		final de.metas.edi.model.I_C_Invoice invoice = (de.metas.edi.model.I_C_Invoice)invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
+		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(InvoiceId.ofRepoId(getRecord_ID()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
 
@@ -99,7 +102,7 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 	@Nullable
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final de.metas.edi.model.I_C_Invoice invoice = (de.metas.edi.model.I_C_Invoice)invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
+		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(InvoiceId.ofRepoId(getRecord_ID()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
 

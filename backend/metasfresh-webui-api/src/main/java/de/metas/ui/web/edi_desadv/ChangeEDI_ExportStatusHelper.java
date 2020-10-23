@@ -23,7 +23,9 @@
 package de.metas.ui.web.edi_desadv;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -36,7 +38,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -47,6 +52,7 @@ public class ChangeEDI_ExportStatusHelper
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
 
 	@NonNull
 	public List<EDIExportStatus> getAvailableTargetExportStatuses(@NonNull final EDIExportStatus fromStatus)
@@ -77,7 +83,7 @@ public class ChangeEDI_ExportStatusHelper
 		}
 	}
 
-	public static void EDI_DesadvDoIt(@NonNull final EDIDesadvId desadvId, @NonNull final EDIExportStatus targetExportStatus, final boolean isProcessed)
+	public void EDI_DesadvDoIt(@NonNull final EDIDesadvId desadvId, @NonNull final EDIExportStatus targetExportStatus, final boolean isProcessed)
 	{
 		final I_EDI_Desadv edi = desadvDAO.retrieveById(desadvId);
 		edi.setEDI_ExportStatus(targetExportStatus.getCode());
@@ -85,9 +91,21 @@ public class ChangeEDI_ExportStatusHelper
 		desadvDAO.save(edi);
 	}
 
+	public void C_DocOutbound_LogDoIt(final EDIExportStatus targetExportStatus, final ArchiveId logId)
+	{
+		// technical detail: the I_C_Doc_Outbound_Log is updated when we update the C_Invoice, via interceptor: de.metas.edi.model.validator.C_Invoice.updateDocOutBoundLog
+		final de.metas.edi.model.I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(logId);
+
+		final TableRecordReference invoiceRecordReference = TableRecordReference.ofReferenced(docOutboundLog);
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecordReference.getRecord_ID());
+
+		ChangeEDI_ExportStatusHelper.C_InvoiceDoIt(invoiceId, targetExportStatus);
+	}
+
 	public void C_InvoiceDoIt(final InvoiceId invoiceId, final EDIExportStatus targetExportStatus)
 	{
-		final de.metas.edi.model.I_C_Invoice invoice = (de.metas.edi.model.I_C_Invoice)invoiceDAO.getByIdInTrx(invoiceId);
+		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(invoiceId);
 		invoice.setEDI_ExportStatus(targetExportStatus.getCode());
 		invoiceDAO.save(invoice);
 	}

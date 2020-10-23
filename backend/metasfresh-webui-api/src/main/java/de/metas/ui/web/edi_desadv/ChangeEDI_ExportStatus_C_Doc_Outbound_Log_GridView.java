@@ -25,9 +25,9 @@ package de.metas.ui.web.edi_desadv;
 import com.google.common.collect.ImmutableSet;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.model.I_C_Doc_Outbound_Log;
+import de.metas.edi.model.I_C_Invoice;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -39,16 +39,16 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.util.Services;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 
-public class ChangeEDI_ExportStatus_C_Invoice_GridView
+public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
 
 	protected static final String PARAM_TargetExportStatus = I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus;
@@ -58,8 +58,8 @@ public class ChangeEDI_ExportStatus_C_Invoice_GridView
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final ImmutableSet<InvoiceId> invoiceIds = getSelectedInvoiceIds();
-		if (invoiceIds.isEmpty())
+		final ImmutableSet<ArchiveId> docOutboundLogIds = getSelectedDocOutboundLogIds();
+		if (docOutboundLogIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
@@ -67,15 +67,18 @@ public class ChangeEDI_ExportStatus_C_Invoice_GridView
 		// technical detail: all records must have the same Export Status
 		EDIExportStatus sameExportStatus = null;
 
-		for (final InvoiceId invoiceId : invoiceIds)
+		for (final ArchiveId logId : docOutboundLogIds)
 		{
-			final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(invoiceId);
+			final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(logId);
 
-			final EDIExportStatus fromExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
-
+			if (!checkIsInvoiceAndEDI(docOutboundLog))
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("Selected record is not an EDI Invoice: " + docOutboundLog);
+			}
+			final EDIExportStatus fromExportStatus = EDIExportStatus.ofNullableCode(docOutboundLog.getEDI_ExportStatus());
 			if (fromExportStatus == null)
 			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("Selected record is not an EDI Invoice: " + invoice);
+				return ProcessPreconditionsResolution.rejectWithInternalReason("Selected record is not an EDI Invoice: " + docOutboundLog);
 			}
 
 			if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
@@ -100,9 +103,9 @@ public class ChangeEDI_ExportStatus_C_Invoice_GridView
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_TargetExportStatus, numericKey = false, lookupSource = LookupSource.list)
 	private LookupValuesList getTargetExportStatusLookupValues(final LookupDataSourceContext context)
 	{
-		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(getSelectedInvoiceIds().iterator().next());
+		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(getSelectedDocOutboundLogIds().iterator().next());
 
-		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(docOutboundLog.getEDI_ExportStatus());
 
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
@@ -114,9 +117,10 @@ public class ChangeEDI_ExportStatus_C_Invoice_GridView
 	@Nullable
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(getSelectedInvoiceIds().iterator().next());
+		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(getSelectedDocOutboundLogIds().iterator().next());
 
-		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
+		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(docOutboundLog.getEDI_ExportStatus());
+
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
@@ -128,17 +132,34 @@ public class ChangeEDI_ExportStatus_C_Invoice_GridView
 	{
 		final EDIExportStatus targetExportStatus = EDIExportStatus.ofCode(p_TargetExportStatus);
 
-		for (final InvoiceId invoiceId : getSelectedInvoiceIds())
+		for (final ArchiveId logId : getSelectedDocOutboundLogIds())
 		{
-			ChangeEDI_ExportStatusHelper.C_InvoiceDoIt(invoiceId, targetExportStatus);
+			ChangeEDI_ExportStatusHelper.C_DocOutbound_LogDoIt(targetExportStatus, logId);
 		}
 
 		return MSG_OK;
 	}
 
-	private ImmutableSet<InvoiceId> getSelectedInvoiceIds()
+	private ImmutableSet<ArchiveId> getSelectedDocOutboundLogIds()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		return selectedRowIds.toIds(InvoiceId::ofRepoId);
+		return selectedRowIds.toIds(ArchiveId::ofRepoId);
+	}
+
+	/**
+	 * TODO tbp: how to check if this docOutboundLog is for edi or not?
+	 * docOutboundLog.isEdiEnabled() is a virtual column!
+	 * in swing this is checked by """(select bp.IsEdiInvoicRecipient from C_BPartner bp where bp.C_BPartner_ID=C_Doc_Outbound_Log.C_BPartner_ID)"""
+	 * do i need to check for if the AD_Table is C_Invoice as well?
+	 * help maybe?
+	 */
+	private boolean checkIsInvoiceAndEDI(final I_C_Doc_Outbound_Log docOutboundLog)
+	{
+		final TableRecordReference recordReference = TableRecordReference.ofReferenced(docOutboundLog);
+		if (!I_C_Invoice.Table_Name.equals(recordReference.getTableName()))
+		{
+			return false;
+		}
+		return true;
 	}
 }
