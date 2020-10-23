@@ -2,6 +2,8 @@ package de.metas.process;
 
 import org.compiere.model.Null;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -47,5 +49,5 @@ public interface IProcessDefaultParametersProvider
 	 *         <li>Important: if the field is a lookup field (table, search etc), then the callers expects an integer <b>ID</b>, not the actual model.
 	 *         </ul>
 	 */
-	Object getParameterDefaultValue(final IProcessDefaultParameter parameter);
+	@Nullable Object getParameterDefaultValue(final IProcessDefaultParameter parameter);
 }
