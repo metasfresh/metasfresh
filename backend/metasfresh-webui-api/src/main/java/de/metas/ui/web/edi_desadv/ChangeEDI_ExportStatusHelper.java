@@ -40,7 +40,7 @@ public class ChangeEDI_ExportStatusHelper
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	@NonNull
-	public List<EDIExportStatus> getAvailableStatuses(@NonNull final EDIExportStatus fromStatus)
+	public List<EDIExportStatus> getAvailableTargetExportStatuses(@NonNull final EDIExportStatus fromStatus)
 	{
 		switch (fromStatus)
 		{

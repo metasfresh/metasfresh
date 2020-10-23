@@ -65,26 +65,27 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
+		// technical detail: all records must have the same Export Status
+		EDIExportStatus commonFromExportStatus = null;
 		// TODO tbp: this is N+1. how to fix?
-		EDIExportStatus commonFromStatus = null;
 		for (final EDIDesadvId id : desadvIds)
 		{
 			final I_EDI_Desadv desadv = desadvDAO.retrieveById(id);
 			final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
 
-			if (ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus).isEmpty())
+			if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
 			}
 
-			if (commonFromStatus == null)
+			if (commonFromExportStatus == null)
 			{
-				commonFromStatus = fromExportStatus;
+				commonFromExportStatus = fromExportStatus;
 			}
 
-			if (!commonFromStatus.equals(fromExportStatus))
+			if (!commonFromExportStatus.equals(fromExportStatus))
 			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("All rows must have the same EDI ExportStatus");
+				return ProcessPreconditionsResolution.rejectWithInternalReason("All records must have the same EDI ExportStatus");
 			}
 		}
 
@@ -101,7 +102,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
-		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
+		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
 
 		return availableTargetStatuses.stream()
 				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
@@ -119,7 +120,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
-		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
+		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
 		if (!availableTargetStatuses.isEmpty())
 		{
 			final String code = availableTargetStatuses.get(0).getCode();

@@ -72,7 +72,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(context.getSingleSelectedRecordId()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
-		if (ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus).isEmpty())
+		if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
 		}
@@ -90,7 +90,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
-		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
+		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
 
 		return availableTargetStatuses.stream()
 				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
@@ -108,7 +108,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
-		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableStatuses(fromExportStatus);
+		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
 		if (!availableTargetStatuses.isEmpty())
 		{
 			final String code = availableTargetStatuses.get(0).getCode();
