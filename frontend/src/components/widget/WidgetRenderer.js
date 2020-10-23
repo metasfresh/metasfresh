@@ -18,13 +18,15 @@ import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
 import DatePicker from './DatePicker';
 import DatetimeRange from './DatetimeRange';
-import DevicesWidget from './Devices/DevicesWidget';
 import Image from './Image';
 import Labels from './Labels';
 import Link from './Link';
 import CharacterLimitInfo from './CharacterLimitInfo';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
+import Switch from './Switch';
+import Amount from './Amount';
+import Password from './Password';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -403,52 +405,31 @@ class WidgetRenderer extends PureComponent {
       }
       case 'Password':
         return (
-          <div className="input-inner-container">
-            <div
-              className={classnames(
-                this.getClassNames({
-                  icon: true,
-                })
-              )}
-            >
-              <input {...widgetProperties} type="password" />
-              {icon && <i className="meta-icon-edit input-icon-right" />}
-            </div>
-            {allowShowPassword && (
-              <div
-                onMouseDown={() => onSetWidgetType('text')}
-                onMouseUp={() => onSetWidgetType('password')}
-                className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
-              >
-                <i className="meta-icon-show" />
-              </div>
-            )}
-          </div>
+          <Password
+            {...{
+              widgetProperties,
+              icon,
+              allowShowPassword,
+              onSetWidgetType,
+            }}
+            getClassNames={this.getClassNames}
+          />
         );
       case 'Integer':
       case 'Amount':
       case 'Quantity':
         return (
-          <div className={classnames(this.getClassNames(), 'number-field')}>
-            <input
-              {...widgetProperties}
-              type="number"
-              min={0}
-              precision={widgetField === 'CableLength' ? 2 : 1}
-              step={subentity === 'quickInput' ? 'any' : 1}
-            />
-            {widgetData[0].devices && (
-              <div className="device-widget-wrapper">
-                <DevicesWidget
-                  devices={widgetData[0].devices}
-                  tabIndex={1}
-                  handleChange={(value) =>
-                    onPatch && onPatch(fields[0].field, value)
-                  }
-                />
-              </div>
-            )}
-          </div>
+          <Amount
+            {...{
+              widgetData,
+              widgetField,
+              fields,
+              subentity,
+              widgetProperties,
+              onPatch,
+            }}
+            getClassNames={this.getClassNames}
+          />
         );
       case 'Number':
       case 'CostPrice':
@@ -474,30 +455,19 @@ class WidgetRenderer extends PureComponent {
         );
       case 'Switch':
         return (
-          <label
-            className={classnames('input-switch', {
-              'input-disabled': readonly,
-              'input-mandatory':
-                widgetData[0].mandatory && widgetData[0].value.length === 0,
-              'input-error':
-                widgetData[0].validStatus && !widgetData[0].validStatus.valid,
-              'input-table': rowId && !isModal,
-            })}
-            tabIndex={tabIndex}
-            ref={forwardedRef}
-            onKeyDown={(e) => {
-              e.key === ' ' && onPatch(widgetField, !widgetData[0].value, id);
+          <Switch
+            {...{
+              widgetData,
+              widgetField,
+              rowId,
+              isModal,
+              tabIndex,
+              forwardedRef,
+              id,
+              readonly,
+              onPatch,
             }}
-          >
-            <input
-              type="checkbox"
-              checked={widgetData[0].value}
-              disabled={readonly}
-              tabIndex="-1"
-              onChange={(e) => onPatch(widgetField, e.target.checked, id)}
-            />
-            <div className="input-slider" />
-          </label>
+          />
         );
       case 'Label':
         return (
@@ -512,8 +482,9 @@ class WidgetRenderer extends PureComponent {
           </div>
         );
       case 'Button':
+      case 'ZoomIntoButton':
       case 'ProcessButton': {
-        let textContent = null;
+        let textContent = caption;
         let clickHandler = undefined;
 
         if (widgetType === 'Button') {
@@ -521,9 +492,10 @@ class WidgetRenderer extends PureComponent {
           textContent =
             widgetData[0].value &&
             widgetData[0].value[Object.keys(widgetData[0].value)[0]];
+        } else if (widgetType === 'ZoomIntoButton') {
+          clickHandler = () => handleZoomInto(fields[0].field);
         } else {
           clickHandler = onHandleProcess;
-          textContent = caption;
         }
 
         return (
@@ -583,21 +555,6 @@ class WidgetRenderer extends PureComponent {
             handlePatch={onPatch}
             readonly={readonly}
           />
-        );
-      case 'ZoomIntoButton':
-        return (
-          <button
-            className={
-              'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
-              (readonly ? 'tag-disabled disabled ' : '')
-            }
-            onClick={() => handleZoomInto(fields[0].field)}
-            tabIndex={tabIndex}
-            ref={forwardedRef}
-          >
-            {caption}
-          </button>
         );
       case 'Labels': {
         let values = [];
