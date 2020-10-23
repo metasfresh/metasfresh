@@ -155,6 +155,7 @@ class Labels extends Component {
 
     switch (event.key) {
       case 'Backspace': {
+        this.setState({ focused: false });
         if (selected.length < 1) {
           return;
         }
