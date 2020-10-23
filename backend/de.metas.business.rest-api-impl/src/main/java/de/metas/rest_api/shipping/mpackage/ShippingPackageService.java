@@ -22,8 +22,10 @@
 
 package de.metas.rest_api.shipping.mpackage;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.shipment.JsonPackage;
 import de.metas.common.shipment.mpackage.JsonCreateShippingPackageInfo;
@@ -39,7 +41,6 @@ import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -87,7 +88,7 @@ public class ShippingPackageService
 				.collect(ImmutableSet.toImmutableSet());
 
 		//2. get shipment Ids by shippedCandidateKeys
-		final ImmutableMap<ShippedCandidateKey, InOutId> candidateKey2ShipmentId = shipmentService.retrieveShipmentIdsByCandidateKey(shippedCandidateKeys);
+		final ImmutableMultimap<ShippedCandidateKey, InOutId> candidateKey2ShipmentId = shipmentService.retrieveShipmentIdsByCandidateKey(shippedCandidateKeys);
 
 		//3. load shippers by internal name
 		final ImmutableSet<String> shipperInternalNameSet = request.getPackageInfos().stream()
@@ -101,14 +102,16 @@ public class ShippingPackageService
 
 		for (final JsonCreateShippingPackageInfo createPackageInfo : request.getPackageInfos())
 		{
-			final GenerateShippingPackagesGroupingKey groupingKey = extractShippingPackagesGroupingKey(candidateKey2ShipmentId, internalName2Shipper, createPackageInfo);
+			final ImmutableList<GenerateShippingPackagesGroupingKey> groupingKeys = extractShippingPackagesGroupingKey(candidateKey2ShipmentId, internalName2Shipper, createPackageInfo);
+			for (final GenerateShippingPackagesGroupingKey groupingKey : groupingKeys)
+			{
+				final HashSet<PackageInfo> packageInfos = extractPackageInfoMutableList(createPackageInfo, internalName2Shipper);
 
-			final HashSet<PackageInfo> packageInfos = extractPackageInfoMutableList(createPackageInfo, internalName2Shipper);
-
-			groupingKey2PackageInfoList.merge(groupingKey, packageInfos, (oldSet, newSet) -> {
-				oldSet.addAll(newSet);
-				return oldSet;
-			});
+				groupingKey2PackageInfoList.merge(groupingKey, packageInfos, (oldSet, newSet) -> {
+					oldSet.addAll(newSet);
+					return oldSet;
+				});
+			}
 		}
 
 		//5 create packages
@@ -127,16 +130,16 @@ public class ShippingPackageService
 	}
 
 	@NonNull
-	private GenerateShippingPackagesGroupingKey extractShippingPackagesGroupingKey(
-			@NonNull final ImmutableMap<ShippedCandidateKey, InOutId> candidateKey2ShipmentId,
+	private ImmutableList<GenerateShippingPackagesGroupingKey> extractShippingPackagesGroupingKey(
+			@NonNull final ImmutableMultimap<ShippedCandidateKey, InOutId> candidateKey2ShipmentId,
 			@NonNull final ImmutableMap<String, I_M_Shipper> internalName2Shipper,
 			@NonNull final JsonCreateShippingPackageInfo packageInfo)
 	{
 		final ShippedCandidateKey shippedCandidateKey = extractShippedCandidateKey(packageInfo);
 
-		final InOutId shipmentId = candidateKey2ShipmentId.get(shippedCandidateKey);
+		final ImmutableCollection<InOutId> shipmentIds = candidateKey2ShipmentId.get(shippedCandidateKey);
 
-		if (shipmentId == null)
+		if (shipmentIds == null || shipmentIds.isEmpty())
 		{
 			throw new AdempiereException("No shipment (M_InOut) was found for the given candidateKey!")
 					.appendParametersToMessage()
@@ -152,10 +155,15 @@ public class ShippingPackageService
 					.setParameter("InternalName", packageInfo.getShipperInternalName());
 		}
 
-		return GenerateShippingPackagesGroupingKey.builder()
-				.inOutId(shipmentId)
-				.shipperId(ShipperId.ofRepoId(shipper.getM_Shipper_ID()))
-				.build();
+		final ImmutableList.Builder<GenerateShippingPackagesGroupingKey> result = ImmutableList.builder();
+		final GenerateShippingPackagesGroupingKey.GenerateShippingPackagesGroupingKeyBuilder groupingKeyBuilder = GenerateShippingPackagesGroupingKey
+				.builder()
+				.shipperId(ShipperId.ofRepoId(shipper.getM_Shipper_ID()));
+		for (final InOutId shipmentId : shipmentIds)
+		{
+			result.add(groupingKeyBuilder.inOutId(shipmentId).build());
+		}
+		return result.build();
 	}
 
 	@NonNull
@@ -188,7 +196,7 @@ public class ShippingPackageService
 		{
 			return trackingBaseURL + jsonPackage.getTrackingCode();
 		}
-		else if(Check.isNotBlank(trackingBaseURL))
+		else if (Check.isNotBlank(trackingBaseURL))
 		{
 			return trackingBaseURL;
 		}

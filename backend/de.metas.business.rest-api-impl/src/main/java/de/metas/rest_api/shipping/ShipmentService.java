@@ -24,6 +24,7 @@ package de.metas.rest_api.shipping;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -85,6 +86,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 @Service
 public class ShipmentService
@@ -280,7 +282,7 @@ public class ShipmentService
 				&& Check.isBlank(bpartnerCode)
 				&& Check.isEmpty(attributes)
 				&& deliveryRule == null
-		        && shipperId == null)
+				&& shipperId == null)
 		{
 			return null;
 		}
@@ -406,16 +408,16 @@ public class ShipmentService
 		return shipmentInfo.getPackages().stream()
 				.map(jsonPackage ->
 						PackageInfo.builder()
-						.trackingNumber(jsonPackage.getTrackingCode())
-						.weight(jsonPackage.getWeight())
-						.trackingUrl(trackingURL)
-						.build()
+								.trackingNumber(jsonPackage.getTrackingCode())
+								.weight(jsonPackage.getWeight())
+								.trackingUrl(trackingURL)
+								.build()
 				)
 				.collect(ImmutableList.toImmutableList());
 	}
 
- 	@NonNull
- 	public ImmutableMap<ShippedCandidateKey, InOutId> retrieveShipmentIdsByCandidateKey(@NonNull final Set<ShippedCandidateKey> shippedCandidateKeys)
+	@NonNull
+	public ImmutableMultimap<ShippedCandidateKey, InOutId> retrieveShipmentIdsByCandidateKey(@NonNull final Set<ShippedCandidateKey> shippedCandidateKeys)
 	{
 		final Set<ShipmentScheduleId> scheduleIds = shippedCandidateKeys.stream().map(ShippedCandidateKey::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
 
@@ -429,13 +431,21 @@ public class ShipmentService
 
 		final ImmutableMap<InOutLineId, I_M_InOut> lineId2InOut = inOutDAO.retrieveInOutByLineIds(inOutLineIds);
 
-		final ImmutableMap.Builder<ShippedCandidateKey, InOutId> candidateKey2ShipmentId = ImmutableMap.builder();
-
+		final ImmutableMultimap.Builder<ShippedCandidateKey, InOutId> candidateKey2ShipmentId = ImmutableMultimap.builder();
 		for (final ShippedCandidateKey candidateKey : shippedCandidateKeys)
 		{
-			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = scheduleId2qtyPickedRecords.get(candidateKey.getShipmentScheduleId());
+			final Supplier<AdempiereException> exceptionSupplier = () -> new AdempiereException("No Shipment was found for the M_ShipmentSchedule_ID!")
+					.appendParametersToMessage()
+					.setParameter("M_ShipmentSchedule_ID", ShipmentScheduleId.toRepoId(candidateKey.getShipmentScheduleId()))
+					.setParameter("ShipmentDocumentNumber", candidateKey.getShipmentDocumentNo());
 
-			final InOutId targetShipmentId = qtyPickedRecords
+			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = scheduleId2qtyPickedRecords.get(candidateKey.getShipmentScheduleId());
+			if (qtyPickedRecords == null)
+			{
+				throw exceptionSupplier.get();
+			}
+
+			final ImmutableList<InOutId> targetShipmentIds = qtyPickedRecords
 					.stream()
 					.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 					.map(InOutLineId::ofRepoId)
@@ -444,18 +454,17 @@ public class ShipmentService
 					//.filter(shipment -> candidateKey.getShipmentDocumentNo().equals(shipment.getDocumentNo()))
 					.map(I_M_InOut::getM_InOut_ID)
 					.map(InOutId::ofRepoId)
-					.findFirst()
-					.orElseThrow( () -> new AdempiereException("No Shipment was found for the given shipment schedule ID and document number!")
-							.appendParametersToMessage()
-							.setParameter("ShipmentScheduleID", candidateKey.getShipmentScheduleId())
-							.setParameter("ShipmentDocumentNumber", candidateKey.getShipmentDocumentNo()));
+					.collect(ImmutableList.toImmutableList());
+			if (targetShipmentIds.isEmpty())
+			{
+				throw exceptionSupplier.get();
+			}
 
-			candidateKey2ShipmentId.put(candidateKey, targetShipmentId);
+			candidateKey2ShipmentId.putAll(candidateKey, targetShipmentIds);
 		}
 
 		return candidateKey2ShipmentId.build();
 	}
-
 
 	//
 	//
@@ -516,7 +525,7 @@ public class ShipmentService
 		@Nullable
 		public ShipperId getShipperId(@Nullable final String shipperInternalName)
 		{
-			if(Check.isBlank(shipperInternalName))
+			if (Check.isBlank(shipperInternalName))
 			{
 				return null;
 			}
@@ -529,7 +538,7 @@ public class ShipmentService
 		}
 
 		@Nullable
-		public  String getTrackingURL(@NonNull final String shipperInternalName)
+		public String getTrackingURL(@NonNull final String shipperInternalName)
 		{
 			final I_M_Shipper shipper = shipperByInternalName.computeIfAbsent(shipperInternalName, this::loadShipper);
 
