@@ -336,6 +336,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	 * <ul>
 	 * <li>already referenced by a shipment line, if <code>onShipmentLine</code> is true
 	 * <li>or NOT referenced by a shipment line, if <code>onShipmentLine</code> is false
+	 * </ul>
 	 */
 	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
 			@NonNull final Set<ShipmentScheduleId> scheduleIds,

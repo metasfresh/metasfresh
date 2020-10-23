@@ -440,7 +440,8 @@ public class ShipmentService
 					.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 					.map(InOutLineId::ofRepoId)
 					.map(lineId2InOut::get)
-					.filter(shipment -> candidateKey.getShipmentDocumentNo().equals(shipment.getDocumentNo()))
+					// don't assume that the shipment's documentNo is equal to the request's assumed documentNo
+					//.filter(shipment -> candidateKey.getShipmentDocumentNo().equals(shipment.getDocumentNo()))
 					.map(I_M_InOut::getM_InOut_ID)
 					.map(InOutId::ofRepoId)
 					.findFirst()
