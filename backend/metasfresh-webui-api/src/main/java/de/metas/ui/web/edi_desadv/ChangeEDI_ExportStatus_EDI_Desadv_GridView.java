@@ -35,7 +35,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -43,7 +42,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.service.IADReferenceDAO;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		extends ViewBasedProcessTemplate
@@ -66,7 +64,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		}
 
 		// technical detail: all records must have the same Export Status
-		EDIExportStatus commonFromExportStatus = null;
+		EDIExportStatus sameExportStatus = null;
 		// TODO tbp: this is N+1. how to fix?
 		for (final EDIDesadvId id : desadvIds)
 		{
@@ -78,12 +76,12 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 				return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
 			}
 
-			if (commonFromExportStatus == null)
+			if (sameExportStatus == null)
 			{
-				commonFromExportStatus = fromExportStatus;
+				sameExportStatus = fromExportStatus;
 			}
 
-			if (!commonFromExportStatus.equals(fromExportStatus))
+			if (!sameExportStatus.equals(fromExportStatus))
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("All records must have the same EDI ExportStatus");
 			}
@@ -102,11 +100,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
-		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
-
-		return availableTargetStatuses.stream()
-				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
-				.collect(LookupValuesList.collect());
+		return ChangeEDI_ExportStatusHelper.computeTargetExportStatusLookupValues(fromExportStatus);
 	}
 
 	@Override
@@ -120,21 +114,19 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		// // TODO tbp: remove hardcoded
 		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
-		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
-		if (!availableTargetStatuses.isEmpty())
-		{
-			final String code = availableTargetStatuses.get(0).getCode();
-			return LookupValue.StringLookupValue.of(code, adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
-		}
-		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+		return ChangeEDI_ExportStatusHelper.computeParameterDefaultValue(fromExportStatus);
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
+		final EDIExportStatus targetExportStatus = EDIExportStatus.ofCode(p_TargetExportStatus);
+		final boolean isProcessed = ChangeEDI_ExportStatusHelper.computeIsProcessedByTargetExportStatus(EDIExportStatus.ofCode(targetExportStatus.getCode()));
 		for (final EDIDesadvId desadvId : getSelectedEdiDesadvIds())
 		{
-			ChangeEDI_ExportStatusHelper.save(desadvId, EDIExportStatus.ofCode(p_TargetExportStatus));
+			ChangeEDI_ExportStatusHelper.EDI_DesadvDoIt(desadvId,
+														targetExportStatus,
+														isProcessed);
 		}
 
 		return MSG_OK;

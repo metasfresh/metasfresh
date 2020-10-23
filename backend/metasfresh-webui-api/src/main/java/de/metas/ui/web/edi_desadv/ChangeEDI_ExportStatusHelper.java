@@ -27,17 +27,23 @@ import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @UtilityClass
 public class ChangeEDI_ExportStatusHelper
 {
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	@NonNull
 	public List<EDIExportStatus> getAvailableTargetExportStatuses(@NonNull final EDIExportStatus fromStatus)
@@ -68,12 +74,34 @@ public class ChangeEDI_ExportStatusHelper
 		}
 	}
 
-	public static void save(@NonNull final EDIDesadvId desadvId, @NonNull final EDIExportStatus targetExportStatus)
+	public static void EDI_DesadvDoIt(@NonNull final EDIDesadvId desadvId, @NonNull final EDIExportStatus targetExportStatus, final boolean isProcessed)
 	{
 		final I_EDI_Desadv edi = desadvDAO.retrieveById(desadvId);
 		edi.setEDI_ExportStatus(targetExportStatus.getCode());
-		edi.setProcessed(ChangeEDI_ExportStatusHelper.computeIsProcessedByTargetExportStatus(EDIExportStatus.ofCode(targetExportStatus.getCode())));
+		edi.setProcessed(isProcessed);
 		desadvDAO.save(edi);
+	}
+
+	@NonNull
+	public LookupValuesList computeTargetExportStatusLookupValues(final EDIExportStatus fromExportStatus)
+	{
+		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
+
+		return availableTargetStatuses.stream()
+				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
+				.collect(LookupValuesList.collect());
+	}
+
+	@Nullable
+	public Object computeParameterDefaultValue(final EDIExportStatus fromExportStatus)
+	{
+		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
+		if (!availableTargetStatuses.isEmpty())
+		{
+			final String code = availableTargetStatuses.get(0).getCode();
+			return LookupValue.StringLookupValue.of(code, adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
+		}
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 }
