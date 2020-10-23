@@ -7,6 +7,7 @@ import {
   getFormatForDateField,
   getFormattedDate,
   getClassNames,
+  getWidgetField,
 } from '../../utils/widgetHelpers';
 import {
   DATE_FORMAT,
@@ -209,6 +210,34 @@ describe('Widget helpers', () => {
       });
 
       expect(resultToCheckEmptyObj).toBe(false);
+    });
+  });
+
+  describe('getWidgetField', () => {
+    it(`return the widget name`, () => {
+      const fields = [{ field: 'Name', caption: 'Name', emptyText: 'none', clearValueText: 'none' }];
+
+      expect(getWidgetField({ fields })).toEqual('Name');
+    });
+
+    it(`return the widget name for filter widget`, () => {
+      const fields = [{
+        caption: "Name",
+        defaultValue: null,
+        defaultValueTo: null,
+        displayed: true,
+        field: "Name",
+        mandatory: false,
+        parameterName: "Name",
+        range: false,
+        readonly: false,
+        type: "primary",
+        value: "",
+        valueTo: "",
+        widgetType: "Text",
+      }];
+
+      expect(getWidgetField({ fields, filterWidget: true })).toEqual('Name');
     });
   });
 });

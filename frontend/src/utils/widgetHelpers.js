@@ -192,6 +192,6 @@ export function shouldPatch({
  * @param {boolean} filterWidget - flag if widget is a filter
  * @param {array} fields - widget fields array
  */
-export function getWidgetField({ filterWidget, fields }) {
+export function getWidgetField({ filterWidget = false, fields }) {
   return filterWidget ? fields[0].parameterName : fields[0].field;
 }
