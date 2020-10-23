@@ -558,7 +558,6 @@ class WidgetRenderer extends PureComponent {
         );
       case 'Labels': {
         let values = [];
-
         const entry = widgetData[0];
 
         if (entry && entry.value && Array.isArray(entry.value.values)) {

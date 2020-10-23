@@ -20,8 +20,6 @@ export default class Switch extends PureComponent {
       <label
         className={classnames('input-switch', {
           'input-disabled': readonly,
-          'input-mandatory':
-            widgetData.mandatory && widgetData.value.length === 0,
           'input-error':
             widgetData.validStatus && !widgetData.validStatus.valid,
           'input-table': rowId && !isModal,
