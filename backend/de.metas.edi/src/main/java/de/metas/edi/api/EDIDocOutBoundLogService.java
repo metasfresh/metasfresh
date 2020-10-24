@@ -65,7 +65,7 @@ public class EDIDocOutBoundLogService
 
 	public I_C_Doc_Outbound_Log retreiveById(@NonNull final ArchiveId archiveId)
 	{
-		return create(docOutboundDAO.retrieveLog(archiveId), I_C_Doc_Outbound_Log.class);
+		return load(archiveId, I_C_Doc_Outbound_Log.class);
 	}
 
 	public I_C_Invoice retreiveById(@NonNull final InvoiceId invoiceId)
