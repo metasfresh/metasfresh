@@ -23,11 +23,12 @@
 package de.metas.ui.web.edi_desadv;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.model.I_C_Doc_Outbound_Log;
+import de.metas.edi.model.I_C_Invoice;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -133,6 +134,23 @@ public class ChangeEDI_ExportStatusHelper
 			return LookupValue.StringLookupValue.of(code, adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
+	/**
+	 * TODO tbp: how to check if this docOutboundLog is for edi or not?
+	 * docOutboundLog.isEdiEnabled() is a virtual column!
+	 * in swing this is checked by """(select bp.IsEdiInvoicRecipient from C_BPartner bp where bp.C_BPartner_ID=C_Doc_Outbound_Log.C_BPartner_ID)"""
+	 * do i need to check for if the AD_Table is C_Invoice as well?
+	 * help maybe?
+	 */
+	public boolean checkIsInvoiceAndEDI(final I_C_Doc_Outbound_Log docOutboundLog)
+	{
+		final TableRecordReference recordReference = TableRecordReference.ofReferenced(docOutboundLog);
+		if (!I_C_Invoice.Table_Name.equals(recordReference.getTableName()))
+		{
+			return false;
+		}
+		return true;
 	}
 
 }

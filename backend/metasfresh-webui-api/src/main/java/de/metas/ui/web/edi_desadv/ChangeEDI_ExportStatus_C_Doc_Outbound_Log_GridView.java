@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
-import de.metas.edi.model.I_C_Invoice;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -40,7 +39,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import org.adempiere.archive.ArchiveId;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
@@ -71,7 +69,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 		{
 			final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(logId);
 
-			if (!checkIsInvoiceAndEDI(docOutboundLog))
+			if (!ChangeEDI_ExportStatusHelper.checkIsInvoiceAndEDI(docOutboundLog))
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("Selected record is not an EDI Invoice: " + docOutboundLog);
 			}
@@ -107,9 +105,6 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(docOutboundLog.getEDI_ExportStatus());
 
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
-
 		return ChangeEDI_ExportStatusHelper.computeTargetExportStatusLookupValues(fromExportStatus);
 	}
 
@@ -120,9 +115,6 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(getSelectedDocOutboundLogIds().iterator().next());
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(docOutboundLog.getEDI_ExportStatus());
-
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		return ChangeEDI_ExportStatusHelper.computeParameterDefaultValue(fromExportStatus);
 	}
@@ -144,22 +136,5 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		return selectedRowIds.toIds(ArchiveId::ofRepoId);
-	}
-
-	/**
-	 * TODO tbp: how to check if this docOutboundLog is for edi or not?
-	 * docOutboundLog.isEdiEnabled() is a virtual column!
-	 * in swing this is checked by """(select bp.IsEdiInvoicRecipient from C_BPartner bp where bp.C_BPartner_ID=C_Doc_Outbound_Log.C_BPartner_ID)"""
-	 * do i need to check for if the AD_Table is C_Invoice as well?
-	 * help maybe?
-	 */
-	private boolean checkIsInvoiceAndEDI(final I_C_Doc_Outbound_Log docOutboundLog)
-	{
-		final TableRecordReference recordReference = TableRecordReference.ofReferenced(docOutboundLog);
-		if (!I_C_Invoice.Table_Name.equals(recordReference.getTableName()))
-		{
-			return false;
-		}
-		return true;
 	}
 }

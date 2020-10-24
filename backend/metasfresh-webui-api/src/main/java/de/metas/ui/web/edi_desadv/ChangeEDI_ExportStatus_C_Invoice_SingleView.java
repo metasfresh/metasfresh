@@ -26,7 +26,6 @@ import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -38,7 +37,6 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
@@ -48,7 +46,6 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 		extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
 
 	protected static final String PARAM_TargetExportStatus = I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus;
@@ -92,9 +89,6 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
 
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
-
 		return ChangeEDI_ExportStatusHelper.computeTargetExportStatusLookupValues(fromExportStatus);
 	}
 
@@ -105,9 +99,6 @@ public class ChangeEDI_ExportStatus_C_Invoice_SingleView
 		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(InvoiceId.ofRepoId(getRecord_ID()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
-
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		return ChangeEDI_ExportStatusHelper.computeParameterDefaultValue(fromExportStatus);
 	}

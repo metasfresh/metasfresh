@@ -71,7 +71,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 
 		if (fromExportStatus == null)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one for: " + desadv);
 		}
 
 		if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
@@ -89,9 +89,6 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
 
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
-
 		return ChangeEDI_ExportStatusHelper.computeTargetExportStatusLookupValues(fromExportStatus);
 	}
 
@@ -102,9 +99,6 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(getRecord_ID()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
-
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		return ChangeEDI_ExportStatusHelper.computeParameterDefaultValue(fromExportStatus);
 	}

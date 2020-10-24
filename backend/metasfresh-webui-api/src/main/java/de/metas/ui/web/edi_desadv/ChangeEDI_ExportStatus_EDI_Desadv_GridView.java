@@ -39,7 +39,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
-import org.adempiere.ad.service.IADReferenceDAO;
 
 import javax.annotation.Nullable;
 
@@ -48,7 +47,6 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	protected static final String PARAM_TargetExportStatus = I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus;
 	@Param(parameterName = PARAM_TargetExportStatus)
@@ -65,7 +63,6 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 
 		// technical detail: all records must have the same Export Status
 		EDIExportStatus sameExportStatus = null;
-		// TODO tbp: this is N+1. how to fix?
 		for (final EDIDesadvId id : desadvIds)
 		{
 			final I_EDI_Desadv desadv = desadvDAO.retrieveById(id);
@@ -73,7 +70,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 
 			if (fromExportStatus == null)
 			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one: " + fromExportStatus);
+				return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot change ExportStatus from the current one for: " + desadv);
 			}
 
 			if (ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus).isEmpty())
@@ -102,9 +99,6 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
 
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
-
 		return ChangeEDI_ExportStatusHelper.computeTargetExportStatusLookupValues(fromExportStatus);
 	}
 
@@ -115,9 +109,6 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(getSelectedEdiDesadvIds().iterator().next());
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
-
-		// // TODO tbp: remove hardcoded
-		// final EDIExportStatus fromExportStatus = EDIExportStatus.Sent;
 
 		return ChangeEDI_ExportStatusHelper.computeParameterDefaultValue(fromExportStatus);
 	}
