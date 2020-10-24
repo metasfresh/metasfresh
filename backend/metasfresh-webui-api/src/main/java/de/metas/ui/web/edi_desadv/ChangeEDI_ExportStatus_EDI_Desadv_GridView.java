@@ -126,7 +126,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_GridView
 	protected String doIt() throws Exception
 	{
 		final EDIExportStatus targetExportStatus = EDIExportStatus.ofCode(p_TargetExportStatus);
-		final boolean isProcessed = ChangeEDI_ExportStatusHelper.computeIsProcessedByTargetExportStatus(EDIExportStatus.ofCode(targetExportStatus.getCode()));
+		final boolean isProcessed = ChangeEDI_ExportStatusHelper.computeIsProcessedByTargetExportStatus(targetExportStatus);
 		for (final EDIDesadvId desadvId : getSelectedEdiDesadvIds())
 		{
 			ChangeEDI_ExportStatusHelper.EDI_DesadvDoIt(desadvId,

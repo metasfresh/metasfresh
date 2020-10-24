@@ -113,7 +113,7 @@ public class ChangeEDI_ExportStatus_EDI_Desadv_SingleView
 	protected String doIt() throws Exception
 	{
 		final EDIExportStatus targetExportStatus = EDIExportStatus.ofCode(p_TargetExportStatus);
-		final boolean isProcessed = ChangeEDI_ExportStatusHelper.computeIsProcessedByTargetExportStatus(EDIExportStatus.ofCode(targetExportStatus.getCode()));
+		final boolean isProcessed = ChangeEDI_ExportStatusHelper.computeIsProcessedByTargetExportStatus(targetExportStatus);
 		ChangeEDI_ExportStatusHelper.EDI_DesadvDoIt(EDIDesadvId.ofRepoId(getRecord_ID()),
 													targetExportStatus,
 													isProcessed);
