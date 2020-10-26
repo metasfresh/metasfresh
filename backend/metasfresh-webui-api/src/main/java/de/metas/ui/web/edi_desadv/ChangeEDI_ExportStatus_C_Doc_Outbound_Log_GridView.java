@@ -25,6 +25,7 @@ package de.metas.ui.web.edi_desadv;
 import com.google.common.collect.ImmutableSet;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.model.DocOutboundLogId;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.IProcessDefaultParameter;
@@ -38,7 +39,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import org.adempiere.archive.ArchiveId;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
@@ -56,7 +56,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final ImmutableSet<ArchiveId> docOutboundLogIds = getSelectedDocOutboundLogIds();
+		final ImmutableSet<DocOutboundLogId> docOutboundLogIds = getSelectedDocOutboundLogIds();
 		if (docOutboundLogIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -65,7 +65,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 		// technical detail: all records must have the same Export Status
 		EDIExportStatus sameExportStatus = null;
 
-		for (final ArchiveId logId : docOutboundLogIds)
+		for (final DocOutboundLogId logId : docOutboundLogIds)
 		{
 			final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(logId);
 
@@ -124,7 +124,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 	{
 		final EDIExportStatus targetExportStatus = EDIExportStatus.ofCode(p_TargetExportStatus);
 
-		for (final ArchiveId logId : getSelectedDocOutboundLogIds())
+		for (final DocOutboundLogId logId : getSelectedDocOutboundLogIds())
 		{
 			ChangeEDI_ExportStatusHelper.C_DocOutbound_LogDoIt(targetExportStatus, logId);
 		}
@@ -132,9 +132,9 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_GridView
 		return MSG_OK;
 	}
 
-	private ImmutableSet<ArchiveId> getSelectedDocOutboundLogIds()
+	private ImmutableSet<DocOutboundLogId> getSelectedDocOutboundLogIds()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		return selectedRowIds.toIds(ArchiveId::ofRepoId);
+		return selectedRowIds.toIds(DocOutboundLogId::ofRepoId);
 	}
 }

@@ -1,6 +1,7 @@
 package de.metas.edi.api;
 
 import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.edi.model.DocOutboundLogId;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.invoice.InvoiceId;
@@ -63,9 +64,9 @@ public class EDIDocOutBoundLogService
 		return Optional.ofNullable(logRecord);
 	}
 
-	public I_C_Doc_Outbound_Log retreiveById(@NonNull final ArchiveId archiveId)
+	public I_C_Doc_Outbound_Log retreiveById(@NonNull final DocOutboundLogId docOutboundLogId)
 	{
-		return load(archiveId, I_C_Doc_Outbound_Log.class);
+		return load(docOutboundLogId, I_C_Doc_Outbound_Log.class);
 	}
 
 	public I_C_Invoice retreiveById(@NonNull final InvoiceId invoiceId)

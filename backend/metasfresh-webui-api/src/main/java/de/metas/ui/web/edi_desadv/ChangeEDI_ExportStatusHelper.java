@@ -27,6 +27,7 @@ import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.model.DocOutboundLogId;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -40,7 +41,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -93,7 +93,7 @@ public class ChangeEDI_ExportStatusHelper
 		desadvDAO.save(edi);
 	}
 
-	public void C_DocOutbound_LogDoIt(final EDIExportStatus targetExportStatus, final ArchiveId logId)
+	public void C_DocOutbound_LogDoIt(final EDIExportStatus targetExportStatus, final DocOutboundLogId logId)
 	{
 		// technical detail: the I_C_Doc_Outbound_Log is updated when we update the C_Invoice, via interceptor: de.metas.edi.model.validator.C_Invoice.updateDocOutBoundLog
 		final de.metas.edi.model.I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(logId);

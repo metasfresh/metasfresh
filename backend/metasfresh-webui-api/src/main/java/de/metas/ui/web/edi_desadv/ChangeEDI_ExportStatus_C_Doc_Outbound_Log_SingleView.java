@@ -24,6 +24,7 @@ package de.metas.ui.web.edi_desadv;
 
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.model.DocOutboundLogId;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.IProcessDefaultParameter;
@@ -38,7 +39,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import lombok.NonNull;
-import org.adempiere.archive.ArchiveId;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
@@ -66,7 +66,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_SingleView
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(ArchiveId.ofRepoId(context.getSingleSelectedRecordId()));
+		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(DocOutboundLogId.ofRepoId(context.getSingleSelectedRecordId()));
 
 		if (ChangeEDI_ExportStatusHelper.checkIsNotInvoiceWithEDI(docOutboundLog))
 		{
@@ -90,7 +90,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_SingleView
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_TargetExportStatus, numericKey = false, lookupSource = LookupSource.list)
 	private LookupValuesList getTargetExportStatusLookupValues(final LookupDataSourceContext context)
 	{
-		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(ArchiveId.ofRepoId(getRecord_ID()));
+		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(DocOutboundLogId.ofRepoId(getRecord_ID()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(docOutboundLog.getEDI_ExportStatus());
 
@@ -101,7 +101,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_SingleView
 	@Nullable
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(ArchiveId.ofRepoId(getRecord_ID()));
+		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(DocOutboundLogId.ofRepoId(getRecord_ID()));
 
 		final EDIExportStatus fromExportStatus = EDIExportStatus.ofCode(docOutboundLog.getEDI_ExportStatus());
 
@@ -113,7 +113,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_SingleView
 	{
 		final EDIExportStatus targetExportStatus = EDIExportStatus.ofCode(p_TargetExportStatus);
 
-		ChangeEDI_ExportStatusHelper.C_DocOutbound_LogDoIt(targetExportStatus, ArchiveId.ofRepoId(getRecord_ID()));
+		ChangeEDI_ExportStatusHelper.C_DocOutbound_LogDoIt(targetExportStatus, DocOutboundLogId.ofRepoId(getRecord_ID()));
 		return MSG_OK;
 	}
 }
