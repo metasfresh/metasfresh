@@ -1,13 +1,21 @@
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Package;
 
 /*
  * #%L
@@ -30,17 +38,6 @@ import org.compiere.model.I_M_Package;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.impl.AddTrackingCodesForInOutWithoutHUReq;
-import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 public interface IHUShipperTransportationBL extends ISingletonService
 {
@@ -90,8 +87,10 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(Collection<I_M_HU> hus);
 
 	@NonNull
-	ShipperTransportationId addTrackingCodesForInOutWithoutHU(AddTrackingCodesForInOutWithoutHUReq req);
+	ShipperTransportationId addTrackingInfosForInOutWithoutHU(AddTrackingInfosForInOutWithoutHUReq req);
 
 	@NonNull
 	I_M_ShipperTransportation getById(ShipperTransportationId shipperTransportationId);
+
+	void processShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId);
 }
