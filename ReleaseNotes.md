@@ -9,6 +9,37 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.156
+## Features
+* metasfresh
+  * [#9886](https://github.com/metasfresh/metasfresh/issues/9886) Filter: Invoice disposition by "reference" = delivery note number entered in the order
+  * [#9938](https://github.com/metasfresh/metasfresh/issues/9938) Display the field AD_Tab in the Table-Process tab of the Process window (WebUI)
+  * [#9958](https://github.com/metasfresh/metasfresh/issues/9958) Fix ProductPlanning creation and Org
+  * [#9966](https://github.com/metasfresh/metasfresh/issues/9966) Add support for CSV-Response in postgREST-Processes
+  * [#10001](https://github.com/metasfresh/metasfresh/issues/10001) Add M_Warehouse in C_Invoice and use it for tax calculation
+  * [#10022](https://github.com/metasfresh/metasfresh/issues/10022) Automatically set `HU.BestBeforeDate` and `HU.LotNr` attributes during Manfacturing
+  * [#10034](https://github.com/metasfresh/metasfresh/issues/10034) Add possibility to open documents created from processes in new tabs
+  * [#10059](https://github.com/metasfresh/metasfresh/issues/10059) Invoice and Order: Only allow doctypes with the same org as the document or *
+  * [#10074](https://github.com/metasfresh/metasfresh/issues/10074) Create metasfresh window for 'Purchase Invoice Candidates'
+  * [#10076](https://github.com/metasfresh/metasfresh/issues/10076) Rename parameter Label at "Gutschrift erstellen"
+  * [#10079](https://github.com/metasfresh/metasfresh/issues/10079) Add window 'Counter Document' and 'Missing/Incomplete Counter Document' to WebUI role
+  * [#10083](https://github.com/metasfresh/metasfresh/issues/10083) Make it easier to work with API export status from metasfresh
+  * [#10088](https://github.com/metasfresh/metasfresh/issues/10088) Filter out closed shipment schedules from picking terminal window
+  * [#10097](https://github.com/metasfresh/metasfresh/issues/10097) Include sequence number in exports for shipment-candidate, receipt-candidate and production-order
+  * [#10098](https://github.com/metasfresh/metasfresh/issues/10098) Assign Material receipt to the project
+  * [#10108](https://github.com/metasfresh/metasfresh/issues/10108) Introduce AD_UI_Section.UIStyle
+  * [#10114](https://github.com/metasfresh/metasfresh/pull/10114) Add special auto-vacuum settings for different tables
+  * [#10122](https://github.com/metasfresh/metasfresh/issues/10122) Picking Tray Cleaning: add QtyTU parameter to "Take out and add to LU" process
+
+## Fixes
+* metasfresh
+  * [#10045](https://github.com/metasfresh/metasfresh/issues/10045) Packing instructions are no longer displayed when ordering
+  * [#10068](https://github.com/metasfresh/metasfresh/issues/10068) Reactivate sales order fix
+  * [#10084](https://github.com/metasfresh/metasfresh/issues/10084) DatePromised and PreparationDate shall be copied From Offer when creating a sales order
+  * [#10116](https://github.com/metasfresh/metasfresh/issues/10116) Created two entries through double click
+  * [#10121](https://github.com/metasfresh/metasfresh/pull/10121) Update lombok to 1.18.14 from 1.18.10
+  * [#10125](https://github.com/metasfresh/metasfresh/issues/10125) Fix editing fields in data entry tabs
+
 # metasfresh 5.155
 ## Features
 * metasfresh

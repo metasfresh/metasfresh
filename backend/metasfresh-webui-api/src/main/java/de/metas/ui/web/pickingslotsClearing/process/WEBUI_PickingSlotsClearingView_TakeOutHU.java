@@ -1,11 +1,7 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
@@ -16,6 +12,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -46,13 +43,7 @@ import java.util.List;
 public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsClearingViewBasedProcess implements IProcessPrecondition
 {
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-	private final transient IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
-	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
-	@Autowired
-	private PickingCandidateService pickingCandidateService;
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	private final List<HUExtractedFromPickingSlotEvent> husExtractedEvents = new ArrayList<>();
 
@@ -86,7 +77,6 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 		final PickingSlotRow huRow = getSingleSelectedPickingSlotRow();
 		Check.assume(huRow.isTopLevelHU(), "row {} shall be a top level HU", huRow);
 		final I_M_HU hu = InterfaceWrapperHelper.load(huRow.getHuId(), I_M_HU.class);
-		final String huStatus = hu.getHUStatus();
 
 		//
 		// Remove the HU from it's picking slot
