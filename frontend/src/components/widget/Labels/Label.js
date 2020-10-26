@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 const noOp = () => {};
@@ -8,7 +8,7 @@ const noOp = () => {};
  * @module Label
  * @extends Component
  */
-class Label extends Component {
+class Label extends PureComponent {
   /**
    * @method handleClick
    * @summary ToDo: Describe the method
@@ -28,6 +28,7 @@ class Label extends Component {
   handleRemove = (e) => {
     e.stopPropagation();
     const { onRemove, label, readonly } = this.props;
+
     if (readonly) return false;
 
     onRemove(label);

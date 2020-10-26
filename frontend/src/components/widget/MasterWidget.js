@@ -7,7 +7,7 @@ import { formatDateWithZeros } from '../../utils/documentListHelper';
 import {
   validatePrecision,
   formatValueByWidgetType,
-} from '../../utils/widgetHelper';
+} from '../../utils/widgetHelpers';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 import { getTableId } from '../../reducers/tables';
 
@@ -25,7 +25,9 @@ class MasterWidget extends PureComponent {
     super(props);
     const { value, widgetData, clearValue } = this.props;
     // `clearValue` removes current field value for the widget. This is used when user
-    // focuses on table cell and starts typing without pressing {enter} first
+    // focuses on table cell and starts typing without pressing {enter} first. `value` is
+    // only used by the `BarcodeScanner` to force formatting of the visible value, so there's
+    // no collision possible here
     this.state = {
       updated: false,
       edited: false,
@@ -33,6 +35,10 @@ class MasterWidget extends PureComponent {
       widgetData: props.widgetData, // this is used for comparison in the getDerivedStateFromProps lifecycle
     };
   }
+
+  componentDidMount = () => (this.mounted = true);
+
+  componentWillUnmount = () => (this.mounted = false);
 
   /**
    * @method getDerivedStateFromProps
@@ -57,13 +63,16 @@ class MasterWidget extends PureComponent {
   componentDidUpdate() {
     const { updated } = this.state;
     if (updated) {
-      this.timeout = setTimeout(() => this.setState({ updated: false }), 1000);
+      this.timeout = setTimeout(() => {
+        this.mounted && this.setState({ updated: false });
+      }, 1000);
     }
   }
 
   /**
    * @method handlePatch
-   * @summary ToDo: Describe the method.
+   * @summary Performs the actual patch request and for `Product attributes` also
+   * updates the field value stored in the redux store.
    * @param {*} property
    * @param {*} value
    */
@@ -96,8 +105,7 @@ class MasterWidget extends PureComponent {
     // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
     // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
-    // Attributes component so that it won't need it anymore. Or add better guards
-    // to be sure it's not called if not needed.
+    // Attributes component so that it won't need it anymore.
     // https://github.com/metasfresh/me03/issues/5384
     widgetType !== 'Button' &&
       !dataId &&
@@ -232,14 +240,19 @@ class MasterWidget extends PureComponent {
     onBlurWidget && onBlurWidget(fieldName);
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  handleFocus = () => this.handleFocusFn(true);
+
+  handleBlur = () => this.handleFocusFn(false);
+
+  handleFocusFn = (val) => {
+    const { handleBackdropLock } = this.props;
+
+    handleBackdropLock && handleBackdropLock(val);
+  };
+
   render() {
-    const { handleBackdropLock, onClickOutside, windowId } = this.props;
+    const { windowId } = this.props;
     const { updated, value } = this.state;
-    const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 
     return (
       <RawWidget
@@ -247,9 +260,8 @@ class MasterWidget extends PureComponent {
         windowType={windowId}
         updated={updated}
         data={value}
-        handleFocus={() => handleFocusFn(true)}
-        handleBlur={() => handleFocusFn(false)}
-        onClickOutside={onClickOutside}
+        handleFocus={this.handleFocus}
+        handleBlur={this.handleBlur}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
