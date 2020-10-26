@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.edi
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,32 +20,44 @@
  * #L%
  */
 
-package de.metas.postgrest.client;
+package de.metas.edi.api;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
-import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Nullable;
-import java.util.List;
-
-import static de.metas.postgrest.client.PostgRESTResponseFormat.JSON;
 
 @Value
-@Builder
-public class GetRequest
+public class EDIDesadvId implements RepoIdAware
 {
+	int repoId;
+
+	@JsonCreator
 	@NonNull
-	String baseURL;
-
-	@Builder.Default
-	PostgRESTResponseFormat responseFormat = JSON;
-
-	@Nullable
-	List<String> pathVariables;
+	public static EDIDesadvId ofRepoId(final int repoId)
+	{
+		return new EDIDesadvId(repoId);
+	}
 
 	@Nullable
-	MultiValueMap<String, String> queryParameters;
+	public static EDIDesadvId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new EDIDesadvId(repoId) : null;
+	}
 
+	private EDIDesadvId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Bank_ID");
+	}
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }
