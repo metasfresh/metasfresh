@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -385,6 +386,33 @@ public class InOutDAO implements IInOutDAO
 		}
 
 		return null;
+	}
+
+	public ImmutableMap<InOutLineId,I_M_InOut> retrieveInOutByLineIds(@NonNull final Set<InOutLineId> inOutLineIds)
+	{
+		final List<I_M_InOutLine> inOutLines = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
+				.create()
+				.list();
+
+		final Set<Integer> inOutIds = inOutLines.stream().map(I_M_InOutLine::getM_InOut_ID).collect(ImmutableSet.toImmutableSet());
+
+		final Map<Integer, I_M_InOut> inOutRecordsById = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutIds)
+				.create()
+				.mapById();
+
+		final ImmutableMap.Builder<InOutLineId, I_M_InOut> lineId2InOutBuilder = ImmutableMap.builder();
+
+		inOutLines.forEach( inOutLine -> {
+			final InOutLineId inOutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
+
+			lineId2InOutBuilder.put(inOutLineId, inOutRecordsById.get(inOutLine.getM_InOut_ID()));
+		});
+
+		return lineId2InOutBuilder.build();
 	}
 
 }

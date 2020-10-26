@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -33,6 +34,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {
@@ -115,4 +117,5 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecords(ShipmentScheduleId shipmentScheduleId);
 
+	ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> retrieveOnShipmentLineRecordsByScheduleIds(Set<ShipmentScheduleId> scheduleIds);
 }

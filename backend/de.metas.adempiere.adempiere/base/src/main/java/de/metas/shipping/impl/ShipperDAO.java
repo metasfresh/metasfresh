@@ -124,7 +124,7 @@ public class ShipperDAO implements IShipperDAO
 	}
 
 	@NonNull
-	public Map<String,I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
+	public ImmutableMap<String,I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
 	{
 		if (Check.isEmpty(internalNameSet))
 		{

@@ -1,6 +1,7 @@
 package de.metas.inout;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
@@ -115,4 +116,6 @@ public interface IInOutDAO extends ISingletonService
 	void unsetLineNos(ImmutableList<InOutLineId> inOutLineIdsToUnset);
 
 	I_M_InOut getInOutByDocumentNumber(String documentNo, DocTypeId docTypeId, OrgId orgId);
+
+	ImmutableMap<InOutLineId,I_M_InOut> retrieveInOutByLineIds(Set<InOutLineId> inOutLineIds);
 }
