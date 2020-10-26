@@ -68,7 +68,7 @@ public class ChangeEDI_ExportStatus_C_Doc_Outbound_Log_SingleView
 
 		final I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(ArchiveId.ofRepoId(context.getSingleSelectedRecordId()));
 
-		if (!ChangeEDI_ExportStatusHelper.checkIsInvoiceAndEDI(docOutboundLog))
+		if (ChangeEDI_ExportStatusHelper.checkIsNotInvoiceWithEDI(docOutboundLog))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Selected record is not an EDI Invoice: " + docOutboundLog);
 		}
