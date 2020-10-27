@@ -1,5 +1,6 @@
 package de.metas.shipping;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
@@ -34,5 +35,5 @@ public interface IShipperDAO extends ISingletonService
 
 	Map<ShipperId,I_M_Shipper> getByIds(Set<ShipperId> shipperIds);
 
-	Map<String,I_M_Shipper> getByInternalName(Set<String> internalNameSet);
+	ImmutableMap<String,I_M_Shipper> getByInternalName(Set<String> internalNameSet);
 }

@@ -110,7 +110,6 @@ public final class PlainContextAware implements IContextAware
 	 * and maybe other code will still use a thread-inherited trx over the "null" trx if there is any.
 	 * <li>Use {@link #newOutOfTrx(Properties)}
 	 *
-	 * @param ctx
 	 * @deprecated please use {@link #newOutOfTrxAllowThreadInherited(Properties)}
 	 *             to get a context aware that will use a local trx but can "fall back" to thread-inherited.
 	 */
@@ -121,9 +120,6 @@ public final class PlainContextAware implements IContextAware
 	}
 
 	/**
-	 *
-	 * @param ctx
-	 * @param trxName
 	 * @deprecated please use {@link #newWithTrxName(Properties, String)} instead.
 	 */
 	@Deprecated

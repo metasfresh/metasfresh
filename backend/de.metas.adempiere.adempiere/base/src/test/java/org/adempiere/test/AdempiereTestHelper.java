@@ -27,6 +27,7 @@ import io.github.jsonSnapshot.SnapshotConfig;
 import io.github.jsonSnapshot.SnapshotMatcher;
 import io.github.jsonSnapshot.SnapshotMatchingStrategy;
 import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
+import lombok.NonNull;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -51,6 +52,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
 
+import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
@@ -293,13 +295,18 @@ public class AdempiereTestHelper
 
 	public static OrgId createOrgWithTimeZone()
 	{
+		return createOrgWithTimeZone(ZoneId.of("Europe/Berlin"));
+	}
+
+	public static OrgId createOrgWithTimeZone(@NonNull final ZoneId timeZone)
+	{
 		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
 		saveRecord(orgRecord);
 
 		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
 		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
 		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
-		orgInfoRecord.setTimeZone("Europe/Berlin");
+		orgInfoRecord.setTimeZone(timeZone.getId());
 		saveRecord(orgInfoRecord);
 
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());

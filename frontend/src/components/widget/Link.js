@@ -1,38 +1,42 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import cx from 'classnames';
+import { get } from 'lodash';
 
-class Link extends Component {
-  constructor(props) {
-    super(props);
-  }
+class Link extends PureComponent {
+  handleClick = () => {
+    const { widgetData } = this.props;
+    const url = get(widgetData[0], ['value'], '');
 
-  handleClick = (url) => {
-    window.open(url, '_blank');
+    if (url) {
+      window.open(url, '_blank');
+    }
   };
 
   render() {
     const {
       getClassNames,
-      isEdited,
+      isFocused,
       widgetProperties,
       icon,
       widgetData,
     } = this.props;
     return (
       <div className="input-inner-container">
-        <div className={getClassNames() + (isEdited ? 'input-focused ' : '')}>
+        <div className={cx(getClassNames(), { 'input-focused': isFocused })}>
           <input {...widgetProperties} type="text" />
           {icon && <i className="meta-icon-edit input-icon-right" />}
         </div>
         <div
-          onClick={() => this.handleClick(widgetData[0].value)}
-          className={
-            'btn btn-icon btn-meta-outline-secondary btn-inline ' +
-            'pointer btn-distance-rev btn-sm ' +
-            (!widgetData[0].validStatus.valid || widgetData[0].value === ''
-              ? 'btn-disabled btn-meta-disabled'
-              : '')
-          }
+          onClick={this.handleClick}
+          className={cx(
+            'btn btn-icon btn-meta-outline-secondary btn-inline',
+            'pointer btn-distance-rev btn-sm',
+            {
+              'btn-disabled btn-meta-disabled':
+                !widgetData[0].validStatus.valid || widgetData[0].value === '',
+            }
+          )}
         >
           <i className="meta-icon-link" />
         </div>
@@ -43,7 +47,7 @@ class Link extends Component {
 
 Link.propTypes = {
   getClassNames: PropTypes.func,
-  isEdited: PropTypes.bool,
+  isFocused: PropTypes.bool,
   widgetProperties: PropTypes.any,
   icon: PropTypes.any,
   widgetData: PropTypes.any,

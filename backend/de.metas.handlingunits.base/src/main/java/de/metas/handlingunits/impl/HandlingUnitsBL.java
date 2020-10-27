@@ -529,10 +529,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean isTopLevel(final I_M_HU hu)
+	public boolean isTopLevel(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
 		return handlingUnitsRepo.retrieveParentItem(hu) == null;
 	}
 

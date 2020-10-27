@@ -29,21 +29,17 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Value
 @Builder
-public class AddTrackingCodesForInOutWithoutHUReq
+public class AddTrackingInfosForInOutWithoutHUReq
 {
 	@NonNull
 	InOutId inOutId;
 
 	@NonNull
 	ShipperId shipperId;
-
-	@NonNull
-	ZonedDateTime shipDate;
 
 	@NonNull
 	List<PackageInfo> packageInfos;

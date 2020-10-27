@@ -790,8 +790,9 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
 }
 
 /*
- *  Wrapper for patch request of widget elements
- *  when responses should merge store
+ * Wrapper for patch request of widget elements
+ * when responses should merge store
+ * @todo TODO: This should return a promise
  */
 export function patch(
   entity,
@@ -896,7 +897,6 @@ export function fireUpdateData({
   rowId,
   isModal,
   fetchAdvancedFields,
-  doNotFetchIncludedTabs,
 }) {
   return (dispatch) => {
     getData({
@@ -906,7 +906,6 @@ export function fireUpdateData({
       tabId: tabId,
       rowId: rowId,
       fetchAdvancedFields: fetchAdvancedFields,
-      doNotFetchIncludedTabs: doNotFetchIncludedTabs,
     }).then((response) => {
       dispatch(
         mapDataToState(
@@ -1225,7 +1224,7 @@ export function handleProcessResponse(response, type, id) {
             await dispatch(closeModal());
             urlPath = `/window/${windowId}/?viewId=${viewId}`;
             if (targetTab === 'NEW_TAB') {
-              openInNewTab(urlPath);
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
               return;
             }
             if (targetTab === 'SAME_TAB') {
@@ -1247,7 +1246,7 @@ export function handleProcessResponse(response, type, id) {
             urlPath = `/window/${windowId}/${documentId}`;
 
             if (targetTab === 'NEW_TAB') {
-              openInNewTab(urlPath);
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
               return false;
             }
 

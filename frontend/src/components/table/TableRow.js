@@ -47,6 +47,8 @@ class TableRow extends PureComponent {
       activeCell: '',
       activeCellName: null,
       updatedRow: false,
+      // controls if on {enter} we should edit a widget, or only submit it.
+      // if true - property will be edited. Otherwise just saved.
       listenOnKeys: true,
       multilineText,
       multilineTextLines,
@@ -135,12 +137,8 @@ class TableRow extends PureComponent {
   };
 
   handleClickOutside = (event) => {
-    const { changeListenOnTrue } = this.props;
-
     this.selectedCell && this.selectedCell.clearValue(true);
     this.handleEditProperty({ event });
-
-    changeListenOnTrue();
   };
 
   handleDoubleClick = (e) => {
@@ -165,7 +163,7 @@ class TableRow extends PureComponent {
       fieldsByName,
       onFastInlineEdit,
     } = this.props;
-    const { listenOnKeys, edited, valueBeforeEditing } = this.state;
+    const { listenOnKeys, edited, valueBeforeEditing, activeCell } = this.state;
     const inputContent = e.target.value;
 
     switch (e.key) {
@@ -204,8 +202,10 @@ class TableRow extends PureComponent {
             tableId,
           });
         }
-        e.stopPropagation();
-        this.handleEditProperty(e);
+        if (edited === property) {
+          e.stopPropagation();
+          this.handleEditProperty({ event: e });
+        }
 
         break;
       case 'Escape':
@@ -220,14 +220,26 @@ class TableRow extends PureComponent {
             tableId,
           });
           e.stopPropagation();
+
+          // reset the field value to the previous one, so that we won't
+          // overwrite it
+          e.target.value = valueBeforeEditing;
+
+          // we need to store the active cell to focus it after deactivating widget
+          const activeCellElement = activeCell;
+
           this.handleEditProperty({ event: e });
+          activeCellElement.focus();
           changeListenOnTrue();
           this.setState({ valueBeforeEditing: null });
         }
         break;
       default: {
-        valueBeforeEditing === null &&
+        // for disabled fields/fields without value, we don't get the field data
+        // from the backend
+        if (valueBeforeEditing === null && fieldsByName[property]) {
           this.setState({ valueBeforeEditing: fieldsByName[property].value });
+        }
 
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
@@ -235,7 +247,6 @@ class TableRow extends PureComponent {
             onFastInlineEdit();
             return false;
           }
-          this.listenOnKeysTrue();
 
           this.handleEditProperty({
             event: e,
@@ -311,10 +322,8 @@ class TableRow extends PureComponent {
             );
 
             if (disabled || readonly) {
-              this.listenOnKeysTrue();
+              !this.state.listenOnKeys && this.listenOnKeysTrue();
               this.handleEditProperty({ event });
-            } else {
-              this.listenOnKeysFalse();
             }
           }
         }
@@ -367,7 +376,6 @@ class TableRow extends PureComponent {
     const { activeCell } = this.state;
 
     this.handleEditProperty({ event: e });
-    this.listenOnKeysTrue();
 
     activeCell && activeCell.focus();
   };
@@ -400,22 +408,19 @@ class TableRow extends PureComponent {
    * @param {function} [cb] - callback function
    */
   _focusCell = (property, cb) => {
-    const { activeCell } = this.state;
+    const { activeCell, activeCellName } = this.state;
     const elem = document.activeElement;
 
-    if (
-      (activeCell !== elem && !elem.className.includes('js-input-field')) ||
-      cb
-    ) {
-      this.setState(
-        {
-          activeCell: elem,
-          activeCellName: property,
-        },
-        () => {
-          cb && cb();
-        }
-      );
+    if (property !== activeCellName || cb) {
+      const newState = { activeCellName: property };
+
+      if (activeCell !== elem && !elem.className.includes('js-input-field')) {
+        newState.activeCell = elem;
+      }
+
+      this.setState(newState, () => {
+        cb && cb();
+      });
     } else {
       cb && cb();
     }
