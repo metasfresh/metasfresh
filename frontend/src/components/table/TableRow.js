@@ -83,8 +83,9 @@ class TableRow extends PureComponent {
 
   /**
    * @method initPropertyEditor
-   * @summary Initialize the editor for an item
-   * @param {object} fieldName - the name of the field, mark - marks the text(like when you click and hold and select the text)
+   * @summary Initialize the editor for a widget field
+   * @param {object} fieldName - the name of the field,
+   * @param {boolean} mark - marks the text(like when you click and hold and select the text)
    */
   initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
@@ -289,6 +290,7 @@ class TableRow extends PureComponent {
    * @param {boolean} [focus] - flag if cell's widget should be focused
    * @param {boolean} [readonly] - widget's read status
    * @param {boolean} [select] - flag if selected cell should be cleared
+   * @param {boolean} [mark] - flag if widget content should be selected
    */
   _editProperty = ({ event, property, focus, readonly, select, mark }) => {
     if (typeof readonly !== undefined ? !readonly : true) {
@@ -409,12 +411,19 @@ class TableRow extends PureComponent {
    */
   _focusCell = (property, cb) => {
     const { activeCell, activeCellName } = this.state;
-    const elem = document.activeElement;
 
     if (property !== activeCellName || cb) {
       const newState = { activeCellName: property };
+      let elem = document.activeElement;
 
-      if (activeCell !== elem && !elem.className.includes('js-input-field')) {
+      // only cells should be stored as `activeCell` so if current element
+      // is not a cell (for instance it's a widget input or a context menu)
+      // find the relevant cell in the DOM
+      if (!elem.className.includes('table-cell')) {
+        elem = document.querySelector(`[data-cy="cell-${property}"]`);
+      }
+
+      if (elem && activeCell !== elem) {
         newState.activeCell = elem;
       }
 
