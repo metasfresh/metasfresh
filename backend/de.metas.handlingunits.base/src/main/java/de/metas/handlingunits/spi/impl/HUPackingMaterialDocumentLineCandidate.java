@@ -173,7 +173,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	/**
 	 *
 	 * @return packing materials amount (qty) converted to given stocking unit of measure.
-	 * @see IProductBL#getStockingUOM(I_M_Product)
+	 * @see IProductBL#getStockUOM(I_M_Product)
 	 */
 	public BigDecimal getQtyInStockingUOM()
 	{

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import de.metas.quantity.Quantity;
 import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -125,7 +126,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 				id2iol.put(inoutLine.getM_InOutLine_ID(), inoutLine);
 			}
 
-			BigDecimal qtyToAllocate = costCollector.getMovementQty();
+			BigDecimal qtyToAllocate = ppCostCollectorBL.getMovementQtyInStockingUOM(costCollector).toBigDecimal();
 			for (final I_M_InOutLine inoutLine : id2iol.values())
 			{
 				final BigDecimal qty = qtyToAllocate.min(inoutLine.getMovementQty());
