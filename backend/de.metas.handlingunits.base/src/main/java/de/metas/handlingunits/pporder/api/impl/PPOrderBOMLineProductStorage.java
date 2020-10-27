@@ -68,7 +68,7 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 		checkStaled();
 
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
+		final I_C_UOM uom = Services.get(IPPOrderBOMBL.class).getBOMLineUOM(orderBOMLine);
 		return Capacity.createInfiniteCapacity(productId, uom);
 	}
 
@@ -81,7 +81,7 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 		final Quantity qtyCapacity;
 		final Quantity qtyToIssueOrReceive;
 		final BOMComponentType componentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
-		if (PPOrderUtil.isReceipt(componentType))
+		if (componentType.isReceipt())
 		{
 			qtyCapacity = ppOrderBOMBL.getQtyRequiredToReceive(orderBOMLine);
 			qtyToIssueOrReceive = ppOrderBOMBL.getQtyToReceive(orderBOMLine);

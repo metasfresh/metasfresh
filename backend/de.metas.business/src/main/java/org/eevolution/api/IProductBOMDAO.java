@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.google.common.collect.ImmutableList;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -28,7 +29,7 @@ public interface IProductBOMDAO extends ISingletonService
 
 	I_PP_Product_BOMLine getBOMLineById(int productBOMLineId);
 
-	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM);
+	ImmutableList<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM);
 
 	List<I_PP_Product_BOMLine> retrieveLinesByBOMIds(Collection<ProductBOMId> bomIds);
 

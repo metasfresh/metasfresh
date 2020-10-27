@@ -40,6 +40,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -750,10 +751,12 @@ public abstract class PO
 		else if (value instanceof Boolean)
 		{
 			final boolean valueBoolean = (boolean)value;
-			return Env.toString(valueBoolean);
+			return StringUtils.ofBoolean(valueBoolean);
 		}
-
-		return value.toString();
+		else
+		{
+			return value.toString();
+		}
 	}	// get_ValueAsString
 
 	/**
@@ -994,7 +997,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_Value(final String ColumnName, Object value)
+	protected final boolean set_Value(final String ColumnName, @Nullable Object value)
 	{
 		if (value instanceof String && ColumnName.equals("WhereClause")
 				&& value.toString().toUpperCase().indexOf("=NULL") != -1)
@@ -1233,7 +1236,7 @@ public abstract class PO
 	 * @return true if value set
 	 */
 	// metas: changed from protected to public
-	public final boolean set_ValueNoCheck(final String ColumnName, final Object value)
+	public final boolean set_ValueNoCheck(final String ColumnName, @Nullable final Object value)
 	{
 		final int index = get_ColumnIndex(ColumnName);
 		if (index < 0)

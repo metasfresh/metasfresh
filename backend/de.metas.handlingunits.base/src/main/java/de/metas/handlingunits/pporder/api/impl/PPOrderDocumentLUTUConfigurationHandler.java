@@ -8,6 +8,8 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -82,12 +84,15 @@ import java.util.Properties;
 		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();
 		if (cuPerTu.signum() > 0)
 		{
-			final BigDecimal undeliveredQtyCU = ppOrder.getQtyOrdered().subtract(ppOrder.getQtyDelivered());
-			final BigDecimal undeliveredQtyTU = undeliveredQtyCU.divide(cuPerTu, 0, RoundingMode.CEILING);
-			lutuConfiguration.setQtyTU(undeliveredQtyTU.min(lutuConfiguration.getQtyTU()));
+			final UomId uomId = ILUTUConfigurationFactory.extractUomIdOrNull(lutuConfiguration);
 
-			final I_C_UOM uomPo = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
-			final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, Quantity.of(undeliveredQtyCU, uomPo));
+			final PPOrderQuantities ppOrderQtys = Services.get(IPPOrderBOMBL.class).getQuantities(ppOrder, uomId);
+			final Quantity undeliveredQtyCU = ppOrderQtys.getQtyRequiredToProduce().subtract(ppOrderQtys.getQtyReceived());
+
+			final Quantity undeliveredQtyTU = undeliveredQtyCU.divide(cuPerTu, 0, RoundingMode.CEILING);
+			lutuConfiguration.setQtyTU(undeliveredQtyTU.toBigDecimal().min(lutuConfiguration.getQtyTU()));
+
+			final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, undeliveredQtyCU);
 			lutuConfiguration.setQtyLU(BigDecimal.valueOf(qtyLU));
 		}
 

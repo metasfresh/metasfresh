@@ -22,8 +22,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_R_Request;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.dlm.Partition;
@@ -37,6 +35,9 @@ import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /*
  * #%L
@@ -61,7 +62,7 @@ import de.metas.util.Services;
  */
 
 /**
- * Different tests for {@link PartitionerServiceOld#createPartition0(PartitionConfig)}.
+ * Different tests for {@link PartitionerService#createPartition0(CreatePartitionRequest)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -71,7 +72,7 @@ public class PartitionerServiceCreatePartitionTests
 	private final PartitionerService partitionerService = new PartitionerService();
 	private final PlainDLMService dlmService = new PlainDLMService();
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		AdempiereTestHelper.get().init();
@@ -196,7 +197,8 @@ public class PartitionerServiceCreatePartitionTests
 		assertThat(partition.getConfig(), is(not(config)));
 	}
 
-	@Test(timeout = 10000) // timeout to make sure this test doesn'T run forever in case of a bug
+	@Test
+	@Timeout(10) // timeout to make sure this test doesn'T run forever in case of a bug
 	public void testCircularReferences()
 	{
 		final PartitionConfig config = PartitionConfig.builder()
@@ -258,14 +260,15 @@ public class PartitionerServiceCreatePartitionTests
 	/**
 	 * Tests invoice-creditmemo
 	 */
-	@Test(timeout = 10000)
+	@Test
+	@Timeout(10) // timeout to make sure this test doesn'T run forever in case of a bug
 	public void testCircularReferences_within_same_table()
 	{
 		testCircularReferences_within_same_table0();
 	}
 
 	/**
-	 * Verify that a record won't be added to another partition after if was processed via {@link PartitionerServiceOld#createPartition0(PartitionConfig)}.
+	 * Verify that a record won't be added to another partition after if was processed via {@link PartitionerService#createPartition0(CreatePartitionRequest)}.
 	 */
 	@Test
 	public void testPartition_stored()
@@ -274,7 +277,7 @@ public class PartitionerServiceCreatePartitionTests
 		dlmService.storePartition(partition, false);
 
 		// make sure the DLM_Partition_ID was updated within the records that we found
-		partitionerService.loadWithAllRecords(partition).getRecordsFlat().stream().forEach(r -> {
+		partitionerService.loadWithAllRecords(partition).getRecordsFlat().forEach(r -> {
 
 			final IDLMAware dlmAware = r.getModel(PlainContextAware.newOutOfTrx(Env.getCtx()), IDLMAware.class);
 			assertThat(dlmAware.getDLM_Partition_ID(), is(partition.getDLM_Partition_ID()));
@@ -442,7 +445,8 @@ public class PartitionerServiceCreatePartitionTests
 				final boolean partitionHasOrder = recordsFlat.stream().anyMatch(r -> I_C_Order.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(r)));
 				if (partitionHasOrder && !partitionHasInvoice)
 				{
-					throw new DLMReferenceException(null,
+					throw new DLMReferenceException(
+							(Throwable)null,
 							TableRecordIdDescriptor.of(I_C_Invoice.Table_Name,
 									I_C_Invoice.COLUMNNAME_C_Order_ID,
 									I_C_Order.Table_Name),
@@ -531,18 +535,15 @@ public class PartitionerServiceCreatePartitionTests
 
 	/**
 	 * Creates a config for R_Request.Record_ID => C_Order
-	 *
-	 * @return
 	 */
 	private PartitionConfig createADTableID_RecordIDConfig()
 	{
-		final PartitionConfig config = PartitionConfig.builder()
+		return PartitionConfig.builder()
 
 				// request -> order, via AD_Table_ID/Record_ID, as indicated by the referencing column name
 				.line(I_R_Request.Table_Name)
 				.ref().setReferencedTableName(I_C_Order.Table_Name).setReferencingColumnName(I_R_Request.COLUMNNAME_Record_ID)
 				.endRef().endLine().build();
-		return config;
 	}
 
 	/**

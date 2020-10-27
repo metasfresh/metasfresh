@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.uom.X12DE355;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -130,9 +131,9 @@ public class JsonConverters
 		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
 
 		final UomId uomId;
-		if (!isEmpty(request.getUomCode(), true))
+		if (!Check.isBlank(request.getUomCode()))
 		{
-			uomId = uomDAO.getUomIdByX12DE355(request.getUomCode());
+			uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(request.getUomCode()));
 		}
 		else
 		{

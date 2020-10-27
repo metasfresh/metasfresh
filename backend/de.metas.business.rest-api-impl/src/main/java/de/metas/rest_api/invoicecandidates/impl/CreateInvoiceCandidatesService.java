@@ -58,6 +58,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -210,7 +211,10 @@ public class CreateInvoiceCandidatesService
 		}
 
 		// uomId
-		final UomId uomId = lookupUomId(item.getUomCode(), productId, item);
+		final UomId uomId = lookupUomId(
+				X12DE355.ofNullableCode(item.getUomCode()), 
+				productId, 
+				item);
 		candidate.invoicingUomId(uomId);
 
 		// qtyOrdered
@@ -502,7 +506,10 @@ public class CreateInvoiceCandidatesService
 
 		final CurrencyId currencyId = lookupCurrencyId(jsonPrice);
 
-		final UomId priceUomId = lookupUomId(jsonPrice.getPriceUomCode(), productId, item);
+		final UomId priceUomId = lookupUomId(
+				X12DE355.ofNullableCode(jsonPrice.getPriceUomCode()),
+				productId, 
+				item);
 
 		final ProductPrice price = ProductPrice.builder()
 				.money(Money.of(jsonPrice.getValue(), currencyId))
@@ -523,11 +530,11 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private UomId lookupUomId(
-			@Nullable final String uomCode,
+			@Nullable final X12DE355 uomCode,
 			@NonNull final ProductId productId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		if (isEmpty(uomCode, true))
+		if (uomCode == null)
 		{
 			return productBL.getStockUOMId(productId);
 		}

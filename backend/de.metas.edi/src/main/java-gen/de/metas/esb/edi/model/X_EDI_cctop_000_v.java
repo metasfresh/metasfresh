@@ -11,7 +11,7 @@ import java.util.Properties;
 public class X_EDI_cctop_000_v extends org.compiere.model.PO implements I_EDI_cctop_000_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1859398464L;
+	private static final long serialVersionUID = 25785628L;
 
     /** Standard Constructor */
     public X_EDI_cctop_000_v (Properties ctx, int EDI_cctop_000_v_ID, String trxName)
@@ -64,14 +64,14 @@ public class X_EDI_cctop_000_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	@Override
-	public void setEdiRecipientGLN (java.lang.String EdiRecipientGLN)
+	public void setEdiDesadvRecipientGLN (java.lang.String EdiDesadvRecipientGLN)
 	{
-		set_Value (COLUMNNAME_EdiRecipientGLN, EdiRecipientGLN);
+		set_Value (COLUMNNAME_EdiDesadvRecipientGLN, EdiDesadvRecipientGLN);
 	}
 
 	@Override
-	public java.lang.String getEdiRecipientGLN() 
+	public java.lang.String getEdiDesadvRecipientGLN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EdiRecipientGLN);
+		return (java.lang.String)get_Value(COLUMNNAME_EdiDesadvRecipientGLN);
 	}
 }

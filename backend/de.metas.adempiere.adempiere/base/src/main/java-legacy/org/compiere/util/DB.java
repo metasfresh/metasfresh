@@ -1176,7 +1176,7 @@ public class DB
 	 * @return first value or -1 if not found
 	 * @throws DBException if there is any SQLException
 	 */
-	public int getSQLValueEx(final String trxName, final String sql, final Object... params) throws DBException
+	public int getSQLValueEx(@Nullable final String trxName, final String sql, final Object... params) throws DBException
 	{
 		int retValue = -1;
 		PreparedStatement pstmt = null;
@@ -1270,7 +1270,7 @@ public class DB
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
-	public String getSQLValueStringEx(final String trxName, final String sql, final Object... params)
+	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
 		String retValue = null;
 		PreparedStatement pstmt = null;

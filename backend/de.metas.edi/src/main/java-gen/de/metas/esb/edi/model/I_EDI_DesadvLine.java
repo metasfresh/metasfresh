@@ -103,6 +103,56 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Invoicing-UOM.
+	 * Maßeinheit in der die betreffende Zeile abgerechnet wird
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_Invoice_ID (int C_UOM_Invoice_ID);
+
+	/**
+	 * Get Invoicing-UOM.
+	 * Maßeinheit in der die betreffende Zeile abgerechnet wird
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_Invoice_ID();
+
+    /** Column name C_UOM_Invoice_ID */
+    public static final String COLUMNNAME_C_UOM_Invoice_ID = "C_UOM_Invoice_ID";
+
+	/**
+	 * Set EanCom_Invoice_UOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setEanCom_Invoice_UOM (java.lang.String EanCom_Invoice_UOM);
+
+	/**
+	 * Get EanCom_Invoice_UOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getEanCom_Invoice_UOM();
+
+    /** Column definition for EanCom_Invoice_UOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EanCom_Invoice_UOM = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "EanCom_Invoice_UOM", null);
+    /** Column name EanCom_Invoice_UOM */
+    public static final String COLUMNNAME_EanCom_Invoice_UOM = "EanCom_Invoice_UOM";
+
+	/**
 	 * Set CU-EAN.
 	 *
 	 * <br>Type: String
@@ -341,6 +391,52 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Order Line.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOrderLine (int OrderLine);
+
+	/**
+	 * Get Order Line.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getOrderLine();
+
+    /** Column definition for OrderLine */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_OrderLine = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "OrderLine", null);
+    /** Column name OrderLine */
+    public static final String COLUMNNAME_OrderLine = "OrderLine";
+
+	/**
+	 * Set Auftragsreferenz.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOrderPOReference (java.lang.String OrderPOReference);
+
+	/**
+	 * Get Auftragsreferenz.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOrderPOReference();
+
+    /** Column definition for OrderPOReference */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_OrderPOReference = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "OrderPOReference", null);
+    /** Column name OrderPOReference */
+    public static final String COLUMNNAME_OrderPOReference = "OrderPOReference";
+
+	/**
 	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
@@ -412,6 +508,29 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_ProductNo = "ProductNo";
 
 	/**
+	 * Set Delviered (invoicing UOM).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInInvoiceUOM (java.math.BigDecimal QtyDeliveredInInvoiceUOM);
+
+	/**
+	 * Get Delviered (invoicing UOM).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInInvoiceUOM();
+
+    /** Column definition for QtyDeliveredInInvoiceUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyDeliveredInInvoiceUOM = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyDeliveredInInvoiceUOM", null);
+    /** Column name QtyDeliveredInInvoiceUOM */
+    public static final String COLUMNNAME_QtyDeliveredInInvoiceUOM = "QtyDeliveredInInvoiceUOM";
+
+	/**
 	 * Set Delivered (stock unit).
 	 *
 	 * <br>Type: Quantity
@@ -479,6 +598,31 @@ public interface I_EDI_DesadvLine
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyEntered", null);
     /** Column name QtyEntered */
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
+
+	/**
+	 * Set Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
+
+	/**
+	 * Get Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyItemCapacity();
+
+    /** Column definition for QtyItemCapacity */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyItemCapacity", null);
+    /** Column name QtyItemCapacity */
+    public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
 
 	/**
 	 * Set Qty Ordered.

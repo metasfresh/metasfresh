@@ -164,7 +164,7 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
 		final BigDecimal qtyDelivered = orderLine.getQtyDelivered();
-		BigDecimal qtyToDeliver = qtyOrdered.subtract(qtyDelivered);
+		final BigDecimal qtyToDeliver = qtyOrdered.subtract(qtyDelivered);
 
 		final I_C_UOM uom = getStockingUOM(orderLine);
 
@@ -586,7 +586,7 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			// we can't use any conversion rate, but need to rely on qtyItemCapacity which is originally coming from order line's CU-TU (M_HU_PI_Item_Product)
 			// therefore we take the detour via qtyOrdered
-			// IMPORTANT: we we don't use the current orderLine's getQtyOrdered from DB, because e.g. it might be 0 if the shipment-schedule was closed, but still we might have a QtyEntered>0,
+			// IMPORTANT: we don't use the current orderLine's getQtyOrdered from DB, because e.g. it might be 0 if the shipment-schedule was closed, but still we might have a QtyEntered>0,
 			// and we don't want this to be our concern here
 			final BigDecimal qtyOrdered = computeQtyOrderedUsingQtyItemCapacity(orderLine);
 
@@ -804,7 +804,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/4535
+	 * task https://github.com/metasfresh/metasfresh/issues/4535
 	 */
 	@Override
 	public void updateProductDescriptionFromProductBOMIfConfigured(final org.compiere.model.I_C_OrderLine orderLine)

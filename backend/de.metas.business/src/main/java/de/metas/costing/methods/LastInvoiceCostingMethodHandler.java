@@ -1,18 +1,5 @@
 package de.metas.costing.methods;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.util.DB;
-import org.springframework.stereotype.Component;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
@@ -33,6 +20,18 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -75,7 +74,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
-		
+
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		final CostAmount amt = request.getAmt();
@@ -87,7 +86,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 			if (qty.signum() != 0)
 			{
 				final CostAmount price = amt.divide(qty, currentCosts.getPrecision());
-				currentCosts.setCostPrice(CostPrice.ownCostPrice(price));
+				currentCosts.setCostPrice(CostPrice.ownCostPrice(price, qty.getUomId()));
 			}
 			else
 			{
@@ -108,7 +107,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
-		
+
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt(), utils.getQuantityUOMConverter());
@@ -119,7 +118,9 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final OrderLineId orderLineId_NOTUSED)
 	{
 		return getLastInvoicePrice(costSegment);
 	}
@@ -180,7 +181,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		{
 			DB.close(rs, pstmt);
 		}
-	}	// getLastInvoicePrice
+	}    // getLastInvoicePrice
 
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)

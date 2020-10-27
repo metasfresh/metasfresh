@@ -22,73 +22,84 @@ package de.metas.material.planning.pporder;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import org.compiere.model.I_C_UOM;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {
+	PPOrderQuantities getQuantities(
+			@NonNull I_PP_Order ppOrder,
+			@NonNull UomId targetUOMId);
+
+	PPOrderQuantities getQuantities(@NonNull I_PP_Order ppOrder);
+
+	void setQuantities(
+			@NonNull I_PP_Order ppOrder,
+			@NonNull PPOrderQuantities from);
+
+	void changeQuantities(
+			@NonNull I_PP_Order ppOrder,
+			@NonNull UnaryOperator<PPOrderQuantities> updater);
+
 	void createOrderBOMAndLines(I_PP_Order ppOrder);
 
-	void explodePhantom(I_PP_Order_BOMLine orderBOMLine, Quantity qtyOrdered);
+	void explodePhantom(
+			I_PP_Order_BOMLine orderBOMLine,
+			Quantity qtyOrdered);
 
-	I_C_UOM getStockingUOM(I_PP_Order_BOMLine orderBOMLine);
+	I_C_UOM getBOMLineUOM(I_PP_Order_BOMLine bomLine);
 
-	/** @return qty already issued (positive, in case of components) or received (negative, in case of co/by products) */
-	Quantity getQtyIssuedOrReceived(I_PP_Order_BOMLine orderBOMLine);
+	@NonNull UomId getBOMLineUOMId(@NonNull I_PP_Order_BOMLine bomLine);
+
+	@NonNull UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
+
+	OrderBOMLineQuantities getQuantities(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Gets Qty Open (i.e. Qty To Issue).
 	 *
-	 * Same as {@link #getQtyToIssue(I_PP_Order_BOMLine, Quantity)} but it will use the standard required quantity (i.e. {@link I_PP_Order_BOMLine#getQtyRequiered()}).
-	 *
-	 * @return Qty Open (Requiered - Delivered)
+	 * @return Qty Open (Standard Required - Delivered)
 	 */
 	Quantity getQtyToIssue(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
-	 * Gets Qty Open (i.e. Qty To Issue).
-	 *
-	 * @param orderBOMLine order bom line
-	 * @param qtyToIssueRequiered quantity required to be considered (instead of standard qty required to issue from BOM Line)
-	 * @return Qty Open (Requiered - Delivered)
-	 */
-	Quantity getQtyToIssue(I_PP_Order_BOMLine orderBOMLine, Quantity qtyToIssueRequiered);
-
-	/**
 	 * Gets qty which is required to issue (i.e. target quantity), without considering how much was issued until now.
 	 *
-	 * @param orderBOMLine
 	 * @return qty required to issue (positive value)
 	 */
 	Quantity getQtyRequiredToIssue(I_PP_Order_BOMLine orderBOMLine);
 
+	void setQtyRequiredToIssueOrReceive(
+			I_PP_Order_BOMLine orderBOMLine,
+			Quantity qtyRequired);
+
 	/**
 	 * Gets Qty To Receive
 	 *
-	 * @param orderBOMLine
 	 * @return Qty To Receive (positive)
-	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
+	 * @throws MrpException if BOM Line is not of type receipt
 	 */
 	Quantity getQtyToReceive(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Gets qty which is required to receive (i.e. target quantity).
 	 *
-	 * @param orderBOMLine
 	 * @return Qty required to receive (positive)
-	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
+	 * @throws MrpException if BOM Line is not of type receipt
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
@@ -98,9 +109,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * Returns the negated value of the given <code>qty</code>.
 	 * <p>
 	 * Note: In case of Co/By-Products, we need to issue negative Qtys
-	 *
-	 * @param qty
-	 * @return
 	 */
 	BigDecimal adjustCoProductQty(BigDecimal qty);
 
@@ -109,13 +117,20 @@ public interface IPPOrderBOMBL extends ISingletonService
 	void addQty(OrderBOMLineQtyChangeRequest request);
 
 	/**
+	 * Computes the quantity for the given {@code ppOrderLinePojo} based on infos from all three parameters.
+	 */
+	Quantity computeQtyRequiredByQtyOfFinishedGoods(
+			PPOrderLine ppOrderLinePojo,
+			Quantity qtyFinishedGood);
+
+	/**
 	 * Calculates how much qty we STILL have to issue to cover proportionally the quantity of finished goods that was already received.
 	 *
-	 * @param orderBOMLine
-	 * @param uom
-	 * @return qty to issue (in given <code>uom</code>)
+	 * @return qty to issue (in given <code>targetUOM</code>)
 	 */
-	Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine, I_C_UOM uom);
+	Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(
+			I_PP_Order_BOMLine orderBOMLine,
+			I_C_UOM targetUOM);
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 
@@ -123,17 +138,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	void unclose(I_PP_Order_BOMLine line);
 
-	/**
-	 * Computes the quantity for the given {@code ppOrderLinePojo} based on infos from all three parameters.
-	 *
-	 * @param ppOrderLinePojo
-	 * @param ppOrderPojo
-	 * @param qtyFinishedGood
-	 * @return
-	 */
-	Quantity computeQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
-
-	boolean isSomethingReportedOnBOMLines(PPOrderId ppOrderId);
+	boolean isSomethingReported(final I_PP_Order ppOrder);
 
 	Optional<DocSequenceId> getSerialNoSequenceId(PPOrderId ppOrderId);
 
