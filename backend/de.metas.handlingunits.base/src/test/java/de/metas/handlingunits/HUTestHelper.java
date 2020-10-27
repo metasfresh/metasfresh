@@ -384,6 +384,7 @@ public class HUTestHelper
 	}
 
 	/**
+	 *
 	 * @param init if <code>true</code>, the the constructor directly calls {@link #init()}.
 	 */
 	public HUTestHelper(final boolean init)
