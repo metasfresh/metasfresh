@@ -1,14 +1,30 @@
 
 package org.eevolution.api.impl;
 
-import static de.metas.document.engine.IDocument.ACTION_Complete;
-import static de.metas.document.engine.IDocument.STATUS_Completed;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.user.UserId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
@@ -22,27 +38,9 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderLineId;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.user.UserId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -71,6 +69,7 @@ import lombok.NonNull;
  */
 final class CreateOrderCommand
 {
+	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
@@ -129,7 +128,7 @@ final class CreateOrderCommand
 		//
 		// BOM & Workflow
 		ppOrderRecord.setPP_Product_BOM_ID(getBOMId(request, productPlanning).getRepoId());
-		ppOrderRecord.setAD_Workflow_ID(getRoutingId(request, productPlanning).getRepoId());
+		ppOrderRecord.setAD_Workflow_ID(getRoutingId(productPlanning).getRepoId());
 
 		//
 		// Dates
@@ -153,8 +152,8 @@ final class CreateOrderCommand
 		// Inherit values from MRP demand
 		ppOrderRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderRecord.setC_BPartner_ID(BPartnerId.toRepoId(getCustomerIdOrNull(request)));
-		
-		ppOrderRecord.setIsPickingOrder(productPlanning.isPickingOrder());
+
+		ppOrderRecord.setIsPickingOrder(productPlanning != null && productPlanning.isPickingOrder());
 
 		//
 		// Save the manufacturing order
@@ -169,7 +168,7 @@ final class CreateOrderCommand
 		// Complete if requested
 		if (isCompleteDocument(request, productPlanning))
 		{
-			documentBL.processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
+			documentBL.processEx(ppOrderRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			Loggables.addLog(
 					"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
 					ppOrderRecord.getPP_Order_ID(), ppOrderRecord.getDocumentNo());
@@ -191,6 +190,7 @@ final class CreateOrderCommand
 		return productPlanning != null && productPlanning.isDocComplete();
 	}
 
+	@Nullable
 	private static UserId getPlannerIdOrNull(
 			@NonNull final PPOrderCreateRequest request,
 			@Nullable final I_PP_Product_Planning productPlanning)
@@ -244,9 +244,7 @@ final class CreateOrderCommand
 				.setParameter("productPlanning", productPlanning);
 	}
 
-	private static PPRoutingId getRoutingId(
-			@NonNull final PPOrderCreateRequest request,
-			@Nullable final I_PP_Product_Planning productPlanning)
+	private static PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
 	{
 		if (productPlanning != null)
 		{
@@ -260,6 +258,7 @@ final class CreateOrderCommand
 		return PPRoutingId.NONE;
 	}
 
+	@Nullable
 	private BPartnerId getCustomerIdOrNull(final PPOrderCreateRequest request)
 	{
 		if (request.getCustomerId() != null)
@@ -286,15 +285,13 @@ final class CreateOrderCommand
 				.build());
 	}
 
-	private void setQtyRequired(@NonNull final I_PP_Order order, @NonNull final Quantity qty)
+	private void setQtyRequired(
+			@NonNull final I_PP_Order order,
+			@NonNull final Quantity qty)
 	{
 		final Quantity qtyRounded = qty.roundToUOMPrecision();
 		order.setQtyEntered(qtyRounded.toBigDecimal());
-		order.setC_UOM_ID(qtyRounded.getUomId().getRepoId());
-
-		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-		final Quantity qtyInSockingUOM = uomConversionService.convertToProductUOM(qtyRounded, productId);
-		order.setQtyOrdered(qtyInSockingUOM.toBigDecimal());
+		ppOrderBOMBL.setQuantities(order, PPOrderQuantities.ofQtyRequiredToProduce(qtyRounded));
 	}
 
 }

@@ -22,10 +22,6 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -39,19 +35,27 @@ import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
 	/**
-	 *
-	 * @param tuPIItemProduct may not be {@code null}
+	 * @param tuPIItemProduct  may not be {@code null}
 	 * @param cuProductId
-	 * @param cuUOM
+	 * @param cuUomId
 	 * @param bpartnerId
 	 * @param noLUForVirtualTU determines if the method shall attempt to configure the lutuConfig with an LU if the given {@code tuPIItemProduct} is the virtual one.<br>
-	 *            Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
+	 *                         Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
 	 */
-	I_M_HU_LUTU_Configuration createLUTUConfiguration(@NonNull I_M_HU_PI_Item_Product tuPIItemProduct, @NonNull ProductId cuProductId, @NonNull UomId cuUomId, BPartnerId bpartnerId, boolean noLUForVirtualTU);
+	I_M_HU_LUTU_Configuration createLUTUConfiguration(
+			@NonNull I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull ProductId cuProductId,
+			@NonNull UomId cuUomId,
+			BPartnerId bpartnerId,
+			boolean noLUForVirtualTU);
 
 	/**
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record
@@ -60,7 +64,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Creates a copy of given configuration.
-	 *
+	 * <p>
 	 * NOTE: it is not saving the new configuration.
 	 *
 	 * @param lutuConfiguration
@@ -75,7 +79,9 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @param lutuConfiguration2
 	 * @return
 	 */
-	boolean isSameForHUProducer(I_M_HU_LUTU_Configuration lutuConfiguration1, I_M_HU_LUTU_Configuration lutuConfiguration2);
+	boolean isSameForHUProducer(
+			I_M_HU_LUTU_Configuration lutuConfiguration1,
+			I_M_HU_LUTU_Configuration lutuConfiguration2);
 
 	/**
 	 * Called before saving the configuration
@@ -101,31 +107,40 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @param lutuConfiguration
 	 * @param disableChangeCheckingOnSave
 	 */
-	void save(I_M_HU_LUTU_Configuration lutuConfiguration, boolean disableChangeCheckingOnSave);
+	void save(
+			I_M_HU_LUTU_Configuration lutuConfiguration,
+			boolean disableChangeCheckingOnSave);
 
 	boolean isNoLU(I_M_HU_LUTU_Configuration lutuConfiguration);
 
-	int calculateQtyLUForTotalQtyTUs(I_M_HU_LUTU_Configuration lutuConfiguration, BigDecimal qtyTUsTotal);
+	int calculateQtyLUForTotalQtyTUs(
+			I_M_HU_LUTU_Configuration lutuConfiguration,
+			BigDecimal qtyTUsTotal);
 
 	/**
 	 * Adjust Qty CU, TU and LU to preciselly match our given <code>qtyTUsTotal</code>/<code>qtyCUsTotal</code>.
-	 *
+	 * <p>
 	 * TODO: more documentation needed here
 	 *
 	 * @param lutuConfiguration
 	 * @param qtyTUsTotal
 	 * @param qtyCUsTotal
 	 */
-	void adjustForTotalQtyTUsAndCUs(I_M_HU_LUTU_Configuration lutuConfiguration, BigDecimal qtyTUsTotal, BigDecimal qtyCUsTotal);
+	void adjustForTotalQtyTUsAndCUs(
+			I_M_HU_LUTU_Configuration lutuConfiguration,
+			BigDecimal qtyTUsTotal,
+			BigDecimal qtyCUsTotal);
 
 	/**
 	 * Calculate how many LUs we would need (using given configuration) for given total CU quantity
 	 *
 	 * @param lutuConfiguration
-	 * @param qtyCUsTotal total CU quantity
+	 * @param qtyCUsTotal       total CU quantity
 	 * @return how many LUs are needed or ZERO if we are dealing with infinite capacities
 	 */
-	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, Quantity qtyCUsTotal);
+	int calculateQtyLUForTotalQtyCUs(
+			I_M_HU_LUTU_Configuration lutuConfiguration,
+			Quantity qtyCUsTotal);
 
 	/**
 	 * Calculates how many CUs (in total).
@@ -140,14 +155,23 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 *
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
-	Quantity convertQtyToLUTUConfigurationUOM(Quantity qty, I_M_HU_LUTU_Configuration lutuConfiguration);
+	Quantity convertQtyToLUTUConfigurationUOM(
+			Quantity qty,
+			I_M_HU_LUTU_Configuration lutuConfiguration);
 
+	@Nullable
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		final UomId uomId = UomId.ofRepoIdOrNull(lutuConfiguration.getC_UOM_ID());
+		final UomId uomId = extractUomIdOrNull(lutuConfiguration);
 		return uomId != null
 				? Services.get(IUOMDAO.class).getById(uomId)
 				: null;
+	}
+
+	@Nullable
+	static UomId extractUomIdOrNull(final @NonNull I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		return UomId.ofRepoIdOrNull(lutuConfiguration.getC_UOM_ID());
 	}
 
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU_LUTU_Configuration lutuConfiguration)

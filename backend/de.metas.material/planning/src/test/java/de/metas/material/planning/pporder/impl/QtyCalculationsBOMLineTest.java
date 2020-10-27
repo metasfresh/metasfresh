@@ -1,20 +1,5 @@
 package de.metas.material.planning.pporder.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
-import org.eevolution.api.BOMComponentType;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -26,6 +11,20 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.eevolution.api.BOMComponentType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -37,12 +36,12 @@ import lombok.Builder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,7 +56,9 @@ public class QtyCalculationsBOMLineTest
 		AdempiereTestHelper.get().init();
 	}
 
-	private I_C_UOM uom(final String name, final int precision)
+	private I_C_UOM uom(
+			final String name,
+			final int precision)
 	{
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setName(name);
@@ -67,7 +68,9 @@ public class QtyCalculationsBOMLineTest
 		return uom;
 	}
 
-	private ProductId product(final String name, final I_C_UOM stockingUOM)
+	private ProductId product(
+			final String name,
+			final I_C_UOM stockingUOM)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setValue(name);
@@ -78,7 +81,10 @@ public class QtyCalculationsBOMLineTest
 	}
 
 	@Builder(builderMethodName = "uomConversion", builderClassName = "_UOMConversionBuilder", buildMethodName = "create")
-	private void createUOMConversion(final I_C_UOM from, String multipliedBy, I_C_UOM to)
+	private void createUOMConversion(
+			final I_C_UOM from,
+			final String multipliedBy,
+			final I_C_UOM to)
 	{
 		final BigDecimal multiplyRate = new BigDecimal(multipliedBy);
 
@@ -91,26 +97,26 @@ public class QtyCalculationsBOMLineTest
 	}
 
 	@Nested
-	public class getFinishedGoodQtyMultiplier
+	public class getQtyRequiredForOneFinishedGood
 	{
 		@Test
 		public void notPercentage()
 		{
-			QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
+			final I_C_UOM uomKg = uom("Kg", 2);
+			final QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
 					.bomProductId(ProductId.ofRepoId(1))
 					.bomProductUOM(uom("Each", 0))
 					//
 					.componentType(BOMComponentType.Component)
 					//
 					.productId(ProductId.ofRepoId(2))
-					.uom(uom("Kg", 2))
+					.uom(uomKg)
 					.qtyPercentage(false)
 					.qtyForOneFinishedGood(new BigDecimal("2"))
 					//
 					.build();
 
-			assertThat(bomLine.getFinishedGoodQtyMultiplier())
-					.isEqualTo("2");
+			assertThat(bomLine.getQtyRequiredForOneFinishedGood()).isEqualTo(Quantity.of("2", uomKg));
 		}
 
 		@Test
@@ -118,7 +124,7 @@ public class QtyCalculationsBOMLineTest
 		{
 			final I_C_UOM uomKg = uom("Kg", 2);
 
-			QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
+			final QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
 					.bomProductId(ProductId.ofRepoId(1))
 					.bomProductUOM(uomKg)
 					//
@@ -131,8 +137,7 @@ public class QtyCalculationsBOMLineTest
 					//
 					.build();
 
-			assertThat(bomLine.getFinishedGoodQtyMultiplier())
-					.isEqualByComparingTo("0.33");
+			assertThat(bomLine.getQtyRequiredForOneFinishedGood()).isEqualTo(Quantity.of("0.33", uomKg));
 		}
 
 		@Test
@@ -145,7 +150,7 @@ public class QtyCalculationsBOMLineTest
 			final ProductId juiceProductId = product("juice", uomLiters);
 			final ProductId concentrateProductId = ProductId.ofRepoId(2);
 
-			QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
+			final QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
 					.bomProductId(juiceProductId)
 					.bomProductUOM(uomLiters)
 					//
@@ -159,10 +164,9 @@ public class QtyCalculationsBOMLineTest
 					//
 					.build();
 
-			assertThat(bomLine.getFinishedGoodQtyMultiplier())
-					.isEqualByComparingTo("0.000125");
+			assertThat(bomLine.getQtyRequiredForOneFinishedGood()).isEqualTo(Quantity.of("0.000125", uomMillis));
 
-			assertThat(bomLine.computeQtyRequired(BigDecimal.ONE))
+			assertThat(bomLine.computeQtyRequired(Quantity.of(1, uomLiters)))
 					.as("How much concentrate is needed to produce 1ml of juice")
 					.isEqualByComparingTo(Quantity.of("0.000125", uomMillis));
 		}
@@ -246,7 +250,6 @@ public class QtyCalculationsBOMLineTest
 							Quantity.of("0.3", uomKg),
 							UOMConversionContext.of(flourProductId),
 							uomGram);
-			System.out.println(qty2);
 
 			final QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
 					.bomProductId(breadProductId)

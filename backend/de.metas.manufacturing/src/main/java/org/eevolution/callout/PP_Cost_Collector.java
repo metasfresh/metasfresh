@@ -4,6 +4,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -13,6 +14,8 @@ import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -45,6 +48,9 @@ import de.metas.util.Services;
 @Callout(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
 {
+	private final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+	private final IPPOrderRoutingRepository orderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
+
 	@CalloutMethod(columnNames = I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID)
 	public void onPP_Order_ID(final I_PP_Cost_Collector cc)
 	{
@@ -54,7 +60,7 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		Services.get(IPPCostCollectorBL.class).updateCostCollectorFromOrder(cc, ppOrder);
+		costCollectorBL.updateCostCollectorFromOrder(cc, ppOrder);
 	}
 
 	@CalloutMethod(columnNames = I_PP_Cost_Collector.COLUMNNAME_PP_Order_Node_ID)
@@ -71,14 +77,14 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		final PPOrderRoutingActivity orderActivity = Services.get(IPPOrderRoutingRepository.class).getOrderRoutingActivity(orderRoutingActivityId);
+		final PPOrderRoutingActivity orderActivity = orderRoutingRepository.getOrderRoutingActivity(orderRoutingActivityId);
 
 		cc.setS_Resource_ID(orderActivity.getResourceId().getRepoId());
 		cc.setIsSubcontracting(orderActivity.isSubcontracting());
 
 		final Quantity qtyToDeliver = orderActivity.getQtyToDeliver();
-		cc.setMovementQty(qtyToDeliver.toBigDecimal());
-		// updateDurationReal(cc); // shall be automatically triggered
+		costCollectorBL.setQuantities(cc, PPCostCollectorQuantities.ofMovementQty(qtyToDeliver));
+		updateDurationReal(cc); // shall be automatically triggered
 	}
 
 	@CalloutMethod(columnNames = I_PP_Cost_Collector.COLUMNNAME_MovementQty)
@@ -87,30 +93,42 @@ public class PP_Cost_Collector
 		updateDurationReal(cc);
 	}
 
-	/** Calculates and sets DurationReal based on selected PP_Order_Node */
+	/**
+	 * Calculates and sets DurationReal based on selected PP_Order_Node
+	 */
 	private void updateDurationReal(final I_PP_Cost_Collector cc)
+	{
+		final WorkingTime durationReal = computeWorkingTime(cc);
+		if (durationReal == null)
+		{
+			return;
+		}
+
+		cc.setDurationReal(durationReal.toBigDecimalUsingActivityTimeUnit());
+	}
+
+	@Nullable
+	private WorkingTime computeWorkingTime(final I_PP_Cost_Collector cc)
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoIdOrNull(cc.getPP_Order_ID());
 		if (orderId == null)
 		{
-			return;
+			return null;
 		}
 
-		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, cc.getPP_Order_Node_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoIdOrNull(orderId, cc.getPP_Order_Node_ID());
 		if (activityId == null)
 		{
-			return;
+			return null;
 		}
 
-		final PPOrderRoutingActivity activity = Services.get(IPPOrderRoutingRepository.class).getOrderRoutingActivity(activityId);
+		final PPOrderRoutingActivity activity = orderRoutingRepository.getOrderRoutingActivity(activityId);
 
-		final WorkingTime durationReal = WorkingTime.builder()
+		return WorkingTime.builder()
 				.durationPerOneUnit(activity.getDurationPerOneUnit())
 				.unitsPerCycle(activity.getUnitsPerCycle())
-				.qty(cc.getMovementQty())
+				.qty(costCollectorBL.getMovementQty(cc))
 				.activityTimeUnit(activity.getDurationUnit())
 				.build();
-
-		cc.setDurationReal(durationReal.toBigDecimalUsingActivityTimeUnit());
 	}
 }

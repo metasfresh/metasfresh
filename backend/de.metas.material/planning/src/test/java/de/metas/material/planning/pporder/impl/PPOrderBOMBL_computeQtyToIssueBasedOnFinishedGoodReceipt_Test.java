@@ -1,31 +1,8 @@
 package de.metas.material.planning.pporder.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.impl.UOMTestHelper;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -37,29 +14,28 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.impl.UOMTestHelper;
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Test {@link PPOrderBOMBL#calculateQtyRequiredProjected(I_PP_Order_BOMLine)}.
+ * Test {@link PPOrderBOMBL#computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM)}.
  *
  * @author tsa
- *
  */
-public class PPOrderBOMBL_calculateQtyRequired_Test
+public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 {
 	private UOMTestHelper helper;
 
-	/** Service under test */
+	/**
+	 * Service under test
+	 */
 	private PPOrderBOMBL ppOrderBOMBL;
 
 	//
 	// Master data
 	private I_C_UOM uomMm;
 	private I_C_UOM uomEa;
-	// private I_M_Product pABAliceSalad;
-	// private I_M_Product pFolie;
 	private I_PP_Order ppOrder;
 	private I_PP_Order_BOMLine ppOrderBOMLine;
 
@@ -138,7 +114,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-		assertThat(ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine).computeQtyRequired(ppOrder.getQtyOrdered()).toBigDecimal())
+		assertThat(ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine).computeQtyRequired(Quantity.of(100, uomEa)).toBigDecimal())
 				.as("QtyRequired projected")
 				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				.isEqualByComparingTo("28600");
@@ -164,7 +140,6 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 	 * In this case projected quantity required will consider the quantity actually produced instead of quantity ordered, because it's bigger.<br/>
 	 * So the result will be 110(quantity produced) x 350mm.<br/>
 	 *
-	 * @param orderBOMLine
 	 * @return projected quantity required.
 	 */
 	private Quantity computeQtyRequiredProjected(final I_PP_Order_BOMLine orderBOMLine)
@@ -174,7 +149,8 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		final BigDecimal qtyDelivered_FinishedGood = ppOrder.getQtyDelivered();
 		final BigDecimal qtyRequiredActual_FinishedGood = qtyRequired_FinishedGood.max(qtyDelivered_FinishedGood);
 
-		return ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, orderBOMLine).computeQtyRequired(qtyRequiredActual_FinishedGood);
+		return ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, orderBOMLine)
+				.computeQtyRequired(Quantity.of(qtyRequiredActual_FinishedGood, uomEa));
 	}
 
 	/**

@@ -500,7 +500,7 @@ import java.util.Map;
 	}
 
 	@Override
-	public IPPOrderReceiptHUProducer bestBeforeDate(final LocalDate bestBeforeDate)
+	public IPPOrderReceiptHUProducer bestBeforeDate(@Nullable final LocalDate bestBeforeDate)
 	{
 		this.bestBeforeDate = bestBeforeDate;
 		return this;

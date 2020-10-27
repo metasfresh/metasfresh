@@ -1,15 +1,7 @@
 package org.eevolution.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.assertj.core.api.AbstractBigDecimalAssert;
-import org.junit.Test;
-
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -21,8 +13,21 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.AbstractBigDecimalAssert;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -34,12 +39,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -65,6 +70,17 @@ public class PPOrderCostsTest
 	private final ProductId productId4 = ProductId.ofRepoId(4);
 	private final ProductId productId5 = ProductId.ofRepoId(5);
 
+	private I_C_UOM uom;
+	private UomId uomId;
+
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		uom = BusinessTestHelper.createUomEach();
+		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+	}
+
 	@Test
 	public void testPostCalculation_SimpleCase()
 	{
@@ -73,30 +89,35 @@ public class PPOrderCostsTest
 				.cost(PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.MainProduct)
 						.costSegmentAndElement(costSegmentAndElement(productId1))
-						.price(CostPrice.zero(currencyId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
 						.build())
 				.cost(PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.MaterialIssue)
 						.costSegmentAndElement(costSegmentAndElement(productId2))
-						.price(CostPrice.zero(currencyId))
+						.price(CostPrice.zero(currencyId, uomId))
 						.accumulatedAmount(CostAmount.of(100, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
 						.build())
 				.cost(PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.CoProduct)
 						.costSegmentAndElement(costSegmentAndElement(productId3))
-						.price(CostPrice.zero(currencyId))
+						.price(CostPrice.zero(currencyId, uomId))
 						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.zero(uom))
 						.build())
 				.cost(PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.CoProduct)
 						.costSegmentAndElement(costSegmentAndElement(productId4))
-						.price(CostPrice.zero(currencyId))
+						.price(CostPrice.zero(currencyId, uomId))
 						.coProductCostDistributionPercent(Percent.of(10))
+						.accumulatedQty(Quantity.zero(uom))
 						.build())
 				.cost(PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.ByProduct)
 						.costSegmentAndElement(costSegmentAndElement(productId5))
-						.price(CostPrice.zero(currencyId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
 						.build())
 				.build();
 
@@ -124,14 +145,18 @@ public class PPOrderCostsTest
 				.build();
 	}
 
-	private CostAmount getPostCalculationCostAmt(final PPOrderCosts orderCosts, final ProductId productId)
+	private CostAmount getPostCalculationCostAmt(
+			final PPOrderCosts orderCosts,
+			final ProductId productId)
 	{
 		return orderCosts.getByCostSegmentAndElement(costSegmentAndElement(productId))
 				.get()
 				.getPostCalculationAmount();
 	}
 
-	private AbstractBigDecimalAssert<?> assertThatPostCalculationAmt(final PPOrderCosts orderCosts, final ProductId productId)
+	private AbstractBigDecimalAssert<?> assertThatPostCalculationAmt(
+			final PPOrderCosts orderCosts,
+			final ProductId productId)
 	{
 		return assertThat(getPostCalculationCostAmt(orderCosts, productId).getValue());
 	}

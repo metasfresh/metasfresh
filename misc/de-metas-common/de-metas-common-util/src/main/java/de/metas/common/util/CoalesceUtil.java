@@ -22,15 +22,13 @@
 
 package de.metas.common.util;
 
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import java.util.Objects;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @UtilityClass
 public class CoalesceUtil
@@ -43,6 +41,12 @@ public class CoalesceUtil
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2)
 	{
 		return value1 == null ? value2 : value1;
+	}
+
+	@Nullable
+	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
+	{
+		return value1 != null ? value1 : value2.get();
 	}
 
 	/**

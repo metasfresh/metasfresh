@@ -47,6 +47,8 @@ import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Accounting Fact
  *
@@ -131,7 +133,7 @@ public final class Fact
 	public FactLine createLine(final DocLine<?> docLine,
 			final MAccount account,
 			final CurrencyId currencyId,
-			final BigDecimal debitAmt, final BigDecimal creditAmt)
+			@Nullable final BigDecimal debitAmt, @Nullable final BigDecimal creditAmt)
 	{
 		return createLine()
 				.setDocLine(docLine)

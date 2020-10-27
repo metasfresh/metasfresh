@@ -65,6 +65,8 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 
+	@NonNull ConversionTypeMethod getConversionTypeMethodById(@NonNull CurrencyConversionTypeId id);
+
 	@Nullable
 	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

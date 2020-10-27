@@ -1,21 +1,6 @@
 package de.metas.costing.methods;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.temporal.TemporalUnit;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.model.I_PP_Cost_Collector;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
@@ -43,9 +28,24 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UOMUtil;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -82,7 +82,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final ICostDetailService costDetailsService;
 	private final CostingMethodHandlerUtils utils;
 
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
@@ -159,7 +159,9 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final OrderLineId orderLineId)
 	{
 		return Optional.empty();
 	}
@@ -170,27 +172,29 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		return currentCostsRepo.getOrCreate(costSegmentAndElement);
 	}
 
-	public CostDetailCreateResult createIssueOrReceipt(final CostDetailCreateRequest request)
+	private CostDetailCreateResult createIssueOrReceipt(final CostDetailCreateRequest request)
 	{
 		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 
-		final Quantity qty = request.getQty();
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostPrice price = currentCosts.getCostPrice();
+		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amt(amt)
+				.qty(qty)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
 
 		final CostDetailCreateResult result = utils.toCostDetailCreateResult(costDetail);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		currentCostsRepo.save(currentCosts);
 
 		return result;
 	}
 
+	@Nullable
 	private CostDetailCreateResult createActivityControl(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final Duration duration)
@@ -203,10 +207,9 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 
-		final Quantity qty = convertDurationToQuantity(duration, request.getProductId());
-
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 		final CostPrice price = getProductActualCostPrice(costSegmentAndElement);
+		final Quantity qty = convertDurationToQuantity(duration, request.getProductId(), price.getUomId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
 		final CurrentCost currentCosts = getCurrentCost(request);
@@ -225,11 +228,10 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	private CostDetailCreateResult createUsageVariance(@NonNull final CostDetailCreateRequest request)
 	{
-		final Quantity qty = request.getQty();
-
 		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 		final CostPrice price = getProductActualCostPrice(costSegmentAndElement);
+		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
 		final CurrentCost currentCosts = getCurrentCost(request);
@@ -446,7 +448,18 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	// return resourceId;
 	// }
 
-	private Quantity convertDurationToQuantity(final Duration duration, final ProductId resourceProductId)
+	private Quantity convertDurationToQuantity(
+			final Duration duration,
+			final ProductId resourceProductId,
+			final UomId targetUomId)
+	{
+		final Quantity qty = convertDurationToQuantity(duration, resourceProductId);
+		return utils.convertToUOM(qty, targetUomId, resourceProductId);
+	}
+
+	private Quantity convertDurationToQuantity(
+			final Duration duration,
+			final ProductId resourceProductId)
 	{
 		final I_C_UOM durationUOM = productsService.getStockUOM(resourceProductId);
 		final TemporalUnit durationUnit = UOMUtil.toTemporalUnit(durationUOM);
