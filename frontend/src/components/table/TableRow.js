@@ -47,9 +47,6 @@ class TableRow extends PureComponent {
       activeCell: '',
       activeCellName: null,
       updatedRow: false,
-      // controls if on {enter} we should edit a widget, or only submit it.
-      // if true - property will be edited. Otherwise just saved.
-      listenOnKeys: true,
       multilineText,
       multilineTextLines,
       cellsExtended: false,
@@ -113,24 +110,6 @@ class TableRow extends PureComponent {
     }
   };
 
-  listenOnKeysTrue = () => {
-    const { changeListenOnTrue } = this.props;
-
-    this.setState({
-      listenOnKeys: true,
-    });
-    changeListenOnTrue();
-  };
-
-  listenOnKeysFalse = () => {
-    const { changeListenOnFalse } = this.props;
-
-    this.setState({
-      listenOnKeys: false,
-    });
-    changeListenOnFalse();
-  };
-
   handleClick = (e) => {
     const { onClick, item } = this.props;
 
@@ -164,30 +143,44 @@ class TableRow extends PureComponent {
       fieldsByName,
       onFastInlineEdit,
     } = this.props;
-    const { listenOnKeys, edited, valueBeforeEditing, activeCell } = this.state;
+    const { edited, valueBeforeEditing, activeCell } = this.state;
     const inputContent = e.target.value;
 
     switch (e.key) {
-      case 'Enter':
-        if (listenOnKeys) {
+      case 'Enter': {
+        // here `edited` controls if on {enter} we should edit a widget, or only submit it.
+        // if true - property will be edited. Otherwise just saved.
+        // If widget is not active - use the textContent as the initial value
+        let fieldValue = e.target.value;
+
+        if (!edited) {
+          fieldValue = e.target.textContent;
           this.handleEditProperty({
             event: e,
             property,
             focus: true,
             readonly,
           });
-          this.setState({ valueBeforeEditing: e.target.textContent });
         }
-        updatePropertyValue({
-          property,
-          value: inputContent,
-          tabId,
-          rowId,
-          isModal: modalVisible,
-          entity,
-          tableId,
-        });
+
+        this.setState(
+          {
+            valueBeforeEditing: fieldValue,
+          },
+          () => {
+            updatePropertyValue({
+              property,
+              value: inputContent,
+              tabId,
+              rowId,
+              isModal: modalVisible,
+              entity,
+              tableId,
+            });
+          }
+        );
         break;
+      }
       case 'Tab':
         // this test is for a case when user is navigating around the table
         // without activating the field. Then there's no widget (input), so the value
@@ -293,6 +286,8 @@ class TableRow extends PureComponent {
    * @param {boolean} [mark] - flag if widget content should be selected
    */
   _editProperty = ({ event, property, focus, readonly, select, mark }) => {
+    const { listenOnKeys, changeListenOnTrue } = this.props;
+
     if (typeof readonly !== undefined ? !readonly : true) {
       if (this.state.edited === property && event) event.persist();
 
@@ -324,7 +319,7 @@ class TableRow extends PureComponent {
             );
 
             if (disabled || readonly) {
-              !this.state.listenOnKeys && this.listenOnKeysTrue();
+              !listenOnKeys && changeListenOnTrue();
               this.handleEditProperty({ event });
             }
           }
@@ -420,7 +415,9 @@ class TableRow extends PureComponent {
       // is not a cell (for instance it's a widget input or a context menu)
       // find the relevant cell in the DOM
       if (!elem.className.includes('table-cell')) {
-        elem = document.querySelector(`[data-cy="cell-${property}"]`);
+        elem = document.querySelector(
+          `.row-selected [data-cy="cell-${property}"]`
+        );
       }
 
       if (elem && activeCell !== elem) {
@@ -466,11 +463,13 @@ class TableRow extends PureComponent {
       onItemChange,
       handleFocusAction,
       tableId,
+      listenOnKeys,
+      changeListenOnTrue,
+      changeListenOnFalse,
     } = this.props;
     const {
       edited,
       updatedRow,
-      listenOnKeys,
       cellsExtended,
       multilineText,
       multilineTextLines,
@@ -568,8 +567,8 @@ class TableRow extends PureComponent {
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 onKeyDown={this.handleKeyDown}
-                listenOnKeysTrue={this.listenOnKeysTrue}
-                listenOnKeysFalse={this.listenOnKeysFalse}
+                listenOnKeysTrue={changeListenOnTrue}
+                listenOnKeysFalse={changeListenOnFalse}
                 closeTableField={this.closeTableField}
               />
             );
