@@ -236,17 +236,17 @@ class TableRow extends PureComponent {
         }
         break;
       default: {
-        // for disabled fields/fields without value, we don't get the field data
-        // from the backend
-        if (valueBeforeEditing === null && fieldsByName[property]) {
-          this.setState({ valueBeforeEditing: fieldsByName[property].value });
-        }
-
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
           if (e.keyCode === F2_KEY) {
             onFastInlineEdit();
             return false;
+          }
+
+          // for disabled fields/fields without value, we don't get the field data
+          // from the backend
+          if (valueBeforeEditing === null && fieldsByName[property]) {
+            this.setState({ valueBeforeEditing: fieldsByName[property].value });
           }
 
           this.handleEditProperty({
@@ -268,7 +268,7 @@ class TableRow extends PureComponent {
    * if optional params are not provided
    *
    * @param {object} e - event
-   * @param {object} [property] - field name
+   * @param {string} [property] - field name
    * @param {boolean} [focus] - flag if cell should be focused
    * @param {object} [item] - widget data object
    * @param {boolean} [select] - flag if selected cell should be cleared
