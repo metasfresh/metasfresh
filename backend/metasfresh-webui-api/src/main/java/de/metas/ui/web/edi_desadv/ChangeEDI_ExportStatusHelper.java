@@ -64,6 +64,7 @@ public class ChangeEDI_ExportStatusHelper
 			case DontSend:
 				return ImmutableList.of(EDIExportStatus.Pending);
 			case Pending:
+			case Error:
 				return ImmutableList.of(EDIExportStatus.DontSend);
 			case Sent:
 				return ImmutableList.of(EDIExportStatus.Pending, EDIExportStatus.DontSend);
@@ -77,6 +78,7 @@ public class ChangeEDI_ExportStatusHelper
 		switch (targetExportStatus)
 		{
 			case DontSend:
+			case Error:
 				return true;
 			case Pending:
 				return false;
