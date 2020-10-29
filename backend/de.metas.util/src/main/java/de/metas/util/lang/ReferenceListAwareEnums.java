@@ -1,5 +1,18 @@
 package de.metas.util.lang;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -7,21 +20,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.Nullable;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -247,7 +245,7 @@ public class ReferenceListAwareEnums
 
 		public T ofNullableCode(@Nullable final String code)
 		{
-			return code != null ? ofCode(code) : null;
+			return Check.isNotBlank(code) ? ofCode(code) : null;
 		}
 
 		public T ofCode(@NonNull final String code)
