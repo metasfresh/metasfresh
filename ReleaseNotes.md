@@ -9,13 +9,18 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.157 - WIP
-https://github.com/metasfresh/metasfresh/issues/10106
-https://github.com/metasfresh/metasfresh/issues/10132
-https://github.com/metasfresh/metasfresh/issues/10135
-https://github.com/metasfresh/metasfresh/issues/10139
-https://github.com/metasfresh/metasfresh/issues/10142
-https://github.com/metasfresh/metasfresh/issues/10145
+# metasfresh 5.157
+## Features
+* metasfresh
+  * [#10106](https://github.com/metasfresh/metasfresh/issues/10106) Add Raw Material Origin and NetWeight into Product
+
+## Fixes
+* metasfresh
+  * [#10132](https://github.com/metasfresh/metasfresh/issues/10132) Fix never ending migration script 5569290_sys_gh10046_setPoReferenceToShipmentSchedule
+  * [#10135](https://github.com/metasfresh/metasfresh/issues/10135) WebUI Front End: Removing labels is annoying and not smooth
+  * [#10139](https://github.com/metasfresh/metasfresh/issues/10139) "Add new" button not displayed after adding a new entry was unsuccessful/aborted
+  * [#10142](https://github.com/metasfresh/metasfresh/issues/10142) Labels component is not respecting read-only property
+  * [#10145](https://github.com/metasfresh/metasfresh/issues/10145) Phone Call Schedule: After action 'create sales order' was called, the action is not available anymore
 
 # metasfresh 5.156
 ## Features
