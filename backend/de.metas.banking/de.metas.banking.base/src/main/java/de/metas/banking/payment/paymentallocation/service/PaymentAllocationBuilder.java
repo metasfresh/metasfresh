@@ -83,7 +83,6 @@ public class PaymentAllocationBuilder
 	private LocalDate _dateAcct;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<PaymentDocument> _paymentDocuments = ImmutableList.of();
-	private boolean allowOnlyOneVendorDoc = true;
 	private boolean allowPartialAllocations = false;
 	private boolean allowPurchaseSalesInvoiceCompensation;
 	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
@@ -263,17 +262,11 @@ public class PaymentAllocationBuilder
 			final List<PayableDocument> payableDocuments,
 			final List<PaymentDocument> paymentDocuments)
 	{
-		if (!allowOnlyOneVendorDoc)
-		{
-			return; // task 09558: nothing to do
-		}
-
 		final List<PaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
 				.filter(paymentDocument -> paymentDocument.getPaymentDirection().isOutboundPayment())
 				.collect(ImmutableList.toImmutableList());
 
 		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = new ArrayList<>();
-		final List<CreditMemoInvoiceAsPaymentDocumentWrapper> paymentVendorDocuments_CreditMemos = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
 			if (!payable.getSoTrx().isPurchase())
@@ -281,24 +274,17 @@ public class PaymentAllocationBuilder
 				continue;
 			}
 
-			if (payable.isCreditMemo())
-			{
-				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocumentWrapper.wrap(payable));
-			}
-			else
+			if (!payable.isCreditMemo())
 			{
 				payableVendorDocuments_NoCreditMemos.add(payable);
-
 			}
 		}
 
 		if (paymentVendorDocuments.size() > 1
-				|| payableVendorDocuments_NoCreditMemos.size() > 1
-				|| paymentVendorDocuments_CreditMemos.size() > 1)
+				|| payableVendorDocuments_NoCreditMemos.size() > 1)
 		{
 			final List<IPaymentDocument> paymentVendorDocs = new ArrayList<>();
 			paymentVendorDocs.addAll(paymentVendorDocuments);
-			paymentVendorDocs.addAll(paymentVendorDocuments_CreditMemos);
 
 			throw new MultipleVendorDocumentsException(paymentVendorDocs, payableVendorDocuments_NoCreditMemos);
 		}
@@ -872,13 +858,6 @@ public class PaymentAllocationBuilder
 	{
 		assertNotBuilt();
 		_dateAcct = dateAcct;
-		return this;
-	}
-
-	public PaymentAllocationBuilder allowOnlyOneVendorDoc(final boolean allowOnlyOneVendorDoc)
-	{
-		assertNotBuilt();
-		this.allowOnlyOneVendorDoc = allowOnlyOneVendorDoc;
 		return this;
 	}
 

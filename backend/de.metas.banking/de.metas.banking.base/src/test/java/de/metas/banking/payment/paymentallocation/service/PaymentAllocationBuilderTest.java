@@ -596,7 +596,7 @@ public class PaymentAllocationBuilderTest
 				ImmutableList.of(
 						invoice1 = invoice().type(VendorInvoice).open("-8000").pay("0").discount("-100").writeOff("-200").build())
 				// Payments
-				, ImmutableList.<PaymentDocument>of());
+				, ImmutableList.of());
 
 		//
 		// Define expected candidates
@@ -649,9 +649,9 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				ImmutableList.of()
+				ImmutableList.of(),
 				// Payments
-				, ImmutableList.of(
+				ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(),
 						payment2 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").build()));
 
@@ -677,9 +677,9 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2, payment3;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.<PayableDocument>asList()
+				ImmutableList.of(),
 				// Payments
-				, ImmutableList.of(
+				ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(), //
 						payment2 = payment().direction(INBOUND).open("3000").amtToAllocate("3000").build(), //
 						payment3 = payment().direction(INBOUND).open("2000").amtToAllocate("2000").build() //
@@ -715,9 +715,9 @@ public class PaymentAllocationBuilderTest
 				// Invoices
 				ImmutableList.of(
 						invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
-						invoice2 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").build())
+						invoice2 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").build()),
 				// Payments
-				, ImmutableList.<PaymentDocument>of());
+				ImmutableList.of());
 
 		//
 		// Define expected candidates
@@ -750,7 +750,7 @@ public class PaymentAllocationBuilderTest
 						invoice = invoice().type(VendorInvoice).open("-5000").pay("-1000").build(),
 						creditMemo = invoice().type(VendorCreditMemo).open("1000").pay("1000").build()),
 				// Payments
-				ImmutableList.<PaymentDocument>of());
+				ImmutableList.of());
 
 		//
 		// Define expected candidates
@@ -787,9 +787,9 @@ public class PaymentAllocationBuilderTest
 					// Invoices
 					ImmutableList.of(
 							invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
-							invoice2 = invoice().type(VendorInvoice).open("-1000").pay("-1000").build())
+							invoice2 = invoice().type(VendorInvoice).open("-1000").pay("-1000").build()),
 					// Payments
-					, ImmutableList.<PaymentDocument>of());
+					ImmutableList.of());
 		}
 
 		@Test
@@ -848,7 +848,7 @@ public class PaymentAllocationBuilderTest
 				// Payments
 				, ImmutableList.of(payment1, payment2));
 
-		assertThatThrownBy(() -> builder.build())
+		assertThatThrownBy(builder::build)
 				.isInstanceOf(MultipleVendorDocumentsException.class);
 	}
 
@@ -995,6 +995,58 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
+	public void test_OneRegularVendorInvoice_TwoCreditMemoVendorInvoices_OneOutboundPayment()
+	{
+		final PaymentDocument payment1;
+		final PayableDocument invoice1;
+		final PayableDocument invoice2;
+		final PayableDocument invoice3;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						invoice1 = invoice().type(VendorInvoice).open("-165").pay("-100").discount("-10").writeOff("-5").build(),
+						invoice2 = invoice().type(VendorCreditMemo).open("80").pay("80").build(),
+						invoice3 = invoice().type(VendorCreditMemo).open("10").pay("10").build())
+				// Payments
+				, ImmutableList.of(
+						payment1 = payment().direction(OUTBOUND).open("-10").amtToAllocate("-10").build()));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				allocation().type(InvoiceToCreditMemo)
+						.payableRef(invoice1.getReference())
+						.paymentRef(invoice2.getReference())
+						.allocatedAmt("-80").discountAmt("-10").writeOffAmt("-5").overUnderAmt("-70")
+						.build(),
+				allocation().type(InvoiceToCreditMemo)
+						.payableRef(invoice1.getReference())
+						.paymentRef(invoice3.getReference())
+						.allocatedAmt("-10").discountAmt("0").writeOffAmt("0").overUnderAmt("-60")
+						.build(),
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("-10").overUnderAmt("-50")
+						.build());
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		//
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 10 + 5));
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		//
+		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), +80); // CM
+		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		//
+		assertInvoiceAllocatedAmt(invoice3.getInvoiceId(), +10); // CM
+		assertInvoiceAllocated(invoice3.getInvoiceId(), true);
+		//
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), -10);
+	}
+
+	@Test
 	public void test_VendorInvoice_CustomerReceipt_expect_Exception()
 	{
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
@@ -1005,7 +1057,7 @@ public class PaymentAllocationBuilderTest
 				, ImmutableList.of(
 						payment().direction(INBOUND).open("100").amtToAllocate("100").build()));
 
-		assertThatThrownBy(() -> builder.build())
+		assertThatThrownBy(builder::build)
 				.isInstanceOf(PayableDocumentNotAllocatedException.class);
 	}
 
@@ -1036,7 +1088,7 @@ public class PaymentAllocationBuilderTest
 		{
 			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 			allowPartialAllocations = false;
-			assertThatThrownBy(() -> setup())
+			assertThatThrownBy(this::setup)
 					.isInstanceOf(PayableDocumentNotAllocatedException.class);
 		}
 
@@ -1130,8 +1182,8 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_invoiceProcessingFee()
 	{
-		PayableDocument invoice1;
-		PaymentDocument payment1;
+		final PayableDocument invoice1;
+		final PaymentDocument payment1;
 
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
 				.orgId(adOrgId)

@@ -41,6 +41,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.payment.PaymentDirection;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.util.time.SystemTime;
@@ -230,13 +231,15 @@ public class PaymentsViewAllocateCommand
 			@NonNull final PaymentRow row,
 			@NonNull final MoneyService moneyService)
 	{
-		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
+		final PaymentDirection paymentDirection = row.getPaymentDirection();
+		final Money openAmt = moneyService.toMoney(row.getOpenAmt())
+				.negateIf(paymentDirection.isOutboundPayment());
 
 		return PaymentDocument.builder()
 				.paymentId(row.getPaymentId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
-				.paymentDirection(row.getPaymentDirection())
+				.paymentDirection(paymentDirection)
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())

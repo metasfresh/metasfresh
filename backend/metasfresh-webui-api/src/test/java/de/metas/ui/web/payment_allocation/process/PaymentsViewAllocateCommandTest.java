@@ -485,8 +485,8 @@ public class PaymentsViewAllocateCommandTest
 			final PaymentDocument paymentDocument = PaymentsViewAllocateCommand.toPaymentDocument(row, moneyService);
 			assertThat(paymentDocument.getType()).isEqualTo(PaymentDocumentType.RegularPayment);
 			assertThat(paymentDocument.getPaymentDirection()).isEqualTo(PaymentDirection.OUTBOUND);
-			assertThat(paymentDocument.getAmountToAllocateInitial()).isEqualTo(Money.of(100, euroCurrencyId));
-			assertThat(paymentDocument.getAmountToAllocate()).isEqualTo(Money.of(100, euroCurrencyId));
+			assertThat(paymentDocument.getAmountToAllocateInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
+			assertThat(paymentDocument.getAmountToAllocate()).isEqualTo(Money.of(-100, euroCurrencyId));
 		}
 	}
 
