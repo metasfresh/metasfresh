@@ -22,56 +22,14 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InboundPaymentToOutboundPayment;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceDiscountOrWriteOff;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
-import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
-import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
-import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
-import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
-import static de.metas.payment.PaymentDirection.INBOUND;
-import static de.metas.payment.PaymentDirection.OUTBOUND;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import de.metas.currency.CurrencyRepository;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
@@ -92,6 +50,43 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InboundPaymentToOutboundPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceDiscountOrWriteOff;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
+import static de.metas.payment.PaymentDirection.INBOUND;
+import static de.metas.payment.PaymentDirection.OUTBOUND;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class PaymentAllocationBuilderTest
 {
@@ -290,10 +285,10 @@ public class PaymentAllocationBuilderTest
 				.documentNo(payment.getDocumentNo())
 				.paymentDirection(direction)
 				.openAmt(euro(open)
-				// .negateIf(direction.isOutboundPayment())
+						// .negateIf(direction.isOutboundPayment())
 				)
 				.amountToAllocate(euro(amtToAllocate)
-				// .negateIf(direction.isOutboundPayment())
+						// .negateIf(direction.isOutboundPayment())
 				)
 				.dateTrx(LocalDate.of(2020, Month.JANUARY, 1))
 				.build();
@@ -423,7 +418,7 @@ public class PaymentAllocationBuilderTest
 				ImmutableList.of(
 						invoice1 = invoice().type(VendorInvoice).open("-8000").pay("0").discount("-100").writeOff("-200").build())
 				// Payments
-				, ImmutableList.<PaymentDocument> of());
+				, ImmutableList.of());
 
 		//
 		// Define expected candidates
@@ -476,9 +471,9 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.<PayableDocument> asList()
+				ImmutableList.of(),
 				// Payments
-				, ImmutableList.of(
+				ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(),
 						payment2 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").build()));
 
@@ -504,9 +499,9 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1, payment2, payment3;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.<PayableDocument> asList()
+				ImmutableList.of(),
 				// Payments
-				, ImmutableList.of(
+				ImmutableList.of(
 						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").build(), //
 						payment2 = payment().direction(INBOUND).open("3000").amtToAllocate("3000").build(), //
 						payment3 = payment().direction(INBOUND).open("2000").amtToAllocate("2000").build() //
@@ -542,9 +537,9 @@ public class PaymentAllocationBuilderTest
 				// Invoices
 				ImmutableList.of(
 						invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
-						invoice2 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").build())
+						invoice2 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").build()),
 				// Payments
-				, ImmutableList.<PaymentDocument> of());
+				ImmutableList.of());
 
 		//
 		// Define expected candidates
@@ -577,7 +572,7 @@ public class PaymentAllocationBuilderTest
 						invoice = invoice().type(VendorInvoice).open("-5000").pay("-1000").build(),
 						creditMemo = invoice().type(VendorCreditMemo).open("1000").pay("1000").build()),
 				// Payments
-				ImmutableList.<PaymentDocument> of());
+				ImmutableList.of());
 
 		//
 		// Define expected candidates
@@ -614,9 +609,9 @@ public class PaymentAllocationBuilderTest
 					// Invoices
 					ImmutableList.of(
 							invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
-							invoice2 = invoice().type(VendorInvoice).open("-1000").pay("-1000").build())
+							invoice2 = invoice().type(VendorInvoice).open("-1000").pay("-1000").build()),
 					// Payments
-					, ImmutableList.<PaymentDocument> of());
+					ImmutableList.of());
 		}
 
 		@Test
@@ -675,7 +670,7 @@ public class PaymentAllocationBuilderTest
 				// Payments
 				, ImmutableList.of(payment1, payment2));
 
-		assertThatThrownBy(() -> builder.build())
+		assertThatThrownBy(builder::build)
 				.isInstanceOf(MultipleVendorDocumentsException.class);
 	}
 
@@ -822,6 +817,58 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
+	public void test_OneRegularVendorInvoice_TwoCreditMemoVendorInvoices_OneOutboundPayment()
+	{
+		final PaymentDocument payment1;
+		final PayableDocument invoice1;
+		final PayableDocument invoice2;
+		final PayableDocument invoice3;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						invoice1 = invoice().type(VendorInvoice).open("-165").pay("-100").discount("-10").writeOff("-5").build(),
+						invoice2 = invoice().type(VendorCreditMemo).open("80").pay("80").build(),
+						invoice3 = invoice().type(VendorCreditMemo).open("10").pay("10").build())
+				// Payments
+				, ImmutableList.of(
+						payment1 = payment().direction(OUTBOUND).open("-10").amtToAllocate("-10").build()));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				allocation().type(InvoiceToCreditMemo)
+						.payableRef(invoice1.getReference())
+						.paymentRef(invoice2.getReference())
+						.allocatedAmt("-80").discountAmt("-10").writeOffAmt("-5").overUnderAmt("-70")
+						.build(),
+				allocation().type(InvoiceToCreditMemo)
+						.payableRef(invoice1.getReference())
+						.paymentRef(invoice3.getReference())
+						.allocatedAmt("-10").discountAmt("0").writeOffAmt("0").overUnderAmt("-60")
+						.build(),
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("-10").overUnderAmt("-50")
+						.build());
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		//
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 10 + 5));
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		//
+		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), +80); // CM
+		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		//
+		assertInvoiceAllocatedAmt(invoice3.getInvoiceId(), +10); // CM
+		assertInvoiceAllocated(invoice3.getInvoiceId(), true);
+		//
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), -10);
+	}
+
+	@Test
 	public void test_VendorInvoice_CustomerReceipt_expect_Exception()
 	{
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
@@ -832,7 +879,7 @@ public class PaymentAllocationBuilderTest
 				, ImmutableList.of(
 						payment().direction(INBOUND).open("100").amtToAllocate("100").build()));
 
-		assertThatThrownBy(() -> builder.build())
+		assertThatThrownBy(builder::build)
 				.isInstanceOf(PayableDocumentNotAllocatedException.class);
 	}
 
@@ -863,7 +910,7 @@ public class PaymentAllocationBuilderTest
 		{
 			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 			allowPartialAllocations = false;
-			assertThatThrownBy(() -> setup())
+			assertThatThrownBy(this::setup)
 					.isInstanceOf(PayableDocumentNotAllocatedException.class);
 		}
 
@@ -957,8 +1004,8 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_invoiceProcessingFee()
 	{
-		PayableDocument invoice1;
-		PaymentDocument payment1;
+		final PayableDocument invoice1;
+		final PaymentDocument payment1;
 
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
 				.orgId(adOrgId)
