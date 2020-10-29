@@ -1,18 +1,27 @@
+/*
+ * #%L
+ * de.metas.util
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.util.lang;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.UtilityClass;
-
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -21,27 +30,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+
+import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ReferenceListAwareEnums
@@ -56,6 +58,7 @@ public class ReferenceListAwareEnums
 		return Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
 	}
 
+	@Nullable
 	public static <T extends ReferenceListAwareEnum> T ofNullableCode(final String code, final Class<T> clazz)
 	{
 		return !Check.isEmpty(code) ? ofCode(code, clazz) : null;
@@ -243,6 +246,7 @@ public class ReferenceListAwareEnums
 			typesByCode = Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
 		}
 
+		@Nullable
 		public T ofNullableCode(@Nullable final String code)
 		{
 			return Check.isNotBlank(code) ? ofCode(code) : null;
@@ -250,7 +254,7 @@ public class ReferenceListAwareEnums
 
 		public T ofCode(@NonNull final String code)
 		{
-			T type = typesByCode.get(code);
+			final T type = typesByCode.get(code);
 			if (type == null)
 			{
 				throw Check.mkEx("No " + typeName + " found for code: " + code);
