@@ -106,7 +106,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();
 
 		final Optional<Candidate> preExistingChildStockCandidate = candidateRepository.retrieveSingleChild(savedCandidate.getId());
-		final CandidateId preExistingChildStockId = preExistingChildStockCandidate.isPresent() ? preExistingChildStockCandidate.get().getId() : null;
+		final CandidateId preExistingChildStockId = preExistingChildStockCandidate.map(Candidate::getId).orElse(null);
 
 		final SaveResult stockCandidate = stockCandidateService
 				.createStockCandidate(savedCandidate.withNegatedQuantity())
@@ -183,7 +183,7 @@ public class DemandCandiateHandler implements CandidateHandler
 					.businessCase(null)
 					.businessCaseDetail(null)
 					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
-					.groupId(demandCandidateWithId.getEffectiveGroupId())
+					//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
 					.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
 					.quantity(requiredQty)
 					.build();
