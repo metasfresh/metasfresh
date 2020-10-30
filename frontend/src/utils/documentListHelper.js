@@ -174,6 +174,10 @@ const doesSelectionExist = function({
   if (selected && selected[0] === 'all') {
     return true;
   }
+  // if selection is empty and data exist, selection is valid
+  if (selected && !selected.length && data) {
+    return true;
+  }
 
   let rows = [];
 
