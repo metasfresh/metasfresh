@@ -92,8 +92,8 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 				ctx,
 				o.getBill_BPartner_ID(),
 				o.getDateOrdered(),
-				productCategoryId.getRepoId(),
-				productId.getRepoId(),
+				ProductCategoryId.toRepoId(productCategoryId),
+				ProductId.toRepoId(productId),
 				ol.getC_Charge_ID(),
 				trxName);
 

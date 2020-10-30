@@ -39,10 +39,10 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.JsonProduct.JsonProductBuilder;
-import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
-import de.metas.common.shipping.shipmentcandidate.JsonCustomer.JsonCustomerBuilder;
 import de.metas.common.shipping.JsonRequestCandidateResult;
 import de.metas.common.shipping.JsonRequestCandidateResults;
+import de.metas.common.shipping.shipmentcandidate.JsonCustomer;
+import de.metas.common.shipping.shipmentcandidate.JsonCustomer.JsonCustomerBuilder;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidate.JsonResponseShipmentCandidateBuilder;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
@@ -53,14 +53,14 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -286,9 +286,12 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
-				.companyName(CoalesceUtil.coalesce(bpartner.getCompanyName(), bpartner.getName()))
+				.companyName(CoalesceUtil.coalesce(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.street(splitStreetAndHouseNumber.getLeft())
 				.streetNo(splitStreetAndHouseNumber.getRight())
+				.addressSuffix1(location.getAddress2())
+				.addressSuffix2(location.getAddress3())
+				.addressSuffix3(location.getAddress4())
 				.postal(postal)
 				.city(city)
 				.countryCode(location.getCountryCode())
