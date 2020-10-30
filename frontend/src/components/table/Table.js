@@ -136,6 +136,11 @@ export default class Table extends PureComponent {
           updateQuickActions && updateQuickActions(id);
           newSelection = [id];
           onSelect(id);
+        } else {
+          let afterDeselect = Array.isArray(selected)
+            ? selected.filter((selItem) => selItem !== id)
+            : id;
+          newSelection = onSelect(afterDeselect);
         }
       }
 
