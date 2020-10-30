@@ -24,12 +24,15 @@ export const getEntityRelatedId = ({ windowId, viewId, docId, tabId }) => {
 const reducer = produce((draftState, action) => {
   switch (action.type) {
     case types.CREATE_FILTER: {
-      const { id, data } = action.payload;
-      const { filterData, filtersActive, activeFiltersCaptions } = data;
+      const {
+        id,
+        data: { filterData, filtersActive, activeFiltersCaptions },
+      } = action.payload;
+
       draftState[id] = {
         ...initialFiltersLeafState,
         filterData: filterData ? filterData : [],
-        filtersActive: filtersActive ? filtersActive : [],
+        filtersActive,
         filtersCaptions: activeFiltersCaptions,
       };
       return;

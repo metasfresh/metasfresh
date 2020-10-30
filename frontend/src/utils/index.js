@@ -1,7 +1,8 @@
 import Moment from 'moment';
-import { DATE_FORMAT } from '../constants/Constants';
 import queryString from 'query-string';
 import counterpart from 'counterpart';
+
+import { DATE_FORMAT } from '../constants/Constants';
 
 // TODO: Move to api ?
 export const getQueryString = (query) =>
