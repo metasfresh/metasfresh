@@ -9,6 +9,7 @@ import {
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
+import { formatFilters } from '../utils/filterHelpers';
 
 import {
   ADD_VIEW_LOCATION_DATA,
@@ -347,12 +348,16 @@ export function fetchDocument({
           filterData: view.layout.filters,
           filtersActive: response.data.filters,
         });
+        const filtersActive = formatFilters({
+          filtersData: view.layout.filters,
+          filtersActive: response.data.filters,
+        });
         dispatch(
           createFilter({
             filterId,
             data: {
               filterData: view.layout.filters, // set the proper layout for the filters
-              filtersActive: response.data.filters,
+              filtersActive,
               activeFiltersCaptions,
             },
           })
