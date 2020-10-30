@@ -1,8 +1,9 @@
-import * as types from '../constants/FilterTypes';
 import deepUnfreeze from 'deep-unfreeze';
-import { fieldValueToString } from '../utils/tableHelpers';
 import _ from 'lodash';
 import { createCachedSelector } from 're-reselect';
+
+import * as types from '../constants/FilterTypes';
+import { fieldValueToString } from '../utils/tableHelpers';
 
 export function clearAllFilters({ filterId, data }) {
   return {
@@ -94,7 +95,7 @@ export function clearStaticFilters({ filterId, data }) {
  * @param {string} filterId - key identifying the filter
  * @param {array} filterData array that contains all the filters as they are retrieved from the BE
  */
-function getParentFilterFromFilterData({ filterId, filterData }) {
+export function getParentFilterFromFilterData({ filterId, filterData }) {
   let parentFilter = {};
   filterData.forEach((filter) => {
     if (filter.filterId && filter.filterId === filterId) {
