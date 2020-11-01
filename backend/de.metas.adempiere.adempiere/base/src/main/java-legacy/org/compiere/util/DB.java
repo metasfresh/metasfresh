@@ -999,7 +999,7 @@ public class DB
 	 *
 	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
-	public int executeUpdateEx(final String sql, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
 	{
 		final Object[] params = null;
 		final int timeOut = 0;
