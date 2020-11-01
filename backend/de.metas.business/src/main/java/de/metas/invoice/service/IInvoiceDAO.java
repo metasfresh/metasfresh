@@ -171,7 +171,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
 
-	List<org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
+	List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 

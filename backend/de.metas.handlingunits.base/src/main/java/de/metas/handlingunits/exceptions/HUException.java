@@ -28,6 +28,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Root of Handling Units module exceptions hierarchy.
  *
@@ -69,7 +71,7 @@ public class HUException extends AdempiereException
 	}
 
 	@Override
-	public HUException setParameter(final String name, final Object value)
+	public HUException setParameter(final @NonNull String name, @Nullable final Object value)
 	{
 		super.setParameter(name, value);
 		return this;

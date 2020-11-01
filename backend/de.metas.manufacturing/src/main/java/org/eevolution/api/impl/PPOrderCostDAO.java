@@ -1,30 +1,7 @@
 package org.eevolution.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.eevolution.api.IPPOrderCostDAO;
-import org.eevolution.api.PPOrderCost;
-import org.eevolution.api.PPOrderCostId;
-import org.eevolution.api.PPOrderCostTrxType;
-import org.eevolution.api.PPOrderCosts;
-import org.eevolution.model.I_PP_Order_Cost;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -37,14 +14,51 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.IPPOrderCostDAO;
+import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCostId;
+import org.eevolution.api.PPOrderCostTrxType;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.model.I_PP_Order_Cost;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PPOrderCostDAO implements IPPOrderCostDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	@Override
+	public boolean hasPPOrderCosts(@NonNull final PPOrderId orderId)
+	{
+		return retrieveAllOrderCostsQuery(orderId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	@NonNull
 	public PPOrderCosts getByOrderId(@NonNull final PPOrderId orderId)
 	{
 		final ImmutableList<PPOrderCost> costs = retrieveAllOrderCostsQuery(orderId)
@@ -53,6 +67,11 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				.stream()
 				.map(this::toPPOrderCost)
 				.collect(ImmutableList.toImmutableList());
+
+		if (costs.isEmpty())
+		{
+			throw new AdempiereException("Order costs were not created yet for " + orderId);
+		}
 
 		return PPOrderCosts.builder()
 				.orderId(orderId)
@@ -70,11 +89,11 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 
 	private IQueryBuilder<I_PP_Order_Cost> retrieveAllOrderCostsQuery(@NonNull final PPOrderId ppOrderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_Cost.class)
 				.addEqualsFilter(I_PP_Order_Cost.COLUMNNAME_PP_Order_ID, ppOrderId)
-		// .addOnlyActiveRecordsFilter() // NOTE: we need to retrieve ALL costs
-		;
+				// .addOnlyActiveRecordsFilter() // NOTE: we need to retrieve ALL costs
+				;
 	}
 
 	@Override
@@ -135,7 +154,9 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		cost.setId(PPOrderCostId.ofRepoId(record.getPP_Order_Cost_ID()));
 	}
 
-	private static void updateRecord(@NonNull final I_PP_Order_Cost record, @NonNull final PPOrderCost from)
+	private static void updateRecord(
+			@NonNull final I_PP_Order_Cost record,
+			@NonNull final PPOrderCost from)
 	{
 		record.setIsActive(true);
 		record.setPP_Order_Cost_TrxType(from.getTrxType().getCode());
@@ -153,7 +174,8 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setCurrentCostPriceLL(price.getComponentsCostPrice().getValue());
 
 		record.setCumulatedAmt(from.getAccumulatedAmount().getValue());
-		record.setCumulatedQty(from.getAccumulatedQty());
+		record.setC_UOM_ID(from.getAccumulatedQty().getUomId().getRepoId());
+		record.setCumulatedQty(from.getAccumulatedQty().toBigDecimal());
 		record.setPostCalculationAmt(from.getPostCalculationAmount().getValue());
 
 		if (from.getTrxType().isCoProduct())
@@ -190,6 +212,8 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				? Percent.of(record.getCostDistributionPercent())
 				: null;
 
+		final I_C_UOM uom = extractUOM(record);
+
 		final CurrencyId currencyId = acctSchema.getCurrencyId();
 		return PPOrderCost.builder()
 				.id(PPOrderCostId.ofRepoId(record.getPP_Order_Cost_ID()))
@@ -198,11 +222,17 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 				.price(CostPrice.builder()
 						.ownCostPrice(CostAmount.of(record.getCurrentCostPrice(), currencyId))
 						.componentsCostPrice(CostAmount.of(record.getCurrentCostPriceLL(), currencyId))
+						.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 						.build())
 				.accumulatedAmount(CostAmount.of(record.getCumulatedAmt(), currencyId))
-				.accumulatedQty(record.getCumulatedQty())
+				.accumulatedQty(Quantity.of(record.getCumulatedQty(), uom))
 				.postCalculationAmount(CostAmount.of(record.getPostCalculationAmt(), currencyId))
 				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
+	}
+
+	private I_C_UOM extractUOM(final I_PP_Order_Cost record)
+	{
+		return uomDAO.getById(record.getC_UOM_ID());
 	}
 }

@@ -51,6 +51,7 @@ class TableCell extends PureComponent {
   handleBackdropLock = (state) => {
     const { item } = this.props;
     const widgetsList = ['ProductAttributes', 'Attributes', 'List', 'Lookup'];
+
     if (!widgetsList.includes(item.widgetType)) {
       !state && this.props.onClickOutside();
     }
@@ -71,7 +72,9 @@ class TableCell extends PureComponent {
     }
 
     onKeyDown(e, property, isReadonly);
-    !isReadonly && updateRow(); // toggle the flag in parrent component highlighting
+
+    // TODO: We should limit this to only action keys (esc, tab, enter)
+    !isReadonly && updateRow(); // toggle the flag in parent component highlighting
     // the row giving the user feedback that an action is running
   };
 

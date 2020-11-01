@@ -1,22 +1,22 @@
 package org.eevolution.costing;
 
-import static org.eevolution.costing.BOMAssertUtils.assertComponentsCostPrice;
-import static org.eevolution.costing.BOMAssertUtils.assertOwnCostPrice;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.BOMComponentType;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
 import de.metas.util.lang.Percent;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.eevolution.costing.BOMAssertUtils.assertComponentsCostPrice;
+import static org.eevolution.costing.BOMAssertUtils.assertOwnCostPrice;
 
 /*
  * #%L
@@ -57,7 +57,7 @@ public class BOMTest
 
 	private I_C_UOM uom_Each;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -71,8 +71,10 @@ public class BOMTest
 	{
 		final BOM bom = BOM.builder()
 				.productId(bomProductId)
+				.qty(Quantity.of(1, uom_Each))
 				.costPrice(BOMCostPrice.builder()
 						.productId(bomProductId)
+						.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
 						.build())
 				.line(BOMLine.builder()
 						.componentId(componentId1)
@@ -80,11 +82,13 @@ public class BOMTest
 						.qty(Quantity.of(5, uom_Each))
 						.costPrice(BOMCostPrice.builder()
 								.productId(componentId1)
+								.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
 								.costElementPrice(BOMCostElementPrice.builder()
 										.costElementId(costElementId1)
 										.costPrice(CostPrice.builder()
 												.ownCostPrice(CostAmount.of(5, currencyId))
 												.componentsCostPrice(CostAmount.of(55, currencyId))
+												.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
 												.build())
 										.build())
 								.build())
@@ -105,8 +109,10 @@ public class BOMTest
 	{
 		final BOM bom = BOM.builder()
 				.productId(bomProductId)
+				.qty(Quantity.of(1, uom_Each))
 				.costPrice(BOMCostPrice.builder()
 						.productId(bomProductId)
+						.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
 						.build())
 				.line(BOMLine.builder()
 						.componentId(componentId1)
@@ -114,11 +120,13 @@ public class BOMTest
 						.qty(Quantity.of(5, uom_Each))
 						.costPrice(BOMCostPrice.builder()
 								.productId(componentId1)
+								.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
 								.costElementPrice(BOMCostElementPrice.builder()
 										.costElementId(costElementId1)
 										.costPrice(CostPrice.builder()
 												.ownCostPrice(CostAmount.of(5, currencyId))
 												.componentsCostPrice(CostAmount.of(55, currencyId))
+												.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
 												.build())
 										.build())
 								.build())
@@ -130,9 +138,10 @@ public class BOMTest
 						.coProductCostDistributionPercent(Percent.of(50))
 						.costPrice(BOMCostPrice.builder()
 								.productId(componentId1)
+								.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
 								.costElementPrice(BOMCostElementPrice.builder()
 										.costElementId(costElementId1)
-										.costPrice(CostPrice.zero(currencyId))
+										.costPrice(CostPrice.zero(currencyId, UomId.ofRepoId(uom_Each.getC_UOM_ID())))
 										.build())
 								.build())
 						.build())

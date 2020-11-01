@@ -1,6 +1,12 @@
-drop function if exists product_costs_recreate_allProducts_reorder ();
+DROP FUNCTION IF EXISTS product_costs_recreate_allProducts_reorder ()
+;
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_allProducts_reorder ()
+;
 
-create function product_costs_recreate_allProducts_reorder() RETURNS text
+
+CREATE FUNCTION "de_metas_acct".product_costs_recreate_allProducts_reorder() RETURNS text
+
+
     LANGUAGE plpgsql
 AS
 $$
@@ -8,17 +14,14 @@ DECLARE
     rowcount integer;
     v_result text := '';
 BEGIN
-    UPDATE m_cost c
-    SET currentcostprice=0,
-        currentqty=0,
-        cumulatedamt=0,
-        cumulatedqty=0,
-        c_currency_id=ac.c_currency_id /*make sure to also get the *current* currency of our ac*/
-    FROM c_acctschema ac
-    WHERE ac.c_acctschema_id=c.c_acctschema_id /*m_cost.c_acctschema_id is mandatory*/;
+    DELETE
+    FROM m_cost c
+    WHERE TRUE
+    -- AND NOT exists(SELECT 1 FROM m_costelement ce WHERE ce.m_costelement_id = c.m_costelement_id AND ce.costingmethod = 'S') -- exclude standard costing
+    ;
     GET DIAGNOSTICS rowcount = ROW_COUNT;
-    v_result := v_result || rowcount || ' M_Cost(s) set to ZERO; ';
-    raise notice '% M_Cost(s) set to ZERO', rowcount;
+    v_result := v_result || rowcount || ' M_Cost(s) deleted; ';
+    RAISE NOTICE '% M_Cost(s) deleted', rowcount;
 
 
     DELETE
@@ -26,8 +29,15 @@ BEGIN
     WHERE 1 = 1;
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     v_result := v_result || rowcount || ' M_CostDetail(s) deleted; ';
+    RAISE NOTICE '% M_CostDetail(s) deleted; ', rowcount;
 
-    raise notice '% M_CostDetail(s) deleted; ', rowcount;
+    DELETE
+    FROM pp_order_cost poc
+    WHERE 1 = 1;
+    GET DIAGNOSTICS rowcount = ROW_COUNT;
+    v_result := v_result || rowcount || ' PP_Order_Cost(s) deleted; ';
+    RAISE NOTICE '% PP_Order_Cost(s) deleted; ', rowcount;
+
 
     SELECT count(1)
     INTO rowcount
@@ -45,11 +55,10 @@ BEGIN
                                tablename_prio,
                                least(record_id, reversal_id),
                                record_id
-
                   ) t
          ) t;
     v_result := v_result || rowcount || ' document(s) unposted; ';
-    raise notice '% document(s) unposted; ', rowcount;
+    RAISE NOTICE '% document(s) unposted; ', rowcount;
 
     RETURN v_result;
 END;

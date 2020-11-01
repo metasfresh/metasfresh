@@ -1,8 +1,5 @@
 import { DATE_FIELD_TYPES } from '../constants/Constants';
-import {
-  getFormatForDateField,
-  generateMomentObj,
-} from '../components/widget/RawWidgetHelpers';
+import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 import { getParentFilterFromFilterData } from '../actions/FiltersActions';
 
 export function formatFilters({ filtersData, filtersActive = [] }) {
@@ -22,8 +19,8 @@ export function formatFilters({ filtersData, filtersActive = [] }) {
 
         if (DATE_FIELD_TYPES.includes(widgetType)) {
           const dateFormat = getFormatForDateField(widgetType);
-          const date = generateMomentObj(value, dateFormat);
-          const dateTo = generateMomentObj(valueTo, dateFormat);
+          const date = getFormattedDate(value, dateFormat);
+          const dateTo = getFormattedDate(valueTo, dateFormat);
 
           filterParameter = {
             parameterName,

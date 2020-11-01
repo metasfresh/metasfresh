@@ -1,26 +1,8 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.util.Check.isEmpty;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.collections4.CollectionUtils;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -81,6 +63,21 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.isEmpty;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -215,8 +212,8 @@ public class CreateInvoiceCandidatesService
 
 		// uomId
 		final UomId uomId = lookupUomId(
-				X12DE355.ofNullableCode(item.getUomCode()), 
-				productId, 
+				X12DE355.ofNullableCode(item.getUomCode()),
+				productId,
 				item);
 		candidate.invoicingUomId(uomId);
 
@@ -514,8 +511,8 @@ public class CreateInvoiceCandidatesService
 		final CurrencyId currencyId = lookupCurrencyId(jsonPrice);
 
 		final UomId priceUomId = lookupUomId(
-				X12DE355.ofNullableCode(jsonPrice.getPriceUomCode()), 
-				productId, 
+				X12DE355.ofNullableCode(jsonPrice.getPriceUomCode()),
+				productId,
 				item);
 
 		final ProductPrice price = ProductPrice.builder()

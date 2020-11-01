@@ -112,11 +112,6 @@ class PPOrderLinesLoader
 		this.asiAttributesProvider = asiAttributesProvider;
 	}
 
-	/**
-	 * Loads {@link PPOrderLinesViewData}s.
-	 *
-	 * @param viewId viewId to be set to newly created {@link PPOrderLineRow}s.
-	 */
 	public PPOrderLinesViewData retrieveData(final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
@@ -156,7 +151,7 @@ class PPOrderLinesLoader
 			@NonNull final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId)
 	{
 		final Comparator<PPOrderLineRow> ppOrderBomLineRowSorter = //
-				Comparator.<PPOrderLineRow> comparingInt(row -> row.isReceipt() ? 0 : 1) // receipt lines first
+				Comparator.<PPOrderLineRow>comparingInt(row -> row.isReceipt() ? 0 : 1) // receipt lines first
 						.thenComparing(row -> row.getOrderBOMLineId());  // BOM lines order
 
 		final Function<? super I_PP_Order_BOMLine, ? extends PPOrderLineRow> ppOrderBomLineRowCreator = //
@@ -258,21 +253,21 @@ class PPOrderLinesLoader
 	{
 		final PPOrderLineType lineType;
 		final String packingInfo;
-		final BigDecimal qtyPlan;
+		final Quantity qtyPlan;
 		final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderBOMLine.getComponentType());
 		if (componentType.isByOrCoProduct())
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
 			packingInfo = computePackingInfo(ppOrderBOMLine);
 
-			qtyPlan = ppOrderBOMBL.adjustCoProductQty(ppOrderBOMLine.getQtyRequiered());
+			qtyPlan = ppOrderBOMBL.getQtyRequiredToReceive(ppOrderBOMLine);
 		}
 		else
 		{
 			lineType = PPOrderLineType.BOMLine_Component;
 			packingInfo = null; // we don't know the packing info for what will be issued.
 
-			qtyPlan = ppOrderBOMLine.getQtyRequiered();
+			qtyPlan = ppOrderBOMBL.getQtyRequiredToIssue(ppOrderBOMLine);
 		}
 
 		final ImmutableList<PPOrderLineRow> includedRows = createIncludedRowsForPPOrderQtys(

@@ -3,6 +3,7 @@ package de.metas.rest_api.ordercandidates.impl;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -199,10 +200,14 @@ public class MasterdataProviderTest
 	@Test
 	void getCreateBPartnerInfo()
 	{
+		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
+		bpGroupRecord.setName("bpGroup");
+		save(bpGroupRecord);
+
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setValue("jsonBPartner.code");
 		bpartnerRecord.setName("jsonBPartner.name");
-		bpartnerRecord.setC_BP_Group_ID(20);
+		bpartnerRecord.setC_BP_Group_ID(bpGroupRecord.getC_BP_Group_ID());
 		saveRecord(bpartnerRecord);
 
 		final JsonRequestBPartner jsonBPartner = new JsonRequestBPartner();

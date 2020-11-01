@@ -89,7 +89,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 			if (qty.signum() != 0)
 			{
 				final CostAmount price = amt.divide(qty, currentCosts.getPrecision());
-				currentCosts.setCostPrice(CostPrice.ownCostPrice(price));
+				currentCosts.setCostPrice(CostPrice.ownCostPrice(price, qty.getUomId()));
 			}
 			else
 			{

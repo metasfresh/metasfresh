@@ -1,0 +1,25 @@
+{
+  "props1": {
+    "widgetData": [
+      {
+        "field": "IsActive",
+        "value": true,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Switch",
+        "validStatus": {
+          "valid": true,
+          "initialValue": true,
+          "fieldName": "IsActive"
+        },
+        "viewEditorRenderMode": "always"
+      }
+    ],
+    "widgetField": "IsActive",
+    "isModal": false,
+    "tabIndex": 2,
+    "forwardedRef": null,
+    "readonly": false
+  }
+}

@@ -1,22 +1,11 @@
 package de.metas.acct;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.model.I_C_AcctSchema_GL;
-import org.junit.Ignore;
-import org.slf4j.Logger;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.acct.api.impl.AcctSchemaDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.currency.CurrencyCode;
@@ -28,6 +17,18 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_GL;
+import org.junit.Ignore;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -57,16 +58,22 @@ public class AcctSchemaTestHelper
 	private static final Logger logger = LogManager.getLogger(AcctSchemaTestHelper.class);
 
 	@Builder(builderMethodName = "newAcctSchema", builderClassName = "newAcctSchemaBuilder")
-	private static AcctSchemaId createAcctSchema()
+	private static AcctSchemaId createAcctSchema(
+			@Nullable final CostingLevel costingLevel,
+			@Nullable final CostingMethod costingMethod,
+			@Nullable final CostTypeId costTypeId,
+			@Nullable final CurrencyId currencyId)
 	{
-		final CurrencyId acctCurrency = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		final CurrencyId currencyIdEffective = currencyId != null
+				? currencyId
+				: PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
 		acctSchemaRecord.setName("Test AcctSchema");
-		acctSchemaRecord.setC_Currency_ID(acctCurrency.getRepoId());
-		acctSchemaRecord.setM_CostType_ID(1);
-		acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
-		acctSchemaRecord.setCostingMethod(CostingMethod.StandardCosting.getCode());
+		acctSchemaRecord.setC_Currency_ID(currencyId.getRepoId());
+		acctSchemaRecord.setM_CostType_ID(costTypeId != null ? costTypeId.getRepoId() : 1);
+		acctSchemaRecord.setCostingLevel(CoalesceUtil.coalesce(costingLevel, CostingLevel.Client).getCode());
+		acctSchemaRecord.setCostingMethod(CoalesceUtil.coalesce(costingMethod, CostingMethod.StandardCosting).getCode());
 		acctSchemaRecord.setSeparator("-");
 		acctSchemaRecord.setTaxCorrectionType(TaxCorrectionType.NONE.getCode());
 		saveRecord(acctSchemaRecord);
@@ -88,8 +95,7 @@ public class AcctSchemaTestHelper
 		acctSchemaDefault.setUnrealizedLoss_Acct(1);
 		saveRecord(acctSchemaDefault);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
-		return acctSchemaId;
+		return AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 	}
 
 	public static void registerAcctSchemaDAOWhichAlwaysProvides(@NonNull final AcctSchemaId acctSchemaId)
@@ -117,7 +123,9 @@ public class AcctSchemaTestHelper
 		}
 
 		@Override
-		public AcctSchemaId getAcctSchemaIdByClientAndOrg(final ClientId clientId, final OrgId orgId)
+		public AcctSchemaId getAcctSchemaIdByClientAndOrg(
+				final ClientId clientId,
+				final OrgId orgId)
 		{
 			logger.debug("Always returning acctSchemaId={} for clientId={} and orgId={}", acctSchemaId, clientId, orgId);
 			return acctSchemaId;

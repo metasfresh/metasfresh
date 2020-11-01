@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /*
  * #%L
@@ -36,9 +37,14 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.event.log.EventLogService;
+import de.metas.event.log.EventLogsRepository;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -87,12 +93,13 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
@@ -101,6 +108,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 	private MRPTestDataSimple masterData;
 
+	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IPPOrderBOMDAO ppOrderBOMDAO;
 	private IPPOrderBOMBL ppOrderBOMBL;
 
@@ -137,11 +145,14 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
+		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
+
 		// Services
 		final MRPTestHelper mrpTestHelper = new MRPTestHelper(false); // initEnv=false
 		masterData = new MRPTestDataSimple(mrpTestHelper);
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		uomStuck = createUOM("Stück", 0, 0);
 		uomMillimeter = createUOM("Millimeter", 2, 4);
@@ -152,7 +163,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		pFolieId = ProductId.ofRepoId(pFolie.getM_Product_ID());
 
 		final I_M_HU_PI pi = helper.createHUDefinition("TestTU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		this.piVersionId = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersionId(pi);
+		this.piVersionId = handlingUnitsDAO.retrievePICurrentVersionId(pi);
 
 		//
 		// Conversion for product Folie: Rolle -> Millimeter
@@ -257,19 +268,25 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Create Manufacturing order and validate Order BOM Line
-		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
-		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
-		Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
-		Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
-		Assert.assertThat("Invalid PP_Order QtyRequired",
-				ppOrderBOMLine_Folie.getQtyRequiered(),
-				Matchers.comparesEqualTo(new BigDecimal("28600")) // = 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
-		);
+		final I_PP_Order ppOrder;
+		final PPOrderBOMLineId ppOrderBOMLineId_Folie;
+		{
+			ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
+			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
+			Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
+			Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
+			Assert.assertThat("Invalid PP_Order QtyRequired",
+					ppOrderBOMLine_Folie.getQtyRequiered(),
+					Matchers.comparesEqualTo(new BigDecimal("28600")) // = 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
+			);
+
+			ppOrderBOMLineId_Folie = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine_Folie.getPP_Order_BOMLine_ID());
+		}
 
 		//
 		// Consider that 20000mm of folie were already issued
 		// => 8600mm (28600-20000) still needs to be issued
-		setBOMLineQtyDeliveredAndSave(ppOrderBOMLine_Folie, Quantity.of(20000, uomMillimeter));
+		addQtyIssuedAndSave(ppOrderBOMLineId_Folie, Quantity.of(20000, uomMillimeter));
 
 		//
 		// Create an VHU with 1Rolle and issue it to manufacturing order
@@ -293,7 +310,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			// 8600mm (28600-20000) still needs to be issued.
 			// 8600mm to role: 8600/1500000 = 0.0057333333333333 => rounded to 2 digits, HALF UP = 0.01role
 			// => 0.99=1.00role - 0.01(28600-20000 mm to rolle)
-			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9942666667");
+			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9942666666");
 			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("8600.00");
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
 		}
@@ -303,11 +320,13 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	/**
 	 * Creates an VHU with 1 role inside and tries to issue it to manufacturing order.
 	 *
-	 * @param ppOrder
-	 * @param expectedHUQtyAfterIssue how much quantity remained in the HU after issue (expected)
+	 * @param expectedHUQtyAfterIssue    how much quantity remained in the HU after issue (expected)
 	 * @param expectedIssuedQtyOnBOMLine how much was issued on BOM line (expected); note: how much issued and not how much was issued until now!
 	 */
-	private void create_OneRoleHU_Issue_And_Test(final I_PP_Order ppOrder, final BigDecimal expectedHUQtyAfterIssue, final BigDecimal expectedIssuedQtyOnBOMLine)
+	private void create_OneRoleHU_Issue_And_Test(
+			@NonNull  final I_PP_Order ppOrder,
+			final BigDecimal expectedHUQtyAfterIssue,
+			final BigDecimal expectedIssuedQtyOnBOMLine)
 	{
 		//
 		// Create VirtualHU with 1 rolle of Folie
@@ -327,8 +346,8 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			final I_M_HU newHU = newHUs.get(0);
 
 			newHU.setM_Locator_ID(ppOrder.getM_Locator_ID());
-			Services.get(IHandlingUnitsDAO.class).saveHU(newHU);
-			Assert.assertTrue("HU's locator shall be set", newHU.getM_Locator_ID() > 0);
+			handlingUnitsDAO.saveHU(newHU);
+			assertThat(newHU.getM_Locator_ID()).withFailMessage("HU's locator shall be set").isGreaterThan(0);
 
 			return newHU;
 		});
@@ -336,7 +355,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Issue created HU to Folie Order BOM Line
-		final ZonedDateTime movementDate = LocalDate.of(2014, 10, 01).atStartOfDay(SystemTime.zoneId());
+		final ZonedDateTime movementDate = LocalDate.parse("2014-10-01").atStartOfDay(SystemTime.zoneId());
 		final List<I_PP_Cost_Collector> costCollectors;
 		final PPOrderBOMLineId ppOrderBOMLineId_Folie;
 		{
@@ -382,20 +401,18 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		// Validate cost collector
 		if (expectedIssuedQtyOnBOMLine.signum() != 0)
 		{
-			Assert.assertEquals("Invalid cost collectors count", 1, costCollectors.size());
+			assertThat(costCollectors).withFailMessage("Invalid cost collectors count").hasSize(1);
 			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
 			Assert.assertEquals("Invalid Cost Collector Type", CostCollectorType.ComponentIssue.getCode(), costCollector.getCostCollectorType());
 			Assert.assertEquals("Invalid Cost Collector MovementDate", TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate());
 			Assert.assertEquals("Invalid Cost Collector PP_Order", ppOrder, costCollector.getPP_Order());
 			Assert.assertEquals("Invalid Cost Collector PP_Order_BOMLine", ppOrderBOMLineId_Folie.getRepoId(), costCollector.getPP_Order_BOMLine_ID());
 			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter.getC_UOM_ID(), costCollector.getC_UOM_ID());
-			Assert.assertThat("Invalid Cost Collector Qty",
-					costCollector.getMovementQty(),
-					Matchers.comparesEqualTo(expectedIssuedQtyOnBOMLine));
+			assertThat(costCollector.getMovementQty()).withFailMessage("Invalid Cost Collector Qty").isEqualByComparingTo(expectedIssuedQtyOnBOMLine);
 		}
 		else
 		{
-			Assert.assertEquals("Invalid cost collectors count", 0, costCollectors.size());
+			assertThat(costCollectors).withFailMessage("Invalid cost collectors count").isEmpty();
 		}
 
 		// FIXME: because MPPCostCollector.completeIt() is not refactored, it's not executed
@@ -405,7 +422,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				.orderBOMLineId(ppOrderBOMLineId_Folie)
 				.usageVariance(false)
 				.qtyIssuedOrReceivedToAdd(Quantity.of(expectedIssuedQtyOnBOMLine, uom)) // which actually is same as cc.getMovementQty()
-				.date(TimeUtil.asLocalDateTime(movementDate))
+				.date(movementDate)
 				.asiId(AttributeSetInstanceId.NONE)
 				.build());
 	}
@@ -448,13 +465,18 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			{
 				//
 				// Create Manufacturing order and validate Order BOM Line
-				final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
-				final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
-				Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
-				Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
-				Assert.assertThat("Invalid PP_Order QtyRequired",
-						ppOrderBOMLine_Folie.getQtyRequiered(),
-						Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
+				final I_PP_Order ppOrder;
+				final PPOrderBOMLineId ppOrderBOMLineId_Folie;
+				{
+					ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
+					final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
+					Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
+					Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
+					Assert.assertThat("Invalid PP_Order QtyRequired",
+							ppOrderBOMLine_Folie.getQtyRequiered(),
+							Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
+					ppOrderBOMLineId_Folie = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine_Folie.getPP_Order_BOMLine_ID());
+				}
 
 				//
 				// Set finish goods received quantity
@@ -463,7 +485,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 				//
 				// Set quantity issued
-				setBOMLineQtyDeliveredAndSave(ppOrderBOMLine_Folie, ppOrderBOMLine_Folie_QtyIssued);
+				addQtyIssuedAndSave(ppOrderBOMLineId_Folie, ppOrderBOMLine_Folie_QtyIssued);
 
 				//
 				// Create an VHU with 1Rolle, issue it to manufacturing order and test
@@ -649,14 +671,12 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		return hu;
 	}
 
-	private void setBOMLineQtyDeliveredAndSave(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyDelivered)
+	private void addQtyIssuedAndSave(final PPOrderBOMLineId orderBOMLineId, final Quantity qtyDelivered)
 	{
-		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_C_UOM productStockingUOM = productBL.getStockUOM(productId);
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
-		final Quantity qtyDeliveredInStockingUOM = uomConversionService.convertQuantityTo(qtyDelivered, conversionCtx, productStockingUOM);
-		orderBOMLine.setQtyDelivered(qtyDeliveredInStockingUOM.toBigDecimal());
-
-		ppOrderBOMDAO.save(orderBOMLine);
+		ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
+				.orderBOMLineId(orderBOMLineId)
+				.qtyIssuedOrReceivedToAdd(qtyDelivered)
+				.date(SystemTime.asZonedDateTime())
+				.build());
 	}
 }

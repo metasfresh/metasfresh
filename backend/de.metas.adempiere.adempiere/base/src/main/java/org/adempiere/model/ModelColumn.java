@@ -22,128 +22,68 @@ package org.adempiere.model;
  * #L%
  */
 
-
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-
 import com.google.common.base.Function;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.NonFinal;
+
+import javax.annotation.Nullable;
 
 /**
  * Class used to describe a column in a particular model.
- *
+ * <p>
  * Please note all COLUMN_ fields from generated interfaces.
  *
- * @author tsa
- *
- * @param <MT> table model class
+ * @param <MT>  table model class
  * @param <CMT> column's model class
+ * @author tsa
  */
+@Value
 public final class ModelColumn<MT, CMT>
 {
-	private final String columnName;
+	/**
+	 * Model class.
+	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return I_C_Invoice.class
+	 */
 	private final Class<MT> modelClass;
-	private String _modelTableName = null; // lazy loaded on demand
+
+	/**
+	 * Column Name.
+	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return "C_BPartner_ID"
+	 */
+	private final String columnName;
+
+	/**
+	 * Column's model class or null.
+	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return I_C_BPartner.class
+	 */
 	private final Class<CMT> columnModelType;
 
-	public ModelColumn(final Class<MT> modelClass, final String columnName, final Class<CMT> columnModelType)
+	@NonFinal
+	private transient String _modelTableName = null; // lazy loaded on demand
+
+	public ModelColumn(
+			@NonNull final Class<MT> modelClass,
+			@NonNull final String columnName,
+			@Nullable final Class<CMT> columnModelType)
 	{
-		super();
 		this.modelClass = modelClass;
 		this.columnName = columnName;
 		this.columnModelType = columnModelType;
 	}
 
-	@Override
-	public String toString()
-	{
-		return "ModelColumn ["
-				+ "columnName=" + columnName
-				+ ", modelClass=" + modelClass
-				+ ", columnModelType=" + columnModelType
-				+ "]";
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(columnName)
-				.append(modelClass)
-				.append(columnModelType)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final ModelColumn<MT, CMT> other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(this.columnName, other.columnName)
-				.append(this.modelClass, other.modelClass)
-				.append(this.columnModelType, other.columnModelType)
-				.isEqual();
-	}
-
-	/**
-	 * Gets model class.
-	 *
-	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return I_C_Invoice.class
-	 *
-	 * @return model class
-	 */
-	public Class<MT> getModelClass()
-	{
-		return modelClass;
-	}
-
 	/**
 	 * Gets model table name.
-	 *
 	 * e.g. if we are talking about I_C_Invoice model class then this method will return "C_Invoice" (i.e. I_C_Invoice.Table_Name)
-	 *
-	 * @return model table name
 	 */
-	public synchronized String getTableName()
+	public String getTableName()
 	{
-		if (_modelTableName == null)
+		String modelTableName = _modelTableName;
+		if (modelTableName == null)
 		{
-			_modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
+			modelTableName = _modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
 		}
-		return _modelTableName;
-	}
-
-	/**
-	 * Gets column name
-	 *
-	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return "C_BPartner_ID"
-	 *
-	 * @return column name
-	 */
-	public String getColumnName()
-	{
-		return columnName;
-	}
-
-	/**
-	 * Gets column's model class or null
-	 *
-	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return I_C_BPartner.class
-	 *
-	 * @return column's model class or null
-	 */
-	public Class<CMT> getColumnModelType()
-	{
-		return columnModelType;
+		return modelTableName;
 	}
 
 	/**
@@ -164,7 +104,6 @@ public final class ModelColumn<MT, CMT>
 	 * Function which gets the Value of this model column.
 	 *
 	 * @author tsa
-	 *
 	 */
 	private final class ValueFunction implements Function<MT, Object>
 	{

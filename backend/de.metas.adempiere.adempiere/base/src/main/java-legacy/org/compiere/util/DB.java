@@ -102,32 +102,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * General Database Interface
- *
- * @author Jorg Janke
- * @author Ashley Ramdass (Posterita)
- * <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
- * connections set rw/ro properties for the connection accordingly.
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- * <li>BF [ 1647864 ] WAN: delete record error
- * <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
- * <li>FR [ 1904460 ] DB.executeUpdate should handle
- * Boolean params
- * <li>BF [ 1962568 ] DB.executeUpdate should handle null params
- * <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
- * <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
- * Object[], String)
- * <li>BF [ 2030233 ] Remove duplicate code from DB class
- * <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
- * <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
- * <li>FR
- * [ 2781053 ] Introduce DB.getValueNamePairs
- * <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
- * https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
- * @author Teo Sarca, teo.sarca@gmail.com
- * <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
- * <li>FR [
- * 2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
- * @version $Id: DB.java,v 1.8 2006/10/09 00:22:29 jjanke Exp $ ---
  */
 @UtilityClass
 public class DB
@@ -1198,7 +1172,7 @@ public class DB
 	 * @return first value or -1 if not found
 	 * @throws DBException if there is any SQLException
 	 */
-	public int getSQLValueEx(final String trxName, final String sql, final Object... params) throws DBException
+	public int getSQLValueEx(@Nullable final String trxName, final String sql, final Object... params) throws DBException
 	{
 		int retValue = -1;
 		PreparedStatement pstmt = null;
@@ -1292,7 +1266,7 @@ public class DB
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
-	public String getSQLValueStringEx(final String trxName, final String sql, final Object... params)
+	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
 		String retValue = null;
 		PreparedStatement pstmt = null;

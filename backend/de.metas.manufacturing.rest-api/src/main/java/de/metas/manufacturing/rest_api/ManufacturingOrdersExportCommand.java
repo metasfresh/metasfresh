@@ -1,8 +1,26 @@
 package de.metas.manufacturing.rest_api;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
+import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.common.manufacturing.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
@@ -32,23 +50,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.ManufacturingOrderQuery;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 
 /*
  * #%L
@@ -78,7 +79,6 @@ final class ManufacturingOrdersExportCommand
 	private static final Logger logger = LogManager.getLogger(ManufacturingOrdersExportCommand.class);
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
@@ -167,7 +167,7 @@ final class ManufacturingOrdersExportCommand
 	private JsonResponseManufacturingOrder toJson(@NonNull final I_PP_Order order)
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
-		final Quantity qtyToProduce = ppOrderBL.getQtyOrdered(order);
+		final Quantity qtyToProduce = ppOrderBOMBL.getQuantities(order).getQtyRequiredToProduce();
 
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);

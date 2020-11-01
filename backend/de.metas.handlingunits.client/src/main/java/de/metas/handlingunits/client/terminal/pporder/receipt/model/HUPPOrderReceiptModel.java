@@ -49,6 +49,8 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 {
 	//
@@ -124,7 +126,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.qtyToReceive(Quantity.zero(uom))
 				.build();
 
-		final Quantity qtyToReceiveTarget = ppOrderBL.getQtyOpen(ppOrder);
+		final Quantity qtyToReceiveTarget = ppOrderBOMBL.getQuantities(ppOrder).getQtyRemainingToProduce();
 
 		final HUPPOrderReceiptCUKey cuKey = new HUPPOrderReceiptCUKey(getTerminalContext(), lutuConfigurationEditor, receiptCostCollectorCandidate, qtyToReceiveTarget);
 		loadCUKeyRecursively(cuKey, lutuConfiguration);
@@ -135,14 +137,13 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	/**
 	 * Creates CU Key for co/by-product receipt
 	 *
-	 * @param ppOrderBOMLine
-	 * @param ppOrder
 	 * @return CU Key or null
 	 */
+	@Nullable
 	private final HUPPOrderReceiptCUKey createCoProductCUKey(final I_PP_Order_BOMLine ppOrderBOMLine, final I_PP_Order ppOrder)
 	{
 		// Make sure we can receive on this BOM Line
-		if (!PPOrderUtil.isReceipt(BOMComponentType.ofCode(ppOrderBOMLine.getComponentType())))
+		if (!BOMComponentType.ofCode(ppOrderBOMLine.getComponentType()).isReceipt())
 		{
 			return null;
 		}

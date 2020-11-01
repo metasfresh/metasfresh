@@ -1,13 +1,5 @@
 package de.metas.costing;
 
-import java.time.LocalDate;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.money.CurrencyConversionTypeId;
@@ -20,6 +12,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Objects;
 
 /*
  * #%L
@@ -54,7 +52,9 @@ public class CostDetailCreateRequest
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
 	CostingDocumentRef documentRef;
-	/** Initial document reference (in case of reversal) */
+	/**
+	 * Initial document reference (in case of reversal)
+	 */
 	CostingDocumentRef initialDocumentRef;
 	CostElement costElement;
 	CostAmount amt;
@@ -156,6 +156,19 @@ public class CostDetailCreateRequest
 		return toBuilder().amt(amt).build();
 	}
 
+	public CostDetailCreateRequest withAmountAndQty(
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty)
+	{
+		if (Objects.equals(this.amt, amt)
+				&& Objects.equals(this.qty, qty))
+		{
+			return this;
+		}
+
+		return toBuilder().amt(amt).qty(qty).build();
+	}
+
 	public CostDetailCreateRequest withProductId(@NonNull final ProductId productId)
 	{
 		if (ProductId.equals(this.productId, productId))
@@ -166,7 +179,9 @@ public class CostDetailCreateRequest
 		return toBuilder().productId(productId).build();
 	}
 
-	public CostDetailCreateRequest withProductIdAndQty(@NonNull final ProductId productId, @NonNull final Quantity qty)
+	public CostDetailCreateRequest withProductIdAndQty(
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qty)
 	{
 		if (ProductId.equals(this.productId, productId)
 				&& Objects.equals(this.qty, qty))

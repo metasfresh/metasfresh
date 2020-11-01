@@ -790,8 +790,9 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
 }
 
 /*
- *  Wrapper for patch request of widget elements
- *  when responses should merge store
+ * Wrapper for patch request of widget elements
+ * when responses should merge store
+ * @todo TODO: This should return a promise
  */
 export function patch(
   entity,

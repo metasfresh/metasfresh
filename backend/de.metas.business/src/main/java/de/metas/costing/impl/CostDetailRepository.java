@@ -1,26 +1,6 @@
 package de.metas.costing.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_CostDetail;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
@@ -36,9 +16,28 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_CostDetail;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -111,7 +110,9 @@ public class CostDetailRepository implements ICostDetailRepository
 		return cd.withId(id);
 	}
 
-	private static void updateRecordFromDocumentRef(final I_M_CostDetail record, final CostingDocumentRef documentRef)
+	private static void updateRecordFromDocumentRef(
+			final I_M_CostDetail record,
+			final CostingDocumentRef documentRef)
 	{
 		final String tableName = documentRef.getTableName();
 		final int recordId = documentRef.getRecordId();
@@ -279,6 +280,7 @@ public class CostDetailRepository implements ICostDetailRepository
 						.costPrice(CostPrice.builder()
 								.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), currencyId))
 								.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), currencyId))
+								.uomId(UomId.ofRepoId(productUOM.getC_UOM_ID())) // TODO: introduce M_CostDetail.Prev_CurrentQty_UOM_ID
 								.build())
 						.qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
 						.cumulatedAmt(CostAmount.of(record.getPrev_CumulatedAmt(), currencyId))
@@ -348,7 +350,9 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
-	public List<CostDetail> getAllForDocumentAndAcctSchemaId(@NonNull final CostingDocumentRef documentRef, @NonNull final AcctSchemaId acctSchemaId)
+	public List<CostDetail> getAllForDocumentAndAcctSchemaId(
+			@NonNull final CostingDocumentRef documentRef,
+			@NonNull final AcctSchemaId acctSchemaId)
 	{
 		return listOrderedById(CostDetailQuery.builder()
 				.documentRef(documentRef)

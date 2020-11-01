@@ -27,8 +27,11 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -46,13 +49,12 @@ import de.metas.util.Services;
 
 /**
  * TODO: one instance per PP_Order.
- *
+ * <p>
  * Helper class to create Manufacturing orders for Carrot Waschproble use-case.
- *
+ * <p>
  * We use this class because we also want to keep the structure all together.
  *
  * @author tsa
- *
  */
 public class WaschprobeOrderData
 {
@@ -64,21 +66,31 @@ public class WaschprobeOrderData
 	public I_M_Material_Tracking materialTracking;
 	public I_PP_Order ppOrder;
 
-	/** Unwashed carrots, raw material */
+	/**
+	 * Unwashed carrots, raw material
+	 */
 	public I_PP_Order_BOMLine ppOrderBOMLine_Carrot_Unwashed;
 
 	public I_PP_Cost_Collector ppOrderCostOllector_Issue_Carrot_Unwashed;
 
-	/** Unwashed carrots, raw material variant */
+	/**
+	 * Unwashed carrots, raw material variant
+	 */
 	public I_PP_Order_BOMLine ppOrderBOMLine_Carrot_Unwashed_Alternative01;
 
-	/** Big Carrots, Co-Product */
+	/**
+	 * Big Carrots, Co-Product
+	 */
 	public I_PP_Order_BOMLine ppOrderBOMLine_Carrot_Big;
 
-	/** Animal food, By-Product */
+	/**
+	 * Animal food, By-Product
+	 */
 	public I_PP_Order_BOMLine ppOrderBOMLine_Carrot_AnimalFood;
 
-	/** UOM used for Order and Order BOM Lines */
+	/**
+	 * UOM used for Order and Order BOM Lines
+	 */
 	public final I_C_UOM uom;
 
 	public WaschprobeOrderData(
@@ -137,9 +149,27 @@ public class WaschprobeOrderData
 				uom);
 
 		// required because currently we get the inOutLines and this the receipt date and country of origin via cc.
-		this.ppOrderCostOllector_Issue_Carrot_Unwashed = data.createPP_CostCollector_Issue(ppOrder,
+		this.ppOrderCostOllector_Issue_Carrot_Unwashed = createPP_CostCollector_Issue(
+				data.getContext(),
+				ppOrder,
 				data.pCarrot_Unwashed,
 				BigDecimal.ZERO);
+	}
+
+	private I_PP_Cost_Collector createPP_CostCollector_Issue(
+			final IContextAware context,
+			final I_PP_Order ppOrder,
+			final I_M_Product issuedProduct,
+			final BigDecimal issuedQty)
+	{
+		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
+		cc.setPP_Order(ppOrder);
+		cc.setCostCollectorType(CostCollectorType.ComponentIssue.getCode());
+		cc.setMovementQty(issuedQty);
+
+		InterfaceWrapperHelper.save(cc);
+
+		return cc;
 	}
 
 	public WaschprobeOrderData assignToMaterialTracking(final I_M_Material_Tracking materialTracking)
@@ -208,8 +238,7 @@ public class WaschprobeOrderData
 
 	public IQualityInspectionOrder createQualityInspectionOrder()
 	{
-		final IQualityInspectionOrder qiOrder = QualityInspectionOrderFactory.createQualityInspectionOrder(ppOrder, materialTracking);
-		return qiOrder;
+		return QualityInspectionOrderFactory.createQualityInspectionOrder(ppOrder, materialTracking);
 	}
 
 	public WaschprobeOrderData refresh()

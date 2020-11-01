@@ -1,3 +1,5 @@
+package de.metas.currency;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -20,16 +22,6 @@
  * #L%
  */
 
-package de.metas.currency;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -37,6 +29,13 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Currency conversion services.
@@ -52,7 +51,7 @@ public interface ICurrencyBL extends ISingletonService
 			@NonNull OrgId orgId);
 
 	@NonNull CurrencyConversionContext createCurrencyConversionContext(
-			@Nullable LocalDate convDate,
+			@NonNull LocalDate convDate,
 			@Nullable ConversionTypeMethod conversionType,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
@@ -65,26 +64,19 @@ public interface ICurrencyBL extends ISingletonService
 	/**
 	 * @return base currency of given client and org
 	 */
-	Currency getBaseCurrency(ClientId adClientId, OrgId adOrgId);
+	Currency getBaseCurrency(
+			ClientId adClientId,
+			OrgId adOrgId);
 
 	/**
 	 * @return base currency ID of given client and org
 	 */
-	CurrencyId getBaseCurrencyId(ClientId adClientId, OrgId adOrgId);
+	CurrencyId getBaseCurrencyId(
+			ClientId adClientId,
+			OrgId adOrgId);
 
-	/**
-	 * Convert an amount to base Currency
-	 *
-	 * @param ctx                 context
-	 * @param currencyFromId      The C_Currency_ID FROM
-	 * @param ConvDate            conversion date - if null - use current date
-	 * @param C_ConversionType_ID conversion rate type - if 0 - use Default
-	 * @param amt                 amount to be converted
-	 * @param AD_Client_ID        client
-	 * @param AD_Org_ID           organization
-	 * @return converted amount
-	 */
 	@Deprecated
+	@Nullable
 	BigDecimal convertBase(
 			BigDecimal amt,
 			CurrencyId currencyFromId,
@@ -93,19 +85,8 @@ public interface ICurrencyBL extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
-	/**
-	 * Convert an amount
-	 *
-	 * @param currencyFromId      The C_Currency_ID FROM
-	 * @param currencyToId        The C_Currency_ID TO
-	 * @param ConvDate            conversion date - if null - use current date
-	 * @param C_ConversionType_ID conversion rate type - if 0 - use Default
-	 * @param amt                 amount to be converted
-	 * @param AD_Client_ID        client
-	 * @param AD_Org_ID           organization
-	 * @return converted amount or null if no rate
-	 */
 	@Deprecated
+	@Nullable
 	BigDecimal convert(
 			BigDecimal amt,
 			CurrencyId currencyFromId,
@@ -121,8 +102,8 @@ public interface ICurrencyBL extends ISingletonService
 	 * @param currencyFromId The C_Currency_ID FROM
 	 * @param currencyToId   The C_Currency_ID TO
 	 * @param amt            amount to be converted
-	 * @param AD_Client_ID   client
-	 * @param AD_Org_ID      organization
+	 * @param clientId       client
+	 * @param orgId          organization
 	 * @return converted amount
 	 */
 	@Deprecated
@@ -133,6 +114,7 @@ public interface ICurrencyBL extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
+	@Nullable
 	CurrencyConversionResult convert(
 			CurrencyConversionContext conversionCtx,
 			BigDecimal amt,
@@ -147,10 +129,7 @@ public interface ICurrencyBL extends ISingletonService
 		return convert(conversionCtx, amt.toBigDecimal(), amt.getCurrencyId(), currencyToId);
 	}
 
-	/**
-	 * @return currency Rate or null
-	 */
-	BigDecimal getRate(
+	Optional<CurrencyRate> getCurrencyRateIfExists(
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId,
 			LocalDate convDate,
@@ -158,14 +137,20 @@ public interface ICurrencyBL extends ISingletonService
 			ClientId clientId,
 			OrgId orgId);
 
-	BigDecimal getRate(
+	CurrencyRate getCurrencyRate(
+			@NonNull CurrencyId currencyFromId,
+			@NonNull CurrencyId currencyToId,
+			@Nullable LocalDate convDate,
+			@Nullable CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
+
+	/**
+	 * @throws NoCurrencyRateFoundException
+	 */
+	@NonNull
+	CurrencyRate getCurrencyRate(
 			CurrencyConversionContext conversionCtx,
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId);
-
-	/**
-	 * @throws NoCurrencyRateFoundException if none found
-	 */
-	@NonNull
-	CurrencyRate getCurrencyRate(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }
