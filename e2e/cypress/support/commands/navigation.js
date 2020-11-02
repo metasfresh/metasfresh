@@ -248,6 +248,9 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
   cy.wait(`@${quickActionsAlias}`);
 
   cy.get(`div[title="${columnAndValue.value}"]`).click(); // select the item with a simple click on it
+  // on first click selection is lost
+  cy.get(`div[title="${columnAndValue.value}"]`).click();
+  // re-select the row -> due to https://github.com/metasfresh/metasfresh/issues/10167
 
   // return cy.selectRowByColumnAndValue(columnAndValue, true, force);
 });
