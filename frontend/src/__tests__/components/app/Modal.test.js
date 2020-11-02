@@ -56,6 +56,9 @@ describe('Modal test', () => {
   // TODO: test all functionality of it before adding back (https://github.com/metasfresh/metasfresh/issues/7128) 
   // TODO: the startProcess test it is skipped for now for that reason
   // TODO: will be added along with the refactoring issue (https://github.com/metasfresh/metasfresh/issues/7126)
+  // As far as I remember failures that caused this to be skipped were because of some actionCreator not
+  // being read from the props. Modal was and still is connected to the store, but it's using dispatch instead
+  // of mapDispatchToProps/object shorthand binding
   it.skip(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
     const dummyProps = fixtures;
     const startProcessMock = jest.fn().mockResolvedValue({});
