@@ -56,6 +56,73 @@
     "supportOpenRecord": true,
     "supportGeoLocations": true   
   },
+  "viewLayout2": {
+    "type": "540376",
+    "windowId": "540376",
+    "caption": "",
+    "description": "",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Product Value",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "productValue",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "materialCockpitDateOnlyFilter",
+        "caption": "Date",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Datum",
+            "parameterName": "DateGeneral",
+            "widgetType": "Date",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary",
+            "showIncrementDecrementButtons": true
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 0
+        },
+        "sortNo": 0
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": true,
+    "collapsible": true,
+    "expandedDepth": 0,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
+  },
   "basicViewData1":{
     "windowId": "169",
     "viewId": "169-Bd",
@@ -98,6 +165,73 @@
     "pageLength": 20,
     "queryLimit": 5000,
     "type": "169"
+  },
+  "basicViewData2":{
+    "windowId": "540376",
+    "viewId": "540376-B6",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 61,
+    "filters": [
+      {
+        "filterId": "materialCockpitDateOnlyFilter",
+        "caption": "Datum",
+        "parameters": [
+          {
+            "parameterName": "DateGeneral",
+            "value": "2020-11-02T00:00:00.000+01:00",
+            "valueTo": null
+          }
+        ]
+      }
+    ],
+    "result": [
+      {
+        "id": "main-2020-11-02-2000751",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "main-2020-11-02-2000751",
+            "widgetType": "Integer"
+          }
+        },
+        "type": "LU",
+        "hasComments": false,
+        "supportAttributes": false,
+        "includedDocuments": [
+          {
+            "id": "attributes-2020-11-02-2000751-sonstige",
+            "fieldsByName": {
+              "ID": {
+                "field": "ID",
+                "value": "attributes-2020-11-02-2000751-sonstige",
+                "widgetType": "Integer"
+              }
+            },
+            "type": "TU",
+            "hasComments": false,
+            "supportAttributes": false
+          },
+          {
+            "id": "attributes-2020-11-02-2000751-ADR",
+            "fieldsByName": {
+              "ID": {
+                "field": "ID",
+                "value": "attributes-2020-11-02-2000751-ADR",
+                "widgetType": "Integer"
+              }
+            },
+            "type": "TU",
+            "hasComments": false,
+            "supportAttributes": false
+          }
+        ]
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540376"
   },
   "modalLayout1": {
     "type": "540189",
