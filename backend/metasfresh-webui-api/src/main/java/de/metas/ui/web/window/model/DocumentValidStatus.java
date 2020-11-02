@@ -1,15 +1,14 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.util.Trace;
+
+import java.util.Objects;
 
 /*
  * #%L
@@ -98,7 +97,7 @@ public final class DocumentValidStatus
 	@Getter
 	private final String reason;
 
-	@JsonProperty("reason")
+	@JsonProperty("stackTrace")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Getter
 	private final String notValidStackTrace;
