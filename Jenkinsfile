@@ -215,7 +215,7 @@ stage('Invoke downstream jobs')
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
           true, // wait=true
-          'metasfresh-esb-legacy-legacy');
+          'metasfresh-esb-legacy');
 				MF_ARTIFACT_VERSIONS['metasfresh-esb-legacy'] = esbCamelDownStreamJobMap.MF_VERSION;
 			}
 		);
