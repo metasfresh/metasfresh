@@ -1047,6 +1047,8 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		return String.valueOf(pgBackendPID);
 	}
 
+	/** @deprecated OIDs are deprecated in PostgreSQL */
+	@Deprecated
 	@Override
 	public String getRowIdSql(final String tableName)
 	{
