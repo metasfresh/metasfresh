@@ -340,6 +340,23 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public List<I_M_PriceList_Version> retrievePriceListVersionsValidAtGivenDate(final Date date)
+	{
+		//TODO: Fix this as there are pricelists that are available at the given date but won't be retrieved.
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PriceList_Version.class)
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						Operator.GREATER_OR_EQUAL,
+						new Timestamp(date.getTime()),
+						DateTruncQueryFilterModifier.DAY)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.create()
+				.list();
+	}
+
+	@Override
 	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv, final boolean onlyProcessed)
 	{
 		// we want the PLV with the lowest ValidFrom that is just greater than plv's
