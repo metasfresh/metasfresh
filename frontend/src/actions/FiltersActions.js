@@ -1,4 +1,4 @@
-import * as types from '../constants/FilterTypes';
+import * as types from '../constants/ActionTypes';
 
 export function clearAllFilters({ filterId, data }) {
   return {

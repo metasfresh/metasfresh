@@ -1,7 +1,7 @@
 import { produce, original } from 'immer';
 import { createCachedSelector } from 're-reselect';
 
-import * as types from '../constants/FilterTypes';
+import * as types from '../constants/ActionTypes';
 
 export const initialFiltersBranchState = {};
 export const initialFiltersLeafState = {

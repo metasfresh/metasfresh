@@ -2,6 +2,7 @@ export * from './actions/TableTypes';
 export * from './actions/ViewTypes';
 export * from './actions/ListTypes';
 export * from './actions/TabTypes';
+export * from './actions/FilterTypes';
 
 /**
  * @constant

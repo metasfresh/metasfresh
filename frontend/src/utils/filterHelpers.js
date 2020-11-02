@@ -301,7 +301,7 @@ export function isFilterValid(filters) {
 /**
  * @method parseFiltersToPatch
  * @summary Patches the params, resulted array has the item values set to either null or previous values
- *          this because filters with only defaultValue shoul not be sent to the server
+ *          this because filters with only defaultValue should not be sent to the server
  * @param {array} params
  */
 export function parseFiltersToPatch(params) {
