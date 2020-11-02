@@ -125,7 +125,7 @@ describe('Open Internal Use from notifications bell and do the checks', function
     cy.selectTab('M_HU_Assignment');
     cy.expectNumberOfRows(1);
     // cy.selectNthRow(0); // removed - reason: first row is already selected by default, if we were to use the selection it will unselect 
-    //                        and fail the test this due to https://github.com/metasfresh/me03/issues/6018
+    //                        and fail the test this due to https://github.com/metasfresh/metasfresh/issues/10167
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_HU_ID', true).then(val => {
       expect(val).contains(huValue);
