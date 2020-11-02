@@ -352,6 +352,7 @@ export default class Table extends PureComponent {
       tableId,
       onFastInlineEdit,
     } = this.props;
+    const { listenOnKeys } = this.state;
 
     if (!rows.length || !columns.length) {
       return null;
@@ -391,6 +392,7 @@ export default class Table extends PureComponent {
           activeSort,
           updatePropertyValue,
           tableId,
+          listenOnKeys,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
