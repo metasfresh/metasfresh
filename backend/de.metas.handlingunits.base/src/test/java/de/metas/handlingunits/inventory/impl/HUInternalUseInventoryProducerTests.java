@@ -33,7 +33,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -51,9 +50,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,7 +85,7 @@ import static org.junit.Assert.assertThat;
  */
 
 /**
- * This test doesn'T really work as it tests nothing. See the {@link #test()} method.
+ * This test doesn'T really work as it tests nothing.
  * It was added to identify bugs in a different person's issue, but the problems were solved by manual testing before I could get to finish this.
  * Feel free to fix and extend it.
  *
@@ -137,7 +133,7 @@ public class HUInternalUseInventoryProducerTests
 
 		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, ClientId.SYSTEM, OrgId.ANY);
 
-		SystemTime.setTimeSource(FixedTimeSource.ofZonedDateTime(LocalDate.of(2019, Month.JUNE, 10).atTime(10, 00).atZone(ZoneId.systemDefault())));
+		SystemTime.setFixedTimeSource("2019-06-10T10:00:00+01:00");
 	}
 
 	@Test

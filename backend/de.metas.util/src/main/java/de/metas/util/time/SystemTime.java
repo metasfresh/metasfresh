@@ -1,59 +1,26 @@
 package de.metas.util.time;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import javax.annotation.Nullable;
-
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /**
- * Code taken from the book "Test Driven", Chapter 7 ("Test-driving the
- * unpredictable") by Lasse Koskela.
- *
- * @author ts
+ * Please consider {@link de.metas.common.util.time.SystemTime}.
  */
 @UtilityClass
 public class SystemTime
 {
-	private static final TimeSource defaultTimeSource = new SystemTimeSource();
-
-	private TimeSource timeSource;
-
 	public long millis()
 	{
-		return getTimeSource().millis();
+		return de.metas.common.util.time.SystemTime.millis();
 	}
 
 	/**
@@ -62,58 +29,53 @@ public class SystemTime
 	 */
 	public ZoneId zoneId()
 	{
-		return getTimeSource().zoneId();
+		return de.metas.common.util.time.SystemTime.zoneId();
 	}
 
 	public GregorianCalendar asGregorianCalendar()
 	{
-
-		final GregorianCalendar cal = new GregorianCalendar();
-		cal.setTimeInMillis(millis());
-
-		return cal;
+		return de.metas.common.util.time.SystemTime.asGregorianCalendar();
 	}
 
 	public Date asDate()
 	{
-		return new Date(millis());
+		return de.metas.common.util.time.SystemTime.asDate();
 	}
 
 	public Timestamp asTimestamp()
 	{
-
-		return new Timestamp(millis());
+		return de.metas.common.util.time.SystemTime.asTimestamp();
 	}
 
 	public Instant asInstant()
 	{
-		return Instant.ofEpochMilli(millis());
+		return de.metas.common.util.time.SystemTime.asInstant();
 	}
 
 	public LocalDateTime asLocalDateTime()
 	{
-		return asZonedDateTime().toLocalDateTime();
+		return de.metas.common.util.time.SystemTime.asLocalDateTime();
 	}
 
 	@NonNull
 	public LocalDate asLocalDate()
 	{
-		return asZonedDateTime().toLocalDate();
+		return de.metas.common.util.time.SystemTime.asLocalDate();
 	}
 
 	public ZonedDateTime asZonedDateTime()
 	{
-		return asZonedDateTime(zoneId());
+		return de.metas.common.util.time.SystemTime.asZonedDateTime();
 	}
 
 	public ZonedDateTime asZonedDateTimeAtStartOfDay()
 	{
-		return asZonedDateTime(zoneId()).truncatedTo(ChronoUnit.DAYS);
+		return de.metas.common.util.time.SystemTime.asZonedDateTimeAtStartOfDay();
 	}
 
 	public ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
 	{
-		return asInstant().atZone(zoneId);
+		return de.metas.common.util.time.SystemTime.asZonedDateTime(zoneId);
 	}
 
 	/**
@@ -121,12 +83,7 @@ public class SystemTime
 	 */
 	public Timestamp asDayTimestamp()
 	{
-		final GregorianCalendar cal = asGregorianCalendar();
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return new Timestamp(cal.getTimeInMillis());
+		return de.metas.common.util.time.SystemTime.asDayTimestamp();
 	}
 
 	/**
@@ -135,17 +92,7 @@ public class SystemTime
 	 */
 	public Date asDayDate()
 	{
-		final GregorianCalendar cal = asGregorianCalendar();
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return new Date(cal.getTimeInMillis());
-	}
-
-	private TimeSource getTimeSource()
-	{
-		return timeSource == null ? defaultTimeSource : timeSource;
+		return de.metas.common.util.time.SystemTime.asDayDate();
 	}
 
 	/**
@@ -154,30 +101,25 @@ public class SystemTime
 	 */
 	public void resetTimeSource()
 	{
-		timeSource = null;
+		de.metas.common.util.time.SystemTime.resetTimeSource();
 	}
 
 	/**
 	 * @param newTimeSource the given TimeSource will be used for the time returned by the
-	 *            methods of this class (unless it is null).
+	 *                      methods of this class (unless it is null).
 	 */
-	public void setTimeSource(@Nullable final TimeSource newTimeSource)
+	public void setTimeSource(@NonNull final de.metas.common.util.time.TimeSource newTimeSource)
 	{
-		timeSource = newTimeSource;
+		de.metas.common.util.time.SystemTime.setTimeSource(newTimeSource);
 	}
 
-	private static final class SystemTimeSource implements TimeSource
+	public void setFixedTimeSource(@NonNull final ZonedDateTime date)
 	{
-		@Override
-		public long millis()
-		{
-			return System.currentTimeMillis();
-		}
+		de.metas.common.util.time.SystemTime.setFixedTimeSource(date);
+	}
 
-		@Override
-		public ZoneId zoneId()
-		{
-			return ZoneId.systemDefault();
-		}
+	public void setFixedTimeSource(@NonNull final String zonedDateTime)
+	{
+		de.metas.common.util.time.SystemTime.setFixedTimeSource(zonedDateTime);
 	}
 }

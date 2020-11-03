@@ -37,7 +37,6 @@ import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -124,7 +123,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void SameDate()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 18, 0, 0));
+			SystemTime.setFixedTimeSource("2017-11-10T18:00:00+01:00");
 
 			final LocalDate today = LocalDate.of(2017, 11, 10);
 
@@ -139,7 +138,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void CandidateBeforeToday()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 18, 15, 16));
+			SystemTime.setFixedTimeSource("2017-11-10T18:15:16+01:00");
 
 			final LocalDate yesterday = LocalDate.of(2017, 11, 9);
 			final LocalDate today = LocalDate.of(2017, 11, 10);
@@ -155,7 +154,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void CurrentYesterday_CandidateToday()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 2, 30, 20));
+			SystemTime.setFixedTimeSource("2017-11-10T02:30:20+01:00");
 
 			final LocalDate yesterday = LocalDate.of(2017, 11, 9);
 
@@ -172,7 +171,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void CurrentToday_CandidateTomorrow()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 51, 14));
+			SystemTime.setFixedTimeSource("2017-11-10T00:51:41+01:00");
 
 			final LocalDate tomorrow = LocalDate.of(2017, 11, 12);
 
@@ -189,7 +188,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void CurrentNextWeek_CandidateTomorrow()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 12, 30, 15));
+			SystemTime.setFixedTimeSource("2017-11-10T12:30:15+01:00");
 
 			final LocalDate tomorrow = LocalDate.of(2017, 11, 12);
 			final LocalDate nextWeek = LocalDate.of(2017, 11, 17);
@@ -205,7 +204,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void BothDatesInThePast()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 1, 1));
+			SystemTime.setFixedTimeSource("2017-11-10T01:01:01+01:00");
 
 			final LocalDate yesterday = LocalDate.of(2017, 11, 9);
 			final LocalDate lastWeek = LocalDate.of(2017, 11, 3);
@@ -233,7 +232,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void Today_CalculateShipmentRule_ForceToday()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 10, 15, 0));
+			SystemTime.setFixedTimeSource("2017-11-10T10:15:00+01:00");
 
 			final LocalDate today = SystemTime.asLocalDate();
 
@@ -247,7 +246,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void Today_CalculateShipmentRule_None()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 17, 16));
+			SystemTime.setFixedTimeSource("2017-11-10T19:17:16+01:00");
 
 			final LocalDate today = SystemTime.asLocalDate();
 
@@ -261,7 +260,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void AnotherDate_CalculateShipmentRule_ForceToday()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 13, 13, 13));
+			SystemTime.setFixedTimeSource("2017-11-10T13:13:13+01:00");
 
 			final LocalDate today = SystemTime.asLocalDate();
 
@@ -277,7 +276,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void DateInFuture_CalculateShipmentRule_None()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
+			SystemTime.setFixedTimeSource("2017-11-10T19:04:04+01:00");
 
 			final LocalDate dateInFuture = LocalDate.of(2017, 11, 17);
 
@@ -291,7 +290,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		@Test
 		public void DateInPast_CalculateShipmentRule_None()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
+			SystemTime.setFixedTimeSource("2017-11-10T01:02:30+01:00");
 
 			final LocalDate today = SystemTime.asLocalDate();
 			final LocalDate dateInPast = LocalDate.of(2017, 11, 3);
@@ -307,7 +306,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		public void DateInPast_CalculateShipmentRule_ForceDeliveryDate()
 		{
 			//set up today
-			SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
+			SystemTime.setFixedTimeSource("2017-11-10T01:02:30+01:00");
 
 			final LocalDate dateInPast = LocalDate.of(2017, 11, 3);
 

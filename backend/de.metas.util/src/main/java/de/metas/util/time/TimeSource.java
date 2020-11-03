@@ -25,7 +25,7 @@ import java.time.ZoneId;
  */
 
 @FunctionalInterface
-public interface TimeSource
+public interface TimeSource extends de.metas.common.util.time.TimeSource
 {
 	long millis();
 

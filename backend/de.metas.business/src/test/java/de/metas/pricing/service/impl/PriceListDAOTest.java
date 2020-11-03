@@ -27,8 +27,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -45,9 +43,10 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -80,7 +79,7 @@ public class PriceListDAOTest
 
 	private final IPriceListDAO priceListDAO = new PlainPriceListDAO();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -91,7 +90,7 @@ public class PriceListDAOTest
 
 		EURO = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		SystemTime.setTimeSource(new FixedTimeSource(2019, 8, 27, 14, 17, 23));
+		SystemTime.setFixedTimeSource("2019-08-27T14:17:23+01:00[Europe/Berlin]");
 	}
 
 	@Test

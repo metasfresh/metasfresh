@@ -1,37 +1,5 @@
 package de.metas.freightcost;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.adempiere.model.I_M_FreightCost;
-import org.adempiere.model.I_M_FreightCostDetail;
-import org.adempiere.model.I_M_FreightCostShipper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.I_M_Shipper;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.Currency;
@@ -52,8 +20,38 @@ import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
+import org.adempiere.model.I_M_FreightCost;
+import org.adempiere.model.I_M_FreightCostDetail;
+import org.adempiere.model.I_M_FreightCostShipper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Shipper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -92,7 +90,7 @@ public class FreightCostTest
 
 	private OrderFreightCostsService orderFreightCostsService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -105,7 +103,7 @@ public class FreightCostTest
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		SystemTime.setTimeSource(new FixedTimeSource(2019, 7, 10, 16, 11, 23));
+		SystemTime.setFixedTimeSource("2019-07-10T16:11:23+01:00[Europe/Berlin]");
 	}
 
 	@Test
@@ -882,14 +880,14 @@ public class FreightCostTest
 	}
 
 	private I_C_Order createSalesOrder(final int partnerId,
-			final int locationId,
-			final String freightCostRule,
-			final BigDecimal freightAmt,
-			final int productId,
-			final int uomId,
-			final BigDecimal price,
-			final CurrencyId currencyId,
-			final String deliveryViaRule)
+									   final int locationId,
+									   final String freightCostRule,
+									   final BigDecimal freightAmt,
+									   final int productId,
+									   final int uomId,
+									   final BigDecimal price,
+									   final CurrencyId currencyId,
+									   final String deliveryViaRule)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 

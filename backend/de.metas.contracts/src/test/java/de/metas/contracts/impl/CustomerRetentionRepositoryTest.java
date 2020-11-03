@@ -27,7 +27,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -63,8 +62,7 @@ public class CustomerRetentionRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		repository = new CustomerRetentionRepository(new ContractInvoiceService());
-
-		SystemTime.setTimeSource(new FixedTimeSource(2018, 12, 13, 0, 0, 0));
+		SystemTime.setFixedTimeSource("2018-12-13T00:00:00+01:00");
 	}
 
 	@Test
