@@ -12,7 +12,7 @@ import {
   clearStaticFilters,
 } from '../../actions/FiltersActions';
 
-import * as ACTION_TYPES from '../../constants/FilterTypes';
+import * as ACTION_TYPES from '../../constants/ActionTypes';
 import filtersData from '../../../test_setup/fixtures/filters/filtersActionsMock.json';
 import filtersDataClearAll from '../../../test_setup/fixtures/filters/filtersDataClearAllMock.json';
 

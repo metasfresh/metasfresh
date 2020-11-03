@@ -128,7 +128,7 @@ WidgetWrapper.propTypes = {
   widgetData: PropTypes.array.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   activeTab: PropTypes.string,
-  timeZone: PropTypes.string.isRequired,
+  timeZone: PropTypes.string,
   fields: PropTypes.array.isRequired,
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,

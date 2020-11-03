@@ -2,22 +2,24 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
+import deepUnfreeze from 'deep-unfreeze';
+
+import { getEntityRelatedId, getCachedFilter } from '../../reducers/filters';
 import {
   updateFilterWidgetShown,
-  setNewFiltersActive,
   updateActiveFilter,
   clearAllFilters,
+  updateNotValidFields,
+} from '../../actions/FiltersActions';
+import {
+  setNewFiltersActive,
   annotateFilters,
   isFilterValid,
-  updateNotValidFields,
-  parseToPatch,
-  getCachedFilter,
-} from '../../actions/FiltersActions';
+  parseFiltersToPatch,
+} from '../../utils/filterHelpers';
 
 import FiltersNotIcluded from './FiltersNotIncluded';
 import FiltersIncluded from './FiltersIncluded';
-import deepUnfreeze from 'deep-unfreeze';
-import { getEntityRelatedId } from '../../reducers/filters';
 
 /**
  * @file Class based component.
@@ -40,7 +42,7 @@ class Filters extends PureComponent {
       const parsedFilter = filter.parameters
         ? {
             ...filter,
-            parameters: parseToPatch(filter.parameters),
+            parameters: parseFiltersToPatch(filter.parameters),
           }
         : filter;
 
