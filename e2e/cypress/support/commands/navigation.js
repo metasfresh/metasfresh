@@ -186,7 +186,10 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
             });
 
             if (trMatchesAllColumns) {
-              cy.wrap(tr).click();
+              // we execute click on the row only if it's not selected already - due to https://github.com/metasfresh/metasfresh/issues/10167
+              if (!tr.classList.contains('row-selected')) {
+                cy.wrap(tr).click();
+              }
               matchingRows.push(tr);
             }
           });
@@ -249,7 +252,7 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
 
   cy.get(`div[title="${columnAndValue.value}"]`).click(); // select the item with a simple click on it
   // on first click selection is lost
-  cy.get(`div[title="${columnAndValue.value}"]`).click();
+  cy.get(`div[title="${columnAndValue.value}"]`).click({ timeout: 300 });
   // re-select the row -> due to https://github.com/metasfresh/metasfresh/issues/10167
 
   // return cy.selectRowByColumnAndValue(columnAndValue, true, force);
