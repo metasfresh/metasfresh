@@ -7,11 +7,13 @@ import _ from 'lodash';
 import viewHandler, { viewState, initialState } from '../../reducers/viewHandler';
 import tablesHandler, {  getTableId } from '../../reducers/tables';
 import windowState from '../../reducers/windowHandler';
+import { getEntityRelatedId } from '../../reducers/filters';
 
 import * as viewActions from '../../actions/ViewActions';
 import { createTableData } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
+import { formatFilters, populateFiltersCaptions } from '../../utils/filterHelpers';
 
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
@@ -290,6 +292,63 @@ describe('ViewActions thunks', () => {
       .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
       (page - 1)}&pageLength=${pageLength}`)
       .reply(200, limitedViewData);
+
+    return store
+      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: false }))
+      .then(() => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      });
+  });
+
+  it(`dispatches 'CREATE_FILTER' with properly formatted filters when fetching filtered view rows data`, () => {
+    const limitedViewLayout = fixtures.viewLayout2;
+    const limitedViewData = fixtures.basicViewData2;
+    const limitedCreateViewData = _.omit(
+      limitedViewData,
+      ['columnsByFieldName', 'result', 'firstRow', 'pageLength', 'headerProperties']
+    );
+    const { windowId, viewId, pageLength, columnsByFieldName } = limitedViewData;
+    const page = 1;
+    const state = createStore({
+      viewHandler: {
+        views: {
+          [windowId]: {
+            layout: { ...limitedViewLayout },
+            ...limitedCreateViewData,
+          },
+        },
+      },
+    });
+    const store = mockStore(state);
+    const filterId = getEntityRelatedId({ windowId, viewId });
+    const activeFiltersCaptions = populateFiltersCaptions({
+      filterData: limitedViewLayout.filters,
+      filtersActive: limitedViewData.filters,
+    });
+    const filtersActive = formatFilters({
+      filtersData: limitedViewLayout.filters,
+      filtersActive: limitedViewData.filters,
+    });
+
+    const filtersData = {
+      filterData: limitedViewLayout.filters, // set the proper layout for the filters
+      filtersActive,
+      activeFiltersCaptions,
+    };
+
+    const payload2 = {
+      id: filterId,
+      data: filtersData,
+    };
+    const expectedActions = [
+      { type: ACTION_TYPES.CREATE_FILTER, payload: payload2}
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+      (page - 1)}&pageLength=${pageLength}`)
+      .reply(200, _.cloneDeep(limitedViewData));
 
     return store
       .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: false }))

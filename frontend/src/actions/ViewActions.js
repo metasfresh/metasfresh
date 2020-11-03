@@ -9,7 +9,7 @@ import {
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
-import { formatFilters } from '../utils/filterHelpers';
+import { formatFilters, populateFiltersCaptions } from '../utils/filterHelpers';
 
 import {
   ADD_VIEW_LOCATION_DATA,
@@ -36,11 +36,7 @@ import {
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
-import {
-  createFilter,
-  deleteFilter,
-  populateFiltersCaptions,
-} from './FiltersActions';
+import { createFilter, deleteFilter } from './FiltersActions';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 
 /**
@@ -352,6 +348,7 @@ export function fetchDocument({
           filtersData: view.layout.filters,
           filtersActive: response.data.filters,
         });
+
         dispatch(
           createFilter({
             filterId,

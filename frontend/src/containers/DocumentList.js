@@ -29,7 +29,7 @@ import {
   updateGridTableData,
   deselectTableRows,
 } from '../actions/TableActions';
-import { filtersActiveContains } from '../actions/FiltersActions';
+import { filtersActiveContains } from '../utils/filterHelpers';
 import {
   setListId,
   setPagination as setListPagination,
