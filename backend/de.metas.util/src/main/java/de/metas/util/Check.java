@@ -519,10 +519,6 @@ public final class Check
 	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 *
-	 * @param cond
-	 * @param errMsg
-	 * @param params
 	 */
 	public static void errorUnless(final boolean cond, final String errMsg, final Object... params)
 	{
@@ -531,11 +527,6 @@ public final class Check
 
 	/**
 	 * Like {@link #errorUnless(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param cond
-	 * @param exceptionClass
-	 * @param errMsg
-	 * @param params
 	 */
 	public static void errorUnless(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
 	{
@@ -581,10 +572,6 @@ public final class Check
 
 	/**
 	 * Supplier for an exception. Can be used with {@link Optional#orElseThrow(Supplier)}.
-	 *
-	 * @param errMsg
-	 * @param params
-	 * @return
 	 */
 	public static Supplier<? extends RuntimeException> supplyEx(final String errMsg, final Object... params)
 	{
@@ -593,11 +580,6 @@ public final class Check
 
 	/**
 	 * Like {@link #supplyEx(String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param errMsg
-	 * @param exceptionClass
-	 * @param params
-	 * @return
 	 */
 	public static Supplier<? extends RuntimeException> supplyEx(final String errMsg, final Class<? extends RuntimeException> exceptionClass, final Object... params)
 	{

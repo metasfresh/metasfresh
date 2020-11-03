@@ -34,10 +34,6 @@ public final class ImmutablePair<LT, RT> implements IPair<LT, RT>
 {
 	/**
 	 * Creates an immutable pair
-	 * 
-	 * @param left
-	 * @param right
-	 * @return
 	 */
 	public static final <L, R> ImmutablePair<L, R> of(
 			@Nullable final L left,
