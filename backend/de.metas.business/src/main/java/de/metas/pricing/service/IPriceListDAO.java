@@ -133,6 +133,8 @@ public interface IPriceListDAO extends ISingletonService
 
 	List<I_M_PriceList_Version> retrievePriceListVersionsValidAtGivenDate(Date date);
 
+	List<I_M_ProductPrice> retrieveExistingProductPricesForGivenProduct(ProductId productId);
+
 	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
 	String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId);

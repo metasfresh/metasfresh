@@ -1,8 +1,10 @@
 package de.metas.product.model.interceptor;
 
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPOCopyRecordSupport;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -16,7 +18,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.product.ProductPOCopyRecordSupport;
+import java.sql.Date;
+import java.time.Instant;
 
 /*
  * #%L
@@ -44,6 +47,7 @@ import de.metas.product.ProductPOCopyRecordSupport;
 public class M_Product
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Init
 	public void init(final IModelValidationEngine engine)
@@ -57,6 +61,7 @@ public class M_Product
 	{
 		if (changeType.isNew())
 		{
+			productBL.createProductPrices(ProductId.ofRepoId(product.getM_Product_ID()), Date.from(Instant.now()));
 			createOrUpdateProductPlanningsForSelector(product);
 		}
 	}

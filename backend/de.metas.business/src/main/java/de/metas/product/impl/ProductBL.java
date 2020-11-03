@@ -1,5 +1,62 @@
 package de.metas.product.impl;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.IProductCostingBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.service.AddProductPriceRequest;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.product.ProductType;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.MAttributeSet;
+import org.compiere.model.MProductCategory;
+import org.compiere.model.X_C_UOM;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -25,58 +82,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.MAttributeSet;
-import org.compiere.model.MProductCategory;
-import org.compiere.model.X_C_UOM;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.IProductCostingBL;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
-import de.metas.product.ProductType;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
@@ -88,6 +93,7 @@ public final class ProductBL implements IProductBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -389,6 +395,46 @@ public final class ProductBL implements IProductBL
 			return "<" + productId + ">";
 		}
 		return product.getValue() + "_" + product.getName();
+	}
+
+	@Override
+	public void createProductPrices(final ProductId productId, Date date)
+	{
+		final List<I_M_ProductPrice> productPrices = priceListDAO.retrieveExistingProductPricesForGivenProduct(productId);
+
+		final List<PriceListVersionId> priceListVersionIds = extraxtPricelistVersionIdsFromProductPrices(productPrices);
+
+		final List<I_M_PriceList_Version> priceListVersions = priceListDAO.retrievePriceListVersionsValidAtGivenDate(date);
+
+		priceListVersions.stream().filter(pv -> priceListVersionIds.contains(PriceListVersionId.ofRepoId(pv.getM_PriceList_Version_ID())));
+
+		I_M_Product product = productsRepo.getById(productId);
+
+		for (I_M_PriceList_Version pricelistVersion:
+			 priceListVersions)
+		{
+			priceListDAO.addProductPrice(AddProductPriceRequest.builder()
+					.productId(productId)
+					.priceListVersionId(PriceListVersionId.ofRepoId(pricelistVersion.getM_PriceList_Version_ID()))
+					.uomId(UomId.ofRepoId(product.getC_UOM_ID()))
+					.priceStd(BigDecimal.ZERO)
+					.taxCategoryId(TaxCategoryId.NOT_FOUND)
+					.build());
+		}
+
+	}
+
+	@Override
+	public List<PriceListVersionId> extraxtPricelistVersionIdsFromProductPrices(final List<I_M_ProductPrice> productPrices)
+	{
+		List<PriceListVersionId> priceListVersionIds = new ArrayList<PriceListVersionId>();
+		for (I_M_ProductPrice productPrice:
+			 productPrices)
+		{
+			priceListVersionIds.add(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
+		}
+
+		return priceListVersionIds;
 	}
 
 	@Override

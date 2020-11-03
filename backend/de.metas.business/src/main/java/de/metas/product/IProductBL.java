@@ -22,23 +22,25 @@ package de.metas.product;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
@@ -169,6 +171,10 @@ public interface IProductBL extends ISingletonService
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
 	String getProductValueAndName(ProductId productId);
+
+	void createProductPrices(ProductId productId, Date date);
+
+	List<PriceListVersionId> extraxtPricelistVersionIdsFromProductPrices(List<I_M_ProductPrice> productPrices);
 
 	@Deprecated
 	default String getProductValueAndName(final int productId)
