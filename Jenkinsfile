@@ -193,7 +193,7 @@ stage('Invoke downstream jobs')
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
           true, // wait=true
-          'metasfresh-webui');
+          'metasfresh-webui-api-legacy');
 				MF_ARTIFACT_VERSIONS['metasfresh-webui'] = webuiDownStreamJobMap.MF_VERSION;
 			},
 			metasfresh_procurement_webui: {
@@ -204,7 +204,7 @@ stage('Invoke downstream jobs')
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
           true, // wait=true
-          'metasfresh-procurement-webui');
+          'metasfresh-procurement-webui-legacy');
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamJobMap.MF_VERSION;
 			},
 			metasfresh_esb_legacy: {
