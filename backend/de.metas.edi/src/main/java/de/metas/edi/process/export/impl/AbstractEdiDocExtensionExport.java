@@ -10,32 +10,33 @@ package de.metas.edi.process.export.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 
 import de.metas.edi.model.I_EDI_Document_Extension;
 
 /**
- * 
+ *
  * Abstract subclass of {@link AbstractExport} that contains code to check if a given {@link I_EDI_Document_Extension} can be exported after all.
  *
  * @param <T>
  */
-public abstract class AbstractEdiDocExtensionExport<T extends I_EDI_Document_Extension> extends AbstractExport<I_EDI_Document_Extension>
+public abstract class AbstractEdiDocExtensionExport<T extends I_EDI_Document_Extension>
+		extends AbstractExport<I_EDI_Document_Extension>
 {
-	public AbstractEdiDocExtensionExport(I_EDI_Document_Extension document, String tableIdentifier, int expClientId)
+	public AbstractEdiDocExtensionExport(I_EDI_Document_Extension document, String tableIdentifier, ClientId expClientId)
 	{
 		super(document, tableIdentifier, expClientId);
 	}

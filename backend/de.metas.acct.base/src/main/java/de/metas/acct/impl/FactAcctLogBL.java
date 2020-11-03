@@ -14,7 +14,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.collections.MapReduceAggregator;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 
@@ -25,6 +24,7 @@ import de.metas.acct.IFactAcctSummaryKey;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.model.X_Fact_Acct_Log;
+import de.metas.util.collections.MapReduceAggregator;
 
 /*
  * #%L

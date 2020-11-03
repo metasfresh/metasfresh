@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.MapReduceAggregator;
 
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -44,6 +43,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.LockOwner;
+import de.metas.util.collections.MapReduceAggregator;
 
 /**
  * Takes {@link I_C_Invoice_Candidate}s, group them by "IC's header aggregation key" and add them {@link InvoiceCandWorkpackageProcessor} workpackages.

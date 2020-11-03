@@ -23,12 +23,12 @@ package de.metas.edi.exception;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,21 +41,23 @@ import java.util.Collection;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+
+
 /**
  * Throwed when there are some fields that are mandatory but unfilled.
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
 public class EDIFillMandatoryException extends AdempiereException
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 9074980284529933724L;
 
 	/**
 	 * NOTE: fields are considered not translated and they will be translated
-	 * 
+	 *
 	 * @param fields
 	 */
 	public EDIFillMandatoryException(final Collection<String> fields)
@@ -65,7 +67,7 @@ public class EDIFillMandatoryException extends AdempiereException
 
 	/**
 	 * NOTE: fields are considered not translated and they will be translated
-	 * 
+	 *
 	 * @param recordName
 	 * @param recordIdentifier
 	 * @param fields
@@ -77,7 +79,7 @@ public class EDIFillMandatoryException extends AdempiereException
 
 	/**
 	 * NOTE: fields are considered not translated and they will be translated
-	 * 
+	 *
 	 * @param recordName
 	 * @param recordIdentifier
 	 * @param fields

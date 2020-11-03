@@ -10,7 +10,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
@@ -39,6 +38,7 @@ import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import lombok.NonNull;
 
 /*

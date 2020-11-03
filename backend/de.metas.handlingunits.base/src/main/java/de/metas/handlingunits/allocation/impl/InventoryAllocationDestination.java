@@ -40,7 +40,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -88,6 +87,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.product.IProductBL;
+import de.metas.uom.IUOMConversionBL;
 import lombok.NonNull;
 
 /**

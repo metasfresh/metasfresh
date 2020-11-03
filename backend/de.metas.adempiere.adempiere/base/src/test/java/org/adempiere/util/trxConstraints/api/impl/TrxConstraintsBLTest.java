@@ -25,12 +25,13 @@ package org.adempiere.util.trxConstraints.api.impl;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.collections.ListUtils;
 
 public class TrxConstraintsBLTest
 {

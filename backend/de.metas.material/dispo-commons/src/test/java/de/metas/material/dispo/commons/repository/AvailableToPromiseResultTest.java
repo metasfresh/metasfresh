@@ -13,7 +13,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.ListUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,6 +23,7 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddTo
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.collections.ListUtils;
 
 /*
  * #%L

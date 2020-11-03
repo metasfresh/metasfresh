@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
@@ -48,6 +47,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.uom.IUOMConversionBL;
 
 /**
  * Manufacturing order callout

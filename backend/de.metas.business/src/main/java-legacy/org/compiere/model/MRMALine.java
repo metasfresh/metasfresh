@@ -28,12 +28,12 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.tax.api.ITaxBL;
+import de.metas.uom.IUOMDAO;
 
 /**
  * RMA Line Model

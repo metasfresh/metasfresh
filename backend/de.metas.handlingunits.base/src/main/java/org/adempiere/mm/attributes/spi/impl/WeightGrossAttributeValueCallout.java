@@ -32,8 +32,8 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 
 public class WeightGrossAttributeValueCallout extends AbstractWeightAttributeValueCallout
 {

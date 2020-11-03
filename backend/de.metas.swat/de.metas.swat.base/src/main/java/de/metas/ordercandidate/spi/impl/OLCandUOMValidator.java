@@ -25,12 +25,12 @@ package de.metas.ordercandidate.spi.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValdiator;
+import de.metas.uom.IUOMConversionBL;
 
 public class OLCandUOMValidator implements IOLCandValdiator
 {

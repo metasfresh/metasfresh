@@ -35,7 +35,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
@@ -52,6 +51,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
+import de.metas.uom.IUOMConversionBL;
 import lombok.NonNull;
 
 /**

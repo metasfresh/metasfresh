@@ -49,7 +49,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
@@ -86,6 +85,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.logging.LogManager;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO

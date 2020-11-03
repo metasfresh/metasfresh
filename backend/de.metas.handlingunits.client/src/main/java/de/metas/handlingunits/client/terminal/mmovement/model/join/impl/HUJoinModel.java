@@ -36,7 +36,6 @@ import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IdentityHashSet;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -53,6 +52,7 @@ import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.collections.IdentityHashSet;
 
 public final class HUJoinModel extends AbstractLTCUModel
 {

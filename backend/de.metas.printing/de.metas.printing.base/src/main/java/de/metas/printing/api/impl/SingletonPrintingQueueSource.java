@@ -30,13 +30,13 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.SingletonIterator;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.collections.SingletonIterator;
 
 /**
  * Used for creating a print job for a single printing queue item.

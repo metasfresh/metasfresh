@@ -37,7 +37,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
@@ -55,6 +54,7 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.IHUStorageBL;
+import de.metas.util.collections.ListUtils;
 import lombok.NonNull;
 
 /**

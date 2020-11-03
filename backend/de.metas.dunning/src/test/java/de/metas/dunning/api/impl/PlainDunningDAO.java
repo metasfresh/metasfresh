@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.IteratorUtils;
 
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningContext;
@@ -41,6 +40,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.collections.IteratorUtils;
 
 public class PlainDunningDAO extends AbstractDunningDAO
 {

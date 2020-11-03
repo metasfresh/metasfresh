@@ -31,7 +31,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
+
+import de.metas.util.collections.ListUtils;
 
 public class DaysOfMonthExploder implements IDateSequenceExploder
 {

@@ -33,7 +33,7 @@ public final class NullLoggable implements ILoggable
 {
 	public static final NullLoggable instance = new NullLoggable();
 
-	public static final boolean isNull(final ILoggable loggable)
+	public static boolean isNull(final ILoggable loggable)
 	{
 		return loggable == null || loggable == NullLoggable.instance;
 	}
@@ -44,9 +44,10 @@ public final class NullLoggable implements ILoggable
 	}
 
 	@Override
-	public void addLog(String msg_IGNORED, Object... msgParameters_IGNORED)
+	public NullLoggable addLog(String msg_IGNORED, Object... msgParameters_IGNORED)
 	{
 		// nothing to do
+		return this;
 	}
 
 }

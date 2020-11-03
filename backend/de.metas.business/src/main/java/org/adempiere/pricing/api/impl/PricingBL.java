@@ -41,7 +41,6 @@ import org.adempiere.pricing.exceptions.PriceListVersionNotFoundException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.AggregatedPricingRule;
 import org.adempiere.pricing.spi.IPricingRule;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -58,6 +57,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.ProductPrices;
+import de.metas.uom.IUOMConversionBL;
 
 public class PricingBL implements IPricingBL
 {

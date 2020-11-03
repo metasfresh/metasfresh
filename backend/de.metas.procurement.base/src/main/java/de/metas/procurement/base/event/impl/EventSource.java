@@ -10,12 +10,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.IAutoCloseable;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.util.collections.IteratorUtils;
 
 /*
  * #%L

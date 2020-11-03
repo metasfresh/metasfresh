@@ -3,7 +3,6 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.collections.MapReduceAggregator;
 import org.compiere.model.I_C_Order;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -11,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 
 /*

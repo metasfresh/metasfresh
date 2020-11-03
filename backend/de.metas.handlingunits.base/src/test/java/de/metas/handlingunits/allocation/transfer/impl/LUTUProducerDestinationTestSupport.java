@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.ListUtils;
 import org.junit.Before;
 
 import de.metas.handlingunits.HUTestHelper;
@@ -17,6 +16,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.collections.ListUtils;
 
 /*
  * #%L

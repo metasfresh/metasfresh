@@ -43,14 +43,12 @@ import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.process.ProcessInfo;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfo;
+
 
 /**
  * Aggregates edi-enabled inOuts into desadv records.
- *
- * @author ts
- *
  */
 public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 {
@@ -67,13 +65,14 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 	{
 		final ProcessInfo pi = getProcessInfo();
 
-		final IQueryFilter<I_M_InOut> processQueryFilter = pi.getQueryFilter();
+		// this process is supposed to run "globally" on all matching M_InOuts
+		final IQueryFilter<I_M_InOut> processQueryFilter = pi.getQueryFilterOrElseTrue();
 
 		// subquery to select only inOuts with EDI-partners
 		final IQuery<I_C_BPartner> ediRecipient = queryBL
 				.createQueryBuilder(I_C_BPartner.class, getCtx(), getTrxName())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEdiRecipient, true).create();
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, true).create();
 
 		final Iterator<I_M_InOut> inOuts = queryBL
 				.createQueryBuilder(I_M_InOut.class, getCtx(), getTrxName())
@@ -95,7 +94,6 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 		.addNotEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_POReference, null)
 
 		// task 08926: make sure the inout has EdiEnabled
-
 		.addEqualsFilter(I_M_InOut.COLUMNNAME_IsEdiEnabled, true)
 
 		.addInSubQueryFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, ediRecipient)

@@ -1,5 +1,8 @@
 package de.metas.quantity;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,11 +28,15 @@ package de.metas.quantity;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import lombok.NonNull;
 
 /**
@@ -57,6 +64,15 @@ public final class Quantity implements Comparable<Quantity>
 		return QTY_INFINITE.compareTo(qty) == 0;
 	}
 
+	public static BigDecimal toBigDecimal(@Nullable final Quantity quantity)
+	{
+		if (quantity == null)
+		{
+			return ZERO;
+		}
+		return quantity.toBigDecimal();
+	}
+	
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
 
 	// NOTE to dev: all fields shall be final because this is a immutable object. Please keep that logic if u are adding more fields
@@ -183,9 +199,18 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return Quantity value; never return null
 	 */
-	public BigDecimal getQty()
+	public BigDecimal toBigDecimal()
 	{
 		return qty;
+	}
+
+	/**
+	 * @deprecated Please use {@link #toBigDecimal()}
+	 */
+	@Deprecated
+	public BigDecimal getQty()
+	{
+		return toBigDecimal();
 	}
 
 	/**
@@ -227,6 +252,11 @@ public final class Quantity implements Comparable<Quantity>
 		return uom.getC_UOM_ID();
 	}
 
+	public UomId getUomId()
+	{
+		return UomId.ofRepoId(uom.getC_UOM_ID());
+	}
+	
 	/**
 	 *
 	 * @param uom
@@ -280,11 +310,17 @@ public final class Quantity implements Comparable<Quantity>
 		return sourceUom.getC_UOM_ID();
 	}
 
+	public UomId getSourceUomId()
+	{
+		return UomId.ofRepoId(sourceUom.getC_UOM_ID());
+	}
+	
 	/**
 	 *
 	 * @param sourceUom
 	 * @return a new {@link Quantity} object
 	 */
+	@Deprecated
 	public Quantity setSourceUOM(final I_C_UOM sourceUom)
 	{
 		if (this.sourceUom == sourceUom)
@@ -520,5 +556,57 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		final Quantity diff = this.subtract(quantity);
 		return diff.signum();
+	}
+
+	public Quantity divide(@NonNull final BigDecimal divisor)
+	{
+		if (BigDecimal.ONE.compareTo(divisor) == 0)
+		{
+			return this;
+		}
+
+		return new Quantity(
+				qty.divide(divisor, uom.getStdPrecision(), RoundingMode.HALF_UP),
+				uom,
+				sourceQty.divide(divisor, sourceUom.getStdPrecision(), RoundingMode.HALF_UP),
+				sourceUom);
+	}
+
+	public Quantity divide(
+			@NonNull final BigDecimal divisor,
+			final int scale,
+			@NonNull final RoundingMode roundingMode)
+	{
+		return new Quantity(
+				qty.divide(divisor, scale, roundingMode),
+				uom,
+				sourceQty.divide(divisor, scale, roundingMode),
+				sourceUom);
+	}
+
+	public Quantity multiply(final int multiplicand)
+	{
+		return multiply(BigDecimal.valueOf(multiplicand));
+	}
+
+	public Quantity multiply(final BigDecimal multiplicand)
+	{
+		if (multiplicand.compareTo(ONE) == 0)
+		{
+			return this;
+		}
+
+		return new Quantity(qty.multiply(multiplicand), uom, sourceQty.multiply(multiplicand), sourceUom);
+	}
+	
+	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)
+	{
+		final BigDecimal newQty = qty.setScale(newScale.toInt(), roundingMode);
+
+		return new Quantity(
+				newQty,
+				uom,
+				sourceQty != null ? sourceQty.setScale(newScale.toInt(), roundingMode) : newQty,
+				sourceUom != null ? sourceUom : uom);
 	}
 }

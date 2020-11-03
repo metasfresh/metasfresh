@@ -30,9 +30,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
@@ -50,12 +47,17 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionContext;
+import de.metas.uom.IUOMDAO;
 import lombok.NonNull;
 
 public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	
 	@Override
 	public int getUOMPrecision(final I_M_Product product)
 	{
@@ -77,11 +79,18 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_C_UOM getStockingUOM(@NonNull final I_M_Product product)
+	public I_C_UOM getStockUOM(@NonNull final I_M_Product product)
 	{
-		return product.getC_UOM();
+		return uomsRepo.getById(product.getC_UOM_ID());
 	}
 
+	@Override
+	public I_C_UOM getStockUOM(final int productId)
+	{
+		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
+	}
 	/**
 	 *
 	 * @param product

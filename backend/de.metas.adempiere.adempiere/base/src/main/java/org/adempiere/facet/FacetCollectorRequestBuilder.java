@@ -28,8 +28,9 @@ import java.util.function.Predicate;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.facet.impl.AbstractFacetCollector;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.IncludeExcludeListPredicate;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.collections.IncludeExcludeListPredicate;
 
 public final class FacetCollectorRequestBuilder<ModelType>
 {

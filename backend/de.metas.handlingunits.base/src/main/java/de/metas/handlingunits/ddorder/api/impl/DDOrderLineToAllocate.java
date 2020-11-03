@@ -30,8 +30,6 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -42,6 +40,8 @@ import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionContext;
 
 /**
  * Wraps a {@link I_DD_OrderLine_Or_Alternative} and keeps track of changes done to it's qty via movements (which are not completed).

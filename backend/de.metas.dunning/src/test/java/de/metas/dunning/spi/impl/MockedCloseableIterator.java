@@ -29,8 +29,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.util.collections.IteratorUtils;
 import org.junit.Assert;
+
+import de.metas.util.collections.IteratorUtils;
 
 public final class MockedCloseableIterator<E> implements Iterator<E>, Closeable
 {

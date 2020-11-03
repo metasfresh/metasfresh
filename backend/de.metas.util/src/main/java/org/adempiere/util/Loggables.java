@@ -5,6 +5,7 @@ import org.adempiere.util.logging.LogbackLoggable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -78,5 +79,15 @@ public final class Loggables
 	public static ILoggable getNullLoggable()
 	{
 		return NullLoggable.instance;
+	}
+
+	public static ILoggable withLogger(@NonNull final Logger logger, @NonNull final Level level)
+	{
+		return new LoggableWithLogger(get(), logger, level);
+	}
+
+	public static ILoggable addLog(final String msg, final Object... msgParameters)
+	{
+		return get().addLog(msg, msgParameters);
 	}
 }

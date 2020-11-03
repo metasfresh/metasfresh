@@ -1,40 +1,18 @@
 package de.metas.edi.process;
 
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
 import org.adempiere.util.Check;
+import org.compiere.Adempiere;
 
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 
 /**
- * Creates as many {@link I_EDI_DesadvLine_SSCC} records as asked and then print them
- * 
+ * Creates as many {@link I_EDI_DesadvLine_Pack} records as asked and then print them
+ *
  * @author tsa
  * @task 08910
  */
@@ -43,8 +21,10 @@ public class EDI_DesadvLine_GenerateSSCCLabels extends JavaProcess
 	//
 	// Parameters
 	private static final String PARAM_Counter = "Counter";
-	/** How many {@link I_EDI_DesadvLine_SSCC} are required */
+	/** How many {@link I_EDI_DesadvLine_Pack} are required */
 	private int p_Counter = 0;
+
+	private final transient SSCC18CodeBL sscc18CodeService = Adempiere.getBean(SSCC18CodeBL.class);
 
 	//
 	// status
@@ -74,7 +54,7 @@ public class EDI_DesadvLine_GenerateSSCCLabels extends JavaProcess
 				.setRequiredSSCC18Count(p_Counter)
 				.build();
 
-		desadvLineLabelsGenerator = new DesadvLineSSCC18Generator()
+		desadvLineLabelsGenerator = new DesadvLineSSCC18Generator(sscc18CodeService)
 				.setContext(this)
 				.setPrintExistingLabels(true)
 				.generateAndEnqueuePrinting(desadvLineLabels);
@@ -83,7 +63,7 @@ public class EDI_DesadvLine_GenerateSSCCLabels extends JavaProcess
 	}
 
 	/**
-	 * Print all enqueued {@link I_EDI_DesadvLine_SSCC} labels.
+	 * Print all enqueued {@link I_EDI_DesadvLine_Pack} labels.
 	 */
 	@Override
 	protected void postProcess(boolean success)

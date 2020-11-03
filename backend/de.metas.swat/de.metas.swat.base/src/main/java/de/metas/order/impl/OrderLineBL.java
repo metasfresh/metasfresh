@@ -43,7 +43,6 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
@@ -70,6 +69,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.uom.IUOMConversionBL;
 import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL

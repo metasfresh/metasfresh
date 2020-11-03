@@ -32,8 +32,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
@@ -57,6 +55,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionContext;
 import lombok.NonNull;
 
 public class LUTUConfigurationFactory implements ILUTUConfigurationFactory

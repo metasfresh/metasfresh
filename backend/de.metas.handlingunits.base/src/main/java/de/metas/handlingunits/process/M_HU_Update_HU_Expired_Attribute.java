@@ -10,7 +10,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Attribute;
 
@@ -22,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_BestBefore_V;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.collections.IteratorUtils;
 
 /*
  * #%L

@@ -38,9 +38,9 @@ import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableBL;
-import de.metas.handlingunits.attribute.IWeightableFactory;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.IWeightableBL;
+import de.metas.handlingunits.attribute.weightable.IWeightableFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
 

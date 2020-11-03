@@ -9,8 +9,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -41,6 +39,8 @@ import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingHandlerAdapter;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionContext;
 import lombok.NonNull;
 
 /**

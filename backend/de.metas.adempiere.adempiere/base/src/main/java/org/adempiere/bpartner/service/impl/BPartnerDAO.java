@@ -1,5 +1,7 @@
 package org.adempiere.bpartner.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -66,13 +68,36 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, final Class<T> modelClass)
+	{
+		// NOTE: generally, don't load out of trx unless knowing the context that therefore knowing that it's OK.
+		// You *don not* know that the C_BPartner wasn't just created and the DB was not yet committed.
+		// Therefore, you can't assume that loading out of trx will be OK.
+		final T bpartner = load(bpartnerId.getRepoId(), modelClass);
+		return bpartner;
+	}
+
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return retrieveBPartnerLocations(Env.getCtx(), bpartnerLocationId.getBpartnerId().getRepoId(), ITrx.TRXNAME_None)
+				.stream()
+				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
 
 	@Override
 	public <T extends I_C_BPartner> T retrieveBPartner(

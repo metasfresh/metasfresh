@@ -30,7 +30,6 @@ import java.util.function.Predicate;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.lock.api.LockOwner;
+import de.metas.util.collections.ListUtils;
 
 /**
  * Test {@link AggregateHUSelectModel}

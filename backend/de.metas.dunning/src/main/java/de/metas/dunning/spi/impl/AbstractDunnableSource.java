@@ -26,10 +26,9 @@ package de.metas.dunning.spi.impl;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
-import org.adempiere.util.collections.FilterIterator;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.util.collections.FilterIterator;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;

@@ -32,6 +32,9 @@ import java.util.Iterator;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.util.collections.PeekIterator;
+import de.metas.util.collections.PeekIteratorWrapper;
+
 public class PeekIteratorWrapperTest
 {
 

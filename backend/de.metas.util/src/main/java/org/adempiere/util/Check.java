@@ -31,6 +31,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 
 /**
@@ -114,7 +116,7 @@ public final class Check
 		}
 	}
 
-	private static void throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
+	private static RuntimeException throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final RuntimeException ex = mkEx(exClazz, msg);
 
@@ -127,6 +129,7 @@ public final class Check
 		else
 		{
 			logger.error(msg, ex);
+			return ex;
 		}
 	}
 
@@ -161,6 +164,85 @@ public final class Check
 			final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
 			throwOrLogEx(exceptionClass, "Assumption failure: " + errMsgFormated);
 		}
+	}
+
+	public static int assumeGreaterOrEqualToZero(final int valueInt, final String valueName)
+	{
+		if (valueInt < 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
+	public static BigDecimal assumeGreaterOrEqualToZero(final BigDecimal valueBD, final String valueName)
+	{
+		assumeNotNull(valueName, "" + valueName + " is not null");
+		if (valueBD == null || valueBD.signum() < 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueBD);
+		}
+		return valueBD;
+	}
+
+	public static int assumeGreaterThanZero(final int valueInt, final String valueName)
+	{
+		if (valueInt <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
+	public static int assumeGreaterThanZero(
+			final int valueInt,
+			final Class<? extends RuntimeException> exceptionClass,
+			final String valueName)
+	{
+		if (valueInt <= 0)
+		{
+			throwOrLogEx(exceptionClass, "Assumption failure: " + valueName + " > 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
+	public static long assumeGreaterThanZero(final long valueLong, final String valueName)
+	{
+		if (valueLong <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueLong);
+		}
+		return valueLong;
+	}
+
+	public static BigDecimal assumeGreaterThanZero(final BigDecimal valueBD, final String valueName)
+	{
+		assumeNotNull(valueName, "" + valueName + " is not null");
+		if (valueBD == null || valueBD.signum() <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueBD);
+		}
+		return valueBD;
+	}
+
+	public static <T> void assumeEquals(final T value1, final T value2)
+	{
+		if (Objects.equals(value1, value2))
+		{
+			return;
+		}
+
+		fail("values not equal: '{}', '{}'", value1, value2);
+	}
+
+	public static <T> void assumeEquals(final T value1, final T value2, final String assumptionMessage, final Object... params)
+	{
+		if (Objects.equals(value1, value2))
+		{
+			return;
+		}
+
+		fail(assumptionMessage, params);
 	}
 
 	/**
@@ -238,9 +320,9 @@ public final class Check
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static void assumeNotNull(final Object object, final String assumptionMessage, final Object... params)
+	public static <T> T assumeNotNull(final T object, final String assumptionMessage, final Object... params)
 	{
-		assumeNotNull(object, defaultExClazz, assumptionMessage, params);
+		return assumeNotNull(object, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
@@ -251,10 +333,11 @@ public final class Check
 	 * @param assumptionMessage
 	 * @param params
 	 */
-	public static void assumeNotNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static <T> T assumeNotNull(final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = object != null;
 		assume(cond, exceptionClass, assumptionMessage, params);
+		return object;
 	}
 
 	/**
@@ -428,6 +511,12 @@ public final class Check
 		}
 	}
 
+	public static RuntimeException fail(final String errMsg, final Object... params)
+	{
+		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
+		return throwOrLogEx(defaultExClazz, "Error: " + errMsgFormated);
+	}
+
 	public static void errorIf(
 			final boolean cond,
 			final String errMsg,
@@ -485,9 +574,31 @@ public final class Check
 		};
 	}
 
+	public static RuntimeException newException(final String errMsg, final Object... params)
+	{
+		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
+		return mkEx(defaultExClazz, errMsgFormated);
+	}
+
 	public static boolean isEmpty(final String str)
 	{
 		return isEmpty(str, false);
+	}
+
+	/**
+	 * @return return true if the string is null, has length 0, or contains only whitespace.
+	 */
+	public static boolean isBlank(@Nullable final String str)
+	{
+		return isEmpty(str, true);
+	}
+
+	/**
+	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
+	 */
+	public static boolean isNotBlank(@Nullable final String str)
+	{
+		return !isEmpty(str, true);
 	}
 
 	/**
@@ -558,7 +669,7 @@ public final class Check
 	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
 	@Deprecated
-	public static final boolean equals(final Object a, final Object b)
+	public static boolean equals(final Object a, final Object b)
 	{
 		if (a == b || a != null && b != null && a.equals(b))
 		{

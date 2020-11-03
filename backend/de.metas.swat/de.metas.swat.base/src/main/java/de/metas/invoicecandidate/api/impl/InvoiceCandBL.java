@@ -55,7 +55,6 @@ import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
@@ -123,6 +122,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import de.metas.uom.IUOMConversionBL;
 import lombok.NonNull;
 
 /**

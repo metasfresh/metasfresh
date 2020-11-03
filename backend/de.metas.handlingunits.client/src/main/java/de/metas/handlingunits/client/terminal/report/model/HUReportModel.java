@@ -75,11 +75,7 @@ public class HUReportModel implements IDisposable
 
 	private boolean disposed = false;
 
-	/**
-	 * @param terminalContext
-	 * @param referenceModel this model will be used to attach to it
-	 */
-	public HUReportModel(final ITerminalContext terminalContext,
+	public HUReportModel(@NonNull final ITerminalContext terminalContext,
 			final HUToReport currentHU,
 			final Set<HUToReport> selectedHUs)
 	{
@@ -164,7 +160,7 @@ public class HUReportModel implements IDisposable
 	protected final void finalize() throws Throwable
 	{
 		dispose();
-	};
+	}
 
 	@Override
 	@OverridingMethodsMustInvokeSuper

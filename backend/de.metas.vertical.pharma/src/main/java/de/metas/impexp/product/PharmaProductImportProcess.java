@@ -22,7 +22,6 @@ import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -36,6 +35,7 @@ import org.compiere.process.MProductPriceCloningCommand;
 
 import de.metas.pricing.ProductPrices;
 import de.metas.product.IProductDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;

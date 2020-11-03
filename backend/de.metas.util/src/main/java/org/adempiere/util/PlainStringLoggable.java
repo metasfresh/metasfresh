@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * An {@link ILoggable} which collects the given log messages into one string.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -40,10 +40,12 @@ public final class PlainStringLoggable implements ILoggable
 	private final List<String> messages = new ArrayList<>();
 
 	@Override
-	public void addLog(String msg, Object... msgParameters)
+	public PlainStringLoggable addLog(String msg, Object... msgParameters)
 	{
 		final String formattedMessage = StringUtils.formatMessage(msg, msgParameters);
 		messages.add(formattedMessage);
+
+		return this;
 	}
 
 	public boolean isEmpty()

@@ -25,31 +25,25 @@ package de.metas.edi.model.validator;
  */
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.impex.model.I_AD_InputDataSource;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 
-@Validator(I_C_Order.class)
+@Interceptor(I_C_Order.class)
+@Component
 public class C_Order
 {
-
-	public static final C_Order INSTANCE = new C_Order();
-
-	private C_Order()
-	{
-	}
-
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
@@ -65,17 +59,12 @@ public class C_Order
 				|| I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(desadvEDIStatus)
 				|| I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(desadvEDIStatus))
 		{
-			throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + desadvEDIStatus + ")");
+			throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + desadvEDIStatus + ")")
+					//.markAsUserValidationError()
+					;
 		}
 	}
 
-	/**
-	 * If the given <code>inOut</code> is OK to be send as EDI, then we add it to a {@link de.metas.esb.edi.model.I_EDI_Desadv}.
-	 * <p>
-	 * Note that if the EDI-status changes to something else later on, the inOut shall remain assigned. Its not this MV's problem.
-	 *
-	 * @param inOut
-	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void addToDesadv(final I_C_Order order)
 	{
@@ -88,7 +77,7 @@ public class C_Order
 			return;
 		}
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (!bpartner.isEdiRecipient())
+		if (!bpartner.isEdiDesadvRecipient() )
 		{
 			return;
 		}
@@ -118,14 +107,14 @@ public class C_Order
 	public void setEdiEnabledForNewOrder(final I_C_Order order)
 	{
 		final boolean ediEnabledByInputDataSource;
-		final I_AD_InputDataSource orderInputDataSource = order.getAD_InputDataSource();
-		if (orderInputDataSource == null)
+
+		if (order.getAD_InputDataSource_ID()<=0)
 		{
 			ediEnabledByInputDataSource = false;
 		}
 		else
 		{
-			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSource);
+			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(order.getAD_InputDataSource_ID());
 		}
 
 		final boolean ediEnabledByBPartner;
@@ -136,7 +125,7 @@ public class C_Order
 		}
 		else
 		{
-			ediEnabledByBPartner = partner.isEdiRecipient();
+			ediEnabledByBPartner = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
 		}
 		order.setIsEdiEnabled(ediEnabledByInputDataSource || ediEnabledByBPartner);
 	}
@@ -148,15 +137,15 @@ public class C_Order
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_AD_InputDataSource_ID)
 	public void updateEdiEnabled(final I_C_Order order)
 	{
-		final I_AD_InputDataSource orderInputDataSource = order.getAD_InputDataSource();
+		final int orderInputDataSourceId = order.getAD_InputDataSource_ID();
 
-		if (orderInputDataSource == null)
+		if (orderInputDataSourceId <= 0)
 		{
 			// nothing to do
 			return;
 		}
 
-		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSource);
+		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSourceId);
 		if (isEdiEnabled)
 		{
 			order.setIsEdiEnabled(true);
@@ -174,11 +163,10 @@ public class C_Order
 			return;
 		}
 
-		final boolean isEdiRecipient = partner.isEdiRecipient();
+		final boolean isEdiRecipient = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
 
 		// in case the partner was changed and the new one is not an edi recipient, the order will not be edi enabled
 		// If the new bp is edi recipient, we leave it to the user to set the flag or not
-
 		if (!isEdiRecipient)
 		{
 			order.setIsEdiEnabled(false);

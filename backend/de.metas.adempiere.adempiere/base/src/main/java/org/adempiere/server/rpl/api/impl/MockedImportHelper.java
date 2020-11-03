@@ -40,11 +40,12 @@ import javax.xml.transform.stream.StreamSource;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.XMLHelper;
 import org.adempiere.server.rpl.api.IImportHelper;
-import org.adempiere.util.collections.Converter;
 import org.adempiere.util.jaxb.DynamicObjectFactory;
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.compiere.util.Ini;
 import org.w3c.dom.Document;
+
+import de.metas.util.collections.Converter;
 
 /**
  * Mocked implementation of {@link IImportHelper} which delegates the work to registered converters.

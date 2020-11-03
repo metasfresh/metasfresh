@@ -25,7 +25,6 @@ package de.metas.handlingunits.storage.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -40,6 +39,7 @@ import de.metas.logging.LogManager;
 import de.metas.quantity.Bucket;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {

@@ -24,8 +24,9 @@ package org.adempiere.util.lang;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.collections.Converter;
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.util.collections.Converter;
 
 /**
  * Table record reference.

@@ -1,5 +1,7 @@
 package de.metas.edi.sscc18;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.edi
@@ -10,18 +12,17 @@ package de.metas.edi.sscc18;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,21 +30,23 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.quantity.Quantity;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC18Labels
 {
@@ -59,15 +62,13 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	private final String productName;
 
 	private int existingSSCC18sCount;
-	private final Supplier<List<I_EDI_DesadvLine_SSCC>> existingSSCC18s;
+	private final Supplier<List<I_EDI_DesadvLine_Pack>> existingSSCC18s;
 	private BigDecimal requiredSSCC18sCount;
 
 	private TotalQtyCUBreakdownCalculator huQtysCalculator;
 
-	private PrintableDesadvLineSSCC18Labels(final Builder builder)
+	private PrintableDesadvLineSSCC18Labels(@NonNull final Builder builder)
 	{
-		super();
-
 		this.desadvLine = builder.getEDI_DesadvLine();
 
 		this.lineNo = builder.getLineNo();
@@ -113,7 +114,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	}
 
 	@Override
-	public List<I_EDI_DesadvLine_SSCC> getExistingSSCC18s()
+	public List<I_EDI_DesadvLine_Pack> getExistingSSCC18s()
 	{
 		return existingSSCC18s.get();
 	}
@@ -155,7 +156,6 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		private Builder()
 		{
-			super();
 		}
 
 		public PrintableDesadvLineSSCC18Labels build()
@@ -183,7 +183,8 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		String getProductValue()
 		{
-			return _desadvLine.getM_Product().getValue();
+			final I_M_Product productRecord = loadOutOfTrx(_desadvLine.getM_Product_ID(), I_M_Product.class);
+			return productRecord.getValue();
 		}
 
 		String getProductName()
@@ -198,18 +199,17 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				return existingSSCC18Count;
 			}
 
-			return desadvDAO.retrieveDesadvLineSSCCsCount(_desadvLine);
+			return desadvDAO.retrieveDesadvLinePackRecordsCount(_desadvLine);
 		}
 
-		Supplier<List<I_EDI_DesadvLine_SSCC>> getExistingSSCC18s()
+		Supplier<List<I_EDI_DesadvLine_Pack>> getExistingSSCC18s()
 		{
-			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_SSCC>>()
+			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_Pack>>()
 			{
-
 				@Override
-				public List<I_EDI_DesadvLine_SSCC> get()
+				public List<I_EDI_DesadvLine_Pack> get()
 				{
-					return desadvDAO.retrieveDesadvLineSSCCs(_desadvLine);
+					return desadvDAO.retrieveDesadvLinePacks(_desadvLine);
 				}
 			});
 		}
@@ -226,7 +226,6 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			{
 				return requiredSSCC18Count;
 			}
-
 			return getHUQtysCalculator().getAvailableLUs();
 		}
 
@@ -266,8 +265,10 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			TotalQtyCUBreakdownCalculator.Builder builder = TotalQtyCUBreakdownCalculator.builder();
 
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.convertQtyToLUTUConfigurationUOM(
-					shipmentSchedule.getQtyOrdered(), shipmentSchedule.getC_UOM(),
+					Quantity.of(shipmentSchedule.getQtyOrdered(),
+							Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID())),
 					lutuConfiguration);
+
 			builder.setQtyCUsTotal(qtyCUsTotal.getQty());
 
 			final BigDecimal qtyTUsTotal = shipmentSchedule.getQtyOrdered_TU();
