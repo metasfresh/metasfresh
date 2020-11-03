@@ -1,10 +1,8 @@
-package de.metas.currency;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,9 @@ package de.metas.currency;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.currency;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
@@ -41,17 +42,16 @@ import lombok.NonNull;
  * Currency conversion services.
  *
  * @author tsa
- *
  */
 public interface ICurrencyBL extends ISingletonService
 {
-	CurrencyConversionContext createCurrencyConversionContext(
+	@NonNull CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable LocalDate convDate,
 			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
-	CurrencyConversionContext createCurrencyConversionContext(
+	@NonNull CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable LocalDate convDate,
 			@Nullable ConversionTypeMethod conversionType,
 			@NonNull ClientId clientId,
@@ -75,13 +75,13 @@ public interface ICurrencyBL extends ISingletonService
 	/**
 	 * Convert an amount to base Currency
 	 *
-	 * @param ctx context
-	 * @param currencyFromId The C_Currency_ID FROM
-	 * @param ConvDate conversion date - if null - use current date
+	 * @param ctx                 context
+	 * @param currencyFromId      The C_Currency_ID FROM
+	 * @param ConvDate            conversion date - if null - use current date
 	 * @param C_ConversionType_ID conversion rate type - if 0 - use Default
-	 * @param amt amount to be converted
-	 * @param AD_Client_ID client
-	 * @param AD_Org_ID organization
+	 * @param amt                 amount to be converted
+	 * @param AD_Client_ID        client
+	 * @param AD_Org_ID           organization
 	 * @return converted amount
 	 */
 	@Deprecated
@@ -96,13 +96,13 @@ public interface ICurrencyBL extends ISingletonService
 	/**
 	 * Convert an amount
 	 *
-	 * @param currencyFromId The C_Currency_ID FROM
-	 * @param currencyToId The C_Currency_ID TO
-	 * @param ConvDate conversion date - if null - use current date
+	 * @param currencyFromId      The C_Currency_ID FROM
+	 * @param currencyToId        The C_Currency_ID TO
+	 * @param ConvDate            conversion date - if null - use current date
 	 * @param C_ConversionType_ID conversion rate type - if 0 - use Default
-	 * @param amt amount to be converted
-	 * @param AD_Client_ID client
-	 * @param AD_Org_ID organization
+	 * @param amt                 amount to be converted
+	 * @param AD_Client_ID        client
+	 * @param AD_Org_ID           organization
 	 * @return converted amount or null if no rate
 	 */
 	@Deprecated
@@ -119,10 +119,10 @@ public interface ICurrencyBL extends ISingletonService
 	 * Convert an amount with today's default rate
 	 *
 	 * @param currencyFromId The C_Currency_ID FROM
-	 * @param currencyToId The C_Currency_ID TO
-	 * @param amt amount to be converted
-	 * @param AD_Client_ID client
-	 * @param AD_Org_ID organization
+	 * @param currencyToId   The C_Currency_ID TO
+	 * @param amt            amount to be converted
+	 * @param AD_Client_ID   client
+	 * @param AD_Org_ID      organization
 	 * @return converted amount
 	 */
 	@Deprecated
@@ -164,12 +164,8 @@ public interface ICurrencyBL extends ISingletonService
 			CurrencyId currencyToId);
 
 	/**
-	 *
-	 * @param conversionCtx
-	 * @param currencyFromId
-	 * @param currencyToId
-	 * @return currency rate; never returns null
-	 * @throws NoCurrencyRateFoundException
+	 * @throws NoCurrencyRateFoundException if none found
 	 */
+	@NonNull
 	CurrencyRate getCurrencyRate(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

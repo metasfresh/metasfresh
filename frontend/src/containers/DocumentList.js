@@ -6,11 +6,7 @@ import currentDevice from 'current-device';
 import { get } from 'lodash';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
-import {
-  locationSearchRequest,
-  deleteStaticFilter,
-  getViewRowsByIds,
-} from '../api';
+import { locationSearchRequest, getViewRowsByIds } from '../api';
 import { getTableId } from '../reducers/tables';
 
 import {
@@ -24,22 +20,23 @@ import {
   resetView,
   deleteView,
   showIncludedView,
+  setIncludedView,
+  unsetIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
   updateTableSelection,
   updateGridTableData,
-  deselectTableItems,
+  deselectTableRows,
 } from '../actions/TableActions';
-import { clearAllFilters } from '../actions/FiltersActions';
+import { filtersActiveContains } from '../actions/FiltersActions';
 import {
-  closeListIncludedView,
-  setListIncludedView,
   setListId,
   setPagination as setListPagination,
   setSorting as setListSorting,
 } from '../actions/ListActions';
 import { updateRawModal, indicatorState } from '../actions/WindowActions';
+import { setBreadcrumb } from '../actions/MenuActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 
 import {
@@ -47,13 +44,13 @@ import {
   DLmapStateToProps,
   GEO_PANEL_STATES,
   getSortingQuery,
-  filtersToMap,
   mergeColumnInfosIntoViewRows,
   mergeRows,
   parseToDisplay,
 } from '../utils/documentListHelper';
 
 import DocumentList from '../components/app/DocumentList';
+import deepUnfreeze from 'deep-unfreeze';
 
 class DocumentListContainer extends Component {
   constructor(props) {
@@ -110,28 +107,22 @@ class DocumentListContainer extends Component {
       windowId,
       refDocumentId,
       referenceId,
-      closeListIncludedView,
+      unsetIncludedView,
       viewId,
       resetView,
       deleteView,
-      clearAllFilters,
       deleteTable,
       isModal,
       updateUri,
       page,
       sort,
+      filter,
     } = this.props;
-    const { staticFilterCleared } = this.state;
+    const staticFilterCleared = filter ? filter.staticFilterCleared : false;
 
     const included =
-      includedView && includedView.windowType && includedView.viewId;
+      includedView && includedView.windowId && includedView.viewId;
     const location = document.location;
-
-    if (nextProps.filters.clearAll) {
-      this.setState({ filtersActive: iMap() }, () => {
-        clearAllFilters(false);
-      });
-    }
 
     /*
      * This is a fix for the case when user selects the link to the current
@@ -184,14 +175,13 @@ class DocumentListContainer extends Component {
         {
           filtersActive: iMap(),
           initialValuesNulled: iMap(),
-          staticFilterCleared: false,
           panelsState: GEO_PANEL_STATES[0],
         },
         () => {
           // TODO: Check if we can just call `showIncludedView` to hide
           // it in the resetView Action Creator
           if (included) {
-            closeListIncludedView(includedView);
+            unsetIncludedView(includedView);
           }
           this.fetchLayoutAndData();
         }
@@ -214,7 +204,7 @@ class DocumentListContainer extends Component {
   connectWebSocket = (customViewId) => {
     const {
       windowId,
-      deselectTableItems,
+      deselectTableRows,
       updateGridTableData,
       fetchHeaderProperties,
       isModal,
@@ -242,7 +232,7 @@ class DocumentListContainer extends Component {
             });
 
             if (removedRows.length) {
-              deselectTableItems(tableId, removedRows);
+              deselectTableRows(tableId, removedRows);
             } else {
               // TODO: Quick actions should probably be handled via redux
               this.updateQuickActions();
@@ -280,21 +270,6 @@ class DocumentListContainer extends Component {
     if (this.quickActionsComponent) {
       this.quickActionsComponent.updateActions(childSelection);
     }
-  };
-
-  /**
-   * @method clearStaticFilters
-   * @summary ToDo: Describe the method.
-   */
-  clearStaticFilters = (filterId) => {
-    const { push, windowId, viewId } = this.props;
-
-    deleteStaticFilter(windowId, viewId, filterId).then((response) => {
-      // TODO: I think this should be stored in redux too
-      this.setState({ staticFilterCleared: true }, () =>
-        push(`/window/${windowId}?viewId=${response.data.viewId}`)
-      );
-    });
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
@@ -394,13 +369,14 @@ class DocumentListContainer extends Component {
       createView,
       setModalDescription,
       isModal,
+      filters,
     } = this.props;
-    const { filtersActive } = this.state;
+    const { filtersActive } = filters;
 
     createView({
       windowId,
       viewType: type,
-      filters: filtersActive.toIndexedSeq().toArray(),
+      filters: filtersActive,
       referenceId: referenceId,
       refDocType: refType,
       refDocumentId: refDocumentId,
@@ -435,24 +411,23 @@ class DocumentListContainer extends Component {
       isIncluded,
       sort,
       viewId,
-      setListIncludedView,
+      setIncludedView,
       setModalDescription,
       filterView,
       isModal,
       updateRawModal,
+      filters,
     } = this.props;
-    const { filtersActive } = this.state;
+
+    let { filtersActive } = filters;
+    filtersActive = deepUnfreeze(filtersActive);
+
     // if we're applying filter, we should reset the page to the first one.
     // Otherwise we might get no results as there are not enough to fill more
     // than a single page.
     const page = 1;
 
-    filterView(
-      windowId,
-      viewId,
-      filtersActive.toIndexedSeq().toArray(),
-      isModal
-    )
+    filterView(windowId, viewId, filtersActive, isModal)
       .then((response) => {
         const newViewId = response.viewId;
 
@@ -463,7 +438,7 @@ class DocumentListContainer extends Component {
         }
 
         if (isIncluded) {
-          setListIncludedView({ windowType: windowId, viewId: newViewId });
+          setIncludedView({ windowId, viewId: newViewId });
         }
 
         if (isModal) {
@@ -536,10 +511,6 @@ class DocumentListContainer extends Component {
           const newState = {
             pageColumnInfosByFieldName,
           };
-
-          if (response.filters) {
-            newState.filtersActive = filtersToMap(response.filters);
-          }
 
           if (
             locationAreaSearch ||
@@ -642,18 +613,13 @@ class DocumentListContainer extends Component {
    * @method handleFilterChange
    * @summary ToDo: Describe the method.
    */
-  handleFilterChange = (activeFilters) => {
-    const locationSearchFilter = activeFilters.has(LOCATION_SEARCH_NAME);
+  handleFilterChange = (filtersActive) => {
+    const locationSearchFilter = filtersActiveContains({
+      filtersActive,
+      key: LOCATION_SEARCH_NAME,
+    });
 
-    // TODO: filters should be kept in the redux state
-    this.setState(
-      {
-        filtersActive: activeFilters,
-      },
-      () => {
-        this.fetchLayoutAndData(true, locationSearchFilter);
-      }
-    );
+    this.fetchLayoutAndData(true, locationSearchFilter);
   };
 
   /**
@@ -752,7 +718,7 @@ class DocumentListContainer extends Component {
             id: identifier,
             showIncludedView: item.supportIncludedViews,
             windowId: item.supportIncludedViews
-              ? item.includedView.windowType || item.includedView.windowId
+              ? item.includedView.windowId || item.includedView.windowId
               : null,
             viewId: item.supportIncludedViews ? item.includedView.viewId : '',
             isModal,
@@ -774,7 +740,7 @@ class DocumentListContainer extends Component {
       layout &&
       layout.includedView &&
       includedView &&
-      includedView.windowType &&
+      includedView.windowId &&
       includedView.viewId;
     const triggerSpinner = layout.supportAttributes
       ? layoutPending
@@ -796,7 +762,6 @@ class DocumentListContainer extends Component {
         onFilterChange={this.handleFilterChange}
         onRedirectToDocument={this.redirectToDocument}
         onRedirectToNewDocument={this.onRedirectToNewDocument}
-        onClearStaticFilters={this.clearStaticFilters}
         onResetInitialFilters={this.resetInitialFilters}
         onUpdateQuickActions={this.updateQuickActions}
         setQuickActionsComponentRef={this.setQuickActionsComponentRef}
@@ -822,8 +787,8 @@ export default connect(
     filterView,
     deleteTable,
     indicatorState,
-    closeListIncludedView,
-    setListIncludedView,
+    unsetIncludedView,
+    setIncludedView,
     setListPagination,
     setListSorting,
     setListId,
@@ -831,11 +796,11 @@ export default connect(
     push,
     updateRawModal,
     updateTableSelection,
-    deselectTableItems,
+    deselectTableRows,
     fetchLocationConfig,
-    clearAllFilters,
     updateGridTableData,
     fetchHeaderProperties,
+    setBreadcrumb,
   },
   null,
   { forwardRef: true }

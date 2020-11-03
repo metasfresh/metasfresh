@@ -383,7 +383,8 @@ class Modal extends Component {
 
           this.removeModal();
         } catch (error) {
-          throw error;
+          // eslint-disable-next-line no-console
+          console.error('Modal.handleStart error: ', error);
         } finally {
           if (this.mounted) {
             // prevent a memory leak

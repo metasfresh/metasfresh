@@ -192,14 +192,9 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Create M_Packages
-			final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
-					.inOutId(request.getShipmentId())
-					.shipperId(shipperId)
-					.processed(request.isProcessed())
-					.trackingCodes(request.getTrackingNumbers())
-					.build();
+			final List<CreatePackagesRequest> createPackagesRequestList = buildCreatePackageRequest(shipperId, request);
 
-			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequest);
+			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequestList);
 			result.addAll(mPackages);
 
 			//
@@ -371,7 +366,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 		final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.builder()
 				.shipment(InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class))
-				.trackingNumbers(req.getTrackingCodes())
+				.packageInfos(req.getPackageInfos())
 				.processed(true)// mark the M_Package records as processed
 				.build();
 
@@ -387,5 +382,34 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final BPartnerLocationId warehouseBPLocationId = BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
 		final BPartnerLocationInfo warehouseBPLocationInfo = bPartnerLocationInfoRepository.getByBPartnerLocationId(warehouseBPLocationId);
 		return warehouseBPLocationInfo;
+	}
+
+	@NonNull
+	private List<CreatePackagesRequest> buildCreatePackageRequest(@NonNull final ShipperId shipperId, @NonNull final CreatePackagesForInOutRequest request)
+	{
+		if (Check.isEmpty(request.getPackageInfos()))
+		{
+			final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
+					.inOutId(request.getShipmentId())
+					.shipperId(shipperId)
+					.processed(request.isProcessed())
+					.build();
+
+			return ImmutableList.of(createPackagesRequest);
+		}
+
+		return request.getPackageInfos()
+				.stream()
+				.map(packageInfo ->  CreatePackagesRequest.builder()
+						.inOutId(request.getShipmentId())
+						.shipperId(shipperId)
+						.processed(request.isProcessed())
+						//
+						.trackingCode(packageInfo.getTrackingNumber())
+						.weight(packageInfo.getWeight())
+						.trackingURL(packageInfo.getTrackingUrl())
+						.build()
+				)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

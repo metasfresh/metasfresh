@@ -3,10 +3,101 @@
  */
 package de.metas.handlingunits.receiptschedule.impl;
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_InOut;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
+import de.metas.handlingunits.report.HUReportExecutor;
+import de.metas.handlingunits.report.HUReportService;
+import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.api.IInOutCandidateBL;
+import de.metas.inoutcandidate.api.IInOutProducer;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
+import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.process.AdProcessId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.exceptions.DBForeignKeyConstraintException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.awt.image.BufferedImage;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import static org.adempiere.model.InterfaceWrapperHelper.createList;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.awt.image.BufferedImage;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -30,90 +121,14 @@ import java.awt.image.BufferedImage;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
-import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
-import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
-import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.handlingunits.model.I_M_InOut;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
-import de.metas.handlingunits.report.HUReportExecutor;
-import de.metas.handlingunits.report.HUReportService;
-import de.metas.handlingunits.report.HUToReport;
-import de.metas.handlingunits.report.HUToReportWrapper;
-import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.api.IInOutCandidateBL;
-import de.metas.inoutcandidate.api.IInOutProducer;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
-import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
+
+	private final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private static final transient Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 
@@ -172,7 +187,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		Services.get(ITrxManager.class).run(trxName, (TrxRunnable)localTrxName -> {
 			final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.get(0));
-			final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(context);
+			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 
 			Services.get(IHUTrxBL.class)
 					.createHUContextProcessorExecutor(huContext)
@@ -299,7 +314,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 */
 	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
 	{
-		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds();
+		final List<I_M_ReceiptSchedule> receiptSchedules = createList(parameters.getReceiptSchedules(), I_M_ReceiptSchedule.class);
+
+		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds() != null
+				? parameters.getSelectedHuIds()
+				: retrieveAllocatedHuIds(receiptSchedules); //if no selectedHuIds were provided, load all the HUs allocated to the target receipt schedules
+
 		validateHuIds(selectedHuIds);
 
 		// Iterate all selected receipt schedules, get assigned HUs and adjust their Product Storage Qty to WeightNet
@@ -307,8 +327,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		{
 			final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(parameters.getCtx(), ITrx.TRXNAME_ThreadInherited);
 			huWeightNetAdjuster.setInScopeHU_IDs(selectedHuIds);
-
-			final List<I_M_ReceiptSchedule> receiptSchedules = createList(parameters.getReceiptSchedules(), I_M_ReceiptSchedule.class);
 			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
 			{
 				// Adjust HU's product storages to their Weight Net Attribute
@@ -329,6 +347,11 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	private void validateHuIds(@NonNull final Set<HuId> huIds)
 	{
+		if (huIds.isEmpty())
+		{
+			throw new HUException("@NoSelection@ @M_HU_ID@");
+		}
+
 		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(SpringContextHolder.instance.getBeansOfType(IHUToReceiveValidator.class));
 
 		for (final HuId huId : huIds)
@@ -340,11 +363,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			}
 
 			huToReceiveValidator.assertValidForReceiving(huRecord);
-		}
-		//
-		if (huIds.isEmpty())
-		{
-			throw new HUException("@NoSelection@ @M_HU_ID@");
 		}
 	}
 
@@ -581,6 +599,69 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		archive.setIsReport(false);
 		archiveStorage.setBinaryData(archive, imagePDFBytes);
 		InterfaceWrapperHelper.save(archive);
+	}
+
+	/**
+	 * Generate it's LU-TU structure automatically
+	 */
+	public void generateHUsIfNeeded(final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		// Skip Receipt schedules which are about Packing Materials
+		if (receiptSchedule.isPackagingMaterial())
+		{
+			return;
+		}
+
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
+		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
+		if (!allocsAll.isEmpty())
+		{
+			loggable.addLog("M_ReceiptSchedule_ID={} - already has HUs assinged to it; not creating HUs", receiptSchedule.getM_ReceiptSchedule_ID());
+		}
+
+		try
+		{
+			loggable.addLog("M_ReceiptSchedule_ID={} - creating HUs and allocating HUs on the fly", receiptSchedule.getM_ReceiptSchedule_ID());
+
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID());
+
+			final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContextForProcessing(context, clientAndOrgId);
+
+			final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial);
+
+			huGenerator.addM_ReceiptSchedule(receiptSchedule);
+
+			final I_M_HU_LUTU_Configuration lutuConfig = createLUTUConfigurationManager(receiptSchedule)
+					.getCreateLUTUConfiguration();
+
+			save(lutuConfig);
+			huGenerator.setM_HU_LUTU_Configuration(lutuConfig);
+
+			final BigDecimal qtyToAllocate = receiptScheduleBL.getQtyOrdered(receiptSchedule);
+
+			huGenerator
+					.setQtyToAllocateTarget(Quantity.of(qtyToAllocate, loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class)))
+					.generateWithinInheritedTransaction();
+		}
+		catch (final DBForeignKeyConstraintException e)
+		{
+			// task 09016: this case happens from time to time (aprox. 90 times in the first 6 months), if the M_ReceiptsSchedule is deleted due to an order reactivation
+			// don't rethrow the exception;
+			final String msg = "Detected a FK constraint violation; We assume that everything was rolled back, but we do not let the processing fail. Check the java comments for details";
+			Loggables.withLogger(logger, Level.WARN).addLog(msg);
+		}
+	}
+
+	private Set<HuId> retrieveAllocatedHuIds(@NonNull final List<I_M_ReceiptSchedule> receiptSchedules)
+	{
+		return receiptSchedules.stream()
+				.map(receiptSchedule -> huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited))
+				.flatMap(Collection::stream)
+				.flatMap(allocation -> Stream.of(allocation.getVHU_ID(), allocation.getM_TU_HU_ID(), allocation.getM_LU_HU_ID()))
+				.filter(huId -> huId > 0)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

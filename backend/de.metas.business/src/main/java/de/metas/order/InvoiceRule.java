@@ -45,7 +45,7 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 	@Getter
 	private final String code;
 
-	private InvoiceRule(@NonNull final String code)
+	InvoiceRule(@NonNull final String code)
 	{
 		this.code = code;
 	}

@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCOLCandType;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
@@ -40,6 +41,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+
+import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
 
 @Component
 public class EcosioOrdersRoute
@@ -62,6 +65,7 @@ public class EcosioOrdersRoute
 
 		final String adClientValue = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_ADClientValue);
 		final String userEnteredById = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_ADUserEnteredByID);
+		final String dataDestinationInternalName = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_ADInputDataDestination_InternalName);
 
 		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_ORDERS_REMOTE, "");
 		if (!Util.isEmpty(remoteEndpoint))
@@ -87,8 +91,12 @@ public class EcosioOrdersRoute
 					olCandXML.setVersionAttr("*");
 					olCandXML.setTrxNameAttr(exchange.getIn().getHeader(Exchange.FILE_NAME, String.class));
 
-					olCandXML.setADInputDataSourceID(new BigInteger("540215"));
+					olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 					olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
+
+					final EDIImpADInputDataSourceLookupINType dataDestinationLookup = resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
+							Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
+					olCandXML.setADDataDestinationID(dataDestinationLookup);
 				})
 				.marshal(dataFormat)
 

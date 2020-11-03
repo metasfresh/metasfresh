@@ -1,7 +1,9 @@
 import update from 'immutability-helper';
 import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
+import { createCachedSelector } from 're-reselect';
 import merge from 'merge';
+import { get } from 'lodash';
 
 import {
   ACTIVATE_TAB,
@@ -46,34 +48,56 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
+  UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
+
+import { updateTab } from '../utils';
+
+const initialMasterState = {
+  layout: {
+    activeTab: null,
+  },
+  data: [],
+  saveStatus: {},
+  validStatus: {},
+  includedTabsInfo: {},
+  hasComments: false,
+  docId: undefined,
+  websocket: null,
+  topActions: {
+    actions: [],
+    fetching: false,
+    error: false,
+  },
+};
+const initialModalState = {
+  visible: false,
+  type: '',
+  dataId: null,
+  tabId: null,
+  rowId: null,
+  viewId: null,
+  layout: {},
+  data: {},
+  modalTitle: '',
+  modalType: '',
+  isAdvanced: false,
+  viewDocumentIds: [],
+  childViewId: null,
+  childViewSelectedIds: [],
+  parentViewId: null,
+  triggerField: null,
+  saveStatus: {},
+  validStatus: {},
+  includedTabsInfo: {},
+  staticModalType: '',
+};
 
 export const initialState = {
   connectionError: false,
 
   // TODO: this should be moved to a separate `modalHandler`
-  modal: {
-    visible: false,
-    type: '',
-    dataId: null,
-    tabId: null,
-    rowId: null,
-    viewId: null,
-    layout: {},
-    data: {},
-    modalTitle: '',
-    modalType: '',
-    isAdvanced: false,
-    viewDocumentIds: [],
-    childViewId: null,
-    childViewSelectedIds: [],
-    parentViewId: null,
-    triggerField: null,
-    saveStatus: {},
-    validStatus: {},
-    includedTabsInfo: {},
-    staticModalType: '',
-  },
+  modal: initialModalState,
   overlay: {
     visible: false,
     data: null,
@@ -94,23 +118,7 @@ export const initialState = {
   },
 
   // this only feeds data to details view now
-  master: {
-    layout: {
-      activeTab: null,
-    },
-    data: [],
-    saveStatus: {},
-    validStatus: {},
-    includedTabsInfo: {},
-    hasComments: false,
-    docId: undefined,
-    websocket: null,
-    topActions: {
-      actions: [],
-      fetching: false,
-      error: false,
-    },
-  },
+  master: initialMasterState,
 
   quickActions: {},
   indicator: 'saved',
@@ -137,6 +145,136 @@ const getQuickactionsData = (state, { windowType, viewId }) => {
 export const getQuickactions = createSelector(
   [getQuickactionsData],
   (actions) => actions
+);
+
+/**
+ * @method getData
+ * @summary getter for master data
+ *
+ * @param {object} state - redux state
+ */
+export const getData = (state, isModal = false) => {
+  const selector = isModal ? 'modal' : 'master';
+
+  return state.windowHandler[selector].data;
+};
+
+const getElementLayout = (state, isModal, layoutPath) => {
+  const selector = isModal ? 'modal' : 'master';
+  const layout = state.windowHandler[selector].layout;
+  const [
+    sectionIdx,
+    columnIdx,
+    elGroupIdx,
+    elLineIdx,
+    elIdx,
+  ] = layoutPath.split('_');
+
+  return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
+    elGroupIdx
+  ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+const getProcessLayout = (state, isModal, elementIndex) =>
+  state.windowHandler.modal.layout.elements[elementIndex];
+
+/**
+ * @method selectWidgetData
+ * @summary map layout fields to widgets. If field doesn't exist in data
+ * just return an empty object (might be it's not initialized yet, but it
+ * exists in the layout)
+ *
+ * @param {object} data
+ * @param {object} layout
+ */
+const selectWidgetData = (data, layout) => {
+  let widgetData = null;
+
+  widgetData = layout.fields.reduce((result, item) => {
+    const values = get(data, [`${item.field}`], {});
+    result.push(values);
+
+    return result;
+  }, []);
+
+  if (!widgetData.length) {
+    widgetData = [{}];
+  }
+
+  return widgetData;
+};
+
+/**
+ * @method getElementWidgetData
+ * @summary cached selector for picking widget data for a desired element
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getElementWidgetData = createCachedSelector(
+  getData,
+  getElementLayout,
+  (data, layout) => selectWidgetData(data, layout)
+)((_state_, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getElementWidgetFields
+ * @summary cached selector for picking fields of a layout section
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getElementWidgetFields = createCachedSelector(
+  getElementLayout,
+  (layout) => layout.fields
+)((_state, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getProcessWidgetData
+ * @summary cached selector for picking widget data for a desired element in process
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getProcessWidgetData = createCachedSelector(
+  getData,
+  getProcessLayout,
+  (data, layout) => selectWidgetData(data, layout)
+)((_state_, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getProcessWidgetFields
+ * @summary cached selector for picking fields of process's elements
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getProcessWidgetFields = createCachedSelector(
+  getProcessLayout,
+  (layout) => layout.fields
+)((_state, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getMasterDocStatus
+ * @summary selector for geting master document status
+ *
+ * @param {object} state - redux state
+ */
+export const getMasterDocStatus = createSelector(
+  getData,
+  (data) => {
+    return [
+      {
+        status: data.DocStatus || null,
+        action: data.DocAction || null,
+        displayed: true,
+      },
+    ];
+  }
 );
 
 export default function windowHandler(state = initialState, action) {
@@ -317,11 +455,8 @@ export default function windowHandler(state = initialState, action) {
     case CLEAR_MASTER_DATA:
       return {
         ...state,
-        master: {
-          ...state.master,
-          data: {},
-          docId: undefined,
-        },
+        master: initialMasterState,
+        modal: initialModalState,
       };
     case SORT_TAB:
       return Object.assign({}, state, {
@@ -342,6 +477,18 @@ export default function windowHandler(state = initialState, action) {
           }),
         }),
       });
+    case UPDATE_TAB_LAYOUT: {
+      const { tabId, layoutData } = action.payload;
+      const updated = updateTab(state.master.layout.tabs, tabId, layoutData);
+
+      return update(state, {
+        master: {
+          layout: {
+            tabs: { $set: updated },
+          },
+        },
+      });
+    }
     case ACTIVATE_TAB:
       return update(state, {
         [action.scope]: {

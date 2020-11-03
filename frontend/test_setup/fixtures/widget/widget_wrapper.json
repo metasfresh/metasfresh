@@ -1,0 +1,173 @@
+{
+  "props1": {
+    "caption": "",
+    "dataId": "1003353",
+    "dataSource": "doc-status",
+    "description": "",
+    "docId": "1003353",
+    "entity": "window",
+    "timeZone": "Europe/Berlin",
+    "modalVisible": false,
+    "fields": [
+      {
+        "caption": "Document Status",
+        "clearValueText": "none",
+        "emptyText": "none",
+        "field": "DocStatus",
+        "lookupSearchStartDelayMillis": 500,
+        "lookupSearchStringMinLength": -1,
+        "source": "list",
+        "type": "ActionButtonStatus"
+      },
+      {
+        "caption": "Process Order",
+        "clearValueText": "none",
+        "emptyText": "none",
+        "field": "DocAction",
+        "lookupSearchStartDelayMillis": 500,
+        "lookupSearchStringMinLength": -1,
+        "source": "list",
+        "type": "ActionButton"
+      }
+    ],
+    "noLabel": true,
+    "renderMaster": true,
+    "type": "primary",
+    "widgetType": "ActionButton",
+    "windowId": "143"
+  },
+  "widgetData1": [
+    {
+      "status": {
+        "field": "DocStatus",
+        "value": {
+          "key": "IP",
+          "caption": "In Progress"
+        },
+        "readonly": true,
+        "mandatory": true,
+        "displayed": true,
+        "lookupValuesStale": true,
+        "widgetType": "List",
+        "validStatus": {
+          "valid": true,
+          "initialValue": true,
+          "fieldName": "DocStatus"
+        },
+        "viewEditorRenderMode": "never"
+      },
+      "action": {
+        "field": "DocAction",
+        "value": {
+          "key": "CO",
+          "caption": "Complete",
+          "description": "Generate documents and complete transaction"
+        },
+        "readonly": false,
+        "mandatory": true,
+        "displayed": true,
+        "lookupValuesStale": true,
+        "widgetType": "Button",
+        "validStatus": {
+          "valid": true,
+          "initialValue": true,
+          "fieldName": "DocAction"
+        },
+        "viewEditorRenderMode": "always"
+      },
+      "displayed": true
+    }
+  ],
+  "props2": {
+    "renderMaster": true,
+    "dataSource": "element",
+    "layoutId": "0_0_0_3_0",
+    "entity": "window",
+    "windowId": "143",
+    "dataId": "1003353",
+    "isModal": false,
+    "tabIndex": 1,
+    "autoFocus": false,
+    "fullScreen": null,
+    "fieldName": "IsDropShip",
+    "caption": "Drop Shipment",
+    "description": "Drop Shipments are sent from the Vendor directly to the Customer",
+    "widgetType": "YesNo",
+    "viewEditorRenderMode": "never",
+    "relativeDocId": 1003353,
+    "activeTab": "AD_Tab-187",
+    "modalVisible": false,
+    "timeZone": "Europe/Berlin",
+    "fields": [
+      {
+        "field": "IsDropShip",
+        "caption": "Drop Shipment",
+        "emptyText": "none",
+        "clearValueText": "none"
+      }
+    ]
+  },
+  "widgetData2": [
+    {
+      "field": "IsDropShip",
+      "value": false,
+      "readonly": false,
+      "mandatory": true,
+      "displayed": true,
+      "widgetType": "YesNo",
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "IsDropShip"
+      },
+      "viewEditorRenderMode": "always"
+    }
+  ],
+  "props3": {
+    "renderMaster": true,
+    "dataSource": "table",
+    "tableId": "540325_540325-P",
+    "caption": "List Price",
+    "description": "List Price",
+    "widgetType": "CostPrice",
+    "gridAlign": "right",
+    "viewEditorRenderMode": "on-demand",
+    "sortable": true,
+    "fields": [
+      {
+        "field": "PriceList",
+        "caption": "List Price",
+        "emptyText": "none",
+        "clearValueText": "none"
+      }
+    ],
+    "windowId": "540325",
+    "viewId": "540325-P",
+    "rowId": "540019",
+    "isOpenDatePicker": false,
+    "listenOnKeys": true,
+    "rowIndex": 0,
+    "colIndex": 6,
+    "isEditable": false,
+    "supportFieldEdit": true,
+    "entity": "documentView",
+    "clearValue": false,
+    "dateFormat": false,
+    "dataId": null,
+    "isMainTable": true,
+    "tabId": null,
+    "noLabel": true,
+    "activeTab": null,
+    "modalVisible": false,
+    "timeZone": "Europe/Berlin"
+  },
+  "widgetData3": [
+    {
+      "field": "PriceList",
+      "value": "4.00",
+      "widgetType": "CostPrice",
+      "displayed": true,
+      "readonly": false
+    }
+  ]
+}

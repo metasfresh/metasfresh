@@ -1,27 +1,28 @@
 package de.metas.material.dispo.commons.candidate;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 
 /*
  * #%L
@@ -45,9 +46,9 @@ import lombok.experimental.Wither;
  * #L%
  */
 
+@With
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
-@Wither
 public class Candidate
 {
 	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescriptor eventDescr)
@@ -64,7 +65,6 @@ public class Candidate
 
 	ClientAndOrgId clientAndOrgId;
 
-	@NonNull
 	CandidateType type;
 
 	/**
@@ -80,14 +80,18 @@ public class Candidate
 	CandidateId parentId;
 
 	/**
-	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
+	 * The different supply candidate(s) and their corresponding demand candidate(s)
+	 * that make up one business case are associated by a common group id.
+	 * Note that {@link CandidateBusinessCase#PRODUCTION} and {@link CandidateBusinessCase#DISTRIBUTION} have multiple candidates in one group,
+	 * Others like {@link CandidateBusinessCase#PURCHASE} have just one candidate in a group.
 	 */
 	MaterialDispoGroupId groupId;
 
 	int seqNo;
 
-	@NonNull
 	MaterialDescriptor materialDescriptor;
+
+	MinMaxDescriptor minMaxDescriptor;
 
 	BusinessCaseDetail businessCaseDetail;
 
@@ -105,9 +109,10 @@ public class Candidate
 			final MaterialDispoGroupId groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
+			final MinMaxDescriptor minMaxDescriptor,
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
-			@Singular final List<TransactionDetail> transactionDetails)
+			@Singular @NonNull final List<TransactionDetail> transactionDetails)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
@@ -123,7 +128,7 @@ public class Candidate
 		this.seqNo = seqNo;
 
 		this.materialDescriptor = materialDescriptor;
-
+		this.minMaxDescriptor = CoalesceUtil.coalesce(minMaxDescriptor, MinMaxDescriptor.ZERO);
 		this.businessCaseDetail = businessCaseDetail;
 		this.additionalDemandDetail = additionalDemandDetail;
 
@@ -152,12 +157,12 @@ public class Candidate
 		{
 			case DEMAND:
 			case STOCK_UP:
-			case SUPPLY:
 				Check.errorIf(
 						businessCaseDetail == null,
 						"If type={}, then the given businessCaseDetail may not be null; this={}",
 						type, this);
 				break;
+			case SUPPLY: // supply candidates can be created without businessCaseDetail if the request was made but no response from the planner came in yet
 			case INVENTORY_UP:
 			case INVENTORY_DOWN:
 				break;
@@ -183,7 +188,7 @@ public class Candidate
 					transactionDetail, this);
 		}
 
-		Check.errorIf((businessCase != null) != (businessCaseDetail != null),
+		Check.errorIf((businessCase == null) != (businessCaseDetail == null),
 				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
 				businessCase, businessCaseDetail, this);
 
@@ -198,14 +203,6 @@ public class Candidate
 	public OrgId getOrgId()
 	{
 		return getClientAndOrgId().getOrgId();
-	}
-
-	/**
-	 * @param addedQuantity may also be negative, in case of subtraction
-	 */
-	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
-	{
-		return withQuantity(getQuantity().add(addedQuantity));
 	}
 
 	public Candidate withNegatedQuantity()
@@ -233,6 +230,7 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
 	}
 
+	@Nullable
 	public MaterialDispoGroupId getEffectiveGroupId()
 	{
 		if (type == CandidateType.STOCK)

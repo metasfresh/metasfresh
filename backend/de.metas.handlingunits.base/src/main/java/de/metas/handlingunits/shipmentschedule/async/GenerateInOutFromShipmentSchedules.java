@@ -102,13 +102,13 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	}
 
 	/**
-	 * Retrieves the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
+	 * Retrieves the {@link ShipmentScheduleWithHU}s for which we will create the shipment(s).
 	 *
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
 	private final List<ShipmentScheduleWithHU> retrieveCandidates()
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = retriveShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = retrieveShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return ImmutableList.of();
@@ -121,7 +121,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse);
 	}
 
-	private List<I_M_ShipmentSchedule> retriveShipmentSchedules()
+	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
 		final boolean skipAlreadyProcessedItems = false; // yes, we want items whose queue packages were already processed! This is a workaround, but we need it that way.

@@ -28,7 +28,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -43,5 +43,11 @@ public class CreatePackagesRequest
 	boolean processed;
 
 	@Nullable
-	List<String> trackingCodes;
+	String trackingCode;
+
+	@Nullable
+	BigDecimal weight;
+
+	@Nullable
+	String trackingURL;
 }

@@ -22,14 +22,12 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryFilterModifier;
-
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilterModifier;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Filters for substrings. This filter creates SQL like <code>column LIKE '%value%'</code>.
@@ -129,12 +127,6 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 		}
 	}
 
-	/**
-	 *
-	 * @param columnName
-	 * @param substring
-	 * @param ignoreCase
-	 */
 	public StringLikeFilter(
 			@NonNull final String columnName,
 			@NonNull final String substring,

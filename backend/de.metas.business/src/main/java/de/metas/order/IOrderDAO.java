@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.util.lang.ExternalId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -49,6 +50,7 @@ public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
 
+	Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds);
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
 	 *

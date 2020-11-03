@@ -37,6 +37,7 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
+import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
@@ -52,6 +53,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
+import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -62,12 +64,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Env;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -92,37 +90,51 @@ public class ShipmentService
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
+	private final AttributeSetHelper attributeSetHelper;
 
-	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService)
+	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
+			final AttributeSetHelper attributeSetHelper)
 	{
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
+		this.attributeSetHelper = attributeSetHelper;
 	}
 
 	public InOutGenerateResult updateShipmentSchedulesAndGenerateShipments(@NonNull final JsonCreateShipmentRequest request)
 	{
-		final ShipmentSchedulesCache cache = ShipmentSchedulesCache.builder()
+		final ShippingInfoCache cache = ShippingInfoCache.builder()
 				.shipmentScheduleBL(shipmentScheduleBL)
 				.scheduleEffectiveBL(scheduleEffectiveBL)
+				.shipperDAO(shipperDAO)
 				.build();
+
 		cache.warmUpForShipmentScheduleIds(extractShipmentScheduleIds(request));
+		cache.warmUpForShipperInternalNames(extractShippersInternalName(request));
 
 		validateRequest(request, cache);
 		updateShipmentSchedules(request.getCreateShipmentInfoList(), cache);
 
-		return generateShipments(toGenerateShipmentsRequest(request));
+		return generateShipments(toGenerateShipmentsRequest(request, cache));
 	}
 
 	private ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final JsonCreateShipmentRequest request)
 	{
 		return request.getCreateShipmentInfoList()
 				.stream()
-				.map(createShipmentInfo -> extractShipmentScheduleId(createShipmentInfo))
+				.map(ShipmentService::extractShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private ImmutableSet<String> extractShippersInternalName(@NonNull final JsonCreateShipmentRequest request)
+	{
+		return request.getCreateShipmentInfoList()
+				.stream()
+				.map(JsonCreateShipmentInfo::getShipperInternalName)
+				.filter(Check::isNotBlank)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -133,7 +145,7 @@ public class ShipmentService
 
 	private void validateRequest(
 			@NonNull final JsonCreateShipmentRequest request,
-			@NonNull final ShipmentSchedulesCache cache)
+			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		if (Check.isEmpty(request.getCreateShipmentInfoList()))
 		{
@@ -145,7 +157,7 @@ public class ShipmentService
 
 	private void validateJsonCreateShipmentInfo(
 			@NonNull final JsonCreateShipmentInfo createShipmentInfo,
-			@NonNull final ShipmentSchedulesCache cache)
+			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		final ShipmentScheduleId shipmentScheduleId = extractShipmentScheduleId(createShipmentInfo);
 
@@ -156,27 +168,33 @@ public class ShipmentService
 		{
 			throw new AdempiereException("M_ShipmentSchedule was already processed!")
 					.appendParametersToMessage()
-					.setParameter("M_ShipmentSchedule", shipmentSchedule);
+					.setParameter("M_ShipmentSchedule_ID", shipmentSchedule.getM_ShipmentSchedule_ID());
 		}
 
 		if (Check.isNotBlank(createShipmentInfo.getProductSearchKey()))
 		{
-			final ProductId incomingProductId = productDAO.retrieveProductIdByValue(createShipmentInfo.getProductSearchKey());
+			final ProductQuery query = ProductQuery.builder().value(createShipmentInfo.getProductSearchKey())
+					.orgId(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()))
+					.includeAnyOrg(true) // include articles with org=*
+					.build();
+			final ProductId incomingProductId = productDAO.retrieveProductIdBy(query);
 
 			if (incomingProductId == null || incomingProductId.getRepoId() != shipmentSchedule.getM_Product_ID())
 			{
-				throw new AdempiereException("Invalid productSearchKey!")
+				throw new AdempiereException("Inconsistent productSearchKey!")
 						.appendParametersToMessage()
-						.setParameter("productSearchKey", createShipmentInfo.getProductSearchKey())
-						.setParameter("corresponding productId", incomingProductId)
-						.setParameter("shipmentSchedule.M_Product_ID", shipmentSchedule.getM_Product_ID());
+						.setParameter("M_ShipmentSchedule_ID", shipmentSchedule.getM_ShipmentSchedule_ID())
+						.setParameter("AD_Org_ID", shipmentSchedule.getAD_Org_ID())
+						.setParameter("jsonCreateShipmentInfo.productSearchKey", createShipmentInfo.getProductSearchKey())
+						.setParameter("productSearchKey belongs to M_Product_ID", ProductId.toRepoId(incomingProductId))
+						.setParameter("M_ShipmentSchedule.M_Product_ID", shipmentSchedule.getM_Product_ID());
 			}
 		}
 	}
 
 	private void updateShipmentSchedules(
 			@NonNull final List<JsonCreateShipmentInfo> createShipmentInfos,
-			@NonNull final ShipmentSchedulesCache cache)
+			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		for (final JsonCreateShipmentInfo createShipmentInfo : createShipmentInfos)
 		{
@@ -193,14 +211,14 @@ public class ShipmentService
 
 	private void updateShipmentSchedule(
 			@NonNull final UpdateShipmentScheduleRequest request,
-			@NonNull final ShipmentSchedulesCache cache)
+			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		shipmentScheduleBL.applyShipmentScheduleChanges(toApplyShipmentScheduleChangesRequest(request, cache));
 	}
 
 	private ApplyShipmentScheduleChangesRequest toApplyShipmentScheduleChangesRequest(
 			@NonNull final UpdateShipmentScheduleRequest request,
-			@NonNull final ShipmentSchedulesCache cache)
+			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		return ApplyShipmentScheduleChangesRequest.builder()
 				.shipmentScheduleId(request.getShipmentScheduleId())
@@ -209,12 +227,14 @@ public class ShipmentService
 				.deliveryRule(request.getDeliveryRule())
 				.attributes(request.getAttributes())
 				.bPartnerLocationIdOverride(extractBPartnerLocationId(request, cache).orElse(null))
+				.shipperId(request.getShipperId())
+				.doNotInvalidateOnChange(true) // don't invalidate it; we don't want the update processor to interfere with us creating the shipment
 				.build();
 	}
 
 	private Optional<BPartnerLocationId> extractBPartnerLocationId(
 			@NonNull final UpdateShipmentScheduleRequest request,
-			@NonNull final ShipmentSchedulesCache cache)
+			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		if (request.getBPartnerLocation() != null)
 		{
@@ -231,9 +251,10 @@ public class ShipmentService
 		}
 	}
 
+	@Nullable
 	private UpdateShipmentScheduleRequest toUpdateShipmentScheduleRequestOrNull(
 			@NonNull final JsonCreateShipmentInfo createShipmentInfo,
-			@NonNull final ShipmentSchedulesCache cache)
+			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		final LocalDateTime deliveryDate = createShipmentInfo.getMovementDate();
 		final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
@@ -242,13 +263,15 @@ public class ShipmentService
 		final String bpartnerCode = createShipmentInfo.getBusinessPartnerSearchKey();
 		final List<JsonAttributeInstance> attributes = createShipmentInfo.getAttributes();
 		final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(createShipmentInfo.getDeliveryRule());
+		final ShipperId shipperId = cache.getShipperId(createShipmentInfo.getShipperInternalName());
 
 		if (deliveryDate == null
 				&& qtyToDeliverInStockingUOM == null
 				&& bPartnerLocation == null
 				&& Check.isBlank(bpartnerCode)
 				&& Check.isEmpty(attributes)
-				&& deliveryRule == null)
+				&& deliveryRule == null
+		        && shipperId == null)
 		{
 			return null;
 		}
@@ -259,7 +282,7 @@ public class ShipmentService
 
 		final List<CreateAttributeInstanceReq> attributeInstanceRequestList = Check.isEmpty(attributes)
 				? null
-				: toCreateAttributeInstanceReqList(attributes);
+				: attributeSetHelper.toCreateAttributeInstanceReqList(attributes);
 
 		return UpdateShipmentScheduleRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
@@ -269,10 +292,11 @@ public class ShipmentService
 				.deliveryDate(TimeUtil.asZonedDateTime(deliveryDate, timeZoneId))
 				.qtyToDeliverInStockingUOM(qtyToDeliverInStockingUOM)
 				.deliveryRule(deliveryRule)
+				.shipperId(shipperId)
 				.build();
 	}
 
-	private GenerateShipmentsRequest toGenerateShipmentsRequest(@NonNull final JsonCreateShipmentRequest request)
+	private GenerateShipmentsRequest toGenerateShipmentsRequest(@NonNull final JsonCreateShipmentRequest request, @NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfoBuilder = new ImmutableMap.Builder<>();
 
@@ -284,12 +308,12 @@ public class ShipmentService
 			shipmentScheduleIdsBuilder.add(shipmentScheduleId);
 
 			if (Check.isNotBlank(createShipmentInfo.getDocumentNo())
-					|| !Check.isEmpty(createShipmentInfo.getTrackingNumbers()))
+					|| !Check.isEmpty(createShipmentInfo.getPackages()))
 			{
 				final ShipmentScheduleExternalInfo externalInfo = ShipmentScheduleExternalInfo
 						.builder()
 						.documentNo(createShipmentInfo.getDocumentNo())
-						.trackingNumbers(createShipmentInfo.getTrackingNumbers())
+						.packageInfoList(extractPackageInfos(createShipmentInfo, cache))
 						.build();
 
 				scheduleId2ExternalInfoBuilder.put(shipmentScheduleId, externalInfo);
@@ -300,12 +324,6 @@ public class ShipmentService
 				.scheduleIds(shipmentScheduleIdsBuilder.build())
 				.scheduleToExternalInfo(scheduleId2ExternalInfoBuilder.build())
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
-
-		final Optional<ShipperId> shipperId = Check.isNotBlank(request.getShipperCode())
-				? shipperDAO.getShipperIdByValue(request.getShipperCode(), Env.getOrgId())
-				: Optional.empty();
-
-		shipperId.map(generateShipmentsRequestBuilder::shipperId);
 
 		return generateShipmentsRequestBuilder.build();
 	}
@@ -322,7 +340,6 @@ public class ShipmentService
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(true)
 				.setScheduleIdToExternalInfo(request.getScheduleToExternalInfo())
-				.setShipperId(request.getShipperId())
 				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE)
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(scheduleWithHUS);
@@ -365,57 +382,50 @@ public class ShipmentService
 		return Optional.ofNullable(bPartnerDAO.retrieveBPartnerLocationId(bPartnerLocationQuery));
 	}
 
-	private List<CreateAttributeInstanceReq> toCreateAttributeInstanceReqList(@NonNull final Collection<JsonAttributeInstance> jsonAttributeInstances)
+	@Nullable
+	private List<PackageInfo> extractPackageInfos(@NonNull final JsonCreateShipmentInfo shipmentInfo, @NonNull final ShipmentService.ShippingInfoCache cache)
 	{
-		return jsonAttributeInstances.stream()
-				.map(this::toCreateAttributeInstanceReq)
+		if (Check.isEmpty(shipmentInfo.getPackages()))
+		{
+			return null;
+		}
+
+		final String trackingURL = Check.isNotBlank(shipmentInfo.getShipperInternalName())
+				? cache.getTrackingURL(shipmentInfo.getShipperInternalName())
+				: null;
+
+		return shipmentInfo.getPackages().stream()
+				.map(jsonPackage ->
+						PackageInfo.builder()
+						.trackingNumber(jsonPackage.getTrackingCode())
+						.weight(jsonPackage.getWeight())
+						.trackingUrl(trackingURL)
+						.build()
+				)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private CreateAttributeInstanceReq toCreateAttributeInstanceReq(@NonNull final JsonAttributeInstance jsonAttributeInstance)
-	{
-		return CreateAttributeInstanceReq.builder()
-				.attributeCode(AttributeCode.ofString(jsonAttributeInstance.getAttributeCode()))
-				.value(extractAttributeValueObject(jsonAttributeInstance))
-				.build();
-	}
-
-	private Object extractAttributeValueObject(@NonNull final JsonAttributeInstance attributeInstance)
-	{
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(attributeInstance.getAttributeCode());
-		final AttributeValueType targetAttributeType = AttributeValueType.ofCode(attribute.getAttributeValueType());
-
-		switch (targetAttributeType)
-		{
-			case DATE:
-				return attributeInstance.getValueDate();
-			case NUMBER:
-				return attributeInstance.getValueNumber();
-			case STRING:
-			case LIST:
-				return attributeInstance.getValueStr();
-			default:
-				throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + targetAttributeType + ", @M_Attribute_ID@=" + attribute.getM_Attribute_ID());
-		}
-	}
-
 	//
 	//
 	//
-	private static class ShipmentSchedulesCache
+	private static class ShippingInfoCache
 	{
 		private final IShipmentScheduleBL shipmentScheduleBL;
 		private final IShipmentScheduleEffectiveBL scheduleEffectiveBL;
+		private final IShipperDAO shipperDAO;
 
 		private final HashMap<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesById = new HashMap<>();
+		private final HashMap<String, I_M_Shipper> shipperByInternalName = new HashMap<>();
 
 		@Builder
-		private ShipmentSchedulesCache(
+		private ShippingInfoCache(
 				@NonNull final IShipmentScheduleBL shipmentScheduleBL,
-				@NonNull final IShipmentScheduleEffectiveBL scheduleEffectiveBL)
+				@NonNull final IShipmentScheduleEffectiveBL scheduleEffectiveBL,
+				@NonNull final IShipperDAO shipperDAO)
 		{
 			this.shipmentScheduleBL = shipmentScheduleBL;
 			this.scheduleEffectiveBL = scheduleEffectiveBL;
+			this.shipperDAO = shipperDAO;
 		}
 
 		public void warmUpForShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
@@ -424,6 +434,14 @@ public class ShipmentService
 					shipmentSchedulesById,
 					shipmentScheduleIds,
 					shipmentScheduleBL::getByIds);
+		}
+
+		public void warmUpForShipperInternalNames(@NonNull final Collection<String> shipperInternalNameCollection)
+		{
+			CollectionUtils.getAllOrLoad(
+					shipperByInternalName,
+					shipperInternalNameCollection,
+					shipperDAO::getByInternalName);
 		}
 
 		private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -441,6 +459,37 @@ public class ShipmentService
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
 			return scheduleEffectiveBL.getBPartnerId(shipmentSchedule);
+		}
+
+		@Nullable
+		public ShipperId getShipperId(@Nullable final String shipperInternalName)
+		{
+			if(Check.isBlank(shipperInternalName))
+			{
+				return null;
+			}
+
+			final I_M_Shipper shipper = shipperByInternalName.computeIfAbsent(shipperInternalName, this::loadShipper);
+
+			return shipper != null
+					? ShipperId.ofRepoId(shipper.getM_Shipper_ID())
+					: null;
+		}
+
+		@Nullable
+		public  String getTrackingURL(@NonNull final String shipperInternalName)
+		{
+			final I_M_Shipper shipper = shipperByInternalName.computeIfAbsent(shipperInternalName, this::loadShipper);
+
+			return shipper != null
+					? shipper.getTrackingURL()
+					: null;
+		}
+
+		@Nullable
+		private I_M_Shipper loadShipper(@NonNull final String shipperInternalName)
+		{
+			return shipperDAO.getByInternalName(ImmutableSet.of(shipperInternalName)).get(shipperInternalName);
 		}
 	}
 }

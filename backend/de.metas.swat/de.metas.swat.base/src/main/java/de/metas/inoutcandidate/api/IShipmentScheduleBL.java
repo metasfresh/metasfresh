@@ -172,6 +172,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	void applyShipmentScheduleChanges(ApplyShipmentScheduleChangesRequest request);
 
+	boolean isDoNotInvalidateOnChange(@NonNull I_M_ShipmentSchedule sched);
+
 	/**
 	 * Close linked shipment schedules if they were partially invoiced
 	 * Note: This behavior is determined by the value of the sys config {@code M_ShipmentSchedule_Close_PartiallyInvoice}.
@@ -179,5 +181,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	void closePartiallyShipped_ShipmentSchedules(I_M_InOut inoutRecord);
 
-	void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched);
+	void updateExportStatus(@NonNull I_M_ShipmentSchedule schedRecord);
+
+	void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule schedRecord);
+
+	Quantity getQtyOrdered(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	Quantity getQtyDelivered(I_M_ShipmentSchedule shipmentScheduleRecord);
 }

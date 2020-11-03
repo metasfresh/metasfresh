@@ -523,6 +523,17 @@ public final class StringUtils
 		return string + suffix;
 	}
 
+	public static String prependIfNotStartingWith(
+			@NonNull final String string,
+			@NonNull final String prefix)
+	{
+		if (string.startsWith(prefix))
+		{
+			return string;
+		}
+		return prefix + string;
+	}
+
 	/**
 	 * Replace String values.
 	 *

@@ -1,0 +1,449 @@
+{
+  "layout1": {
+    "type": "540371",
+    "windowId": "540371",
+    "caption": "Kommissionierung Abschluss",
+    "description": "",
+    "emptyResultText": "Es sind noch keine Detailzeilen vorhanden.",
+    "emptyResultHint": "Du kannst sie im jeweiligen Fenster erfassen.",
+    "elements": [
+      {
+        "caption": "Code",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huCode",
+            "caption": "",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Produkt",
+        "description": "",
+        "widgetType": "Lookup",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huProduct",
+            "caption": "",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Packvorschrift",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "restrictToMediaTypes": [
+          "screen"
+        ],
+        "fields": [
+          {
+            "field": "huPackingInfo",
+            "caption": "",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Menge CU/TU",
+        "description": "",
+        "widgetType": "Quantity",
+        "size": null,
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huQtyCU",
+            "caption": "",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "PickingSlotBarcodeFilter",
+        "caption": "Scan picking slot",
+        "inlineRenderMode": "button",
+        "barcodeScannerType": "qrCode",
+        "parametersLayoutType": "singleOverlayField",
+        "parameters": [
+          {
+            "caption": "Scan picking slot",
+            "parameterName": "Barcode",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary",
+            "barcodeScannerType": "qrCode"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 0
+        },
+        "sortNo": 0
+      },
+      {
+        "filterId": "BPartner",
+        "caption": "Geschäftspartner",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Geschäftspartner",
+            "parameterName": "C_BPartner_ID",
+            "widgetType": "Lookup",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 0
+        },
+        "sortNo": 0
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": true,
+    "collapsible": false,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": {
+      "openOnSelect": true,
+      "blurWhenOpen": false
+    },
+    "supportIncludedView": true,
+    "supportIncludedViewOnSelect": true,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
+  },
+  "includedViewLayout1": {
+    "type": "packingHUs",
+    "windowId": "packingHUs",
+    "caption": "HU Editor",
+    "description": "",
+    "emptyResultText": "Es sind noch keine Detailzeilen vorhanden.",
+    "emptyResultHint": "Du kannst sie im jeweiligen Fenster erfassen.",
+    "elements": [
+      {
+        "caption": "Code",
+        "description": "",
+        "widgetType": "Text",
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "Value",
+            "caption": "",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Produkt",
+        "description": "",
+        "widgetType": "Lookup",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": false,
+        "fields": [
+          {
+            "field": "M_Product_ID",
+            "caption": "",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Menge CU/TU",
+        "description": "",
+        "widgetType": "Quantity",
+        "size": "S",
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": false,
+        "fields": [
+          {
+            "field": "QtyCU",
+            "caption": "",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "caption": "Filter",
+        "includedFilters": [
+          {
+            "filterId": "barcode",
+            "caption": "Barcode",
+            "inlineRenderMode": "button",
+            "barcodeScannerType": "qrCode",
+            "parametersLayoutType": "singleOverlayField",
+            "parameters": [
+              {
+                "caption": "Barcode",
+                "parameterName": "Barcode",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary",
+                "barcodeScannerType": "qrCode"
+              }
+            ],
+            "debugProperties": {
+              "sortNo": 0
+            },
+            "sortNo": 0
+          },
+          {
+            "filterId": "default",
+            "caption": "Standard",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Sektion",
+                "parameterName": "AD_Org_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Suchschlüssel",
+                "parameterName": "Value",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Lagerort",
+                "parameterName": "M_Locator_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Gebinde Status",
+                "parameterName": "HUStatus",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "in HU enthalten",
+                "parameterName": "IsChildHU",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "Produkt Kategorie",
+                "parameterName": "M_Product_Category_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Los-Nr.",
+                "parameterName": "Lot",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Produkt",
+                "parameterName": "M_Product_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              }
+            ],
+            "debugProperties": {
+              "sortNo": 10000
+            },
+            "sortNo": 10000
+          },
+          {
+            "filterId": "location-area-search",
+            "caption": "Umkreissuche",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Straße und Nr.",
+                "parameterName": "Address1",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "PLZ",
+                "parameterName": "Postal",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Ort",
+                "parameterName": "City",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Land",
+                "parameterName": "C_Country_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Entfernung",
+                "parameterName": "Distance",
+                "widgetType": "Integer",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Besuchsadresse",
+                "parameterName": "VisitorsAddress",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              }
+            ],
+            "debugProperties": {
+              "sortNo": 40000
+            },
+            "sortNo": 40000
+          }
+        ],
+        "debugProperties": {}
+      }
+    ],
+    "supportAttributes": true,
+    "supportTree": true,
+    "collapsible": false,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
+  }
+}

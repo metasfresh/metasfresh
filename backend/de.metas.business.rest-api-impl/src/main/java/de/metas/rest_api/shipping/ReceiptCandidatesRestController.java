@@ -22,13 +22,9 @@
 
 package de.metas.rest_api.shipping;
 
-import de.metas.Profiles;
-import de.metas.common.shipping.JsonRequestCandidateResults;
-import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +35,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
+import de.metas.Profiles;
+import de.metas.common.shipping.JsonRequestCandidateResults;
+import de.metas.common.shipping.receiptcandidate.JsonResponseReceiptCandidates;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 @RequestMapping(ReceiptCandidatesRestController.ENDPOINT)
 @RestController
@@ -61,7 +62,8 @@ public class ReceiptCandidatesRestController
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{
-		final Integer limitEff = CoalesceUtil.coalesce(limit, 500);
+		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(500);
+
 		final JsonResponseReceiptCandidates result = receiptCandidateAPIService.exportReceiptCandidates(limitEff);
 		return ResponseEntity.ok(result);
 	}

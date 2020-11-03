@@ -26,6 +26,7 @@ import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  *  Trace Information
@@ -49,12 +50,16 @@ public class Trace
 	{
 		int nestLevel = maxNestLevel;
 		if (nestLevel < 1)
+		{
 			nestLevel = 99;
+		}
 		//
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<>();
 		Throwable t = caller;
 		if (t == null)
+		{
 			t = new Throwable();
+		}
 
 		StackTraceElement[] elements = t.getStackTrace();
 		for (int i = 0; i < elements.length && list.size() <= maxNestLevel; i++)
@@ -63,7 +68,9 @@ public class Trace
 		//	System.out.println(list.size() + ": " + className);
 			if (!(className.startsWith("org.compiere.util.Trace")
 				|| className.startsWith("java.lang.Throwable")))
+			{
 				list.add(className);
+			}
 		}
 
 		String[] retValue = new String[list.size()];
@@ -80,7 +87,9 @@ public class Trace
 	{
 		String[] array = getCallerClasses (null, nestLevel);
 		if (array.length < nestLevel)
+		{
 			return "";
+		}
 		return array[nestLevel];
 	}   //  getCallerClass
 
@@ -104,14 +113,18 @@ public class Trace
 		for (int i = 1; i < elements.length; i++)
 		{
 			if (elements[i].getClassName().indexOf("util.Trace") != -1)
+			{
 				continue;
+			}
 			if (!adempiereOnly
 				|| (adempiereOnly && elements[i].getClassName().startsWith("org.compiere"))
 				)
 			{
 				log.debug(i + ": " + elements[i]);
 				if (first9only && ++counter > 8)
+				{
 					break;
+				}
 			}
 		}	
 	}   //  printStack
@@ -121,7 +134,12 @@ public class Trace
 		return toOneLineStackTraceString(new Exception().getStackTrace());
 	}
 
-	public static final String toOneLineStackTraceString(final StackTraceElement[] stacktrace)
+	public static final String toOneLineStackTraceString(@NonNull final Throwable throwable)
+	{
+		return toOneLineStackTraceString(throwable.getStackTrace());
+	}
+
+	public static final String toOneLineStackTraceString(@NonNull final StackTraceElement[] stacktrace)
 	{
 		final StringBuilder stackTraceStr = new StringBuilder();
 		int ste_Considered = 0;

@@ -25,8 +25,10 @@ class Label extends Component {
    * @summary ToDo: Describe the method
    * @todo Write the documentation
    */
-  handleRemove = () => {
-    const { onRemove, label } = this.props;
+  handleRemove = (e) => {
+    e.stopPropagation();
+    const { onRemove, label, readonly } = this.props;
+    if (readonly) return false;
 
     onRemove(label);
   };
@@ -64,6 +66,7 @@ Label.propTypes = {
   }).isRequired,
   onClick: PropTypes.func,
   onRemove: PropTypes.func,
+  readonly: PropTypes.bool,
 };
 
 Label.defaultProps = {

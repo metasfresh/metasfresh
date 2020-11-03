@@ -1,23 +1,8 @@
 package de.metas.user.api.impl;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
@@ -41,8 +26,23 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
@@ -58,7 +58,7 @@ public class UserBL implements IUserBL
 
 	private MailService mailService()
 	{
-		return Adempiere.getBean(MailService.class);
+		return SpringContextHolder.instance.getBean(MailService.class);
 	}
 
 	@Override
@@ -328,7 +328,7 @@ public class UserBL implements IUserBL
 		{
 			return false;
 		}
-	}	// isEMailValid
+	}    // isEMailValid
 
 	@Override
 	public ITranslatableString checkCanSendEMail(final UserEMailConfig userEmailConfig)
@@ -374,7 +374,10 @@ public class UserBL implements IUserBL
 			throw new AdempiereException(TranslatableStrings.builder()
 					.append("User cannot send emails: ")
 					.append(errmsg)
-					.build());
+					.build())
+					.appendParametersToMessage()
+					.setParameter("AD_User_ID", adUserId.getRepoId())
+					.setParameter("UserEMailConfig", userEmailConfig);
 		}
 	}
 

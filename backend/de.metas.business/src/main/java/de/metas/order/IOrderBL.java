@@ -22,18 +22,6 @@
 
 package de.metas.order;
 
-import java.time.ZoneId;
-import java.util.Properties;
-
-import lombok.NonNull;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_PriceList_Version;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
@@ -43,6 +31,17 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.project.ProjectId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_PriceList_Version;
+
+import java.time.ZoneId;
+import java.util.Properties;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -50,7 +49,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
-	 *
+	 * <p>
 	 * This method does nothing if:
 	 * <ul>
 	 * <li>pricing system is not set
@@ -90,9 +89,9 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
-	 *
+	 * <p>
 	 * In case there is any error, this method will throw an exception.
-	 *
+	 * <p>
 	 * NOTE: in case the bpartner location or the pricing system is not set, this method will skip the validation and no exception will be thrown.
 	 *
 	 * @param order
@@ -194,18 +193,18 @@ public interface IOrderBL extends ISingletonService
 	 * Is Tax Included in Amount.
 	 *
 	 * @param order
-	 * @param tax optional
+	 * @param tax   optional
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
-	 *         <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
+	 * <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
 	 */
 	boolean isTaxIncluded(I_C_Order order, I_C_Tax tax);
 
 	/**
 	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.
 	 * Also update the order line's reservation via {@link IOrderPA#reserveStock(I_C_Order, I_C_OrderLine...)}.
-	 *
+	 * <p>
 	 * This method is saving the order line.
-	 *
+	 * <p>
 	 * This is the counter-part of {@link #reopenLine(I_C_OrderLine)}.
 	 *
 	 * @param orderLine
@@ -214,9 +213,9 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Re-open closed line (i.e. set QtyOrdered=QtyEntered converted to product stocking UOM) and update reservations.
-	 *
+	 * <p>
 	 * This method is saving the order line.
-	 *
+	 * <p>
 	 * This is the counter-part of {@link #closeLine(I_C_OrderLine)}.
 	 *
 	 * @param orderLine
@@ -260,6 +259,8 @@ public interface IOrderBL extends ISingletonService
 
 	ProjectId getProjectIdOrNull(OrderLineId orderLineId);
 
-	/** @return organization's timezone or system timezone; never returns null */
+	/**
+	 * @return organization's timezone or system timezone; never returns null
+	 */
 	ZoneId getTimeZone(I_C_Order order);
 }

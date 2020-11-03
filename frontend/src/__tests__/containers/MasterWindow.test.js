@@ -181,7 +181,7 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .get(`/window/${windowType}/${docId}/`)
         .reply(200, dataFixtures.data1);
 
       const wrapper = await mount(
@@ -307,7 +307,7 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .get(`/window/${windowType}/${docId}/`)
         .reply(200, dataFixtures.data2);
 
       const wrapper = mount(
@@ -428,7 +428,7 @@ describe('MasterWindowContainer', () => {
           </Provider>
         );
       } catch (e) {
-          console.log('e: ', e);
+        console.log('e: ', e);
       }
 
       await waitForExpect(() => {

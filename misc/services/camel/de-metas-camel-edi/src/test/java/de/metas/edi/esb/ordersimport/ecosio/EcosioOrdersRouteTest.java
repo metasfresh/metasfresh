@@ -52,6 +52,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 			properties.setProperty(AbstractEDIRoute.EDI_ORDER_ADClientValue, "AD_Client.Value");
 			properties.setProperty(AbstractEDIRoute.EDI_ORDER_ADUserEnteredByID, "199");
+			properties.setProperty(AbstractEDIRoute.EDI_ORDER_ADInputDataDestination_InternalName, "ecosio-dest-internalname");
 			return properties;
 		}
 		catch (final IOException e)
@@ -89,6 +90,9 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 		assertThat(string1).isEqualToIgnoringWhitespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
 						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"filename\">"
+						+ "    <AD_DataDestination_ID>"
+						+ "        <InternalName>ecosio-dest-internalname</InternalName>"
+						+ "    </AD_DataDestination_ID>"
 						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
 						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
 						+ "    <QtyEntered>10</QtyEntered>"
@@ -98,6 +102,9 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 		assertThat(string2).isEqualToIgnoringWhitespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
 						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"filename\">"
+						+ "    <AD_DataDestination_ID>"
+						+ "        <InternalName>ecosio-dest-internalname</InternalName>"
+						+ "    </AD_DataDestination_ID>"
 						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
 						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
 						+ "    <QtyEntered>20</QtyEntered>"

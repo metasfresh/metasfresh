@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import cx from 'classnames';
+import { connect } from 'react-redux';
 
 import { getLayout, patchRequest } from '../../api';
 import { completeRequest, createInstance } from '../../actions/GenericActions';
-import { parseToDisplay } from '../../utils/documentListHelper';
+import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 
+import { parseToDisplay } from '../../utils/documentListHelper';
 import RawWidget from '../widget/RawWidget';
 
 class TableQuickInput extends Component {
@@ -168,7 +170,15 @@ class TableQuickInput extends Component {
   };
 
   renderFields = (layout, data, dataId, attributeType, quickInputId) => {
-    const { tabId, docType, forceHeight } = this.props;
+    const {
+      tabId,
+      docType,
+      forceHeight,
+      modalVisible,
+      timeZone,
+      allowShortcut,
+      disableShortcut,
+    } = this.props;
     const { inProgress } = this.state;
 
     this.rawWidgets = [];
@@ -229,6 +239,12 @@ class TableQuickInput extends Component {
             type="secondary"
             autoFocus={idx === 0}
             initialFocus={idx === 0}
+            {...{
+              modalVisible,
+              timeZone,
+              allowShortcut,
+              disableShortcut,
+            }}
           />
         );
       });
@@ -300,6 +316,15 @@ class TableQuickInput extends Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  const { appHandler, windowHandler } = state;
+
+  return {
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
+};
+
 TableQuickInput.propTypes = {
   addNotification: PropTypes.func.isRequired,
   closeBatchEntry: PropTypes.func,
@@ -307,6 +332,18 @@ TableQuickInput.propTypes = {
   docType: PropTypes.any,
   docId: PropTypes.string,
   tabId: PropTypes.string,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
 };
 
-export default TableQuickInput;
+export default connect(
+  mapStateToProps,
+  {
+    allowShortcut,
+    disableShortcut,
+  }
+)(TableQuickInput);
+
+export { TableQuickInput };

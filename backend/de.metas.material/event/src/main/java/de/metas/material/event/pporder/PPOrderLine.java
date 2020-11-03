@@ -1,19 +1,18 @@
 package de.metas.material.event.pporder;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -46,7 +45,6 @@ import lombok.Value;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -63,14 +61,15 @@ public class PPOrderLine
 
 	/**
 	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.<br>
-	 * Note that this is somewhat redundant with the {@link #getComponentType()} properties, but in material-dispo
-	 * we don't want to depend on the BL to evaluate the component type.
 	 */
 	boolean receipt;
 
 	Instant issueOrReceiveDate;
 
 	ProductDescriptor productDescriptor;
+
+	@Nullable
+	MinMaxDescriptor minMaxDescriptor;
 
 	BigDecimal qtyRequired;
 
@@ -84,6 +83,7 @@ public class PPOrderLine
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered)
@@ -96,6 +96,7 @@ public class PPOrderLine
 		this.ppOrderLineId = ppOrderLineId;
 		this.receipt = receipt;
 		this.productDescriptor = productDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = qtyDelivered;

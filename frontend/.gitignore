@@ -11,6 +11,9 @@ dist
 .history
 docs
 
+# Ingore output from jest reporter
+junit.xml
+
 # Dynamic storybook configuration file
 .storybook/foundStories.js
 

@@ -1,19 +1,18 @@
 import Moment from 'moment';
 import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
-
+import _ from 'lodash';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
-import { allowShortcut } from '../../actions/WindowActions';
 import {
   DATE_FORMAT,
   TIME_FORMAT,
   DATE_TIMEZONE_FORMAT,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
+
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -111,7 +110,7 @@ export class RawWidget extends Component {
   shouldComponentUpdate(nextProps) {
     switch (this.props.widgetType) {
       case 'YesNo':
-        return nextProps.widgetData[0].value !== this.props.widgetData[0].value;
+        return !_.isEqual(nextProps.widgetData[0], this.props.widgetData[0]);
 
       default:
         return true;
@@ -146,9 +145,14 @@ export class RawWidget extends Component {
    * @param {*} e
    */
   handleFocus = () => {
-    const { handleFocus, listenOnKeysFalse } = this.props;
+    const {
+      handleFocus,
+      listenOnKeysFalse,
+      disableShortcut,
+      widgetType,
+    } = this.props;
 
-    // dispatch(disableShortcut());
+    widgetType === 'LongText' && disableShortcut(); // fix issue in Cypress with cut underscores - false positive failing tests
     // - commented because if you focus on an item and you disable the shourtcuts you won't be able to use any shortcut
     //   assigned to that specific item/widget - see issue https://github.com/metasfresh/metasfresh/issues/7119
     listenOnKeysFalse && listenOnKeysFalse();
@@ -174,7 +178,7 @@ export class RawWidget extends Component {
    */
   handleBlur = (widgetField, value, id) => {
     const {
-      dispatch,
+      allowShortcut,
       handleBlur,
       listenOnKeysTrue,
       enableOnClickOutside,
@@ -186,7 +190,7 @@ export class RawWidget extends Component {
       },
       () => {
         enableOnClickOutside && enableOnClickOutside();
-        dispatch(allowShortcut());
+        allowShortcut();
         handleBlur && handleBlur(this.willPatch(widgetField, value));
 
         listenOnKeysTrue && listenOnKeysTrue();
@@ -222,6 +226,7 @@ export class RawWidget extends Component {
   handleKeyDown = (e, property, value) => {
     const { lastFormField, widgetType, closeTableField } = this.props;
     const { key } = e;
+
     this.updateTypedCharacters(e.target.value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
@@ -449,19 +454,19 @@ export class RawWidget extends Component {
       updateHeight,
       rowIndex,
     } = this.props;
-    let widgetValue = data != null ? data : widgetData[0].value;
+    let tabIndex = this.props.tabIndex;
     const { isEdited, charsTyped } = this.state;
+
+    let widgetValue = data != null ? data : widgetData[0].value;
+    if (widgetValue === null) {
+      widgetValue = '';
+    }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
       ? fields[0].parameterName
       : fields[0].field;
     const readonly = widgetData[0].readonly;
-    let tabIndex = this.props.tabIndex;
-
-    if (widgetValue === null) {
-      widgetValue = '';
-    }
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {
       tabIndex = -1;
@@ -912,7 +917,7 @@ export class RawWidget extends Component {
               type="number"
               min={0}
               precision={widgetField === 'CableLength' ? 2 : 1}
-              step={subentity === 'quickInput' ? 0.1 : 1}
+              step={subentity === 'quickInput' ? 'any' : 1}
             />
             {widgetData[0].devices && (
               <div className="device-widget-wrapper">
@@ -1129,6 +1134,7 @@ export class RawWidget extends Component {
             windowType={windowType}
             viewId={viewId}
             selected={values}
+            readonly={readonly}
             className={this.getClassNames()}
             onChange={(value) =>
               this.handlePatch(widgetField, {
@@ -1333,7 +1339,4 @@ export class RawWidget extends Component {
 RawWidget.propTypes = RawWidgetPropTypes;
 RawWidget.defaultProps = RawWidgetDefaultProps;
 
-export default connect((state) => ({
-  modalVisible: state.windowHandler.modal.visible,
-  timeZone: state.appHandler.me.timeZone,
-}))(RawWidget);
+export default RawWidget;
