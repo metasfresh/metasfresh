@@ -128,6 +128,9 @@ export class ColumnAndValue {
   }
 }
 
+/**
+ * selectRowByColumnAndValue - command
+ */
 Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false, force = false, single = true) => {
   cy.log(`Select row by ${JSON.stringify(columnAndValue)}`);
   const timeout = { timeout: 10000 };
