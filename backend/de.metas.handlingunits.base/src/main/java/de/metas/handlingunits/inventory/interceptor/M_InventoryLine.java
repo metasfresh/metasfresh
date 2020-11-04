@@ -5,9 +5,9 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -91,7 +91,9 @@ public class M_InventoryLine
 					.toInventoryLine(inventoryLineRecord)
 					.distributeQtyCountToHUs(qtyCount);
 
-			inventoryLineRepository.saveInventoryLineHURecords(inventoryLine);
+			final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLineRecord.getM_Inventory_ID());
+
+			inventoryLineRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
 		}
 	}
 

@@ -22,47 +22,50 @@
 
 package de.metas.common.shipment;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.MeasurableRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = JsonCreateShipmentRequest.JsonCreateShipmentRequestBuilder.class)
-public class JsonCreateShipmentRequest
+public class JsonCreateShipmentRequest extends MeasurableRequest
 {
-	@JsonProperty("shipperCode")
-	String shipperCode;
-
 	@NonNull
 	@JsonProperty("shipmentList")
 	List<JsonCreateShipmentInfo> createShipmentInfoList;
 
 	@Builder
 	public JsonCreateShipmentRequest(
-			@JsonProperty("shipperCode") final String shipperCode,
 			@JsonProperty("shipmentList") final List<JsonCreateShipmentInfo> createShipmentInfoList)
 	{
-		this.shipperCode = shipperCode;
 		this.createShipmentInfoList = createShipmentInfoList != null
 				? createShipmentInfoList.stream().filter(Objects::nonNull).collect(Collectors.toList())
 				: ImmutableList.of();
 	}
-	
-	
+
+	@Override
+	@JsonIgnore
+	public int getSize()
+	{
+		return createShipmentInfoList.size();
+	}
+
+
 	@JsonPOJOBuilder(withPrefix = "")
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class JsonCreateShipmentRequestBuilder
 	{
 	}

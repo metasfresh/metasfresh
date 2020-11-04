@@ -22,20 +22,53 @@
 
 package de.metas.payment.api.impl;
 
+import static java.math.BigDecimal.ZERO;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
@@ -61,38 +94,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.math.BigDecimal.ZERO;
 
 public class PaymentBL implements IPaymentBL
 {
@@ -181,17 +182,14 @@ public class PaymentBL implements IPaymentBL
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			CurrencyRate = currencyBL.getRate(
+			CurrencyRate = currencyBL.getCurrencyRate(
 					invoiceCurrencyId,
 					currencyId,
 					ConvDate,
 					conversionTypeId,
 					clientId,
-					orgId);
-			if (CurrencyRate == null || CurrencyRate.compareTo(ZERO) == 0)
-			{
-				throw new AdempiereException("NoCurrencyConversion");
-			}
+					orgId)
+					.getConversionRate();
 
 			//
 			final CurrencyPrecision precision = currencyDAO.getStdPrecision(currencyId);
@@ -305,22 +303,14 @@ public class PaymentBL implements IPaymentBL
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			currencyRate = currencyBL.getRate(
+			currencyRate = currencyBL.getCurrencyRate(
 					invoiceCurrencyId,
 					currencyId,
 					convDate,
 					conversionTypeId,
 					clientId,
-					orgId);
-			if (currencyRate == null || currencyRate.signum() == 0)
-			{
-				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-						convDate,
-						conversionTypeId,
-						clientId,
-						orgId);
-				throw new NoCurrencyRateFoundException(conversionCtx, invoiceCurrencyId, currencyId);
-			}
+					orgId)
+					.getConversionRate();
 		}
 
 		BigDecimal PayAmt = payment.getPayAmt();

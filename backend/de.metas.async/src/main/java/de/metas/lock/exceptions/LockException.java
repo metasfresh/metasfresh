@@ -27,6 +27,7 @@ import java.util.Arrays;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -101,7 +102,7 @@ public abstract class LockException extends AdempiereException
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	public LockException setRecord(final TableRecordReference record)
+	public LockException setRecord(final @NonNull TableRecordReference record)
 	{
 		super.setRecord(record);
 		resetMessageBuilt();
@@ -110,7 +111,7 @@ public abstract class LockException extends AdempiereException
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public LockException setParameter(final String name, final Object value)
+	public LockException setParameter(final @NonNull String name, final Object value)
 	{
 		super.setParameter(name, value);
 		return this;

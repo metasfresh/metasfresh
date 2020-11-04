@@ -3,13 +3,7 @@
  */
 package de.metas.manufacturing.acct;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.acct.DocLine;
-import org.compiere.model.MAccount;
-import org.compiere.util.DB;
-import org.eevolution.model.I_PP_Cost_Collector;
-
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
@@ -24,6 +18,14 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.acct.DocLine;
+import org.compiere.model.MAccount;
+import org.compiere.util.DB;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.model.I_PP_Cost_Collector;
 
 /**
  * @author Teo Sarca, www.arhipac.ro
@@ -31,15 +33,22 @@ import de.metas.util.Services;
  */
 public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 {
-	public DocLine_CostCollector(final I_PP_Cost_Collector cc, final Doc_PPCostCollector doc)
+	public DocLine_CostCollector(
+			final I_PP_Cost_Collector cc,
+			final Doc_PPCostCollector doc)
 	{
 		super(InterfaceWrapperHelper.getPO(cc), doc);
 
-		setQty(Quantity.of(cc.getMovementQty(), getProductStockingUOM()), false);
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty();
+		setQty(movementQty, false);
+
 		setReversalLine_ID(cc.getReversal_ID());
 	}
 
-	public MAccount getAccountForCostElement(final AcctSchema as, final CostElement costElement)
+	public MAccount getAccountForCostElement(
+			final AcctSchema as,
+			final CostElement costElement)
 	{
 		final ProductAcctType acctType = getProductAcctTypeByCostElement(costElement);
 		return getAccount(acctType, as);
@@ -75,29 +84,34 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 	}
 
 	@Override
-	public MAccount getAccount(final ProductAcctType acctType, final AcctSchema as)
+	@NonNull
+	public MAccount getAccount(
+			@NonNull final ProductAcctType acctType,
+			@NonNull final AcctSchema as)
 	{
 		final ProductId productId = getProductId();
 		if (productId == null)
 		{
 			return super.getAccount(acctType, as);
 		}
-
-		final String acctColumnName = acctType.getColumnName();
-		final String sql = " SELECT "
-				+ " COALESCE(pa." + acctColumnName + ",pca." + acctColumnName + ",asd." + acctColumnName + ")"
-				+ " FROM M_Product p"
-				+ " INNER JOIN M_Product_Acct pa ON (pa.M_Product_ID=p.M_Product_ID)"
-				+ " INNER JOIN M_Product_Category_Acct pca ON (pca.M_Product_Category_ID=p.M_Product_Category_ID AND pca.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
-				+ " INNER JOIN C_AcctSchema_Default asd ON (asd.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
-				+ " WHERE pa.M_Product_ID=? AND pa.C_AcctSchema_ID=?";
-		final int validCombinationId = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, productId, as.getId());
-		if (validCombinationId <= 0)
+		else
 		{
-			return null;
-		}
+			final String acctColumnName = acctType.getColumnName();
+			final String sql = " SELECT "
+					+ " COALESCE(pa." + acctColumnName + ",pca." + acctColumnName + ",asd." + acctColumnName + ")"
+					+ " FROM M_Product p"
+					+ " INNER JOIN M_Product_Acct pa ON (pa.M_Product_ID=p.M_Product_ID)"
+					+ " INNER JOIN M_Product_Category_Acct pca ON (pca.M_Product_Category_ID=p.M_Product_Category_ID AND pca.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
+					+ " INNER JOIN C_AcctSchema_Default asd ON (asd.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
+					+ " WHERE pa.M_Product_ID=? AND pa.C_AcctSchema_ID=?";
+			final AccountId accountId = AccountId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, sql, productId, as.getId()));
+			if (accountId == null)
+			{
+				throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + ", product " + productId + " and " + as);
+			}
 
-		return Services.get(IAccountDAO.class).getById(validCombinationId);
+			return services.getAccountById(accountId);
+		}
 	}
 
 	public AggregatedCostAmount getCreateCosts(final AcctSchema as)

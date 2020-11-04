@@ -53,7 +53,6 @@ import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
@@ -131,7 +130,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
 			final BOMComponentType componentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
-			if (PPOrderUtil.isReceipt(componentType))
+			if (componentType.isReceipt())
 			{
 				continue;
 			}

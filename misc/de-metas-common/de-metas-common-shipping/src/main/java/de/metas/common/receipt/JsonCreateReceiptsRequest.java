@@ -22,32 +22,49 @@
 
 package de.metas.common.receipt;
 
-import java.util.List;
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.MeasurableRequest;
+import de.metas.common.customerreturns.JsonCreateCustomerReturnInfo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.List;
+import java.util.Objects;
+
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = JsonCreateReceiptsRequest.JsonCreateReceiptsRequestBuilder.class)
-public class JsonCreateReceiptsRequest
+public class JsonCreateReceiptsRequest extends MeasurableRequest
 {
 	@NonNull
 	@JsonProperty("receiptList")
 	List<JsonCreateReceiptInfo> jsonCreateReceiptInfoList;
 
+	@NonNull
+	@JsonProperty("returnList")
+	List<JsonCreateCustomerReturnInfo> jsonCreateCustomerReturnInfoList;
+
 	@Builder
-	public JsonCreateReceiptsRequest(@JsonProperty("receiptList") final List<JsonCreateReceiptInfo> jsonCreateReceiptInfoList)
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public JsonCreateReceiptsRequest(@JsonProperty("receiptList") final List<JsonCreateReceiptInfo> jsonCreateReceiptInfoList,
+			@JsonProperty("returnList") final List<JsonCreateCustomerReturnInfo> jsonCreateCustomerReturnInfoList)
 	{
 		this.jsonCreateReceiptInfoList = jsonCreateReceiptInfoList != null
 				? jsonCreateReceiptInfoList.stream().filter(Objects::nonNull).collect(ImmutableList.toImmutableList())
 				: ImmutableList.of();
+
+		this.jsonCreateCustomerReturnInfoList = jsonCreateCustomerReturnInfoList != null
+				? jsonCreateCustomerReturnInfoList.stream().filter(Objects::nonNull).collect(ImmutableList.toImmutableList())
+				: ImmutableList.of();
+	}
+
+	@JsonIgnore
+	public int getSize()
+	{
+		return jsonCreateReceiptInfoList.size() + jsonCreateCustomerReturnInfoList.size();
 	}
 }

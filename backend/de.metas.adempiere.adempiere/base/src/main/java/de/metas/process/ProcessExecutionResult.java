@@ -440,6 +440,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -460,6 +461,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -477,6 +479,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(null)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}

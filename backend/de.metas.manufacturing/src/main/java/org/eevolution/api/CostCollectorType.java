@@ -12,6 +12,8 @@ import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -22,12 +24,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,14 +55,15 @@ public enum CostCollectorType
 		this.code = code;
 	}
 
-	public static CostCollectorType ofNullableCode(final String code)
+	@Nullable
+	public static CostCollectorType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
 	public static CostCollectorType ofCode(@NonNull final String code)
 	{
-		CostCollectorType type = typesByCode.get(code);
+		final CostCollectorType type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + CostCollectorType.class + " found for code: " + code);
@@ -70,7 +73,7 @@ public enum CostCollectorType
 
 	private static final ImmutableMap<String, CostCollectorType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), CostCollectorType::getCode);
 
-	public boolean isMaterial(final PPOrderBOMLineId orderBOMLineId)
+	public boolean isMaterial(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		return isMaterialReceipt()
 				|| isAnyComponentIssueOrCoProduct(orderBOMLineId);
@@ -91,13 +94,13 @@ public enum CostCollectorType
 		return this == ComponentIssue;
 	}
 
-	public boolean isAnyComponentIssueOrCoProduct(final PPOrderBOMLineId orderBOMLineId)
+	public boolean isAnyComponentIssueOrCoProduct(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		return isAnyComponentIssue(orderBOMLineId)
 				|| isCoOrByProductReceipt();
 	}
 
-	public boolean isAnyComponentIssue(final PPOrderBOMLineId orderBOMLineId)
+	public boolean isAnyComponentIssue(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		return isComponentIssue()
 				|| isMaterialMethodChangeVariance(orderBOMLineId);
@@ -126,12 +129,12 @@ public enum CostCollectorType
 		return this == UsageVariance;
 	}
 
-	public boolean isMaterialUsageVariance(final PPOrderBOMLineId orderBOMLineId)
+	public boolean isMaterialUsageVariance(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		return this == UsageVariance && orderBOMLineId != null;
 	}
 
-	public boolean isResourceUsageVariance(final PPOrderRoutingActivityId activityId)
+	public boolean isResourceUsageVariance(@Nullable final PPOrderRoutingActivityId activityId)
 	{
 		return this == UsageVariance && activityId != null;
 	}
@@ -146,7 +149,7 @@ public enum CostCollectorType
 		return this == MethodChangeVariance;
 	}
 
-	public boolean isMaterialMethodChangeVariance(final PPOrderBOMLineId orderBOMLineId)
+	public boolean isMaterialMethodChangeVariance(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		return this == MethodChangeVariance && orderBOMLineId != null;
 	}

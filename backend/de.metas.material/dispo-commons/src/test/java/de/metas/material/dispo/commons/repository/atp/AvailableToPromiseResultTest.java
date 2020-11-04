@@ -1,19 +1,6 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.commons.attributes.AttributesKeyMatcher;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
@@ -21,6 +8,16 @@ import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.commons.attributes.ExcludeAttributesKeyMatcher;
 import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.event.commons.AttributesKey;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -361,8 +358,11 @@ public class AvailableToPromiseResultTest
 					.seqNo(1)
 					.build();
 
-			assertThatThrownBy(() -> result.addQtyToAllMatchingGroups(request))
-					.hasMessageStartingWith("No matching group found for ");
+			result.addQtyToAllMatchingGroups(request);
+
+			final AvailableToPromiseResult availableToPromiseResult = result.build();
+
+			assertThat(availableToPromiseResult.getResultGroups()).isEmpty();
 		}
 
 		@Test
@@ -478,6 +478,60 @@ public class AvailableToPromiseResultTest
 				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.OTHER);
 				assertThat(group.getQty()).isEqualByComparingTo("10");
 			}
+		}
+
+		@Test
+		public void oneGroup_withEmptyAttributeValues_forAllMatchingRequests()
+		{
+			final String emptyValueAttribute = "1=";
+			final int testProductId = 1;
+
+			//the attributes key of the group
+			final AttributesKey emptyAttributesKey = AttributesKey.ofString("1=");
+
+			final AvailableToPromiseResultBucket testBucket = AvailableToPromiseResultBucket.builder()
+				.bpartner(BPartnerClassifier.any())
+				.product(ProductClassifier.specific(1))
+				.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(emptyAttributesKey))
+				.build();
+
+			testBucket.addDefaultEmptyGroupIfPossible();
+
+			final AvailableToPromiseResultBuilder result = new AvailableToPromiseResultBuilder(ImmutableList.of(testBucket));
+
+			//req 1
+			AddToResultGroupRequest addToResultGroupRequest = AddToResultGroupRequest.builder()
+					.bpartner(BPartnerClassifier.any())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.productId(testProductId)
+					.storageAttributesKey(AttributesKey.ofString(emptyValueAttribute + "1"))
+					.qty(BigDecimal.TEN)
+					.date(NOW.toInstant())
+					.seqNo(1)
+					.build();
+
+			result.addQtyToAllMatchingGroups(addToResultGroupRequest);
+
+			//req 2
+			addToResultGroupRequest = AddToResultGroupRequest.builder()
+					.bpartner(BPartnerClassifier.any())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.productId(testProductId)
+					.storageAttributesKey(AttributesKey.ofString(emptyValueAttribute + "2"))
+					.qty(BigDecimal.TEN)
+					.date(NOW.toInstant())
+					.seqNo(2)
+					.build();
+
+			result.addQtyToAllMatchingGroups(addToResultGroupRequest);
+
+			final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
+			assertThat(groups).hasSize(1);
+
+			final AvailableToPromiseResultGroup group = groups.get(0);
+			assertThat(group.getProductId()).isEqualTo(testProductId);
+			assertThat(group.getQty()).isEqualByComparingTo("20");
+			assertThat(group.getStorageAttributesKey()).isEqualTo(emptyAttributesKey);
 		}
 	}
 

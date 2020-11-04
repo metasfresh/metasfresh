@@ -152,6 +152,31 @@ public interface I_PP_Order
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom);
+
+	/**
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCanBeExportedFrom();
+
+    /** Column definition for CanBeExportedFrom */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_CanBeExportedFrom = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "CanBeExportedFrom", null);
+    /** Column name CanBeExportedFrom */
+    public static final String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -246,6 +271,31 @@ public interface I_PP_Order
 
     /** Column name C_DocTypeTarget_ID */
     public static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCopyFrom (java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCopyFrom();
+
+    /** Column definition for CopyFrom */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_CopyFrom = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "CopyFrom", null);
+    /** Column name CopyFrom */
+    public static final String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Sales order.
@@ -362,79 +412,6 @@ public interface I_PP_Order
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom);
-
-	/**
-	 * Get Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCanBeExportedFrom();
-
-    /** Column definition for CanBeExportedFrom */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_CanBeExportedFrom = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "CanBeExportedFrom", null);
-    /** Column name CanBeExportedFrom */
-    public static final String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCopyFrom (java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCopyFrom();
-
-    /** Column definition for CopyFrom */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_CopyFrom = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "CopyFrom", null);
-    /** Column name CopyFrom */
-    public static final String COLUMNNAME_CopyFrom = "CopyFrom";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -461,6 +438,29 @@ public interface I_PP_Order
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set DateConfirm.
@@ -1114,29 +1114,6 @@ public interface I_PP_Order
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Warehouse_ID();
-
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
 	 * Set MRP Allow Cleanup.
 	 * MRP is allowed to remove this document
 	 *
@@ -1210,6 +1187,29 @@ public interface I_PP_Order
     public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_MRP_ToDelete = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "MRP_ToDelete", null);
     /** Column name MRP_ToDelete */
     public static final String COLUMNNAME_MRP_ToDelete = "MRP_ToDelete";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_ID();
+
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set OrderType.
@@ -1331,7 +1331,8 @@ public interface I_PP_Order
     public static final String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
-	 * Set Produktionsauftrag.
+	 * Set Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1340,7 +1341,8 @@ public interface I_PP_Order
 	public void setPP_Order_ID (int PP_Order_ID);
 
 	/**
-	 * Get Produktionsauftrag.
+	 * Get Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1531,10 +1533,8 @@ public interface I_PP_Order
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setQtyBatchSize (java.math.BigDecimal QtyBatchSize);
 
 	/**
@@ -1542,7 +1542,7 @@ public interface I_PP_Order
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getQtyBatchSize();
 
@@ -1721,35 +1721,6 @@ public interface I_PP_Order
     public static final String COLUMNNAME_QtyScrap = "QtyScrap";
 
 	/**
-	 * Set Ressource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Ressource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getS_Resource_ID();
-
-	public org.compiere.model.I_S_Resource getS_Resource();
-
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-    /** Column definition for S_Resource_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_S_Resource>(I_PP_Order.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
 	 * Set Planungs-Art.
 	 * Type of schedule
 	 *
@@ -1798,6 +1769,35 @@ public interface I_PP_Order
     public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_SerNo = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "SerNo", null);
     /** Column name SerNo */
     public static final String COLUMNNAME_SerNo = "SerNo";
+
+	/**
+	 * Set Ressource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Ressource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getS_Resource_ID();
+
+	public org.compiere.model.I_S_Resource getS_Resource();
+
+	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+
+    /** Column definition for S_Resource_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_S_Resource>(I_PP_Order.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+    /** Column name S_Resource_ID */
+    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Get Updated.

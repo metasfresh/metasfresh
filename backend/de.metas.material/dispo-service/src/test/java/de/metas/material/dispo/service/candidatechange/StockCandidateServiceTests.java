@@ -1,32 +1,6 @@
 package de.metas.material.dispo.service.candidatechange;
 
-import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -39,6 +13,34 @@ import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -78,7 +80,7 @@ public class StockCandidateServiceTests
 	private int parentIdSequence;
 
 	@BeforeEach
-	public void init()
+	void init()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -92,11 +94,14 @@ public class StockCandidateServiceTests
 				candidateRepositoryWriteService);
 	}
 
-	private void createStockRecordAtTimeNOW()
+	private SaveResult createStockRecordAtTimeNOW(@Nullable final BPartnerId customerId)
 	{
+		final boolean reserved = customerId != null; // in stock candidates,reserved coesn't really matter, but we set it for consistency
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
+				.customerId(customerId)
+				.reservedForCustomer(reserved)
 				.quantity(new BigDecimal("10"))
 				.date(NOW)
 				.build();
@@ -106,14 +111,18 @@ public class StockCandidateServiceTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
-		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
+		return candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
 
-	/** creates a stock candidate at a certain time and then adds an earlier one */
+	/**
+	 * creates a stock candidate at a certain time and then adds an earlier one
+	 */
 	@Test
-	public void createStockCandidate_before_existing()
+	void createStockCandidate_2ndWithout_1stWithout_customer()
 	{
-		createStockRecordAtTimeNOW();
+		final SaveResult nowCandidateResult = createStockRecordAtTimeNOW(null);
+		assertThat(nowCandidateResult.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
@@ -122,6 +131,14 @@ public class StockCandidateServiceTests
 				.quantity(BigDecimal.ONE)
 				.build();
 
+		final SaveResult result = invokeCreateStockCandidate(materialDescr);
+
+		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo(/* 0+1= */ONE);
+		assertThat(result.getPreviousQty()).isNull();
+	}
+
+	private SaveResult invokeCreateStockCandidate(final MaterialDescriptor materialDescr)
+	{
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.STOCK)
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
@@ -129,17 +146,39 @@ public class StockCandidateServiceTests
 				.build();
 
 		// invoke the the method under test
-		final SaveResult result = stockCandidateService.createStockCandidate(candidate);
-
-		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo(/* 0+1= */ONE);
-		assertThat(result.getPreviousQty()).isNull();
+		return stockCandidateService.createStockCandidate(candidate);
 	}
 
-	/** creates a stock candidate at a certain time and then adds a later one */
 	@Test
-	public void createStockCandidate_after_existing()
+	void createStockCandidate_2ndWith_1stWithout_customer()
 	{
-		createStockRecordAtTimeNOW();
+		final SaveResult candidate2Result = createStockRecordAtTimeNOW(BPartnerId.ofRepoId(10));
+		assertThat(candidate2Result.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
+
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
+				.date(BEFORE_NOW)
+				.quantity(BigDecimal.ONE)
+				.build();
+
+		final SaveResult candidate1Result = invokeCreateStockCandidate(materialDescr);
+
+		assertThat(candidate1Result.getCandidate().getQuantity()).isEqualByComparingTo("1"); // the first candidate has its 1
+		assertThat(candidate1Result.getPreviousQty()).isNull();
+
+		final I_MD_Candidate nowCandidateRecord = load(candidate2Result.getCandidate().getId(), I_MD_Candidate.class);
+		assertThat(nowCandidateRecord.getQty()).isEqualByComparingTo("10");  // the original candidate that is now 2nd candidate still has its 10
+	}
+
+	/**
+	 * Creates a stock candidate without a customerId at a certain time and then adds a later one, also without customerId
+	 */
+	@Test
+	void createStockCandidate_1stWithout_2ndWithout_customer()
+	{
+		final SaveResult nowCandidateResult = createStockRecordAtTimeNOW(null);
+		assertThat(nowCandidateResult.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
@@ -148,34 +187,59 @@ public class StockCandidateServiceTests
 				.quantity(BigDecimal.ONE)
 				.build();
 
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.STOCK)
-				.clientAndOrgId(CLIENT_AND_ORG_ID)
-				.materialDescriptor(materialDescr)
-				.build();
-
-		// invoke the the method under test
-		final SaveResult result = stockCandidateService.createStockCandidate(candidate);
+		final SaveResult result = invokeCreateStockCandidate(materialDescr);
 
 		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo(/* 10+1= */"11");
 		assertThat(result.getPreviousQty()).isEqualByComparingTo(TEN);
+
+		final I_MD_Candidate nowCandidateRecord = load(nowCandidateResult.getCandidate().getId(), I_MD_Candidate.class);
+		assertThat(nowCandidateRecord.getQty()).isEqualByComparingTo("10");  // the original candidate still has its 10
 	}
 
+	/**
+	 * Creates a stock candidate without a customerId at a certain time and then adds a later one which has a customerId
+	 */
 	@Test
-	public void updateQuantity_error_if_missing_candidate_record()
+	void createStockCandidate_1stWithout_2ndWith_customer()
 	{
-		final CandidateBuilder candidateBuilder = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.materialDescriptor(createMaterialDescriptor())
-				.id(CandidateId.ofRepoId(23));
+		final SaveResult candidate1Result = createStockRecordAtTimeNOW(null);
+		assertThat(candidate1Result.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
 
-		assertThatThrownBy(() -> candidateBuilder.build())
-				.isInstanceOf(NullPointerException.class)
-				.hasMessageStartingWith("clientAndOrgId");
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.customerId(BPartnerId.ofRepoId(10))
+				.warehouseId(WAREHOUSE_ID)
+				.date(AFTER_NOW)
+				.quantity(BigDecimal.ONE)
+				.build();
+
+		final SaveResult candidate2Result = invokeCreateStockCandidate(materialDescr);
+
+		assertThat(candidate2Result.getCandidate().getQuantity()).isEqualByComparingTo(/* 10+1= */"11");
+		assertThat(candidate2Result.getPreviousQty()).isEqualByComparingTo(TEN);
+
+		final I_MD_Candidate candidate1Record = load(candidate1Result.getCandidate().getId(), I_MD_Candidate.class);
+		assertThat(candidate1Record.getQty()).isEqualByComparingTo("10");  // the original candidate still has its 10
+	}
+
+
+	@Test
+	void updateQuantity_error_if_missing_candidate_record()
+	{
+		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.type(CandidateType.DEMAND)
+				.clearTransactionDetails()
+				.materialDescriptor(createMaterialDescriptor())
+				.id(CandidateId.ofRepoId(23))
+				.build();
+
+		assertThatThrownBy(() -> stockCandidateService.updateQtyAndDate(candidate))
+				.isInstanceOf(RuntimeException.class);
 	}
 
 	@Test
-	public void updateQuantity()
+	void updateQuantity()
 	{
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setQty(TEN);
@@ -197,11 +261,12 @@ public class StockCandidateServiceTests
 		assertThat(result.getQtyDelta()).isEqualByComparingTo("-9"); // new qty of 1 minus old qty of 10
 
 		assertThat(result.getPreviousQty()).isEqualByComparingTo(TEN);
+		assertThat(result.getPreviousTime()).isNotNull();
 		assertThat(result.getPreviousTime().getDate()).isEqualTo(t1);
 	}
 
 	@Test
-	public void addOrUpdateStock_simple_case()
+	void addOrUpdateStock_simple_case()
 	{
 		invokeStockCandidateService(t1, "10"); // (t1 => 10)
 		invokeStockCandidateService(t2, "-4"); // (t1 => 10), (t2 => 6)
@@ -222,7 +287,7 @@ public class StockCandidateServiceTests
 	}
 
 	@Test
-	public void addOrUpdateStock_with_non_chronological_updates()
+	void addOrUpdateStock_with_non_chronological_updates()
 	{
 		invokeStockCandidateService(t1, "10"); // (t1 => 10)
 		{
@@ -266,12 +331,12 @@ public class StockCandidateServiceTests
 	}
 
 	/**
-	 * Similar to {@link #testUpdateStockDifferentTimes()}, but two invocations have the same timestamp.
+	 * Similar to {@link #addOrUpdateStock_simple_case()}, but two invocations have the same timestamp.
 	 */
 	@Test
 	// @Ignore("stockCandidateService can't do this thing alone as of now. It needs to be driven my demandCandidateHandler and supplyCandidateHandler")
 	// TODO 3034 refactor&fix
-	public void addOrUpdateStock_with_overlapping_time()
+	void addOrUpdateStock_with_overlapping_time()
 	{
 		{
 			invokeStockCandidateService(t1, "10");
@@ -324,7 +389,7 @@ public class StockCandidateServiceTests
 	}
 
 	@Test
-	public void addOrUpdateStock_move_backwards()
+	void addOrUpdateStock_move_backwards()
 	{
 		invokeStockCandidateService(t1, "10"); // (t1 => 10)
 		invokeStockCandidateService(t3, "-3"); // (t1 => 10), (t3 => 7)
@@ -372,7 +437,7 @@ public class StockCandidateServiceTests
 	}
 
 	@Test
-	public void addOrUpdateStock_move_forwards()
+	void addOrUpdateStock_move_forwards()
 	{
 		invokeStockCandidateService(t1, "10"); // (t1 => 10)
 		final SaveResult t2SaveResult = //
@@ -438,7 +503,6 @@ public class StockCandidateServiceTests
 	}
 
 	/**
-	 * @param date
 	 * @param qty qty to be "injected into the stock. System needs to create a new stock record or update an exiting one
 	 * @return the parameter that this method passed to {@link StockCandidateService#applyDeltaToMatchingLaterStockCandidates(SaveResult)}
 	 */

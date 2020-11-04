@@ -42,7 +42,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ImportIssueInfo
 {
 	@Nullable
@@ -107,6 +107,10 @@ public class ImportIssueInfo
 
 	@NonNull
 	ImmutableList<IssueLabel> issueLabels;
+
+	@Nullable
+	LocalDate deliveredDate;
+
 
 	public String getSearchKey()
 	{

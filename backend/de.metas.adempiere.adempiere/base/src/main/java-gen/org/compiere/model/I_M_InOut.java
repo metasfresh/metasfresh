@@ -1794,4 +1794,27 @@ public interface I_M_InOut
     public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_Weight = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "Weight", null);
     /** Column name Weight */
     public static final String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set External resource URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalResourceURL (java.lang.String ExternalResourceURL);
+
+	/**
+	 * Get External resource URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalResourceURL();
+
+	/** Column definition for ExternalResourceURL */
+	public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_ExternalResourceURL = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "ExternalResourceURL", null);
+	/** Column name ExternalResourceURL */
+	public static final String COLUMNNAME_ExternalResourceURL = "ExternalResourceURL";
 }

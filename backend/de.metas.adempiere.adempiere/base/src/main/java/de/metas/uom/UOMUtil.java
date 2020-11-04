@@ -1,10 +1,10 @@
 package de.metas.uom;
 
-import java.time.temporal.TemporalUnit;
-
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_UOM;
 
-import lombok.experimental.UtilityClass;
+import java.time.temporal.TemporalUnit;
 
 /**
  * Utility class with more or less "trivial", but reusable for UOM-code.
@@ -12,6 +12,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class UOMUtil
 {
+
 	public static boolean isMinute(final I_C_UOM uom)
 	{
 		final X12DE355 x12de355 = X12DE355.ofNullableCode(uom.getX12DE355());
@@ -69,6 +70,7 @@ public class UOMUtil
 		return x12de355.isTemporalUnit();
 	}
 
+	@NonNull
 	public static TemporalUnit toTemporalUnit(final I_C_UOM uom)
 	{
 		final X12DE355 x12de355 = X12DE355.ofCode(uom.getX12DE355());

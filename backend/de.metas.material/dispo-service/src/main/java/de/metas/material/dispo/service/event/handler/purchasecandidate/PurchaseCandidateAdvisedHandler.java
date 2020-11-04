@@ -1,26 +1,27 @@
 package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -52,16 +53,19 @@ public final class PurchaseCandidateAdvisedHandler
 
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService requestMaterialOrderService;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	/**
-	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
+	 * @param requestMaterialOrderService needed in case we directly request a {@link PurchaseCandidateAdvisedEvent}'s proposed purchase order to be created.
 	 */
 	public PurchaseCandidateAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final RequestMaterialOrderService requestMaterialOrderService)
+			@NonNull final RequestMaterialOrderService requestMaterialOrderService,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.requestMaterialOrderService = requestMaterialOrderService;
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
 	@Override
@@ -85,9 +89,7 @@ public final class PurchaseCandidateAdvisedHandler
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 
-		final MaterialDescriptor materialDescriptor = event
-				.getSupplyRequiredDescriptor()
-				.getMaterialDescriptor();
+		final MaterialDescriptor materialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor();
 
 		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
 				.qty(materialDescriptor.getQuantity())
@@ -97,10 +99,29 @@ public final class PurchaseCandidateAdvisedHandler
 				.advised(Flag.TRUE)
 				.build();
 
-		final Candidate supplyCandidate = Candidate.builder()
+		// see if there is an existing supply candidate to work with
+		Candidate.CandidateBuilder candidateBuilder = null;
+		if (supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
+		{
+			final CandidatesQuery supplyCandidateQuery = CandidatesQuery.fromId(
+					CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
+			final Candidate existingCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(supplyCandidateQuery);
+			if (existingCandidate == null)
+			{
+				candidateBuilder = existingCandidate.toBuilder();
+			}
+		}
+		if (candidateBuilder == null)
+		{
+			candidateBuilder = Candidate.builder();
+		}
+
+		// put out data into the new or preexisting candidate
+		final Candidate supplyCandidate = candidateBuilder
+				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
+				.id(CandidateId.ofRepoIdOrNull(supplyRequiredDescriptor.getSupplyCandidateId()))
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
@@ -109,6 +130,7 @@ public final class PurchaseCandidateAdvisedHandler
 		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
+			// the group contains just one item, i.e. the supplyCandidate, but for the same of generic-ness we use that same interface that's also used for production and distribution
 			requestMaterialOrderService.requestMaterialOrderForCandidates(createdCandidate.getGroupId());
 		}
 	}

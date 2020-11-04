@@ -1,36 +1,5 @@
 package de.metas.uom.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -44,29 +13,53 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-public class UOMConversionBLTest extends UOMTestBase
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class UOMConversionBLTest
 {
 	private static final X12DE355 X12_Meter = X12DE355.ofCode("MTR");
 	private static final X12DE355 X12_Millimeter = X12DE355.ofCode("mm");
 	private static final X12DE355 X12_Rolle = X12DE355.ofCode("RL");
 
-	/** Service under test */
+	private UOMTestHelper uomConversionHelper;
+
+	/**
+	 * Service under test
+	 */
 	private UOMConversionBL conversionBL;
 
-	@Override
-	protected void afterInit()
+	@BeforeEach
+	public void beforeEach()
 	{
+		AdempiereTestHelper.get().init();
+		POJOWrapper.setDefaultStrictValues(true);
+
+		this.uomConversionHelper = new UOMTestHelper(Env.getCtx());
+
 		// Service under test
 		conversionBL = (UOMConversionBL)Services.get(IUOMConversionBL.class);
 	}
 
-	private ProductId createProduct(final String name, final I_C_UOM uom)
+	private ProductId createProduct(
+			final String name,
+			final I_C_UOM uom)
 	{
 		return uomConversionHelper.createProduct(name, uom);
 	}
 
-	private ProductId createProduct(final String name, final UomId uomId)
+	private ProductId createProduct(
+			final String name,
+			final UomId uomId)
 	{
 		return uomConversionHelper.createProduct(name, uomId);
 	}
@@ -112,7 +105,8 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	private void adjustToUOMPrecisionWithoutRoundingIfPossible(
-			final String qtyStr, final int uomPrecision,
+			final String qtyStr,
+			final int uomPrecision,
 			final String qtyStrExpected,
 			final int uomPrecisionExpected)
 	{
@@ -275,105 +269,140 @@ public class UOMConversionBLTest extends UOMTestBase
 		assertThat(convertedQty).isEqualTo("3000000.26");
 	}
 
-	@Test
-	public void getTimeConversionRate()
+	@Nested
+	public class getTimeConversionRate
 	{
-		final I_C_UOM minute = uomConversionHelper.createUOM(
-				"Minute",
-				1,
-				0,
-				X12DE355.MINUTE);
+		private I_C_UOM minute;
+		private I_C_UOM hour;
+		private I_C_UOM day;
+		private I_C_UOM week;
+		private I_C_UOM month;
+		private I_C_UOM year;
 
-		final I_C_UOM hour = uomConversionHelper.createUOM(
-				"Hour",
-				1,
-				0,
-				X12DE355.HOUR);
+		@BeforeEach
+		public void beforeEach()
+		{
+			minute = uomConversionHelper.createUOM(
+					"Minute",
+					1,
+					0,
+					X12DE355.MINUTE);
 
-		final I_C_UOM day = uomConversionHelper.createUOM(
-				"Day",
-				1,
-				0,
-				X12DE355.DAY);
+			hour = uomConversionHelper.createUOM(
+					"Hour",
+					1,
+					0,
+					X12DE355.HOUR);
 
-		final I_C_UOM week = uomConversionHelper.createUOM(
-				"Week",
-				1,
-				0,
-				X12DE355.WEEK);
+			day = uomConversionHelper.createUOM(
+					"Day",
+					1,
+					0,
+					X12DE355.DAY);
 
-		final I_C_UOM month = uomConversionHelper.createUOM(
-				"Month",
-				1,
-				0,
-				X12DE355.MONTH);
+			week = uomConversionHelper.createUOM(
+					"Week",
+					1,
+					0,
+					X12DE355.WEEK);
 
-		final I_C_UOM year = uomConversionHelper.createUOM(
-				"Year",
-				1,
-				0,
-				X12DE355.YEAR);
+			month = uomConversionHelper.createUOM(
+					"Month",
+					1,
+					0,
+					X12DE355.MONTH);
 
+			year = uomConversionHelper.createUOM(
+					"Year",
+					1,
+					0,
+					X12DE355.YEAR);
+		}
+
+		@Test
+		void minutesPerDay()
 		{
 			final BigDecimal minutesPerDay = BigDecimal.valueOf(60 * 24);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(day, minute);
 			assertThat(rate).isEqualByComparingTo(minutesPerDay);
 		}
 
-		final BigDecimal daysPerWeek = BigDecimal.valueOf(7);
+		@Test
+		void daysPerWeek()
 		{
+			final BigDecimal daysPerWeek = BigDecimal.valueOf(7);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(week, day);
 			assertThat(rate).isEqualByComparingTo(daysPerWeek);
 		}
 
-		final BigDecimal hoursPerDay = BigDecimal.valueOf(24);
+		@Test
+		void hoursPerDay()
 		{
+			final BigDecimal hoursPerDay = BigDecimal.valueOf(24);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(day, hour);
 			assertThat(rate).isEqualByComparingTo(hoursPerDay);
 		}
 
+		@Test
+		void hoursPerWeek()
 		{
+			final BigDecimal daysPerWeek = BigDecimal.valueOf(7);
+			final BigDecimal hoursPerDay = BigDecimal.valueOf(24);
 			final BigDecimal hoursPerWeek = daysPerWeek.multiply(hoursPerDay);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(week, hour);
 			assertThat(rate).isEqualByComparingTo(hoursPerWeek);
 		}
 
+		@Test
+		void weeksPerMonth()
 		{
 			final BigDecimal weeksPerMonth = BigDecimal.valueOf(4);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(month, week);
 			assertThat(rate).isEqualByComparingTo(weeksPerMonth);
 		}
 
+		@Test
+		void daysPerMinute()
 		{
 			final BigDecimal daysPerMinute = BigDecimal.valueOf(1.0 / 1440.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(minute, day);
 			assertThat(rate).isEqualByComparingTo(daysPerMinute);
 		}
 
+		@Test
+		void weeksPerDay()
 		{
 			final BigDecimal weeksPerDay = BigDecimal.valueOf(1.0 / 7.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(day, week);
 			assertThat(rate).isEqualByComparingTo(weeksPerDay);
 		}
 
+		@Test
+		void daysPerHour()
 		{
 			final BigDecimal daysPerHour = BigDecimal.valueOf(1.0 / 24.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(hour, day);
 			assertThat(rate).isEqualByComparingTo(daysPerHour);
 		}
 
+		@Test
+		void weeksPerHour()
 		{
 			final BigDecimal weeksPerHour = BigDecimal.valueOf(1.0 / 168.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(hour, week);
 			assertThat(rate).isEqualByComparingTo(weeksPerHour);
 		}
 
+		@Test
+		void monthsPerWeek()
 		{
 			final BigDecimal monthsPerWeek = BigDecimal.valueOf(1.0 / 4.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(week, month);
 			assertThat(rate).isEqualByComparingTo(monthsPerWeek);
 		}
 
+		@Test
+		void minutesPerYear()
 		{
 			final BigDecimal minutesPerYear = BigDecimal.valueOf(1.0 / 525600.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(minute, year);

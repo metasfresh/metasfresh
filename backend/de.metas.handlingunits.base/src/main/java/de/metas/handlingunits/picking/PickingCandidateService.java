@@ -82,7 +82,7 @@ public class PickingCandidateService
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final PickingCandidateStatus status)
 	{
 		return pickingCandidateRepository.getByShipmentScheduleIdAndStatus(shipmentScheduleId, status);

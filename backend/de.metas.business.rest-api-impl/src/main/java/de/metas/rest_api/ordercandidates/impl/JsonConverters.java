@@ -1,5 +1,7 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.time.ZoneId;
 import java.util.List;
 

@@ -2,12 +2,16 @@ package org.eevolution.api;
 
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPPOrderCostDAO extends ISingletonService
 {
-	PPOrderCosts getByOrderId(PPOrderId orderId);
+	boolean hasPPOrderCosts(@NonNull PPOrderId orderId);
 
-	void deleteByOrderId(PPOrderId ppOrderId);
+	@NonNull
+	PPOrderCosts getByOrderId(@NonNull PPOrderId orderId);
 
-	void save(PPOrderCosts orderCosts);
+	void deleteByOrderId(@NonNull PPOrderId ppOrderId);
+
+	void save(@NonNull PPOrderCosts orderCosts);
 }

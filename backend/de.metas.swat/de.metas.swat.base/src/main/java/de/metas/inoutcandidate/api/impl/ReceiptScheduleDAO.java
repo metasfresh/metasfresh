@@ -288,7 +288,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
-	public IQueryBuilder<I_M_ReceiptSchedule> createQueryForShipmentScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter)
+	public IQueryBuilder<I_M_ReceiptSchedule> createQueryForReceiptScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter)
 	{
 		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)

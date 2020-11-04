@@ -115,10 +115,10 @@ public class ShipmentScheduleEnqueuer
 		trxManager.run(trxNameInitial, new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				final ILock mainLock = acquireLock(adPInstanceId, queryFilters);
-				try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(localTrxName))
+				try (final ILockAutoCloseable ignore = mainLock.asAutocloseableOnTrxClose(localTrxName))
 				{
 					final Result result0 = createWorkpackages0(
 							PlainContextAware.newWithTrxName(_ctx, localTrxName),
@@ -172,13 +172,13 @@ public class ShipmentScheduleEnqueuer
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
-			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentSchedule))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(shipmentSchedule))
 			{
 				final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
 				if (invalidSchedulesService.isFlaggedForRecompute(shipmentScheduleId))
 				{
-					logger.debug("shipmentScheduleId={} is flagged for recompute; won't enqueue the current workpackage");
+					logger.debug("shipmentScheduleId is flagged for recompute; won't enqueue the current workpackage");
 					doEnqueueCurrentPackage = false;
 				}
 
@@ -234,9 +234,9 @@ public class ShipmentScheduleEnqueuer
 
 	private void handleAllSchedsAdded(
 			@Nullable final IWorkPackageBuilder workpackageBuilder,
-			String lastHeaderAggregationKey,
-			boolean noSchedsAreToRecompute,
-			Result result)
+			@Nullable final String lastHeaderAggregationKey,
+			final boolean noSchedsAreToRecompute,
+			final Result result)
 	{
 		if (workpackageBuilder == null)
 		{
@@ -262,13 +262,13 @@ public class ShipmentScheduleEnqueuer
 	}
 
 	/** Lock all invoice candidates for selection and return an auto-closable lock. */
-	private final ILock acquireLock(@NonNull final PInstanceId adPInstanceId, IQueryFilter<I_M_ShipmentSchedule> queryFilters)
+	private ILock acquireLock(@NonNull final PInstanceId adPInstanceId, final IQueryFilter<I_M_ShipmentSchedule> queryFilters)
 	{
 		final LockOwner lockOwner = LockOwner.newOwner("ShipmentScheduleEnqueuer", adPInstanceId.getRepoId());
 		return lockManager.lock()
 				.setOwner(lockOwner)
 				// allow these locks to be cleaned-up on server starts.
-				// NOTE: when we will add the ICs to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
+				// NOTE: when we will add the scheds to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
 				.setAutoCleanup(true)
 				.setFailIfAlreadyLocked(true)
 				.setSetRecordsByFilter(I_M_ShipmentSchedule.class, queryFilters)
@@ -280,7 +280,7 @@ public class ShipmentScheduleEnqueuer
 		return _trxNameInitial;
 	}
 
-	private void setTrxNameInitial(String _trxNameInitial)
+	private void setTrxNameInitial(final String _trxNameInitial)
 	{
 		this._trxNameInitial = _trxNameInitial;
 	}
@@ -289,7 +289,7 @@ public class ShipmentScheduleEnqueuer
 	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-342
+	 * task https://metasfresh.atlassian.net/browse/FRESH-342
 	 */
 	public static class Result
 	{
@@ -330,15 +330,15 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 
 		@NonNull
-		private PInstanceId adPInstanceId;
+		PInstanceId adPInstanceId;
 
 		@NonNull
-		private IQueryFilter<I_M_ShipmentSchedule> queryFilters;
+		IQueryFilter<I_M_ShipmentSchedule> queryFilters;
 
 		@NonNull
-		private M_ShipmentSchedule_QuantityTypeToUse quantityType;
-		private boolean completeShipments;
-		private boolean isShipmentDateToday;
+		M_ShipmentSchedule_QuantityTypeToUse quantityType;
+		boolean completeShipments;
+		boolean isShipmentDateToday;
 	}
 
 }

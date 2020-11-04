@@ -374,9 +374,6 @@ public class ReceiptScheduleHUGenerator
 	/**
 	 * Create Handling Units for not allocated qty of line.
 	 *
-	 * @param ctx
-	 * @param maxLUsToCreate
-	 * @param trxName
 	 * @return generated HUs
 	 */
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate0(@NonNull final IAllocationRequest request)

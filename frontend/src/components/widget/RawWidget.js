@@ -1,44 +1,27 @@
-import Moment from 'moment';
-import React, { Component } from 'react';
+import React, { createRef, PureComponent } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import { connect } from 'react-redux';
+import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
-import _ from 'lodash';
+
+import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
-import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
-import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import {
-  DATE_FORMAT,
-  TIME_FORMAT,
-  DATE_TIMEZONE_FORMAT,
-  DATE_FIELD_FORMATS,
-} from '../../constants/Constants';
-import ActionButton from './ActionButton';
-import Attributes from './Attributes/Attributes';
-import Checkbox from './Checkbox';
-import DatePicker from './DatePicker';
-import DatetimeRange from './DatetimeRange';
+import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
+
+import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
-import Image from './Image';
 import Tooltips from '../tooltips/Tooltips';
-import Labels from './Labels';
-import Link from './Link';
-import CharacterLimitInfo from './CharacterLimitInfo';
-import List from './List/List';
-import Lookup from './Lookup/Lookup';
 
 /**
  * @file Class based component.
  * @module RawWidget
  * @extends Component
  */
-export class RawWidget extends Component {
+export class RawWidget extends PureComponent {
   constructor(props) {
     super(props);
 
     const { widgetData } = props;
-    // TODO: We should use `null` instead
     let cachedValue = undefined;
 
     if (widgetData && widgetData[0]) {
@@ -52,28 +35,27 @@ export class RawWidget extends Component {
       }
     }
 
+    this.rawWidget = createRef(null);
+
     this.state = {
-      isEdited: false,
+      isFocused: false,
       cachedValue,
       errorPopup: false,
       tooltipToggled: false,
       clearedFieldWarning: false,
     };
-
-    this.getClassNames = getClassNames.bind(this);
-    this.generateMomentObj = generateMomentObj.bind(this);
   }
 
   componentDidMount() {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
 
-    if (rawWidget && autoFocus) {
-      rawWidget.focus();
+    if (rawWidget.current && autoFocus) {
+      rawWidget.current.focus();
     }
 
     if (textSelected) {
-      rawWidget.select();
+      rawWidget.current.select();
     }
   }
 
@@ -105,35 +87,17 @@ export class RawWidget extends Component {
   }
 
   /**
-   *  Re-rendering conditions by widgetType this to prevent unnecessary re-renders
-   *  Performance boost
-   */
-  shouldComponentUpdate(nextProps) {
-    switch (this.props.widgetType) {
-      case 'YesNo':
-        return !_.isEqual(nextProps.widgetData[0], this.props.widgetData[0]);
-
-      default:
-        return true;
-    }
-  }
-
-  setRef = (ref) => {
-    this.rawWidget = ref;
-  };
-
-  /**
-   * @method focus
+   * @method handleListFocus
    * @summary Function used specifically for list widgets. It blocks outside clicks, which are
    * then enabled again in handleBlur. This is to avoid closing the list as it's a separate
    * DOM element outside of it's parent's tree.
    */
-  focus = () => {
+  handleListFocus = () => {
     const { handleFocus, disableOnClickOutside } = this.props;
     const { rawWidget } = this;
 
-    if (rawWidget && rawWidget.focus) {
-      rawWidget.focus();
+    if (rawWidget.current && rawWidget.current.focus) {
+      rawWidget.current.focus();
     }
 
     disableOnClickOutside && disableOnClickOutside();
@@ -142,21 +106,29 @@ export class RawWidget extends Component {
 
   /**
    * @method handleFocus
-   * @summary ToDo: Describe the method.
-   * @param {*} e
+   * @summary Focus handler. Disables keydown handler in the parent Table and
+   * duplicated focus actions in the parent TableRow
    */
   handleFocus = () => {
-    const { handleFocus, listenOnKeysFalse, dispatch, widgetType } = this.props;
+    const {
+      handleFocus,
+      listenOnKeysFalse,
+      disableShortcut,
+      widgetType,
+    } = this.props;
 
-    widgetType === 'LongText' && dispatch(disableShortcut()); // fix issue in Cypress with cut underscores - false positive failing tests
-    // - commented because if you focus on an item and you disable the shourtcuts you won't be able to use any shortcut
-    //   assigned to that specific item/widget - see issue https://github.com/metasfresh/metasfresh/issues/7119
+    // fix issue in Cypress with cut underscores - false positive failing tests
+    // - commented out because if you focus on an item and you disable the shourtcuts
+    // you won't be able to use any shortcut assigned to that specific item/widget
+    // - see issue https://github.com/metasfresh/metasfresh/issues/7119
+    widgetType === 'LongText' && disableShortcut();
+
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
       this.setState(
         {
-          isEdited: true,
+          isFocused: true,
         },
         () => {
           handleFocus && handleFocus();
@@ -166,15 +138,17 @@ export class RawWidget extends Component {
   };
 
   /**
-   * @method handleBlurBlur
-   * @summary ToDo: Describe the method.
+   * @method handleBlurWithParams
+   * @summary on blurring the widget field enable shortcuts/key event listeners
+   * and patch the field if necessary
+   *
    * @param {*} widgetField
    * @param {*} value
    * @param {*} id
    */
-  handleBlur = (widgetField, value, id) => {
+  handleBlurWithParams = (widgetField, value, id) => {
     const {
-      dispatch,
+      allowShortcut,
       handleBlur,
       listenOnKeysTrue,
       enableOnClickOutside,
@@ -182,13 +156,12 @@ export class RawWidget extends Component {
 
     this.setState(
       {
-        isEdited: false,
+        isFocused: false,
       },
       () => {
         enableOnClickOutside && enableOnClickOutside();
-        dispatch(allowShortcut());
-        handleBlur && handleBlur(this.willPatch(widgetField, value));
-
+        allowShortcut();
+        handleBlur && handleBlur();
         listenOnKeysTrue && listenOnKeysTrue();
 
         if (widgetField) {
@@ -199,6 +172,20 @@ export class RawWidget extends Component {
   };
 
   /**
+   * @method handleBlur
+   * @summary Wrapper around `handleBlurWithParams` to grab the missing
+   * parameters and avoid anonymous function in event handlers
+   * @param {*} e - DOM event
+   */
+  handleBlur = (e) => {
+    const { filterWidget, fields, id } = this.props;
+    const value = e.target.value;
+    const widgetField = getWidgetField({ filterWidget, fields });
+
+    this.handleBlurWithParams(widgetField, value, id);
+  };
+
+  /**
    * @method updateTypedCharacters
    * @summary updates in the state the number of charactes typed
    * @param {typedText} string
@@ -206,22 +193,29 @@ export class RawWidget extends Component {
   updateTypedCharacters = (typedText) => {
     const { fieldName } = this.props;
     let existingCharsTyped = { ...this.state.charsTyped };
+
     existingCharsTyped[fieldName] = typedText.length;
     this.setState({ charsTyped: existingCharsTyped });
-    return true;
   };
 
   /**
    * @method handleKeyDown
    * @summary key handler for the widgets. For number fields we're suppressing up/down
    *          arrows to enable table row navigation
-   * @param {*} e
-   * @param {*} property
-   * @param {*} value
+   * @param {*} e - DOM event
    */
-  handleKeyDown = (e, property, value) => {
-    const { lastFormField, widgetType, closeTableField } = this.props;
+  handleKeyDown = (e) => {
+    const {
+      lastFormField,
+      widgetType,
+      filterWidget,
+      fields,
+      closeTableField,
+    } = this.props;
+    const value = e.target.value;
     const { key } = e;
+    const widgetField = getWidgetField({ filterWidget, fields });
+
     this.updateTypedCharacters(e.target.value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
@@ -239,53 +233,33 @@ export class RawWidget extends Component {
       closeTableField();
       e.preventDefault();
 
-      this.handleBlur();
-
-      return this.handlePatch(property, value, null, null, true);
+      return this.handlePatch(widgetField, value, null, null, true);
     }
 
     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
       if (key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
-      return this.handlePatch(property, value);
+
+      return key === 'Tab'
+        ? this.handleBlur(e)
+        : this.handlePatch(widgetField, value);
     }
   };
 
   /**
-   * @method willPatch
-   * @summary Checks if the value has actually changed between what was cached before.
-   * @param {*} property
-   * @param {*} value
-   * @param {*} valueTo
+   * @method handleChange
+   * @summary onChange event handler
+   * @param {*} e - DOM event
    */
-  willPatch = (property, value, valueTo) => {
-    const { widgetData } = this.props;
-    const { cachedValue } = this.state;
+  handleChange = (e) => {
+    const { handleChange, filterWidget, fields } = this.props;
+    const widgetField = getWidgetField({ filterWidget, fields });
 
-    // if there's no widget value, then nothing could've changed. Unless
-    // it's a widget for actions (think ActionButton)
-    const isValue =
-      widgetData[0].value !== undefined ||
-      (widgetData[0].status && widgetData[0].status.value !== undefined);
-    let fieldData = widgetData.find((widget) => widget.field === property);
-    if (!fieldData) {
-      fieldData = widgetData[0];
+    if (handleChange) {
+      this.updateTypedCharacters(e.target.value);
+      handleChange(widgetField, e.target.value);
     }
-
-    let allowPatching =
-      (isValue &&
-        (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
-          JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
-      JSON.stringify(cachedValue) != JSON.stringify(value) ||
-      // clear field that had it's cachedValue nulled before
-      (cachedValue === null && value === null);
-
-    if (cachedValue === undefined && !value) {
-      allowPatching = false;
-    }
-
-    return allowPatching;
   };
 
   /**
@@ -302,8 +276,21 @@ export class RawWidget extends Component {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress, widgetType, maxLength } = this.props;
-    const willPatch = this.willPatch(property, value, valueTo);
+    const {
+      handlePatch,
+      inProgress,
+      widgetType,
+      maxLength,
+      widgetData,
+    } = this.props;
+    const { cachedValue } = this.state;
+    const willPatch = shouldPatch({
+      property,
+      value,
+      valueTo,
+      cachedValue,
+      widgetData,
+    });
 
     if (widgetType === 'LongText' || widgetType === 'Text') {
       value = value.substring(0, maxLength);
@@ -348,19 +335,28 @@ export class RawWidget extends Component {
   };
 
   /**
-   * @method handleErrorPopup
-   * @summary ToDo: Describe the method.
-   * @param {*} value
+   * @method setWidgetType
+   * @summary used for password fields, when user wants to reveal the typed password
+   *
+   * @param {string} type - toggles between text/password
    */
-  handleErrorPopup = (value) => {
-    this.setState({
-      errorPopup: value,
-    });
-  };
+  setWidgetType = (type) => (this.rawWidget.type = type);
+
+  /**
+   * @method showErrorPopup
+   * @summary shows error message on mouse over
+   */
+  showErrorPopup = () => this.setState({ errorPopup: true });
+
+  /**
+   * @method hideErrorPopup
+   * @summary hides error message on mouse out
+   */
+  hideErrorPopup = () => this.setState({ errorPopup: false });
 
   /**
    * @method clearFieldWarning
-   * @summary ToDo: Describe the method.
+   * @summary Suppress showing the error message, as user already acknowledged it
    * @param {*} warning
    */
   clearFieldWarning = (warning) => {
@@ -373,19 +369,15 @@ export class RawWidget extends Component {
 
   /**
    * @method toggleTooltip
-   * @summary ToDo: Describe the method.
-   * @param {*} show
+   * @summary toggle tooltip (if it's available)
+   * @param {bool} show
    */
-  toggleTooltip = (show) => {
-    this.setState({
-      tooltipToggled: show,
-    });
-  };
+  toggleTooltip = (show) => this.setState({ tooltipToggled: show });
 
   /**
    * @method renderErrorPopup
-   * @summary ToDo: Describe the method.
-   * @param {*} reason
+   * @summary this is self explanatory
+   * @param {string} reason - the cause of error
    */
   renderErrorPopup = (reason) => {
     return (
@@ -399,69 +391,31 @@ export class RawWidget extends Component {
    */
   renderWidget = () => {
     const {
-      handleChange,
-      updated,
       modalVisible,
       isModal,
       filterWidget,
-      filterId,
       id,
-      range,
-      onHide,
-      handleBackdropLock,
-      subentity,
-      widgetType,
-      subentityId,
-      dropdownOpenCallback,
-      autoFocus,
       fullScreen,
-      //@TODO Looks like `fields` and `widgetData` are the very same thing 99.9% of the time.
       fields,
-      windowType,
-      dataId,
-      type,
       widgetData,
-      rowId,
-      tabId,
-      docId,
-      activeTab,
-      icon,
-      gridAlign,
-      entity,
-      onShow,
-      caption,
-      viewId,
       data,
-      listenOnKeys,
-      listenOnKeysFalse,
-      closeTableField,
-      handleZoomInto,
-      attribute,
-      allowShowPassword,
-      onBlurWidget,
       defaultValue,
-      isOpenDatePicker,
-      dateFormat,
-      initialFocus,
-      timeZone,
       fieldName,
       maxLength,
-      updateHeight,
-      rowIndex,
     } = this.props;
+    let tabIndex = this.props.tabIndex;
+    const { isFocused, charsTyped } = this.state;
+
     let widgetValue = data != null ? data : widgetData[0].value;
-    const { isEdited, charsTyped } = this.state;
+    if (widgetValue === null) {
+      widgetValue = '';
+    }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
       ? fields[0].parameterName
       : fields[0].field;
     const readonly = widgetData[0].readonly;
-    let tabIndex = this.props.tabIndex;
-
-    if (widgetValue === null) {
-      widgetValue = '';
-    }
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {
       tabIndex = -1;
@@ -472,10 +426,8 @@ export class RawWidget extends Component {
       widgetData[0].widgetType === 'List' && widgetData[0].multiListValue
         ? true
         : false;
-    // TODO:  ^^^^^^^^^^^^^
 
     const widgetProperties = {
-      ref: this.setRef,
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
@@ -486,662 +438,35 @@ export class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: (e) =>
-        handleChange &&
-        this.updateTypedCharacters(e.target.value) &&
-        handleChange(widgetField, e.target.value),
-      onBlur: (e) => this.handleBlur(widgetField, e.target.value, id),
-      onKeyDown: (e) =>
-        this.handleKeyDown(e, widgetField, e.target.value, widgetType),
+      onChange: this.handleChange,
+      onBlur: this.handleBlur,
+      onKeyDown: this.handleKeyDown,
       title: widgetValue,
       id,
     };
     const showErrorBorder = charsTyped && charsTyped[fieldName] > maxLength;
-    let selectedValue = widgetData[0].value
-      ? widgetData[0].value
-      : widgetData[0].defaultValue;
+    const charsTypedCount = charsTyped && charsTyped[fieldName];
 
-    switch (widgetType) {
-      case 'Date':
-        if (range) {
-          // TODO: Watch out! The datetimerange widget as exception,
-          // is non-controlled input! For further usage, needs
-          // upgrade.
-          return (
-            <DatetimeRange
-              onChange={(value, valueTo) =>
-                this.handlePatch(
-                  widgetField,
-                  value ? Moment(value).format(DATE_FORMAT) : null,
-                  null,
-                  valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
-                )
-              }
-              field={widgetField}
-              mandatory={widgetData[0].mandatory}
-              validStatus={widgetData[0].validStatus}
-              value={widgetData[0].value}
-              valueTo={widgetData[0].valueTo}
-              {...{
-                tabIndex,
-                onShow,
-                onHide,
-                timeZone,
-              }}
-            />
-          );
-        } else {
-          return (
-            <div className={this.getClassNames({ icon: true })}>
-              <DatePicker
-                key={1}
-                field={widgetField}
-                timeFormat={false}
-                dateFormat={dateFormat || true}
-                inputProps={{
-                  placeholder: fields[0].emptyText,
-                  disabled: readonly,
-                  tabIndex: tabIndex,
-                }}
-                value={widgetValue || widgetData[0].value}
-                onChange={(date) => handleChange(widgetField, date)}
-                patch={(date) =>
-                  this.handlePatch(
-                    widgetField,
-                    this.generateMomentObj(date, DATE_FORMAT),
-                    null,
-                    null,
-                    true
-                  )
-                }
-                handleChange={handleChange}
-                {...{
-                  handleBackdropLock,
-                  isOpenDatePicker,
-                  timeZone,
-                }}
-              />
-            </div>
-          );
-        }
-      case 'ZonedDateTime':
-        return (
-          <div className={this.getClassNames({ icon: true })}>
-            <DatePicker
-              key={1}
-              field={widgetField}
-              timeFormat={true}
-              dateFormat={dateFormat || true}
-              hasTimeZone={true}
-              inputProps={{
-                placeholder: fields[0].emptyText,
-                disabled: readonly,
-                tabIndex: tabIndex,
-              }}
-              value={widgetValue || widgetData[0].value}
-              onChange={(date) => handleChange(widgetField, date)}
-              patch={(date) =>
-                this.handlePatch(
-                  widgetField,
-                  this.generateMomentObj(date, DATE_TIMEZONE_FORMAT),
-                  null,
-                  null,
-                  true
-                )
-              }
-              handleChange={handleChange}
-              {...{
-                handleBackdropLock,
-                isOpenDatePicker,
-                timeZone,
-              }}
-            />
-          </div>
-        );
-      case 'Time':
-        return (
-          <div className={this.getClassNames({ icon: true })}>
-            <DatePicker
-              field={widgetField}
-              timeFormat={TIME_FORMAT}
-              dateFormat={false}
-              inputProps={{
-                placeholder: fields[0].emptyText,
-                disabled: readonly,
-                tabIndex: tabIndex,
-              }}
-              value={this.generateMomentObj(widgetValue, TIME_FORMAT)}
-              onChange={(date) => handleChange(widgetField, date)}
-              patch={(date) =>
-                this.handlePatch(
-                  widgetField,
-                  this.generateMomentObj(date, TIME_FORMAT),
-                  null,
-                  null,
-                  true
-                )
-              }
-              tabIndex={tabIndex}
-              handleChange={handleChange}
-              handleBackdropLock={handleBackdropLock}
-            />
-          </div>
-        );
-      case 'Timestamp':
-        return (
-          <div className={this.getClassNames({ icon: true })}>
-            <DatePicker
-              field={widgetField}
-              timeFormat={false}
-              dateFormat={DATE_FIELD_FORMATS[widgetType]}
-              inputProps={{
-                placeholder: fields[0].emptyText,
-                disabled: readonly,
-                tabIndex: tabIndex,
-              }}
-              value={widgetValue}
-              onChange={(date) => handleChange(widgetField, date)}
-              patch={(date) =>
-                this.handlePatch(
-                  widgetField,
-                  this.generateMomentObj(date, `x`),
-                  null,
-                  null,
-                  true
-                )
-              }
-              tabIndex={tabIndex}
-              handleChange={handleChange}
-              handleBackdropLock={handleBackdropLock}
-            />
-          </div>
-        );
-      case 'DateRange': {
-        return (
-          <DatetimeRange
-            onChange={(value, valueTo) => {
-              const val = Moment(value).format(DATE_FORMAT);
-              const valTo = Moment(valueTo).format(DATE_FORMAT);
-
-              this.handlePatch(widgetField, {
-                ...(val && { value: val }),
-                ...(valTo && { valueTo: valTo }),
-              });
-            }}
-            mandatory={widgetData[0].mandatory}
-            validStatus={widgetData[0].validStatus}
-            onShow={onShow}
-            onHide={onHide}
-            value={widgetData[0].value}
-            valueTo={widgetData[0].valueTo}
-            tabIndex={tabIndex}
-          />
-        );
-      }
-      case 'Lookup':
-        return (
-          <Lookup
-            {...{
-              attribute,
-            }}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            recent={[]}
-            dataId={dataId}
-            properties={fields}
-            windowType={windowType}
-            widgetData={widgetData}
-            placeholder={
-              this.props.emptyText
-                ? this.props.emptyText
-                : this.props.fields[0].emptyText
-            }
-            readonly={readonly}
-            mandatory={widgetData[0].mandatory}
-            rank={type}
-            align={gridAlign}
-            isModal={isModal}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
-            parameterName={fields[0].parameterName}
-            selected={widgetValue}
-            tabId={tabId}
-            rowId={rowId}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
-            initialFocus={initialFocus}
-            forceFullWidth={this.props.forceFullWidth}
-            forceHeight={this.props.forceHeight}
-            validStatus={widgetData[0].validStatus}
-            newRecordCaption={fields[0].newRecordCaption}
-            newRecordWindowId={fields[0].newRecordWindowId}
-            listenOnKeys={listenOnKeys}
-            listenOnKeysFalse={listenOnKeysFalse}
-            closeTableField={closeTableField}
-            onFocus={this.focus}
-            onBlur={this.handleBlur}
-            onChange={this.handlePatch}
-            onBlurWidget={onBlurWidget}
-            onClickOutside={this.props.onClickOutside}
-          />
-        );
-      case 'List':
-        return (
-          <List
-            {...{
-              attribute,
-            }}
-            widgetField={widgetField}
-            dataId={dataId}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            defaultValue={fields[0].emptyText}
-            selected={selectedValue}
-            properties={fields[0]}
-            readonly={readonly}
-            mandatory={widgetData[0].mandatory}
-            windowType={windowType}
-            rowId={rowId}
-            tabId={tabId}
-            onFocus={this.focus}
-            onBlur={this.handleBlur}
-            onChange={this.handlePatch}
-            align={gridAlign}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
-            parameterName={fields[0].parameterName}
-            emptyText={fields[0].emptyText}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
-            validStatus={widgetData[0].validStatus}
-            isMultiselect={isMultiselect}
-          />
-        );
-
-      case 'MultiListValue':
-        return (
-          <List
-            {...{
-              attribute,
-            }}
-            widgetField={widgetField}
-            dataId={dataId}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            defaultValue={fields[0].emptyText}
-            selected={widgetData[0].value || null}
-            properties={fields[0]}
-            readonly={readonly}
-            mandatory={widgetData[0].mandatory}
-            windowType={windowType}
-            rowId={rowId}
-            tabId={tabId}
-            onFocus={this.focus}
-            onBlur={this.handleBlur}
-            onChange={this.handlePatch}
-            align={gridAlign}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
-            parameterName={fields[0].parameterName}
-            emptyText={fields[0].emptyText}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
-            validStatus={widgetData[0].validStatus}
-            isMultiselect={true}
-          />
-        );
-      case 'Link':
-        return (
-          <Link
-            getClassNames={() => this.getClassNames({ icon: true })}
-            {...{
-              isEdited,
-              widgetProperties,
-              icon,
-              widgetData,
-              tabIndex,
-              fullScreen,
-            }}
-          />
-        );
-      case 'Text':
-        return (
-          <div>
-            <div
-              className={classnames(
-                this.getClassNames({
-                  icon: true,
-                }),
-                {
-                  'input-focused': isEdited,
-                },
-                {
-                  'border-danger': showErrorBorder,
-                }
-              )}
-            >
-              <input {...widgetProperties} type="text" />
-              {icon && <i className="meta-icon-edit input-icon-right" />}
-            </div>
-            {charsTyped && charsTyped[fieldName] >= 0 && (
-              <CharacterLimitInfo
-                charsTyped={charsTyped[fieldName]}
-                maxLength={maxLength}
-              />
-            )}
-          </div>
-        );
-      case 'LongText':
-        return (
-          <div>
-            <div
-              className={classnames(
-                this.getClassNames({
-                  icon: false,
-                  forcedPrimary: true,
-                }),
-                {
-                  'input-focused': isEdited,
-                },
-                {
-                  'border-danger': showErrorBorder,
-                }
-              )}
-            >
-              <textarea {...widgetProperties} />
-            </div>
-            {charsTyped && charsTyped[fieldName] >= 0 && (
-              <CharacterLimitInfo
-                charsTyped={charsTyped[fieldName]}
-                maxLength={maxLength}
-              />
-            )}
-          </div>
-        );
-      case 'Password':
-        return (
-          <div className="input-inner-container">
-            <div
-              className={classnames(
-                this.getClassNames({
-                  icon: true,
-                }),
-                {
-                  'input-focused': isEdited,
-                }
-              )}
-            >
-              <input {...widgetProperties} type="password" ref={this.setRef} />
-              {icon && <i className="meta-icon-edit input-icon-right" />}
-            </div>
-            {allowShowPassword && (
-              <div
-                onMouseDown={() => {
-                  this.rawWidget.type = 'text';
-                }}
-                onMouseUp={() => {
-                  this.rawWidget.type = 'password';
-                }}
-                className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
-              >
-                <i className="meta-icon-show" />
-              </div>
-            )}
-          </div>
-        );
-      case 'Integer':
-      case 'Amount':
-      case 'Quantity':
-        return (
-          <div
-            className={classnames(this.getClassNames(), 'number-field', {
-              'input-focused': isEdited,
-            })}
-          >
-            <input
-              {...widgetProperties}
-              type="number"
-              min={0}
-              precision={widgetField === 'CableLength' ? 2 : 1}
-              step={subentity === 'quickInput' ? 0.1 : 1}
-            />
-            {widgetData[0].devices && (
-              <div className="device-widget-wrapper">
-                <DevicesWidget
-                  devices={widgetData[0].devices}
-                  tabIndex={1}
-                  handleChange={(value) =>
-                    this.handlePatch && this.handlePatch(fields[0].field, value)
-                  }
-                />
-              </div>
-            )}
-          </div>
-        );
-      case 'Number':
-      case 'CostPrice':
-        return (
-          <div
-            className={classnames(this.getClassNames(), 'number-field', {
-              'input-focused': isEdited,
-            })}
-          >
-            <input {...widgetProperties} type="number" />
-          </div>
-        );
-      case 'YesNo':
-        return (
-          <Checkbox
-            {...{
-              widgetData,
-              disabled: readonly,
-              fullScreen,
-              tabIndex,
-              widgetField,
-              id,
-              filterWidget,
-            }}
-            handlePatch={this.handlePatch}
-          />
-        );
-      case 'Switch':
-        return (
-          <label
-            className={classnames('input-switch', {
-              'input-disabled': readonly,
-              'input-mandatory':
-                widgetData[0].mandatory && widgetData[0].value.length === 0,
-              'input-error':
-                widgetData[0].validStatus && !widgetData[0].validStatus.valid,
-              'input-table': rowId && !isModal,
-            })}
-            tabIndex={tabIndex}
-            ref={this.setRef}
-            onKeyDown={(e) => {
-              e.key === ' ' &&
-                this.handlePatch(widgetField, !widgetData[0].value, id);
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={widgetData[0].value}
-              disabled={readonly}
-              tabIndex="-1"
-              onChange={(e) =>
-                this.handlePatch(widgetField, e.target.checked, id)
-              }
-            />
-            <div className="input-slider" />
-          </label>
-        );
-      case 'Label':
-        return (
-          <div
-            className={classnames('tag tag-warning ', {
-              [`text-${gridAlign}`]: gridAlign,
-            })}
-            tabIndex={tabIndex}
-            ref={this.setRef}
-          >
-            {widgetData[0].value}
-          </div>
-        );
-      case 'Button':
-        return (
-          <button
-            className={
-              'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
-              (readonly ? 'tag-disabled disabled ' : '')
-            }
-            onClick={() => this.handlePatch(widgetField)}
-            tabIndex={tabIndex}
-            ref={this.setRef}
-          >
-            {widgetData[0].value &&
-              widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
-          </button>
-        );
-      case 'ProcessButton':
-        return (
-          <button
-            className={
-              'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
-              (readonly ? 'tag-disabled disabled ' : '')
-            }
-            onClick={this.handleProcess}
-            tabIndex={tabIndex}
-            ref={this.setRef}
-          >
-            {caption}
-          </button>
-        );
-      case 'ActionButton':
-        return (
-          <ActionButton
-            data={widgetData[0]}
-            windowType={windowType}
-            fields={fields}
-            dataId={dataId}
-            docId={docId}
-            activeTab={activeTab}
-            onChange={(option) => this.handlePatch(fields[1].field, option)}
-            tabIndex={tabIndex}
-            dropdownOpenCallback={dropdownOpenCallback}
-            ref={this.setRef}
-          />
-        );
-      case 'ProductAttributes':
-        return (
-          <Attributes
-            entity={entity}
-            attributeType="pattribute"
-            fields={fields}
-            dataId={dataId}
-            widgetData={widgetData[0]}
-            docType={windowType}
-            tabId={tabId}
-            rowId={rowId}
-            viewId={viewId}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-            fieldName={widgetField}
-            handleBackdropLock={handleBackdropLock}
-            patch={(option) => this.handlePatch(widgetField, option)}
-            tabIndex={tabIndex}
-            autoFocus={autoFocus}
-            readonly={readonly}
-            rowIndex={rowIndex}
-            updateHeight={updateHeight}
-          />
-        );
-      case 'Address':
-        return (
-          <Attributes
-            attributeType="address"
-            entity={entity}
-            fields={fields}
-            dataId={dataId}
-            widgetData={widgetData[0]}
-            docType={windowType}
-            tabId={tabId}
-            rowId={rowId}
-            fieldName={widgetField}
-            handleBackdropLock={handleBackdropLock}
-            patch={(option) => this.handlePatch(widgetField, option)}
-            tabIndex={tabIndex}
-            autoFocus={autoFocus}
-            readonly={readonly}
-            isModal={isModal}
-          />
-        );
-      case 'Image':
-        return (
-          <Image
-            fields={fields}
-            data={widgetData[0]}
-            handlePatch={this.handlePatch}
-            readonly={readonly}
-          />
-        );
-      case 'ZoomIntoButton':
-        return (
-          <button
-            className={
-              'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
-              (readonly ? 'tag-disabled disabled ' : '')
-            }
-            onClick={() => handleZoomInto(fields[0].field)}
-            tabIndex={tabIndex}
-            ref={this.setRef}
-          >
-            {caption}
-          </button>
-        );
-      case 'Labels': {
-        let values = [];
-
-        const entry = widgetData[0];
-
-        if (entry && entry.value && Array.isArray(entry.value.values)) {
-          values = entry.value.values;
-        }
-
-        return (
-          <Labels
-            name={widgetField}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            tabId={tabId}
-            rowId={rowId}
-            windowType={windowType}
-            viewId={viewId}
-            selected={values}
-            className={this.getClassNames()}
-            onChange={(value) =>
-              this.handlePatch(widgetField, {
-                values: value,
-              })
-            }
-            tabIndex={tabIndex}
-          />
-        );
-      }
-      default:
-        return false;
-    }
+    return (
+      <WidgetRenderer
+        {...this.props}
+        {...{
+          readonly,
+          isMultiselect,
+          widgetField,
+          widgetProperties,
+          showErrorBorder,
+          isFocused,
+        }}
+        ref={this.rawWidget}
+        charsTyped={charsTypedCount}
+        onListFocus={this.handleListFocus}
+        onBlurWithParams={this.handleBlurWithParams}
+        onPatch={this.handlePatch}
+        onSetWidgetType={this.setWidgetType}
+        onHandleProcess={this.handleProcess}
+      />
+    );
   };
 
   render() {
@@ -1152,10 +477,6 @@ export class RawWidget extends Component {
       fields,
       type,
       noLabel,
-      // TODO: We should not be using an empty object when widgetData is not defined.
-      // It's really a bad practice. No value = null ! Right now sometimes it's an
-      // array with a single empty object, sometimes [-1], other times [undefined].
-      // That's a big NO NO
       widgetData,
       rowId,
       isModal,
@@ -1173,7 +494,7 @@ export class RawWidget extends Component {
       errorPopup,
       clearedFieldWarning,
       tooltipToggled,
-      isEdited,
+      isFocused,
     } = this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
@@ -1272,8 +593,12 @@ export class RawWidget extends Component {
           )}
           <div
             className={fieldClass}
-            onMouseEnter={() => this.handleErrorPopup(true)}
-            onMouseLeave={() => this.handleErrorPopup(false)}
+            onMouseEnter={
+              validStatus && !validStatus.valid
+                ? this.showErrorPopup
+                : undefined
+            }
+            onMouseLeave={this.hideErrorPopup}
           >
             {!clearedFieldWarning && warning && (
               <div
@@ -1297,7 +622,7 @@ export class RawWidget extends Component {
 
             <div
               className={classnames('input-body-container', {
-                focused: isEdited,
+                focused: isFocused,
               })}
               title={valueDescription}
             >
@@ -1333,7 +658,4 @@ export class RawWidget extends Component {
 RawWidget.propTypes = RawWidgetPropTypes;
 RawWidget.defaultProps = RawWidgetDefaultProps;
 
-export default connect((state) => ({
-  modalVisible: state.windowHandler.modal.visible,
-  timeZone: state.appHandler.me.timeZone,
-}))(RawWidget);
+export default RawWidget;

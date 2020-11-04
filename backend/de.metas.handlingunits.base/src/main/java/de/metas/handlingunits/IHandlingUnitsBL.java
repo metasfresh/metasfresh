@@ -273,7 +273,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets top level parent of given HU (i.e. the top of hierarchy) or given HU if that HU does not have a parent.
 	 *
-	 * @param hu
 	 * @return top level parent; never return null; more preciselly:
 	 *         <ul>
 	 *         <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
@@ -409,6 +408,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return {@code true} if the given {@code hu} is not {@code null} and if it also has a {@code M_HU_Item_Parent} with {@code ItemType} being {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.
 	 */
 	boolean isAggregateHU(I_M_HU hu);
+
+	QtyTU getTUsCount(final I_M_HU tuOrAggregatedTU);
 
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
@@ -547,6 +548,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	}
 
 	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
+
+	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
 }

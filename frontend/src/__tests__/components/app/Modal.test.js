@@ -17,24 +17,28 @@ import keymap from '../../../../test_setup/fixtures/keymap.json';
 import thunk from 'redux-thunk';
 const mockStore = configureStore([thunk]);
 
-windowHandlerState.modal = testModal;
+const getInitialState = function(state = {}) {
+  const res = merge.recursive(
+    true,
+    {
+      appHandler: { ...appHandlerState },
+      windowHandler: {
+        ...windowHandlerState,
+        modal: testModal,
+      },
+    },
+    state
+  );
+
+  return res;
+};
 
 describe('Modal test', () => {
   it('renders without errors', () => {
     const dummyProps = fixtures;
-    const initialState = function(state = {}) {
-      const res = merge.recursive(
-        true,
-        {
-          appHandler: { ...appHandlerState },
-          windowHandler: { ...windowHandlerState },
-        },
-        state
-      );
-
-      return res;
-    };
+    const initialState = getInitialState();
     const store = mockStore(initialState);
+
     const wrapper = render(
       <Provider store={store}>
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>

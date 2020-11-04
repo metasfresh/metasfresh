@@ -1,6 +1,7 @@
 package de.metas.bpartner.composite.repository;
 
 import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -20,6 +21,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
@@ -138,7 +140,10 @@ final class BPartnerCompositeSaver
 		}
 
 		bpartnerRecord.setExternalId(ExternalId.toValue(bpartner.getExternalId()));
-		bpartnerRecord.setC_BP_Group_ID(bpartner.getGroupId().getRepoId()); // since we validated, we know it's set
+
+		// load within trx and set to the record. otherwise MBPartner.beforeSave() might fail
+		final I_C_BP_Group bpGroupRecord = load(bpartner.getGroupId().getRepoId(), I_C_BP_Group.class); // since we validated, we know it's set
+		bpartnerRecord.setC_BP_Group(bpGroupRecord);
 		// bpartner.getId() used only for lookup
 
 		bpartnerRecord.setAD_Language(Language.asLanguageStringOrNull(bpartner.getLanguage()));
@@ -217,10 +222,10 @@ final class BPartnerCompositeSaver
 			final BPartnerLocationType locationType = bpartnerLocation.getLocationType();
 			if (locationType != null)
 			{
-				locationType.getBillTo().ifPresent(b -> bpartnerLocationRecord.setIsBillTo(b));
-				locationType.getBillToDefault().ifPresent(b -> bpartnerLocationRecord.setIsBillToDefault(b));
-				locationType.getShipTo().ifPresent(b -> bpartnerLocationRecord.setIsShipTo(b));
-				locationType.getShipToDefault().ifPresent(b -> bpartnerLocationRecord.setIsShipToDefault(b));
+				locationType.getBillTo().ifPresent(bpartnerLocationRecord::setIsBillTo);
+				locationType.getBillToDefault().ifPresent(bpartnerLocationRecord::setIsBillToDefault);
+				locationType.getShipTo().ifPresent(bpartnerLocationRecord::setIsShipTo);
+				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
 			}
 
 			boolean anyLocationChange = false;
@@ -228,7 +233,7 @@ final class BPartnerCompositeSaver
 			// C_Location is immutable; never update an existing record, but create a new one
 			final I_C_Location locationRecord = newInstance(I_C_Location.class);
 
-			anyLocationChange = anyLocationChange || bpartnerLocation.isActiveChanged();
+			anyLocationChange = bpartnerLocation.isActiveChanged();
 			locationRecord.setIsActive(bpartnerLocation.isActive());
 
 			anyLocationChange = anyLocationChange || bpartnerLocation.isAddress1Changed();
@@ -371,7 +376,7 @@ final class BPartnerCompositeSaver
 			@NonNull final BPartnerContact bpartnerContact,
 			@Nullable final OrgId orgId)
 	{
-		try (final MDCCloseable bpartnerContactRecordMDC = TableRecordMDC.putTableRecordReference(I_AD_User.Table_Name, bpartnerContact.getId()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_AD_User.Table_Name, bpartnerContact.getId()))
 		{
 			final I_AD_User bpartnerContactRecord = loadOrNew(bpartnerContact.getId(), I_AD_User.class);
 
@@ -393,14 +398,14 @@ final class BPartnerCompositeSaver
 			final BPartnerContactType contactType = bpartnerContact.getContactType();
 			if (contactType != null)
 			{
-				contactType.getDefaultContact().ifPresent(b -> bpartnerContactRecord.setIsDefaultContact(b));
-				contactType.getBillToDefault().ifPresent(b -> bpartnerContactRecord.setIsBillToContact_Default(b));
-				contactType.getShipToDefault().ifPresent(b -> bpartnerContactRecord.setIsShipToContact_Default(b));
-				contactType.getSales().ifPresent(b -> bpartnerContactRecord.setIsSalesContact(b));
-				contactType.getSalesDefault().ifPresent(b -> bpartnerContactRecord.setIsSalesContact_Default(b));
-				contactType.getPurchase().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact(b));
-				contactType.getPurchaseDefault().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact_Default(b));
-				contactType.getSubjectMatter().ifPresent(b -> bpartnerContactRecord.setIsSubjectMatterContact(b));
+				contactType.getDefaultContact().ifPresent(bpartnerContactRecord::setIsDefaultContact);
+				contactType.getBillToDefault().ifPresent(bpartnerContactRecord::setIsBillToContact_Default);
+				contactType.getShipToDefault().ifPresent(bpartnerContactRecord::setIsShipToContact_Default);
+				contactType.getSales().ifPresent(bpartnerContactRecord::setIsSalesContact);
+				contactType.getSalesDefault().ifPresent(bpartnerContactRecord::setIsSalesContact_Default);
+				contactType.getPurchase().ifPresent(bpartnerContactRecord::setIsPurchaseContact);
+				contactType.getPurchaseDefault().ifPresent(bpartnerContactRecord::setIsPurchaseContact_Default);
+				contactType.getSubjectMatter().ifPresent(bpartnerContactRecord::setIsSubjectMatterContact);
 			}
 
 			bpartnerContactRecord.setDescription(bpartnerContact.getDescription());
@@ -441,7 +446,7 @@ final class BPartnerCompositeSaver
 			@NonNull final BPartnerBankAccount bankAccount,
 			@Nullable final OrgId orgId)
 	{
-		try (final MDCCloseable bankAccountRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BP_BankAccount.Table_Name, bankAccount.getId()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BP_BankAccount.Table_Name, bankAccount.getId()))
 		{
 
 			final I_C_BP_BankAccount record = loadOrNew(bankAccount.getId(), I_C_BP_BankAccount.class);

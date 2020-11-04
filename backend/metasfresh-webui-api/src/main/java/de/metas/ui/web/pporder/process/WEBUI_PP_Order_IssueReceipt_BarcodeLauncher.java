@@ -1,5 +1,6 @@
 package de.metas.ui.web.pporder.process;
 
+import de.metas.process.ProcessExecutionResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.IPPOrderDAO;
@@ -60,7 +61,7 @@ public class WEBUI_PP_Order_IssueReceipt_BarcodeLauncher extends JavaProcess
 		}
 
 		final TableRecordReference ppOrderRef = TableRecordReference.of(org.eevolution.model.I_PP_Order.Table_Name, ppOrderId);
-		getResult().setRecordToOpen(ppOrderRef, PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toInt(), OpenTarget.GridView);
+		getResult().setRecordToOpen(ppOrderRef, PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toInt(), OpenTarget.GridView, ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB_OVERLAY);
 		return MSG_OK;
 	}
 }

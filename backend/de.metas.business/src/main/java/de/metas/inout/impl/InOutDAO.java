@@ -1,12 +1,50 @@
 package de.metas.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.IDocument;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -30,44 +68,6 @@ import java.util.Collection;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.IDocument;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.product.ProductId;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
-
 public class InOutDAO implements IInOutDAO
 {
 	private static final Logger logger = LogManager.getLogger(InOutDAO.class);
@@ -90,6 +90,18 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> List<T> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds, final Class<T> returnType)
+	{
+		final Set<Integer> ids = inoutLineIds.stream().map(InOutLineId::getRepoId).collect(Collectors.toSet());
+
+		return queryBL.createQueryBuilder(returnType)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, ids)
+				.create()
+				.list(returnType);
 	}
 
 	@NonNull
@@ -356,4 +368,51 @@ public class InOutDAO implements IInOutDAO
 				.update(updater);
 		logger.debug("LineNo was set to 0 for {} M_InOutLine records; inOutLineIdsToUnset.size={}", unsetCount, inOutLineIdsToUnset.size());
 	}
+
+	@Nullable
+	public I_M_InOut getInOutByDocumentNumber(@NonNull final String documentNo, @NonNull final DocTypeId docTypeId, @NonNull final OrgId orgId)
+	{
+		List<I_M_InOut> inOutList = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_DocType_ID, docTypeId)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_DocumentNo, documentNo)
+				.create()
+				.list();
+
+		if (inOutList.size() == 1)
+		{
+			return inOutList.get(0);
+		}
+
+		return null;
+	}
+
+	public ImmutableMap<InOutLineId,I_M_InOut> retrieveInOutByLineIds(@NonNull final Set<InOutLineId> inOutLineIds)
+	{
+		final List<I_M_InOutLine> inOutLines = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
+				.create()
+				.list();
+
+		final Set<Integer> inOutIds = inOutLines.stream().map(I_M_InOutLine::getM_InOut_ID).collect(ImmutableSet.toImmutableSet());
+
+		final Map<Integer, I_M_InOut> inOutRecordsById = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutIds)
+				.create()
+				.mapById();
+
+		final ImmutableMap.Builder<InOutLineId, I_M_InOut> lineId2InOutBuilder = ImmutableMap.builder();
+
+		inOutLines.forEach( inOutLine -> {
+			final InOutLineId inOutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
+
+			lineId2InOutBuilder.put(inOutLineId, inOutRecordsById.get(inOutLine.getM_InOut_ID()));
+		});
+
+		return lineId2InOutBuilder.build();
+	}
+
 }
