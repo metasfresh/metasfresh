@@ -44,7 +44,7 @@ public class CoalesceUtil
 	}
 
 	@Nullable
-	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
+	public <T> T coalesceOrGet(@Nullable final T value1, @NonNull final Supplier<T> value2)
 	{
 		return value1 != null ? value1 : value2.get();
 	}
