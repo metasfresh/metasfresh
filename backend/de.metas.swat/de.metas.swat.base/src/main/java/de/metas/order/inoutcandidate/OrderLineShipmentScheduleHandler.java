@@ -244,6 +244,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		shipmentSchedule.setPriorityRule(order.getPriorityRule());
 		shipmentSchedule.setBill_BPartner_ID(order.getBill_BPartner_ID());
+		shipmentSchedule.setBill_Location_ID(order.getBill_Location_ID());
+		shipmentSchedule.setBill_User_ID(order.getBill_User_ID());
+
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
 		shipmentSchedule.setM_Tour_ID(order.getM_Tour_ID());
@@ -295,7 +298,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveModelsWithMissingCandidates(
+	public Iterator<?> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
 			final String trxName)
 	{
@@ -306,7 +309,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
 		final TypedSqlQueryFilter<I_C_OrderLine> orderLinesFilter = TypedSqlQueryFilter.of(wc);
 
-		final Iterator<I_C_OrderLine> orderLines = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(orderLinesFilter)
@@ -316,8 +319,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_C_OrderLine.class);
-
-		return orderLines;
 	}
 
 	/**
@@ -332,7 +333,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		return salesOrderLine::getQtyOrdered;
 	}
 
-	private PPOrderId createPickingOrderIfNeeded(final I_C_OrderLine salesOrderLine)
+	@Nullable
+	private PPOrderId createPickingOrderIfNeeded(@NonNull final I_C_OrderLine salesOrderLine)
 	{
 		final PickingBOMService pickingBOMService = SpringContextHolder.instance.getBean(PickingBOMService.class);
 		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);
