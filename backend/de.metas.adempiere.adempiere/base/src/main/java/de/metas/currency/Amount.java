@@ -35,12 +35,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,19 +49,18 @@ import lombok.Value;
 
 /**
  * Amount datatype: a {@link BigDecimal} value and a currency code.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 @Value
-public final class Amount implements Comparable<Amount>
+public class Amount implements Comparable<Amount>
 {
-	public static Amount of(@NonNull final BigDecimal value, @NonNull CurrencyCode currencyCode)
+	public static Amount of(@NonNull final BigDecimal value, @NonNull final CurrencyCode currencyCode)
 	{
 		return new Amount(value, currencyCode);
 	}
 
-	public static Amount of(final int value, @NonNull CurrencyCode currencyCode)
+	public static Amount of(final int value, @NonNull final CurrencyCode currencyCode)
 	{
 		return of(BigDecimal.valueOf(value), currencyCode);
 	}
@@ -80,7 +79,7 @@ public final class Amount implements Comparable<Amount>
 	BigDecimal value;
 	CurrencyCode currencyCode;
 
-	private Amount(@NonNull final BigDecimal value, @NonNull CurrencyCode currencyCode)
+	private Amount(@NonNull final BigDecimal value, @NonNull final CurrencyCode currencyCode)
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyCode = currencyCode;
@@ -251,12 +250,19 @@ public final class Amount implements Comparable<Amount>
 		}
 	}
 
-	public Amount multiply(@NonNull Percent percent, @NonNull final CurrencyPrecision precision)
+	public Amount multiply(@NonNull final Percent percent, @NonNull final CurrencyPrecision precision)
 	{
 		final BigDecimal newValue = percent.computePercentageOf(value, precision.toInt(), precision.getRoundingMode());
 
 		return !newValue.equals(value)
 				? new Amount(newValue, currencyCode)
+				: this;
+	}
+
+	public Amount abs()
+	{
+		return value.signum() < 0
+				? new Amount(value.abs(), currencyCode)
 				: this;
 	}
 }
