@@ -622,10 +622,6 @@ public class TimeUtilTest
 	public void test_asTimestamp_asLocalDateWithTimeZone()
 	{
 		SystemTime.setFixedTimeSource("2020-04-29T13:14:00+05:00");
-		// SystemTime.setTimeSource(
-		// 		FixedTimeSource.ofZonedDateTime(LocalDate.of(2020, Month.APRIL, 29)
-		// 				.atTime(LocalTime.of(13, 14))
-		// 				.atZone(ZoneId.of("UTC+5"))));
 
 		final Timestamp timestamp = TimeUtil.asTimestamp(
 				LocalDate.parse("2020-04-30")
