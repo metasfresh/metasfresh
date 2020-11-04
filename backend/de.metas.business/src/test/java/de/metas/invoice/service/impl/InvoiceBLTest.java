@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -47,7 +48,6 @@ import de.metas.document.DocTypeId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class InvoiceBLTest
 {

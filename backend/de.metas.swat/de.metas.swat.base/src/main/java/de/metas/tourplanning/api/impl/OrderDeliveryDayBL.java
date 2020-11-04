@@ -3,6 +3,7 @@ package de.metas.tourplanning.api.impl;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -22,7 +23,6 @@ import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
@@ -93,7 +93,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 				bpartnerLocationId);
 		final ZonedDateTime preparationDate = tourAndDate.getRight();
 
-		final ZonedDateTime systemTime = SystemTime.asZonedDateTime(timeZone);
+		final ZonedDateTime systemTime = de.metas.common.util.time.SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
 			order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));

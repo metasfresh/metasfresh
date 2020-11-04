@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,6 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -56,9 +56,9 @@ public class CandidateRepositoryRetrievalTest
 	public void retrieveCandidatesForPPOrderId()
 	{
 		@SuppressWarnings("unused")
-		final I_MD_Candidate candidateWithoutProdDetail = createCandidateRecord(SystemTime.asTimestamp());
+		final I_MD_Candidate candidateWithoutProdDetail = createCandidateRecord(de.metas.common.util.time.SystemTime.asTimestamp());
 
-		final I_MD_Candidate candidateWithUnrelatedProdDetail = createCandidateRecord(SystemTime.asTimestamp());
+		final I_MD_Candidate candidateWithUnrelatedProdDetail = createCandidateRecord(de.metas.common.util.time.SystemTime.asTimestamp());
 		final I_MD_Candidate_Prod_Detail unrelatedProductionDetail = newInstance(I_MD_Candidate_Prod_Detail.class);
 		unrelatedProductionDetail.setPP_Order_ID(10);
 		unrelatedProductionDetail.setMD_Candidate(candidateWithUnrelatedProdDetail);

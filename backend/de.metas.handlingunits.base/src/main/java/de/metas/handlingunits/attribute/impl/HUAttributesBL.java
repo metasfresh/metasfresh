@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 
 /*
@@ -52,7 +53,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class HUAttributesBL implements IHUAttributesBL

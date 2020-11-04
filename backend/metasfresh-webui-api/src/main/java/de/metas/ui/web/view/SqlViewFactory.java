@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -258,7 +258,7 @@ public class SqlViewFactory implements IViewFactory
 			}
 			else
 			{
-				value = SystemTime.asZonedDateTime();
+				value = de.metas.common.util.time.SystemTime.asZonedDateTime();
 			}
 		}
 		else

@@ -2,6 +2,7 @@ package de.metas.payment.sepa.process;
 
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -19,7 +20,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Process that creates SEPA xmls in 3 steps:

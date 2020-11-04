@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
@@ -45,7 +46,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class WFActivityModel
 {

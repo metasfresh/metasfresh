@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -64,7 +65,6 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -139,7 +139,7 @@ public class PurchaseRowsLoaderTest
 
 		salesOrderRecord = newInstance(I_C_Order.class);
 		salesOrderRecord.setC_BPartner_ID(bPartnerCustomer.getC_BPartner_ID());
-		salesOrderRecord.setPreparationDate(SystemTime.asTimestamp());
+		salesOrderRecord.setPreparationDate(de.metas.common.util.time.SystemTime.asTimestamp());
 		salesOrderRecord.setC_PaymentTerm_ID(30);
 		saveRecord(salesOrderRecord);
 

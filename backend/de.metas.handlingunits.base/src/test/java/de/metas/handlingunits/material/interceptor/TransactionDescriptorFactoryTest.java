@@ -9,6 +9,7 @@ import static org.compiere.util.TimeUtil.asInstant;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -20,7 +21,6 @@ import org.junit.Test;
 
 import de.metas.inout.InOutLineId;
 import de.metas.product.ProductId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

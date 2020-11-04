@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -65,7 +66,6 @@ import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -173,7 +173,7 @@ class ContactRestControllerTest
 		saveRecord(userRecord3);
 		resetTimeSource();
 
-		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test
@@ -246,7 +246,7 @@ class ContactRestControllerTest
 
 		recordChangeLogRepository.add(TableRecordReference.of(userRecord), RecordChangeLogEntry.builder()
 				.changedByUserId(null)
-				.changedTimestamp(SystemTime.asInstant())
+				.changedTimestamp(de.metas.common.util.time.SystemTime.asInstant())
 				.columnName(I_AD_User.COLUMNNAME_Name)
 				.columnDisplayName(TranslatableStrings.constant("columnDisplayName"))
 				.valueOld("valueOld")
@@ -354,7 +354,7 @@ class ContactRestControllerTest
 						.build())
 				.build();
 
-		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 
 		final ResponseEntity<JsonResponseUpsert> result = contactRestController.createOrUpdateContact(upsertRequest);
 

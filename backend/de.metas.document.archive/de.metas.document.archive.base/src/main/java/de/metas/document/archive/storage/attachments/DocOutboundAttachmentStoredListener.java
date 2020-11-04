@@ -2,6 +2,7 @@ package de.metas.document.archive.storage.attachments;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 
 import java.net.URI;
@@ -18,7 +19,6 @@ import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
