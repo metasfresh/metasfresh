@@ -232,18 +232,20 @@ public class PaymentAndInvoiceRowsRepo
 
 	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(final InvoiceToAllocate invoiceToAllocate, final ZonedDateTime evaluationDate)
 	{
-		if (!invoiceToAllocate.getDocBaseType().isCustomerInvoice())
+		if (invoiceToAllocate.getDocBaseType().isSales())
+		{
+			return invoiceProcessorServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+					.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+					.evaluationDate(evaluationDate)
+					.customerId(invoiceToAllocate.getBpartnerId())
+					.invoiceId(invoiceToAllocate.getInvoiceId())
+					.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+					.build());
+		}
+		else
 		{
 			return Optional.empty();
 		}
-
-		return invoiceProcessorServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
-				.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
-				.evaluationDate(evaluationDate)
-				.customerId(invoiceToAllocate.getBpartnerId())
-				.invoiceId(invoiceToAllocate.getInvoiceId())
-				.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
-				.build());
 	}
 
 	public List<InvoiceRow> getInvoiceRowsListByInvoiceId(
