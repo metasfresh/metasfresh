@@ -1,18 +1,39 @@
 package de.metas.order.inoutcandidate;
 
-import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,38 +56,16 @@ import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.picking_bom.PickingBOMService;
-import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
-import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.order.DeliveryRule;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /**
  * Default implementation for sales order lines.
@@ -76,6 +75,7 @@ import lombok.NonNull;
 @Component
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
+	private static IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
@@ -243,9 +243,15 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			@NonNull final I_C_Order order)
 	{
 		shipmentSchedule.setPriorityRule(order.getPriorityRule());
-		shipmentSchedule.setBill_BPartner_ID(order.getBill_BPartner_ID());
-		shipmentSchedule.setBill_Location_ID(order.getBill_Location_ID());
-		shipmentSchedule.setBill_User_ID(order.getBill_User_ID());
+
+		final BPartnerLocationId billToLocationId = orderBL.getBillToLocationId(order);
+		shipmentSchedule.setBill_BPartner_ID(billToLocationId.getBpartnerId().getRepoId());
+		shipmentSchedule.setBill_Location_ID(billToLocationId.getRepoId());
+		if(orderBL.hasBillToContactId(order))
+		{
+			final BPartnerContactId billToContactId = orderBL.getBillToContactId(order);
+			shipmentSchedule.setBill_User_ID(BPartnerContactId.toRepoId(billToContactId));
+		}
 
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());

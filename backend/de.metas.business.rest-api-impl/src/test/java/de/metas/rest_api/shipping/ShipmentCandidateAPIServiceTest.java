@@ -152,7 +152,7 @@ class ShipmentCandidateAPIServiceTest
 
 		assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(1);
-		assertThat(result.getItems().get(0).getCustomer().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);

@@ -27,7 +27,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -196,8 +198,14 @@ class ShipmentCandidateAPIService
 				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentSchedule.getId()))
 				{
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(shipmentSchedule, attributesForASIs);
-					final JsonCustomer customer = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner);
-					final JsonProduct product = createJsonProduct(shipmentSchedule, customer.getLanguage(), productId2Product);
+
+					final JsonCustomer shipBPartner = createJsonCustomer(
+							shipmentSchedule.getShipBPartnerId(),
+							shipmentSchedule.getShipLocationId(),
+							shipmentSchedule.getShipContactId(),
+							bpartnerIdToBPartner);
+
+					final JsonProduct product = createJsonProduct(shipmentSchedule, shipBPartner.getLanguage(), productId2Product);
 
 					final List<JsonQuantity> quantityToDeliver = createJsonQuantities(shipmentSchedule.getQuantityToDeliver());
 
@@ -206,13 +214,23 @@ class ShipmentCandidateAPIService
 					final JsonResponseShipmentCandidateBuilder itemBuilder = JsonResponseShipmentCandidate.builder()
 							.id(JsonMetasfreshId.of(shipmentSchedule.getId().getRepoId()))
 							.orgCode(orgDAO.retrieveOrgValue(shipmentSchedule.getOrgId()))
-							.customer(customer)
+							.shipBPartner(shipBPartner)
 							.product(product)
 							.attributeSetInstance(jsonAttributeSetInstance)
 							.quantities(quantityToDeliver)
 							.orderedQty(orderedQty)
 							.dateOrdered(shipmentSchedule.getDateOrdered())
 							.numberOfItemsForSameShipment(shipmentSchedule.getNumberOfItemsForSameShipment());
+
+					if (shipmentSchedule.getBillBPartnerId() != null && shipmentSchedule.getBillLocationId() != null)
+					{
+						final JsonCustomer billBPartner = createJsonCustomer(
+								shipmentSchedule.getBillBPartnerId(),
+								shipmentSchedule.getBillLocationId(),
+								shipmentSchedule.getBillContactId(),
+								bpartnerIdToBPartner);
+						itemBuilder.billBPartner(billBPartner);
+					}
 
 					setOrderReferences(itemBuilder, shipmentSchedule, orderIdToOrderRecord);
 
@@ -246,16 +264,18 @@ class ShipmentCandidateAPIService
 	}
 
 	private JsonCustomer createJsonCustomer(
-			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final BPartnerLocationId bPartnerLocationId,
+			@Nullable final BPartnerContactId bPartnerContactId,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
-		final BPartnerComposite composite = bpartnerIdToBPartner.get(shipmentSchedule.getCustomerId());
+		final BPartnerComposite composite = bpartnerIdToBPartner.get(bpartnerId);
 		final BPartnerLocation location = composite
-				.extractLocation(shipmentSchedule.getLocationId())
+				.extractLocation(bPartnerLocationId)
 				.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's location from the shipment schedule's bPartner")
 						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
-						.setParameter("C_BPartner_Location_ID", shipmentSchedule.getLocationId().getRepoId()));
+						.setParameter("C_BPartner_ID", bpartnerId.getRepoId())
+						.setParameter("C_BPartner_Location_ID", bPartnerLocationId.getRepoId()));
 
 		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(location.getAddress1());
 		if (splitStreetAndHouseNumber == null)
@@ -286,7 +306,7 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
-		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
+		final JsonCustomerBuilder shipBPartnerBuilder = JsonCustomer.builder()
 				.company(bpartner.isCompany())
 				.companyName(CoalesceUtil.firstNotEmptyTrimmed(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
@@ -299,47 +319,22 @@ class ShipmentCandidateAPIService
 				.city(city)
 				.countryCode(location.getCountryCode())
 				.language(adLanguage);
-		if (shipmentSchedule.getContactId() != null)
+		if (bPartnerContactId != null)
 		{
-			final BPartnerContact contact = composite.extractContact(shipmentSchedule.getContactId())
+			final BPartnerContact contact = composite.extractContact(bPartnerContactId)
 					.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
 							.appendParametersToMessage()
-							.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
-							.setParameter("AD_User_ID", shipmentSchedule.getContactId().getRepoId()));
+							.setParameter("C_BPartner_ID", bpartnerId.getRepoId())
+							.setParameter("AD_User_ID", bPartnerContactId.getRepoId()));
 
-			customerBuilder
+			shipBPartnerBuilder
 					.contactEmail(contact.getEmail())
 					.contactName(contact.getName())
 					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
-			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", shipmentSchedule.getContactId().getRepoId());
-		}
-		else if(false)
-		{
-			// try to set a contact, even if the shipment candidate specifies none...which we currently don't do!
-			if (composite.getContacts().size() == 1)
-			{ // shipment candidate has no contact, but the bpartner has only one
-				final BPartnerContact contact = composite.getContacts().get(0);
-				customerBuilder
-						.contactEmail(contact.getEmail())
-						.contactName(contact.getName())
-						.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
-				logger.debug("Exporting single-contact AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
-			}
-			else
-			{ // see if we have a shipto-contact
-				final BPartnerContact contact = composite.extractContact(c -> c.getContactType().getIsShipToDefaultOr(false)).orElse(null);
-				if (contact != null)
-				{
-					customerBuilder
-							.contactEmail(contact.getEmail())
-							.contactName(contact.getName())
-							.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
-					logger.debug("Exporting shipToDefault AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
-				}
-			}
+			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", bPartnerContactId.getRepoId());
 		}
 
-		return customerBuilder.build();
+		return shipBPartnerBuilder.build();
 	}
 
 	private JsonProduct createJsonProduct(
@@ -615,8 +610,13 @@ class ShipmentCandidateAPIService
 		{
 			idsRegistryBuilder
 					.shipmentScheduleId(shipmentSchedule.getId())
-					.bPartnerId(shipmentSchedule.getCustomerId())
+					.bPartnerId(shipmentSchedule.getShipBPartnerId())
 					.productId(shipmentSchedule.getProductId());
+
+			if (shipmentSchedule.getBillBPartnerId() != null)
+			{
+				idsRegistryBuilder.bPartnerId(shipmentSchedule.getShipBPartnerId());
+			}
 
 			if (shipmentSchedule.getAttributeSetInstanceId() != null)
 			{
