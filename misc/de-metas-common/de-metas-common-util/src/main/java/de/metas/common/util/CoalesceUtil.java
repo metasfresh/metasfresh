@@ -43,13 +43,11 @@ public class CoalesceUtil
 		return value1 == null ? value2 : value1;
 	}
 
-	// with openJDK java-8 (various versions including jdk8u272-b10) there were compile errors
-	// feel free to uncomment and retry with a more modern java version
-	// @Nullable
-	// public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
-	// {
-	// 	return value1 != null ? value1 : value2.get();
-	// }
+	@Nullable
+	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
+	{
+		return value1 != null ? value1 : value2.get();
+	}
 
 	/**
 	 * @return first not null value from list

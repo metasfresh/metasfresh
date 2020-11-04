@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.function.UnaryOperator;
 
 @Value
 public class PPCostCollectorQuantities
@@ -53,8 +54,8 @@ public class PPCostCollectorQuantities
 			@Nullable final Quantity rejectedQty)
 	{
 		this.movementQty = movementQty;
-		this.scrappedQty = CoalesceUtil.coalesce(scrappedQty, movementQty.toZero());
-		this.rejectedQty = CoalesceUtil.coalesce(rejectedQty, movementQty.toZero());
+		this.scrappedQty = CoalesceUtil.coalesce(scrappedQty, movementQty::toZero);
+		this.rejectedQty = CoalesceUtil.coalesce(rejectedQty, movementQty::toZero);
 		this.uomId = Quantity.getCommonUomIdOfAll(
 				this.movementQty,
 				this.scrappedQty,

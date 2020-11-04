@@ -65,11 +65,11 @@ public class PPOrderQuantities
 			@Nullable final Quantity qtyReserved)
 	{
 		this.qtyRequiredToProduce = qtyRequiredToProduce;
-		this.qtyRequiredToProduceBeforeClose = CoalesceUtil.coalesce(qtyRequiredToProduceBeforeClose, qtyRequiredToProduce.toZero());
-		this.qtyReceived = CoalesceUtil.coalesce(qtyReceived, qtyRequiredToProduce.toZero());
-		this.qtyScrapped = CoalesceUtil.coalesce(qtyScrapped, qtyRequiredToProduce.toZero());
-		this.qtyRejected = CoalesceUtil.coalesce(qtyRejected, qtyRequiredToProduce.toZero());
-		this.qtyReserved = CoalesceUtil.coalesce(qtyReserved, qtyRequiredToProduce.toZero());
+		this.qtyRequiredToProduceBeforeClose = CoalesceUtil.coalesce(qtyRequiredToProduceBeforeClose, qtyRequiredToProduce::toZero);
+		this.qtyReceived = CoalesceUtil.coalesce(qtyReceived, qtyRequiredToProduce::toZero);
+		this.qtyScrapped = CoalesceUtil.coalesce(qtyScrapped, qtyRequiredToProduce::toZero);
+		this.qtyRejected = CoalesceUtil.coalesce(qtyRejected, qtyRequiredToProduce::toZero);
+		this.qtyReserved = CoalesceUtil.coalesce(qtyReserved, qtyRequiredToProduce::toZero);
 
 		this.uomId = Quantity.getCommonUomIdOfAll(
 				this.qtyRequiredToProduce,

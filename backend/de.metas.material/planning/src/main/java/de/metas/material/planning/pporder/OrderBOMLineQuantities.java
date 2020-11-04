@@ -30,6 +30,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 
@@ -72,14 +74,14 @@ public class OrderBOMLineQuantities
 			@Nullable final Quantity qtyReserved)
 	{
 		this.qtyRequired = qtyRequired;
-		this.qtyRequiredBeforeClose = CoalesceUtil.coalesce(qtyRequiredBeforeClose, qtyRequired.toZero());
-		this.qtyIssuedOrReceived = CoalesceUtil.coalesce(qtyIssuedOrReceived, qtyRequired.toZero());
-		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesce(qtyIssuedOrReceivedActual, qtyRequired.toZero());
-		this.qtyReject = CoalesceUtil.coalesce(qtyReject, qtyRequired.toZero());
-		this.qtyScrap = CoalesceUtil.coalesce(qtyScrap, qtyRequired.toZero());
-		this.qtyUsageVariance = CoalesceUtil.coalesce(qtyUsageVariance, qtyRequired.toZero());
-		this.qtyPost = CoalesceUtil.coalesce(qtyPost, qtyRequired.toZero());
-		this.qtyReserved = CoalesceUtil.coalesce(qtyReserved, qtyRequired.toZero());
+		this.qtyRequiredBeforeClose = CoalesceUtil.coalesce(qtyRequiredBeforeClose, qtyRequired::toZero);
+		this.qtyIssuedOrReceived = CoalesceUtil.coalesce(qtyIssuedOrReceived, qtyRequired::toZero);
+		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesce(qtyIssuedOrReceivedActual, qtyRequired::toZero);
+		this.qtyReject = CoalesceUtil.coalesce(qtyReject, qtyRequired::toZero);
+		this.qtyScrap = CoalesceUtil.coalesce(qtyScrap, qtyRequired::toZero);
+		this.qtyUsageVariance = CoalesceUtil.coalesce(qtyUsageVariance, qtyRequired::toZero);
+		this.qtyPost = CoalesceUtil.coalesce(qtyPost, qtyRequired::toZero);
+		this.qtyReserved = CoalesceUtil.coalesce(qtyReserved, qtyRequired::toZero);
 
 		this.uomId = Quantity.getCommonUomIdOfAll(
 				this.qtyRequired,
