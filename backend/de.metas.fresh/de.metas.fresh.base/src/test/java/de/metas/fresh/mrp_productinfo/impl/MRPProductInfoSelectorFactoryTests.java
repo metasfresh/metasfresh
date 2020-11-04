@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.api.IParams;
@@ -20,7 +21,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -64,7 +64,7 @@ public class MRPProductInfoSelectorFactoryTests
 		InterfaceWrapperHelper.save(asi);
 
 		final I_PMM_PurchaseCandidate pc = InterfaceWrapperHelper.newInstance(I_PMM_PurchaseCandidate.class);
-		pc.setDatePromised(SystemTime.asDayTimestamp());
+		pc.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		pc.setM_Product_ID(23);
 		pc.setM_AttributeSetInstance(asi);
 		InterfaceWrapperHelper.save(pc);
@@ -130,7 +130,7 @@ public class MRPProductInfoSelectorFactoryTests
 		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
 		InterfaceWrapperHelper.save(asi);
 
-		final ZonedDateTime date = SystemTime.asZonedDateTime();
+		final ZonedDateTime date = de.metas.common.util.time.SystemTime.asZonedDateTime();
 		final IParams params = Params.ofMap(ImmutableMap.of(
 				prefix + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, TimeUtil.asTimestamp(date),
 				prefix + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX, 23,
@@ -172,7 +172,7 @@ public class MRPProductInfoSelectorFactoryTests
 		final I_M_AttributeSetInstance asi2 = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
 		InterfaceWrapperHelper.save(asi2);
 
-		final ZonedDateTime date = SystemTime.asZonedDateTime();
+		final ZonedDateTime date = de.metas.common.util.time.SystemTime.asZonedDateTime();
 		final IParams params = Params.ofMap(ImmutableMap.<String, Object> builder()
 				.put("blah2" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, TimeUtil.asTimestamp(date))
 				.put("blah2" + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX, 23)

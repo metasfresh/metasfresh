@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,6 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -98,7 +98,7 @@ public class PPOrderChangedHandlerTest
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.oldDocStatus(DocStatus.Completed)
 				.newDocStatus(DocStatus.Completed)
-				.oldDatePromised(SystemTime.asInstant())
+				.oldDatePromised(de.metas.common.util.time.SystemTime.asInstant())
 				.newDatePromised(SystemTime.asInstant())
 				.newQtyDelivered(ONE)
 				.newQtyRequired(TEN)

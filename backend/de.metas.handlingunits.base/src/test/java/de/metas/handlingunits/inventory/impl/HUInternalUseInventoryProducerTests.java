@@ -2,6 +2,7 @@ package de.metas.handlingunits.inventory.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
@@ -33,7 +34,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -133,7 +133,7 @@ public class HUInternalUseInventoryProducerTests
 
 		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, ClientId.SYSTEM, OrgId.ANY);
 
-		SystemTime.setFixedTimeSource("2019-06-10T10:00:00+01:00");
+		de.metas.common.util.time.SystemTime.setFixedTimeSource("2019-06-10T10:00:00+01:00");
 	}
 
 	@Test
@@ -168,7 +168,7 @@ public class HUInternalUseInventoryProducerTests
 		husToDestroy.add(lu);
 
 		final ActivityId activityId = createActivity("Activity1");
-		final ZonedDateTime movementDate = SystemTime.asZonedDateTime();
+		final ZonedDateTime movementDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
 		final String description = "Test Description";
 		final boolean isCompleteInventory = true;
 		final boolean isCreateMovement = false;
@@ -239,7 +239,7 @@ public class HUInternalUseInventoryProducerTests
 		husToDestroy.add(receiptLu);
 
 		final ActivityId activityId = createActivity("Activity1");
-		final ZonedDateTime movementDate = SystemTime.asZonedDateTimeAtStartOfDay();
+		final ZonedDateTime movementDate = de.metas.common.util.time.SystemTime.asZonedDateTimeAtStartOfDay();
 		final String description = "Test Description";
 		final boolean isCompleteInventory = true;
 		final boolean isCreateMovement = false;
@@ -364,7 +364,7 @@ public class HUInternalUseInventoryProducerTests
 	{
 		final I_M_InOut inout = newInstance(I_M_InOut.class);
 		inout.setC_BPartner_ID(bpartnerId.getRepoId());
-		inout.setMovementDate(SystemTime.asDayTimestamp());
+		inout.setMovementDate(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		inout.setDocStatus(X_M_InOut.DOCSTATUS_Completed);
 		saveRecord(inout);
 

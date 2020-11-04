@@ -22,7 +22,6 @@
 
 package de.metas.attachments.listener;
 
-import de.metas.util.time.SystemTime;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -51,7 +52,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler

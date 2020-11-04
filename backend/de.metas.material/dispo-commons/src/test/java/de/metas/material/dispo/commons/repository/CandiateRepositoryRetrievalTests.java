@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
@@ -52,7 +53,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -106,7 +106,7 @@ public class CandiateRepositoryRetrievalTests
 	@Test
 	public void fromCandidateRecord_record_to_candidate()
 	{
-		final Timestamp dateProjected = SystemTime.asTimestamp();
+		final Timestamp dateProjected = de.metas.common.util.time.SystemTime.asTimestamp();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setDateProjected(dateProjected);
 		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
@@ -15,7 +16,6 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -73,7 +73,7 @@ import de.metas.security.UserRolePermissionsKey;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -1177,7 +1177,7 @@ public final class Env
 		final Timestamp timestamp = parseTimestamp(timestampStr);
 		if (timestamp == null)
 		{
-			final Timestamp sysDate = SystemTime.asTimestamp();
+			final Timestamp sysDate = de.metas.common.util.time.SystemTime.asTimestamp();
 			if (!Adempiere.isUnitTestMode())
 			{
 				// metas: tsa: added a dummy exception to be able to track it quickly
@@ -2196,7 +2196,7 @@ public final class Env
 			if (Services.get(ISysConfigBL.class).getBooleanValue("LOGINDATE_AUTOUPDATE", false, Env.getAD_Client_ID(ctx)) == true)
 			{
 				// Note: we keep these conditions in 2 inner IFs because we want to avoid infinite recursion
-				value = toString(SystemTime.asDayTimestamp());
+				value = toString(de.metas.common.util.time.SystemTime.asDayTimestamp());
 				setProperty(ctx, context, value);
 			}
 		}
@@ -2345,7 +2345,7 @@ public final class Env
 		throw new AdempiereException("Failed converting `" + timestampStr + "` to " + Timestamp.class + "."
 				+ "\nExpected following formats:"
 				+ "\n1. JDBC format"
-				+ "\n2. ISO8601 format: `" + DATE_PATTEN + "`, e.g. " + SystemTime.asZonedDateTime().format(DATE_FORMAT));
+				+ "\n2. ISO8601 format: `" + DATE_PATTEN + "`, e.g. " + de.metas.common.util.time.SystemTime.asZonedDateTime().format(DATE_FORMAT));
 	}
 
 	private static Timestamp parseTimestampUsingJDBCFormatOrNull(@NonNull final String timestampStr)

@@ -11,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -64,7 +65,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -182,7 +182,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		purchaseCandidateRecord.setDemandReference("DemandReference");
 		purchaseCandidateRecord.setC_UOM(uomRecord);
 		purchaseCandidateRecord.setQtyToPurchase(QTY_TO_PURCHASE_NINE);
-		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
+		purchaseCandidateRecord.setPurchaseDatePromised(de.metas.common.util.time.SystemTime.asTimestamp());
 		saveRecord(purchaseCandidateRecord);
 
 		final I_C_OrderLine purchaseOrderLineRecord = salesOrderLineRecord;

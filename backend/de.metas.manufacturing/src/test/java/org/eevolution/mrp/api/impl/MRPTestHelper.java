@@ -2,6 +2,7 @@ package org.eevolution.mrp.api.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -27,7 +28,6 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -768,7 +768,7 @@ public class MRPTestHelper
 		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
-		final Timestamp t1 = SystemTime.asTimestamp();
+		final Timestamp t1 = de.metas.common.util.time.SystemTime.asTimestamp();
 		ppOrder.setDateOrdered(t1);
 		ppOrder.setDateStartSchedule(t1);
 	}

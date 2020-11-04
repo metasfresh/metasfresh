@@ -31,6 +31,7 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.payment.paymentallocation.PaymentToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -46,7 +47,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
@@ -105,7 +105,7 @@ public class PaymentAndInvoiceRowsRepo
 	{
 		Check.assumeNotEmpty(paymentIds, "paymentIds is not empty");
 
-		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+		final ZonedDateTime evaluationDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
 
 		final List<PaymentToAllocate> paymentsToAllocate = paymentAllocationRepo.retrievePaymentsToAllocate(PaymentToAllocateQuery.builder()
 				.evaluationDate(evaluationDate)

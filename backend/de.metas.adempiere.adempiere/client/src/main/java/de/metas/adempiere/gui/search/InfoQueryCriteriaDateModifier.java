@@ -37,6 +37,7 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -59,7 +60,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -411,11 +411,11 @@ public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 				final int displayType = infoColumn.getAD_Reference_ID();
 				if (DisplayType.Date == displayType)
 				{
-					parent.setCtxAttribute(column, SystemTime.asDayTimestamp());
+					parent.setCtxAttribute(column, de.metas.common.util.time.SystemTime.asDayTimestamp());
 				}
 				else if (DisplayType.Time == displayType)
 				{
-					parent.setCtxAttribute(column, SystemTime.asTimestamp());
+					parent.setCtxAttribute(column, de.metas.common.util.time.SystemTime.asTimestamp());
 				}
 				else if (DisplayType.DateTime == displayType)
 				{

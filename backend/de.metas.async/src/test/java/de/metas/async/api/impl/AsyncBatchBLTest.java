@@ -2,8 +2,8 @@ package de.metas.async.api.impl;
 
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -33,7 +33,7 @@ public class AsyncBatchBLTest
 
 		this.asyncBatchBL = (AsyncBatchBL)Services.get(IAsyncBatchBL.class);
 
-		this.now = SystemTime.asTimestamp();
+		this.now = de.metas.common.util.time.SystemTime.asTimestamp();
 		SystemTime.setFixedTimeSource(TimeUtil.asZonedDateTime(now));
 	}
 

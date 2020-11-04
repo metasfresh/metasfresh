@@ -3,6 +3,7 @@ package de.metas.async.processor.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
@@ -17,7 +18,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;

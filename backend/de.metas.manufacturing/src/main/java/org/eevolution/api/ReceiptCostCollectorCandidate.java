@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -14,7 +15,6 @@ import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

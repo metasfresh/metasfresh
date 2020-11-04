@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -10,7 +11,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;

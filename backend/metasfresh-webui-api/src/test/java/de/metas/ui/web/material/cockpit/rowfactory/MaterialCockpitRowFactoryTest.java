@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -47,7 +48,6 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -194,7 +194,7 @@ public class MaterialCockpitRowFactoryTest
 
 		final I_MD_Cockpit cockpitRecordWithAttributes = newInstance(I_MD_Cockpit.class);
 		cockpitRecordWithAttributes.setM_Product(product);
-		cockpitRecordWithAttributes.setDateGeneral(SystemTime.asTimestamp());
+		cockpitRecordWithAttributes.setDateGeneral(de.metas.common.util.time.SystemTime.asTimestamp());
 		cockpitRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
 		cockpitRecordWithAttributes.setQtyReserved_Purchase(TEN);
 		save(cockpitRecordWithAttributes);
@@ -224,7 +224,7 @@ public class MaterialCockpitRowFactoryTest
 		stockRecordWithEmptyAttributesKey.setQtyOnHand(TWELVE);
 		save(stockRecordWithEmptyAttributesKey);
 
-		final LocalDate today = SystemTime.asLocalDate();
+		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(today)
@@ -306,7 +306,7 @@ public class MaterialCockpitRowFactoryTest
 	@Test
 	public void createEmptyRowBuckets()
 	{
-		final LocalDate today = SystemTime.asLocalDate();
+		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// invoke method under test

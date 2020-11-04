@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -91,7 +92,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.exceptions.ServiceConnectionException;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 @ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
@@ -436,7 +436,7 @@ class WorkpackageProcessorTask implements Runnable
 	 */
 	private void markStartProcessing(final I_C_Queue_WorkPackage workPackage)
 	{
-		workPackage.setLastStartTime(SystemTime.asTimestamp());
+		workPackage.setLastStartTime(de.metas.common.util.time.SystemTime.asTimestamp());
 		queueDAO.save(workPackage);
 	}
 
@@ -493,7 +493,7 @@ class WorkpackageProcessorTask implements Runnable
 			@NonNull final IWorkpackageSkipRequest skipRequest)
 	{
 
-		final Timestamp skippedAt = SystemTime.asTimestamp();
+		final Timestamp skippedAt = de.metas.common.util.time.SystemTime.asTimestamp();
 		final Exception skipException = skipRequest.getException();
 		final int skippedCount = workPackage.getSkipped_Count();
 

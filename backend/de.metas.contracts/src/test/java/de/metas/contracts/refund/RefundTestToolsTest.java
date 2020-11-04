@@ -1,6 +1,6 @@
 package de.metas.contracts.refund;
 
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 

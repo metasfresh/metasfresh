@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -24,7 +25,6 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
@@ -182,7 +182,7 @@ public class RequestMaterialOrderService
 
 		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
-				.dateOrdered(SystemTime.asInstant())
+				.dateOrdered(de.metas.common.util.time.SystemTime.asInstant())
 				.ppOrder(ppOrderBuilder.build())
 				.build();
 	}

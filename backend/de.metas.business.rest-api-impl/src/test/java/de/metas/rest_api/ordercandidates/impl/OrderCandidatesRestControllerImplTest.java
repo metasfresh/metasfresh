@@ -14,6 +14,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.greeting.GreetingRepository;
@@ -71,7 +72,6 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -1172,7 +1172,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipToDefault(false)
 				.build();
 
-		SystemTime.setTimeSource(() -> 1584400036193L + 10000); // some later time, such that the bpartner's creation was in the past.
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1584400036193L + 10000); // some later time, such that the bpartner's creation was in the past.
 
 		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_Create_UpdateMerge_1.json");
 

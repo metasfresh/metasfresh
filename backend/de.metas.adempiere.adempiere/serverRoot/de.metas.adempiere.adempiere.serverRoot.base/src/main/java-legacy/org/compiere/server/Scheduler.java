@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -81,7 +82,6 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 

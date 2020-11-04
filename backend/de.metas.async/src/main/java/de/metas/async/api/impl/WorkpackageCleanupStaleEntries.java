@@ -26,6 +26,7 @@ package de.metas.async.api.impl;
 import java.util.Date;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,7 +40,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Identify and deactivates stale {@link I_C_Queue_WorkPackage}s.

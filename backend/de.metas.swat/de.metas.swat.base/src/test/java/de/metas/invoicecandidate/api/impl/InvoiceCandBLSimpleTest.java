@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Timestamp;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.InvoiceRule;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -72,7 +72,7 @@ class InvoiceCandBLSimpleTest
 	@Test
 	void setQtyAndDateForFreightCost_otherICToWaitFor()
 	{
-		final Timestamp dateOrdered = SystemTime.asTimestamp();
+		final Timestamp dateOrdered = de.metas.common.util.time.SystemTime.asTimestamp();
 
 		final I_C_Invoice_Candidate freightCostICRecord = newInstance(I_C_Invoice_Candidate.class);
 		freightCostICRecord.setC_Order_ID(1);

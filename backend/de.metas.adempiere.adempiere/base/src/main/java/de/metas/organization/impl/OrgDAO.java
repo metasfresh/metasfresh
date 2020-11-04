@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -61,7 +62,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class OrgDAO implements IOrgDAO
@@ -283,7 +283,7 @@ public class OrgDAO implements IOrgDAO
 			return SystemTime.zoneId();
 		}
 		final ZoneId timeZone = getOrgInfoById(orgId).getTimeZone();
-		return timeZone != null ? timeZone : SystemTime.zoneId();
+		return timeZone != null ? timeZone : de.metas.common.util.time.SystemTime.zoneId();
 	}
 
 }

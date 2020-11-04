@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -40,7 +41,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 
 @ExtendWith(AdempiereTestWatcher.class)

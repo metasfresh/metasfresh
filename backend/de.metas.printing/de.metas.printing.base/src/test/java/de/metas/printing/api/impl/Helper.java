@@ -1,6 +1,7 @@
 package de.metas.printing.api.impl;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -43,7 +44,6 @@ import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.table.api.IADTableDAO;

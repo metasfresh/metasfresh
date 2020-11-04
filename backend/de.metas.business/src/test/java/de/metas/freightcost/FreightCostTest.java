@@ -2,6 +2,7 @@ package de.metas.freightcost;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -20,7 +21,6 @@ import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.model.I_M_FreightCostDetail;
 import org.adempiere.model.I_M_FreightCostShipper;
@@ -103,7 +103,7 @@ public class FreightCostTest
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		SystemTime.setFixedTimeSource("2019-07-10T16:11:23+01:00[Europe/Berlin]");
+		de.metas.common.util.time.SystemTime.setFixedTimeSource("2019-07-10T16:11:23+01:00[Europe/Berlin]");
 	}
 
 	@Test
@@ -146,7 +146,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -231,7 +231,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -316,7 +316,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -396,7 +396,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -476,7 +476,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -544,7 +544,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -603,7 +603,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -746,7 +746,7 @@ public class FreightCostTest
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
-		final Timestamp validForm = SystemTime.asDayTimestamp();
+		final Timestamp validForm = de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
 				shipper1.getM_Shipper_ID(),
@@ -999,7 +999,7 @@ public class FreightCostTest
 
 		tax.setC_TaxCategory_ID(taxCateogry.getC_TaxCategory_ID());
 		tax.setC_Country_ID(countryId);
-		tax.setValidFrom(SystemTime.asDayTimestamp());
+		tax.setValidFrom(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		save(tax);
 
@@ -1016,7 +1016,7 @@ public class FreightCostTest
 
 		final I_M_PriceList_Version pricelistVersion = newInstance(I_M_PriceList_Version.class);
 		pricelistVersion.setM_PriceList_ID(priceListId);
-		pricelistVersion.setValidFrom(SystemTime.asDayTimestamp());
+		pricelistVersion.setValidFrom(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		save(pricelistVersion);
 
 		final I_M_ProductPrice productPrice = newInstance(I_M_ProductPrice.class);

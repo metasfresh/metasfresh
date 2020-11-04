@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -32,7 +33,6 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

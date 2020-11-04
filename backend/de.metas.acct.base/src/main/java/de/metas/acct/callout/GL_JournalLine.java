@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRate;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -50,7 +51,6 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 @Callout(value = I_GL_JournalLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class GL_JournalLine

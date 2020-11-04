@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -40,7 +41,6 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

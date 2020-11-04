@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 
@@ -27,7 +28,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * 	Project Issue Model

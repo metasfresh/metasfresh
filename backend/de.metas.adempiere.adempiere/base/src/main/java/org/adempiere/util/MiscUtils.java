@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,7 +44,6 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
-import de.metas.util.time.SystemTime;
 
 /**
  * Misc utils

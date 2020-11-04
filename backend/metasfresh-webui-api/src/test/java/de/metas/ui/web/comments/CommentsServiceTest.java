@@ -33,6 +33,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -77,7 +78,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 class CommentsServiceTest

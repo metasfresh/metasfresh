@@ -2,6 +2,7 @@ package de.metas.marketing.base;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.common.util.time.SystemTime;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
@@ -16,7 +17,6 @@ import de.metas.marketing.base.model.PlatformRepository;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
@@ -96,7 +96,7 @@ public class CampaignServiceTest
 	@Test
 	public void removeFromNewsletter_ExistingConsent()
 	{
-		SystemTime.setFixedTimeSource("2017-11-10T19:04:04+01:00");
+		de.metas.common.util.time.SystemTime.setFixedTimeSource("2017-11-10T19:04:04+01:00");
 
 		final User user = createUser("User1", "mail@mail.mail");
 

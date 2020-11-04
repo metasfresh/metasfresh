@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -29,7 +30,6 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -329,7 +329,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
 		final Locale locale = Locale.getDefault();

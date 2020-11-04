@@ -1,5 +1,6 @@
 package org.eevolution.api.impl;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -84,7 +85,7 @@ public class PPOrderBLTest
 		public void beforeEach()
 		{
 			now = ZonedDateTime.now();
-			de.metas.util.time.SystemTime.setFixedTimeSource(now);
+			SystemTime.setFixedTimeSource(now);
 		}
 
 		private void setCanBeExportedAfterSeconds(int seconds)

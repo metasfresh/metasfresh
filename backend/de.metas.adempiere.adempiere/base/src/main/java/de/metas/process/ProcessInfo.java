@@ -14,6 +14,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -65,7 +66,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.Getter;
 import lombok.NonNull;
 

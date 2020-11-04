@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -68,7 +69,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
-import de.metas.util.time.SystemTime;
 
 class ShipmentCandidateAPIServiceTest
 {
@@ -126,7 +126,7 @@ class ShipmentCandidateAPIServiceTest
 	{
 		// given
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord(null,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// when
 		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(QueryLimit.ofInt(500));
@@ -147,7 +147,7 @@ class ShipmentCandidateAPIServiceTest
 	{
 		// given
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord(null,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");
@@ -183,13 +183,13 @@ class ShipmentCandidateAPIServiceTest
 		final I_C_OrderLine orderLine1 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1 = createShipmentScheduleRecord(orderLine1,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		final I_C_Order order2 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
 		final I_C_OrderLine orderLine2 = createOrderLine(order2);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord2 = createShipmentScheduleRecord(orderLine2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");
@@ -233,13 +233,13 @@ class ShipmentCandidateAPIServiceTest
 		final I_C_OrderLine orderLine1 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1 = createShipmentScheduleRecord(orderLine1,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		final I_C_Order order2 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
 		final I_C_OrderLine orderLine2 = createOrderLine(order2);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord2 = createShipmentScheduleRecord(orderLine2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");
@@ -280,13 +280,13 @@ class ShipmentCandidateAPIServiceTest
 		final I_C_OrderLine orderLine1 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1 = createShipmentScheduleRecord(orderLine1,
-				TimeUtil.asTimestamp(SystemTime.asInstant().plusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().plusMillis(1000)));
 
 		final I_C_Order order2 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
 		final I_C_OrderLine orderLine2 = createOrderLine(order2);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord2 = createShipmentScheduleRecord(orderLine2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().plusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().plusMillis(1000)));
 
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");
@@ -323,37 +323,37 @@ class ShipmentCandidateAPIServiceTest
 		final I_C_OrderLine orderLine1_1 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_1 = createShipmentScheduleRecord(orderLine1_1,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 2
 		final I_C_OrderLine orderLine1_2 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_2 = createShipmentScheduleRecord(orderLine1_2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 3
 		final I_C_OrderLine orderLine1_3 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_3 = createShipmentScheduleRecord(orderLine1_3,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 4
 		final I_C_OrderLine orderLine1_4 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_4 = createShipmentScheduleRecord(orderLine1_4,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 5
 		final I_C_OrderLine orderLine1_5 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_5 = createShipmentScheduleRecord(orderLine1_5,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		final I_C_Order order2 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
 		final I_C_OrderLine orderLine2 = createOrderLine(order2);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord2 = createShipmentScheduleRecord(orderLine2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");
@@ -441,37 +441,37 @@ class ShipmentCandidateAPIServiceTest
 		final I_C_OrderLine orderLine1_1 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_1 = createShipmentScheduleRecord(orderLine1_1,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 2
 		final I_C_OrderLine orderLine1_2 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_2 = createShipmentScheduleRecord(orderLine1_2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 3
 		final I_C_OrderLine orderLine1_3 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_3 = createShipmentScheduleRecord(orderLine1_3,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 4
 		final I_C_OrderLine orderLine1_4 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_4 = createShipmentScheduleRecord(orderLine1_4,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 5
 		final I_C_OrderLine orderLine1_5 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_5 = createShipmentScheduleRecord(orderLine1_5,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		final I_C_Order order2 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
 		final I_C_OrderLine orderLine2 = createOrderLine(order2);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord2 = createShipmentScheduleRecord(orderLine2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");
@@ -548,19 +548,19 @@ class ShipmentCandidateAPIServiceTest
 		final I_C_OrderLine orderLine1_1 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_1 = createShipmentScheduleRecord(orderLine1_1,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 2
 		final I_C_OrderLine orderLine1_2 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_2 = createShipmentScheduleRecord(orderLine1_2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().plusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().plusMillis(1000)));
 
 		// Schedule 3
 		final I_C_OrderLine orderLine1_3 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_3 = createShipmentScheduleRecord(orderLine1_3,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		// Schedule 4
 		final I_C_OrderLine orderLine1_4 = createOrderLine(order1);
@@ -572,13 +572,13 @@ class ShipmentCandidateAPIServiceTest
 		final I_C_OrderLine orderLine1_5 = createOrderLine(order1);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord1_5 = createShipmentScheduleRecord(orderLine1_5,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		final I_C_Order order2 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
 		final I_C_OrderLine orderLine2 = createOrderLine(order2);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord2 = createShipmentScheduleRecord(orderLine2,
-				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+				TimeUtil.asTimestamp(de.metas.common.util.time.SystemTime.asInstant().minusMillis(1000)));
 
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");

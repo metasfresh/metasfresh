@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_C_BPartner;
@@ -18,7 +19,6 @@ import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
 import de.metas.product.ProductId;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

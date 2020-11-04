@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.sales.com
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyRepository;
@@ -11,7 +12,6 @@ import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;

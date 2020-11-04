@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -63,7 +64,6 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 @Interceptor(I_C_Invoice.class)

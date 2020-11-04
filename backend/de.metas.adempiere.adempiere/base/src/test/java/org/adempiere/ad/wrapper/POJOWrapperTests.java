@@ -1,7 +1,7 @@
 package org.adempiere.ad.wrapper;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
