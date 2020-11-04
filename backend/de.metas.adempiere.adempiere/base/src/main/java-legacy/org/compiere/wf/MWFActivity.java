@@ -28,13 +28,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
@@ -86,6 +87,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import org.slf4j.Logger;
 
 /**
  * Workflow Activity Model.
@@ -99,6 +101,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 {
 	private static final long serialVersionUID = 2987002047442429221L;
 
+	private static final Logger log = LogManager.getLogger(MWFActivity.class);
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("de.metas.document.UserNotifications", Type.REMOTE);
 	private static final String MSG_NotApproved = "NotApproved";
 
@@ -241,7 +244,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * Parent Contructor
 	 *
 	 * @param process process
-	 * @param AD_WF_Node_ID start node
+	 * @param next_ID start node
 	 * @param lastPO PO from the previously executed node
 	 */
 	public MWFActivity(MWFProcess process, int next_ID, PO lastPO)
@@ -399,7 +402,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	/**************************************************************************
 	 * Get Persistent Object in Transaction
 	 *
-	 * @param trx transaction
+	 * @param trxName transaction
 	 * @return po
 	 */
 	private final PO getPO(final String trxName)
@@ -782,13 +785,15 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @param AD_User_ID starting User
 	 * @param C_Currency_ID currency
 	 * @param amount amount
-	 * @param AD_Org_ID document organization
+	 * @param clientAndOrgId document organization
 	 * @param ownDocument the document is owned by AD_User_ID
 	 * @return AD_User_ID - if -1 no Approver
 	 */
-	public int getApprovalUser(final int AD_User_ID,
-			final int C_Currency_ID, final BigDecimal amount,
-			final int orgRepoId,
+	public static int getApprovalUser(
+			final int AD_User_ID,
+			final int C_Currency_ID,
+			final BigDecimal amount,
+			final ClientAndOrgId clientAndOrgId,
 			boolean ownDocument)
 	{
 		// Nothing to approve
@@ -800,14 +805,12 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		// services
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		
-		final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
+		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 		// Starting user
-		I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), AD_User_ID);
-		log.debug("For User=" + user
-				+ ", Amt=" + amount
-				+ ", Own=" + ownDocument);
+		I_AD_User user = userDAO.retrieveUserOrNull(Env.getCtx(), AD_User_ID);
+		log.debug("For User={}, Amt={}, Own={}", user, amount, ownDocument);
 
 		I_AD_User oldUser = null;
 		while (user != null)
@@ -818,11 +821,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				return -1;
 			}
 			oldUser = user;
-			log.debug("User=" + user.getName());
+			log.debug("User={}", user.getName());
 			// Get Roles of User
 			final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
-					Env.getClientId(),
-					orgId,
+					clientAndOrgId.getClientId(),
+					clientAndOrgId.getOrgId(),
 					UserId.ofRepoId(AD_User_ID),
 					Env.getLocalDate());
 			for (final IUserRolePermissions role : roles)
@@ -845,12 +848,12 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (C_Currency_ID != amtApprovalCurrencyId
 						&& amtApprovalCurrencyId > 0)			// No currency = amt only
 				{
-					amtApproval = Services.get(ICurrencyBL.class).convert(// today & default rate
+					amtApproval = currencyBL.convert(// today & default rate
 							amtApproval,
 							CurrencyId.ofRepoId(amtApprovalCurrencyId),
 							CurrencyId.ofRepoId(C_Currency_ID),
-							ClientId.ofRepoId(getAD_Client_ID()),
-							orgId);
+							clientAndOrgId.getClientId(),
+							clientAndOrgId.getOrgId());
 					if (amtApproval == null || amtApproval.signum() == 0)
 					{
 						continue;
@@ -876,8 +879,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			else
 			{
 				log.debug("No Supervisor");
-				IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-				OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
+				OrgInfo orgInfo = orgsRepo.getOrgInfoById(clientAndOrgId.getOrgId());
 				// Get Org Supervisor
 				if (orgInfo.getSupervisorId() != null)
 				{
@@ -1270,73 +1272,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** User Choice ******/
 		else if (MWFNode.ACTION_UserChoice.equals(action))
 		{
-			log.debug("UserChoice:AD_Column_ID={}", m_node.getAD_Column_ID());
-			// Approval
-			final IDocument doc = Services.get(IDocumentBL.class).getDocumentOrNull(getPO(trxName));
-			if (m_node.isUserApproval() && doc != null)
-			{
-				boolean autoApproval = false;
-				// Approval Hierarchy
-				if (isInvoker())
-				{
-					// Set Approver
-					int startAD_User_ID = getAD_User_ID();
-					if (startAD_User_ID == 0)
-					{
-						startAD_User_ID = doc.getDoc_User_ID();
-					}
-					int nextAD_User_ID = getApprovalUser(startAD_User_ID,
-							doc.getC_Currency_ID(), doc.getApprovalAmt(),
-							doc.getAD_Org_ID(),
-							startAD_User_ID == doc.getDoc_User_ID());	// own doc
-					// same user = approved
-					autoApproval = startAD_User_ID == nextAD_User_ID;
-					if (!autoApproval)
-					{
-						setAD_User_ID(nextAD_User_ID);
-					}
-				}
-				else
-				// fixed Approver
-				{
-					MWFResponsible resp = getResponsible();
-					// MZ Goodwill
-					// [ 1742751 ] Workflow: User Choice is not working
-					if (resp.isHuman())
-					{
-						autoApproval = resp.getAD_User_ID() == m_process.getAD_User_ID();
-						if (!autoApproval && resp.getAD_User_ID() != 0)
-						{
-							setAD_User_ID(resp.getAD_User_ID());
-						}
-					}
-					else if (resp.isRole())
-					{
-						final RoleId roleId = RoleId.ofRepoId(resp.getAD_Role_ID());
-						final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
-						if (allRoleUserIds.contains(UserId.ofRepoId(m_process.getAD_User_ID())))
-						{
-							autoApproval = true;
-						}
-					}
-					else if (resp.isOrganization())
-					{
-						throw new AdempiereException("Support not implemented for " + resp);
-					}
-					else
-					{
-						throw new AdempiereException("@NotSupported@ " + resp);
-					}
-					// end MZ
-				}
-				if (autoApproval
-						&& doc.processIt(IDocument.ACTION_Approve)
-						&& doc.save())
-				{
-					return true;	// done
-				}
-			}	// approval
-			return false;	// wait for user
+			return performWork_UserChoice(trxName);
 		}
 		/****** User Form ******/
 		else if (MWFNode.ACTION_UserForm.equals(action))
@@ -1353,6 +1289,83 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		//
 		throw new IllegalArgumentException("Invalid Action (Not Implemented) =" + action);
 	}	// performWork
+
+	private boolean performWork_UserChoice(final String trxName) throws Exception
+	{
+		log.debug("UserChoice:AD_Column_ID={}", m_node.getAD_Column_ID());
+
+		// Approval
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		final IDocument doc = documentBL.getDocumentOrNull(getPO(trxName));
+		if (m_node.isUserApproval() && doc != null)
+		{
+			boolean autoApproval = false;
+			// Approval Hierarchy
+			if (isInvoker())
+			{
+				// Set Approver
+				int startAD_User_ID = getAD_User_ID();
+				if (startAD_User_ID == 0)
+				{
+					startAD_User_ID = doc.getDoc_User_ID();
+				}
+				int nextAD_User_ID = getApprovalUser(
+						startAD_User_ID,
+						doc.getC_Currency_ID(),
+						doc.getApprovalAmt(),
+						ClientAndOrgId.ofClientAndOrg(doc.getAD_Client_ID(), doc.getAD_Org_ID()),
+						startAD_User_ID == doc.getDoc_User_ID());	// own doc
+				// same user = approved
+				autoApproval = startAD_User_ID == nextAD_User_ID;
+				if (!autoApproval)
+				{
+					setAD_User_ID(nextAD_User_ID);
+				}
+			}
+			else
+			// fixed Approver
+			{
+				final MWFResponsible resp = getResponsible();
+				// MZ Goodwill
+				// [ 1742751 ] Workflow: User Choice is not working
+				if (resp.isHuman())
+				{
+					autoApproval = resp.getAD_User_ID() == m_process.getAD_User_ID();
+					if (!autoApproval && resp.getAD_User_ID() > 0)
+					{
+						setAD_User_ID(resp.getAD_User_ID());
+					}
+				}
+				else if (resp.isRole())
+				{
+					final RoleId roleId = RoleId.ofRepoId(resp.getAD_Role_ID());
+					final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
+					if (allRoleUserIds.contains(UserId.ofRepoId(m_process.getAD_User_ID())))
+					{
+						autoApproval = true;
+					}
+				}
+				else if (resp.isOrganization())
+				{
+					throw new AdempiereException("Support not implemented for " + resp);
+				}
+				else
+				{
+					throw new AdempiereException("@NotSupported@ " + resp);
+				}
+				// end MZ
+			}
+
+			if (autoApproval
+					&& doc.processIt(IDocument.ACTION_Approve)
+					&& doc.save())
+			{
+				return true;	// done
+			}
+		}	// approval
+
+		return false;	// wait for user
+	}
 
 	/**
 	 * Set Variable
@@ -1458,9 +1471,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						{
 							startAD_User_ID = doc.getDoc_User_ID();
 						}
-						int nextAD_User_ID = getApprovalUser(startAD_User_ID,
-								doc.getC_Currency_ID(), doc.getApprovalAmt(),
-								doc.getAD_Org_ID(),
+						int nextAD_User_ID = getApprovalUser(
+								startAD_User_ID,
+								doc.getC_Currency_ID(),
+								doc.getApprovalAmt(),
+								ClientAndOrgId.ofClientAndOrg(doc.getAD_Client_ID(), doc.getAD_Org_ID()),
 								startAD_User_ID == doc.getDoc_User_ID());	// own doc
 						// No Approver
 						if (nextAD_User_ID <= 0)
@@ -1818,7 +1833,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * Send actual EMail
 	 *
 	 * @param client client
-	 * @param AD_User_ID user
+	 * @param userId user
 	 * @param email email string
 	 * @param subject subject
 	 * @param message message
