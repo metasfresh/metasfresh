@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -19,7 +20,6 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -125,7 +125,7 @@ import de.metas.util.time.SystemTime;
 		final DocumentId documentId = documentsRepo.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
 			huEmptiesService.newReturnsInOutProducer(getCtx())
 					.setMovementType(getReturnMovementType())
-					.setMovementDate(SystemTime.asDayTimestamp())
+					.setMovementDate(de.metas.common.util.time.SystemTime.asDayTimestamp())
 					.fillReturnsInOutHeader(InterfaceWrapperHelper.create(document, I_M_InOut.class));
 			return document.getDocumentId();
 		});

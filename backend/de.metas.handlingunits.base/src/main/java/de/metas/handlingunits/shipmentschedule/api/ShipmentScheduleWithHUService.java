@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
@@ -74,7 +75,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

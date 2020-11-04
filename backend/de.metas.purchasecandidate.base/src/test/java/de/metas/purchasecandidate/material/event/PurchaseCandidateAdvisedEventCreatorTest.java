@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -29,7 +30,6 @@ import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

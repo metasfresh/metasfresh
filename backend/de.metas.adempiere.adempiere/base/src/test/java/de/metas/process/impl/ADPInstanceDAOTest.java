@@ -25,6 +25,7 @@ package de.metas.process.impl;
 
 import java.sql.Timestamp;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
@@ -36,9 +37,7 @@ import org.junit.Test;
 
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.impl.ADPInstanceDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class ADPInstanceDAOTest
 {

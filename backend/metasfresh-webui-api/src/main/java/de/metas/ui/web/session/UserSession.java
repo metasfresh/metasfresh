@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -39,7 +40,6 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -488,7 +488,7 @@ public class UserSession
 			return orgInfo.getTimeZone();
 		}
 
-		return SystemTime.zoneId();
+		return de.metas.common.util.time.SystemTime.zoneId();
 	}
 
 	/**

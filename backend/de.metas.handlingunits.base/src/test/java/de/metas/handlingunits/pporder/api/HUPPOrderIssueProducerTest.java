@@ -37,6 +37,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogsRepository;
 import lombok.NonNull;
@@ -95,7 +96,6 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -355,7 +355,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Issue created HU to Folie Order BOM Line
-		final ZonedDateTime movementDate = LocalDate.parse("2014-10-01").atStartOfDay(SystemTime.zoneId());
+		final ZonedDateTime movementDate = LocalDate.parse("2014-10-01").atStartOfDay(de.metas.common.util.time.SystemTime.zoneId());
 		final List<I_PP_Cost_Collector> costCollectors;
 		final PPOrderBOMLineId ppOrderBOMLineId_Folie;
 		{
@@ -511,11 +511,11 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setM_Warehouse_ID(masterData.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
-		ppOrder.setDatePromised(SystemTime.asDayTimestamp());
+		ppOrder.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setC_UOM_ID(productBOM.getC_UOM_ID());
-		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
+		ppOrder.setDateStartSchedule(de.metas.common.util.time.SystemTime.asTimestamp());
 		ppOrder.setPlanningStatus(PPOrderPlanningStatus.PLANNING.getCode());
 		Services.get(IPPOrderDAO.class).save(ppOrder);
 		return ppOrder;

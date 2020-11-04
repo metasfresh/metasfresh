@@ -20,6 +20,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -102,7 +103,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.api.impl;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -35,7 +36,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -136,7 +136,7 @@ public abstract class ReceiptScheduleTestBase
 
 		ctx = Env.getCtx();
 		date = SystemTime.asTimestamp();
-		date2 = SystemTime.asDayTimestamp();
+		date2 = de.metas.common.util.time.SystemTime.asDayTimestamp();
 		Env.setContext(ctx, Env.CTXNAME_Date, date2);
 
 		// Master data

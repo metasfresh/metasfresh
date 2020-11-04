@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_R_Request;
@@ -25,7 +26,6 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.request.api.IRequestBL;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -125,7 +125,7 @@ public class RequestBLTest
 
 		ddOrder.setAD_User(createUser("User 2"));
 
-		ddOrder.setDatePromised(SystemTime.asDayTimestamp());
+		ddOrder.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		save(ddOrder);
 		return ddOrder;

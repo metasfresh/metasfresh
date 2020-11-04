@@ -33,6 +33,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -59,8 +60,6 @@ import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -389,7 +388,7 @@ public class PaymentsViewAllocateCommandTest
 				//
 				// Create test data
 				final ZonedDateTime now = LocalDate.parse("2020-08-01").atStartOfDay(ZoneId.of("UTC+5"));
-				SystemTime.setTimeSource(FixedTimeSource.ofZonedDateTime(now));
+				SystemTime.setFixedTimeSource(now);
 				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerCreditMemo).openAmt(euro(-100)).serviceFeeAmt("10").build();
 
 				//

@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.InputStream;
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -98,7 +99,6 @@ import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.UIDStringUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -274,7 +274,7 @@ class BpartnerRestControllerTest
 				.requestItem(requestItem)
 				.build();
 
-		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(bpartnerUpsertRequest);
@@ -406,7 +406,7 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_Update_BPartner_Name_Insert_Location()
 	{
-		SystemTime.setTimeSource(() -> 1563553074); // Fri, 19 Jul 2019 16:17:54 GMT
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1563553074); // Fri, 19 Jul 2019 16:17:54 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BPartnerRestControllerTest_Update_BPartner_Name_Insert_Location.json");
@@ -596,7 +596,7 @@ class BpartnerRestControllerTest
 	{
 		final JsonRequestContactUpsertItem jsonContact = MockedDataUtil.createMockContact("newContact-");
 
-		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
@@ -645,7 +645,7 @@ class BpartnerRestControllerTest
 		jsonContact.setCode("jsonContact.code-UPDATED");
 		jsonContact.setMetasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID));
 
-		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
@@ -758,7 +758,7 @@ class BpartnerRestControllerTest
 		createBPartnerData(3);
 		createBPartnerData(4);
 
-		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 

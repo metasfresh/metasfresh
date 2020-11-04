@@ -28,6 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -52,7 +53,6 @@ import de.metas.product.IProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.time.SystemTime;
 
 /**
  * Tool used to take a given Qty from a given VHU and load it to each given TUs.

@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
@@ -59,7 +60,6 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -198,7 +198,7 @@ public class Login
 		{
 			loginFailureCount++;
 			user.setLoginFailureCount(loginFailureCount);
-			user.setLoginFailureDate(SystemTime.asTimestamp());
+			user.setLoginFailureDate(de.metas.common.util.time.SystemTime.asTimestamp());
 			if (user.getLoginFailureCount() >= maxLoginFailure)
 			{
 				user.setIsAccountLocked(true);
@@ -393,7 +393,7 @@ public class Login
 	{
 		//
 		// Get user role
-		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final LocalDate loginDate = de.metas.common.util.time.SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
 		final IUserRolePermissions role = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 
 		//
@@ -504,7 +504,7 @@ public class Login
 		final LocalDate loginDate;
 		if (timestamp == null)
 		{
-			loginDate = SystemTime.asLocalDate();
+			loginDate = de.metas.common.util.time.SystemTime.asLocalDate();
 		}
 		else
 		{

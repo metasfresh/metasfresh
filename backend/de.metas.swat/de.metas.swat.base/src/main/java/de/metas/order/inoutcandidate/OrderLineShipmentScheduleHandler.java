@@ -13,6 +13,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -65,7 +66,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -367,7 +367,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				//
 				.dateOrdered(SystemTime.asInstant())
 				.datePromised(TimeUtil.asInstant(salesOrderLine.getDatePromised()))
-				.dateStartSchedule(SystemTime.asInstant())
+				.dateStartSchedule(de.metas.common.util.time.SystemTime.asInstant())
 				//
 				.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
 				.customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))

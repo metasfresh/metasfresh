@@ -2,6 +2,7 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -19,7 +20,6 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;

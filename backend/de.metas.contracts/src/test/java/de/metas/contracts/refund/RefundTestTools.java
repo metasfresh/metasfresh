@@ -15,6 +15,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,7 +65,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

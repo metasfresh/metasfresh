@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -34,7 +35,6 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

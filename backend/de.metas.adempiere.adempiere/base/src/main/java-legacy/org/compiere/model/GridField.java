@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.swing.SwingUtilities;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -66,7 +67,6 @@ import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Grid Field Model.

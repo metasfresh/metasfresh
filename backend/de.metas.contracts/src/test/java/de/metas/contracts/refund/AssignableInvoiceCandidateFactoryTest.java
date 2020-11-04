@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -27,7 +28,6 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
