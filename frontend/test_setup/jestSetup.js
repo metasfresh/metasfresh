@@ -43,6 +43,11 @@ window.HTMLDivElement.prototype.getBoundingClientRect = function() {
   };
 }
 
+// uncomment for debugging
+// process.on('unhandledRejection', (reason) => {
+//   console.log('REJECTION', reason)
+// })
+
 global.EventSource = EventSource;
 global.window = window;
 global.document = window.document;

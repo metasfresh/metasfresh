@@ -321,7 +321,7 @@ export function fetchDocument({
         dispatch(fetchDocumentError(windowId, error, isModal));
 
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -373,7 +373,7 @@ export function createView({
         dispatch(createViewError(windowId, error, isModal));
 
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -400,7 +400,7 @@ export function fetchLayout(
       .catch((error) => {
         dispatch(fetchLayoutError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -426,7 +426,7 @@ export function filterView(windowId, viewId, filters, isModal = false) {
       .catch((error) => {
         dispatch(filterViewError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
@@ -446,7 +446,7 @@ export function fetchLocationConfig(windowId, isModal = false) {
       .catch((error) => {
         dispatch(fetchLocationConfigError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
