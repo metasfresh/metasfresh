@@ -70,6 +70,10 @@ public class SystemTime
 		setTimeSource(FixedTimeSource.ofZonedDateTime(date));
 	}
 
+	/**
+	 * @param zonedDateTime ISO 8601 date time format (see {@link ZonedDateTime#parse(CharSequence)}).
+	 *                      e.g. 2018-02-28T13:13:13+01:00[Europe/Berlin]
+	 */
 	public static void setFixedTimeSource(@NonNull final String zonedDateTime)
 	{
 		setTimeSource(FixedTimeSource.ofZonedDateTime(ZonedDateTime.parse(zonedDateTime)));
