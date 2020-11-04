@@ -56,6 +56,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -406,7 +407,7 @@ public final class ProductBL implements IProductBL
 
 		final List<I_M_PriceList_Version> priceListVersions = priceListDAO.retrievePriceListVersionsValidAtGivenDate(date);
 
-		priceListVersions.stream().filter(pv -> priceListVersionIds.contains(PriceListVersionId.ofRepoId(pv.getM_PriceList_Version_ID())));
+		priceListVersions.stream().filter(pv -> !priceListVersionIds.contains(PriceListVersionId.ofRepoId(pv.getM_PriceList_Version_ID()))).collect(Collectors.toList());
 
 		I_M_Product product = productsRepo.getById(productId);
 

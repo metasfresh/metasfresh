@@ -83,7 +83,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -346,26 +345,15 @@ public class PriceListDAO implements IPriceListDAO
 		//TODO: Fix this as there are pricelists that are available at the given date but won't be retrieved.
 		final List<I_M_PriceList_Version> list = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class)
-				// .addCompareFilter(
-				// 		I_M_PriceList_Version.COLUMNNAME_ValidFrom,
-				// 		Operator.GREATER_OR_EQUAL,
-				// 		new Timestamp(date.getTime()),
-				// 		DateTruncQueryFilterModifier.DAY)
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						Operator.GREATER_OR_EQUAL,
+						new Timestamp(date.getTime()),
+						DateTruncQueryFilterModifier.DAY)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
 				.create()
 				.list();
-
-
-		List<I_M_PriceList_Version> priceListVersionsValidAtGivenDate = new ArrayList<I_M_PriceList_Version>();
-
-		for (I_M_PriceList_Version version:
-			  list)
-		{
-			if (retrieveNextVersionOrNull(version, false) != null) {
-				priceListVersionsValidAtGivenDate.add(version);
-			}
-		}
 
 		return list;
 	}
