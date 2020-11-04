@@ -342,7 +342,6 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public List<I_M_PriceList_Version> retrievePriceListVersionsValidAtGivenDate(final Date date)
 	{
-		//TODO: Fix this as there are pricelists that are available at the given date but won't be retrieved.
 		final List<I_M_PriceList_Version> list = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class)
 				.addCompareFilter(
