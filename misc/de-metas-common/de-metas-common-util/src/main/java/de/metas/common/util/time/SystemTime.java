@@ -1,7 +1,6 @@
 package de.metas.common.util.time;
 
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -37,24 +36,22 @@ import java.util.GregorianCalendar;
  * #L%
  */
 
-@UtilityClass
 public class SystemTime
 {
 	private static final TimeSource defaultTimeSource = new SystemTimeSource();
 
 	@Nullable
-	private TimeSource timeSource;
+	private static TimeSource timeSource;
 
-	private TimeSource getTimeSource()
+	private static TimeSource getTimeSource()
 	{
 		return timeSource == null ? defaultTimeSource : timeSource;
 	}
 
 	/**
-	 * After invocation of this method, the time returned will be the system
-	 * time again.
+	 * After invocation of this method, the time returned will be the system time again.
 	 */
-	public void resetTimeSource()
+	public static void resetTimeSource()
 	{
 		timeSource = null;
 	}
@@ -63,32 +60,32 @@ public class SystemTime
 	 * @param newTimeSource the given TimeSource will be used for the time returned by the
 	 *                      methods of this class (unless it is null).
 	 */
-	public void setTimeSource(@NonNull final TimeSource newTimeSource)
+	public static void setTimeSource(@NonNull final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
 	}
 
-	public void setFixedTimeSource(@NonNull final ZonedDateTime date)
+	public static void setFixedTimeSource(@NonNull final ZonedDateTime date)
 	{
 		setTimeSource(FixedTimeSource.ofZonedDateTime(date));
 	}
 
-	public void setFixedTimeSource(@NonNull final String zonedDateTime)
+	public static void setFixedTimeSource(@NonNull final String zonedDateTime)
 	{
 		setTimeSource(FixedTimeSource.ofZonedDateTime(ZonedDateTime.parse(zonedDateTime)));
 	}
 
-	public long millis()
+	public static long millis()
 	{
 		return getTimeSource().millis();
 	}
 
-	public ZoneId zoneId()
+	public static ZoneId zoneId()
 	{
 		return getTimeSource().zoneId();
 	}
 
-	public GregorianCalendar asGregorianCalendar()
+	public static GregorianCalendar asGregorianCalendar()
 	{
 		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTimeInMillis(millis());
@@ -96,12 +93,12 @@ public class SystemTime
 		return cal;
 	}
 
-	public Date asDate()
+	public static Date asDate()
 	{
 		return new Date(millis());
 	}
 
-	public Timestamp asTimestamp()
+	public static Timestamp asTimestamp()
 	{
 		return new Timestamp(millis());
 	}
@@ -109,7 +106,7 @@ public class SystemTime
 	/**
 	 * Same as {@link #asTimestamp()} but the returned date will be truncated to DAY.
 	 */
-	public Timestamp asDayTimestamp()
+	public static Timestamp asDayTimestamp()
 	{
 		final GregorianCalendar cal = asGregorianCalendar();
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -123,7 +120,7 @@ public class SystemTime
 	 * "Why not go with {@link #asDayTimestamp()}" you ask?
 	 * See https://stackoverflow.com/questions/8929242/compare-date-object-with-a-timestamp-in-java
 	 */
-	public Date asDayDate()
+	public static Date asDayDate()
 	{
 		final GregorianCalendar cal = asGregorianCalendar();
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -133,33 +130,33 @@ public class SystemTime
 		return new Date(cal.getTimeInMillis());
 	}
 
-	public Instant asInstant()
+	public static Instant asInstant()
 	{
 		return Instant.ofEpochMilli(millis());
 	}
 
-	public LocalDateTime asLocalDateTime()
+	public static LocalDateTime asLocalDateTime()
 	{
 		return asZonedDateTime().toLocalDateTime();
 	}
 
 	@NonNull
-	public LocalDate asLocalDate()
+	public static LocalDate asLocalDate()
 	{
 		return asZonedDateTime().toLocalDate();
 	}
 
-	public ZonedDateTime asZonedDateTime()
+	public static ZonedDateTime asZonedDateTime()
 	{
 		return asZonedDateTime(zoneId());
 	}
 
-	public ZonedDateTime asZonedDateTimeAtStartOfDay()
+	public static ZonedDateTime asZonedDateTimeAtStartOfDay()
 	{
 		return asZonedDateTime(zoneId()).truncatedTo(ChronoUnit.DAYS);
 	}
 
-	public ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
+	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
 	{
 		return asInstant().atZone(zoneId);
 	}
