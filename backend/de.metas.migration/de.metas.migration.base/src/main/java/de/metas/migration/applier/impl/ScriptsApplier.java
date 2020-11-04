@@ -22,11 +22,6 @@ package de.metas.migration.applier.impl;
  * #L%
  */
 
-import java.util.Iterator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.metas.migration.IDatabase;
 import de.metas.migration.IScript;
 import de.metas.migration.IScriptsRegistry;
@@ -34,12 +29,17 @@ import de.metas.migration.applier.IScriptsApplier;
 import de.metas.migration.applier.IScriptsApplierListener;
 import de.metas.migration.applier.IScriptsApplierListener.ScriptFailedResolution;
 import de.metas.migration.applier.IScriptsProvider;
+import de.metas.migration.exception.ScriptException;
 import de.metas.migration.exception.ScriptExecutionException;
 import de.metas.migration.executor.IScriptExecutor;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.executor.impl.DefaultScriptExecutorFactory;
 import lombok.NonNull;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
 
 public class ScriptsApplier implements IScriptsApplier
 {
@@ -124,12 +124,12 @@ public class ScriptsApplier implements IScriptsApplier
 				continue;
 			}
 
-			if(countSkippedFromLastAction > 0)
+			if (countSkippedFromLastAction > 0)
 			{
 				logger.info("Skipped {} scripts that were already applied", countSkippedFromLastAction);
 			}
 			countSkippedFromLastAction = 0;
-			
+
 			final ScriptApplyResult result = apply(script);
 			if (result == ScriptApplyResult.Applied)
 			{
@@ -148,7 +148,7 @@ public class ScriptsApplier implements IScriptsApplier
 		}
 
 		//
-		if(countSkippedFromLastAction > 0)
+		if (countSkippedFromLastAction > 0)
 		{
 			logger.info("Skipped {} scripts that were already applied", countSkippedFromLastAction);
 		}
@@ -167,11 +167,6 @@ public class ScriptsApplier implements IScriptsApplier
 		}
 	}
 
-	/**
-	 *
-	 * @param script
-	 * @return
-	 */
 	private ScriptApplyResult apply(final IScript script)
 	{
 		final IScriptsApplierListener listener = getListener();
@@ -246,7 +241,19 @@ public class ScriptsApplier implements IScriptsApplier
 
 	private IScriptExecutor getExecutor(final IScript script)
 	{
-		return scriptExecutorFactory.createScriptExecutor(targetDatabase, script);
+		try
+		{
+			return scriptExecutorFactory.createScriptExecutor(targetDatabase, script);
+		}
+		catch (final ScriptException se)
+		{
+			throw se.addParameter("script.fileName", script.getLocalFile());
+		}
+		catch (final RuntimeException rte)
+		{
+			logger.error("Caught " + rte.getClass().getSimpleName() + " while getting executor for script " + script.getLocalFile() + "; -> logging here and rethrowing", rte);
+			throw rte;
+		}
 	}
 
 	private IScriptExecutor getSqlExecutor()
