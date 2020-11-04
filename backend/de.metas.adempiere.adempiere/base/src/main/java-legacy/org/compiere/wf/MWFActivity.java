@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -88,6 +90,8 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /**
  * Workflow Activity Model.
@@ -1254,12 +1258,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** Set Variable ******/
 		else if (MWFNode.ACTION_SetVariable.equals(action))
 		{
-			String value = m_node.getAttributeValue();
-			log.debug("SetVariable:AD_Column_ID={}", m_node.getAD_Column_ID()
-					+ " to " + value);
-			MColumn column = m_node.getColumn();
-			int dt = column.getAD_Reference_ID();
-			return setVariable(value, dt, null, trxName);
+			performWork_SetVariable(trxName);
+			return true;
 		}	// SetVariable
 
 		/****** TODO Start WF Instance ******/
@@ -1290,7 +1290,16 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		throw new IllegalArgumentException("Invalid Action (Not Implemented) =" + action);
 	}	// performWork
 
-	private boolean performWork_UserChoice(final String trxName) throws Exception
+	private void performWork_SetVariable(@Nullable final String trxName)
+	{
+		final String value = m_node.getAttributeValue();
+		log.debug("SetVariable:AD_Column_ID={} to {}", m_node.getAD_Column_ID(), value);
+		MColumn column = m_node.getColumn();
+		final int dt = column.getAD_Reference_ID();
+		setVariable(value, dt, null, trxName);
+	}
+
+	private boolean performWork_UserChoice(@Nullable final String trxName)
 	{
 		log.debug("UserChoice:AD_Column_ID={}", m_node.getAD_Column_ID());
 
@@ -1373,10 +1382,13 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @param valueStr new Value
 	 * @param displayType display type
 	 * @param textMsg optional Message
-	 * @return true if set
-	 * @throws Exception if error
+	 * @throws AdempiereException if error
 	 */
-	private boolean setVariable(String valueStr, int displayType, String textMsg, String trxName)
+	private void setVariable(
+			@Nullable final String valueStr,
+			final int displayType,
+			@Nullable final String textMsg,
+			@Nullable final String trxName)
 	{
 		m_newValue = null;
 		final PO po = getPO(trxName);
@@ -1393,11 +1405,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		}
 		else if (displayType == DisplayType.YesNo)
 		{
-			dbValue = DisplayType.toBoolean(valueStr);
+			dbValue = StringUtils.toBoolean(valueStr);
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
-			dbValue = new BigDecimal(valueStr);
+			dbValue = NumberUtils.asBigDecimal(valueStr);
 		}
 		else
 		{
@@ -1422,7 +1434,6 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		}
 		setTextMsg(msg);
 		m_newValue = valueStr;
-		return true;
 	}	// setVariable
 
 	/**
@@ -1432,19 +1443,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @param value new Value
 	 * @param displayType display type
 	 * @param textMsg optional Message
-	 * @return true if set
 	 * @throws Exception if error
 	 */
-	public boolean setUserChoice(int AD_User_ID, String value, int displayType, String textMsg)
+	public void setUserChoice(int AD_User_ID, String value, int displayType, String textMsg)
 	{
 		setWFState(StateEngine.STATE_Running);
 		setAD_User_ID(AD_User_ID);
 		final String trxName = get_TrxName();
-		boolean ok = setVariable(value, displayType, textMsg, trxName);
-		if (!ok)
-		{
-			return false;
-		}
+		setVariable(value, displayType, textMsg, trxName);
 
 		String newState = StateEngine.STATE_Completed;
 		// Approval
@@ -1534,8 +1540,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						.build());
 			}
 		}
+
 		setWFState(newState);
-		return ok;
 	}	// setUserChoice
 
 	/**
