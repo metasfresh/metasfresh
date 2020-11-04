@@ -24,8 +24,10 @@ package de.metas.activity.model.validator;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.organization.OrgId;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
@@ -53,8 +55,8 @@ public class M_InOutLine
 		{
 			return;
 		}
-		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
 
+		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(ClientId.ofRepoId(inOutLine.getAD_Client_ID()), OrgId.ofRepoId(inOutLine.getAD_Org_ID()), productId);
 		if (productActivityId == null)
 		{
 			return;
@@ -67,10 +69,6 @@ public class M_InOutLine
 			return;
 		}
 
-		if (productActivityId != null)
-		{
-			dimensionService.updateRecord(inOutLine, orderLineDimension.withActivityId(productActivityId));
-		}
-
+		dimensionService.updateRecord(inOutLine, orderLineDimension.withActivityId(productActivityId));
 	}
 }

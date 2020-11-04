@@ -29,6 +29,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -36,6 +37,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
@@ -78,7 +80,7 @@ public class C_OrderLine
 		orderLine.setIsDiverse(productBL.isDiverse(productId));
 
 		// Activity
-		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
+		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(ClientId.ofRepoId(orderLine.getAD_Client_ID()), OrgId.ofRepoId(orderLine.getAD_Org_ID()), productId);
 
 		if (productActivityId == null)
 		{
