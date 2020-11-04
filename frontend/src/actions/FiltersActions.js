@@ -41,12 +41,12 @@ export function updateNotValidFields({ filterId, data }) {
 }
 
 /**
- * @method updateActiveFilter
- * @summary Updates the activeFilter in the store for the corresponding entity id
+ * @method updateActiveFilters
+ * @summary Updates the activeFilters in the store for the corresponding entity id
  */
-export function updateActiveFilter({ filterId, data }) {
+export function updateActiveFilters({ filterId, data }) {
   return {
-    type: types.UPDATE_ACTIVE_FILTER,
+    type: types.UPDATE_ACTIVE_FILTERS,
     payload: { id: filterId, data },
   };
 }
