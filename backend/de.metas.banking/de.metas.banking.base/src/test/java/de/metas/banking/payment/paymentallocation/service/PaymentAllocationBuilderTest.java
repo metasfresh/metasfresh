@@ -22,40 +22,39 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InboundPaymentToOutboundPayment;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceDiscountOrWriteOff;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
-import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
-import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
-import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
-import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
-import static de.metas.payment.PaymentDirection.INBOUND;
-import static de.metas.payment.PaymentDirection.OUTBOUND;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -73,35 +72,32 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.DocTypeId;
-import de.metas.document.engine.IDocument;
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentDirection;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InboundPaymentToOutboundPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceDiscountOrWriteOff;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
+import static de.metas.payment.PaymentDirection.INBOUND;
+import static de.metas.payment.PaymentDirection.OUTBOUND;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@SuppressWarnings({ "NestedAssignment", "SameParameterValue" })
 public class PaymentAllocationBuilderTest
 {
 	// services
@@ -137,12 +133,6 @@ public class PaymentAllocationBuilderTest
 		invoiceDocTypes = new HashMap<>();
 
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
-
-	}
-
-	private Money euro(final String amount)
-	{
-		return money(amount, euroCurrencyId);
 	}
 
 	private Money money(final String amount, CurrencyId currencyId)
@@ -188,11 +178,12 @@ public class PaymentAllocationBuilderTest
 		dumpCandidates("Actual candidates", candidatesActual);
 		dumpCandidates("Expected candidates", candidatesExpected);
 
-		assertThat(candidatesActual).hasSize(candidatesExpected.size());
-		for (int i = 0; i < candidatesExpected.size(); i++)
+		final int expectedSize = candidatesExpected.size();
+		assertThat(candidatesActual).hasSize(expectedSize);
+		for (int i = 0; i < expectedSize; i++)
 		{
 			assertThat(candidatesActual.get(i))
-					.as("candidate with index=" + i)
+					.as("candidate " + (i + 1) + "/" + expectedSize)
 					.isEqualToComparingFieldByField(candidatesExpected.get(i));
 		}
 	}
@@ -214,7 +205,7 @@ public class PaymentAllocationBuilderTest
 	}
 
 	/**
-	 * NOTE: amounts shall be CreditMemo adjusted, but not AP adjusted
+	 * NOTE: amounts shall be CreditMemo adjusted and AP adjusted
 	 */
 	@Builder(builderMethodName = "invoice", builderClassName = "$PayableDocumentBuilder")
 	private PayableDocument newInvoice(
@@ -236,13 +227,12 @@ public class PaymentAllocationBuilderTest
 				.invoiceProcessingFee(money(invoiceProcessingFee, currency))
 				.build();
 
-		final LocalDate acctDate = LocalDate.of(2020, Month.SEPTEMBER, 4);
+		final LocalDate acctDate = LocalDate.parse("2020-09-04");
 
 		//
 		// Create the invoice record (needed for the BL which calculates how much was allocated)
 		final I_C_Invoice invoice;
 		{
-
 			final Money invoiceGrandTotal = openAmt
 					.negateIf(type.isCreditMemo())
 					.negateIf(!type.isSales());
@@ -1179,51 +1169,120 @@ public class PaymentAllocationBuilderTest
 		assertExpected(candidatesExpected, builder);
 	}
 
-	@Test
-	public void test_invoiceProcessingFee()
+	@Nested
+	public class InvoiceProcessingFee
 	{
-		final PayableDocument invoice1;
-		final PaymentDocument payment1;
+		@Test
+		public void customerInvoice_and_inboundPayment()
+		{
+			final PayableDocument invoice1;
+			final PaymentDocument payment1;
 
-		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
-				.orgId(adOrgId)
-				.evaluationDate(date.atStartOfDay(ZoneId.of("UTC-8")))
-				.customerId(bpartnerId)
-				.invoiceId(InvoiceId.ofRepoId(1111))
-				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(2222))
-				.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(3333))
-				.serviceFeeProductId(ProductId.ofRepoId(4444))
-				.feeAmountIncludingTax(Amount.of(666, CurrencyCode.EUR)) // does not matter
-				.build();
+			final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
+					.orgId(adOrgId)
+					.evaluationDate(date.atStartOfDay(ZoneId.of("UTC-8")))
+					.customerId(bpartnerId)
+					.invoiceId(InvoiceId.ofRepoId(1111))
+					.serviceCompanyBPartnerId(BPartnerId.ofRepoId(2222))
+					.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(3333))
+					.serviceFeeProductId(ProductId.ofRepoId(4444))
+					.feeAmountIncludingTax(Amount.of(666, CurrencyCode.EUR)) // does not matter
+					.build();
 
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						invoice1 = invoice().type(CustomerInvoice).open("100").pay("88").discount("10").invoiceProcessingFee("2").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).build())
-				// Payments
-				, ImmutableList.of(
-						payment1 = payment().direction(INBOUND).open("88").amtToAllocate("88").build()));
+			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+					// Invoices
+					ImmutableList.of(
+							invoice1 = invoice().type(CustomerInvoice).open("100").pay("88").discount("10").invoiceProcessingFee("2").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).build())
+					// Payments
+					, ImmutableList.of(
+							payment1 = payment().direction(INBOUND).open("88").amtToAllocate("88").build()));
 
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
-						.payableRef(invoice1.getReference())
-						.invoiceProcessingFee("2")
-						.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
-						.overUnderAmt("98")
-						.build(),
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
+							.payableRef(invoice1.getReference())
+							.invoiceProcessingFee("2")
+							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+							.overUnderAmt("98")
+							.build(),
 
-				allocation().type(InvoiceToPayment)
-						.payableRef(invoice1.getReference())
-						.paymentRef(payment1.getReference())
-						.allocatedAmt("88")
-						.discountAmt("10")
-						.build());
+					allocation().type(InvoiceToPayment)
+							.payableRef(invoice1.getReference())
+							.paymentRef(payment1.getReference())
+							.allocatedAmt("88")
+							.discountAmt("10")
+							.build());
 
-		final PaymentAllocationResult result = builder
-				.dryRun() // would fail if is not dryRun because we cannot save InvoiceProcessingFee allocations
-				.build();
-		assertExpected(candidatesExpected, result.getCandidates());
+			final PaymentAllocationResult result = builder
+					.dryRun() // would fail if is not dryRun because we cannot save InvoiceProcessingFee allocations
+					.build();
+			assertExpected(candidatesExpected, result.getCandidates());
+		}
+
+		/**
+		 * Story: given a sales invoice of 100 EUR and a credit memo of 100 EUR.
+		 * Each of them are processed by invoice processing company.
+		 * For each of them, the invoice processing company is retaining 10%, i.e. 10 EUR.
+		 * We allocate each other.
+		 * After allocation we expect:
+		 * Sales Invoice of 100 EUR to be fully allocated => zero open amount.
+		 * Sales Credit Memo of 100 EUR (i.e. actually -100 EUR because we have to given 100 EUR back) to have -20 EUR open amount,
+		 * because we still have to give 20 EUR back.
+		 */
+		@Test
+		public void salesInvoice_and_salesCreditMemo_sameAmount()
+		{
+			final PayableDocument salesInvoice;
+			final PayableDocument creditMemo;
+
+			final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
+					.orgId(adOrgId)
+					.evaluationDate(date.atStartOfDay(ZoneId.of("UTC-8")))
+					.customerId(bpartnerId)
+					.invoiceId(InvoiceId.ofRepoId(1111))
+					.serviceCompanyBPartnerId(BPartnerId.ofRepoId(2222))
+					.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(3333))
+					.serviceFeeProductId(ProductId.ofRepoId(4444))
+					.feeAmountIncludingTax(Amount.of(666, CurrencyCode.EUR)) // does not matter
+					.build();
+
+			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+					// Invoices
+					ImmutableList.of(
+							salesInvoice = invoice().type(CustomerInvoice).open("100").pay("90").discount("0").invoiceProcessingFee("10").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).build(),
+							creditMemo = invoice().type(CustomerCreditMemo).open("-100").pay("-110"/* -100 + 10*/).discount("0").invoiceProcessingFee("10").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).build()
+					)
+					// Payments
+					, ImmutableList.of());
+
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
+							.payableRef(salesInvoice.getReference())
+							.invoiceProcessingFee("10")
+							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+							.overUnderAmt("90")
+							.build(),
+					allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
+							.payableRef(creditMemo.getReference())
+							.invoiceProcessingFee("10")
+							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+							.overUnderAmt("-110")
+							.build(),
+					allocation().type(InvoiceToCreditMemo)
+							.payableRef(salesInvoice.getReference())
+							.paymentRef(creditMemo.getReference())
+							.allocatedAmt("90")
+							.discountAmt("0")
+							.paymentOverUnderAmt("-20")
+							.build());
+
+			final PaymentAllocationResult result = builder
+					.dryRun() // would fail if is not dryRun because we cannot save InvoiceProcessingFee allocations
+					.build();
+			assertExpected(candidatesExpected, result.getCandidates());
+		}
 	}
 }

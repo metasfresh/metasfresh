@@ -9,6 +9,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
@@ -706,8 +707,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
 		}
 
-		throw new AdempiereException("@NotFound@ @Bill_Location_ID@")
-				.setParameter("C_BPartner_ID", bpartnerId)
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final String bpartnerName = bpartnerBL.getBPartnerValueAndName(bpartnerId);
+		throw new BPartnerNoBillToAddressException(bpartnerName)
 				.setParameter("SOTrx", soTrx)
 				.appendParametersToMessage();
 	}
@@ -1771,8 +1773,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void allocateCreditMemo(final I_C_Invoice invoice,
-			final I_C_Invoice creditMemo,
-			final BigDecimal openAmt)
+										 final I_C_Invoice creditMemo,
+										 final BigDecimal openAmt)
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
