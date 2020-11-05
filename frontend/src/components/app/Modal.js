@@ -772,4 +772,6 @@ const mapStateToProps = (state, props) => {
   };
 };
 
+export { Modal as DisconnectedModal };
+
 export default connect(mapStateToProps)(Modal);
