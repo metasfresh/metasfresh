@@ -135,7 +135,7 @@ export default class TableHeader extends PureComponent {
 
 TableHeader.propTypes = {
   orderBy: PropTypes.array,
-  onSortTable: PropTypes.func.isRequired,
+  onSortTable: PropTypes.func,
   tabId: PropTypes.any,
   windowType: PropTypes.string,
   docId: PropTypes.string,
