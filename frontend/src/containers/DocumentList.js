@@ -4,11 +4,14 @@ import { push } from 'react-router-redux';
 import { Map as iMap, Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get } from 'lodash';
+import deepUnfreeze from 'deep-unfreeze';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { locationSearchRequest, getViewRowsByIds } from '../api';
-import { getTableId } from '../reducers/tables';
+import { connectWS, disconnectWS } from '../utils/websockets';
 
+import { getTableId } from '../reducers/tables';
+import { getEntityRelatedId } from '../reducers/filters';
 import {
   addViewLocationData,
   createView,
@@ -29,7 +32,6 @@ import {
   updateGridTableData,
   deselectTableRows,
 } from '../actions/TableActions';
-import { filtersActiveContains } from '../utils/filterHelpers';
 import {
   setListId,
   setPagination as setListPagination,
@@ -37,7 +39,7 @@ import {
 } from '../actions/ListActions';
 import { updateRawModal, indicatorState } from '../actions/WindowActions';
 import { setBreadcrumb } from '../actions/MenuActions';
-import { connectWS, disconnectWS } from '../utils/websockets';
+import { deleteFilter } from '../actions/FiltersActions';
 
 import {
   DLpropTypes,
@@ -48,9 +50,9 @@ import {
   mergeRows,
   parseToDisplay,
 } from '../utils/documentListHelper';
+import { filtersActiveContains } from '../utils/filterHelpers';
 
 import DocumentList from '../components/app/DocumentList';
-import deepUnfreeze from 'deep-unfreeze';
 
 class DocumentListContainer extends Component {
   constructor(props) {
@@ -65,7 +67,6 @@ class DocumentListContainer extends Component {
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
-      filtersActive: iMap(),
       initialValuesNulled: iMap(),
     };
 
@@ -100,6 +101,7 @@ class DocumentListContainer extends Component {
       referenceId: nextReferenceId,
       windowId: nextWindowId,
       queryViewId: nextQueryViewId,
+      viedData: nextViewData,
     } = nextProps;
     const {
       includedView,
@@ -116,9 +118,10 @@ class DocumentListContainer extends Component {
       updateUri,
       page,
       sort,
-      filter,
+      filters,
+      viewData: { pending },
     } = this.props;
-    const staticFilterCleared = filter ? filter.staticFilterCleared : false;
+    const staticFilterCleared = filters ? filters.staticFilterCleared : false;
 
     const included =
       includedView && includedView.windowId && includedView.viewId;
@@ -160,32 +163,39 @@ class DocumentListContainer extends Component {
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
-      deleteTable(getTableId({ windowId, viewId }));
+      // if view is already loading or reloading (after filtering) don't fetch
+      // the data and layout again
+      if (!(pending || (nextViewData && nextViewData.pending))) {
+        deleteTable(getTableId({ windowId, viewId }));
 
-      // if for instance we're replacing included view with a completely
-      // different view, we have no use of the old one and can safely
-      // remove it
-      if (nextWindowId === windowId) {
-        resetView(windowId, isModal);
-      } else {
-        deleteView(windowId, isModal);
-      }
+        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+        deleteFilter(entityRelatedId);
 
-      this.setState(
-        {
-          filtersActive: iMap(),
-          initialValuesNulled: iMap(),
-          panelsState: GEO_PANEL_STATES[0],
-        },
-        () => {
-          // TODO: Check if we can just call `showIncludedView` to hide
-          // it in the resetView Action Creator
-          if (included) {
-            unsetIncludedView(includedView);
-          }
-          this.fetchLayoutAndData();
+        // if for instance we're replacing included view with a completely
+        // different view, we have no use of the old one and can safely
+        // remove it
+        if (nextWindowId === windowId) {
+          resetView(windowId, isModal);
+        } else {
+          deleteView(windowId, isModal);
         }
-      );
+
+        this.setState(
+          {
+            initialValuesNulled: iMap(),
+            panelsState: GEO_PANEL_STATES[0],
+          },
+          () => {
+            // TODO: Check if we can just call `showIncludedView` to hide
+            // it in the resetView Action Creator
+            if (included) {
+              unsetIncludedView(includedView);
+            }
+
+            this.fetchLayoutAndData();
+          }
+        );
+      }
     }
 
     const stateChanges = {};
@@ -337,9 +347,16 @@ class DocumentListContainer extends Component {
    * @summary If viewId exists, than browse that view.
    */
   browseView = () => {
-    const { viewId, page, sort } = this.props;
-    const { filtersActive } = this.state;
-    const locationSearchFilter = filtersActive.has(LOCATION_SEARCH_NAME);
+    const {
+      viewId,
+      page,
+      sort,
+      filters: { filtersActive },
+    } = this.props;
+    const locationSearchFilter = filtersActiveContains({
+      filtersActive,
+      key: LOCATION_SEARCH_NAME,
+    });
 
     // in case of redirect from a notification, first call will have viewId empty
     if (viewId) {
@@ -369,9 +386,8 @@ class DocumentListContainer extends Component {
       createView,
       setModalDescription,
       isModal,
-      filters,
+      filters: { filtersActive },
     } = this.props;
-    const { filtersActive } = filters;
 
     createView({
       windowId,
@@ -467,6 +483,7 @@ class DocumentListContainer extends Component {
       updateRawModal,
       isModal,
       rawModalVisible,
+      filters: { filtersActive },
     } = this.props;
 
     indicatorState('pending');
@@ -511,12 +528,12 @@ class DocumentListContainer extends Component {
           const newState = {
             pageColumnInfosByFieldName,
           };
+          const locationSearchFilter = filtersActiveContains({
+            filtersActive,
+            key: LOCATION_SEARCH_NAME,
+          });
 
-          if (
-            locationAreaSearch ||
-            (newState.filtersActive &&
-              newState.filtersActive.has(LOCATION_SEARCH_NAME))
-          ) {
+          if (locationAreaSearch || locationSearchFilter) {
             this.getLocationData(resultById);
           }
 
