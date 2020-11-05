@@ -63,9 +63,13 @@ describe('Modal test', () => {
   it(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
     const initialState = getInitialState();
     const store = mockStore(initialState);
+    // setProcessPending() is called only by createProcess and we can use that as an indicator to know if it was called
+    const expectedActions = [{ type: 'SET_PROCESS_STATE_PENDING' }];
+    expect(store.getActions()).toEqual([]); // before mounting the modal the should'n be any action
+
     const dummyProps = fixtures;
     const startProcessMock = jest.fn().mockResolvedValue({});
-    mount(
+    const wrapper = await mount(
       <DisconnectedModal
         {...dummyProps}
         createProcess={startProcessMock}
@@ -75,9 +79,7 @@ describe('Modal test', () => {
       />
     );
 
-    await waitFor(() => {
-      expect(startProcessMock).toHaveBeenCalled();
-      done();
-    });
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    done();
   });
 });
