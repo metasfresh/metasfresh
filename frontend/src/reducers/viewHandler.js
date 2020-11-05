@@ -346,6 +346,8 @@ export default function viewHandler(state = initialState, action) {
       const type = getViewType(isModal);
       const view = getLocalView(state, id, isModal);
 
+      // we're not setting `pending` to false, as it'll be reset
+      // by fetching the document
       return {
         ...state,
         [`${type}`]: {
@@ -357,7 +359,6 @@ export default function viewHandler(state = initialState, action) {
             size,
             // TODO: Should we always set it to 1 ?
             page: 1,
-            pending: false,
           },
         },
       };
