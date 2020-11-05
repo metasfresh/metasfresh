@@ -3,12 +3,13 @@ import { mount, shallow, render } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
+import { waitFor } from '@testing-library/dom';
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 
-import Modal, { Modal as DisconnectedModal } from '../../../components/app/Modal';
+import Modal, { DisconnectedModal } from '../../../components/app/Modal';
 import fixtures from '../../../../test_setup/fixtures/modal.json';
 import testModal from '../../../../test_setup/fixtures/test_modal.json';
 
@@ -53,25 +54,30 @@ describe('Modal test', () => {
   });
 
   // TODO: For this to work it implies having the Modal component disconnected and
-  // TODO: test all functionality of it before adding back (https://github.com/metasfresh/metasfresh/issues/7128) 
+  // TODO: test all functionality of it before adding back (https://github.com/metasfresh/metasfresh/issues/7128)
   // TODO: the startProcess test it is skipped for now for that reason
   // TODO: will be added along with the refactoring issue (https://github.com/metasfresh/metasfresh/issues/7126)
   // As far as I remember failures that caused this to be skipped were because of some actionCreator not
   // being read from the props. Modal was and still is connected to the store, but it's using dispatch instead
   // of mapDispatchToProps/object shorthand binding
-  it.skip(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
+  it(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
+    const initialState = getInitialState();
+    const store = mockStore(initialState);
     const dummyProps = fixtures;
     const startProcessMock = jest.fn().mockResolvedValue({});
-    const wrapper = mount(
+    mount(
       <DisconnectedModal
         {...dummyProps}
         createProcess={startProcessMock}
         data={null}
+        dispatch={store.dispatch}
         layout={null}
       />
     );
 
-    expect(startProcessMock).toHaveBeenCalled();
-    done();
+    await waitFor(() => {
+      expect(startProcessMock).toHaveBeenCalled();
+      done();
+    });
   });
 });
