@@ -13,7 +13,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -41,10 +41,11 @@ public class BPGroupDAO implements IBPGroupDAO
 {
 	private static final Logger logger = LogManager.getLogger(BPGroupDAO.class);
 
+	/** Loading within inherited trx, because it might be called when the BPGroup in question was only just created, and that trx was not yet committed. */
 	@Override
 	public I_C_BP_Group getById(@NonNull final BPGroupId bpGroupId)
 	{
-		return loadOutOfTrx(bpGroupId, I_C_BP_Group.class);
+		return load(bpGroupId, I_C_BP_Group.class);
 	}
 
 	@Override

@@ -1,26 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.NumberFormat;
-import java.util.Locale;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
-import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.util.DB;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -31,6 +10,26 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.X_C_BPartner_Stats;
+import org.compiere.util.DB;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -83,9 +82,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	/**
 	 * Create the C_BPartner_Stats entry for the given bpartner.
-	 *
-	 * @param partner
-	 * @return
 	 */
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
