@@ -69,10 +69,10 @@ describe('FiltersActions general', () => {
     );
   });
 
-  it(`dispatches 'UPDATE_ACTIVE_FILTERS' action when creating the filters`, () => {
+  it.only(`dispatches 'UPDATE_ACTIVE_FILTERS' action when creating the filters`, () => {
     const expectedActionsOnCreation = [
       {
-        type: ACTION_TYPES.CREATE_FILTERS,
+        type: ACTION_TYPES.CREATE_FILTER,
         payload: { id: '540092_540092-FF', data: filtersData },
       },
     ];
@@ -107,7 +107,7 @@ describe('FiltersActions general', () => {
       updateActiveFilters({ filterId: '540092_540092-FF', data: activeFilter })
     );
     expect(store.getActions()[1].type).toEqual(
-      ACTION_TYPES.UPDATE_ACTIVE_FILTER
+      ACTION_TYPES.UPDATE_ACTIVE_FILTERS
     );
     expect(store.getActions()[1].payload).toEqual({
       id: '540092_540092-FF',
