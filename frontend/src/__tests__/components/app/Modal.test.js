@@ -3,9 +3,8 @@ import { mount, shallow, render } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import { waitFor } from '@testing-library/dom';
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
-
+import { SET_PROCESS_STATE_PENDING } from '../../../constants/ActionTypes';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 
@@ -64,7 +63,7 @@ describe('Modal test', () => {
     const initialState = getInitialState();
     const store = mockStore(initialState);
     // setProcessPending() is called only by createProcess and we can use that as an indicator to know if it was called
-    const expectedActions = [{ type: 'SET_PROCESS_STATE_PENDING' }];
+    const expectedActions = [{ type: SET_PROCESS_STATE_PENDING }];
     expect(store.getActions()).toEqual([]); // before mounting the modal the should'n be any action
 
     const dummyProps = fixtures;
