@@ -86,7 +86,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(partner.getC_BP_Group_ID());
-		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getById(bpGroupId);
+		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getByIdInInheritedTrx(bpGroupId);
 		
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
