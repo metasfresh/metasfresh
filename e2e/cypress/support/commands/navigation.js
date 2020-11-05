@@ -47,7 +47,7 @@ Cypress.Commands.add('selectSingleTabRow', () => {
 
 Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) => {
   // retry 8 times to open the referenced document
-  const date = humanReadableNow();
+  // const date = humanReadableNow();
   const timeout = { timeout: 20000 };
   checkIfWindowCanExecuteActions();
 
@@ -233,6 +233,10 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
       cy.get(barcodeFilterPath).click();
     });
 
+  const filterAlias = 'filter_' + humanReadableNow();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.Filter)).as(filterAlias);
+
   const quickActionsAlias = 'quickActions_' + humanReadableNow();
   cy.server();
   cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
@@ -247,18 +251,8 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
     cy.waitForSaveIndicator();
   }
 
-  // Workaround:
-  // if not doing this wait, we may get `element detached` errors
-  // ref: https://github.com/cypress-io/cypress/issues/7306
-  // in the future cypress may retry on element detached, but that's not the case as of 2020-05-22
+  cy.wait(`@${filterAlias}`);
   cy.wait(`@${quickActionsAlias}`);
-
-  cy.get(`div[title="${columnAndValue.value}"]`).click(); // select the item with a simple click on it
-  // on first click selection is lost
-  cy.get(`div[title="${columnAndValue.value}"]`).click({ timeout: 300 });
-  // re-select the row -> due to https://github.com/metasfresh/metasfresh/issues/10167
-
-  // return cy.selectRowByColumnAndValue(columnAndValue, true, force);
 });
 
 /**
