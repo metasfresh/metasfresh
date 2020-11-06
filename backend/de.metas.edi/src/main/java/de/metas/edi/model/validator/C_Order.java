@@ -41,7 +41,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 @Interceptor(I_C_Order.class)
-@Component
+@Component("de.metas.edi.model.validator.C_Order")
 public class C_Order
 {
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,

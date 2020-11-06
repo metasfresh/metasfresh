@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.model.X_M_ProductPrice;
+import org.compiere.model.X_C_OrderLine;
 
 import lombok.Getter;
 
@@ -33,10 +33,10 @@ import lombok.Getter;
 public enum InvoicableQtyBasedOn
 {
 	/** Please keep in sync with {@link X_M_ProductPrice#INVOICABLEQTYBASEDON_CatchWeight}. */
-	CatchWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_CatchWeight),
+	CatchWeight(X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight),
 
 	/** Please keep in sync with {@link X_M_ProductPrice#INVOICABLEQTYBASEDON_Nominal}. */
-	NominalWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_Nominal);
+	NominalWeight(X_C_OrderLine.INVOICABLEQTYBASEDON_Nominal);
 
 	public static InvoicableQtyBasedOn fromRecordString(@Nullable final String invoicableQtyBasedOn)
 	{
@@ -44,11 +44,11 @@ public enum InvoicableQtyBasedOn
 		{
 			return NominalWeight; // default
 		}
-		else if (X_M_ProductPrice.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn))
+		else if (X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn))
 		{
 			return CatchWeight;
 		}
-		else if (X_M_ProductPrice.INVOICABLEQTYBASEDON_Nominal.equals(invoicableQtyBasedOn))
+		else if (X_C_OrderLine.INVOICABLEQTYBASEDON_Nominal.equals(invoicableQtyBasedOn))
 		{
 			return NominalWeight;
 		}

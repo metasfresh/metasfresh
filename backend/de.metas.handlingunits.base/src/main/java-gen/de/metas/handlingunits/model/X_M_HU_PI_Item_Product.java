@@ -137,6 +137,38 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set TU-EAN.
+		@param EAN_TU TU-EAN	  */
+	@Override
+	public void setEAN_TU (java.lang.String EAN_TU)
+	{
+		set_Value (COLUMNNAME_EAN_TU, EAN_TU);
+	}
+
+	/** Get TU-EAN.
+		@return TU-EAN	  */
+	@Override
+	public java.lang.String getEAN_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
+	}
+
+	/** Set GTIN.
+		@param GTIN GTIN	  */
+	@Override
+	public void setGTIN (java.lang.String GTIN)
+	{
+		set_Value (COLUMNNAME_GTIN, GTIN);
+	}
+
+	/** Get GTIN.
+		@return GTIN	  */
+	@Override
+	public java.lang.String getGTIN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
+	}
+
 	/** Set Jedes Produkt erlauben.
 		@param IsAllowAnyProduct Jedes Produkt erlauben	  */
 	@Override
@@ -184,7 +216,44 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode_LU_Fallback()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+	}
+
+	@Override
+	public void setM_HU_PackagingCode_LU_Fallback(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode_LU_Fallback)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, de.metas.handlingunits.model.I_M_HU_PackagingCode.class, M_HU_PackagingCode_LU_Fallback);
+	}
+
+	/** Set LU Fallback-Verpackungscode.
+		@param M_HU_PackagingCode_LU_Fallback_ID 
+		Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	  */
+	@Override
+	public void setM_HU_PackagingCode_LU_Fallback_ID (int M_HU_PackagingCode_LU_Fallback_ID)
+	{
+		if (M_HU_PackagingCode_LU_Fallback_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, Integer.valueOf(M_HU_PackagingCode_LU_Fallback_ID));
+	}
+
+	/** Get LU Fallback-Verpackungscode.
+		@return Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	  */
+	@Override
+	public int getM_HU_PackagingCode_LU_Fallback_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_ID, de.metas.handlingunits.model.I_M_HU_PI_Item.class);
 	}

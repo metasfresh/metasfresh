@@ -34,7 +34,7 @@ import de.metas.edi.model.I_M_InOutLine;
 import org.adempiere.util.Services;
 
 @Interceptor(I_M_InOutLine.class)
-@Component
+@Component("de.metas.edi.model.validator.M_InOut ")
 public class M_InOutLine
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

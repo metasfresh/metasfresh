@@ -182,6 +182,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set CU-EAN.
+		@param EAN_CU CU-EAN	  */
+	@Override
+	public void setEAN_CU (java.lang.String EAN_CU)
+	{
+		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
+	}
+
+	/** Get CU-EAN.
+		@return CU-EAN	  */
+	@Override
+	public java.lang.String getEAN_CU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
+	}
+
 	/** Set Gegenwärtiger Lieferant.
 		@param IsCurrentVendor 
 		Diesen Lieferanten für Bepreisung und Lagerauffüllung verwenden
@@ -334,6 +350,60 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return bd;
 	}
 
+	/** Set Produktbeschreibung.
+	@param ProductDescription 
+	Produktbeschreibung
+  */
+@Override
+public void setProductDescription (java.lang.String ProductDescription)
+{
+	set_Value (COLUMNNAME_ProductDescription, ProductDescription);
+}
+
+/** Get Produktbeschreibung.
+	@return Produktbeschreibung
+  */
+@Override
+public java.lang.String getProductDescription () 
+{
+	return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
+}
+
+/** Set Produktname.
+	@param ProductName 
+	Name des Produktes
+  */
+@Override
+public void setProductName (java.lang.String ProductName)
+{
+	set_Value (COLUMNNAME_ProductName, ProductName);
+}
+
+/** Get Produktname.
+	@return Name des Produktes
+  */
+@Override
+public java.lang.String getProductName () 
+{
+	return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+}
+
+/** Set Produktnummer.
+	@param ProductNo Produktnummer	  */
+@Override
+public void setProductNo (java.lang.String ProductNo)
+{
+	set_Value (COLUMNNAME_ProductNo, ProductNo);
+}
+
+/** Get Produktnummer.
+	@return Produktnummer	  */
+@Override
+public java.lang.String getProductNo () 
+{
+	return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
+}
+	
 	/** Set Qualitäts-Einstufung.
 		@param QualityRating 
 		Method for rating vendors
@@ -398,6 +468,25 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set UPC/EAN.
+		@param UPC 
+		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
+	@Override
+	public void setUPC (java.lang.String UPC)
+	{
+		set_Value (COLUMNNAME_UPC, UPC);
+	}
+
+	/** Get UPC/EAN.
+		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
+	@Override
+	public java.lang.String getUPC () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UPC);
 	}
 
 	/** Set Produkt-Kategorie Geschäftspartner.

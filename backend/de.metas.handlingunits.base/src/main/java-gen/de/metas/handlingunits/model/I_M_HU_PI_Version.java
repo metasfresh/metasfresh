@@ -193,6 +193,33 @@ public interface I_M_HU_PI_Version
     public static final String COLUMNNAME_IsCurrent = "IsCurrent";
 
 	/**
+	 * Set Verpackungscode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_ID (int M_HU_PackagingCode_ID);
+
+	/**
+	 * Get Verpackungscode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackagingCode_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode();
+
+	public void setM_HU_PackagingCode(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode);
+
+    /** Column definition for M_HU_PackagingCode_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Version, de.metas.handlingunits.model.I_M_HU_PackagingCode> COLUMN_M_HU_PackagingCode_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Version, de.metas.handlingunits.model.I_M_HU_PackagingCode>(I_M_HU_PI_Version.class, "M_HU_PackagingCode_ID", de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+    /** Column name M_HU_PackagingCode_ID */
+    public static final String COLUMNNAME_M_HU_PackagingCode_ID = "M_HU_PackagingCode_ID";
+
+	/**
 	 * Set Packvorschrift.
 	 *
 	 * <br>Type: TableDir

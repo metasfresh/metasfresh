@@ -36,7 +36,6 @@ import de.metas.edi.api.IEDIInvoiceCandBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Invoice_Candidate;
 
-
 @Interceptor(I_C_Invoice_Candidate.class)
 @Component
 public class C_Invoice_Candidate

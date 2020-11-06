@@ -1,24 +1,8 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_Desadv
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_Desadv 
@@ -30,17 +14,10 @@ public interface I_EDI_Desadv
     /** AD_Table_ID=540644 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -48,45 +25,34 @@ public interface I_EDI_Desadv
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Client>(I_EDI_Desadv.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Org>(I_EDI_Desadv.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rechnungsstandort.
-	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 * Set Bill Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -95,8 +61,7 @@ public interface I_EDI_Desadv
 	public void setBill_Location_ID (int Bill_Location_ID);
 
 	/**
-	 * Get Rechnungsstandort.
-	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 * Get Bill Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -104,18 +69,11 @@ public interface I_EDI_Desadv
 	 */
 	public int getBill_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getBill_Location();
-
-	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location);
-
-    /** Column definition for Bill_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "Bill_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name Bill_Location_ID */
     public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -124,8 +82,7 @@ public interface I_EDI_Desadv
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -133,18 +90,11 @@ public interface I_EDI_Desadv
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner>(I_EDI_Desadv.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -153,8 +103,7 @@ public interface I_EDI_Desadv
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -162,18 +111,12 @@ public interface I_EDI_Desadv
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -182,8 +125,8 @@ public interface I_EDI_Desadv
 	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -191,18 +134,12 @@ public interface I_EDI_Desadv
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_Currency>(I_EDI_Desadv.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -216,8 +153,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -225,14 +162,12 @@ public interface I_EDI_Desadv
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User>(I_EDI_Desadv.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Auftragsdatum.
-	 * Datum des Auftrags
+	 * Set Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -241,8 +176,8 @@ public interface I_EDI_Desadv
 	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
-	 * Get Auftragsdatum.
-	 * Datum des Auftrags
+	 * Get Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -281,6 +216,48 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
+	 * Set Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
+
+	/**
+	 * Get Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_BPartner_ID();
+
+    /** Column name DropShip_BPartner_ID */
+    public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+
+	/**
+	 * Set Ship Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_Location_ID (int DropShip_Location_ID);
+
+	/**
+	 * Get Ship Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_Location_ID();
+
+    /** Column name DropShip_Location_ID */
+    public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
+
+	/**
 	 * Set DESADV.
 	 *
 	 * <br>Type: ID
@@ -302,52 +279,6 @@ public interface I_EDI_Desadv
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_Desadv_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_Desadv_ID", null);
     /** Column name EDI_Desadv_ID */
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
-
-	/**
-	 * Set Geliefert % Minimum.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setEDI_DESADV_MinimumSumPercentage (java.math.BigDecimal EDI_DESADV_MinimumSumPercentage);
-
-	/**
-	 * Get Geliefert % Minimum.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getEDI_DESADV_MinimumSumPercentage();
-
-    /** Column definition for EDI_DESADV_MinimumSumPercentage */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_DESADV_MinimumSumPercentage = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_DESADV_MinimumSumPercentage", null);
-    /** Column name EDI_DESADV_MinimumSumPercentage */
-    public static final String COLUMNNAME_EDI_DESADV_MinimumSumPercentage = "EDI_DESADV_MinimumSumPercentage";
-
-	/**
-	 * Set Geliefert %.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage);
-
-	/**
-	 * Get Geliefert %.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getEDI_DESADV_SumPercentage();
-
-    /** Column definition for EDI_DESADV_SumPercentage */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_DESADV_SumPercentage = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_DESADV_SumPercentage", null);
-    /** Column name EDI_DESADV_SumPercentage */
-    public static final String COLUMNNAME_EDI_DESADV_SumPercentage = "EDI_DESADV_SumPercentage";
 
 	/**
 	 * Set EDI Fehlermeldung.
@@ -375,8 +306,8 @@ public interface I_EDI_Desadv
 	/**
 	 * Set EDI Status Exportieren.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setEDI_ExportStatus (java.lang.String EDI_ExportStatus);
@@ -384,8 +315,8 @@ public interface I_EDI_Desadv
 	/**
 	 * Get EDI Status Exportieren.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getEDI_ExportStatus();
@@ -394,6 +325,52 @@ public interface I_EDI_Desadv
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_ExportStatus = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_ExportStatus", null);
     /** Column name EDI_ExportStatus */
     public static final String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
+
+	/**
+	 * Set Geliefert %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFulfillmentPercent (java.math.BigDecimal FulfillmentPercent);
+
+	/**
+	 * Get Geliefert %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getFulfillmentPercent();
+
+    /** Column definition for FulfillmentPercent */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_FulfillmentPercent = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "FulfillmentPercent", null);
+    /** Column name FulfillmentPercent */
+    public static final String COLUMNNAME_FulfillmentPercent = "FulfillmentPercent";
+
+	/**
+	 * Set Geliefert % Minimum.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFulfillmentPercentMin (java.math.BigDecimal FulfillmentPercentMin);
+
+	/**
+	 * Get Geliefert % Minimum.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getFulfillmentPercentMin();
+
+    /** Column definition for FulfillmentPercentMin */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_FulfillmentPercentMin = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "FulfillmentPercentMin", null);
+    /** Column name FulfillmentPercentMin */
+    public static final String COLUMNNAME_FulfillmentPercentMin = "FulfillmentPercentMin";
 
 	/**
 	 * Set Übergabeadresse.
@@ -413,18 +390,33 @@ public interface I_EDI_Desadv
 	 */
 	public int getHandOver_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getHandOver_Location();
-
-	public void setHandOver_Location(org.compiere.model.I_C_BPartner_Location HandOver_Location);
-
-    /** Column definition for HandOver_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_HandOver_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "HandOver_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name HandOver_Location_ID */
     public static final String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Handover partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHandOver_Partner_ID (int HandOver_Partner_ID);
+
+	/**
+	 * Get Handover partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getHandOver_Partner_ID();
+
+    /** Column name HandOver_Partner_ID */
+    public static final String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -433,8 +425,8 @@ public interface I_EDI_Desadv
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -473,8 +465,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
-	 * Set Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -483,8 +475,8 @@ public interface I_EDI_Desadv
 	public void setPOReference (java.lang.String POReference);
 
 	/**
-	 * Get Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -498,8 +490,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -508,8 +499,7 @@ public interface I_EDI_Desadv
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -546,8 +536,54 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Set SumDeliveredInStockingUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSumDeliveredInStockingUOM (java.math.BigDecimal SumDeliveredInStockingUOM);
+
+	/**
+	 * Get SumDeliveredInStockingUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getSumDeliveredInStockingUOM();
+
+    /** Column definition for SumDeliveredInStockingUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_SumDeliveredInStockingUOM = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "SumDeliveredInStockingUOM", null);
+    /** Column name SumDeliveredInStockingUOM */
+    public static final String COLUMNNAME_SumDeliveredInStockingUOM = "SumDeliveredInStockingUOM";
+
+	/**
+	 * Set SumOrderedInStockingUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSumOrderedInStockingUOM (java.math.BigDecimal SumOrderedInStockingUOM);
+
+	/**
+	 * Get SumOrderedInStockingUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getSumOrderedInStockingUOM();
+
+    /** Column definition for SumOrderedInStockingUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_SumOrderedInStockingUOM = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "SumOrderedInStockingUOM", null);
+    /** Column name SumOrderedInStockingUOM */
+    public static final String COLUMNNAME_SumOrderedInStockingUOM = "SumOrderedInStockingUOM";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -561,8 +597,8 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -570,8 +606,31 @@ public interface I_EDI_Desadv
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User>(I_EDI_Desadv.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Nutzer 1.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUserFlag (java.lang.String UserFlag);
+
+	/**
+	 * Get Nutzer 1.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUserFlag();
+
+    /** Column definition for UserFlag */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_UserFlag = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "UserFlag", null);
+    /** Column name UserFlag */
+    public static final String COLUMNNAME_UserFlag = "UserFlag";
 }

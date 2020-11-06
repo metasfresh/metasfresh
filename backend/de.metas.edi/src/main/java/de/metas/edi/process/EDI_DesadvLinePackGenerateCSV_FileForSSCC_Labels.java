@@ -26,6 +26,8 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Check;
 
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+
 import java.util.List;
 
 public class EDI_DesadvLinePackGenerateCSV_FileForSSCC_Labels extends EDI_GenerateCSV_FileForSSCC_Labels
