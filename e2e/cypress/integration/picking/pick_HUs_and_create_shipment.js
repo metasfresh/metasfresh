@@ -104,8 +104,11 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
     });
-
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
+    cy.get('.spinner', { timeout: 10000 })
+      .should('not.exist')
+      .then(() => {
+        cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
+      });
   });
 
   it('Confirm Picks', function() {
