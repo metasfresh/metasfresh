@@ -173,16 +173,6 @@ export function populateFiltersCaptions(filters) {
 }
 
 /**
- * @method filtersActiveContains
- * @summary returns a boolean value depending on the presence of the key withing the activeFilters passed array
- */
-export function filtersActiveContains({ filtersActive, key }) {
-  if (filtersActive.lenght === 0) return false;
-  const isPresent = filtersActive.filter((item) => item.filterId === key);
-  return isPresent.length ? true : false;
-}
-
-/**
  * @method setNewFiltersActive
  * @todo name is misleading. It suggests this is an action creator.
  * @summary returns a new array with filters that are going to be the active ones
@@ -217,6 +207,17 @@ function foundAmongActiveFilters({ storeActiveFilters, filterToAdd }) {
     if (item.filterId === filterToAdd.filterId) isPresent = true;
   });
   return isPresent;
+}
+
+/**
+ * @method filtersActiveContains
+ * @summary returns a boolean value depending on the presence of the key withing the activeFilters passed array
+ */
+export function filtersActiveContains({ filtersActive, key }) {
+  if (!filtersActive || filtersActive.lenght === 0) return false;
+  const isPresent = filtersActive.filter((item) => item.filterId === key);
+
+  return isPresent.length ? true : false;
 }
 
 /**

@@ -485,7 +485,7 @@ describe('Views reducer for `modals` type', () => {
 
     expect(state.modals).toEqual(
       expect.objectContaining({
-        [id]: expect.objectContaining({ pending: false, notFound: false, viewId, filters }),
+        [id]: expect.objectContaining({ pending: true, notFound: false, viewId, filters }),
       }),
     );
   });
