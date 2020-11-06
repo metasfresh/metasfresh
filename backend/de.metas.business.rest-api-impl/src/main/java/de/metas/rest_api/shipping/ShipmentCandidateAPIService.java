@@ -64,6 +64,7 @@ import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem;
+import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem.ShipmentScheduleExportAuditItemBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -115,7 +116,6 @@ import java.util.function.Function;
 
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 
 @Service
 class ShipmentCandidateAPIService
@@ -161,7 +161,9 @@ class ShipmentCandidateAPIService
 			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
 					APIExportAudit
 							.<ShipmentScheduleExportAuditItem>builder()
-							.transactionId(transactionKey);
+							.transactionId(transactionKey)
+							.orgId(OrgId.ANY)
+							.exportStatus(APIExportStatus.Exported); // status might be changed to "error" down the line
 
 			final List<ShipmentSchedule> shipmentSchedules = loadShipmentSchedulesToExport(limit);
 
@@ -376,14 +378,12 @@ class ShipmentCandidateAPIService
 			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder)
 	{
-		final OrgId orgId = shipmentSchedule.getOrgId();
-
 		auditBuilder.item(
 				shipmentSchedule.getId(),
 				ShipmentScheduleExportAuditItem.builder()
 						.exportStatus(APIExportStatus.Exported)
 						.repoIdAware(shipmentSchedule.getId())
-						.orgId(orgId)
+						.orgId(shipmentSchedule.getOrgId())
 						.build());
 	}
 
@@ -401,14 +401,16 @@ class ShipmentCandidateAPIService
 				.summary(e.getMessage())
 				.build());
 
-		auditBuilder.item(
-				shipmentSchedule.getId(),
-				ShipmentScheduleExportAuditItem.builder()
-						.exportStatus(APIExportStatus.ExportError)
-						.repoIdAware(shipmentSchedule.getId())
-						.issueId(adIssueId)
-						.orgId(orgId)
-						.build());
+		auditBuilder
+				.exportStatus(APIExportStatus.ExportError)
+				.item(
+						shipmentSchedule.getId(),
+						ShipmentScheduleExportAuditItem.builder()
+								.exportStatus(APIExportStatus.ExportError)
+								.repoIdAware(shipmentSchedule.getId())
+								.issueId(adIssueId)
+								.orgId(orgId)
+								.build());
 	}
 
 	@Value
@@ -450,60 +452,80 @@ class ShipmentCandidateAPIService
 			logger.debug("given results is empty; -> return");
 			return;
 		}
-		final APIExportAudit<ShipmentScheduleExportAuditItem> auditRecords = shipmentScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
-		if (auditRecords == null)
+		final APIExportAudit<ShipmentScheduleExportAuditItem> exportAudit = shipmentScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
+		if (exportAudit == null)
 		{
 			logger.debug("Given results.transactionKey={} does not match any audit records; -> return", results.getTransactionKey());
 			return;
 		}
+
+		exportAudit.setForwardedData(results.getForwardedData());
+		exportAudit.setIssueId(generalAdIssueId);
+
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
 				results.getItems(),
 				item -> ShipmentScheduleId.ofRepoId(item.getScheduleId().getValue()));
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getByIds(shipmentScheduleIds);
 
-		for (final JsonRequestCandidateResult resultItem : results.getItems())
+		APIExportStatus overallStatus = ExportedAndForwarded;
+		for (final JsonRequestCandidateResult jsonResultItem : results.getItems())
 		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(resultItem.getScheduleId().getValue());
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(jsonResultItem.getScheduleId().getValue());
 			final ShipmentSchedule shipmentSchedule = shipmentSchedules.get(shipmentScheduleId);
 			if (shipmentSchedule == null)
 			{
 				continue; // also shouldn't happen, unless we do some API-testing with static JSON stuff
 			}
 
-			ShipmentScheduleExportAuditItem auditRecord = auditRecords.getItemById(shipmentScheduleId);
-			if (auditRecord == null) // should not happen, but we don't want to make a fuzz in case it does
-			{
-				auditRecord = ShipmentScheduleExportAuditItem.builder()
-						.orgId(shipmentSchedule.getOrgId())
-						.repoIdAware(shipmentScheduleId)
-						.exportStatus(Pending)
-						.build();
-				auditRecords.addItem(auditRecord);
-			}
+			final ShipmentScheduleExportAuditItemBuilder builder = createOrGetAuditItemBuilder(exportAudit, shipmentScheduleId)
+					.orgId(shipmentSchedule.getOrgId());
 
-			final APIExportStatus status;
-			switch (resultItem.getOutcome())
+			final APIExportStatus itemStatus;
+			switch (jsonResultItem.getOutcome())
 			{
 				case OK:
-					status = ExportedAndForwarded;
+					itemStatus = ExportedAndForwarded;
 					break;
 				case ERROR:
-					status = ExportedAndError;
+					itemStatus = ExportedAndError;
+					overallStatus = ExportedAndError;
 
-					final AdIssueId specificAdIssueId = createADIssue(resultItem.getError());
-					auditRecord.setIssueId(CoalesceUtil.coalesce(specificAdIssueId, generalAdIssueId));
+					final AdIssueId specificAdIssueId = createADIssue(jsonResultItem.getError());
+					builder.issueId(CoalesceUtil.coalesce(specificAdIssueId));
 					break;
 				default:
-					throw new AdempiereException("resultItem has unexpected outcome=" + resultItem.getOutcome())
+					throw new AdempiereException("jsonResultItem has unexpected outcome=" + jsonResultItem.getOutcome())
 							.setParameter("TransactionIdAPI", results.getTransactionKey())
-							.setParameter("resultItem", resultItem);
+							.setParameter("jsonResultItem", jsonResultItem);
 			}
+			builder.exportStatus(itemStatus);
+			exportAudit.addItem(builder.build());
 
-			auditRecord.setExportStatus(status);
-			shipmentSchedule.setExportStatus(status);
+			shipmentSchedule.setExportStatus(itemStatus);
 		}
+
+		exportAudit.setExportStatus(overallStatus);
+
 		shipmentScheduleRepository.saveAll(shipmentSchedules.values());
-		shipmentScheduleAuditRepository.save(auditRecords);
+		shipmentScheduleAuditRepository.save(exportAudit);
+	}
+
+	private ShipmentScheduleExportAuditItemBuilder createOrGetAuditItemBuilder(
+			@NonNull final APIExportAudit<ShipmentScheduleExportAuditItem> exportAudit,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final ShipmentScheduleExportAuditItemBuilder builder;
+
+		final ShipmentScheduleExportAuditItem existingExportAuditItem = exportAudit.getItemById(shipmentScheduleId);
+		if (existingExportAuditItem == null) // should not happen, but we don't want to make a fuzz in case it does
+		{
+			return ShipmentScheduleExportAuditItem.builder()
+					.repoIdAware(shipmentScheduleId);
+		}
+		else
+		{
+			return existingExportAuditItem.toBuilder();
+		}
 	}
 
 	@Nullable

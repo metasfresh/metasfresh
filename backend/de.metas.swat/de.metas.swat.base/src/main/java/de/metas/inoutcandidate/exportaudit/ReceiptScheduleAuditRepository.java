@@ -75,7 +75,7 @@ public class ReceiptScheduleAuditRepository implements APIExportAuditRepository<
 	{
 		final StagingData stagingData = retrieveStagingData(audit.getTransactionId());
 
-		for (final ReceiptScheduleExportAuditItem item : audit.getItems().values())
+		for (final ReceiptScheduleExportAuditItem item : audit.getItems())
 		{
 			I_M_ReceiptSchedule_ExportAudit record = stagingData.schedIdToRecords.get(item.getRepoIdAware().getRepoId());
 			if (record == null)
