@@ -69,7 +69,7 @@ describe('FiltersActions general', () => {
     );
   });
 
-  it.only(`dispatches 'UPDATE_ACTIVE_FILTERS' action when creating the filters`, () => {
+  it(`dispatches 'UPDATE_ACTIVE_FILTERS' action when creating the filters`, () => {
     const expectedActionsOnCreation = [
       {
         type: ACTION_TYPES.CREATE_FILTER,
