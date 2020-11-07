@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.AdMessageKey;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -97,8 +98,8 @@ import lombok.NonNull;
 @ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
 class WorkpackageProcessorTask implements Runnable
 {
-	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText";
-	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle";
+	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
+	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
 	private static final transient Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);

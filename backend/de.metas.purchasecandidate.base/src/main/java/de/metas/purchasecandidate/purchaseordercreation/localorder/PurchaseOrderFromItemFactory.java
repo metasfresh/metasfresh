@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -30,6 +31,8 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -62,16 +65,16 @@ import lombok.NonNull;
 /* package */ final class PurchaseOrderFromItemFactory
 {
 	@VisibleForTesting
-	final static String MSG_Different_DatePromised = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised";
+	final static AdMessageKey MSG_Different_DatePromised = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised");
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity";
+	final static AdMessageKey MSG_Different_Quantity = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity");
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity_AND_DatePromised = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
+	final static AdMessageKey MSG_Different_Quantity_AND_DatePromised = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised");
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final OrderFactory orderFactory;
@@ -82,7 +85,7 @@ import lombok.NonNull;
 	@Builder
 	private PurchaseOrderFromItemFactory(
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
-			@NonNull OrderUserNotifications userNotifications)
+			@NonNull final OrderUserNotifications userNotifications)
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
@@ -143,6 +146,7 @@ import lombok.NonNull;
 		pruchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
 	}
 
+	@Nullable
 	private ADMessageAndParams createMessageAndParamsOrNull(@NonNull final I_C_Order order)
 	{
 		boolean deviatingDatePromised = false;

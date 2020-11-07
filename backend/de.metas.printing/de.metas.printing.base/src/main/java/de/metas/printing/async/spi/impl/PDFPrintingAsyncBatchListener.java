@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -60,7 +61,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
-	private static final String MSG_Event_PDFGenerated = "PDFPrintingAsyncBatchListener_PrintJob_Done";
+	private static final AdMessageKey MSG_Event_PDFGenerated = AdMessageKey.of("PDFPrintingAsyncBatchListener_PrintJob_Done");
 	private static int WINDOW_ID_PrintingQueue = 540165; // FIXME: hardcoded
 
 	@Override
@@ -115,10 +116,6 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 
 	/**
 	 * trigger notification event for processed workpackage
-	 * 
-	 * @param notifiableWP
-	 * @param seenPackages
-	 * @param asyncBatch
 	 */
 	private void sendUserNotifications(
 			final I_C_Queue_WorkPackage notifiableWP,
@@ -190,7 +187,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 			return countersByPrintPackageId.keySet();
 		}
 
-		public int getCounter(int printPackageId)
+		public int getCounter(final int printPackageId)
 		{
 			return countersByPrintPackageId.getOrDefault(printPackageId, 0);
 		}

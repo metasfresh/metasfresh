@@ -6,7 +6,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_EventAudit;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -29,30 +28,12 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 	 */
 	private static final long serialVersionUID = 3760514881823970823L;
 
-	/**
-	 * Get Event Audit for node
-	 *
-	 * @param ctx              context
-	 * @param AD_WF_Process_ID process
-	 * @param AD_WF_Node_ID    optional node
-	 * @return event audit or null
-	 * @deprecated Deprecated since 3.4.0. Use instead {@link #get(Properties, int, int, String)}
-	 */
-	@Deprecated
-	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID, final int AD_WF_Node_ID)
+	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID)
 	{
-		return get(ctx, AD_WF_Process_ID, AD_WF_Node_ID, ITrx.TRXNAME_None);
+		return get(ctx, AD_WF_Process_ID, -1);
 	}
 
-	/**
-	 * Get Event Audit for node
-	 *
-	 * @param ctx              context
-	 * @param AD_WF_Process_ID process
-	 * @param AD_WF_Node_ID    optional node
-	 * @return event audit or null
-	 */
-	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID, final int AD_WF_Node_ID, @Nullable final String trxName)
+	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID, final int AD_WF_Node_ID)
 	{
 		final ArrayList<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder("AD_WF_Process_ID=?");
@@ -62,7 +43,7 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 			whereClause.append(" AND AD_WF_Node_ID=?");
 			params.add(AD_WF_Node_ID);
 		}
-		final List<MWFEventAudit> list = new Query(ctx, Table_Name, whereClause.toString(), trxName)
+		final List<MWFEventAudit> list = new Query(ctx, Table_Name, whereClause.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				.setOrderBy(COLUMNNAME_AD_WF_EventAudit_ID)
 				.list(MWFEventAudit.class);
@@ -70,30 +51,6 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 		final MWFEventAudit[] retValue = new MWFEventAudit[list.size()];
 		list.toArray(retValue);
 		return retValue;
-	}    //	get
-
-	/**
-	 * Get Event Audit for node
-	 *
-	 * @param ctx              context
-	 * @param AD_WF_Process_ID process
-	 * @return event audit or null
-	 * @deprecated Deprecated since 3.4.0. Use instead {@link #get(Properties, int, String)}
-	 */
-	@Deprecated
-	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID)
-	{
-		return get(ctx, AD_WF_Process_ID, ITrx.TRXNAME_None);
-	}
-
-	/**
-	 * Get Event Audit for node
-	 *
-	 * @return event audit or null
-	 */
-	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID, @Nullable final String trxName)
-	{
-		return get(ctx, AD_WF_Process_ID, 0, trxName);
 	}    //	get
 
 	public MWFEventAudit(final Properties ctx, final int AD_WF_EventAudit_ID, final String trxName)
@@ -108,8 +65,6 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 
 	/**
 	 * Activity Constructor
-	 *
-	 * @param activity activity
 	 */
 	public MWFEventAudit(final MWFActivity activity)
 	{

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -55,7 +56,7 @@ import lombok.Value;
 
 public class OrderUserNotifications
 {
-	public static final OrderUserNotifications newInstance()
+	public static OrderUserNotifications newInstance()
 	{
 		return new OrderUserNotifications();
 	}
@@ -67,8 +68,8 @@ public class OrderUserNotifications
 
 	private static final Logger logger = LogManager.getLogger(OrderUserNotifications.class);
 
-	private static final String MSG_PurchaseOrderCompleted = "Event_PurchaseOrderCreated";
-	private static final String MSG_SalesOrderCompleted = "Event_SalesOrderCreated";
+	private static final AdMessageKey MSG_PurchaseOrderCompleted = AdMessageKey.of("Event_PurchaseOrderCreated");
+	private static final AdMessageKey MSG_SalesOrderCompleted = AdMessageKey.of("Event_SalesOrderCreated");
 
 	private OrderUserNotifications()
 	{
@@ -76,9 +77,6 @@ public class OrderUserNotifications
 
 	/**
 	 * Convenience method that calls {@link #notifyOrderCompleted(NotificationRequest)} with the order's creator as recipient.
-	 *
-	 * @param order
-	 * @return
 	 */
 	public OrderUserNotifications notifyOrderCompleted(@NonNull final I_C_Order order)
 	{
@@ -115,7 +113,7 @@ public class OrderUserNotifications
 		return this;
 	}
 
-	private final List<UserNotificationRequest> createOrderCompletedEvents(
+	private List<UserNotificationRequest> createOrderCompletedEvents(
 			@NonNull final I_C_Order order,
 			@NonNull final Set<UserId> recipientUserIds,
 			@NonNull final ADMessageAndParams adMessageAndParams)
@@ -133,7 +131,7 @@ public class OrderUserNotifications
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	private UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
 				.topic(USER_NOTIFICATIONS_TOPIC);
@@ -167,7 +165,7 @@ public class OrderUserNotifications
 	public static class ADMessageAndParams
 	{
 		@NonNull
-		String adMessage;
+		AdMessageKey adMessage;
 		@Singular
 		List<Object> params;
 	}

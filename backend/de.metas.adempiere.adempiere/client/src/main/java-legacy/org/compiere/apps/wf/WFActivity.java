@@ -503,7 +503,7 @@ public class WFActivity extends CPanel
 	{
 		final SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.DateTime);
 		final StringBuilder sb = new StringBuilder();
-		final MWFEventAudit[] events = MWFEventAudit.get(activity.getCtx(), activity.getAD_WF_Process_ID(), ITrx.TRXNAME_None);
+		final MWFEventAudit[] events = MWFEventAudit.get(activity.getCtx(), activity.getAD_WF_Process_ID());
 		for (final MWFEventAudit audit : events)
 		{
 			// sb.append("<p style=\"width:400\">");
