@@ -426,7 +426,7 @@ public class WorkflowProcessor extends AdempiereServer
 		int counter = 0;
 
 		// To Activity Owner
-		final UserId activityUserId = UserId.ofRepoIdOrNull(activity.getAD_User_ID());
+		final UserId activityUserId = activity.getUserId();
 		if (activityUserId != null)
 		{
 			if (m_client.sendEMail(activityUserId, subject, message, pdf))
@@ -449,7 +449,7 @@ public class WorkflowProcessor extends AdempiereServer
 
 		// To Activity Responsible
 		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
-		final WFResponsibleId activityResponsibleId = WFResponsibleId.ofRepoId(activity.getAD_WF_Responsible_ID());
+		final WFResponsibleId activityResponsibleId = activity.getWFResponsibleId();
 		WFResponsible responsible = workflowDAO.getWFResponsibleById(activityResponsibleId);
 		counter += sendAlertToResponsible(responsible, list, process, subject, message, pdf);
 

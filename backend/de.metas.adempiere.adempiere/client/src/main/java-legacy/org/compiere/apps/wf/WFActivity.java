@@ -18,6 +18,7 @@ package org.compiere.apps.wf;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
@@ -25,8 +26,9 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.WFNode;
+import de.metas.workflow.WFNodeAction;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.apps.wf.WFActivityModel;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ADialog;
@@ -57,8 +59,6 @@ import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 import org.compiere.wf.MWFActivity;
 import org.compiere.wf.MWFEventAudit;
-import de.metas.workflow.WFNode;
-import de.metas.workflow.WFNodeAction;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -83,12 +83,11 @@ import java.util.List;
 public class WFActivity extends CPanel
 		implements FormPanel, ActionListener, ListSelectionListener
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 6917300855914216420L;
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private static final AdMessageKey MSG_DocumentForwardedToYou = AdMessageKey.of("DocumentedForwardedToYou");
 
 	/**
 	 * WF Activity
@@ -733,7 +732,7 @@ public class WFActivity extends CPanel
 			}
 			else
 			{
-				m_activity.forwardTo(forwardToId, textMsg);
+				m_activity.forwardTo(forwardToId, MSG_DocumentForwardedToYou, textMsg);
 			}
 		}
 		// User Choice - Answer

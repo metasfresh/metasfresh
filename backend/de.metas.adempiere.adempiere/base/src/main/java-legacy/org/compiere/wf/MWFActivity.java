@@ -60,12 +60,12 @@ import lombok.With;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Activity;
@@ -74,6 +74,7 @@ import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_WF_Activity;
+import org.compiere.model.X_AD_WF_EventAudit;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -110,6 +111,8 @@ public class MWFActivity extends X_AD_WF_Activity
 
 	private static final Logger log = LogManager.getLogger(MWFActivity.class);
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
+
+	private static final AdMessageKey MSG_ApprovalRequest = AdMessageKey.of("ApprovalRequest");
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	private WFNode _node = null; // lazy
@@ -258,7 +261,14 @@ public class MWFActivity extends X_AD_WF_Activity
 	WFState getState()
 	{
 		return WFState.ofCode(getWFState());
-	}    // getState
+	}
+
+	@Deprecated
+	@Override
+	public String getWFState()
+	{
+		return super.getWFState();
+	}
 
 	@Override
 	@Deprecated
@@ -304,6 +314,34 @@ public class MWFActivity extends X_AD_WF_Activity
 			// TODO: teo_sarca: throw exception ? please analyze the call hierarchy first
 		}
 	}    // setWFState
+
+	public UserId getUserId()
+	{
+		return UserId.ofRepoIdOrNullIfSystem(getAD_User_ID());
+	}
+
+	/**
+	 * @deprecated please use {@link #getUserId()}
+	 */
+	@Deprecated
+	public int getAD_User_ID()
+	{
+		return super.getAD_User_ID();
+	}
+
+	public void setUserId(@NonNull final UserId userId)
+	{
+		super.setAD_User_ID(userId.getRepoId());
+	}
+
+	/**
+	 * @deprecated please use {@link #forwardTo}
+	 */
+	@Deprecated
+	public void setAD_User_ID(final int adUserId)
+	{
+		super.setAD_User_ID(adUserId);
+	}
 
 	/**
 	 * @return true if closed
@@ -386,8 +424,7 @@ public class MWFActivity extends X_AD_WF_Activity
 		}
 		else
 		{
-			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
-			po = this._po = TableModelLoader.instance.getPO(getCtx(), tableName, getRecord_ID(), ITrx.TRXNAME_ThreadInherited);
+			po = this._po = TableModelLoader.instance.getPO(getCtx(), getAD_Table_ID(), getRecord_ID(), ITrx.TRXNAME_ThreadInherited);
 			return po;
 		}
 	}    // getPO
@@ -412,6 +449,11 @@ public class MWFActivity extends X_AD_WF_Activity
 		}
 
 		return Services.get(IDocumentBL.class).getDocumentOrNull(po);
+	}
+
+	public TableRecordReference getDocumentRef()
+	{
+		return TableRecordReference.of(getAD_Table_ID(), getRecord_ID());
 	}
 
 	Optional<ClientId> getPO_AD_Client_ID()
@@ -556,7 +598,7 @@ public class MWFActivity extends X_AD_WF_Activity
 		{
 			responsibleId = WFResponsibleId.ofRepoId(process.getAD_WF_Responsible_ID());
 		}
-		setAD_WF_Responsible_ID(responsibleId.getRepoId());
+		setWFResponsibleId(responsibleId);
 		final WFResponsible resp = getResponsible();
 
 		// User - Directly responsible
@@ -567,13 +609,36 @@ public class MWFActivity extends X_AD_WF_Activity
 			userId = UserId.ofRepoId(process.getAD_User_ID());
 		}
 
-		setAD_User_ID(userId.getRepoId());
+		setUserId(userId);
+	}
+
+	public WFResponsibleId getWFResponsibleId()
+	{
+		return WFResponsibleId.ofRepoIdOrNull(super.getAD_WF_Responsible_ID());
+	}
+
+	@Override
+	@Deprecated
+	public int getAD_WF_Responsible_ID()
+	{
+		return super.getAD_WF_Responsible_ID();
 	}
 
 	private WFResponsible getResponsible()
 	{
-		final WFResponsibleId responsibleId = WFResponsibleId.ofRepoId(getAD_WF_Responsible_ID());
-		return Services.get(IADWorkflowDAO.class).getWFResponsibleById(responsibleId);
+		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+		return workflowDAO.getWFResponsibleById(getWFResponsibleId());
+	}
+
+	public void setWFResponsibleId(@NonNull final WFResponsibleId wfResponsibleId)
+	{
+		super.setAD_WF_Responsible_ID(wfResponsibleId.getRepoId());
+	}
+
+	@Deprecated
+	public void setAD_WF_Responsible_ID(final int id)
+	{
+		super.setAD_WF_Responsible_ID(id);
 	}
 
 	private boolean isInvoker()
@@ -600,7 +665,7 @@ public class MWFActivity extends X_AD_WF_Activity
 	{
 		final UserId documentOwnerId = UserId.ofRepoId(doc.getDoc_User_ID());
 		final UserId invokerId = CoalesceUtil.coalesce(
-				UserId.ofRepoIdOrNullIfSystem(getAD_User_ID()),
+				getUserId(),
 				documentOwnerId);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(doc.getC_Currency_ID());
@@ -996,7 +1061,7 @@ public class MWFActivity extends X_AD_WF_Activity
 		ProcessInfo.builder()
 				.setCtx(getCtx())
 				.setAD_Client_ID(getAD_Client_ID())
-				.setAD_User_ID(getAD_User_ID())
+				.setUserId(getUserId())
 				.setAD_Process_ID(wfNode.getProcessId())
 				.setTitle(wfNode.getName().getDefaultValue())
 				.setRecord(getAD_Table_ID(), getRecord_ID())
@@ -1014,7 +1079,7 @@ public class MWFActivity extends X_AD_WF_Activity
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(getCtx())
 				.setAD_Client_ID(getAD_Client_ID())
-				.setAD_User_ID(getAD_User_ID())
+				.setUserId(getUserId())
 				.setAD_Process_ID(wfNode.getProcessId())
 				.setTitle(wfNode.getName().getDefaultValue())
 				.setRecord(getAD_Table_ID(), getRecord_ID())
@@ -1136,8 +1201,8 @@ public class MWFActivity extends X_AD_WF_Activity
 		final boolean autoApproval;
 
 		// Approval Hierarchy
-		final WFResponsible resp = getResponsible();
-		if (resp.isInvoker())
+		final WFResponsible responsible = getResponsible();
+		if (responsible.isInvoker())
 		{
 			final DocumentToApproveRequest documentToApprove = toDocumentToApproveRequest(doc);
 			final UserId approverId = getApprovalUser(documentToApprove).orElse(null);
@@ -1151,26 +1216,26 @@ public class MWFActivity extends X_AD_WF_Activity
 			}
 			else
 			{
-				setAD_User_ID(approverId.getRepoId());
+				forwardTo(approverId, MSG_ApprovalRequest, null);
 				autoApproval = false;
 			}
 		}
-		else if (resp.isHuman())
+		else if (responsible.isHuman())
 		{
 			final MWFProcess wfProcess = getWorkflowProcess();
-			autoApproval = resp.getUserId() != null && resp.getUserId().getRepoId() == wfProcess.getAD_User_ID();
-			if (!autoApproval && resp.getUserId() != null)
+			autoApproval = responsible.getUserId() != null && responsible.getUserId().getRepoId() == wfProcess.getAD_User_ID();
+			if (!autoApproval && responsible.getUserId() != null)
 			{
-				setAD_User_ID(resp.getUserId().getRepoId());
+				forwardTo(responsible.getUserId(), MSG_ApprovalRequest, null);
 			}
 		}
-		else if (resp.isRole())
+		else if (responsible.isRole())
 		{
 			final MWFProcess wfProcess = getWorkflowProcess();
 
 			final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 
-			final RoleId roleId = resp.getRoleId();
+			final RoleId roleId = responsible.getRoleId();
 			final Set<UserId> allRoleUserIds = roleDAO.retrieveUserIdsForRoleId(roleId);
 			if (allRoleUserIds.contains(UserId.ofRepoId(wfProcess.getAD_User_ID())))
 			{
@@ -1181,13 +1246,13 @@ public class MWFActivity extends X_AD_WF_Activity
 				autoApproval = false;
 			}
 		}
-		else if (resp.isOrganization())
+		else if (responsible.isOrganization())
 		{
-			throw new AdempiereException("Support not implemented for " + resp);
+			throw new AdempiereException("Support not implemented for " + responsible);
 		}
 		else
 		{
-			throw new AdempiereException("@NotSupported@ " + resp);
+			throw new AdempiereException("@NotSupported@ " + responsible);
 		}
 
 		if (autoApproval)
@@ -1272,7 +1337,7 @@ public class MWFActivity extends X_AD_WF_Activity
 			@Nullable final String textMsg)
 	{
 		changeWFStateTo(WFState.Running);
-		setAD_User_ID(userId.getRepoId());
+		setUserId(userId);
 		setVariable(value, displayType, textMsg);
 
 		final WFState newState;
@@ -1328,7 +1393,7 @@ public class MWFActivity extends X_AD_WF_Activity
 					// Another user is allowed to approve it => forward to that user
 					else if (!UserId.equals(documentToApprove.getWorkflowInvokerId(), approverId))
 					{
-						forwardTo(approverId, "Next Approver");
+						forwardTo(approverId, MSG_ApprovalRequest, null);
 						newState = WFState.Suspended;
 					}
 					else
@@ -1384,37 +1449,49 @@ public class MWFActivity extends X_AD_WF_Activity
 	/**
 	 * Forward To
 	 */
-	public void forwardTo(@NonNull final UserId userId, @Nullable final String textMsg)
+	public void forwardTo(
+			@NonNull final UserId userId,
+			@NonNull final AdMessageKey subject,
+			@Nullable final String textMsg)
 	{
-		if (userId.getRepoId() == getAD_User_ID())
+		final UserId oldUserId = getUserId();
+		if (UserId.equals(userId, oldUserId))
 		{
 			log.warn("Asked to forward to same user `{}`. Do nothing.", userId);
 			return;
 		}
-		//
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		final UserId oldUserId = UserId.ofRepoIdOrSystem(getAD_User_ID());
-		final I_AD_User oldUser = userDAO.getById(oldUserId);
-		final I_AD_User user = userDAO.getById(userId);
 
 		// Update
-		setAD_User_ID(user.getAD_User_ID());
+		setUserId(userId);
 		addTextMsg(textMsg);
 		saveEx();
+
+		//
+		// Notify user
+		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+		final TableRecordReference documentRef = getDocumentRef();
+		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
+				.topic(USER_NOTIFICATIONS_TOPIC)
+				.recipientUserId(userId)
+				.subjectADMessage(subject)
+				.subjectADMessageParam(documentRef)
+				.contentPlain(textMsg)
+				.targetAction(TargetRecordAction.of(documentRef))
+				.build());
 
 		// Close up Old Event
 		{
 			final I_AD_WF_EventAudit audit = getEventAudit();
-			audit.setAD_User_ID(oldUser.getAD_User_ID());
+			audit.setAD_User_ID(oldUserId.getRepoId());
 			audit.setTextMsg(getTextMsg());
 			audit.setAttributeName("AD_User_ID");
-			audit.setOldValue(oldUser.getName() + "(" + oldUser.getAD_User_ID() + ")");
-			audit.setNewValue(user.getName() + "(" + user.getAD_User_ID() + ")");
+			audit.setOldValue(buildUserSummary(oldUserId));
+			audit.setNewValue(buildUserSummary(userId));
 			//
 			audit.setWFState(getWFState());
-			audit.setEventType(MWFEventAudit.EVENTTYPE_StateChanged);
-			final long ms = System.currentTimeMillis() - audit.getCreated().getTime();
-			audit.setElapsedTimeMS(new BigDecimal(ms));
+			audit.setEventType(X_AD_WF_EventAudit.EVENTTYPE_StateChanged);
+			final long ms = SystemTime.millis() - audit.getCreated().getTime();
+			audit.setElapsedTimeMS(BigDecimal.valueOf(ms));
 			InterfaceWrapperHelper.save(audit);
 		}
 
@@ -1422,10 +1499,22 @@ public class MWFActivity extends X_AD_WF_Activity
 		newEventAudit();
 	}
 
+	private String buildUserSummary(final UserId userId)
+	{
+		if (userId == null)
+		{
+			return null;
+		}
+
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final String name = userDAO.retrieveUserFullname(userId);
+		return name + " (" + userId.getRepoId() + ")";
+	}
+
 	public void setUserConfirmation(@NonNull final UserId userId, @Nullable final String textMsg)
 	{
 		changeWFStateTo(WFState.Running);
-		setAD_User_ID(userId.getRepoId());
+		setUserId(userId);
 		if (textMsg != null)
 		{
 			addTextMsg(textMsg);
@@ -1715,8 +1804,8 @@ public class MWFActivity extends X_AD_WF_Activity
 			sb.append(wfNode.getName().getDefaultValue());
 		}
 
-		sb.append(",State=").append(getWFState())
-				.append(",AD_User_ID=").append(getAD_User_ID())
+		sb.append(",State=").append(getState())
+				.append(",AD_User_ID=").append(getUserId())
 				.append(",").append(getCreated())
 				.append("]");
 		return sb.toString();
@@ -1729,13 +1818,16 @@ public class MWFActivity extends X_AD_WF_Activity
 	private String toStringX()
 	{
 		final StringBuilder sb = new StringBuilder();
-		sb.append(getWFStateText())
-				.append(": ").append(getNode().getName());
-		if (getAD_User_ID() > 0)
+		sb.append(getWFStateText()).append(": ").append(getNode().getName());
+
+		final UserId userId = getUserId();
+		if (userId != null)
 		{
-			final String userFullname = Services.get(IUserDAO.class).retrieveUserFullname(getAD_User_ID());
+			final IUserDAO userDAO = Services.get(IUserDAO.class);
+			final String userFullname = userDAO.retrieveUserFullname(userId);
 			sb.append(" (").append(userFullname).append(")");
 		}
+
 		return sb.toString();
 	}
 }

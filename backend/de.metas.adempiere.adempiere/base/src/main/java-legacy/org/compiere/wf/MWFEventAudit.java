@@ -1,8 +1,10 @@
 package org.compiere.wf;
 
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
+import de.metas.workflow.WFResponsibleId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_WF_EventAudit;
@@ -24,9 +26,6 @@ import java.util.Properties;
  */
 public class MWFEventAudit extends X_AD_WF_EventAudit
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 3760514881823970823L;
 
 	public static List<I_AD_WF_EventAudit> getByProcess(final int AD_WF_Process_ID)
@@ -67,10 +66,10 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 		setAD_Table_ID(activity.getAD_Table_ID());
 		setRecord_ID(activity.getRecord_ID());
 		//
-		setAD_WF_Responsible_ID(activity.getAD_WF_Responsible_ID());
-		setAD_User_ID(activity.getAD_User_ID());
+		setAD_WF_Responsible_ID(WFResponsibleId.toRepoId(activity.getWFResponsibleId()));
+		setAD_User_ID(UserId.toRepoId(activity.getUserId()));
 		//
-		setWFState(activity.getWFState());
+		setWFState(activity.getState().getCode());
 		setEventType(EVENTTYPE_ProcessCreated);
 		setElapsedTimeMS(BigDecimal.ZERO);
 		//
