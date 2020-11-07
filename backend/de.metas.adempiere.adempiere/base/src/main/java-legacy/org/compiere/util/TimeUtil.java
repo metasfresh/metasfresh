@@ -1818,6 +1818,11 @@ public class TimeUtil
 		return asInstant(obj, SystemTime.zoneId());
 	}
 
+	public static Instant asInstant(@Nullable final Timestamp timestamp)
+	{
+		return timestamp != null ? timestamp.toInstant() : null;
+	}
+
 	public static Instant asInstant(
 			@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{

@@ -41,7 +41,9 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
+import de.metas.workflow.WDEventAuditType;
 import de.metas.workflow.WFAction;
+import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
 import de.metas.workflow.WFNodeEmailRecipient;
@@ -53,6 +55,7 @@ import de.metas.workflow.WFState;
 import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
 import de.metas.workflow.service.IADWorkflowDAO;
+import de.metas.workflow.service.WFEventAuditRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -69,12 +72,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Activity;
-import org.compiere.model.I_AD_WF_EventAudit;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_WF_Activity;
-import org.compiere.model.X_AD_WF_EventAudit;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -116,7 +117,7 @@ public class MWFActivity extends X_AD_WF_Activity
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	private WFNode _node = null; // lazy
-	private I_AD_WF_EventAudit _audit = null;
+	private WFEventAudit _lastAudit = null;
 	private PO _po = null; // lazy
 	private String m_newValue = null;
 	private MWFProcess _wfProcess = null; // lazy
@@ -353,57 +354,90 @@ public class MWFActivity extends X_AD_WF_Activity
 
 	private void updateEventAudit()
 	{
-		final I_AD_WF_EventAudit audit = getEventAudit();
+		final WFEventAudit audit = getLastEventAuditOrCreate();
 		audit.setTextMsg(getTextMsg());
-		audit.setWFState(getWFState());
+		audit.setWfState(getState());
 		if (m_newValue != null)
 		{
-			audit.setNewValue(m_newValue);
+			audit.setAttributeValueNew(m_newValue);
 		}
 		if (getState().isClosed())
 		{
-			audit.setEventType(MWFEventAudit.EVENTTYPE_ProcessCompleted);
-			final long ms = System.currentTimeMillis() - audit.getCreated().getTime();
-			audit.setElapsedTimeMS(new BigDecimal(ms));
+			audit.setEventType(WDEventAuditType.ProcessCompleted);
+			audit.updateElapsedTime();
 		}
 		else
 		{
-			audit.setEventType(MWFEventAudit.EVENTTYPE_StateChanged);
+			audit.setEventType(WDEventAuditType.StateChanged);
 		}
 
-		InterfaceWrapperHelper.save(audit);
-	}    // updateEventAudit
+		final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
+		auditRepo.save(audit);
+	}
 
-	/**
-	 * Get/Create Event Audit
-	 */
-	private I_AD_WF_EventAudit getEventAudit()
+	private WFEventAudit getLastEventAuditOrCreate()
 	{
-		I_AD_WF_EventAudit audit = this._audit;
-		if (audit == null)
+		WFEventAudit lastAudit = this._lastAudit;
+		if (lastAudit == null)
 		{
-			final List<I_AD_WF_EventAudit> events = MWFEventAudit.getByWFNode(getAD_WF_Process_ID(), getAD_WF_Node_ID());
-			if (events.isEmpty())
-			{
-				audit = new MWFEventAudit(this);
-			}
-			else
-			{
-				audit = events.get(events.size() - 1);        // last event
-			}
+			final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
 
-			this._audit = audit;
+			final int wfProcessId = getAD_WF_Process_ID();
+			final WFNodeId wfNodeId = WFNodeId.ofRepoId(getAD_WF_Node_ID());
+			lastAudit = auditRepo.getLastByWFNodeId(wfProcessId, wfNodeId)
+					.orElseGet(() -> newEventAuditDraft(this));
+
+			this._lastAudit = lastAudit;
 		}
 
-		return audit;
+		return lastAudit;
 	}
 
 	private void newEventAudit()
 	{
-		final MWFEventAudit audit = new MWFEventAudit(this);
-		audit.saveEx();
+		final WFEventAudit audit = newEventAuditDraft(this);
 
-		this._audit = audit;
+		final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
+		auditRepo.save(audit);
+
+		this._lastAudit = audit;
+	}
+
+	private static WFEventAudit newEventAuditDraft(@NonNull final MWFActivity activity)
+	{
+		final WFEventAudit.WFEventAuditBuilder builder = WFEventAudit.builder()
+				.eventType(WDEventAuditType.ProcessCreated)
+				//
+				.orgId(OrgId.ofRepoId(activity.getAD_Org_ID()))
+				.wfProcessId(activity.getAD_WF_Process_ID())
+				//.wfNodeId(WFNodeId.ofRepoId(activity.getAD_WF_Node_ID())) // see below
+				.documentRef(TableRecordReference.ofOrNull(activity.getAD_Table_ID(), activity.getRecord_ID()))
+				//
+				.wfResponsibleId(activity.getWFResponsibleId())
+				.userId(activity.getUserId())
+				//
+				.wfState(activity.getState())
+				.elapsedTime(Duration.ZERO);
+
+		final WFNode node = activity.getNode();
+		if (node != null)
+		{
+			builder.wfNodeId(node.getId());
+
+			final WFNodeAction action = node.getAction();
+			if (WFNodeAction.SetVariable.equals(action)
+					|| WFNodeAction.UserChoice.equals(action))
+			{
+				builder.attributeName(node.getDocumentColumnName());
+				builder.attributeValueOld(String.valueOf(activity.getAttributeValue()));
+				if (WFNodeAction.SetVariable.equals(action))
+				{
+					builder.attributeValueNew(node.getAttributeValue());
+				}
+			}
+		}
+
+		return builder.build();
 	}
 
 	private PO getPONoLoad()
@@ -537,7 +571,8 @@ public class MWFActivity extends X_AD_WF_Activity
 			final WorkflowId workflowId = WorkflowId.ofRepoId(getAD_Workflow_ID());
 			final WFNodeId nodeId = WFNodeId.ofRepoId(getAD_WF_Node_ID());
 
-			final Workflow workflow = Services.get(IADWorkflowDAO.class).getById(workflowId);
+			final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+			final Workflow workflow = workflowDAO.getById(workflowId);
 			node = this._node = workflow.getNodeById(nodeId);
 		}
 		return node;
@@ -1481,18 +1516,19 @@ public class MWFActivity extends X_AD_WF_Activity
 
 		// Close up Old Event
 		{
-			final I_AD_WF_EventAudit audit = getEventAudit();
-			audit.setAD_User_ID(oldUserId.getRepoId());
+			final WFEventAudit audit = getLastEventAuditOrCreate();
+			audit.setUserId(oldUserId);
 			audit.setTextMsg(getTextMsg());
 			audit.setAttributeName("AD_User_ID");
-			audit.setOldValue(buildUserSummary(oldUserId));
-			audit.setNewValue(buildUserSummary(userId));
+			audit.setAttributeValueOld(buildUserSummary(oldUserId));
+			audit.setAttributeValueNew(buildUserSummary(userId));
 			//
-			audit.setWFState(getWFState());
-			audit.setEventType(X_AD_WF_EventAudit.EVENTTYPE_StateChanged);
-			final long ms = SystemTime.millis() - audit.getCreated().getTime();
-			audit.setElapsedTimeMS(BigDecimal.valueOf(ms));
-			InterfaceWrapperHelper.save(audit);
+			audit.setWfState(getState());
+			audit.setEventType(WDEventAuditType.StateChanged);
+			audit.updateElapsedTime();
+
+			final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
+			auditRepo.save(audit);
 		}
 
 		// Create new one

@@ -26,11 +26,15 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
+import de.metas.workflow.WFNodeId;
+import de.metas.workflow.service.WFEventAuditRepository;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.apps.wf.WFActivityModel;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -41,7 +45,6 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_AD_Form;
-import org.compiere.model.I_AD_WF_EventAudit;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
 import org.compiere.model.PO;
@@ -58,7 +61,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 import org.compiere.wf.MWFActivity;
-import org.compiere.wf.MWFEventAudit;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -501,18 +503,22 @@ public class WFActivity extends CPanel
 	 */
 	private static String getHistoryHTML(final MWFActivity activity)
 	{
+		final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
+
 		final SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.DateTime);
 		final StringBuilder sb = new StringBuilder();
-		final List<I_AD_WF_EventAudit> events = MWFEventAudit.getByProcess(activity.getAD_WF_Process_ID());
-		for (final I_AD_WF_EventAudit audit : events)
+		final List<WFEventAudit> events = auditRepo.getByProcessId(activity.getAD_WF_Process_ID());
+		for (final WFEventAudit audit : events)
 		{
+			final WFNodeId wfNodeId = audit.getWfNodeId();
+			final String wfNodeName = wfNodeId != null ? String.valueOf(wfNodeId.getRepoId()) : null; // TODO fetch node name
+
 			// sb.append("<p style=\"width:400\">");
 			sb.append("<p>");
 			sb.append(format.format(audit.getCreated()))
 					.append(" ")
-					.append(getHTMLpart("b", audit.getAD_WF_Node().getName()))
+					.append(getHTMLpart("b", wfNodeName))
 					.append(": ")
-					.append(getHTMLpart(null, audit.getDescription()))
 					.append(getHTMLpart("i", audit.getTextMsg()));
 			sb.append("</p>");
 		}
