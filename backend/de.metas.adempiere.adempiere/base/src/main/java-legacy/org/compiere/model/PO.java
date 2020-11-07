@@ -76,7 +76,7 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
-import org.compiere.wf.DocWorkflowManager;
+import de.metas.workflow.execution.DocWorkflowManager;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

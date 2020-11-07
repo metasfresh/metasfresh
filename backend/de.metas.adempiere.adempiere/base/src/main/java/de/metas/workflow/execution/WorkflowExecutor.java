@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.document.workflow;
+package de.metas.workflow.execution;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;

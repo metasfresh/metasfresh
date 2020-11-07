@@ -1,21 +1,42 @@
-package org.compiere.wf;
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import de.metas.document.workflow.WorkflowExecutor;
+package de.metas.workflow.execution;
+
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.Workflow;
+import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
-import org.compiere.model.DocWorkflowMgr;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluator;
-import de.metas.workflow.service.IADWorkflowDAO;
+import org.compiere.wf.MWFProcess;
 import org.slf4j.Logger;
 
 import java.sql.PreparedStatement;
@@ -23,14 +44,8 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Document Workflow Manager
- *
- * @author Jorg Janke
- * @version $Id: DocWorkflowManager.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
- */
 @ToString
-public class DocWorkflowManager implements DocWorkflowMgr
+public class DocWorkflowManager
 {
 	public static DocWorkflowManager get()
 	{
@@ -47,7 +62,6 @@ public class DocWorkflowManager implements DocWorkflowMgr
 	{
 	}
 
-	@Override
 	public void fireDocValueWorkflows(final PO document)
 	{
 		countCalled.incrementAndGet();

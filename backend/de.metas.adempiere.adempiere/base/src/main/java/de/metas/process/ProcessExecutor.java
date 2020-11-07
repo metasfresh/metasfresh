@@ -1,8 +1,7 @@
 package de.metas.process;
 
 import com.google.common.base.Stopwatch;
-import de.metas.document.workflow.WorkflowExecutor;
-import de.metas.i18n.AdMessageId;
+import de.metas.workflow.execution.WorkflowExecutor;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
