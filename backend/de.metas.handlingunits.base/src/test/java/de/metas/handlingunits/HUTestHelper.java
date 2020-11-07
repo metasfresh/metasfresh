@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -141,7 +142,6 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -1629,7 +1629,7 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
 				r.getCuProductId(), // product
 				Quantity.of(r.getLoadCuQty(), r.getLoadCuUOM()), // qty
-				SystemTime.asZonedDateTime());
+				de.metas.common.util.time.SystemTime.asZonedDateTime());
 
 		huLoader.load(request);
 	}

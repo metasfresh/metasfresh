@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -24,7 +25,6 @@ import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -164,7 +164,7 @@ public class HUPricing extends AttributePricing
 						.onlyValidPrices(true)
 						.matching(HUPIItemProductMatcher_Any)
 						.retrieveStrictDefault(I_M_ProductPrice.class),
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), de.metas.common.util.time.SystemTime.zoneId()));
 		if (defaultPrice == null)
 		{
 			return null;

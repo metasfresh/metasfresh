@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -96,7 +97,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
@@ -403,7 +403,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
-		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
+		final ZonedDateTime reportDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{

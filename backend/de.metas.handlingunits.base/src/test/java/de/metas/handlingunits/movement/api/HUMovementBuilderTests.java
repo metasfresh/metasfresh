@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -53,7 +54,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class HUMovementBuilderTests
 {

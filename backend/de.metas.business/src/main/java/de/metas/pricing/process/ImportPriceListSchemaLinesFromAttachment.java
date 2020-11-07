@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.io.IOUtils;
 import org.compiere.SpringContextHolder;
@@ -58,7 +59,6 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**

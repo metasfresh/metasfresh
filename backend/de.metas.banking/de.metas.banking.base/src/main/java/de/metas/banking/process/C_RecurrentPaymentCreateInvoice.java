@@ -42,13 +42,13 @@ package de.metas.banking.process;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 
 import de.metas.banking.service.IBankingBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * 

@@ -1,27 +1,8 @@
 package de.metas.marketing.base;
 
-import static de.metas.i18n.Language.AD_Language_en_AU;
-import static de.metas.i18n.Language.asLanguage;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.common.util.time.SystemTime;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
@@ -36,8 +17,25 @@ import de.metas.marketing.base.model.PlatformRepository;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static de.metas.i18n.Language.AD_Language_en_AU;
+import static de.metas.i18n.Language.asLanguage;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /*
  * #%L
@@ -98,7 +96,7 @@ public class CampaignServiceTest
 	@Test
 	public void removeFromNewsletter_ExistingConsent()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
+		de.metas.common.util.time.SystemTime.setFixedTimeSource("2017-11-10T19:04:04+01:00");
 
 		final User user = createUser("User1", "mail@mail.mail");
 

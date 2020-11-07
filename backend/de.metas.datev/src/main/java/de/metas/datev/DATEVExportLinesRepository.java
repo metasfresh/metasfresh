@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.sql.Timestamp;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -17,7 +18,6 @@ import de.metas.datev.model.I_DATEV_ExportLine;
 import de.metas.datev.model.I_RV_DATEV_Export_Fact_Acct_Invoice;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

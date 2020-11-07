@@ -37,6 +37,7 @@ package org.eevolution.model;
  * #L%
  */
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -50,7 +51,6 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;

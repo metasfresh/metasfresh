@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -78,7 +79,6 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class WorkPackageQueue implements IWorkPackageQueue
@@ -217,7 +217,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		final IQuery<I_C_Queue_WorkPackage> query = createQuery(workPackageCtx);
 
-		final long startTS = SystemTime.millis();
+		final long startTS = de.metas.common.util.time.SystemTime.millis();
 		I_C_Queue_WorkPackage workPackage = retrieveAndLock(query);
 		if (timeoutMillis == TIMEOUT_OneTimeOnly && workPackage == null)
 		{

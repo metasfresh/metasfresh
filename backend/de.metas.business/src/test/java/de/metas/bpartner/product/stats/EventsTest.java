@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.time.Month;
 
+import de.metas.common.util.time.SystemTime;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
@@ -17,7 +18,6 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

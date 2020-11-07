@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -78,7 +79,6 @@ import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Shipment Model
@@ -92,10 +92,10 @@ import de.metas.util.time.SystemTime;
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 1948157 ] Is necessary the reference for document reverse
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http ://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id =176962
+ * see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id =176962
  * @author Armen Rizal, Goodwill Consulting
  *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
- * @see http ://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
+ * see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
  */
 public class MInOut extends X_M_InOut implements IDocument
 {
@@ -2197,6 +2197,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		counter.setAD_Org_ID(counterAD_Org_ID.getRepoId());
 		counter.setM_Warehouse_ID(WarehouseId.toRepoId(counterOrgInfo.getWarehouseId()));
 		//
+		counter.setAD_User_ID(-1); // don't leave the old AD_User_ID dangling in our copy, because it doesn't go together with counterBP
 		counter.setBPartner(counterBP);
 
 		if (isDropShip())

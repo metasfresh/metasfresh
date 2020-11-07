@@ -48,12 +48,11 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import de.metas.common.util.time.SystemTime;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -622,10 +621,7 @@ public class TimeUtilTest
 	@Test
 	public void test_asTimestamp_asLocalDateWithTimeZone()
 	{
-		SystemTime.setTimeSource(
-				FixedTimeSource.ofZonedDateTime(LocalDate.of(2020, Month.APRIL, 29)
-						.atTime(LocalTime.of(13, 14))
-						.atZone(ZoneId.of("UTC+5"))));
+		SystemTime.setFixedTimeSource("2020-04-29T13:14:00+05:00");
 
 		final Timestamp timestamp = TimeUtil.asTimestamp(
 				LocalDate.parse("2020-04-30")

@@ -7,7 +7,7 @@ import deepUnfreeze from 'deep-unfreeze';
 import { getEntityRelatedId, getCachedFilter } from '../../reducers/filters';
 import {
   updateFilterWidgetShown,
-  updateActiveFilter,
+  updateActiveFilters,
   clearAllFilters,
   updateNotValidFields,
 } from '../../actions/FiltersActions';
@@ -59,7 +59,7 @@ class Filters extends PureComponent {
    * @param {object} filterToAdd
    */
   setFilterActive = (filterToAdd) => {
-    const { updateDocList, filterId, updateActiveFilter } = this.props;
+    const { updateDocList, filterId, updateActiveFilters } = this.props;
     const { filtersActive: storeActiveFilters } = this.props.filters;
 
     // updating the active filters from the redux store with the filter passed as param
@@ -68,7 +68,7 @@ class Filters extends PureComponent {
       filterToAdd,
     });
 
-    updateActiveFilter({ filterId, data: newFiltersActive }); // update in the store the filters
+    updateActiveFilters({ filterId, data: newFiltersActive }); // update in the store the filters
     updateDocList(newFiltersActive); // move on and update the page with the new filters via DocList
   };
 
@@ -219,7 +219,7 @@ Filters.propTypes = {
   modalVisible: PropTypes.bool,
   filterId: PropTypes.string,
   updateFilterWidgetShown: PropTypes.func,
-  updateActiveFilter: PropTypes.func,
+  updateActiveFilters: PropTypes.func,
   filters: PropTypes.object,
   clearAllFilters: PropTypes.func,
   updateNotValidFields: PropTypes.func,
@@ -262,7 +262,7 @@ export default connect(
   mapStateToProps,
   {
     updateFilterWidgetShown,
-    updateActiveFilter,
+    updateActiveFilters,
     clearAllFilters,
     updateNotValidFields,
   }

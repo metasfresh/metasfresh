@@ -17,8 +17,8 @@
 package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -75,7 +75,7 @@ public class TimeUtil
 	@Deprecated
 	public static Timestamp getDay(final long time)
 	{
-		final long timeToUse = time > 0 ? time : SystemTime.millis();
+		final long timeToUse = time > 0 ? time : de.metas.common.util.time.SystemTime.millis();
 
 		// note-ts: not using a locale because this method may be used during early startup
 		// (and I don't see what for we need a locale)
@@ -201,7 +201,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getNextDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -226,7 +226,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getPrevDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -251,7 +251,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getMonthLastDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -279,7 +279,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getMonthMiddleDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dateToUse = day == null ? SystemTime.asDayTimestamp() : day;
+		final Timestamp dateToUse = day == null ? de.metas.common.util.time.SystemTime.asDayTimestamp() : day;
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -598,8 +598,8 @@ public class TimeUtil
 	public static int getDaysBetween(@NonNull Instant start, @NonNull Instant end)
 	{
 		// Thanks to http://mattgreencroft.blogspot.com/2014/12/java-8-time-choosing-right-object.html
-		final LocalDate d1 = LocalDateTime.ofInstant(start, SystemTime.zoneId()).toLocalDate();
-		final LocalDate d2 = LocalDateTime.ofInstant(end, SystemTime.zoneId()).toLocalDate();
+		final LocalDate d1 = LocalDateTime.ofInstant(start, de.metas.common.util.time.SystemTime.zoneId()).toLocalDate();
+		final LocalDate d2 = LocalDateTime.ofInstant(end, de.metas.common.util.time.SystemTime.zoneId()).toLocalDate();
 		return Period.between(d1, d2).getDays();
 	}
 
@@ -676,7 +676,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -705,7 +705,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -763,7 +763,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -802,7 +802,7 @@ public class TimeUtil
 	 */
 	public static Date addMinutes(final Date dateTime, final int offset)
 	{
-		final Date dateTimeToUse = dateTime == null ? SystemTime.asDate() : dateTime;
+		final Date dateTimeToUse = dateTime == null ? de.metas.common.util.time.SystemTime.asDate() : dateTime;
 
 		if (offset == 0)
 		{
@@ -1189,7 +1189,7 @@ public class TimeUtil
 			@Nullable final Date dayTime,
 			final String trunc)
 	{
-		final Date dayTimeToUse = dayTime == null ? SystemTime.asTimestamp() : dayTime;
+		final Date dayTimeToUse = dayTime == null ? de.metas.common.util.time.SystemTime.asTimestamp() : dayTime;
 		return truncToMillisDayTimeNotNull(dayTimeToUse, trunc);
 	}
 
@@ -1407,7 +1407,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
-				.atStartOfDay(coalesce(timezone, SystemTime.zoneId()))
+				.atStartOfDay(coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId()))
 				.toInstant();
 		return Timestamp.from(instant);
 	}
@@ -1426,7 +1426,7 @@ public class TimeUtil
 			@Nullable final ZoneId timezone)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
-		final ZoneId timezoneEff = coalesce(timezone, SystemTime.zoneId());
+		final ZoneId timezoneEff = coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId());
 
 		final Instant instant;
 		if (localTime == null)
@@ -1737,7 +1737,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(SystemTime.zoneId()).toLocalDateTime();
+			return asInstant(obj).atZone(de.metas.common.util.time.SystemTime.zoneId()).toLocalDateTime();
 		}
 	}
 
@@ -1754,7 +1754,7 @@ public class TimeUtil
 	public static ZonedDateTime asZonedDateTime(@Nullable final LocalDate localDate)
 	{
 		return localDate != null
-				? localDate.atStartOfDay(SystemTime.zoneId())
+				? localDate.atStartOfDay(de.metas.common.util.time.SystemTime.zoneId())
 				: null;
 	}
 
@@ -1765,7 +1765,7 @@ public class TimeUtil
 			return null;
 		}
 
-		return asZonedDateTime(obj, SystemTime.zoneId());
+		return asZonedDateTime(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
@@ -1815,7 +1815,7 @@ public class TimeUtil
 
 	public static Instant asInstant(@Nullable final Object obj)
 	{
-		return asInstant(obj, SystemTime.zoneId());
+		return asInstant(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
 	public static Instant asInstant(@Nullable final Timestamp timestamp)

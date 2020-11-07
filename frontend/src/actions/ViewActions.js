@@ -6,11 +6,8 @@ import {
   locationConfigRequest,
   headerPropertiesRequest,
 } from '../api';
-import { getTableId } from '../reducers/tables';
-import { getEntityRelatedId } from '../reducers/filters';
-import { getView } from '../reducers/viewHandler';
-import { formatFilters, populateFiltersCaptions } from '../utils/filterHelpers';
 
+import { formatFilters, populateFiltersCaptions } from '../utils/filterHelpers';
 import {
   ADD_VIEW_LOCATION_DATA,
   CREATE_VIEW,
@@ -36,6 +33,9 @@ import {
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
+import { getTableId } from '../reducers/tables';
+import { getEntityRelatedId } from '../reducers/filters';
+import { getView } from '../reducers/viewHandler';
 import { createFilter, deleteFilter } from './FiltersActions';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 
@@ -324,7 +324,12 @@ export function fetchDocument({
       orderBy,
     })
       .then((response) => {
+        // remove the old filter from the store
+        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+        dispatch(deleteFilter(entityRelatedId));
+
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
+
         const tableId = getTableId({ windowId, viewId });
         const tableData = { windowId, viewId, ...response.data };
 
@@ -496,12 +501,7 @@ export function filterView(windowId, viewId, filters, isModal = false) {
 
         // remove table, so that we won't add filtered rows to the previous data
         const tableId = getTableId({ windowId, viewId });
-
         dispatch(deleteTable(tableId));
-
-        // remove the old filter from the store
-        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
-        dispatch(deleteFilter(entityRelatedId));
 
         return Promise.resolve(response.data);
       })
@@ -533,7 +533,7 @@ export function fetchLocationConfig(windowId, isModal = false) {
 
 /**
  * @method showIncludedView
- * @summary ToDo: Describe the method.
+ * @summary Set included view in the store and toggle it's visibility
  */
 export function showIncludedView({
   id,

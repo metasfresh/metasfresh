@@ -71,7 +71,7 @@ const reducer = produce((draftState, action) => {
 
       return;
     }
-    case types.UPDATE_ACTIVE_FILTER: {
+    case types.UPDATE_ACTIVE_FILTERS: {
       const { id, data } = action.payload;
       draftState[id].filtersActive = data;
       return;

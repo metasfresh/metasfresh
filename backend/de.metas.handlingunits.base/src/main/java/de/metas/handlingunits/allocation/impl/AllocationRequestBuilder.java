@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
@@ -16,7 +17,6 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.ToString;
 

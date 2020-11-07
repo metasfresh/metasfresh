@@ -24,6 +24,7 @@ package de.metas.currency.impl;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -40,7 +41,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;

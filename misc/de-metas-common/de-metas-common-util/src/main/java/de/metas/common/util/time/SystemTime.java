@@ -1,15 +1,18 @@
 package de.metas.common.util.time;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -21,99 +24,143 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@UtilityClass
 public class SystemTime
 {
 	private static final TimeSource defaultTimeSource = new SystemTimeSource();
 
-	private TimeSource timeSource;
+	@Nullable
+	private static TimeSource timeSource;
 
-	private TimeSource getTimeSource()
+	private static TimeSource getTimeSource()
 	{
 		return timeSource == null ? defaultTimeSource : timeSource;
 	}
 
 	/**
-	 * After invocation of this method, the time returned will be the system
-	 * time again.
+	 * After invocation of this method, the time returned will be the system time again.
 	 */
-	public void resetTimeSource()
+	public static void resetTimeSource()
 	{
 		timeSource = null;
 	}
 
 	/**
 	 * @param newTimeSource the given TimeSource will be used for the time returned by the
-	 *            methods of this class (unless it is null).
+	 *                      methods of this class (unless it is null).
 	 */
-	public void setTimeSource(@NonNull final TimeSource newTimeSource)
+	public static void setTimeSource(@NonNull final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
 	}
 
-	public void setFixedTimeSource(@NonNull final ZonedDateTime date)
+	public static void setFixedTimeSource(@NonNull final ZonedDateTime date)
 	{
 		setTimeSource(FixedTimeSource.ofZonedDateTime(date));
 	}
 
-	public long millis()
+	/**
+	 * @param zonedDateTime ISO 8601 date time format (see {@link ZonedDateTime#parse(CharSequence)}).
+	 *                      e.g. 2018-02-28T13:13:13+01:00[Europe/Berlin]
+	 */
+	public static void setFixedTimeSource(@NonNull final String zonedDateTime)
+	{
+		setTimeSource(FixedTimeSource.ofZonedDateTime(ZonedDateTime.parse(zonedDateTime)));
+	}
+
+	public static long millis()
 	{
 		return getTimeSource().millis();
 	}
 
-	public ZoneId zoneId()
+	public static ZoneId zoneId()
 	{
 		return getTimeSource().zoneId();
 	}
 
-	public GregorianCalendar asGregorianCalendar()
+	public static GregorianCalendar asGregorianCalendar()
 	{
-
 		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTimeInMillis(millis());
 
 		return cal;
 	}
 
-	public Instant asInstant()
+	public static Date asDate()
+	{
+		return new Date(millis());
+	}
+
+	public static Timestamp asTimestamp()
+	{
+		return new Timestamp(millis());
+	}
+
+	/**
+	 * Same as {@link #asTimestamp()} but the returned date will be truncated to DAY.
+	 */
+	public static Timestamp asDayTimestamp()
+	{
+		final GregorianCalendar cal = asGregorianCalendar();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return new Timestamp(cal.getTimeInMillis());
+	}
+
+	/**
+	 * "Why not go with {@link #asDayTimestamp()}" you ask?
+	 * See https://stackoverflow.com/questions/8929242/compare-date-object-with-a-timestamp-in-java
+	 */
+	public static Date asDayDate()
+	{
+		final GregorianCalendar cal = asGregorianCalendar();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return new Date(cal.getTimeInMillis());
+	}
+
+	public static Instant asInstant()
 	{
 		return Instant.ofEpochMilli(millis());
 	}
 
-	public LocalDateTime asLocalDateTime()
+	public static LocalDateTime asLocalDateTime()
 	{
 		return asZonedDateTime().toLocalDateTime();
 	}
 
 	@NonNull
-	public LocalDate asLocalDate()
+	public static LocalDate asLocalDate()
 	{
 		return asZonedDateTime().toLocalDate();
 	}
 
-	public ZonedDateTime asZonedDateTime()
+	public static ZonedDateTime asZonedDateTime()
 	{
 		return asZonedDateTime(zoneId());
 	}
 
-	public ZonedDateTime asZonedDateTimeAtStartOfDay()
+	public static ZonedDateTime asZonedDateTimeAtStartOfDay()
 	{
 		return asZonedDateTime(zoneId()).truncatedTo(ChronoUnit.DAYS);
 	}
 
-	public ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
+	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
 	{
 		return asInstant().atZone(zoneId);
 	}

@@ -179,7 +179,7 @@ public final class Document
 		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
 	}
 
-	private Document(final Builder builder)
+	private Document(@NonNull final Builder builder)
 	{
 		entityDescriptor = builder.getEntityDescriptor();
 		_parentDocument = builder.getParentDocument();

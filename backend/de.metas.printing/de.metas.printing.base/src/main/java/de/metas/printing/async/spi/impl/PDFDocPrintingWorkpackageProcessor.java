@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,7 +47,6 @@ import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * This processor process the enqueued <code>C_Print_Job_Instructions</code>

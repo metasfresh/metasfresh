@@ -3,6 +3,7 @@ package de.metas.procurement.base.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -14,7 +15,6 @@ import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.sync.protocol.AbstractSyncModel;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
