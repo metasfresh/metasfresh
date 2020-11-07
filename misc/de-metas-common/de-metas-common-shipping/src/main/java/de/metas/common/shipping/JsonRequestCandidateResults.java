@@ -53,7 +53,7 @@ public class JsonRequestCandidateResults
 	String forwardedData;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	private JsonRequestCandidateResults(
 			@JsonProperty("transactionKey") @NonNull final String transactionKey,
 			@JsonProperty("error") @Nullable final JsonError error,
@@ -77,6 +77,5 @@ public class JsonRequestCandidateResults
 			result.item(item.withError());
 		}
 		return result.build();
-
 	}
 }

@@ -145,10 +145,7 @@ UPDATE AD_Table SET Name='M_ShipmentSchedule_ExportAudit_Item', TableName='M_Shi
 UPDATE AD_Sequence SET Name='M_ShipmentSchedule_ExportAudit_Item',Updated=TO_TIMESTAMP('2020-11-06 09:59:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555141
 ;
 
--- 2020-11-06T08:59:20.707Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE M_ShipmentSchedule_ExportAudit_SEQ RENAME TO M_ShipmentSchedule_ExportAudit_Item_SEQ
-;
+
 
 -- 2020-11-06T09:00:45.219Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -210,8 +207,6 @@ UPDATE AD_Field SET Name='Lieferdispo - Exportrevisionsposition', Description=NU
 /* DDL */  select update_Column_Translation_From_AD_Element(578532) 
 ;
 
-/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule_ExportAudit','ALTER TABLE M_ShipmentSchedule_ExportAudit RENAME COLUMN M_ShipmentSchedule_ExportAudit_ID TO M_ShipmentSchedule_ExportAudit_Item_ID;');
-/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule_ExportAudit','ALTER TABLE M_ShipmentSchedule_ExportAudit RENAME TO M_ShipmentSchedule_ExportAudit_Item;');
 
 ------
 
@@ -385,15 +380,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(578530) 
 ;
 
--- 2020-11-06T09:16:49.878Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('m_shipmentschedule_exportaudit','ExportSequenceNumber','NUMERIC(10)',null,null)
-;
-
--- 2020-11-06T09:16:54.672Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('m_shipmentschedule_exportaudit','ForwardedData','TEXT',null,null)
-;
 
 -- 2020-11-06T09:44:08.334Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -430,15 +416,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(576240) 
 ;
 
--- 2020-11-06T09:46:12.695Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('m_shipmentschedule_exportaudit','TransactionIdAPI','VARCHAR(255)',null,null)
-;
-
--- 2020-11-06T09:47:02.085Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('m_shipmentschedule_exportaudit','TransactionIdAPI','VARCHAR(255)',null,null)
-;
 
 -- 2020-11-06T09:47:45.455Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -540,11 +517,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(577793) 
 ;
 
--- 2020-11-06T09:50:32.563Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ CREATE TABLE public.M_ShipmentSchedule_ExportAudit_Item (AD_Client_ID NUMERIC(10) NOT NULL, AD_Issue_ID NUMERIC(10), AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_ShipmentSchedule_ExportAudit_ID NUMERIC(10), M_ShipmentSchedule_ExportAudit_Item_ID NUMERIC(10) NOT NULL, M_ShipmentSchedule_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT MShipmentScheduleExportAudit_MShipmentScheduleExportAuditItem FOREIGN KEY (M_ShipmentSchedule_ExportAudit_ID) REFERENCES public.M_ShipmentSchedule_ExportAudit DEFERRABLE INITIALLY DEFERRED, CONSTRAINT M_ShipmentSchedule_ExportAudit_Item_Key PRIMARY KEY (M_ShipmentSchedule_ExportAudit_Item_ID))
-;
-
 -- 2020-11-06T09:51:35.005Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column (AD_Reference_ID,DefaultValue,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,EntityType,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,ColumnName,IsAutoApplyValidationRule,Name,AD_Org_ID,FacetFilterSeqNo,MaxFacetsToFetch,IsFacetFilter,AD_Element_ID) VALUES (11,'',10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2020-11-06 10:51:34','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2020-11-06 10:51:34','YYYY-MM-DD HH24:MI:SS'),100,'N','N',541504,'N',572075,'N','N','N','N','N','N','N','N',0,'de.metas.inoutcandidate','N','N','ExportSequenceNumber','N','ExportSequenceNumber',0,0,0,'N',578530)
@@ -612,29 +584,6 @@ DELETE FROM AD_Column WHERE AD_Column_ID=572075
 
 ---------
 
---migrate
-INSERT INTO m_shipmentschedule_exportaudit (m_shipmentschedule_exportaudit_id,
-                                            TransactionIdAPI,
-                                            ExportStatus,
-                                            AD_Client_ID,
-                                            AD_Org_ID,
-                                            Created,
-                                            CreatedBy,
-                                            Updated,
-                                            UpdatedBy,
-                                            IsActive)
-SELECT nextval('m_shipmentschedule_exportaudit_seq') AS m_shipmentschedule_exportaudit_id,
-       TransactionIdAPI,
-       min(ExportStatus) as ExportStatus, --all items with the same TransactionIdAPI have the same
-       AD_Client_ID,
-       AD_Org_ID,
-       min(created)                                  AS Created,
-       99                                            AS CreatedBy,
-       min(updated)                                  AS Updated,
-       99                                            AS UpdatedBy,
-       'Y'                                           AS IsActive
-FROM m_shipmentschedule_exportaudit_item eai
-GROUP BY TransactionIdAPI, AD_Client_ID, AD_Org_ID;
 
 -- 2020-11-06T10:15:56.019Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -716,20 +665,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(2887) 
 ;
 
--- 2020-11-06T16:43:59.309Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('m_shipmentschedule_exportaudit','AD_Issue_ID','NUMERIC(10)',null,null)
-;
-
--- 2020-11-06T16:44:22.995Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DROP INDEX IF EXISTS m_shipmentschedule_exportaudit_transactionidapi_uc
-;
-
--- 2020-11-06T16:44:22.997Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX M_ShipmentSchedule_ExportAudit_TransactionIdAPI_UC ON M_ShipmentSchedule_ExportAudit (TransactionIdAPI) WHERE IsActive='Y'
-;
 
 -- 2020-11-06T16:45:03.827Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
