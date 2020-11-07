@@ -222,13 +222,14 @@ public class ServerBoot implements InitializingBean
 							.setThreadNamePrefix("cleanup-" + I_T_Query_Selection.Table_Name)
 							.build());
 
+			// note: "If any execution of this task takes longer than its period, then subsequent executions may start late, but will not concurrently execute."
 			scheduledExecutor.scheduleAtFixedRate(
 					QuerySelectionToDeleteHelper::deleteScheduledSelectionsNoFail, // command, don't fail because on failure the task won't be re-scheduled so it's game over
 					clearQuerySelectionsRateInSeconds, // initialDelay
 					clearQuerySelectionsRateInSeconds, // period
 					TimeUnit.SECONDS // timeUnit
 			);
-			logger.info("Clearing query selection table each {} seconds", clearQuerySelectionsRateInSeconds);
+			logger.info("Clearing query selection tables each {} seconds", clearQuerySelectionsRateInSeconds);
 		}
 	}
 }
