@@ -353,7 +353,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 	private ImmutableList<WFNodeTransitionCondition> retrieveConditions(@NonNull final WFNodeTransitionId transitionId)
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_NextCondition.class)
-				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_WF_NextCondition.COLUMNNAME_AD_WF_NodeNext_ID, transitionId)
 				.orderBy(I_AD_WF_NextCondition.COLUMNNAME_SeqNo)
 				.orderBy(I_AD_WF_NextCondition.COLUMNNAME_AD_WF_NextCondition_ID)
