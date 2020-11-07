@@ -1,14 +1,15 @@
 package org.compiere.wf;
 
+import de.metas.util.Services;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.Query;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_AD_WF_EventAudit;
 import org.compiere.model.X_AD_WF_EventAudit;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,30 +29,24 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 	 */
 	private static final long serialVersionUID = 3760514881823970823L;
 
-	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID)
+	public static List<I_AD_WF_EventAudit> getByProcess(final int AD_WF_Process_ID)
 	{
-		return get(ctx, AD_WF_Process_ID, -1);
+		return getByWFNode(AD_WF_Process_ID, -1);
 	}
 
-	public static MWFEventAudit[] get(final Properties ctx, final int AD_WF_Process_ID, final int AD_WF_Node_ID)
+	public static List<I_AD_WF_EventAudit> getByWFNode(final int AD_WF_Process_ID, final int AD_WF_Node_ID)
 	{
-		final ArrayList<Object> params = new ArrayList<>();
-		final StringBuilder whereClause = new StringBuilder("AD_WF_Process_ID=?");
-		params.add(AD_WF_Process_ID);
+		final IQueryBuilder<I_AD_WF_EventAudit> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_WF_EventAudit.class)
+				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Process_ID, AD_WF_Process_ID)
+				.orderBy(COLUMNNAME_AD_WF_EventAudit_ID);
 		if (AD_WF_Node_ID > 0)
 		{
-			whereClause.append(" AND AD_WF_Node_ID=?");
-			params.add(AD_WF_Node_ID);
+			queryBuilder.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Node_ID, AD_WF_Node_ID);
 		}
-		final List<MWFEventAudit> list = new Query(ctx, Table_Name, whereClause.toString(), ITrx.TRXNAME_None)
-				.setParameters(params)
-				.setOrderBy(COLUMNNAME_AD_WF_EventAudit_ID)
-				.list(MWFEventAudit.class);
-		//
-		final MWFEventAudit[] retValue = new MWFEventAudit[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}    //	get
+
+		return queryBuilder.create().list();
+	}
 
 	public MWFEventAudit(final Properties ctx, final int AD_WF_EventAudit_ID, final String trxName)
 	{
@@ -63,9 +58,6 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 		super(ctx, rs, trxName);
 	}
 
-	/**
-	 * Activity Constructor
-	 */
 	public MWFEventAudit(final MWFActivity activity)
 	{
 		super(activity.getCtx(), 0, activity.get_TrxName());

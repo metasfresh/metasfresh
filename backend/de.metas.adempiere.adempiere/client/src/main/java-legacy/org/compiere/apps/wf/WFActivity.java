@@ -39,6 +39,7 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_AD_Form;
+import org.compiere.model.I_AD_WF_EventAudit;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
 import org.compiere.model.PO;
@@ -503,8 +504,8 @@ public class WFActivity extends CPanel
 	{
 		final SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.DateTime);
 		final StringBuilder sb = new StringBuilder();
-		final MWFEventAudit[] events = MWFEventAudit.get(activity.getCtx(), activity.getAD_WF_Process_ID());
-		for (final MWFEventAudit audit : events)
+		final List<I_AD_WF_EventAudit> events = MWFEventAudit.getByProcess(activity.getAD_WF_Process_ID());
+		for (final I_AD_WF_EventAudit audit : events)
 		{
 			// sb.append("<p style=\"width:400\">");
 			sb.append("<p>");

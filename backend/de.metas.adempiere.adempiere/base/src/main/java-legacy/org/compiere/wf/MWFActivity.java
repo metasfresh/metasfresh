@@ -69,6 +69,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Activity;
+import org.compiere.model.I_AD_WF_EventAudit;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.PO;
@@ -112,7 +113,7 @@ public class MWFActivity extends X_AD_WF_Activity
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	private WFNode _node = null; // lazy
-	private MWFEventAudit _audit = null;
+	private I_AD_WF_EventAudit _audit = null;
 	private PO _po = null; // lazy
 	private String m_newValue = null;
 	private MWFProcess _wfProcess = null; // lazy
@@ -314,7 +315,7 @@ public class MWFActivity extends X_AD_WF_Activity
 
 	private void updateEventAudit()
 	{
-		final MWFEventAudit audit = getEventAudit();
+		final I_AD_WF_EventAudit audit = getEventAudit();
 		audit.setTextMsg(getTextMsg());
 		audit.setWFState(getWFState());
 		if (m_newValue != null)
@@ -338,19 +339,19 @@ public class MWFActivity extends X_AD_WF_Activity
 	/**
 	 * Get/Create Event Audit
 	 */
-	private MWFEventAudit getEventAudit()
+	private I_AD_WF_EventAudit getEventAudit()
 	{
-		MWFEventAudit audit = this._audit;
+		I_AD_WF_EventAudit audit = this._audit;
 		if (audit == null)
 		{
-			final MWFEventAudit[] events = MWFEventAudit.get(getCtx(), getAD_WF_Process_ID(), getAD_WF_Node_ID());
-			if (events == null || events.length == 0)
+			final List<I_AD_WF_EventAudit> events = MWFEventAudit.getByWFNode(getAD_WF_Process_ID(), getAD_WF_Node_ID());
+			if (events.isEmpty())
 			{
 				audit = new MWFEventAudit(this);
 			}
 			else
 			{
-				audit = events[events.length - 1];        // last event
+				audit = events.get(events.size() - 1);        // last event
 			}
 
 			this._audit = audit;
@@ -1403,7 +1404,7 @@ public class MWFActivity extends X_AD_WF_Activity
 
 		// Close up Old Event
 		{
-			final MWFEventAudit audit = getEventAudit();
+			final I_AD_WF_EventAudit audit = getEventAudit();
 			audit.setAD_User_ID(oldUser.getAD_User_ID());
 			audit.setTextMsg(getTextMsg());
 			audit.setAttributeName("AD_User_ID");
@@ -1414,7 +1415,7 @@ public class MWFActivity extends X_AD_WF_Activity
 			audit.setEventType(MWFEventAudit.EVENTTYPE_StateChanged);
 			final long ms = System.currentTimeMillis() - audit.getCreated().getTime();
 			audit.setElapsedTimeMS(new BigDecimal(ms));
-			audit.saveEx();
+			InterfaceWrapperHelper.save(audit);
 		}
 
 		// Create new one
