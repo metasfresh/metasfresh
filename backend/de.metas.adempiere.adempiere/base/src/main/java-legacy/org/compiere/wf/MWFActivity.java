@@ -343,7 +343,7 @@ public class MWFActivity extends X_AD_WF_Activity
 		MWFEventAudit audit = this._audit;
 		if (audit == null)
 		{
-			final MWFEventAudit[] events = MWFEventAudit.get(getCtx(), getAD_WF_Process_ID(), getAD_WF_Node_ID(), ITrx.TRXNAME_None);
+			final MWFEventAudit[] events = MWFEventAudit.get(getCtx(), getAD_WF_Process_ID(), getAD_WF_Node_ID());
 			if (events == null || events.length == 0)
 			{
 				audit = new MWFEventAudit(this);
@@ -1357,8 +1357,10 @@ public class MWFActivity extends X_AD_WF_Activity
 			log.warn("", ex);
 		}
 
+		//
 		// Send Not Approved Notification
-		if (newState.equals(WFState.Aborted) && doc.getDoc_User_ID() > 0)
+		final UserId userId = UserId.ofRepoIdOrNullIfSystem(doc.getDoc_User_ID());
+		if (newState.equals(WFState.Aborted) && userId != null)
 		{
 			final String docInfo = (doc.getSummary() != null ? doc.getSummary() + "\n" : "")
 					+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
@@ -1367,7 +1369,7 @@ public class MWFActivity extends X_AD_WF_Activity
 			final INotificationBL notificationBL = Services.get(INotificationBL.class);
 			notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 					.topic(USER_NOTIFICATIONS_TOPIC)
-					.recipientUserId(UserId.ofRepoId(doc.getDoc_User_ID()))
+					.recipientUserId(userId)
 					.contentADMessage(MSG_NotApproved)
 					.contentADMessageParam(doc.toTableRecordReference())
 					.contentADMessageParam(docInfo)
