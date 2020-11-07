@@ -1,17 +1,15 @@
 package de.metas.bpartner.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.NumberFormat;
-import java.util.Locale;
-
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -22,15 +20,16 @@ import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 
-import de.metas.bpartner.BPGroupId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -83,14 +82,11 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	/**
 	 * Create the C_BPartner_Stats entry for the given bpartner.
-	 *
-	 * @param partner
-	 * @return
 	 */
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(partner.getC_BP_Group_ID());
-		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getById(bpGroupId);
+		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getByIdInInheritedTrx(bpGroupId);
 		
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
@@ -329,7 +325,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), de.metas.common.util.time.SystemTime.asDayTimestamp());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
 		final Locale locale = Locale.getDefault();
