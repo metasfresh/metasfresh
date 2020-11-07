@@ -2,6 +2,8 @@ package de.metas.process;
 
 import com.google.common.base.Stopwatch;
 import de.metas.document.workflow.WorkflowExecutor;
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
@@ -75,7 +77,7 @@ public final class ProcessExecutor
 		return s_currentProcess_ID.get();
 	}
 
-	private static final String AD_PROCESS_EXECUTION_DONE_MSG = "AD_Process_Execution_Done";
+	private static final AdMessageKey MSG_DONE = AdMessageKey.of("AD_Process_Execution_Done");
 
 	// Thread locals
 	private static final ThreadLocal<AdProcessId> s_currentProcess_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
@@ -584,7 +586,7 @@ public final class ProcessExecutor
 
 				final String processName = pi.getTitle();
 				final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-						.contentADMessage(AD_PROCESS_EXECUTION_DONE_MSG)
+						.contentADMessage(MSG_DONE)
 						.contentADMessageParam(processName)
 						.recipientUserId(loggedUserId)
 						.targetAction(TargetRecordAction.of(TableRecordReference.of(I_AD_PInstance.Table_Name, pi.getPinstanceId())))

@@ -1368,7 +1368,7 @@ public class MWFActivity extends X_AD_WF_Activity
 			notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 					.topic(USER_NOTIFICATIONS_TOPIC)
 					.recipientUserId(UserId.ofRepoId(doc.getDoc_User_ID()))
-					.contentADMessage(MSG_NotApproved.toAD_Message())
+					.contentADMessage(MSG_NotApproved)
 					.contentADMessageParam(doc.toTableRecordReference())
 					.contentADMessageParam(docInfo)
 					.targetAction(TargetRecordAction.of(doc.toTableRecordReference()))
