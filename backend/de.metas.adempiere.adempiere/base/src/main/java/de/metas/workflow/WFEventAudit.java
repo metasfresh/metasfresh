@@ -42,7 +42,7 @@ public class WFEventAudit
 	int id;
 
 	@NonNull
-	WDEventAuditType eventType;
+	WFEventAuditType eventType;
 
 	@Builder.Default
 	@NonNull
@@ -79,9 +79,4 @@ public class WFEventAudit
 	String attributeValueOld;
 	@Nullable
 	String attributeValueNew;
-
-	public void updateElapsedTime()
-	{
-		setElapsedTime(Duration.between(created, SystemTime.asInstant()));
-	}
 }

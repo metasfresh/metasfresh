@@ -27,7 +27,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import de.metas.workflow.WFAction;
@@ -64,6 +63,7 @@ public class WFProcess
 	private final UserId userId;
 	@Nullable
 	private String textMsg;
+	@Nullable
 	private String processMsg;
 	@Nullable
 	private AdIssueId issueId;
@@ -156,12 +156,13 @@ public class WFProcess
 	 */
 	public void changeWFStateTo(final WFState wfState)
 	{
-		if (getState().isClosed())
+		// No state change
+		if (getState().equals(wfState))
 		{
 			return;
 		}
 
-		if (getState().equals(wfState))
+		if (getState().isClosed())
 		{
 			return;
 		}
@@ -176,7 +177,7 @@ public class WFProcess
 				setProcessed();
 			}
 
-			context.save(this);
+			//context.save(this);
 
 			//	Force close to all Activities
 			if (getState().isClosed())
@@ -190,7 +191,7 @@ public class WFProcess
 					}
 
 					activity.setProcessed();
-					context.save(activity);
+					//context.save(activity);
 				}
 			}    //	closed
 		}
@@ -200,11 +201,6 @@ public class WFProcess
 		}
 	}
 
-	/**************************************************************************
-	 * 	Check Status of Activities.
-	 * 	- update Process if required
-	 * 	- start new activity
-	 */
 	void checkActivities()
 	{
 		if (getState().isClosed())
@@ -239,11 +235,13 @@ public class WFProcess
 				}
 
 				//
+				// Activity is closed
 				if (activityState.isClosed())
 				{
 					//	eliminate from active processed
 					activity.setProcessed();
-					context.save(activity);
+					//context.save(activity);
+
 					//
 					if (closedState == null)
 					{
@@ -263,13 +261,21 @@ public class WFProcess
 						}
 					}
 				}
-				else    //	not closed
+				//
+				// Activity not closed
+				else
 				{
-					closedState = null;        //	all need to be closed
+					// All activities shall be closed in order to close the process
+					closedState = null;
+
 					if (activityState.isSuspended())
+					{
 						suspended = true;
+					}
 					if (activityState.isRunning())
+					{
 						running = true;
+					}
 				}
 			}    //	for all activities
 		}
@@ -348,15 +354,17 @@ public class WFProcess
 
 		//	eliminate from active processed
 		lastActivity.setProcessed();
-		context.save(lastActivity);
+		//context.save(lastActivity);
 
 		//	Start next activity
 		final WFNodeSplitType splitType = lastActivity.getNode().getSplitType();
 		for (final WFNodeTransition transition : transitions)
 		{
-			//	Is this a valid transition?
+			//	Can we move to next activity?
 			if (!transition.isValidFor(lastActivity))
+			{
 				continue;
+			}
 
 			//	Start new Activity...
 			final WFActivity activity = newActivity(transition.getNextNodeId());
@@ -423,7 +431,7 @@ public class WFProcess
 
 	void addTextMsg(@Nullable final String textMsg)
 	{
-		if (Check.isBlank(textMsg))
+		if (textMsg == null || textMsg.isEmpty())
 		{
 			return;
 		}
@@ -471,9 +479,7 @@ public class WFProcess
 		addTextMsg(ex);
 	}
 
-	public String getProcessMsg()
-	{
-		return processMsg;
-	}
+	@Nullable
+	public String getProcessMsg() { return processMsg; }
 
 }

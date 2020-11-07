@@ -50,9 +50,9 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
-import de.metas.workflow.WDEventAuditType;
 import de.metas.workflow.WFAction;
 import de.metas.workflow.WFEventAudit;
+import de.metas.workflow.WFEventAuditType;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
 import de.metas.workflow.WFNodeEmailRecipient;
@@ -95,7 +95,8 @@ public class WFActivity
 	private static final Logger log = LogManager.getLogger(WFActivity.class);
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
 
-	private static final AdMessageKey MSG_ApprovalRequest = AdMessageKey.of("DocumentApprovalRequest");
+	private static final AdMessageKey MSG_DocumentApprovalRequest = AdMessageKey.of("DocumentApprovalRequest");
+	private static final AdMessageKey MSG_DocumentSentToApproval = AdMessageKey.of("DocumentSentToApproval");
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	private final WorkflowExecutionContext context;
@@ -106,18 +107,23 @@ public class WFActivity
 	private WFState wfState;
 	private boolean processed;
 	private final TableRecordReference documentRef;
-	private Instant endWaitTime;
 	@Nullable
 	private String textMsg;
 	@Nullable
 	private AdIssueId issueId;
 
+	@NonNull
 	private WFResponsibleId wfResponsibleId;
+	@Nullable
 	private UserId userId;
 
-	private WFEventAudit _lastAudit = null;
-	private String m_newValue = null;
+	@Nullable
+	private Optional<String> m_newValue = null;
 	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
+
+	private final Instant startTime;
+	@Nullable
+	private Instant endWaitTime;
 
 	public WFActivity(
 			@NonNull final WFProcess process,
@@ -137,21 +143,11 @@ public class WFActivity
 		{
 			this.priority = wfNode.getPriority();
 		}
-		final Duration durationLimit = wfNode.getDurationLimit();
-		if (!durationLimit.isZero())
-		{
-			this.endWaitTime = SystemTime.asInstant().plus(durationLimit);
-		}
-		else
-		{
-			this.endWaitTime = null;
-		}
 
 		// Responsible
 		{
-			this.wfResponsibleId = CoalesceUtil.coalesce(wfNode.getResponsibleId(), process.getWfResponsibleId());
-
-			final WFResponsible resp = context.getResponsibleById(this.wfResponsibleId);
+			wfResponsibleId = wfNode.getResponsibleId() != null ? wfNode.getResponsibleId() : process.getWfResponsibleId();
+			final WFResponsible resp = context.getResponsibleById(wfResponsibleId);
 
 			// User - Directly responsible
 			this.userId = resp.getUserId();
@@ -162,10 +158,12 @@ public class WFActivity
 			}
 		}
 
-		context.save(this);
+		this.startTime = SystemTime.asInstant();
 
-		//
-		newEventAudit();
+		final Duration durationLimit = wfNode.getDurationLimit();
+		this.endWaitTime = !durationLimit.isZero()
+				? startTime.plus(durationLimit)
+				: null;
 	}
 
 	@NonNull
@@ -188,11 +186,6 @@ public class WFActivity
 		return wfState;
 	}
 
-	private void setState(@NonNull final WFState wfState)
-	{
-		this.wfState = wfState;
-	}
-
 	/**
 	 * Set Activity State.
 	 * It also validates the new state and if is valid,
@@ -200,22 +193,24 @@ public class WFActivity
 	 */
 	public void changeWFStateTo(final WFState wfState)
 	{
-		if (getState().isClosed())
-		{
-			return;
-		}
+		// No state change
 		if (getState().equals(wfState))
 		{
 			return;
 		}
-		//
+
+		if (getState().isClosed())
+		{
+			return;
+		}
+
 		if (getState().isValidNewState(wfState))
 		{
-			final WFState oldState = getState();
-			log.debug(oldState + "->" + wfState + ", Msg=" + getTextMsg());
-			setState(wfState);
-			context.save(this);            // closed in MWFProcess.checkActivities()
-			updateEventAudit();
+			log.debug("{} -> {}, Msg={}", getState(), wfState, getTextMsg());
+			this.wfState = wfState;
+			//context.save(this);
+
+			logAuditStateChanged();
 
 			// Inform Process
 			final WFProcess wfProcess = getWorkflowProcess();
@@ -226,11 +221,12 @@ public class WFActivity
 			final String msg = "Set WFState - Ignored Invalid Transformation - New=" + wfState + ", Current=" + getState();
 			log.error(msg);
 			addTextMsg(msg);
-			context.save(this);
+			//context.save(this);
 			// TODO: teo_sarca: throw exception ? please analyze the call hierarchy first
 		}
 	}    // setWFState
 
+	@Nullable
 	public UserId getUserId() { return this.userId; }
 
 	public void setUserId(@NonNull final UserId userId) { this.userId = userId; }
@@ -242,7 +238,10 @@ public class WFActivity
 
 	private void setEndWaitTime(@NonNull final Instant endWaitTime) { this.endWaitTime = endWaitTime; }
 
+	@Nullable
 	public Instant getEndWaitTime() { return endWaitTime; }
+
+	public Duration getElapsedTime() { return Duration.between(startTime, SystemTime.asInstant()); }
 
 	public boolean isProcessed() { return processed; }
 
@@ -256,87 +255,60 @@ public class WFActivity
 		return getState().isClosed();
 	}
 
-	private void updateEventAudit()
+	private WFEventAudit.WFEventAuditBuilder prepareEventAudit(@NonNull final WFEventAuditType eventType)
 	{
-		final WFEventAudit audit = getLastEventAuditOrCreate();
-		audit.setTextMsg(getTextMsg());
-		audit.setWfState(getState());
-		if (m_newValue != null)
-		{
-			audit.setAttributeValueNew(m_newValue);
-		}
-		if (getState().isClosed())
-		{
-			audit.setEventType(WDEventAuditType.ProcessCompleted);
-			audit.updateElapsedTime();
-		}
-		else
-		{
-			audit.setEventType(WDEventAuditType.StateChanged);
-		}
+		final WFNode node = getNode();
 
-		context.save(audit);
-	}
-
-	private WFEventAudit getLastEventAuditOrCreate()
-	{
-		WFEventAudit lastAudit = this._lastAudit;
-		if (lastAudit == null)
-		{
-			final WFProcessId wfProcessId = getWorkflowProcess().getWfProcessId();
-			final WFNodeId wfNodeId = getNode().getId();
-			lastAudit = context.getLastEventAuditByWFNodeId(wfProcessId, wfNodeId)
-					.orElseGet(() -> newEventAuditDraft(this));
-
-			this._lastAudit = lastAudit;
-		}
-
-		return lastAudit;
-	}
-
-	private void newEventAudit()
-	{
-		final WFEventAudit audit = newEventAuditDraft(this);
-		context.save(audit);
-
-		this._lastAudit = audit;
-	}
-
-	private static WFEventAudit newEventAuditDraft(@NonNull final WFActivity activity)
-	{
 		final WFEventAudit.WFEventAuditBuilder builder = WFEventAudit.builder()
-				.eventType(WDEventAuditType.ProcessCreated)
+				.eventType(eventType)
 				//
 				.orgId(OrgId.ANY)
-				.wfProcessId(activity.getWorkflowProcess().getWfProcessId())
-				//.wfNodeId(WFNodeId.ofRepoId(activity.getAD_WF_Node_ID())) // see below
-				.documentRef(activity.getDocumentRef())
+				.wfProcessId(getWorkflowProcess().getWfProcessId())
+				.wfNodeId(node.getId())
+				.documentRef(getDocumentRef())
 				//
-				.wfResponsibleId(activity.getWFResponsibleId())
-				.userId(activity.getUserId())
+				.wfResponsibleId(getWFResponsibleId())
+				.userId(getUserId())
 				//
-				.wfState(activity.getState())
-				.elapsedTime(Duration.ZERO);
+				.wfState(getState())
+				.elapsedTime(getElapsedTime())
+				//
+				.textMsg(getTextMsg());
 
-		final WFNode node = activity.getNode();
-		if (node != null)
+		final WFNodeAction action = node.getAction();
+		if (WFNodeAction.SetVariable.equals(action))
 		{
-			builder.wfNodeId(node.getId());
-
-			final WFNodeAction action = node.getAction();
-			if (WFNodeAction.SetVariable.equals(action)
-					|| WFNodeAction.UserChoice.equals(action))
-			{
-				builder.attributeName(node.getDocumentColumnName());
-				builder.attributeValueOld(String.valueOf(activity.getAttributeValue()));
-				if (WFNodeAction.SetVariable.equals(action))
-				{
-					builder.attributeValueNew(node.getAttributeValue());
-				}
-			}
+			builder.attributeName(node.getDocumentColumnName());
+			builder.attributeValueOld(String.valueOf(getAttributeValue()));
+			builder.attributeValueNew(node.getAttributeValue());
+		}
+		else if (WFNodeAction.UserChoice.equals(action))
+		{
+			builder.attributeName(node.getDocumentColumnName());
+			builder.attributeValueOld(String.valueOf(getAttributeValue()));
 		}
 
-		return builder.build();
+		return builder;
+	}
+
+	private void logAuditActivityStarted()
+	{
+		context.addEventAudit(prepareEventAudit(WFEventAuditType.ProcessCreated).build());
+	}
+
+	private void logAuditStateChanged()
+	{
+		final WFEventAuditType eventType = getState().isClosed()
+				? WFEventAuditType.ProcessCompleted
+				: WFEventAuditType.StateChanged;
+
+		final WFEventAudit audit = prepareEventAudit(eventType).build();
+		if (m_newValue != null)
+		{
+			audit.setAttributeValueNew(m_newValue.orElse(null));
+		}
+
+		context.addEventAudit(audit);
 	}
 
 	private IDocument getDocument() { return context.getDocument(documentRef); }
@@ -372,6 +344,7 @@ public class WFActivity
 
 	public WFNode getNode() { return wfNode; }
 
+	@Nullable
 	public String getTextMsg() { return textMsg; }
 
 	private void setTextMsg(@Nullable final String textMsg) { this.textMsg = textMsg; }
@@ -410,6 +383,7 @@ public class WFActivity
 
 	private void setIssueId(@NonNull final AdIssueId issueId) { this.issueId = issueId; }
 
+	@Nullable
 	public AdIssueId getIssueId() { return issueId; }
 
 	/**
@@ -471,7 +445,7 @@ public class WFActivity
 				.build();
 	}
 
-	private Optional<UserId> getApprovalUser(@NonNull final DocumentToApproveRequest document)
+	private Optional<UserId> getApproverId(@NonNull final DocumentToApproveRequest document)
 	{
 		// Nothing to approve
 		if (document.getAmountToApprove() == null || document.getAmountToApprove().signum() == 0)
@@ -595,13 +569,14 @@ public class WFActivity
 	 */
 	public void run()
 	{
-		log.debug("Node={}", getNode());
+		logAuditActivityStarted();
 
 		m_newValue = null;
 
 		context.getTrxManager().runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
-			private DocStatus newDocStatus = null;
+			private boolean docStatusChanged = false;
+			private Throwable exception = null;
 
 			@Override
 			public void run(final String localTrxName)
@@ -625,7 +600,8 @@ public class WFActivity
 				// Do Work
 				final PerformWorkResult result = performWork();
 				final PerformWorkResolution resolution = result.getResolution();
-				this.newDocStatus = result.getNewDocStatus();
+				final DocStatus newDocStatus = result.getNewDocStatus();
+				docStatusChanged = newDocStatus != null;
 
 				if (resolution == PerformWorkResolution.COMPLETED)
 				{
@@ -644,21 +620,9 @@ public class WFActivity
 			@Override
 			public boolean doCatch(final Throwable ex)
 			{
-				// If we have a DocStatus, change it to Invalid, and throw the exception to the next level
-				// If not, don't touch it at all.
-				if (newDocStatus != null)
-				{
-					newDocStatus = DocStatus.Invalid;
-				}
-
+				this.exception = ex;
 				addTextMsg(ex);
-				changeWFStateTo(WFState.Terminated);    // unlocks
-
-				// Set Document Status
-				if (newDocStatus != null)
-				{
-					context.setDocStatus(getDocumentRef(), newDocStatus);
-				}
+				changeWFStateTo(WFState.Terminated);
 
 				return ROLLBACK;
 			}
@@ -666,7 +630,21 @@ public class WFActivity
 			@Override
 			public void doFinally()
 			{
-				context.save(WFActivity.this);
+				// context.save(WFActivity.this);
+
+				// If document status was changed in on this node then we have to set it to Invalid.
+				// If this node didn't touch the document status then let's preserve it.
+				if (exception != null && docStatusChanged)
+				{
+					try
+					{
+						context.setDocStatus(getDocumentRef(), DocStatus.Invalid);
+					}
+					catch (final Exception ex)
+					{
+						log.warn("Failed setting document's DocStatus to invalid but IGNORED: {}", getDocumentRef());
+					}
+				}
 			}
 		});
 	}
@@ -692,10 +670,6 @@ public class WFActivity
 		DocStatus newDocStatus;
 	}
 
-	/**
-	 * Perform Work.
-	 * Set Text Msg.
-	 */
 	private PerformWorkResult performWork()
 	{
 		final WFNode wfNode = getNode();
@@ -756,7 +730,7 @@ public class WFActivity
 		}
 		else
 		{
-			throw new AdempiereException("Invalid Action (Not Implemented) =" + action);
+			throw new AdempiereException("Action not handled: " + action);
 		}
 	}
 
@@ -942,53 +916,35 @@ public class WFActivity
 			return PerformWorkResult.SUSPENDED;
 		}
 
-		final boolean autoApproval;
-
-		// Approval Hierarchy
+		//
+		// Find who shall approve the document
+		final DocumentToApproveRequest approvalRequest = getDocumentToApproveRequest();
+		final UserId workflowInvokerId = approvalRequest.getWorkflowInvokerId();
 		final WFResponsible responsible = getResponsible();
+		final boolean autoApproval;
+		final UserId approverId;
 		if (responsible.isInvoker())
 		{
-			final DocumentToApproveRequest documentToApprove = getDocumentToApproveRequest();
-			final UserId approverId = getApprovalUser(documentToApprove).orElse(null);
-			if (approverId == null)
-			{
-				throw new AdempiereException("No user to approve found!"); // TODO: trl
-			}
-			else if (UserId.equals(documentToApprove.getWorkflowInvokerId(), approverId)) // same user as invoker
-			{
-				autoApproval = true;
-			}
-			else
-			{
-				autoApproval = false;
-
-				final String invokerName = context.getUserFullname();
-				forwardTo(approverId, msgApprovalRequest(), null);
-			}
+			approverId = getApproverId(approvalRequest).orElse(null);
+			autoApproval = UserId.equals(workflowInvokerId, approverId);
 		}
 		else if (responsible.isHuman())
 		{
-			final WFProcess wfProcess = getWorkflowProcess();
-			autoApproval = responsible.getUserId() != null
-					&& UserId.equals(responsible.getUserId(), wfProcess.getUserId());
-			if (!autoApproval && responsible.getUserId() != null)
-			{
-				final String invokerName = context.getUserFullname();
-				forwardTo(responsible.getUserId(), msgApprovalRequest(), null);
-			}
+			approverId = responsible.getUserId();
+			autoApproval = UserId.equals(workflowInvokerId, approverId);
 		}
 		else if (responsible.isRole())
 		{
 			final Set<UserId> allRoleUserIds = context.getUserIdsByRoleId(responsible.getRoleId());
-
-			final WFProcess wfProcess = getWorkflowProcess();
-			if (allRoleUserIds.contains(wfProcess.getUserId()))
+			autoApproval = allRoleUserIds.contains(workflowInvokerId);
+			if (autoApproval)
 			{
-				autoApproval = true;
+				approverId = workflowInvokerId;
 			}
 			else
 			{
-				autoApproval = false;
+				// NOTE: atm we cannot forward to all of those users, so we just pick the first one
+				approverId = allRoleUserIds.stream().findFirst().orElse(null);
 			}
 		}
 		else if (responsible.isOrganization())
@@ -1000,6 +956,8 @@ public class WFActivity
 			throw new AdempiereException("@NotSupported@ " + responsible);
 		}
 
+		//
+		//
 		if (autoApproval)
 		{
 			context.processDocument(getDocumentRef(), IDocument.ACTION_Approve);
@@ -1008,6 +966,22 @@ public class WFActivity
 		}
 		else
 		{
+			if (approverId == null)
+			{
+				throw new AdempiereException("No user to approve found!"); // TODO: trl
+			}
+
+			forwardTo(approverId, msgApprovalRequest(), null);
+
+			context.sendNotification(UserNotificationRequest.builder()
+					.topic(USER_NOTIFICATIONS_TOPIC)
+					.recipientUserId(workflowInvokerId)
+					.contentADMessage(MSG_DocumentSentToApproval)
+					.contentADMessageParam(getDocumentRef())
+					.contentADMessageParam(context.getUserFullnameById(approverId))
+					.targetAction(UserNotificationRequest.TargetRecordAction.of(getDocumentRef()))
+					.build());
+
 			return PerformWorkResult.SUSPENDED;
 		}
 	}
@@ -1015,7 +989,7 @@ public class WFActivity
 	private ADMessageAndParams msgApprovalRequest()
 	{
 		final String invokerName = context.getUserFullname();
-		return ADMessageAndParams.of(MSG_ApprovalRequest, invokerName, getDocumentRef());
+		return ADMessageAndParams.of(MSG_DocumentApprovalRequest, invokerName, getDocumentRef());
 	}
 
 	/**
@@ -1062,7 +1036,7 @@ public class WFActivity
 			msg += " - " + textMsg;
 		}
 		addTextMsg(msg);
-		m_newValue = valueStr;
+		m_newValue = Optional.ofNullable(valueStr);
 	}    // setVariable
 
 	/**
@@ -1079,7 +1053,6 @@ public class WFActivity
 		setVariable(value, displayType, textMsg);
 
 		final WFState newState;
-
 		if (getNode().isUserApproval())
 		{
 			final boolean approved = StringUtils.toBoolean(value);
@@ -1115,7 +1088,7 @@ public class WFActivity
 				if (isInvoker())
 				{
 					final DocumentToApproveRequest documentToApprove = getDocumentToApproveRequest();
-					final UserId approverId = getApprovalUser(documentToApprove).orElse(null);
+					final UserId approverId = getApproverId(documentToApprove).orElse(null);
 
 					// No Approver
 					if (approverId == null)
@@ -1191,7 +1164,7 @@ public class WFActivity
 		// Update
 		setUserId(userId);
 		addTextMsg(textMsg);
-		context.save(this);
+		//context.save(this);
 
 		//
 		// Notify user
@@ -1204,28 +1177,16 @@ public class WFActivity
 				.targetAction(UserNotificationRequest.TargetRecordAction.of(documentRef))
 				.build());
 
-		// Close up Old Event
-		{
-			final WFEventAudit audit = getLastEventAuditOrCreate();
-			audit.setUserId(oldUserId);
-			audit.setTextMsg(getTextMsg());
-			audit.setAttributeName("AD_User_ID");
-			audit.setAttributeValueOld(buildUserSummary(oldUserId));
-			audit.setAttributeValueNew(buildUserSummary(userId));
-			//
-			audit.setWfState(getState());
-			audit.setEventType(WDEventAuditType.StateChanged);
-			audit.updateElapsedTime();
-
-			context.save(audit);
-		}
-
-		// Create new one
-		newEventAudit();
+		context.addEventAudit(prepareEventAudit(WFEventAuditType.StateChanged)
+				.userId(oldUserId)
+				.attributeName("AD_User_ID")
+				.attributeValueOld(buildUserSummary(oldUserId))
+				.attributeValueNew(buildUserSummary(userId))
+				.build());
 	}
 
 	@Nullable
-	private String buildUserSummary(final UserId userId)
+	private String buildUserSummary(@Nullable final UserId userId)
 	{
 		if (userId == null)
 		{
@@ -1252,7 +1213,7 @@ public class WFActivity
 		return getNode()
 				.getProcessParameters()
 				.stream()
-				.map(wfNodePara -> createProcessInfoParameter(wfNodePara))
+				.map(this::createProcessInfoParameter)
 				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableList());
 	}
@@ -1371,7 +1332,7 @@ public class WFActivity
 		// Explicit EMail
 		sendEMail(
 				client,
-				(UserId)null,
+				null,
 				wfNode.getEmailTo(),
 				subject,
 				message,
@@ -1502,26 +1463,5 @@ public class WFActivity
 		{
 			log.warn("No userId or email provided");
 		}
-	}    // sendEMail
-
-	/**
-	 * User String Representation.
-	 * Suspended: Approve it (Joe)
-	 */
-	@Deprecated
-	private String toStringX()
-	{
-		final StringBuilder sb = new StringBuilder();
-
-		sb.append(getState()).append(": ").append(getNode().getName());
-
-		final UserId userId = getUserId();
-		if (userId != null)
-		{
-			final String userFullname = context.getUserFullnameById(userId);
-			sb.append(" (").append(userFullname).append(")");
-		}
-
-		return sb.toString();
 	}
 }

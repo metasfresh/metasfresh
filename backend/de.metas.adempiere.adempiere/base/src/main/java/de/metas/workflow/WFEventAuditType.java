@@ -28,23 +28,23 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_AD_WF_EventAudit;
 
-public enum WDEventAuditType implements ReferenceListAwareEnum
+public enum WFEventAuditType implements ReferenceListAwareEnum
 {
 	ProcessCreated(X_AD_WF_EventAudit.EVENTTYPE_ProcessCreated),
 	StateChanged(X_AD_WF_EventAudit.EVENTTYPE_StateChanged),
 	ProcessCompleted(X_AD_WF_EventAudit.EVENTTYPE_ProcessCompleted);
 
-	private static final ReferenceListAwareEnums.ValuesIndex<WDEventAuditType> typesByCode = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<WFEventAuditType> typesByCode = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
 
-	WDEventAuditType(@NonNull final String code)
+	WFEventAuditType(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
-	public static WDEventAuditType ofCode(@NonNull final String code)
+	public static WFEventAuditType ofCode(@NonNull final String code)
 	{
 		return typesByCode.ofCode(code);
 	}

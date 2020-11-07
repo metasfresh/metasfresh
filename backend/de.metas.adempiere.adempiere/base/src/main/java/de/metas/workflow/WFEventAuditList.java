@@ -22,42 +22,36 @@
 
 package de.metas.workflow;
 
-import de.metas.organization.OrgId;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import lombok.Builder;
+import com.google.common.collect.ImmutableList;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 
-import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-@Value
-@Builder
-public class WFResponsible
+@EqualsAndHashCode
+@ToString
+public final class WFEventAuditList
 {
-	@NonNull
-	WFResponsibleId id;
+	private final ArrayList<WFEventAudit> list = new ArrayList<>();
 
-	@NonNull
-	WFResponsibleType type;
+	private final HashMap<WFNodeId, WFEventAudit> lastEventByNodeId = new HashMap<>();
 
-	@NonNull
-	String name;
+	public WFEventAudit getLastOrNull(@NonNull final WFNodeId wfNodeId)
+	{
+		return lastEventByNodeId.get(wfNodeId);
+	}
 
-	@Nullable
-	UserId userId;
+	public void add(@NonNull final WFEventAudit audit)
+	{
+		list.add(audit);
+		lastEventByNodeId.put(audit.getWfNodeId(), audit);
+	}
 
-	@Nullable
-	RoleId roleId;
+	public ImmutableList<WFEventAudit> toList()
+	{
+		return ImmutableList.copyOf(list);
+	}
 
-	@Nullable
-	OrgId orgId;
-
-	public boolean isInvoker() { return userId == null && roleId == null; }
-
-	public boolean isHuman() { return type == WFResponsibleType.Human && userId != null; }
-
-	public boolean isRole() { return type == WFResponsibleType.Role && roleId != null; }
-
-	public boolean isOrganization() { return type == WFResponsibleType.Organization && orgId != null; }
 }

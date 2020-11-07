@@ -22,18 +22,16 @@
 
 package de.metas.workflow.service;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
-import de.metas.util.Services;
-import de.metas.workflow.WDEventAuditType;
+import de.metas.workflow.WFEventAuditType;
 import de.metas.workflow.WFEventAudit;
+import de.metas.workflow.WFEventAuditList;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
 import de.metas.workflow.execution.WFProcessId;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_WF_EventAudit;
@@ -42,36 +40,13 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class WFEventAuditRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public List<WFEventAudit> getByProcessId(@NonNull final WFProcessId wfProcessId)
+	public void save(@NonNull final WFEventAuditList auditList)
 	{
-		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_EventAudit.class)
-				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Process_ID, wfProcessId)
-				.orderBy(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_EventAudit_ID)
-				.create()
-				.stream()
-				.map(record -> toWFEventAudit(record))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public Optional<WFEventAudit> getLastByWFNodeId(
-			@NonNull final WFProcessId wfProcessId,
-			@NonNull final WFNodeId nodeId)
-	{
-		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_EventAudit.class)
-				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Process_ID, wfProcessId)
-				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Node_ID, nodeId)
-				.orderByDescending(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_EventAudit_ID)
-				.create()
-				.firstOptional(I_AD_WF_EventAudit.class)
-				.map(record -> toWFEventAudit(record));
+		auditList.toList().forEach(this::save);
 	}
 
 	public void save(@NonNull final WFEventAudit audit)
@@ -111,11 +86,12 @@ public class WFEventAuditRepository
 		audit.setCreated(TimeUtil.asInstant(record.getCreated()));
 	}
 
+	@SuppressWarnings("unused")
 	private static WFEventAudit toWFEventAudit(@NonNull final I_AD_WF_EventAudit record)
 	{
 		return WFEventAudit.builder()
 				.id(record.getAD_WF_EventAudit_ID())
-				.eventType(WDEventAuditType.ofCode(record.getEventType()))
+				.eventType(WFEventAuditType.ofCode(record.getEventType()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				//
 				.wfProcessId(WFProcessId.ofRepoId(record.getAD_WF_Process_ID()))

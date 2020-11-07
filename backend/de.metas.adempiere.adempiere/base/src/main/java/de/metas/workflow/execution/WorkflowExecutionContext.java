@@ -52,6 +52,7 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.workflow.WFEventAudit;
+import de.metas.workflow.WFEventAuditList;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsible;
@@ -80,7 +81,6 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Builder
@@ -127,6 +127,8 @@ public final class WorkflowExecutionContext
 
 	private final HashMap<TableRecordReference, PO> poByRef = new HashMap<>();
 
+	private final WFEventAuditList auditList = new WFEventAuditList();
+
 	@NonNull
 	public WFNode getNodeById(@NonNull final WFNodeId nodeId)
 	{
@@ -138,15 +140,16 @@ public final class WorkflowExecutionContext
 		return workflowDAO.getWFResponsibleById(wfResponsibleId);
 	}
 
-	public void saveAll(@NonNull final WFProcess wfProcess)
+	void saveAll(@NonNull final WFProcess wfProcess)
 	{
 		save(wfProcess);
 		wfProcess.getAllActivities().forEach(this::save);
+		auditRepo.save(auditList);
 	}
 
-	public void save(@NonNull final WFProcess wfProcess) { wfProcessRepo.save(wfProcess); }
+	void save(@NonNull final WFProcess wfProcess) { wfProcessRepo.save(wfProcess); }
 
-	public void save(@NonNull final WFActivity wfActivity) { wfProcessRepo.save(wfActivity); }
+	private void save(@NonNull final WFActivity wfActivity) { wfProcessRepo.save(wfActivity); }
 
 	public IDocument processDocument(
 			@NonNull final TableRecordReference documentRef,
@@ -320,11 +323,9 @@ public final class WorkflowExecutionContext
 		auditRepo.save(audit);
 	}
 
-	public Optional<WFEventAudit> getLastEventAuditByWFNodeId(
-			final WFProcessId wfProcessId,
-			@NonNull final WFNodeId nodeId)
+	public void addEventAudit(@NonNull final WFEventAudit audit)
 	{
-		return auditRepo.getLastByWFNodeId(wfProcessId, nodeId);
+		auditList.add(audit);
 	}
 
 	public void createNewAttachment(
