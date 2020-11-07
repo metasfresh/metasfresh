@@ -41,6 +41,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
+import de.metas.workflow.WFAction;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
 import de.metas.workflow.WFNodeEmailRecipient;
@@ -71,7 +72,7 @@ import org.compiere.model.MNote;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.StateEngine;
+import de.metas.workflow.WFState;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -151,7 +152,7 @@ public class MWFActivity extends X_AD_WF_Activity
 		setAD_Client_ID(process.getAD_Client_ID());
 		setAD_Org_ID(process.getAD_Org_ID());
 		// Status
-		super.setWFState(WFSTATE_NotStarted);
+		super.setWFState(WFState.NotStarted.getCode());
 		setProcessed(false);
 		// Set Workflow Node
 		setAD_Workflow_ID(process.getAD_Workflow_ID());
@@ -247,16 +248,16 @@ public class MWFActivity extends X_AD_WF_Activity
 		return wfProcess;
 	}
 
-	StateEngine getState()
+	WFState getState()
 	{
-		return StateEngine.ofCode(getWFState());
+		return WFState.ofCode(getWFState());
 	}    // getState
 
 	@Override
 	@Deprecated
-	public void setWFState(final String WFState)
+	public void setWFState(final String wfState)
 	{
-		changeWFStateTo(WFState);
+		changeWFStateTo(WFState.ofCode(wfState));
 	}
 
 	/**
@@ -264,22 +265,22 @@ public class MWFActivity extends X_AD_WF_Activity
 	 * It also validates the new state and if is valid,
 	 * then create event audit and call {@link MWFProcess#checkActivities(PO)}
 	 */
-	public void changeWFStateTo(final String WFState)
+	public void changeWFStateTo(final WFState wfState)
 	{
 		if (getState().isClosed())
 		{
 			return;
 		}
-		if (getWFState().equals(WFState))
+		if (getState().equals(wfState))
 		{
 			return;
 		}
 		//
-		if (getState().isValidNewState(WFState))
+		if (getState().isValidNewState(wfState))
 		{
 			final String oldState = getWFState();
-			log.debug(oldState + "->" + WFState + ", Msg=" + getTextMsg());
-			super.setWFState(WFState);
+			log.debug(oldState + "->" + wfState + ", Msg=" + getTextMsg());
+			super.setWFState(wfState.getCode());
 			saveEx();            // closed in MWFProcess.checkActivities()
 			updateEventAudit();
 
@@ -289,7 +290,7 @@ public class MWFActivity extends X_AD_WF_Activity
 		}
 		else
 		{
-			final String msg = "Set WFState - Ignored Invalid Transformation - New=" + WFState + ", Current=" + getWFState();
+			final String msg = "Set WFState - Ignored Invalid Transformation - New=" + wfState + ", Current=" + getWFState();
 			log.error(msg);
 			addTextMsg(msg);
 			saveEx();
@@ -469,9 +470,9 @@ public class MWFActivity extends X_AD_WF_Activity
 	{
 		super.setAD_WF_Node_ID(nodeId.getRepoId());
 
-		if (!WFSTATE_NotStarted.equals(getWFState()))
+		if (!WFState.NotStarted.equals(getState()))
 		{
-			super.setWFState(WFSTATE_NotStarted);
+			super.setWFState(WFState.NotStarted.getCode());
 		}
 		if (isProcessed())
 		{
@@ -768,19 +769,19 @@ public class MWFActivity extends X_AD_WF_Activity
 			@Override
 			public void run(final String localTrxName)
 			{
-				if (!getState().isValidAction(StateEngine.ACTION_Start))
+				if (!getState().isValidAction(WFAction.Start))
 				{
 					addTextMsg(new AdempiereException("State=" + getWFState() + " - cannot start"));
-					changeWFStateTo(StateEngine.STATE_Terminated);
+					changeWFStateTo(WFState.Terminated);
 					return;
 				}
 				//
-				changeWFStateTo(StateEngine.STATE_Running);
+				changeWFStateTo(WFState.Running);
 
 				if (getNode() == null)
 				{
 					addTextMsg("Node not found");
-					changeWFStateTo(StateEngine.STATE_Aborted);
+					changeWFStateTo(WFState.Aborted);
 					return;
 				}
 
@@ -791,11 +792,11 @@ public class MWFActivity extends X_AD_WF_Activity
 
 				if (resolution == PerformWorkResolution.COMPLETED)
 				{
-					changeWFStateTo(StateEngine.STATE_Completed);
+					changeWFStateTo(WFState.Completed);
 				}
 				else if (resolution == PerformWorkResolution.SUSPENDED)
 				{
-					changeWFStateTo(StateEngine.STATE_Suspended);
+					changeWFStateTo(WFState.Suspended);
 				}
 				else
 				{
@@ -814,7 +815,7 @@ public class MWFActivity extends X_AD_WF_Activity
 				}
 
 				addTextMsg(ex);
-				changeWFStateTo(StateEngine.STATE_Terminated);    // unlocks
+				changeWFStateTo(WFState.Terminated);    // unlocks
 
 				// Set Document Status
 				final PO po = getPONoLoad();
@@ -1263,11 +1264,11 @@ public class MWFActivity extends X_AD_WF_Activity
 			final int displayType,
 			@Nullable final String textMsg)
 	{
-		changeWFStateTo(StateEngine.STATE_Running);
+		changeWFStateTo(WFState.Running);
 		setAD_User_ID(userId.getRepoId());
 		setVariable(value, displayType, textMsg);
 
-		final String newState;
+		final WFState newState;
 
 		if (getNode().isUserApproval())
 		{
@@ -1276,15 +1277,15 @@ public class MWFActivity extends X_AD_WF_Activity
 		}
 		else
 		{
-			newState = StateEngine.STATE_Completed;
+			newState = WFState.Completed;
 		}
 
 		changeWFStateTo(newState);
 	}    // setUserChoice
 
-	private String setUserChoice_DocumentApproval(final boolean approved)
+	private WFState setUserChoice_DocumentApproval(final boolean approved)
 	{
-		String newState = StateEngine.STATE_Completed;
+		WFState newState = WFState.Completed;
 
 		final IDocument doc = getDocumentOrNull();
 		if (doc == null)
@@ -1297,7 +1298,7 @@ public class MWFActivity extends X_AD_WF_Activity
 			// Not approved
 			if (!approved)
 			{
-				newState = StateEngine.STATE_Aborted;
+				newState = WFState.Aborted;
 				if (!(doc.processIt(IDocument.ACTION_Reject)))
 				{
 					addTextMsg("Cannot Reject - Document Status: " + doc.getDocStatus());
@@ -1313,7 +1314,7 @@ public class MWFActivity extends X_AD_WF_Activity
 					// No Approver
 					if (approverId == null)
 					{
-						newState = StateEngine.STATE_Aborted;
+						newState = WFState.Aborted;
 						addTextMsg("Cannot Approve - No Approver");
 						doc.processIt(IDocument.ACTION_Reject);
 					}
@@ -1321,14 +1322,14 @@ public class MWFActivity extends X_AD_WF_Activity
 					else if (!UserId.equals(documentToApprove.getWorkflowInvokerId(), approverId))
 					{
 						forwardTo(approverId, "Next Approver");
-						newState = StateEngine.STATE_Suspended;
+						newState = WFState.Suspended;
 					}
 					else
 					// Approve
 					{
 						if (!doc.processIt(IDocument.ACTION_Approve))
 						{
-							newState = StateEngine.STATE_Aborted;
+							newState = WFState.Aborted;
 							addTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
 						}
 					}
@@ -1336,7 +1337,7 @@ public class MWFActivity extends X_AD_WF_Activity
 				// No Invoker - Approve
 				else if (!doc.processIt(IDocument.ACTION_Approve))
 				{
-					newState = StateEngine.STATE_Aborted;
+					newState = WFState.Aborted;
 					addTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
 				}
 			}
@@ -1345,13 +1346,13 @@ public class MWFActivity extends X_AD_WF_Activity
 		}
 		catch (final Exception ex)
 		{
-			newState = StateEngine.STATE_Terminated;
+			newState = WFState.Terminated;
 			addTextMsg(ex);
 			log.warn("", ex);
 		}
 
 		// Send Not Approved Notification
-		if (newState.equals(StateEngine.STATE_Aborted) && doc.getDoc_User_ID() > 0)
+		if (newState.equals(WFState.Aborted) && doc.getDoc_User_ID() > 0)
 		{
 			final String docInfo = (doc.getSummary() != null ? doc.getSummary() + "\n" : "")
 					+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
@@ -1414,13 +1415,13 @@ public class MWFActivity extends X_AD_WF_Activity
 
 	public void setUserConfirmation(@NonNull final UserId userId, @Nullable final String textMsg)
 	{
-		changeWFStateTo(StateEngine.STATE_Running);
+		changeWFStateTo(WFState.Running);
 		setAD_User_ID(userId.getRepoId());
 		if (textMsg != null)
 		{
 			addTextMsg(textMsg);
 		}
-		changeWFStateTo(StateEngine.STATE_Completed);
+		changeWFStateTo(WFState.Completed);
 	}    // setUserConfirmation
 
 	private static List<ProcessInfoParameter> createProcessInfoParameters(@NonNull final WFNode wfNode, @NonNull final PO po)

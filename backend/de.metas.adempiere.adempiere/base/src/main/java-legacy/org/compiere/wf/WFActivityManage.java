@@ -18,7 +18,7 @@ package org.compiere.wf;
 
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
-import org.compiere.process.StateEngine;
+import de.metas.workflow.WFState;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
@@ -90,7 +90,7 @@ public class WFActivityManage extends JavaProcess
 			// Set the 'processed'-flag when an activity is aborted; not setting this flag
 			// will leave the activity in an "unmanagable" state
 			activity.setProcessed(true);
-			activity.changeWFStateTo(StateEngine.STATE_Aborted);
+			activity.changeWFStateTo(WFState.Aborted);
 			return msg;
 		}
 		String msg = null;

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.workflow.WFState;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
@@ -134,7 +135,7 @@ public class WFActivityModel
 			// Suspended activities
 			wc.append(" AND ");
 			wc.append(I_AD_WF_Activity.COLUMNNAME_WFState).append("=?");
-			params.add(X_AD_WF_Activity.WFSTATE_Suspended);
+			params.add(WFState.Suspended.getCode());
 
 			// Responsible
 			wc.append(" AND (").append(wcResponsible).append(")");

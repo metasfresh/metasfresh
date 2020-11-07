@@ -34,7 +34,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Activity;
-import org.compiere.process.StateEngine;
+import de.metas.workflow.WFState;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFProcess;
 import de.metas.workflow.Workflow;
@@ -105,7 +105,7 @@ public class WorkflowExecutor
 
 		Thread.yield();
 		int loops = 0;
-		StateEngine state = process.getState();
+		WFState state = process.getState();
 		while (!state.isClosed() && !state.isSuspended())
 		{
 			if (loops > MAXLOOPS)
@@ -143,7 +143,7 @@ public class WorkflowExecutor
 			@NonNull final ProcessExecutionResult result,
 			@NonNull final MWFProcess fromWFProcess)
 	{
-		final StateEngine state = fromWFProcess.getState();
+		final WFState state = fromWFProcess.getState();
 		String summary = fromWFProcess.getProcessMsg();
 		if (Check.isBlank(summary))
 		{
@@ -155,7 +155,7 @@ public class WorkflowExecutor
 		}
 		if (Check.isBlank(summary))
 		{
-			summary = state.getStateInfo();
+			summary = state.toString();
 		}
 
 		if (state.isTerminated() || state.isAborted())

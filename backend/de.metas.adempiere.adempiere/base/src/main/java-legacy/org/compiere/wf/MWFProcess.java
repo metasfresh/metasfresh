@@ -13,11 +13,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
+import de.metas.workflow.WFAction;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFNodeSplitType;
 import de.metas.workflow.WFNodeTransition;
+import de.metas.workflow.WFState;
 import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.TableModelLoader;
@@ -27,11 +30,9 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_WF_Activity;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_WF_Process;
-import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import de.metas.workflow.service.IADWorkflowDAO;
 
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
@@ -90,7 +91,7 @@ public class MWFProcess extends X_AD_WF_Process
 		this._workflow = workflow;
 		setAD_Workflow_ID(workflow.getId().getRepoId());
 		setPriority(workflow.getPriority());
-		super.setWFState(WFSTATE_NotStarted);
+		super.setWFState(WFState.NotStarted.getCode());
 
 		//	Document
 		setAD_Table_ID(pi.getTable_ID());
@@ -98,7 +99,7 @@ public class MWFProcess extends X_AD_WF_Process
 		if (getPO() == null)
 		{
 			addTextMsg(new AdempiereException("No PO with ID=" + pi.getRecord_ID()));
-			super.setWFState(WFSTATE_Terminated);
+			super.setWFState(WFState.Terminated.getCode());
 		}
 		else
 		{
@@ -138,7 +139,7 @@ public class MWFProcess extends X_AD_WF_Process
 				.listImmutable(MWFActivity.class);
 	}
 
-	public Optional<I_AD_WF_Activity> getFirstActivityByWFState(@NonNull final StateEngine wfState)
+	public Optional<I_AD_WF_Activity> getFirstActivityByWFState(@NonNull final WFState wfState)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_Activity.class)
@@ -149,38 +150,38 @@ public class MWFProcess extends X_AD_WF_Process
 				.firstOptional(I_AD_WF_Activity.class);
 	}
 
-	public StateEngine getState()
+	public WFState getState()
 	{
-		return StateEngine.ofCode(getWFState());
+		return WFState.ofCode(getWFState());
 	}
 
 	@Override
 	@Deprecated
-	public void setWFState(final String WFState)
+	public void setWFState(final String wfState)
 	{
-		changeWFStateTo(WFState);
+		changeWFStateTo(WFState.ofCode(wfState));
 	}
 
 	/**
 	 * Set Process State and update Actions
 	 */
-	public void changeWFStateTo(final String WFState)
+	public void changeWFStateTo(final WFState wfState)
 	{
 		if (getState().isClosed())
 		{
 			return;
 		}
 
-		if (getWFState().equals(WFState))
+		if (getState().equals(wfState))
 		{
 			return;
 		}
 
 		//
-		if (getState().isValidNewState(WFState))
+		if (getState().isValidNewState(wfState))
 		{
-			log.debug("Set WFState={}", WFState);
-			super.setWFState(WFState);
+			log.debug("Set WFState={}", wfState);
+			super.setWFState(wfState.getCode());
 			if (getState().isClosed())
 			{
 				setProcessed(true);
@@ -195,8 +196,8 @@ public class MWFProcess extends X_AD_WF_Process
 				{
 					if (!activity.isClosed())
 					{
-						activity.addTextMsg("Process:" + WFState);
-						activity.changeWFStateTo(WFState);
+						activity.addTextMsg("Process:" + wfState);
+						activity.changeWFStateTo(wfState);
 					}
 					if (!activity.isProcessed())
 					{
@@ -208,7 +209,7 @@ public class MWFProcess extends X_AD_WF_Process
 		}
 		else
 		{
-			log.warn("Ignored invalid state transition {} -> {}", getWFState(), WFState);
+			log.warn("Ignored invalid state transition {} -> {}", getWFState(), wfState);
 		}
 	}
 
@@ -230,7 +231,7 @@ public class MWFProcess extends X_AD_WF_Process
 		}
 
 		//
-		String closedState = null;
+		WFState closedState = null;
 		boolean suspended = false;
 		boolean running = false;
 
@@ -238,13 +239,13 @@ public class MWFProcess extends X_AD_WF_Process
 		if (activities.isEmpty())
 		{
 			addTextMsg(new AdempiereException("No Active Processed found"));
-			closedState = WFSTATE_Terminated;
+			closedState = WFState.Terminated;
 		}
 		else
 		{
 			for (final MWFActivity activity : activities)
 			{
-				final StateEngine activityState = activity.getState();
+				final WFState activityState = activity.getState();
 
 				//	Completed - Start Next
 				if (activityState.isCompleted())
@@ -256,7 +257,6 @@ public class MWFProcess extends X_AD_WF_Process
 				}
 
 				//
-				final String activityWFState = activity.getWFState();
 				if (activityState.isClosed())
 				{
 					//	eliminate from active processed
@@ -265,19 +265,19 @@ public class MWFProcess extends X_AD_WF_Process
 					//
 					if (closedState == null)
 					{
-						closedState = activityWFState;
+						closedState = activityState;
 					}
-					else if (!closedState.equals(activityWFState))
+					else if (!closedState.equals(activityState))
 					{
 						//	Overwrite if terminated
-						if (WFSTATE_Terminated.equals(activityWFState))
+						if (WFState.Terminated.equals(activityState))
 						{
-							closedState = activityWFState;
+							closedState = activityState;
 						}
 						//	Overwrite if activity aborted and no other terminated
-						else if (WFSTATE_Aborted.equals(activityWFState) && !WFSTATE_Terminated.equals(closedState))
+						else if (WFState.Aborted.equals(activityState) && !WFState.Terminated.equals(closedState))
 						{
-							closedState = activityWFState;
+							closedState = activityState;
 						}
 					}
 				}
@@ -304,11 +304,11 @@ public class MWFProcess extends X_AD_WF_Process
 		}
 		else if (suspended)
 		{
-			changeWFStateTo(WFSTATE_Suspended);
+			changeWFStateTo(WFState.Suspended);
 		}
 		else if (running)
 		{
-			changeWFStateTo(WFSTATE_Running);
+			changeWFStateTo(WFState.Running);
 		}
 	}    //	checkActivities
 
@@ -398,14 +398,14 @@ public class MWFProcess extends X_AD_WF_Process
 	 */
 	public void startWork()
 	{
-		if (!getState().isValidAction(StateEngine.ACTION_Start))
+		if (!getState().isValidAction(WFAction.Start))
 		{
 			log.warn("State={} - cannot start", getWFState());
 			return;
 		}
 
 		final WFNodeId firstWFNodeId = getWorkflow().getFirstNodeId();
-		changeWFStateTo(WFSTATE_Running);
+		changeWFStateTo(WFState.Running);
 		try
 		{
 			//	Start first Activity with first Node
@@ -416,7 +416,7 @@ public class MWFProcess extends X_AD_WF_Process
 		{
 			log.error("firstWFNodeId={}", firstWFNodeId, ex);
 			setProcessMsg(ex);
-			changeWFStateTo(StateEngine.STATE_Terminated);
+			changeWFStateTo(WFState.Terminated);
 		}
 	}
 

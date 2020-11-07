@@ -18,7 +18,7 @@ package org.compiere.wf;
 
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
-import org.compiere.process.StateEngine;
+import de.metas.workflow.WFState;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
@@ -87,7 +87,7 @@ public class WFProcessManage extends JavaProcess
 			String msg = user.getName() + ": Abort";
 			process.addTextMsg(msg);
 			process.setAD_User_ID(getAD_User_ID());
-			process.changeWFStateTo(StateEngine.STATE_Aborted);
+			process.changeWFStateTo(WFState.Aborted);
 			return msg;
 		}
 		String msg = null;

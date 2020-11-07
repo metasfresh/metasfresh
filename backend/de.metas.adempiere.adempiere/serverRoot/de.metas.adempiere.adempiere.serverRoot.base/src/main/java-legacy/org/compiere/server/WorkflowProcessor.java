@@ -29,7 +29,7 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MClient;
 import org.compiere.model.PO;
-import org.compiere.process.StateEngine;
+import de.metas.workflow.WFState;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.compiere.wf.MWFActivity;
@@ -125,7 +125,7 @@ public class WorkflowProcessor extends AdempiereServer
 			while (rs.next())
 			{
 				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
-				activity.changeWFStateTo(StateEngine.STATE_Completed);
+				activity.changeWFStateTo(WFState.Completed);
 				// saves and calls MWFProcess.checkActivities();
 				count++;
 			}
