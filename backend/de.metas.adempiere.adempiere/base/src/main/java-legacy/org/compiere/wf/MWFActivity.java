@@ -111,7 +111,7 @@ public class MWFActivity extends X_AD_WF_Activity
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
-	private WFNode _node = null;
+	private WFNode _node = null; // lazy
 	private MWFEventAudit _audit = null;
 	private PO _po = null; // lazy
 	private String m_newValue = null;
@@ -495,7 +495,7 @@ public class MWFActivity extends X_AD_WF_Activity
 			final WFNodeId nodeId = WFNodeId.ofRepoId(getAD_WF_Node_ID());
 
 			final Workflow workflow = Services.get(IADWorkflowDAO.class).getById(workflowId);
-			node = workflow.getNodeById(nodeId);
+			node = this._node = workflow.getNodeById(nodeId);
 		}
 		return node;
 	}
