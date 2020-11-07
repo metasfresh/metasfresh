@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -92,7 +93,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.exceptions.ServiceConnectionException;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 @ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })

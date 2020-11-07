@@ -22,9 +22,9 @@
 
 package de.metas.workflow;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
 import de.metas.workflow.execution.WFProcessId;
 import lombok.Builder;
 import lombok.Data;

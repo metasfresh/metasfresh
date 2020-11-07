@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.server;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -26,7 +27,6 @@ import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFResponsibleType;

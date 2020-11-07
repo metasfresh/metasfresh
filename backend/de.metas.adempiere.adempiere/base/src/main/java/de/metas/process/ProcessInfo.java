@@ -1,20 +1,30 @@
 package de.metas.process;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.report.server.OutputType;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.workflow.WorkflowId;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,35 +54,22 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.ILanguageBL;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.report.server.OutputType;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.security.permissions.Access;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
-import lombok.Getter;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Process Instance informations.
- *
+ * <p>
  * NOTE to developers: when changing this class, please keep in mind that it always shall be fully restorable from AD_PInstance_ID.
  *
  * @author authors of earlier versions of this class are: Jorg Janke, victor.perez@e-evolution.com
@@ -158,15 +155,21 @@ public final class ProcessInfo implements Serializable
 
 	private final Properties ctx;
 
-	/** Title of the Process/Report */
+	/**
+	 * Title of the Process/Report
+	 */
 	@Getter
 	private final String title;
 	@Getter
 	private final AdProcessId adProcessId;
 
-	/** Table ID if the Process */
+	/**
+	 * Table ID if the Process
+	 */
 	private final int adTableId;
-	/** Record ID if the Process */
+	/**
+	 * Record ID if the Process
+	 */
 	private final int recordId;
 	private final Set<TableRecordReference> selectedIncludedRecords;
 
@@ -181,7 +184,9 @@ public final class ProcessInfo implements Serializable
 	private final int windowNo;
 	private final int tabNo;
 
-	/** Class Name */
+	/**
+	 * Class Name
+	 */
 	private final Optional<String> className;
 	private transient ProcessClassInfo _processClassInfo = null; // lazy
 
@@ -198,24 +203,32 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean invokedByScheduler;
 
-	/** IF true, then expect the user to be notified, with a link to the AD_Pssntance_ID */
+	/**
+	 * IF true, then expect the user to be notified, with a link to the AD_Pssntance_ID
+	 */
 	@Getter
 	private final boolean notifyUserAfterExecution;
 
-	/** Process Instance ID */
+	/**
+	 * Process Instance ID
+	 */
 	@Getter
 	private PInstanceId pinstanceId;
 
 	private Boolean async = null;
 
-	/** Parameters */
+	/**
+	 * Parameters
+	 */
 	private ImmutableList<ProcessInfoParameter> parameters = null; // lazy loaded
 	private final ImmutableList<ProcessInfoParameter> parametersOverride;
 
 	//
 	// Reporting related
 
-	/** Is print preview instead of direct print ? Only relevant if this is a reporting process */
+	/**
+	 * Is print preview instead of direct print ? Only relevant if this is a reporting process
+	 */
 	@Getter
 	private final boolean printPreview;
 	@Getter
@@ -234,7 +247,9 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final Optional<String> jsonPath;
 
-	/** Process result */
+	/**
+	 * Process result
+	 */
 	@Getter
 	private final ProcessExecutionResult result;
 
@@ -270,7 +285,7 @@ public final class ProcessInfo implements Serializable
 	public boolean isAsync()
 	{
 		return async;
-	}	// isBatch
+	}    // isBatch
 
 	/**
 	 * Shall only be called once. Intended to be called by {@link ProcessExecutor} only.
@@ -407,7 +422,7 @@ public final class ProcessInfo implements Serializable
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
 	 * @param modelClass
-	 * @param trxName transaction to be used when loading the record
+	 * @param trxName    transaction to be used when loading the record
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
@@ -524,7 +539,7 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * Get Process Parameters.
-	 *
+	 * <p>
 	 * If they were not already set, they will be loaded from database.
 	 *
 	 * @return parameters; never returns null
@@ -537,7 +552,7 @@ public final class ProcessInfo implements Serializable
 			parameters = mergeParameters(parametersFromDB, parametersOverride);
 		}
 		return parameters;
-	}	// getParameter
+	}    // getParameter
 
 	public List<ProcessInfoParameter> getParametersNoLoad()
 	{
@@ -596,8 +611,7 @@ public final class ProcessInfo implements Serializable
 	 * IMPORTANT: in most cases, {@link #getQueryFilterOrElseFalse()} is what you probably want to use.
 	 *
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
-	 *         gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
-	 *
+	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
 	 * @task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
@@ -659,7 +673,9 @@ public final class ProcessInfo implements Serializable
 		return compositeFilter;
 	}
 
-	/** @return selected included rows of current single selected document */
+	/**
+	 * @return selected included rows of current single selected document
+	 */
 	public Set<TableRecordReference> getSelectedIncludedRecords()
 	{
 		return selectedIncludedRecords;
@@ -687,9 +703,8 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
-	 *
 	 * @return the {@link ProcessClassInfo} for this instance's <code>className</code> (see {@link #getClassName()}) or {@link ProcessClassInfo#NULL} if this instance has no classname or the
-	 *         instance's classname's class can't be loaded.
+	 * instance's classname's class can't be loaded.
 	 */
 	public ProcessClassInfo getProcessClassInfo()
 	{
@@ -706,7 +721,7 @@ public final class ProcessInfo implements Serializable
 		private boolean createTemporaryCtx = false;
 		/**
 		 * Window context variables to copy when {@link #createTemporaryCtx}
-		 *
+		 * <p>
 		 * NOTE to developer: before changing and mainly removing some context variables from this list,
 		 * please do a text search and check the code which is actually relying on this list.
 		 */
@@ -1601,12 +1616,11 @@ public final class ProcessInfo implements Serializable
 		/**
 		 * Advises the builder to also try loading the parameters from database.
 		 *
-		 * @param loadParametersFromDB
-		 *            <ul>
-		 *            <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
-		 *            <li><code>false</code> - the parameters will be loaded from database only if they were not specified here. If at least one parameter was added to this builder, no parameters will
-		 *            be loaded from database but only those added here will be used.
-		 *            </ul>
+		 * @param loadParametersFromDB <ul>
+		 *                                        <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
+		 *                                        <li><code>false</code> - the parameters will be loaded from database only if they were not specified here. If at least one parameter was added to this builder, no parameters will
+		 *                                        be loaded from database but only those added here will be used.
+		 *                                        </ul>
 		 */
 		public ProcessInfoBuilder setLoadParametersFromDB(boolean loadParametersFromDB)
 		{

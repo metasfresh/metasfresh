@@ -23,6 +23,7 @@
 package de.metas.workflow.execution;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.email.EMailAddress;
@@ -49,7 +50,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import de.metas.workflow.WFAction;
 import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFEventAuditType;

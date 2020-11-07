@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.workflow.interceptors.AD_Workflow;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -112,7 +113,6 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class MRPTestHelper
 {
