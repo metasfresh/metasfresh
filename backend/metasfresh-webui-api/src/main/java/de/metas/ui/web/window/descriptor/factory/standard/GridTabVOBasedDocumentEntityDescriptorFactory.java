@@ -1,36 +1,5 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.Adempiere;
-import org.compiere.model.GridFieldDefaultFilterDescriptor;
-import org.compiere.model.GridFieldVO;
-import org.compiere.model.GridTabVO;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_UI_Element;
-import org.compiere.model.I_AD_UI_ElementField;
-import org.compiere.model.X_AD_UI_ElementField;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatees;
-import org.elasticsearch.client.Client;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
@@ -66,6 +35,35 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.Adempiere;
+import org.compiere.model.GridFieldDefaultFilterDescriptor;
+import org.compiere.model.GridFieldVO;
+import org.compiere.model.GridTabVO;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.X_AD_UI_ElementField;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Evaluatees;
+import org.elasticsearch.client.Client;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -436,7 +434,7 @@ import lombok.NonNull;
 
 		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
 		final int fieldMaxLength = widgetType.isStrictText() && gridFieldVO.getFieldLength() > 0 ? gridFieldVO.getFieldLength() : 0;
-		
+
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)
 				.setCaption(gridFieldVO.getHeaderTrls(), gridFieldVO.getHeader())
 				.setDescription(gridFieldVO.getDescriptionTrls(), gridFieldVO.getDescription())
@@ -481,7 +479,7 @@ import lombok.NonNull;
 
 	/**
 	 * @return true if the given {@code gridFieldVO} is flagged as parent link and also matches the parent-link columName.
-	 *         Logically there can be only one parent link field.
+	 * Logically there can be only one parent link field.
 	 */
 	private static boolean isCurrentlyUsedParentLinkField(
 			@NonNull final GridFieldVO gridFieldVO,
@@ -647,8 +645,9 @@ import lombok.NonNull;
 		{
 			// FIXME: hardcoded, exclude field when considering ProcessButton widget
 			// because it's AD_Process_ID it's a placeholder-ish one.
-			if (WindowConstants.FIELDNAME_DocAction.equals(fieldName)
-					|| WindowConstants.FIELDNAME_Processing.equals(fieldName))
+			if (
+				//WindowConstants.FIELDNAME_DocAction.equals(fieldName) ||
+					WindowConstants.FIELDNAME_Processing.equals(fieldName))
 			{
 				return null;
 			}
@@ -716,17 +715,17 @@ import lombok.NonNull;
 				// .setReadonlyLogic(readonlyLogic)
 				// .setAlwaysUpdateable(alwaysUpdateable)
 				// .setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
-				 				 
+
 				//
 				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
-		
+
 		final String labelDisplayLogic = getLabelDisplayLogic(labelsUIElement);
 		if (!Check.isBlank(labelDisplayLogic))
 		{
 			fieldBuilder.setDisplayLogic(labelDisplayLogic);
 		}
-		
+
 		//
 		// Add Field builder to document entity
 		entityDescriptor.addField(fieldBuilder);
@@ -739,9 +738,9 @@ import lombok.NonNull;
 	private String getLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
 	{
 		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
-		
-		Check.assumeNotNull(labelField, I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for UI Element {} !", labelsUIElement );
-		
+
+		Check.assumeNotNull(labelField, I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for UI Element {} !", labelsUIElement);
+
 		return labelField.getDisplayLogic();
 	}
 

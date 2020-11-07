@@ -1,13 +1,24 @@
 package de.metas.process;
 
-import java.sql.CallableStatement;
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
+import com.google.common.base.Stopwatch;
+import de.metas.document.workflow.WorkflowExecutor;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.OrgId;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
+import de.metas.script.ScriptExecutor;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.session.jaxrs.IServerService;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -26,29 +37,19 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.wf.MWFProcess;
-import org.compiere.wf.MWorkflow;
+import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowDAO;
 import org.slf4j.Logger;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.i18n.IMsgBL;
-// import de.metas.adempiere.form.IClientUI;
-import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.organization.OrgId;
-import de.metas.script.IADRuleDAO;
-import de.metas.script.ScriptEngineFactory;
-import de.metas.script.ScriptExecutor;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.session.jaxrs.IServerService;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * Process executor: executes a process (sync or async) which was defined by given {@link ProcessInfo}.
@@ -357,7 +358,7 @@ public final class ProcessExecutor
 
 	/**
 	 * Lock the process instance and notify the parent
-	 *
+	 * <p>
 	 * NOTE: it's OK to throw exceptions
 	 */
 	private void lock(final boolean runningLocally)
@@ -379,7 +380,7 @@ public final class ProcessExecutor
 
 	/**
 	 * Unlock the process instance and notify the parent.
-	 *
+	 * <p>
 	 * NOTE: it's very important this method to never throw exception.
 	 */
 	private void unlock(final boolean runningLocally)
@@ -430,19 +431,22 @@ public final class ProcessExecutor
 	/**
 	 * Start Workflow.
 	 *
-	 * @param AD_Workflow_ID workflow
 	 * @return true if started
 	 */
 	private boolean startWorkflow()
 	{
-		final int AD_Workflow_ID = pi.getAD_Workflow_ID();
-		Check.assume(AD_Workflow_ID > 0, "AD_Workflow_ID > 0");
-		logger.debug("startWorkflow: {} ({})", AD_Workflow_ID, pi);
+		final WorkflowId workflowId = WorkflowId.ofRepoIdOrNull(pi.getAD_Workflow_ID());
+		Check.assumeNotNull(workflowId, "workflowId");
+		logger.debug("startWorkflow: {} ({})", workflowId, pi);
 
-		final MWorkflow wf = MWorkflow.get(pi.getCtx(), AD_Workflow_ID);
+		final Workflow workflow = Services.get(IADWorkflowDAO.class).getById(workflowId);
 
 		// note: depending on a pi flag we also called wf.start(pi);, but that flag always had a constant value.
-		final MWFProcess wfProcess = wf.startWait(pi);	// may return null
+		@Nullable final MWFProcess wfProcess = WorkflowExecutor.builder()
+				.workflow(workflow)
+				.processInfo(pi)
+				.build()
+				.startAndWait();
 
 		final boolean started = wfProcess != null;
 		logger.debug("startWorkflow finish: started={}, wfProcess={}", started, wfProcess);
@@ -761,7 +765,7 @@ public final class ProcessExecutor
 		/**
 		 * Sets the callback to be executed after AD_PInstance is created but before the actual process is started.
 		 * If the callback fails, the exception is propagated, so the process will not be started.
-		 *
+		 * <p>
 		 * A common use case of <code>beforeCallback</code> is to create to selections which are linked to this process instance.
 		 *
 		 * @param beforeCallback
@@ -772,4 +776,4 @@ public final class ProcessExecutor
 			return this;
 		}
 	}
-}	// ProcessCtl
+}    // ProcessCtl

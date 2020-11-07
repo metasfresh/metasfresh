@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.workflow.interceptors.AD_Workflow;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -300,7 +301,7 @@ public class MRPTestHelper
 		final I_AD_Client client = null;
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
-		modelInterceptorRegistry.addModelInterceptor(new org.compiere.wf.model.validator.AD_Workflow(), client);
+		modelInterceptorRegistry.addModelInterceptor(new AD_Workflow(), client);
 
 		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), client);
 	}

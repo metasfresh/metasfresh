@@ -20,7 +20,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.wf.api.IADWorkflowBL;
+import de.metas.workflow.service.IADWorkflowBL;
 
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;

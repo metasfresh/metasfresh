@@ -16,24 +16,19 @@
  *****************************************************************************/
 package org.compiere.apps.wf;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.reflist.ReferenceId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.apps.wf.WFActivityModel;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -44,9 +39,9 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_AD_Form;
-import org.compiere.model.MColumn;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
+import org.compiere.model.PO;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
@@ -60,35 +55,42 @@ import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 import org.compiere.wf.MWFActivity;
-import org.compiere.wf.MWFNode;
+import org.compiere.wf.MWFEventAudit;
+import de.metas.workflow.WFNode;
+import de.metas.workflow.WFNodeAction;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 /**
  * WorkFlow Activities Panel
- * 
+ *
  * @author Jorg Janke
- * @version $Id: WFActivity.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
- * 
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL - BF [ 1748449 ]
  * @author Compiere - CarlosRuiz integrate code for table selection on workflow present at GPL version of Compiere 3.2.0
+ * @version $Id: WFActivity.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
 public class WFActivity extends CPanel
 		implements FormPanel, ActionListener, ListSelectionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6917300855914216420L;
-	
-	private IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * WF Activity
-	 * 
 	 */
 	public WFActivity()
 	{
@@ -100,81 +102,91 @@ public class WFActivity extends CPanel
 			dynInit(m_WindowNo);
 			jbInit();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("", e);
 		}
-	}	// WFActivity
+	}    // WFActivity
 
 	private WFActivityModel model;
-	
-	/** Window No */
+
+	/**
+	 * Window No
+	 */
 	private int m_WindowNo = 0;
-	/** FormFrame */
+	/**
+	 * FormFrame
+	 */
 	private FormFrame m_frame = null;
-	/** Open Activities */
+	/**
+	 * Open Activities
+	 */
 	private MWFActivity[] m_activities = null;
-	/** Current Activity */
+	/**
+	 * Current Activity
+	 */
 	private MWFActivity m_activity = null;
 	/** Set Column */
-	private MColumn m_column = null;
-	/** Logger */
-	private static Logger log = LogManager.getLogger(WFActivity.class);
+	// private MColumn m_column = null;
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LogManager.getLogger(WFActivity.class);
 
 	DefaultTableModel selTableModel = new DefaultTableModel(
 			new String[] { msgBL.translate(Env.getCtx(), "Priority"),
 					msgBL.translate(Env.getCtx(), "AD_WF_Node_ID"),
 					msgBL.translate(Env.getCtx(), "Summary") }, 0);
-	private MiniTable selTable = new MiniTable();
-	private CScrollPane selPane = new CScrollPane(selTable);
+	private final MiniTable selTable = new MiniTable();
+	private final CScrollPane selPane = new CScrollPane(selTable);
 	//
-	private CPanel centerPanel = new CPanel();
-	private GridBagLayout centerLayout = new GridBagLayout();
-	private CLabel lNode = new CLabel(msgBL.translate(Env.getCtx(), "AD_WF_Node_ID"));
-	private CTextField fNode = new CTextField();
-	private CLabel lDesctiption = new CLabel(msgBL.translate(Env.getCtx(), "Description"));
-	private CTextArea fDescription = new CTextArea();
-	private CLabel lHelp = new CLabel(msgBL.translate(Env.getCtx(), "Help"));
-	private CTextArea fHelp = new CTextArea();
-	private CLabel lHistory = new CLabel(msgBL.translate(Env.getCtx(), "History"));
-	private CTextPane fHistory = new CTextPane();
-	private CLabel lAnswer = new CLabel(msgBL.getMsg(Env.getCtx(), "Answer"));
-	private CPanel answers = new CPanel(new FlowLayout(FlowLayout.LEADING));
-	private CTextField fAnswerText = new CTextField();
-	private CComboBox fAnswerList = new CComboBox();
-	private CButton fAnswerButton = new CButton();
+	private final CPanel centerPanel = new CPanel();
+	private final GridBagLayout centerLayout = new GridBagLayout();
+	private final CLabel lNode = new CLabel(msgBL.translate(Env.getCtx(), "AD_WF_Node_ID"));
+	private final CTextField fNode = new CTextField();
+	private final CLabel lDesctiption = new CLabel(msgBL.translate(Env.getCtx(), "Description"));
+	private final CTextArea fDescription = new CTextArea();
+	private final CLabel lHelp = new CLabel(msgBL.translate(Env.getCtx(), "Help"));
+	private final CTextArea fHelp = new CTextArea();
+	private final CLabel lHistory = new CLabel(msgBL.translate(Env.getCtx(), "History"));
+	private final CTextPane fHistory = new CTextPane();
+	private final CLabel lAnswer = new CLabel(msgBL.getMsg(Env.getCtx(), "Answer"));
+	private final CPanel answers = new CPanel(new FlowLayout(FlowLayout.LEADING));
+	private final CTextField fAnswerText = new CTextField();
+	private final CComboBox fAnswerList = new CComboBox();
+	private final CButton fAnswerButton = new CButton();
 	// private CButton bPrevious = AEnv.getButton("Previous");
 	// private CButton bNext = AEnv.getButton("Next");
-	private CButton bZoom = AEnv.getButton("Zoom");
-	private CLabel lTextMsg = new CLabel(msgBL.getMsg(Env.getCtx(), "Messages"));
-	private CTextArea fTextMsg = new CTextArea();
-	private CButton bOK = ConfirmPanel.createOKButton(true);
-	private VLookup fForward = null;	// dynInit
-	private CLabel lForward = new CLabel(msgBL.getMsg(Env.getCtx(), "Forward"));
-	private CLabel lOptional = new CLabel("(" + msgBL.translate(Env.getCtx(), "Optional") + ")");
-	private StatusBar statusBar = new StatusBar();
+	private final CButton bZoom = AEnv.getButton("Zoom");
+	private final CLabel lTextMsg = new CLabel(msgBL.getMsg(Env.getCtx(), "Messages"));
+	private final CTextArea fTextMsg = new CTextArea();
+	private final CButton bOK = ConfirmPanel.createOKButton(true);
+	private VLookup fForward = null;    // dynInit
+	private final CLabel lForward = new CLabel(msgBL.getMsg(Env.getCtx(), "Forward"));
+	private final CLabel lOptional = new CLabel("(" + msgBL.translate(Env.getCtx(), "Optional") + ")");
+	private final StatusBar statusBar = new StatusBar();
 
 	/**
 	 * Dynamic Init. Called before Static Init
-	 * 
+	 *
 	 * @param WindowNo window
 	 */
-	private void dynInit(int WindowNo)
+	private void dynInit(final int WindowNo)
 	{
 		model = new WFActivityModel(Env.getCtx());
 		loadActivities();
 		// Forward
 		fForward = VLookup.createUser(WindowNo);
-	}	// dynInit
+	}    // dynInit
 
 	/**
 	 * Static Init. Called after Dynamic Init
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
 	{
-		int width = 150;
+		final int width = 150;
 		centerPanel.setLayout(centerLayout);
 		fNode.setReadWrite(false);
 		fDescription.setReadWrite(false);
@@ -269,17 +281,17 @@ public class WFActivity extends CPanel
 		centerPanel.add(bOK, new GridBagConstraints(3, row, 1, 1, 0.0, 0.0,
 				GridBagConstraints.EAST, GridBagConstraints.NONE,
 				new Insets(10, 5, 5, 10), 0, 0));
-	}	// jbInit
+	}    // jbInit
 
 	/**
 	 * Initialize Panel for FormPanel
-	 * 
+	 *
 	 * @param WindowNo window
-	 * @param frame frame
+	 * @param frame    frame
 	 * @see org.compiere.apps.form.FormPanel#init(int, FormFrame)
 	 */
 	@Override
-	public void init(int WindowNo, FormFrame frame)
+	public void init(final int WindowNo, final FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
 		m_frame = frame;
@@ -294,15 +306,15 @@ public class WFActivity extends CPanel
 			frame.getContentPane().add(this, BorderLayout.CENTER);
 			display(-1);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("", e);
 		}
-	}	// init
+	}    // init
 
 	/**
 	 * Dispose
-	 * 
+	 *
 	 * @see org.compiere.apps.form.FormPanel#dispose()
 	 */
 	@Override
@@ -313,11 +325,11 @@ public class WFActivity extends CPanel
 			m_frame.dispose();
 		}
 		m_frame = null;
-	}	// dispose
-	
+	}    // dispose
+
 	/**
 	 * Get active activities count
-	 * 
+	 *
 	 * @return int
 	 */
 	public int getActivitiesCount()
@@ -325,10 +337,10 @@ public class WFActivity extends CPanel
 		final int count = model.getActivitiesCount();
 		return count;
 	}
-	
+
 	/**
 	 * Load Activities
-	 * 
+	 *
 	 * @return int
 	 */
 	public int loadActivities()
@@ -337,32 +349,90 @@ public class WFActivity extends CPanel
 		{
 			selTableModel.removeRow(0);
 		}
-		
-		long start = System.currentTimeMillis();
+
+		final long start = System.currentTimeMillis();
 		final List<MWFActivity> activities = model.retrieveActivities();
-		
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		for (final MWFActivity activity : activities)
 		{
 			final Object[] rowData = new Object[3];
 			rowData[0] = activity.getPriority();
-			rowData[1] = activity.getNodeName();
-			rowData[2] = activity.getSummary();
+			rowData[1] = activity.getNode().getName().translate(adLanguage);
+			rowData[2] = getSummary(activity);
 			selTableModel.addRow(rowData);
 		}
-		
+
 		selTable.autoSize(false);
 		m_activities = activities.toArray(new MWFActivity[activities.size()]);
 		//
 		log.debug("#" + m_activities.length + "(" + (System.currentTimeMillis() - start) + "ms)");
 		return m_activities.length;
-	}	// loadActivities
+	}    // loadActivities
+
+	/**
+	 * @return PO Summary
+	 */
+	@Nullable
+	private static String getSummary(final MWFActivity activity)
+	{
+		final PO po = activity.getPO();
+		if (po == null)
+		{
+			return null;
+		}
+		final StringBuilder sb = new StringBuilder();
+		final String[] keyColumns = po.get_KeyColumns();
+		if ((keyColumns != null) && (keyColumns.length > 0))
+		{
+			sb.append(Services.get(IMsgBL.class).translate(Env.getCtx(), keyColumns[0])).append(" ");
+		}
+		int index = po.get_ColumnIndex("DocumentNo");
+		if (index != -1)
+		{
+			sb.append(po.get_Value(index)).append(": ");
+		}
+		index = po.get_ColumnIndex("SalesRep_ID");
+		Integer sr = null;
+		if (index != -1)
+		{
+			sr = (Integer)po.get_Value(index);
+		}
+		else
+		{
+			index = po.get_ColumnIndex("AD_User_ID");
+			if (index != -1)
+			{
+				sr = (Integer)po.get_Value(index);
+			}
+		}
+		if (sr != null)
+		{
+			final String userFullname = Services.get(IUserDAO.class).retrieveUserFullname(sr);
+			if (!Check.isEmpty(userFullname))
+			{
+				sb.append(userFullname).append(" ");
+			}
+		}
+		//
+		index = po.get_ColumnIndex("C_BPartner_ID");
+		if (index != -1)
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(po.get_ValueAsInt(index));
+			if (bpartnerId != null)
+			{
+				final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerName(bpartnerId);
+				sb.append(bpartnerName).append(" ");
+			}
+		}
+		return sb.toString();
+	}
 
 	/**
 	 * Display.
-	 * 
+	 *
 	 * @param index index of table Fill Editors
 	 */
-	public void display(int index)
+	public void display(final int index)
 	{
 		log.debug("Index=" + index);
 		m_activity = resetDisplay(index);
@@ -373,53 +443,47 @@ public class WFActivity extends CPanel
 		}
 
 		// Display Activity
-		fNode.setText(m_activity.getNodeName());
-		fDescription.setText(m_activity.getNodeDescription());
-		fHelp.setText(m_activity.getNodeHelp());
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		fNode.setText(m_activity.getNode().getName().translate(adLanguage));
+		fDescription.setText(m_activity.getNode().getDescription().translate(adLanguage));
+		fHelp.setText(m_activity.getNode().getHelp().translate(adLanguage));
 		//
-		fHistory.setText(m_activity.getHistoryHTML());
+		fHistory.setText(getHistoryHTML(m_activity));
 
 		// User Actions
-		MWFNode node = m_activity.getNode();
-		if (MWFNode.ACTION_UserChoice.equals(node.getAction()))
+		final WFNode node = m_activity.getNode();
+		if (WFNodeAction.UserChoice.equals(node.getAction()))
 		{
-			if (m_column == null)
+			final ReferenceId dt = node.getDocumentColumnValueType();
+			if (dt.getRepoId() == DisplayType.YesNo)
 			{
-				m_column = node.getColumn();
+				final ValueNamePair[] values = MRefList.getList(Env.getCtx(), 319, false);        // _YesNo
+				fAnswerList.setModel(new DefaultComboBoxModel(values));
+				fAnswerList.setVisible(true);
 			}
-			if (m_column != null && m_column.get_ID() != 0)
+			else if (dt.getRepoId() == DisplayType.List)
 			{
-				int dt = m_column.getAD_Reference_ID();
-				if (dt == DisplayType.YesNo)
-				{
-					ValueNamePair[] values = MRefList.getList(Env.getCtx(), 319, false);		// _YesNo
-					fAnswerList.setModel(new DefaultComboBoxModel(values));
-					fAnswerList.setVisible(true);
-				}
-				else if (dt == DisplayType.List)
-				{
-					ValueNamePair[] values = MRefList.getList(Env.getCtx(), m_column.getAD_Reference_Value_ID(), false);
-					fAnswerList.setModel(new DefaultComboBoxModel(values));
-					fAnswerList.setVisible(true);
-				}
-				else
-				// other display types come here
-				{
-					fAnswerText.setText("");
-					fAnswerText.setVisible(true);
-				}
+				final ValueNamePair[] values = MRefList.getList(Env.getCtx(), node.getDocumentColumnValueReferenceId().getRepoId(), false);
+				fAnswerList.setModel(new DefaultComboBoxModel(values));
+				fAnswerList.setVisible(true);
+			}
+			else
+			// other display types come here
+			{
+				fAnswerText.setText("");
+				fAnswerText.setVisible(true);
 			}
 		}
 		// --
-		else if (MWFNode.ACTION_UserWindow.equals(node.getAction())
-				|| MWFNode.ACTION_UserForm.equals(node.getAction()))
+		else if (WFNodeAction.UserWindow.equals(node.getAction())
+				|| WFNodeAction.UserForm.equals(node.getAction()))
 		{
-			fAnswerButton.setText(node.getName());
-			fAnswerButton.setToolTipText(node.getDescription());
+			fAnswerButton.setText(node.getName().getDefaultValue());
+			fAnswerButton.setToolTipText(node.getDescription().getDefaultValue());
 			fAnswerButton.setVisible(true);
 		}
 		/*
-		 * else if (MWFNode.ACTION_UserWorkbench.equals(node.getAction())) log.error("Workflow Action not implemented yet");
+		 * else if (WFNodeAction.UserWorkbench.equals(node.getAction())) log.error("Workflow Action not implemented yet");
 		 */
 		else
 		{
@@ -428,15 +492,66 @@ public class WFActivity extends CPanel
 
 		statusBar.setStatusDB((index + 1) + "/" + m_activities.length);
 		statusBar.setStatusLine(msgBL.getMsg(Env.getCtx(), "WFActivities"));
-	}	// display
+	}    // display
+
+	/**************************************************************************
+	 * Get Process Activity (Event) History
+	 *
+	 * @return history
+	 */
+	private static String getHistoryHTML(final MWFActivity activity)
+	{
+		final SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.DateTime);
+		final StringBuilder sb = new StringBuilder();
+		final MWFEventAudit[] events = MWFEventAudit.get(activity.getCtx(), activity.getAD_WF_Process_ID(), ITrx.TRXNAME_None);
+		for (final MWFEventAudit audit : events)
+		{
+			// sb.append("<p style=\"width:400\">");
+			sb.append("<p>");
+			sb.append(format.format(audit.getCreated()))
+					.append(" ")
+					.append(getHTMLpart("b", audit.getAD_WF_Node().getName()))
+					.append(": ")
+					.append(getHTMLpart(null, audit.getDescription()))
+					.append(getHTMLpart("i", audit.getTextMsg()));
+			sb.append("</p>");
+		}
+		return sb.toString();
+	}    // getHistory
+
+	/**
+	 * Get HTML part
+	 *
+	 * @param tag     HTML tag
+	 * @param content content
+	 * @return <tag>content</tag>
+	 */
+	private static StringBuilder getHTMLpart(@Nullable final String tag, final String content)
+	{
+		final StringBuilder sb = new StringBuilder();
+		if (content == null || content.length() == 0)
+		{
+			return sb;
+		}
+		if (tag != null && tag.length() > 0)
+		{
+			sb.append("<").append(tag).append(">");
+		}
+		sb.append(content);
+		if (tag != null && tag.length() > 0)
+		{
+			sb.append("</").append(tag).append(">");
+		}
+		return sb;
+	}    // getHTMLpart
 
 	/**
 	 * Reset Display
-	 * 
+	 *
 	 * @param selIndex select index
 	 * @return selected activity
 	 */
-	private MWFActivity resetDisplay(int selIndex)
+	private MWFActivity resetDisplay(final int selIndex)
 	{
 		fAnswerText.setVisible(false);
 		fAnswerList.setVisible(false);
@@ -447,9 +562,8 @@ public class WFActivity extends CPanel
 		fForward.setValue(null);
 		fForward.setEnabled(selIndex >= 0);
 		//
-		statusBar.setStatusDB(String.valueOf(selIndex + 1) + "/" + m_activities.length);
+		statusBar.setStatusDB((selIndex + 1) + "/" + m_activities.length);
 		m_activity = null;
-		m_column = null;
 		if (m_activities.length > 0)
 		{
 			if (selIndex >= 0 && selIndex < m_activities.length)
@@ -468,31 +582,31 @@ public class WFActivity extends CPanel
 			statusBar.setStatusLine(msgBL.getMsg(Env.getCtx(), "WFNoActivities"));
 		}
 		return m_activity;
-	}	// resetDisplay
+	}    // resetDisplay
 
 	/**
 	 * Selection Listener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
-	public void valueChanged(ListSelectionEvent e)
+	public void valueChanged(final ListSelectionEvent e)
 	{
-		int index = selTable.getSelectedRow();
+		final int index = selTable.getSelectedRow();
 		if (index >= 0)
 		{
 			display(index);
 		}
-	}	// valueChanged
+	}    // valueChanged
 
 	/**
 	 * Action Listener
-	 * 
+	 *
 	 * @param e event
 	 * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent e)
 	{
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
@@ -510,7 +624,7 @@ public class WFActivity extends CPanel
 		}
 		//
 		this.setCursor(Cursor.getDefaultCursor());
-	}	// actionPerformed
+	}    // actionPerformed
 
 	/**
 	 * Zoom
@@ -523,7 +637,7 @@ public class WFActivity extends CPanel
 			return;
 		}
 		AEnv.zoom(m_activity.getAD_Table_ID(), m_activity.getRecord_ID());
-	}	// cmd_zoom
+	}    // cmd_zoom
 
 	/**
 	 * Answer Button
@@ -536,14 +650,14 @@ public class WFActivity extends CPanel
 			return;
 		}
 		//
-		MWFNode node = m_activity.getNode();
-		if (MWFNode.ACTION_UserWindow.equals(node.getAction()))
+		final WFNode node = m_activity.getNode();
+		if (WFNodeAction.UserWindow.equals(node.getAction()))
 		{
-			AdWindowId AD_Window_ID = AdWindowId.ofRepoId(node.getAD_Window_ID());		// Explicit Window
-			String ColumnName = m_activity.getPO().get_TableName() + "_ID";
-			int Record_ID = m_activity.getRecord_ID();
-			MQuery query = MQuery.getEqualQuery(ColumnName, Record_ID);
-			boolean IsSOTrx = m_activity.isSOTrx();
+			final AdWindowId AD_Window_ID = node.getAdWindowId();        // Explicit Window
+			final String ColumnName = m_activity.getPO().get_TableName() + "_ID";
+			final int Record_ID = m_activity.getRecord_ID();
+			final MQuery query = MQuery.getEqualQuery(ColumnName, Record_ID);
+			final boolean IsSOTrx = m_activity.isSOTrx();
 			//
 			log.info("Zoom to AD_Window_ID=" + AD_Window_ID
 					+ " - " + query + " (IsSOTrx=" + IsSOTrx + ")");
@@ -556,9 +670,10 @@ public class WFActivity extends CPanel
 			AEnv.showCenterScreen(frame);
 			frame = null;
 		}
-		else if (MWFNode.ACTION_UserForm.equals(node.getAction()))
+		else if (WFNodeAction.UserForm.equals(node.getAction()))
 		{
-			final I_AD_Form form = node.getAD_Form();
+			final int adFormId = node.getAdFormId();
+			final I_AD_Form form = InterfaceWrapperHelper.loadOutOfTrx(adFormId, I_AD_Form.class);
 			final FormFrame ff = new FormFrame();
 			if (ff.openForm(form))
 			{
@@ -573,15 +688,15 @@ public class WFActivity extends CPanel
 			}
 		}
 		/*
-		 * else if (MWFNode.ACTION_UserWorkbench.equals(node.getAction())) {
-		 * 
+		 * else if (WFNodeAction.UserWorkbench.equals(node.getAction())) {
+		 *
 		 * }
 		 */
 		else
 		{
 			log.error("No User Action:" + node.getAction());
 		}
-	}	// cmd_button
+	}    // cmd_button
 
 	/**
 	 * Save
@@ -593,49 +708,42 @@ public class WFActivity extends CPanel
 		{
 			return;
 		}
-		int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
-		String textMsg = fTextMsg.getText();
+		final UserId userId = Env.getLoggedUserId();
+		final String textMsg = fTextMsg.getText();
 		//
-		MWFNode node = m_activity.getNode();
+		final WFNode node = m_activity.getNode();
 
-		Object forward = fForward.getValue();
+		final Object forward = fForward.getValue();
 
 		// ensure activity is ran within a transaction - [ 1953628 ]
-		Trx trx = Trx.get(Trx.createTrxName("FWFA"), true);
+		final Trx trx = Trx.get(Trx.createTrxName("FWFA"), true);
 		m_activity.set_TrxName(trx.getTrxName());
 
 		if (forward != null)
 		{
-			log.info("Forward to " + forward);
-			int fw = ((Integer)forward).intValue();
-			if (fw == AD_User_ID || fw == 0)
+			log.info("Forward to {}", forward);
+			final UserId forwardToId = UserId.ofRepoIdOrNullIfSystem((Integer)forward);
+			if (forwardToId == null || UserId.equals(userId, forwardToId))
 			{
-				log.error("Forward User=" + fw);
+				log.error("Forward User={}", forwardToId);
 				trx.rollback();
 				trx.close();
 				return;
 			}
-			if (!m_activity.forwardTo(fw, textMsg))
+			else
 			{
-				ADialog.error(m_WindowNo, this, "CannotForward");
-				trx.rollback();
-				trx.close();
-				return;
+				m_activity.forwardTo(forwardToId, textMsg);
 			}
 		}
 		// User Choice - Answer
-		else if (MWFNode.ACTION_UserChoice.equals(node.getAction()))
+		else if (WFNodeAction.UserChoice.equals(node.getAction()))
 		{
-			if (m_column == null)
-			{
-				m_column = node.getColumn();
-			}
 			// Do we have an answer?
-			int dt = m_column.getAD_Reference_ID();
+			final ReferenceId dt = node.getDocumentColumnValueType();
 			String value = fAnswerText.getText();
-			if (dt == DisplayType.YesNo || dt == DisplayType.List)
+			if (dt.getRepoId() == DisplayType.YesNo || dt.getRepoId() == DisplayType.List)
 			{
-				ValueNamePair pp = (ValueNamePair)fAnswerList.getSelectedItem();
+				final ValueNamePair pp = (ValueNamePair)fAnswerList.getSelectedItem();
 				value = pp.getValue();
 			}
 			if (value == null || value.length() == 0)
@@ -646,14 +754,14 @@ public class WFActivity extends CPanel
 				return;
 			}
 			//
-			log.info("Answer=" + value + " - " + textMsg);
+			log.info("Answer={}" + value + " - " + textMsg);
 			try
 			{
-				m_activity.setUserChoice(AD_User_ID, value, dt, textMsg);
+				m_activity.setUserChoice(userId, value, dt.getRepoId(), textMsg);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
-				log.error(node.getName(), e);
+				log.error(node.getName().getDefaultValue(), e);
 				ADialog.error(m_WindowNo, this, "Error", e.toString());
 				trx.rollback();
 				trx.close();
@@ -667,11 +775,11 @@ public class WFActivity extends CPanel
 			try
 			{
 				// ensure activity is ran within a transaction
-				m_activity.setUserConfirmation(AD_User_ID, textMsg);
+				m_activity.setUserConfirmation(userId, textMsg);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
-				log.error(node.getName(), e);
+				log.error(node.getName().getDefaultValue(), e);
 				ADialog.error(m_WindowNo, this, "Error", e.toString());
 				trx.rollback();
 				trx.close();
@@ -686,6 +794,6 @@ public class WFActivity extends CPanel
 		// Next
 		loadActivities();
 		display(-1);
-	}	// cmd_OK
+	}    // cmd_OK
 
-}	// WFActivity
+}    // WFActivity

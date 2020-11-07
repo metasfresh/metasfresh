@@ -16,77 +16,30 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Node_Para;
 
+import java.sql.ResultSet;
+import java.util.Properties;
 
-/**
- *	Workflow Node Process Parameter Model
- *	
- *  @author Jorg Janke
- *  @version $Id: MWFNodePara.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
- */
+@Deprecated
 public class MWFNodePara extends X_AD_WF_Node_Para
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4132254339643230238L;
 
-
-	/**
-	 * 	Get Parameters for a node
-	 *	@param ctx context
-	 *	@param AD_WF_Node_ID node
-	 *	@return array of parameters
-	 */
-	public static MWFNodePara[] getParameters (Properties ctx, int AD_WF_Node_ID)
+	public MWFNodePara(Properties ctx, int id, String trxName)
 	{
-		
-		List<MWFNodePara> list = new Query(ctx, Table_Name, "AD_WF_Node_ID=?", null)
-			.setParameters(new Object[]{AD_WF_Node_ID})
-			.list(MWFNodePara.class);
-		MWFNodePara[] retValue = new MWFNodePara[list.size ()];
-		list.toArray (retValue);
-		return retValue;
-	}	//	getParameters
-	
-	
-	/**************************************************************************
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param id id
-	 *	@param trxName transaction
-	 */
-	public MWFNodePara (Properties ctx, int id, String trxName)
-	{
-		super (ctx, id, trxName);
-	}	//	MWFNodePara
+		super(ctx, id, trxName);
+	}
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
-	public MWFNodePara (Properties ctx, ResultSet rs, String trxName)
+	public MWFNodePara(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MWFNodePara
-	
-	/**
-	 * 	Get Attribute Name.
-	 * 	If not set - retrieve it
-	 *	@return attribute name
-	 */
+	}
+
 	@Override
-	public String getAttributeName ()
+	public String getAttributeName()
 	{
-		String an = super.getAttributeName ();
+		String an = super.getAttributeName();
 		if (an == null || an.length() == 0 && getAD_Process_Para_ID() > 0)
 		{
 			an = getAD_Process_Para().getColumnName();
@@ -94,35 +47,5 @@ public class MWFNodePara extends X_AD_WF_Node_Para
 			save();
 		}
 		return an;
-	}	//	getAttributeName
-	
-	/**
-	 * 	Get Display Type
-	 *	@return display type
-	 */
-	public int getDisplayType()
-	{
-		return getAD_Process_Para().getAD_Reference_ID();
-	}	//	getDisplayType
-
-	/**
-	 * 	Is Mandatory
-	 *	@return true if mandatory
-	 */
-	public boolean isMandatory()
-	{
-		return getAD_Process_Para().isMandatory();
-	}	//	isMandatory
-	
-	/**
-	 * 	Set AD_Process_Para_ID
-	 *	@param AD_Process_Para_ID id
-	 */
-	@Override
-	public void setAD_Process_Para_ID (int AD_Process_Para_ID)
-	{
-		super.setAD_Process_Para_ID (AD_Process_Para_ID);
-		setAttributeName(null);
 	}
-	
-}	//	MWFNodePara
+}

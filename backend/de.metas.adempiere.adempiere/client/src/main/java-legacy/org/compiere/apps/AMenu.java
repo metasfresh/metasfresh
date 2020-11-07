@@ -79,7 +79,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
 import org.compiere.util.Splash;
-import org.compiere.wf.api.IADWorkflowBL;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Form;
@@ -98,7 +99,7 @@ import de.metas.util.Services;
  *
  * @author Colin Rooney (croo) RFE#1670185 restrict access to info queries
  * @author victor.perez@e-evolution.com
- * @see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
+ * @see [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
  *
  */
 public final class AMenu extends CFrame
@@ -751,22 +752,17 @@ public final class AMenu extends CFrame
 		}
 	}	// updateInfo
 
-	/*************************************************************************
-	 * Start Workflow Activity
-	 *
-	 * @param AD_Workflow_ID id
-	 */
-	protected void startWorkFlow(final int AD_Workflow_ID)
+	protected void startWorkFlow(final WorkflowId workflowId)
 	{
 		final WFPanel wfPanel = new WFPanel(this);
 		// load panel
-		wfPanel.load(AD_Workflow_ID, false);
+		wfPanel.load(workflowId, false);
 		// set this on true in order use the simplified form
 		wfPanel.setSimpleWorkflowWindow(true);
 
 		// create the frame
 		final FormFrame ff = new FormFrame();
-		ff.setTitle(Services.get(IMsgBL.class).getMsg(m_ctx, "WorkflowPanel") + " - " + Services.get(IADWorkflowBL.class).getWorkflowName(AD_Workflow_ID));
+		ff.setTitle(Services.get(IMsgBL.class).getMsg(m_ctx, "WorkflowPanel") + " - " + Services.get(IADWorkflowBL.class).getWorkflowName(workflowId));
 		ff.setIconImage(Images.getImage2("mWorkFlow"));
 
 		wfPanel.init(m_WindowNo, ff);

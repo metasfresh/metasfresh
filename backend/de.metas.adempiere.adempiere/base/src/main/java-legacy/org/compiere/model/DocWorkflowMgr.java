@@ -25,12 +25,5 @@ package org.compiere.model;
  */
 public interface DocWorkflowMgr
 {
-	/**
-	 * 	Process Document Value Workflow
-	 *	@param document document
-	 *	@param AD_Table_ID table
-	 *	@return true if WF started
-	 */
-	public boolean process (PO document);
-	
-}	//	DocWorkflowMgr
+	void fireDocValueWorkflows(PO document);
+}

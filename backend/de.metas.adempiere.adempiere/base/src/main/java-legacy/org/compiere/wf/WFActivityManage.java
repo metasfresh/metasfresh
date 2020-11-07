@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.wf;
 
+import de.metas.workflow.WFResponsible;
+import de.metas.workflow.WFResponsibleId;
 import org.compiere.process.StateEngine;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -23,6 +25,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import de.metas.workflow.service.IADWorkflowDAO;
 
 /**
  *	Manage Workflow Activity
@@ -81,13 +84,13 @@ public class WFActivityManage extends JavaProcess
 		if (p_IsAbort)
 		{
 			String msg = user.getName() + ": Abort";
-			activity.setTextMsg(msg);
+			activity.addTextMsg(msg);
 			activity.setAD_User_ID(getAD_User_ID());
 			// 2007-06-14, matthiasO.
 			// Set the 'processed'-flag when an activity is aborted; not setting this flag
 			// will leave the activity in an "unmanagable" state
 			activity.setProcessed(true);
-			activity.setWFState(StateEngine.STATE_Aborted);
+			activity.changeWFStateTo(StateEngine.STATE_Aborted);
 			return msg;
 		}
 		String msg = null;
@@ -97,16 +100,17 @@ public class WFActivityManage extends JavaProcess
 			I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), activity.getAD_User_ID());
 			I_AD_User to = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), p_AD_User_ID);
 			msg = user.getName() + ": " + from.getName() + " -> " + to.getName();
-			activity.setTextMsg(msg);
+			activity.addTextMsg(msg);
 			activity.setAD_User_ID(p_AD_User_ID);
 		}
 		//	Change Responsible
 		if (p_AD_WF_Responsible_ID != 0 && activity.getAD_WF_Responsible_ID() != p_AD_WF_Responsible_ID)
 		{
-			MWFResponsible from = MWFResponsible.get(getCtx(), activity.getAD_WF_Responsible_ID());
-			MWFResponsible to = MWFResponsible.get(getCtx(), p_AD_WF_Responsible_ID);
+			final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+			WFResponsible from = workflowDAO.getWFResponsibleById(WFResponsibleId.ofRepoId(activity.getAD_WF_Responsible_ID()));
+			WFResponsible to = workflowDAO.getWFResponsibleById(WFResponsibleId.ofRepoId(p_AD_WF_Responsible_ID));
 			String msg1 = user.getName() + ": " + from.getName() + " -> " + to.getName();
-			activity.setTextMsg(msg1);
+			activity.addTextMsg(msg1);
 			activity.setAD_WF_Responsible_ID(p_AD_WF_Responsible_ID);
 			if (msg == null)
 				msg = msg1;

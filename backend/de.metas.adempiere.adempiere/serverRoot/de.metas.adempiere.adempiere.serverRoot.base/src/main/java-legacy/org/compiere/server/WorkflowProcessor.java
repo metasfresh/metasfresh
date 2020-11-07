@@ -16,26 +16,6 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import java.io.File;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Set;
-
-import org.compiere.model.MClient;
-import org.compiere.model.PO;
-import org.compiere.process.StateEngine;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.compiere.wf.MWFActivity;
-import org.compiere.wf.MWFNode;
-import org.compiere.wf.MWFProcess;
-import org.compiere.wf.MWFResponsible;
-import org.compiere.wf.MWorkflowProcessor;
-import org.compiere.wf.MWorkflowProcessorLog;
-
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -46,6 +26,30 @@ import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.DBException;
+import org.compiere.model.MClient;
+import org.compiere.model.PO;
+import org.compiere.process.StateEngine;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.compiere.wf.MWFActivity;
+import org.compiere.wf.MWFProcess;
+import org.compiere.wf.MWorkflowProcessor;
+import org.compiere.wf.MWorkflowProcessorLog;
+import de.metas.workflow.WFNode;
+import de.metas.workflow.WFResponsible;
+import de.metas.workflow.WFResponsibleId;
+import de.metas.workflow.WFResponsibleType;
+import de.metas.workflow.service.IADWorkflowDAO;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Workflow Processor
@@ -121,7 +125,7 @@ public class WorkflowProcessor extends AdempiereServer
 			while (rs.next())
 			{
 				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
-				activity.setWFState(StateEngine.STATE_Completed);
+				activity.changeWFStateTo(StateEngine.STATE_Completed);
 				// saves and calls MWFProcess.checkActivities();
 				count++;
 			}
@@ -152,23 +156,24 @@ public class WorkflowProcessor extends AdempiereServer
 				+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID AND wf.AD_WorkflowProcessor_ID=?"
 				+ " AND wfn.DynPriorityUnit IS NOT NULL AND wfn.DynPriorityChange IS NOT NULL)";
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		int count = 0;
 		int countEMails = 0;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, m_model.getAD_WorkflowProcessor_ID());
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
+				MWFActivity activity = new MWFActivity(getCtx(), rs);
 				if (activity.getDynPriorityStart() == 0)
 				{
 					activity.setDynPriorityStart(activity.getPriority());
 				}
 				long ms = System.currentTimeMillis() - activity.getCreated().getTime();
-				MWFNode node = activity.getNode();
-				int prioDiff = node.calculateDynamicPriority((int)(ms / 1000));
+				WFNode node = activity.getNode();
+				int prioDiff = calculateDynamicPriority(node, (int)(ms / 1000));
 				activity.setPriority(activity.getDynPriorityStart() + prioDiff);
 				activity.save();
 				count++;
@@ -177,15 +182,37 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 		catch (Exception e)
 		{
-			log.error(sql, e);
+			throw new DBException(e, sql);
 		}
 		finally
 		{
-			DB.close(pstmt);
+			DB.close(rs, pstmt);
 		}
 
 		m_summary.append("DynPriority #").append(count).append(" - ");
 	}	// setPriority
+
+	/**
+	 * Calculate Dynamic Priority
+	 *
+	 * @param seconds second after created
+	 * @return dyn prio
+	 */
+	private static int calculateDynamicPriority(final WFNode wfNode, final int seconds)
+	{
+		if (seconds == 0
+				|| wfNode.getDynPriorityUnitDuration().isZero()
+				|| wfNode.getDynPriorityChange().signum() == 0)
+		{
+			return 0;
+		}
+
+		final BigDecimal change = new BigDecimal(seconds)
+				.divide(BigDecimal.valueOf(wfNode.getDynPriorityUnitDuration().getSeconds()), BigDecimal.ROUND_DOWN)
+				.multiply(wfNode.getDynPriorityChange());
+		return change.intValue();
+	}    //	calculateDynamicPriority
+
 
 	/**
 	 * Send Alerts
@@ -374,9 +401,9 @@ public class WorkflowProcessor extends AdempiereServer
 			m_client = MClient.get(getCtx(), activity.getAD_Client_ID());
 		}
 
-		MWFProcess process = new MWFProcess(getCtx(), activity.getAD_WF_Process_ID(), null);
+		MWFProcess process = new MWFProcess(getCtx(), activity.getAD_WF_Process_ID());
 
-		String subjectVar = activity.getNode().getName();
+		String subjectVar = activity.getNode().getName().getDefaultValue();
 		String message = activity.getTextMsg();
 		if (message == null || message.length() == 0)
 		{
@@ -421,17 +448,18 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 
 		// To Activity Responsible
-		MWFResponsible responsible = MWFResponsible.get(getCtx(), activity.getAD_WF_Responsible_ID());
-		counter += sendAlertToResponsible(responsible, list, process,
-				subject, message, pdf);
+		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+		final WFResponsibleId activityResponsibleId = WFResponsibleId.ofRepoId(activity.getAD_WF_Responsible_ID());
+		WFResponsible responsible = workflowDAO.getWFResponsibleById(activityResponsibleId);
+		counter += sendAlertToResponsible(responsible, list, process, subject, message, pdf);
 
 		// To Process Responsible
+		final WFResponsibleId processResponsibleId = WFResponsibleId.ofRepoId(process.getAD_WF_Responsible_ID());
 		if (toProcess
-				&& process.getAD_WF_Responsible_ID() != activity.getAD_WF_Responsible_ID())
+				&& !WFResponsibleId.equals(processResponsibleId, activityResponsibleId))
 		{
-			responsible = MWFResponsible.get(getCtx(), process.getAD_WF_Responsible_ID());
-			counter += sendAlertToResponsible(responsible, list, process,
-					subject, message, pdf);
+			responsible = workflowDAO.getWFResponsibleById(processResponsibleId);
+			counter += sendAlertToResponsible(responsible, list, process, subject, message, pdf);
 		}
 
 		// Processor SuperVisor
@@ -460,15 +488,15 @@ public class WorkflowProcessor extends AdempiereServer
 	 * @return number of mail sent
 	 */
 	private int sendAlertToResponsible(
-			MWFResponsible responsible,
+			WFResponsible responsible,
 			final ArrayList<UserId> alreadyNotifiedUserIds,
 			MWFProcess process,
 			String subject,
 			String message,
 			File pdf)
 	{
-		final UserId responsibleUserId = responsible.getAD_User_ID() > 0 ? UserId.ofRepoId(responsible.getAD_User_ID()) : null;
-		final RoleId responsibleRoleId = responsible.getAD_Role_ID() > 0 ? RoleId.ofRepoId(responsible.getAD_Role_ID()) : null;
+		// final UserId responsibleUserId = responsible.getUserId();
+		// final RoleId responsibleRoleId = responsible.getRoleId();
 
 		int counter = 0;
 		if (responsible.isInvoker())
@@ -476,18 +504,17 @@ public class WorkflowProcessor extends AdempiereServer
 			// nothing
 		}
 		// Human
-		else if (MWFResponsible.RESPONSIBLETYPE_Human.equals(responsible.getResponsibleType())
-				&& responsibleUserId != null
-				&& !alreadyNotifiedUserIds.contains(responsibleUserId))
+		else if (responsible.isHuman()
+				&& !alreadyNotifiedUserIds.contains(responsible.getUserId()))
 		{
-			if (m_client.sendEMail(responsibleUserId, subject, message, pdf))
+			if (m_client.sendEMail(responsible.getUserId(), subject, message, pdf))
 			{
 				counter++;
 			}
-			alreadyNotifiedUserIds.add(responsibleUserId);
+			alreadyNotifiedUserIds.add(responsible.getUserId());
 		}
 		// Org of the Document
-		else if (MWFResponsible.RESPONSIBLETYPE_Organization.equals(responsible.getResponsibleType()))
+		else if (responsible.getType() == WFResponsibleType.Organization)
 		{
 			PO document = process.getPO();
 			if (document != null)
@@ -506,10 +533,9 @@ public class WorkflowProcessor extends AdempiereServer
 			}
 		}
 		// Role
-		else if (MWFResponsible.RESPONSIBLETYPE_Role.equals(responsible.getResponsibleType())
-				&& responsibleRoleId != null)
+		else if (responsible.isRole())
 		{
-			final RoleId roleId = RoleId.ofRepoId(responsible.getAD_Role_ID());
+			final RoleId roleId = responsible.getRoleId();
 			final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
 			for (final UserId adUserId : allRoleUserIds)
 			{

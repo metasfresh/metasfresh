@@ -88,7 +88,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	}
 
 	@Override
-	public boolean processIt(final String action) throws Exception
+	public boolean processIt(final String action)
 	{
 		processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, action);

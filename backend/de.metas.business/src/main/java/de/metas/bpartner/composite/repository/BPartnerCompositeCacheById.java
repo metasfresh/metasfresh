@@ -2,6 +2,7 @@ package de.metas.bpartner.composite.repository;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -60,7 +61,7 @@ final class BPartnerCompositeCacheById
 
 	public Collection<BPartnerComposite> getAllOrLoad(
 			@NonNull final Collection<BPartnerId> bpartnerIds,
-			@NonNull final Function<Collection<BPartnerId>, Map<BPartnerId, BPartnerComposite>> loader)
+			@NonNull final Function<Set<BPartnerId>, Map<BPartnerId, BPartnerComposite>> loader)
 	{
 		return cache.getAllOrLoad(bpartnerIds, loader);
 	}

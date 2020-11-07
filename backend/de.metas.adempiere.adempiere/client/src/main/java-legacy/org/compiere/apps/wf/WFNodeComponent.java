@@ -31,10 +31,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.border.Border;
 
+import de.metas.workflow.WFNode;
+import de.metas.workflow.WFNodeId;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.wf.MWFNode;
 
 /**
  *	Graphical Work Flow Node.
@@ -43,7 +45,7 @@ import org.compiere.wf.MWFNode;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: WFNode.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
-public class WFNode extends JComponent
+class WFNodeComponent extends JComponent
 {
 	/**
 	 * 
@@ -55,27 +57,26 @@ public class WFNode extends JComponent
 	 * 	Create WF Node
 	 * 	@param node model
 	 */
-	public WFNode (MWFNode node)
+	public WFNodeComponent(@NonNull final WorkflowNodeModel node)
 	{
-		super();
 		setOpaque(false);
 		m_node = node;
-		setName(m_node.getName());
+		setName(m_node.getName().getDefaultValue());
 		m_icon = new WFIcon(node.getAction());
-		m_name = m_node.getName(true);
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		m_name = m_node.getName().translate(adLanguage);
 		setBorder(null);
 		
 		//	Tool Tip
-		String description = node.getDescription(true);
+		String description = node.getDescription().translate(adLanguage);
 		if (description != null && description.length() > 0)
 			setToolTipText(description);
 		else
-			setToolTipText(node.getName(true));
+			setToolTipText(node.getName().translate(adLanguage));
 		
 		//	Location
 		setBounds(node.getXPosition(), node.getYPosition(), s_size.width, s_size.height);
-		log.info(node.getAD_WF_Node_ID() 
-			+ "," + node.getName() + " - " + getLocation());
+		log.info(node.getId() + "," + node.getName() + " - " + getLocation());
 		setSelected(false);
 		setVisited(false);
 	}	//	WFNode
@@ -89,10 +90,10 @@ public class WFNode extends JComponent
 	/**	Size of the Node				*/
 	private static Dimension	s_size = new Dimension (150, 70);
 	/**	Logger			*/
-	private static Logger log = LogManager.getLogger(WFNode.class);
+	private static Logger log = LogManager.getLogger(WFNodeComponent.class);
 	
 	/**	ID						*/
-	private MWFNode 		m_node = null;
+	private final WorkflowNodeModel m_node;
 	/**	Icon					*/
 	private WFIcon			m_icon = null;
 	/** Name to paint			*/
@@ -161,7 +162,7 @@ public class WFNode extends JComponent
 	 */
 	public int getAD_Client_ID()
 	{
-		return m_node.getAD_Client_ID();
+		return m_node.getClientId().getRepoId();
 	}	//	getAD_Client_ID
 
 	/**
@@ -172,22 +173,13 @@ public class WFNode extends JComponent
 	{
 		return getAD_Client_ID() == Env.getAD_Client_ID(Env.getCtx());
 	}	//	isEditable
-	
-	
-	/**
-	 * 	Get Node ID
-	 * 	@return Node ID
-	 */
-	public int getAD_WF_Node_ID()
-	{
-		return m_node.getAD_WF_Node_ID();
-	}	//	getAD_WF_Node_ID
 
-	/**
-	 * 	Get Node Model
-	 * 	@return Node Model
-	 */
-	public MWFNode getModel()
+	public WFNodeId getNodeId()
+	{
+		return m_node.getId();
+	}
+
+	public WorkflowNodeModel getModel()
 	{
 		return m_node;
 	}	//	getModel
@@ -200,7 +192,8 @@ public class WFNode extends JComponent
 	public void setLocation (int x, int y)
 	{
 		super.setLocation (x, y);
-		m_node.setPosition(x, y);
+		m_node.setXPosition(x);
+		m_node.setYPosition(y);
 	}
 	
 	/**
@@ -210,7 +203,7 @@ public class WFNode extends JComponent
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("WFNode[");
-		sb.append(getAD_WF_Node_ID()).append("-").append(m_name)
+		sb.append(getNodeId().getRepoId()).append("-").append(m_name)
 			.append(",").append(getBounds())
 			.append("]");
 		return sb.toString();

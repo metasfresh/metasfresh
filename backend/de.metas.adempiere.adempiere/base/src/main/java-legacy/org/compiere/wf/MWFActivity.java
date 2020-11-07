@@ -1,84 +1,33 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.wf;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import de.metas.logging.LogManager;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.util.NumberUtils;
-import de.metas.util.StringUtils;
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxSavepoint;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Process_Para;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_AD_WF_Node_Para;
-import org.compiere.model.MClient;
-import org.compiere.model.MColumn;
-import org.compiere.model.MNote;
-import org.compiere.model.PO;
-import org.compiere.model.Query;
-import org.compiere.model.X_AD_WF_Activity;
-import org.compiere.print.ReportEngine;
-import org.compiere.process.StateEngine;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.Trace;
-import org.compiere.util.Trx;
-import org.compiere.util.Util;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.event.Topic;
-import de.metas.event.Type;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.reflist.ReferenceId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -88,10 +37,62 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
+import de.metas.workflow.WFNode;
+import de.metas.workflow.WFNodeAction;
+import de.metas.workflow.WFNodeEmailRecipient;
+import de.metas.workflow.WFNodeId;
+import de.metas.workflow.WFNodeParameter;
+import de.metas.workflow.WFResponsible;
+import de.metas.workflow.WFResponsibleId;
+import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.With;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_WF_Activity;
+import org.compiere.model.MClient;
+import org.compiere.model.MNote;
+import org.compiere.model.PO;
+import org.compiere.model.X_AD_WF_Activity;
+import org.compiere.print.ReportEngine;
+import org.compiere.process.StateEngine;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import de.metas.workflow.service.IADWorkflowDAO;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Workflow Activity Model.
@@ -101,112 +102,46 @@ import javax.annotation.Nullable;
  * @author Jorg Janke
  * @version $Id: MWFActivity.java,v 1.4 2006/07/30 00:51:05 jjanke Exp $
  */
-public class MWFActivity extends X_AD_WF_Activity implements Runnable
+public class MWFActivity extends X_AD_WF_Activity
 {
 	private static final long serialVersionUID = 2987002047442429221L;
 
 	private static final Logger log = LogManager.getLogger(MWFActivity.class);
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("de.metas.document.UserNotifications", Type.REMOTE);
-	private static final String MSG_NotApproved = "NotApproved";
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
+	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
-	/**
-	 * Get Activities for table/record
-	 *
-	 * @param ctx context
-	 * @param AD_Table_ID table
-	 * @param Record_ID record
-	 * @param activeOnly if true only not processed records are returned
-	 * @return activity
-	 */
-	private static MWFActivity[] get(Properties ctx, int AD_Table_ID, int Record_ID, boolean activeOnly)
-	{
-		ArrayList<Object> params = new ArrayList<>();
-		StringBuffer whereClause = new StringBuffer("AD_Table_ID=? AND Record_ID=?");
-		params.add(AD_Table_ID);
-		params.add(Record_ID);
-		if (activeOnly)
-		{
-			whereClause.append(" AND Processed<>?");
-			params.add(true);
-		}
-		List<MWFActivity> list = new Query(ctx, Table_Name, whereClause.toString(), null)
-				.setParameters(params)
-				.setOrderBy(COLUMNNAME_AD_WF_Activity_ID)
-				.list(MWFActivity.class);
+	private WFNode _node = null;
+	private MWFEventAudit _audit = null;
+	private PO _po = null; // lazy
+	private String m_newValue = null;
+	private MWFProcess _wfProcess = null; // lazy
+	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
 
-		MWFActivity[] retValue = new MWFActivity[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}	// get
-
-	/**
-	 * Get Active Info
-	 *
-	 * @param ctx context
-	 * @param AD_Table_ID table
-	 * @param Record_ID record
-	 * @return activity summary
-	 */
-	public static String getActiveInfo(Properties ctx, int AD_Table_ID, int Record_ID)
-	{
-		MWFActivity[] acts = get(ctx, AD_Table_ID, Record_ID, true);
-		if (acts == null || acts.length == 0)
-		{
-			return null;
-		}
-		//
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < acts.length; i++)
-		{
-			if (i > 0)
-			{
-				sb.append("\n");
-			}
-			MWFActivity activity = acts[i];
-			sb.append(activity.toStringX());
-		}
-		return sb.toString();
-	}	// getActivityInfo
-
-	/**************************************************************************
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param AD_WF_Activity_ID id
-	 * @param trxName transaction
-	 */
-	public MWFActivity(Properties ctx, int AD_WF_Activity_ID, String trxName)
+	public MWFActivity(final Properties ctx, final int AD_WF_Activity_ID, final String trxName)
 	{
 		super(ctx, AD_WF_Activity_ID, trxName);
-		if (AD_WF_Activity_ID == 0)
+		if (is_new())
 		{
-			throw new IllegalArgumentException("Cannot create new WF Activity directly");
+			throw new AdempiereException("Cannot create new WF Activity directly");
 		}
-		m_state = new StateEngine(getWFState());
-	}	// MWFActivity
+	}
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
-	public MWFActivity(Properties ctx, ResultSet rs, String trxName)
+	public MWFActivity(final Properties ctx, final ResultSet rs)
+	{
+		this(ctx, rs, ITrx.TRXNAME_None);
+	}
+
+	@Deprecated
+	public MWFActivity(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-		m_state = new StateEngine(getWFState());
-	}	// MWFActivity
+	}
 
-	/**
-	 * Parent Contructor
-	 *
-	 * @param process process
-	 * @param AD_WF_Node_ID start node
-	 */
-	public MWFActivity(MWFProcess process, int AD_WF_Node_ID)
+	public MWFActivity(
+			@NonNull final MWFProcess process,
+			@NonNull final WFNodeId nodeId)
 	{
-		super(process.getCtx(), 0, process.get_TrxName());
+		super(process.getCtx(), 0, ITrx.TRXNAME_None); // always out-of-trx
 		setAD_WF_Process_ID(process.getAD_WF_Process_ID());
 		setPriority(process.getPriority());
 		// Document Link
@@ -217,97 +152,121 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		setAD_Org_ID(process.getAD_Org_ID());
 		// Status
 		super.setWFState(WFSTATE_NotStarted);
-		m_state = new StateEngine(getWFState());
 		setProcessed(false);
 		// Set Workflow Node
 		setAD_Workflow_ID(process.getAD_Workflow_ID());
-		setAD_WF_Node_ID(AD_WF_Node_ID);
+		setWorkflowNodeAndResetToNotStarted(nodeId);
 		// Node Priority & End Duration
-		MWFNode node = MWFNode.get(getCtx(), AD_WF_Node_ID);
-		int priority = node.getPriority();
+		final WFNode node = getNode();
+		final int priority = node.getPriority();
 		if (priority != 0 && priority != getPriority())
 		{
 			setPriority(priority);
 		}
-		long limitMS = node.getLimitMS();
-		if (limitMS != 0)
+		final Duration durationLimit = node.getDurationLimit();
+		if (!durationLimit.isZero())
 		{
-			setEndWaitTime(new Timestamp(limitMS + System.currentTimeMillis()));
+			final Instant endWaitTime = SystemTime.asInstant().plus(durationLimit);
+			setEndWaitTime(TimeUtil.asTimestamp(endWaitTime));
 		}
 		// Responsible
 		setResponsible(process);
-		save();
+		saveEx();
+
 		//
-		m_audit = new MWFEventAudit(this);
-		m_audit.save();
+		newEventAudit();
+
 		//
-		m_process = process;
-	}	// MWFActivity
+		this._wfProcess = process;
+	}
 
 	/**
-	 * Parent Contructor
-	 *
-	 * @param process process
-	 * @param next_ID start node
 	 * @param lastPO PO from the previously executed node
 	 */
-	public MWFActivity(MWFProcess process, int next_ID, PO lastPO)
+	public MWFActivity(
+			@NonNull final MWFProcess process,
+			@NonNull final WFNodeId nodeId,
+			@Nullable final PO lastPO)
 	{
-		this(process, next_ID);
+		this(process, nodeId);
 		if (lastPO != null)
 		{
 			// Compare if the last PO is the same type and record needed here, if yes, use it
 			if (lastPO.get_Table_ID() == getAD_Table_ID() && lastPO.get_ID() == getRecord_ID())
 			{
-				m_po = lastPO;
+				this._po = lastPO;
+				this._po.set_TrxName(ITrx.TRXNAME_ThreadInherited);
 			}
 		}
 	}
 
-	/** State Machine */
-	private StateEngine m_state = null;
-	/** Workflow Node */
-	private MWFNode m_node = null;
-	/** Transaction */
-	// private Trx m_trx = null;
-	/** Audit */
-	private MWFEventAudit m_audit = null;
-	/** Persistent Object */
-	private PO m_po = null;
-	/** Document Status */
-	private String m_docStatus = null;
-	/** New Value to save in audit */
-	private String m_newValue = null;
-	/** Process */
-	private MWFProcess m_process = null;
-	/** List of email recipients */
-	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
-
-	/**************************************************************************
-	 * Get State
-	 *
-	 * @return state
+	/**
+	 * @return activity summary
 	 */
-	public StateEngine getState()
+	@Nullable
+	public static String getActiveInfo(final int AD_Table_ID, final int Record_ID)
 	{
-		return m_state;
-	}	// getState
+		final ImmutableList<MWFActivity> acts = getActiveActivities(AD_Table_ID, Record_ID);
+		if (acts.isEmpty())
+		{
+			return null;
+		}
+		//
+		final StringBuilder sb = new StringBuilder();
+		for (final MWFActivity activity : acts)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append("\n");
+			}
+			sb.append(activity.toStringX());
+		}
+		return sb.toString();
+	}
+
+	private static ImmutableList<MWFActivity> getActiveActivities(final int AD_Table_ID, final int Record_ID)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_Activity.class)
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_AD_Table_ID, AD_Table_ID)
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_AD_Table_ID, Record_ID)
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_Processed, false)
+				.orderBy(I_AD_WF_Activity.COLUMNNAME_AD_WF_Activity_ID)
+				.create()
+				.listImmutable(MWFActivity.class);
+	}
+
+	@NonNull
+	private MWFProcess getWorkflowProcess()
+	{
+		MWFProcess wfProcess = this._wfProcess;
+		if (wfProcess == null)
+		{
+			wfProcess = this._wfProcess = new MWFProcess(getCtx(), getAD_WF_Process_ID());
+		}
+		return wfProcess;
+	}
+
+	StateEngine getState()
+	{
+		return StateEngine.ofCode(getWFState());
+	}    // getState
+
+	@Override
+	@Deprecated
+	public void setWFState(final String WFState)
+	{
+		changeWFStateTo(WFState);
+	}
 
 	/**
 	 * Set Activity State.
 	 * It also validates the new state and if is valid,
-	 * then create event audit and call {@link MWFProcess#checkActivities(String, PO)}
-	 *
-	 * @param WFState
+	 * then create event audit and call {@link MWFProcess#checkActivities(PO)}
 	 */
-	@Override
-	public void setWFState(String WFState)
+	public void changeWFStateTo(final String WFState)
 	{
-		if (m_state == null)
-		{
-			m_state = new StateEngine(getWFState());
-		}
-		if (m_state.isClosed())
+		if (getState().isClosed())
 		{
 			return;
 		}
@@ -316,138 +275,118 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			return;
 		}
 		//
-		if (m_state.isValidNewState(WFState))
+		if (getState().isValidNewState(WFState))
 		{
-			String oldState = getWFState();
+			final String oldState = getWFState();
 			log.debug(oldState + "->" + WFState + ", Msg=" + getTextMsg());
 			super.setWFState(WFState);
-			m_state = new StateEngine(getWFState());
-			save();			// closed in MWFProcess.checkActivities()
+			saveEx();            // closed in MWFProcess.checkActivities()
 			updateEventAudit();
 
 			// Inform Process
-			if (m_process == null)
-			{
-				m_process = new MWFProcess(getCtx(), getAD_WF_Process_ID(),
-						this.get_TrxName());
-			}
-			m_process.checkActivities(this.get_TrxName(), m_po);
+			final MWFProcess wfProcess = getWorkflowProcess();
+			wfProcess.checkActivities(getPONoLoad());
 		}
 		else
 		{
-			String msg = "Set WFState - Ignored Invalid Transformation - New="
-					+ WFState + ", Current=" + getWFState();
+			final String msg = "Set WFState - Ignored Invalid Transformation - New=" + WFState + ", Current=" + getWFState();
 			log.error(msg);
-			Trace.printStack();
-			setTextMsg(msg);
-			save();
+			addTextMsg(msg);
+			saveEx();
 			// TODO: teo_sarca: throw exception ? please analyze the call hierarchy first
 		}
-	}	// setWFState
+	}    // setWFState
 
 	/**
-	 * Is Activity closed
-	 *
 	 * @return true if closed
 	 */
 	public boolean isClosed()
 	{
-		return m_state.isClosed();
-	}	// isClosed
+		return getState().isClosed();
+	}
 
-	/**************************************************************************
-	 * Update Event Audit
-	 */
 	private void updateEventAudit()
 	{
-		// log.debug("");
-		getEventAudit();
-		m_audit.setTextMsg(getTextMsg());
-		m_audit.setWFState(getWFState());
+		final MWFEventAudit audit = getEventAudit();
+		audit.setTextMsg(getTextMsg());
+		audit.setWFState(getWFState());
 		if (m_newValue != null)
 		{
-			m_audit.setNewValue(m_newValue);
+			audit.setNewValue(m_newValue);
 		}
-		if (m_state.isClosed())
+		if (getState().isClosed())
 		{
-			m_audit.setEventType(MWFEventAudit.EVENTTYPE_ProcessCompleted);
-			long ms = System.currentTimeMillis() - m_audit.getCreated().getTime();
-			m_audit.setElapsedTimeMS(new BigDecimal(ms));
+			audit.setEventType(MWFEventAudit.EVENTTYPE_ProcessCompleted);
+			final long ms = System.currentTimeMillis() - audit.getCreated().getTime();
+			audit.setElapsedTimeMS(new BigDecimal(ms));
 		}
 		else
 		{
-			m_audit.setEventType(MWFEventAudit.EVENTTYPE_StateChanged);
+			audit.setEventType(MWFEventAudit.EVENTTYPE_StateChanged);
 		}
-		m_audit.save();
-	}	// updateEventAudit
+
+		InterfaceWrapperHelper.save(audit);
+	}    // updateEventAudit
 
 	/**
 	 * Get/Create Event Audit
-	 *
-	 * @return event
 	 */
-	public MWFEventAudit getEventAudit()
+	private MWFEventAudit getEventAudit()
 	{
-		if (m_audit != null)
+		MWFEventAudit audit = this._audit;
+		if (audit == null)
 		{
-			return m_audit;
-		}
-		MWFEventAudit[] events = MWFEventAudit.get(getCtx(), getAD_WF_Process_ID(), getAD_WF_Node_ID(), get_TrxName());
-		if (events == null || events.length == 0)
-		{
-			m_audit = new MWFEventAudit(this);
-		}
-		else {
-			m_audit = events[events.length - 1];		// last event
-		}
-		return m_audit;
-	}	// getEventAudit
-
-	/**************************************************************************
-	 * Get Persistent Object in Transaction
-	 *
-	 * @param trxName transaction
-	 * @return po
-	 */
-	private final PO getPO(final String trxName)
-	{
-		if (m_po != null)
-		{
-			if (trxName != null)
+			final MWFEventAudit[] events = MWFEventAudit.get(getCtx(), getAD_WF_Process_ID(), getAD_WF_Node_ID(), ITrx.TRXNAME_None);
+			if (events == null || events.length == 0)
 			{
-				m_po.set_TrxName(trxName);
+				audit = new MWFEventAudit(this);
 			}
-			return m_po;
+			else
+			{
+				audit = events[events.length - 1];        // last event
+			}
+
+			this._audit = audit;
 		}
 
-		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
-		m_po = TableModelLoader.instance.getPO(getCtx(), tableName, getRecord_ID(), trxName);
-		return m_po;
-	}	// getPO
+		return audit;
+	}
 
-	private final PO getPONoLoad()
+	private void newEventAudit()
 	{
-		return m_po;
+		final MWFEventAudit audit = new MWFEventAudit(this);
+		audit.saveEx();
+
+		this._audit = audit;
+	}
+
+	private PO getPONoLoad()
+	{
+		return this._po;
 	}
 
 	/**
 	 * Get Persistent Object
-	 *
-	 * @return po
 	 */
 	public PO getPO()
 	{
-		return getPO(get_TrxName());
-	}	// getPO
+		PO po = this._po;
+		if (po != null)
+		{
+			po.set_TrxName(ITrx.TRXNAME_ThreadInherited);
+			return po;
+		}
+		else
+		{
+			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
+			po = this._po = TableModelLoader.instance.getPO(getCtx(), tableName, getRecord_ID(), ITrx.TRXNAME_ThreadInherited);
+			return po;
+		}
+	}    // getPO
 
 	private IDocument getDocument()
 	{
-		return getDocument(ITrx.TRXNAME_ThreadInherited);
-	}
-
-	private IDocument getDocument(final String trxName)
-	{
-		final PO po = getPO(trxName);
+		final PO po = getPO();
 		if (po == null)
 		{
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
@@ -456,9 +395,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		return Services.get(IDocumentBL.class).getDocument(po);
 	}
 
-	private IDocument getDocumentOrNull(final String trxName)
+	public IDocument getDocumentOrNull()
 	{
-		final PO po = getPO(trxName);
+		final PO po = getPO();
 		if (po == null)
 		{
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
@@ -467,56 +406,51 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		return Services.get(IDocumentBL.class).getDocumentOrNull(po);
 	}
 
-	/**
-	 * Get PO AD_Client_ID
-	 *
-	 * @return client of PO
-	 */
-	public int getPO_AD_Client_ID()
+	Optional<ClientId> getPO_AD_Client_ID()
 	{
 		final PO po = getPO();
-		return po != null ? po.getAD_Client_ID() : -1;
+		return po != null
+				? ClientId.optionalOfRepoId(po.getAD_Client_ID())
+				: Optional.empty();
 	}
 
 	/**
-	 * Get Attribute Value (based on Node) of PO
-	 *
-	 * @return Attribute Value or null
+	 * @return Attribute Value (based on Node) of PO
 	 */
-	public Object getAttributeValue()
+	@Nullable
+	Object getAttributeValue()
 	{
-		MWFNode node = getNode();
+		final WFNode node = getNode();
 		if (node == null)
 		{
 			return null;
 		}
-		int AD_Column_ID = node.getAD_Column_ID();
-		if (AD_Column_ID == 0)
+		final int AD_Column_ID = node.getDocumentColumnId();
+		if (AD_Column_ID <= 0)
 		{
 			return null;
 		}
-		PO po = getPO();
-		if (po.get_ID() == 0)
+		final PO po = getPO();
+		if (po.get_ID() <= 0)
 		{
 			return null;
 		}
 		return po.get_ValueOfColumn(AD_Column_ID);
-	}	// getAttributeValue
+	}    // getAttributeValue
 
 	/**
-	 * Is SO Trx
-	 *
-	 * @return SO Trx or of not found true
+	 * @return SO Trx
 	 */
 	public boolean isSOTrx()
 	{
-		PO po = getPO();
-		if (po.get_ID() == 0)
+		final PO po = getPO();
+		if (po == null || po.get_ID() <= 0)
 		{
 			return true;
 		}
+
 		// Is there a Column?
-		int index = po.get_ColumnIndex("IsSOTrx");
+		final int index = po.get_ColumnIndex("IsSOTrx");
 		if (index < 0)
 		{
 			if (po.get_TableName().startsWith("M_"))
@@ -525,873 +459,757 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			}
 			return true;
 		}
-		// we have a column
-		try
+		else
 		{
-			Boolean IsSOTrx = (Boolean)po.get_Value(index);
-			return IsSOTrx.booleanValue();
+			return po.get_ValueAsBoolean(index);
 		}
-		catch (Exception e)
-		{
-			log.error("", e);
-		}
-		return true;
-	}	// isSOTrx
+	}    // isSOTrx
 
-	/**************************************************************************
-	 * Set AD_WF_Node_ID.
-	 * (Re)Set to Not Started
-	 *
-	 * @param AD_WF_Node_ID now node
-	 */
-	@Override
-	public void setAD_WF_Node_ID(int AD_WF_Node_ID)
+	private void setWorkflowNodeAndResetToNotStarted(@NonNull final WFNodeId nodeId)
 	{
-		if (AD_WF_Node_ID == 0)
-		{
-			throw new IllegalArgumentException("Workflow Node is not defined");
-		}
-		super.setAD_WF_Node_ID(AD_WF_Node_ID);
-		//
+		super.setAD_WF_Node_ID(nodeId.getRepoId());
+
 		if (!WFSTATE_NotStarted.equals(getWFState()))
 		{
 			super.setWFState(WFSTATE_NotStarted);
-			m_state = new StateEngine(getWFState());
 		}
 		if (isProcessed())
 		{
 			setProcessed(false);
 		}
-	}	// setAD_WF_Node_ID
+	}
 
-	/**
-	 * Get WF Node
-	 *
-	 * @return node
-	 */
-	public MWFNode getNode()
+	public WFNode getNode()
 	{
-		if (m_node == null)
+		WFNode node = this._node;
+		if (node == null)
 		{
-			m_node = MWFNode.get(getCtx(), getAD_WF_Node_ID());
+			final WorkflowId workflowId = WorkflowId.ofRepoId(getAD_Workflow_ID());
+			final WFNodeId nodeId = WFNodeId.ofRepoId(getAD_WF_Node_ID());
+
+			final Workflow workflow = Services.get(IADWorkflowDAO.class).getById(workflowId);
+			node = workflow.getNodeById(nodeId);
 		}
-		return m_node;
-	}	// getNode
+		return node;
+	}
 
-	/**
-	 * Get WF Node Name
-	 *
-	 * @return translated node name
-	 */
-	public String getNodeName()
+	void addTextMsg(@Nullable final String textMsg)
 	{
-		return getNode().getName(true);
-	}	// getNodeName
-
-	/**
-	 * Get Node Description
-	 *
-	 * @return translated node description
-	 */
-	public String getNodeDescription()
-	{
-		return getNode().getDescription(true);
-	}	// getNodeDescription
-
-	/**
-	 * Get Node Help
-	 *
-	 * @return translated node help
-	 */
-	public String getNodeHelp()
-	{
-		return getNode().getHelp(true);
-	}	// getNodeHelp
-
-	/**
-	 * Is this an user Approval step?
-	 *
-	 * @return true if User Approval
-	 */
-	public boolean isUserApproval()
-	{
-		return getNode().isUserApproval();
-	}	// isNodeApproval
-
-	/**
-	 * Is this a Manual user step?
-	 *
-	 * @return true if Window/Form/..
-	 */
-	public boolean isUserManual()
-	{
-		return getNode().isUserManual();
-	}	// isUserManual
-
-	/**
-	 * Is this a user choice step?
-	 *
-	 * @return true if User Choice
-	 */
-	public boolean isUserChoice()
-	{
-		return getNode().isUserChoice();
-	}	// isUserChoice
-
-	/**
-	 * Set Text Msg (add to existing)
-	 *
-	 * @param TextMsg
-	 */
-	@Override
-	public void setTextMsg(String TextMsg)
-	{
-		if (TextMsg == null || TextMsg.length() == 0)
+		if (textMsg == null || Check.isBlank(textMsg))
 		{
 			return;
 		}
-		String oldText = getTextMsg();
-		if (oldText == null || oldText.length() == 0)
-		{
-			super.setTextMsg(Util.trimSize(TextMsg, 1000));
-		}
-		else if (TextMsg != null && TextMsg.length() > 0)
-		{
-			super.setTextMsg(Util.trimSize(oldText + "\n - " + TextMsg, 1000));
-		}
-	}	// setTextMsg
 
-	/**
-	 * Add to Text Msg
-	 *
-	 * @param obj some object
-	 */
-	public void addTextMsg(Object obj)
-	{
-		if (obj == null)
+		final String oldText = StringUtils.trimBlankToNull(getTextMsg());
+		if (oldText == null || Check.isBlank(oldText))
 		{
-			return;
-		}
-		//
-		StringBuffer TextMsg = new StringBuffer();
-		if (obj instanceof Exception)
-		{
-			Exception ex = (Exception)obj;
-			if (ex.getMessage() != null && ex.getMessage().trim().length() > 0)
-			{
-				TextMsg.append(ex.toString());
-			}
-			else if (ex instanceof NullPointerException)
-			{
-				TextMsg.append(ex.getClass().getName());
-			}
-			while (ex != null)
-			{
-				StackTraceElement[] st = ex.getStackTrace();
-				for (int i = 0; i < st.length; i++)
-				{
-					StackTraceElement ste = st[i];
-					if (i == 0 || ste.getClassName().startsWith("org.compiere") || ste.getClassName().startsWith("org.adempiere"))
-					{
-						TextMsg.append(" (").append(i).append("): ")
-								.append(ste.toString())
-								.append("\n");
-					}
-				}
-				if (ex.getCause() instanceof Exception)
-				{
-					ex = (Exception)ex.getCause();
-				}
-				else
-				{
-					ex = null;
-				}
-			}
+			super.setTextMsg(StringUtils.trunc(textMsg.trim(), 1000));
 		}
 		else
 		{
-			TextMsg.append(obj.toString());
+			super.setTextMsg(StringUtils.trunc(oldText.trim() + "\n" + textMsg.trim(), 1000));
 		}
-		//
-		String oldText = getTextMsg();
-		if (oldText == null || oldText.length() == 0)
+	}
+
+	private void addTextMsg(@Nullable final Throwable ex)
+	{
+		if (ex == null)
 		{
-			super.setTextMsg(Util.trimSize(TextMsg.toString(), 1000));
+			return;
 		}
-		else if (TextMsg != null && TextMsg.length() > 0)
-		{
-			super.setTextMsg(Util.trimSize(oldText + "\n - " + TextMsg.toString(), 1000));
-		}
-	}	// setTextMsg
+
+		final IErrorManager errorManager = Services.get(IErrorManager.class);
+
+		addTextMsg(AdempiereException.extractMessage(ex));
+
+		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+		final AdIssueId adIssueId = errorManager.createIssue(metasfreshException);
+		setAD_Issue_ID(adIssueId.getRepoId());
+	}
 
 	/**
 	 * Get WF State text
 	 *
 	 * @return state text
 	 */
-	public String getWFStateText()
+	private String getWFStateText()
 	{
 		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), WFSTATE_AD_Reference_ID, getWFState());
-	}	// getWFStateText
+	}    // getWFStateText
 
 	/**
 	 * Set Responsible and User from Process / Node
-	 *
-	 * @param process process
 	 */
-	private void setResponsible(MWFProcess process)
+	private void setResponsible(@NonNull final MWFProcess process)
 	{
 		// Responsible
-		int AD_WF_Responsible_ID = getNode().getAD_WF_Responsible_ID();
-		if (AD_WF_Responsible_ID == 0)
+		WFResponsibleId responsibleId = getNode().getResponsibleId();
+		if (responsibleId == null)
 		{
-			AD_WF_Responsible_ID = process.getAD_WF_Responsible_ID();
+			responsibleId = WFResponsibleId.ofRepoId(process.getAD_WF_Responsible_ID());
 		}
-		setAD_WF_Responsible_ID(AD_WF_Responsible_ID);
-		MWFResponsible resp = getResponsible();
+		setAD_WF_Responsible_ID(responsibleId.getRepoId());
+		final WFResponsible resp = getResponsible();
 
 		// User - Directly responsible
-		int AD_User_ID = resp.getAD_User_ID();
+		UserId userId = resp.getUserId();
 		// Invoker - get Sales Rep or last updater of document
-		if (AD_User_ID == 0 && resp.isInvoker())
+		if (userId == null || resp.isInvoker())
 		{
-			AD_User_ID = process.getAD_User_ID();
+			userId = UserId.ofRepoId(process.getAD_User_ID());
 		}
-		//
-		setAD_User_ID(AD_User_ID);
-	}	// setResponsible
 
-	/**
-	 * Get Responsible
-	 *
-	 * @return responsible
-	 */
-	public MWFResponsible getResponsible()
+		setAD_User_ID(userId.getRepoId());
+	}
+
+	private WFResponsible getResponsible()
 	{
-		MWFResponsible resp = MWFResponsible.get(getCtx(), getAD_WF_Responsible_ID());
-		return resp;
-	}	// isInvoker
+		final WFResponsibleId responsibleId = WFResponsibleId.ofRepoId(getAD_WF_Responsible_ID());
+		return Services.get(IADWorkflowDAO.class).getWFResponsibleById(responsibleId);
+	}
 
-	/**
-	 * Is Invoker (no user & no role)
-	 *
-	 * @return true if invoker
-	 */
-	public boolean isInvoker()
+	private boolean isInvoker()
 	{
 		return getResponsible().isInvoker();
-	}	// isInvoker
+	}    // isInvoker
 
-	/**
-	 * Get Approval User.
-	 * If the returned user is the same, the document is approved.
-	 *
-	 * @param AD_User_ID starting User
-	 * @param C_Currency_ID currency
-	 * @param amount amount
-	 * @param clientAndOrgId document organization
-	 * @param ownDocument the document is owned by AD_User_ID
-	 * @return AD_User_ID - if -1 no Approver
-	 */
-	public static int getApprovalUser(
-			final int AD_User_ID,
-			final int C_Currency_ID,
-			final BigDecimal amount,
-			final ClientAndOrgId clientAndOrgId,
-			boolean ownDocument)
+	@Value
+	@Builder
+	private static class DocumentToApproveRequest
+	{
+		@NonNull
+		UserId workflowInvokerId;
+
+		@Nullable
+		Money amountToApprove;
+		@NonNull
+		UserId documentOwnerId;
+		@NonNull
+		ClientAndOrgId clientAndOrgId;
+	}
+
+	private DocumentToApproveRequest toDocumentToApproveRequest(final IDocument doc)
+	{
+		final UserId documentOwnerId = UserId.ofRepoId(doc.getDoc_User_ID());
+		final UserId invokerId = CoalesceUtil.coalesce(
+				UserId.ofRepoIdOrNullIfSystem(getAD_User_ID()),
+				documentOwnerId);
+
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(doc.getC_Currency_ID());
+		final Money amountToApprove = currencyId != null
+				? Money.of(doc.getApprovalAmt(), currencyId)
+				: null;
+
+		return DocumentToApproveRequest.builder()
+				.workflowInvokerId(invokerId)
+				.amountToApprove(amountToApprove)
+				.documentOwnerId(documentOwnerId)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(doc.getAD_Client_ID(), doc.getAD_Org_ID()))
+				.build();
+	}
+
+	private Optional<UserId> getApprovalUser(@NonNull final DocumentToApproveRequest document)
 	{
 		// Nothing to approve
-		if (amount == null || amount.signum() == 0)
+		if (document.getAmountToApprove() == null || document.getAmountToApprove().signum() == 0)
 		{
-			return AD_User_ID;
+			return Optional.of(document.getWorkflowInvokerId());
 		}
 
-		// services
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-
-		// Starting user
-		I_AD_User user = userDAO.retrieveUserOrNull(Env.getCtx(), AD_User_ID);
-		log.debug("For User={}, Amt={}, Own={}", user, amount, ownDocument);
-
-		I_AD_User oldUser = null;
-		while (user != null)
+		UserId currentUserId = document.getWorkflowInvokerId();
+		final HashSet<UserId> alreadyCheckedUserIds = new HashSet<>();
+		while (currentUserId != null)
 		{
-			if (user.equals(oldUser))
+			if (!alreadyCheckedUserIds.add(currentUserId))
 			{
-				log.debug("Loop - {}", user.getName());
-				return -1;
-			}
-			oldUser = user;
-			log.debug("User={}", user.getName());
-			// Get Roles of User
-			final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
-					clientAndOrgId.getClientId(),
-					clientAndOrgId.getOrgId(),
-					UserId.ofRepoId(AD_User_ID),
-					Env.getLocalDate());
-			for (final IUserRolePermissions role : roles)
-			{
-				final DocumentApprovalConstraint docApprovalConstraints = role.getConstraint(DocumentApprovalConstraint.class)
-						.or(DocumentApprovalConstraint.DEFAULT);
-				if (ownDocument && !docApprovalConstraints.canApproveOwnDoc())
-				{
-					continue;	// find a role with allows them to approve own
-				}
-
-				BigDecimal amtApproval = docApprovalConstraints.getAmtApproval();
-				if (amtApproval == null || amtApproval.signum() == 0)
-				{
-					continue;
-				}
-
-				//
-				final int amtApprovalCurrencyId = docApprovalConstraints.getC_Currency_ID();
-				if (C_Currency_ID != amtApprovalCurrencyId
-						&& amtApprovalCurrencyId > 0)			// No currency = amt only
-				{
-					amtApproval = currencyBL.convert(// today & default rate
-							amtApproval,
-							CurrencyId.ofRepoId(amtApprovalCurrencyId),
-							CurrencyId.ofRepoId(C_Currency_ID),
-							clientAndOrgId.getClientId(),
-							clientAndOrgId.getOrgId());
-					if (amtApproval == null || amtApproval.signum() == 0)
-					{
-						continue;
-					}
-				}
-				boolean approved = amount.compareTo(amtApproval) <= 0;
-				log.debug("Approved=" + approved
-						+ " - User=" + user.getName() + ", Role=" + role.getName()
-						+ ", ApprovalAmt=" + amtApproval);
-				if (approved)
-				{
-					return user.getAD_User_ID();
-				}
+				log.debug("Loop - {}", alreadyCheckedUserIds);
+				return Optional.empty();
 			}
 
-			// **** Find next User
-			// Get Supervisor
-			if (user.getSupervisor_ID() != 0)
+			if (isUserAllowedToApproveDocument(currentUserId, document))
 			{
-				user = userDAO.getById(user.getSupervisor_ID());
-				log.debug("Supervisor: {}", user);
+				return Optional.of(currentUserId);
 			}
-			else
+
+			//
+			// Get's user's supervisor
+			currentUserId = getSupervisorOfUserId(currentUserId).orElse(null);
+			if (currentUserId == null)
 			{
-				log.debug("No Supervisor");
-				OrgInfo orgInfo = orgsRepo.getOrgInfoById(clientAndOrgId.getOrgId());
-				// Get Org Supervisor
-				if (orgInfo.getSupervisorId() != null)
-				{
-					user = userDAO.getById(orgInfo.getSupervisorId());
-				}
-				else
-				{
-					log.debug("No Org Supervisor");
-					// Get Parent Org Supervisor
-					if (orgInfo.getParentOrgId() != null)
-					{
-						orgInfo = orgsRepo.getOrgInfoById(orgInfo.getParentOrgId());
-						if (orgInfo.getSupervisorId() != null)
-						{
-							user = userDAO.getById(orgInfo.getSupervisorId());
-							log.debug("Parent Org Supervisor: {}", user);
-						}
-					}
-				}
-			}	// No Supervisor
-			// ownDocument should always be false for the next user
-			ownDocument = false;
-		}	// while there is a user to approve
+				currentUserId = getSupervisorOfOrgId(document.getClientAndOrgId().getOrgId()).orElse(null);
+			}
+		}
 
 		log.debug("No user found");
-		return -1;
-	}	// getApproval
+		return Optional.empty();
+	}    // getApproval
+
+	private boolean isUserAllowedToApproveDocument(
+			@NonNull final UserId userId,
+			@NonNull final DocumentToApproveRequest document)
+	{
+		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+
+		final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
+				document.getClientAndOrgId().getClientId(),
+				document.getClientAndOrgId().getOrgId(),
+				userId,
+				Env.getLocalDate());
+		for (final IUserRolePermissions role : roles)
+		{
+			if (isRoleAllowedToApproveDocument(role, userId, document))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static boolean isRoleAllowedToApproveDocument(
+			@NonNull final IUserRolePermissions role,
+			@NonNull final UserId userId,
+			@NonNull final DocumentToApproveRequest document)
+	{
+		final DocumentApprovalConstraint docApprovalConstraints = role.getConstraint(DocumentApprovalConstraint.class)
+				.or(DocumentApprovalConstraint.DEFAULT);
+
+		final boolean ownDocument = UserId.equals(document.getDocumentOwnerId(), userId);
+		if (ownDocument && !docApprovalConstraints.canApproveOwnDoc())
+		{
+			return false;
+		}
+
+		final Money amountToApprove = document.getAmountToApprove();
+		if (amountToApprove == null)
+		{
+			return true;
+		}
+
+		Money maxAllowedAmount = docApprovalConstraints.getAmtApproval(amountToApprove.getCurrencyId());
+		if (maxAllowedAmount.signum() <= 0)
+		{
+			return false;
+		}
+
+		//
+		if (!CurrencyId.equals(amountToApprove.getCurrencyId(), maxAllowedAmount.getCurrencyId()))
+		{
+			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+			final BigDecimal maxAllowedAmountConvBD = currencyBL.convert(// today & default rate
+					maxAllowedAmount.toBigDecimal(),
+					maxAllowedAmount.getCurrencyId(),
+					amountToApprove.getCurrencyId(),
+					document.getClientAndOrgId().getClientId(),
+					document.getClientAndOrgId().getOrgId());
+			if (maxAllowedAmountConvBD == null || maxAllowedAmountConvBD.signum() == 0)
+			{
+				// TODO: fail
+				return false;
+			}
+
+			maxAllowedAmount = Money.of(maxAllowedAmountConvBD, amountToApprove.getCurrencyId());
+		}
+
+		return amountToApprove.isLessThanOrEqualTo(maxAllowedAmount);
+	}
+
+	private Optional<UserId> getSupervisorOfUserId(@NonNull final UserId userId)
+	{
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+
+		final I_AD_User user = userDAO.getById(userId);
+		final UserId supervisorId = UserId.ofRepoIdOrNullIfSystem(user.getSupervisor_ID());
+		return Optional.ofNullable(supervisorId);
+	}
+
+	private Optional<UserId> getSupervisorOfOrgId(@NonNull final OrgId orgId)
+	{
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+
+		OrgId currentOrgId = orgId;
+		final HashSet<OrgId> alreadyCheckedOrgIds = new HashSet<>();
+		while (currentOrgId != null)
+		{
+			if (!alreadyCheckedOrgIds.add(currentOrgId))
+			{
+				log.debug("Org look detected, returning empty: {}", alreadyCheckedOrgIds);
+				return Optional.empty();
+			}
+
+			final OrgInfo orgInfo = orgsRepo.getOrgInfoById(currentOrgId);
+			if (orgInfo.getSupervisorId() != null)
+			{
+				return Optional.of(orgInfo.getSupervisorId());
+			}
+
+			currentOrgId = orgInfo.getParentOrgId();
+		}
+
+		return Optional.empty();
+	}
 
 	/**************************************************************************
 	 * Execute Work.
 	 * Called from MWFProcess.startNext
 	 * Feedback to Process via setWFState -> checkActivities
 	 */
-	@Override
 	public void run()
 	{
 		log.debug("Node={}", getNode());
+
 		m_newValue = null;
 
-		// m_trx = Trx.get(, true);
-		Trx trx = null;
-		boolean localTrx = false;
-		if (get_TrxName() == null)
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
-			this.set_TrxName(Trx.createTrxName("WFA"));
-			localTrx = true;
-		}
+			private DocStatus newDocStatus = null;
 
-		trx = Trx.get(get_TrxName(), true);
-
-		ITrxSavepoint savepoint = null;
-
-		//
-		try
-		{
-			if (!localTrx)
+			@Override
+			public void run(final String localTrxName)
 			{
-				savepoint = trx.createTrxSavepoint(null);
-			}
-
-			if (!m_state.isValidAction(StateEngine.ACTION_Start))
-			{
-				setTextMsg("State=" + getWFState() + " - cannot start");
-				addTextMsg(new Exception(""));
-				setWFState(StateEngine.STATE_Terminated);
-				return;
-			}
-			//
-			setWFState(StateEngine.STATE_Running);
-
-			if (getNode().get_ID() == 0)
-			{
-				setTextMsg("Node not found - AD_WF_Node_ID=" + getAD_WF_Node_ID());
-				setWFState(StateEngine.STATE_Aborted);
-				return;
-			}
-			// Do Work
-			/**** Trx Start ****/
-			boolean done = performWork(Trx.get(get_TrxName(), false));
-
-			/**** Trx End ****/
-			// teo_sarca [ 1708835 ]
-			// Reason: if the commit fails the document should be put in Invalid state
-			if (localTrx)
-			{
-				try
+				if (!getState().isValidAction(StateEngine.ACTION_Start))
 				{
-					trx.commit(true);
+					addTextMsg(new AdempiereException("State=" + getWFState() + " - cannot start"));
+					changeWFStateTo(StateEngine.STATE_Terminated);
+					return;
 				}
-				catch (Exception e)
+				//
+				changeWFStateTo(StateEngine.STATE_Running);
+
+				if (getNode() == null)
 				{
-					// If we have a DocStatus, change it to Invalid, and throw the exception to the next level
-					if (m_docStatus != null)
-					{
-						m_docStatus = IDocument.STATUS_Invalid;
-					}
-					throw e;
+					addTextMsg("Node not found");
+					changeWFStateTo(StateEngine.STATE_Aborted);
+					return;
+				}
+
+				// Do Work
+				final PerformWorkResult result = performWork();
+				final PerformWorkResolution resolution = result.getResolution();
+				this.newDocStatus = result.getNewDocStatus();
+
+				if (resolution == PerformWorkResolution.COMPLETED)
+				{
+					changeWFStateTo(StateEngine.STATE_Completed);
+				}
+				else if (resolution == PerformWorkResolution.SUSPENDED)
+				{
+					changeWFStateTo(StateEngine.STATE_Suspended);
+				}
+				else
+				{
+					throw new AdempiereException("Unknown resolution: " + result);
 				}
 			}
 
-			setWFState(done ? StateEngine.STATE_Completed : StateEngine.STATE_Suspended);
-
-			// NOTE: there is no need to postImmediate because DocumentEngine is handling this case (old code was removed from here)
-		}
-		catch (final Exception ex)
-		{
-			log.warn("{}", getNode(), ex);
-			/**** Trx Rollback ****/
-			if (localTrx)
+			@Override
+			public boolean doCatch(final Throwable ex)
 			{
-				trx.rollback();
-			}
-			else if (savepoint != null)
-			{
-				try
+				// If we have a DocStatus, change it to Invalid, and throw the exception to the next level
+				// If not, don't touch it at all.
+				if (newDocStatus != null)
 				{
-					trx.rollback(savepoint);
-					savepoint = null;
+					newDocStatus = DocStatus.Invalid;
 				}
-				catch (Exception e1)
+
+				addTextMsg(ex);
+				changeWFStateTo(StateEngine.STATE_Terminated);    // unlocks
+
+				// Set Document Status
+				final PO po = getPONoLoad();
+				final IDocument doc = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
+				if (doc != null && newDocStatus != null)
 				{
-					log.warn("Failed while rolling back to savepoint " + savepoint + ". Going forward...", e1);
+					InterfaceWrapperHelper.refresh(po);
+					doc.setDocStatus(newDocStatus.getCode());
+					InterfaceWrapperHelper.save(po);
 				}
+
+				return ROLLBACK;
 			}
 
-			//
-			if (ex.getCause() != null)
+			@Override
+			public void doFinally()
 			{
-				log.warn("Cause", ex.getCause());
+				InterfaceWrapperHelper.save(MWFActivity.this);
 			}
+		});
+	}
 
-			String processMsg = ex.getLocalizedMessage();
-			if (processMsg == null || processMsg.length() == 0)
-			{
-				processMsg = ex.getMessage();
-			}
-			setTextMsg(processMsg);
-			addTextMsg(ex);
-			setWFState(StateEngine.STATE_Terminated);	// unlocks
+	private enum PerformWorkResolution
+	{
+		COMPLETED,
+		SUSPENDED
+	}
 
-			// Set Document Status
-			final PO po = getPONoLoad();
-			final IDocument doc = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
-			if (doc != null && m_docStatus != null)
-			{
-				po.load(get_TrxName());
-				doc.setDocStatus(m_docStatus);
-				m_po.save();
-			}
-		}
-		finally
-		{
-			if (localTrx && trx != null)
-			{
-				trx.close();
-			}
-		}
-	}	// run
+	@Value
+	@Builder
+	private static class PerformWorkResult
+	{
+		public static final PerformWorkResult COMPLETED = builder().resolution(PerformWorkResolution.COMPLETED).build();
+		public static final PerformWorkResult SUSPENDED = builder().resolution(PerformWorkResolution.SUSPENDED).build();
+
+		@NonNull
+		PerformWorkResolution resolution;
+
+		@Nullable
+		@With
+		DocStatus newDocStatus;
+	}
 
 	/**
 	 * Perform Work.
 	 * Set Text Msg.
-	 *
-	 * @param trx transaction
-	 * @return true if completed, false otherwise
-	 * @throws Exception if error
 	 */
-	private boolean performWork(final Trx trx) throws Exception
+	private PerformWorkResult performWork()
 	{
-		log.debug("Performing work for {} [{}]", m_node, trx);
-		m_docStatus = null;
+		final WFNode wfNode = getNode();
+		log.debug("Performing work for {}", wfNode);
 
-		if (m_node.getPriority() != 0)
+		if (wfNode.getPriority() != 0)
 		{
-			setPriority(m_node.getPriority());
+			setPriority(wfNode.getPriority());
 		}
 
-		final String trxName = trx != null ? trx.getTrxName() : ITrx.TRXNAME_None;
-		final String action = m_node.getAction();
+		final WFNodeAction action = wfNode.getAction();
 
-		/****** Sleep (Start/End) ******/
-		if (MWFNode.ACTION_WaitSleep.equals(action))
+		if (WFNodeAction.WaitSleep.equals(action))
 		{
-			log.debug("Sleep:WaitTime=" + m_node.getWaitTime());
-			if (m_node.getWaitingTime() == 0)
-			 {
-				return true;	// done
-			}
-			Calendar cal = Calendar.getInstance();
-			cal.add(m_node.getDurationCalendarField(), m_node.getWaitTime());
-			setEndWaitTime(new Timestamp(cal.getTimeInMillis()));
-			return false;		// not done
+			return performWork_WaitSleep();
 		}
-
-		/****** Document Action ******/
-		else if (MWFNode.ACTION_DocumentAction.equals(action))
+		else if (WFNodeAction.DocumentAction.equals(action))
 		{
-			log.debug("DocumentAction={}", m_node.getDocAction());
-
-			boolean success = false;
-			String processMsg = null;
-			final IDocument doc = getDocument(trxName);
-
-			//
-			try
-			{
-				success = doc.processIt(m_node.getDocAction());	// ** Do the work
-				setTextMsg(doc.getSummary());
-				processMsg = doc.getProcessMsg();
-				m_docStatus = doc.getDocStatus();
-			}
-			catch (Exception e)
-			{
-				if (m_process != null)
-				{
-					m_process.setProcessMsg(e.getLocalizedMessage());
-				}
-				throw e;
-			}
-
-			// NOTE: there is no need to postImmediate because DocumentEngine is handling this case (old code was removed from here)
-
-			//
-			if (m_process != null)
-			{
-				m_process.setProcessMsg(processMsg);
-			}
-
-			//
-			if (!m_po.save())
-			{
-				success = false;
-				processMsg = "SaveError";
-			}
-			if (!success)
-			{
-				if (processMsg == null || processMsg.length() == 0)
-				{
-					processMsg = "PerformWork Error - " + m_node.toStringX();
-					if (doc != null)
-					{
-						processMsg += " - DocStatus=" + doc.getDocStatus();
-					}
-				}
-				throw new Exception(processMsg);
-			}
-			return success;
-		}	// DocumentAction
-
-		/****** Report ******/
-		else if (MWFNode.ACTION_AppsReport.equals(action))
-		{
-			log.debug("Report: AD_Process_ID={}", m_node.getAD_Process_ID());
-			final ProcessInfo pi = ProcessInfo.builder()
-					.setCtx(getCtx())
-					.setAD_Client_ID(getAD_Client_ID())
-					.setAD_User_ID(getAD_User_ID())
-					.setAD_Process_ID(m_node.getAD_Process_ID())
-					.setTitle(m_node.getName(true))
-					.setRecord(getAD_Table_ID(), getRecord_ID())
-					.addParameters(createProcessInfoParameters(getPO(trxName)))
-					.build();
-			if (!pi.isReportingProcess())
-			{
-				throw new IllegalStateException("Not a Report AD_Process_ID=" + pi);
-			}
-
-			// Report
-			ReportEngine re = ReportEngine.get(getCtx(), pi);
-			if (re == null)
-			{
-				throw new IllegalStateException("Cannot create Report AD_Process_ID=" + m_node.getAD_Process_ID());
-			}
-			File report = re.getPDF();
-			// Notice
-			int AD_Message_ID = 753;		// HARDCODED WorkflowResult
-			MNote note = new MNote(getCtx(), AD_Message_ID, getAD_User_ID(), trx.getTrxName());
-			note.setTextMsg(m_node.getName(true));
-			note.setDescription(m_node.getDescription(true));
-			note.setRecord(getAD_Table_ID(), getRecord_ID());
-			note.save();
-			// Attachment
-
-			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-			attachmentEntryService.createNewAttachment(note, report);
-			return true;
+			return performWork_DocumentAction();
 		}
-
-		/****** Process ******/
-		else if (MWFNode.ACTION_AppsProcess.equals(action))
+		else if (WFNodeAction.AppsReport.equals(action))
 		{
-			log.debug("Process: AD_Process_ID={}", m_node.getAD_Process_ID());
-			ProcessInfo.builder()
-					.setCtx(getCtx())
-					.setAD_Client_ID(getAD_Client_ID())
-					.setAD_User_ID(getAD_User_ID())
-					.setAD_Process_ID(m_node.getAD_Process_ID())
-					.setTitle(m_node.getName(true))
-					.setRecord(getAD_Table_ID(), getRecord_ID())
-					.addParameters(createProcessInfoParameters(getPO(trxName)))
-					//
-					.buildAndPrepareExecution()
-					.onErrorThrowException()
-					.executeSync();
-			return true;
+			performWork_AppsReport();
+			return PerformWorkResult.COMPLETED;
 		}
-
-		/******
-		 * Start Task (Probably redundant;
-		 * same can be achieved by attaching a Workflow node sequentially)
-		 ******/
-		/*
-		 * else if (MWFNode.ACTION_AppsTask.equals(action))
-		 * {
-		 * log.warn("Task:AD_Task_ID=" + m_node.getAD_Task_ID());
-		 * log.warn("Start Task is not implemented yet");
-		 * }
-		 */
-
-		/****** EMail ******/
-		else if (MWFNode.ACTION_EMail.equals(action))
+		else if (WFNodeAction.AppsProcess.equals(action))
 		{
-			log.debug("EMail:EMailRecipient={}", m_node.getEMailRecipient());
-
-			final IDocument document = getDocumentOrNull(trxName);
-			if (document != null)
-			{
-				m_emails = new ArrayList<>();
-				sendEMail();
-				setTextMsg(m_emails.toString());
-			}
-			else
-			{
-				final PO po = getPO(trxName);
-
-				MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(getNode().getR_MailText_ID());
-				
-				final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
-				final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
-						.recordAndUpdateBPartnerAndContact(po);
-
-				// metas: tsa: check for null strings
-				StringBuffer subject = new StringBuffer();
-				if (!Check.isEmpty(getNode().getDescription(), true))
-				{
-					subject.append(getNode().getDescription());
-				}
-				if (!Check.isEmpty(mailTextBuilder.getMailHeader(), true))
-				{
-					if (subject.length() > 0)
-					{
-						subject.append(": ");
-					}
-					subject.append(mailTextBuilder.getMailHeader());
-				}
-
-				// metas: tsa: check for null strings
-				StringBuffer message = new StringBuffer(mailTextBuilder.getFullMailText());
-				if (!Check.isEmpty(getNodeHelp(), true))
-				{
-					message.append("\n-----\n").append(getNodeHelp());
-				}
-				
-				final EMailAddress to = EMailAddress.ofString(getNode().getEMail());
-
-				final MClient client = MClient.get(getCtx(), getAD_Client_ID());
-				client.sendEMail(to, subject.toString(), message.toString(), null);
-			}
-			return true;	// done
-		}	// EMail
-
-		/****** Set Variable ******/
-		else if (MWFNode.ACTION_SetVariable.equals(action))
-		{
-			performWork_SetVariable(trxName);
-			return true;
-		}	// SetVariable
-
-		/****** TODO Start WF Instance ******/
-		else if (MWFNode.ACTION_SubWorkflow.equals(action))
-		{
-			log.warn("Workflow:AD_Workflow_ID={}", m_node.getAD_Workflow_ID());
-			log.warn("Start WF Instance is not implemented yet");
+			performWork_AppsProcess();
+			return PerformWorkResult.COMPLETED;
 		}
-
-		/****** User Choice ******/
-		else if (MWFNode.ACTION_UserChoice.equals(action))
+		else if (WFNodeAction.EMail.equals(action))
 		{
-			return performWork_UserChoice(trxName);
+			performWork_EMail();
+			return PerformWorkResult.COMPLETED;
 		}
-		/****** User Form ******/
-		else if (MWFNode.ACTION_UserForm.equals(action))
+		else if (WFNodeAction.SetVariable.equals(action))
 		{
-			log.debug("Form:AD_Form_ID=" + m_node.getAD_Form_ID());
-			return false;
+			performWork_SetVariable();
+			return PerformWorkResult.COMPLETED;
 		}
-		/****** User Window ******/
-		else if (MWFNode.ACTION_UserWindow.equals(action))
+		else if (WFNodeAction.SubWorkflow.equals(action))
 		{
-			log.debug("Window:AD_Window_ID=" + m_node.getAD_Window_ID());
-			return false;
+			throw new AdempiereException("Starting sub-workflow is not implemented yet");
 		}
-		//
-		throw new IllegalArgumentException("Invalid Action (Not Implemented) =" + action);
-	}	// performWork
-
-	private void performWork_SetVariable(@Nullable final String trxName)
-	{
-		final String value = m_node.getAttributeValue();
-		log.debug("SetVariable:AD_Column_ID={} to {}", m_node.getAD_Column_ID(), value);
-		MColumn column = m_node.getColumn();
-		final int dt = column.getAD_Reference_ID();
-		setVariable(value, dt, null, trxName);
+		else if (WFNodeAction.UserChoice.equals(action))
+		{
+			return performWork_UserChoice();
+		}
+		else if (WFNodeAction.UserForm.equals(action))
+		{
+			log.debug("Form:AD_Form_ID={}", wfNode.getAdFormId());
+			return PerformWorkResult.SUSPENDED;
+		}
+		else if (WFNodeAction.UserWindow.equals(action))
+		{
+			log.debug("Window:AD_Window_ID={}", wfNode.getAdWindowId());
+			return PerformWorkResult.SUSPENDED;
+		}
+		else
+		{
+			throw new AdempiereException("Invalid Action (Not Implemented) =" + action);
+		}
 	}
 
-	private boolean performWork_UserChoice(@Nullable final String trxName)
+	private void performWork_EMail()
 	{
-		log.debug("UserChoice:AD_Column_ID={}", m_node.getAD_Column_ID());
+		log.debug("EMail:EMailRecipient={}", getNode().getEmailRecipient());
 
-		// Approval
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-		final IDocument doc = documentBL.getDocumentOrNull(getPO(trxName));
-		if (m_node.isUserApproval() && doc != null)
+		final IDocument document = getDocumentOrNull();
+		if (document != null)
 		{
-			boolean autoApproval = false;
-			// Approval Hierarchy
-			if (isInvoker())
+			m_emails = new ArrayList<>();
+			sendEMail();
+			addTextMsg(m_emails.toString());
+		}
+		else
+		{
+			final PO po = getPO();
+
+			final MailTemplateId mailTemplateId = getNode().getMailTemplateId();
+
+			final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
+			final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
+					.recordAndUpdateBPartnerAndContact(po);
+
+			final String adLanguage = mailTextBuilder.getAdLanguage();
+
+			// metas: tsa: check for null strings
+			final StringBuilder subject = new StringBuilder();
+			final String description = getNode().getDescription().translate(adLanguage);
+			if (!Check.isBlank(description))
 			{
-				// Set Approver
-				int startAD_User_ID = getAD_User_ID();
-				if (startAD_User_ID == 0)
+				subject.append(description);
+			}
+			if (!Check.isBlank(mailTextBuilder.getMailHeader()))
+			{
+				if (subject.length() > 0)
 				{
-					startAD_User_ID = doc.getDoc_User_ID();
+					subject.append(": ");
 				}
-				int nextAD_User_ID = getApprovalUser(
-						startAD_User_ID,
-						doc.getC_Currency_ID(),
-						doc.getApprovalAmt(),
-						ClientAndOrgId.ofClientAndOrg(doc.getAD_Client_ID(), doc.getAD_Org_ID()),
-						startAD_User_ID == doc.getDoc_User_ID());	// own doc
-				// same user = approved
-				autoApproval = startAD_User_ID == nextAD_User_ID;
-				if (!autoApproval)
-				{
-					setAD_User_ID(nextAD_User_ID);
-				}
+				subject.append(mailTextBuilder.getMailHeader());
+			}
+
+			// metas: tsa: check for null strings
+			final StringBuilder message = new StringBuilder(mailTextBuilder.getFullMailText());
+			final String help = getNode().getHelp().translate(adLanguage);
+			if (!Check.isBlank(help))
+			{
+				message.append("\n-----\n").append(help);
+			}
+
+			final EMailAddress to = getNode().getEmailTo();
+
+			final MClient client = MClient.get(getCtx(), getAD_Client_ID());
+			client.sendEMail(to, subject.toString(), message.toString(), null);
+		}
+	}
+
+	private void performWork_AppsProcess()
+	{
+		final WFNode wfNode = getNode();
+		log.debug("Process: AD_Process_ID={}", wfNode.getProcessId());
+
+		ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Client_ID(getAD_Client_ID())
+				.setAD_User_ID(getAD_User_ID())
+				.setAD_Process_ID(wfNode.getProcessId())
+				.setTitle(wfNode.getName().getDefaultValue())
+				.setRecord(getAD_Table_ID(), getRecord_ID())
+				.addParameters(createProcessInfoParameters(wfNode, getPO()))
+				//
+				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				.executeSync();
+	}
+
+	private void performWork_AppsReport()
+	{
+		final WFNode wfNode = getNode();
+		log.debug("Report: AD_Process_ID={}", wfNode.getProcessId());
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Client_ID(getAD_Client_ID())
+				.setAD_User_ID(getAD_User_ID())
+				.setAD_Process_ID(wfNode.getProcessId())
+				.setTitle(wfNode.getName().getDefaultValue())
+				.setRecord(getAD_Table_ID(), getRecord_ID())
+				.addParameters(createProcessInfoParameters(wfNode, getPO()))
+				.build();
+		if (!pi.isReportingProcess())
+		{
+			throw new IllegalStateException("Not a Report AD_Process_ID=" + pi);
+		}
+
+		// Report
+		final ReportEngine re = ReportEngine.get(getCtx(), pi);
+		if (re == null)
+		{
+			throw new AdempiereException("Cannot create Report AD_Process_ID=" + wfNode.getProcessId());
+		}
+		final File report = re.getPDF();
+		// Notice
+		final int AD_Message_ID = 753;        // HARDCODED WorkflowResult
+		final MNote note = new MNote(getCtx(), AD_Message_ID, getAD_User_ID(), ITrx.TRXNAME_ThreadInherited);
+		note.setTextMsg(wfNode.getName().getDefaultValue());
+		note.setDescription(wfNode.getDescription().getDefaultValue());
+		note.setRecord(getAD_Table_ID(), getRecord_ID());
+		note.saveEx();
+		// Attachment
+
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+		attachmentEntryService.createNewAttachment(note, report);
+	}
+
+	private PerformWorkResult performWork_WaitSleep()
+	{
+		final WFNode wfNode = getNode();
+		final Duration waitTime = wfNode.getWaitTime();
+		log.debug("Sleep:WaitTime={}", waitTime);
+		if (waitTime.isNegative() || waitTime.isZero())
+		{
+			return PerformWorkResult.COMPLETED;
+		}
+		else
+		{
+			final Instant endWaitTime = SystemTime.asInstant().plus(waitTime);
+			setEndWaitTime(TimeUtil.asTimestamp(endWaitTime));
+			return PerformWorkResult.SUSPENDED;
+		}
+	}
+
+	private PerformWorkResult performWork_DocumentAction()
+	{
+		final WFNode wfNode = getNode();
+		final String docAction = wfNode.getDocAction();
+		final MWFProcess wfProcess = this.getWorkflowProcess();
+		log.debug("DocumentAction={}", docAction);
+
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		final PO po = getPO();
+		if (po == null)
+		{
+			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
+		}
+
+		try
+		{
+			final IDocument doc = documentBL.getDocument(po);
+			documentBL.processEx(doc, docAction);
+
+			addTextMsg(doc.getSummary());
+			wfProcess.setProcessMsg(doc.getProcessMsg());
+
+			InterfaceWrapperHelper.save(po);
+
+			return PerformWorkResult.builder()
+					.resolution(PerformWorkResolution.COMPLETED)
+					.newDocStatus(DocStatus.ofCode(doc.getDocStatus()))
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			wfProcess.setProcessMsg(ex);
+			throw ex;
+		}
+	}
+
+	private void performWork_SetVariable()
+	{
+		final WFNode wfNode = getNode();
+		final String value = wfNode.getAttributeValue();
+		log.debug("SetVariable:AD_Column_ID={} to {}", wfNode.getDocumentColumnId(), value);
+		final ReferenceId dt = wfNode.getDocumentColumnValueType();
+		setVariable(value, dt.getRepoId(), null);
+	}
+
+	private PerformWorkResult performWork_UserChoice()
+	{
+		final WFNode wfNode = getNode();
+		log.debug("UserChoice:AD_Column_ID={}", wfNode.getDocumentColumnId());
+
+		// Approval:
+		if (getNode().isUserApproval())
+		{
+			return performWork_UserChoice_DocumentApproval();
+		}
+		// Wait for user's manual input:
+		else
+		{
+			return PerformWorkResult.SUSPENDED;
+		}
+	}
+
+	private PerformWorkResult performWork_UserChoice_DocumentApproval()
+	{
+		final IDocument doc = getDocumentOrNull();
+		if (doc == null)
+		{
+			return PerformWorkResult.SUSPENDED;
+		}
+
+		final boolean autoApproval;
+
+		// Approval Hierarchy
+		final WFResponsible resp = getResponsible();
+		if (resp.isInvoker())
+		{
+			final DocumentToApproveRequest documentToApprove = toDocumentToApproveRequest(doc);
+			final UserId approverId = getApprovalUser(documentToApprove).orElse(null);
+			if (approverId == null)
+			{
+				throw new AdempiereException("No user to approve found!"); // TODO: trl
+			}
+			else if (UserId.equals(documentToApprove.getWorkflowInvokerId(), approverId)) // same user as invoker
+			{
+				autoApproval = true;
 			}
 			else
-			// fixed Approver
 			{
-				final MWFResponsible resp = getResponsible();
-				// MZ Goodwill
-				// [ 1742751 ] Workflow: User Choice is not working
-				if (resp.isHuman())
-				{
-					autoApproval = resp.getAD_User_ID() == m_process.getAD_User_ID();
-					if (!autoApproval && resp.getAD_User_ID() > 0)
-					{
-						setAD_User_ID(resp.getAD_User_ID());
-					}
-				}
-				else if (resp.isRole())
-				{
-					final RoleId roleId = RoleId.ofRepoId(resp.getAD_Role_ID());
-					final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
-					if (allRoleUserIds.contains(UserId.ofRepoId(m_process.getAD_User_ID())))
-					{
-						autoApproval = true;
-					}
-				}
-				else if (resp.isOrganization())
-				{
-					throw new AdempiereException("Support not implemented for " + resp);
-				}
-				else
-				{
-					throw new AdempiereException("@NotSupported@ " + resp);
-				}
-				// end MZ
+				setAD_User_ID(approverId.getRepoId());
+				autoApproval = false;
 			}
-
-			if (autoApproval
-					&& doc.processIt(IDocument.ACTION_Approve)
-					&& doc.save())
+		}
+		else if (resp.isHuman())
+		{
+			final MWFProcess wfProcess = getWorkflowProcess();
+			autoApproval = resp.getUserId() != null && resp.getUserId().getRepoId() == wfProcess.getAD_User_ID();
+			if (!autoApproval && resp.getUserId() != null)
 			{
-				return true;	// done
+				setAD_User_ID(resp.getUserId().getRepoId());
 			}
-		}	// approval
+		}
+		else if (resp.isRole())
+		{
+			final MWFProcess wfProcess = getWorkflowProcess();
 
-		return false;	// wait for user
+			final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+
+			final RoleId roleId = resp.getRoleId();
+			final Set<UserId> allRoleUserIds = roleDAO.retrieveUserIdsForRoleId(roleId);
+			if (allRoleUserIds.contains(UserId.ofRepoId(wfProcess.getAD_User_ID())))
+			{
+				autoApproval = true;
+			}
+			else
+			{
+				autoApproval = false;
+			}
+		}
+		else if (resp.isOrganization())
+		{
+			throw new AdempiereException("Support not implemented for " + resp);
+		}
+		else
+		{
+			throw new AdempiereException("@NotSupported@ " + resp);
+		}
+
+		if (autoApproval)
+		{
+			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+			documentBL.processEx(doc, IDocument.ACTION_Approve);
+
+			return PerformWorkResult.COMPLETED;
+		}
+		else
+		{
+			return PerformWorkResult.SUSPENDED;
+		}
 	}
 
 	/**
 	 * Set Variable
 	 *
-	 * @param valueStr new Value
+	 * @param valueStr    new Value
 	 * @param displayType display type
-	 * @param textMsg optional Message
+	 * @param textMsg     optional Message
 	 * @throws AdempiereException if error
 	 */
 	private void setVariable(
 			@Nullable final String valueStr,
 			final int displayType,
-			@Nullable final String textMsg,
-			@Nullable final String trxName)
+			@Nullable final String textMsg)
 	{
 		m_newValue = null;
-		final PO po = getPO(trxName);
+		final PO po = getPO();
 		if (po == null)
 		{
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
@@ -1416,205 +1234,206 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			dbValue = valueStr;
 		}
 
-		final String nodeColumnName = Services.get(IADTableDAO.class).retrieveColumnName(getNode().getAD_Column_ID());
+		final String nodeColumnName = getNode().getDocumentColumnName();
 		po.set_ValueOfColumn(nodeColumnName, dbValue);
 
-		po.save();
-		if (dbValue != null && !dbValue.equals(po.get_ValueOfColumn(getNode().getAD_Column_ID())))
+		po.saveEx();
+		if (dbValue != null && !dbValue.equals(po.get_ValueOfColumn(getNode().getDocumentColumnId())))
 		{
 			throw new AdempiereException("Persistent Object not updated - AD_Table_ID="
 					+ getAD_Table_ID() + ", Record_ID=" + getRecord_ID()
-					+ " - Should=" + valueStr + ", Is=" + po.get_ValueOfColumn(m_node.getAD_Column_ID()));
+					+ " - Should=" + valueStr + ", Is=" + po.get_ValueOfColumn(getNode().getDocumentColumnId()));
 		}
 		// Info
-		String msg = getNode().getAttributeName() + "=" + valueStr;
+		String msg = nodeColumnName + "=" + valueStr;
 		if (textMsg != null && textMsg.length() > 0)
 		{
 			msg += " - " + textMsg;
 		}
-		setTextMsg(msg);
+		addTextMsg(msg);
 		m_newValue = valueStr;
-	}	// setVariable
+	}    // setVariable
 
 	/**
 	 * Set User Choice
-	 *
-	 * @param AD_User_ID user
-	 * @param value new Value
-	 * @param displayType display type
-	 * @param textMsg optional Message
-	 * @throws Exception if error
 	 */
-	public void setUserChoice(int AD_User_ID, String value, int displayType, String textMsg)
+	public void setUserChoice(
+			@NonNull final UserId userId,
+			final String value,
+			final int displayType,
+			@Nullable final String textMsg)
 	{
-		setWFState(StateEngine.STATE_Running);
-		setAD_User_ID(AD_User_ID);
-		final String trxName = get_TrxName();
-		setVariable(value, displayType, textMsg, trxName);
+		changeWFStateTo(StateEngine.STATE_Running);
+		setAD_User_ID(userId.getRepoId());
+		setVariable(value, displayType, textMsg);
 
-		String newState = StateEngine.STATE_Completed;
-		// Approval
-		final IDocument doc = getDocumentOrNull(trxName);
-		if (getNode().isUserApproval() && doc != null)
+		final String newState;
+
+		if (getNode().isUserApproval())
 		{
-			try
-			{
-				// Not approved
-				if (!"Y".equals(value))
-				{
-					newState = StateEngine.STATE_Aborted;
-					if (!(doc.processIt(IDocument.ACTION_Reject)))
-					{
-						setTextMsg("Cannot Reject - Document Status: " + doc.getDocStatus());
-					}
-				}
-				else
-				{
-					if (isInvoker())
-					{
-						int startAD_User_ID = getAD_User_ID();
-						if (startAD_User_ID == 0)
-						{
-							startAD_User_ID = doc.getDoc_User_ID();
-						}
-						int nextAD_User_ID = getApprovalUser(
-								startAD_User_ID,
-								doc.getC_Currency_ID(),
-								doc.getApprovalAmt(),
-								ClientAndOrgId.ofClientAndOrg(doc.getAD_Client_ID(), doc.getAD_Org_ID()),
-								startAD_User_ID == doc.getDoc_User_ID());	// own doc
-						// No Approver
-						if (nextAD_User_ID <= 0)
-						{
-							newState = StateEngine.STATE_Aborted;
-							setTextMsg("Cannot Approve - No Approver");
-							doc.processIt(IDocument.ACTION_Reject);
-						}
-						else if (startAD_User_ID != nextAD_User_ID)
-						{
-							forwardTo(nextAD_User_ID, "Next Approver");
-							newState = StateEngine.STATE_Suspended;
-						}
-						else
-						// Approve
-						{
-							if (!(doc.processIt(IDocument.ACTION_Approve)))
-							{
-								newState = StateEngine.STATE_Aborted;
-								setTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
-							}
-						}
-					}
-					// No Invoker - Approve
-					else if (!(doc.processIt(IDocument.ACTION_Approve)))
-					{
-						newState = StateEngine.STATE_Aborted;
-						setTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
-					}
-				}
-				doc.save();
-			}
-			catch (Exception e)
-			{
-				newState = StateEngine.STATE_Terminated;
-				setTextMsg("User Choice: " + AdempiereException.extractMessage(e));
-				addTextMsg(e);
-				log.warn("", e);
-			}
-
-			// Send Approval Notification
-			if (newState.equals(StateEngine.STATE_Aborted) && doc.getDoc_User_ID() > 0)
-			{
-				final String docInfo = (doc.getSummary() != null ? doc.getSummary() + "\n" : "")
-						+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
-						+ (getTextMsg() != null ? getTextMsg() : "");
-
-				final INotificationBL notificationBL = Services.get(INotificationBL.class);
-				notificationBL.sendAfterCommit(UserNotificationRequest.builder()
-						.topic(USER_NOTIFICATIONS_TOPIC)
-						.recipientUserId(UserId.ofRepoId(doc.getDoc_User_ID()))
-						.contentADMessage(MSG_NotApproved)
-						.contentADMessageParam(doc.toTableRecordReference())
-						.contentADMessageParam(docInfo)
-						.targetAction(TargetRecordAction.of(doc.toTableRecordReference()))
-						.build());
-			}
+			final boolean approved = StringUtils.toBoolean(value);
+			newState = setUserChoice_DocumentApproval(approved);
+		}
+		else
+		{
+			newState = StateEngine.STATE_Completed;
 		}
 
-		setWFState(newState);
-	}	// setUserChoice
+		changeWFStateTo(newState);
+	}    // setUserChoice
+
+	private String setUserChoice_DocumentApproval(final boolean approved)
+	{
+		String newState = StateEngine.STATE_Completed;
+
+		final IDocument doc = getDocumentOrNull();
+		if (doc == null)
+		{
+			return newState;
+		}
+
+		try
+		{
+			// Not approved
+			if (!approved)
+			{
+				newState = StateEngine.STATE_Aborted;
+				if (!(doc.processIt(IDocument.ACTION_Reject)))
+				{
+					addTextMsg("Cannot Reject - Document Status: " + doc.getDocStatus());
+				}
+			}
+			else
+			{
+				if (isInvoker())
+				{
+					final DocumentToApproveRequest documentToApprove = toDocumentToApproveRequest(doc);
+					final UserId approverId = getApprovalUser(documentToApprove).orElse(null);
+
+					// No Approver
+					if (approverId == null)
+					{
+						newState = StateEngine.STATE_Aborted;
+						addTextMsg("Cannot Approve - No Approver");
+						doc.processIt(IDocument.ACTION_Reject);
+					}
+					// Another user is allowed to approve it => forward to that user
+					else if (!UserId.equals(documentToApprove.getWorkflowInvokerId(), approverId))
+					{
+						forwardTo(approverId, "Next Approver");
+						newState = StateEngine.STATE_Suspended;
+					}
+					else
+					// Approve
+					{
+						if (!doc.processIt(IDocument.ACTION_Approve))
+						{
+							newState = StateEngine.STATE_Aborted;
+							addTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
+						}
+					}
+				}
+				// No Invoker - Approve
+				else if (!doc.processIt(IDocument.ACTION_Approve))
+				{
+					newState = StateEngine.STATE_Aborted;
+					addTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
+				}
+			}
+
+			doc.save();
+		}
+		catch (final Exception ex)
+		{
+			newState = StateEngine.STATE_Terminated;
+			addTextMsg(ex);
+			log.warn("", ex);
+		}
+
+		// Send Not Approved Notification
+		if (newState.equals(StateEngine.STATE_Aborted) && doc.getDoc_User_ID() > 0)
+		{
+			final String docInfo = (doc.getSummary() != null ? doc.getSummary() + "\n" : "")
+					+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
+					+ (getTextMsg() != null ? getTextMsg() : "");
+
+			final INotificationBL notificationBL = Services.get(INotificationBL.class);
+			notificationBL.sendAfterCommit(UserNotificationRequest.builder()
+					.topic(USER_NOTIFICATIONS_TOPIC)
+					.recipientUserId(UserId.ofRepoId(doc.getDoc_User_ID()))
+					.contentADMessage(MSG_NotApproved.toAD_Message())
+					.contentADMessageParam(doc.toTableRecordReference())
+					.contentADMessageParam(docInfo)
+					.targetAction(TargetRecordAction.of(doc.toTableRecordReference()))
+					.build());
+		}
+
+		return newState;
+	}
 
 	/**
 	 * Forward To
-	 *
-	 * @param AD_User_ID user
-	 * @param textMsg text message
-	 * @return true if forwarded
 	 */
-	public boolean forwardTo(int AD_User_ID, String textMsg)
+	public void forwardTo(@NonNull final UserId userId, @Nullable final String textMsg)
 	{
-		if (AD_User_ID < 0)
+		if (userId.getRepoId() == getAD_User_ID())
 		{
-			log.warn("Does not exist - AD_User_ID=" + AD_User_ID);
-		}
-		if (AD_User_ID == getAD_User_ID())
-		{
-			log.warn("Same User - AD_User_ID=" + AD_User_ID);
-			return false;
+			log.warn("Asked to forward to same user `{}`. Do nothing.", userId);
+			return;
 		}
 		//
-		final I_AD_User oldUser = getAD_User();
-		final I_AD_User user = Services.get(IUserDAO.class).getById(AD_User_ID);
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final UserId oldUserId = UserId.ofRepoIdOrSystem(getAD_User_ID());
+		final I_AD_User oldUser = userDAO.getById(oldUserId);
+		final I_AD_User user = userDAO.getById(userId);
+
 		// Update
 		setAD_User_ID(user.getAD_User_ID());
-		setTextMsg(textMsg);
-		save();
-		// Close up Old Event
-		getEventAudit();
-		m_audit.setAD_User_ID(oldUser.getAD_User_ID());
-		m_audit.setTextMsg(getTextMsg());
-		m_audit.setAttributeName("AD_User_ID");
-		m_audit.setOldValue(oldUser.getName() + "(" + oldUser.getAD_User_ID() + ")");
-		m_audit.setNewValue(user.getName() + "(" + user.getAD_User_ID() + ")");
-		//
-		m_audit.setWFState(getWFState());
-		m_audit.setEventType(MWFEventAudit.EVENTTYPE_StateChanged);
-		long ms = System.currentTimeMillis() - m_audit.getCreated().getTime();
-		m_audit.setElapsedTimeMS(new BigDecimal(ms));
-		m_audit.save();
-		// Create new one
-		m_audit = new MWFEventAudit(this);
-		m_audit.save();
-		return true;
-	}	// forwardTo
+		addTextMsg(textMsg);
+		saveEx();
 
-	/**
-	 * Set User Confirmation
-	 *
-	 * @param AD_User_ID user
-	 * @param textMsg optional message
-	 */
-	public void setUserConfirmation(int AD_User_ID, String textMsg)
+		// Close up Old Event
+		{
+			final MWFEventAudit audit = getEventAudit();
+			audit.setAD_User_ID(oldUser.getAD_User_ID());
+			audit.setTextMsg(getTextMsg());
+			audit.setAttributeName("AD_User_ID");
+			audit.setOldValue(oldUser.getName() + "(" + oldUser.getAD_User_ID() + ")");
+			audit.setNewValue(user.getName() + "(" + user.getAD_User_ID() + ")");
+			//
+			audit.setWFState(getWFState());
+			audit.setEventType(MWFEventAudit.EVENTTYPE_StateChanged);
+			final long ms = System.currentTimeMillis() - audit.getCreated().getTime();
+			audit.setElapsedTimeMS(new BigDecimal(ms));
+			audit.saveEx();
+		}
+
+		// Create new one
+		newEventAudit();
+	}
+
+	public void setUserConfirmation(@NonNull final UserId userId, @Nullable final String textMsg)
 	{
-		log.debug(textMsg);
-		setWFState(StateEngine.STATE_Running);
-		setAD_User_ID(AD_User_ID);
+		changeWFStateTo(StateEngine.STATE_Running);
+		setAD_User_ID(userId.getRepoId());
 		if (textMsg != null)
 		{
-			setTextMsg(textMsg);
+			addTextMsg(textMsg);
 		}
-		setWFState(StateEngine.STATE_Completed);
-	}	// setUserConfirmation
+		changeWFStateTo(StateEngine.STATE_Completed);
+	}    // setUserConfirmation
 
-	private List<ProcessInfoParameter> createProcessInfoParameters(final PO po)
+	private static List<ProcessInfoParameter> createProcessInfoParameters(@NonNull final WFNode wfNode, @NonNull final PO po)
 	{
-		return Stream.of(m_node.getParameters())
+		return wfNode.getProcessParameters()
+				.stream()
 				.map(wfNodePara -> createProcessInfoParameter(wfNodePara, po))
-				.filter(pip -> pip != null)
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private final ProcessInfoParameter createProcessInfoParameter(final I_AD_WF_Node_Para nPara, final PO po)
+	@Nullable
+	private static ProcessInfoParameter createProcessInfoParameter(@NonNull final WFNodeParameter nPara, @NonNull final PO po)
 	{
 		final String attributeName = nPara.getAttributeName();
 		final String attributeValue = nPara.getAttributeValue();
@@ -1626,7 +1445,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			value = null;
 		}
-		else if (attributeValue.indexOf('@') != -1 && po != null)	// we have a variable
+		else if (attributeValue.indexOf('@') != -1 && po != null)    // we have a variable
 		{
 			// Strip
 			int index = attributeValue.indexOf('@');
@@ -1647,10 +1466,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			// not a column
 			{
 				// try Env
-				String env = Env.getContext(getCtx(), columnName);
-				if (env.length() == 0)
+				final String env = Env.getContext(Env.getCtx(), columnName);
+				if (Check.isEmpty(env))
 				{
-					log.warn(attributeName + " - not column nor environment =" + columnName + "(" + attributeValue + ")");
+					log.warn("{} - not column nor environment ={}({})", attributeName, columnName, attributeValue);
 					return null;
 				}
 				else
@@ -1658,20 +1477,18 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					value = env;
 				}
 			}
-		}	// @variable@
-
-		final I_AD_Process_Para adProcessPara = nPara.getAD_Process_Para();
+		}    // @variable@
 
 		// No Value
 		if (value == null)
 		{
-			if (adProcessPara.isMandatory())
+			if (nPara.isMandatory())
 			{
-				log.warn(attributeName + " - empty - mandatory!");
+				log.warn("{} - empty - mandatory!", attributeName);
 			}
 			else
 			{
-				log.debug(attributeName + " - empty");
+				log.debug("{} - empty", attributeName);
 			}
 			return null;
 		}
@@ -1679,28 +1496,16 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		// Convert to Type
 		try
 		{
-			final int displayType = adProcessPara.getAD_Reference_ID();
+			final int displayType = nPara.getValueType().getRepoId();
 			if (DisplayType.isNumeric(displayType)
 					|| DisplayType.isID(displayType))
 			{
-				BigDecimal bd = null;
-				if (value instanceof BigDecimal)
-				{
-					bd = (BigDecimal)value;
-				}
-				else if (value instanceof Integer)
-				{
-					bd = new BigDecimal(((Integer)value).intValue());
-				}
-				else
-				{
-					bd = new BigDecimal(value.toString());
-				}
+				final BigDecimal bd = NumberUtils.asBigDecimal(value);
 				return ProcessInfoParameter.of(attributeName, bd);
 			}
 			else if (DisplayType.isDate(displayType))
 			{
-				Timestamp ts = null;
+				final Timestamp ts;
 				if (value instanceof Timestamp)
 				{
 					ts = (Timestamp)value;
@@ -1716,60 +1521,59 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				return ProcessInfoParameter.of(attributeName, value.toString());
 			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.warn("Failed on {} = {} ({})", attributeName, attributeValue, value, e);
 			return null;
 		}
 	}
 
-	/*********************************
-	 * Send EMail
-	 */
 	private void sendEMail()
 	{
 		final IDocument doc = getDocument();
 
 		final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
-		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(m_node.getR_MailText_ID());
+		final WFNode wfNode = getNode();
+		final MailTemplateId mailTemplateId = wfNode.getMailTemplateId();
 		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
-				.recordAndUpdateBPartnerAndContact(m_po);
+				.recordAndUpdateBPartnerAndContact(getPONoLoad());
 		//
-		String subject = doc.getDocumentInfo()
+		final String subject = doc.getDocumentInfo()
 				+ ": " + mailTextBuilder.getMailHeader();
-		String message = mailTextBuilder.getFullMailText()
+		final String message = mailTextBuilder.getFullMailText()
 				+ "\n-----\n" + doc.getDocumentInfo()
 				+ "\n" + doc.getSummary();
-		File pdf = doc.createPDF();
+		final File pdf = doc.createPDF();
 		//
-		MClient client = MClient.get(doc.getCtx(), doc.getAD_Client_ID());
+		final MClient client = MClient.get(doc.getCtx(), doc.getAD_Client_ID());
 
 		// Explicit EMail
 		sendEMail(
 				client,
 				(UserId)null,
-				EMailAddress.ofNullableString(m_node.getEMail()),
+				wfNode.getEmailTo(),
 				subject,
 				message,
 				pdf,
 				mailTextBuilder.isHtml());
 		// Recipient Type
-		String recipient = m_node.getEMailRecipient();
+		final WFNodeEmailRecipient emailRecipient = wfNode.getEmailRecipient();
 		// email to document user
-		if (recipient == null || recipient.length() == 0)
+		if (emailRecipient == null)
 		{
 			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
 			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
 		}
-		else if (recipient.equals(MWFNode.EMAILRECIPIENT_DocumentBusinessPartner))
+		else if (emailRecipient.equals(WFNodeEmailRecipient.DocumentBusinessPartner))
 		{
-			int index = m_po.get_ColumnIndex("AD_User_ID");
+			final PO po = getPONoLoad();
+			final int index = po.get_ColumnIndex("AD_User_ID");
 			if (index > 0)
 			{
-				Object oo = m_po.get_Value(index);
+				final Object oo = po.get_Value(index);
 				if (oo instanceof Integer)
 				{
-					final UserId userId = UserId.ofRepoIdOrNull(((Integer)oo).intValue());
+					final UserId userId = UserId.ofRepoIdOrNull((Integer)oo);
 					if (userId != null)
 					{
 						sendEMail(client, userId, null, subject, message, pdf, mailTextBuilder.isHtml());
@@ -1789,14 +1593,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				log.debug("No User Field in Document");
 			}
 		}
-		else if (recipient.equals(MWFNode.EMAILRECIPIENT_DocumentOwner))
+		else if (emailRecipient.equals(WFNodeEmailRecipient.DocumentOwner))
 		{
 			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
 			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
 		}
-		else if (recipient.equals(MWFNode.EMAILRECIPIENT_WFResponsible))
+		else if (emailRecipient.equals(WFNodeEmailRecipient.WorkflowResponsible))
 		{
-			final MWFResponsible resp = getResponsible();
+			final WFResponsible resp = getResponsible();
 			if (resp.isInvoker())
 			{
 				final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
@@ -1809,19 +1613,17 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			}
 			else if (resp.isRole())
 			{
-				final I_AD_Role role = resp.getRole();
-				if (role != null)
+				final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+				final RoleId roleId = resp.getRoleId();
+				for (final UserId adUserId : roleDAO.retrieveUserIdsForRoleId(roleId))
 				{
-					final RoleId roleId = RoleId.ofRepoId(role.getAD_Role_ID());
-					for (final UserId adUserId : Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId))
-					{
-						sendEMail(client, adUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
-					}
+					sendEMail(client, adUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
 				}
 			}
 			else if (resp.isOrganization())
 			{
-				final OrgId orgId = OrgId.ofRepoIdOrAny(m_po.getAD_Org_ID());
+				final PO po = getPONoLoad();
+				final OrgId orgId = OrgId.ofRepoIdOrAny(po.getAD_Org_ID());
 				final OrgInfo org = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
 				if (org.getSupervisorId() == null)
 				{
@@ -1833,27 +1635,27 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				}
 			}
 		}
-	}	// sendEMail
+	}    // sendEMail
 
 	/**
 	 * Send actual EMail
 	 *
-	 * @param client client
-	 * @param userId user
-	 * @param email email string
+	 * @param client  client
+	 * @param userId  user
+	 * @param email   email string
 	 * @param subject subject
 	 * @param message message
-	 * @param pdf attachment
-	 * @param isHtml isHtml
+	 * @param pdf     attachment
+	 * @param isHtml  isHtml
 	 */
 	private void sendEMail(
-			MClient client,
-			UserId userId, 
+			final MClient client,
+			final UserId userId,
 			EMailAddress email,
-			String subject, 
-			String message, 
-			File pdf, 
-			boolean isHtml)
+			final String subject,
+			final String message,
+			final File pdf,
+			final boolean isHtml)
 	{
 		if (userId != null)
 		{
@@ -1884,93 +1686,39 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.warn("No userId or email provided");
 		}
-	}	// sendEMail
+	}    // sendEMail
 
-	/**************************************************************************
-	 * Get Process Activity (Event) History
-	 *
-	 * @return history
-	 */
-	public String getHistoryHTML()
-	{
-		SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.DateTime);
-		StringBuffer sb = new StringBuffer();
-		MWFEventAudit[] events = MWFEventAudit.get(getCtx(), getAD_WF_Process_ID(), get_TrxName());
-		for (MWFEventAudit audit : events)
-		{
-			// sb.append("<p style=\"width:400\">");
-			sb.append("<p>");
-			sb.append(format.format(audit.getCreated()))
-					.append(" ")
-					.append(getHTMLpart("b", audit.getNodeName()))
-					.append(": ")
-					.append(getHTMLpart(null, audit.getDescription()))
-					.append(getHTMLpart("i", audit.getTextMsg()));
-			sb.append("</p>");
-		}
-		return sb.toString();
-	}	// getHistory
-
-	/**
-	 * Get HTML part
-	 *
-	 * @param tag HTML tag
-	 * @param content content
-	 * @return <tag>content</tag>
-	 */
-	private StringBuffer getHTMLpart(String tag, String content)
-	{
-		StringBuffer sb = new StringBuffer();
-		if (content == null || content.length() == 0)
-		{
-			return sb;
-		}
-		if (tag != null && tag.length() > 0)
-		{
-			sb.append("<").append(tag).append(">");
-		}
-		sb.append(content);
-		if (tag != null && tag.length() > 0)
-		{
-			sb.append("</").append(tag).append(">");
-		}
-		return sb;
-	}	// getHTMLpart
-
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MWFActivity[");
-		sb.append(get_ID()).append(",Node=");
-		if (m_node == null)
+		final StringBuilder sb = new StringBuilder("MWFActivity[");
+		sb.append(get_ID());
+
+		sb.append(",Node=");
+		final WFNode wfNode = this._node;
+		if (wfNode == null)
 		{
 			sb.append(getAD_WF_Node_ID());
 		}
 		else
 		{
-			sb.append(m_node.getName());
+			sb.append(wfNode.getName().getDefaultValue());
 		}
+
 		sb.append(",State=").append(getWFState())
 				.append(",AD_User_ID=").append(getAD_User_ID())
 				.append(",").append(getCreated())
 				.append("]");
 		return sb.toString();
-	} 	// toString
+	}
 
 	/**
 	 * User String Representation.
 	 * Suspended: Approve it (Joe)
-	 *
-	 * @return info
 	 */
-	public String toStringX()
+	private String toStringX()
 	{
-		StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		sb.append(getWFStateText())
 				.append(": ").append(getNode().getName());
 		if (getAD_User_ID() > 0)
@@ -1979,65 +1727,5 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			sb.append(" (").append(userFullname).append(")");
 		}
 		return sb.toString();
-	}	// toStringX
-
-	/**
-	 * Get Document Summary
-	 *
-	 * @return PO Summary
-	 */
-	public String getSummary()
-	{
-		PO po = getPO();
-		if (po == null)
-		{
-			return null;
-		}
-		StringBuffer sb = new StringBuffer();
-		String[] keyColumns = po.get_KeyColumns();
-		if ((keyColumns != null) && (keyColumns.length > 0))
-		{
-			sb.append(Services.get(IMsgBL.class).translate(getCtx(), keyColumns[0])).append(" ");
-		}
-		int index = po.get_ColumnIndex("DocumentNo");
-		if (index != -1)
-		{
-			sb.append(po.get_Value(index)).append(": ");
-		}
-		index = po.get_ColumnIndex("SalesRep_ID");
-		Integer sr = null;
-		if (index != -1)
-		{
-			sr = (Integer)po.get_Value(index);
-		}
-		else
-		{
-			index = po.get_ColumnIndex("AD_User_ID");
-			if (index != -1)
-			{
-				sr = (Integer)po.get_Value(index);
-			}
-		}
-		if (sr != null)
-		{
-			String userFullname = Services.get(IUserDAO.class).retrieveUserFullname(sr.intValue());
-			if (!Check.isEmpty(userFullname))
-			{
-				sb.append(userFullname).append(" ");
-			}
-		}
-		//
-		index = po.get_ColumnIndex("C_BPartner_ID");
-		if (index != -1)
-		{
-			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(po.get_ValueAsInt(index));
-			if (bpartnerId != null)
-			{
-				final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerName(bpartnerId);
-				sb.append(bpartnerName).append(" ");
-			}
-		}
-		return sb.toString();
-	}	// getSummary
-
-}	// MWFActivity
+	}
+}

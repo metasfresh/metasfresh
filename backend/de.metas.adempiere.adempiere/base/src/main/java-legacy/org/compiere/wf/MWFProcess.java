@@ -1,639 +1,506 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.wf;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.organization.OrgId;
+import de.metas.process.ProcessInfo;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
+import de.metas.workflow.WFNodeId;
+import de.metas.workflow.WFNodeSplitType;
+import de.metas.workflow.WFNodeTransition;
+import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.MTable;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_WF_Activity;
 import org.compiere.model.PO;
-import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Process;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
+import de.metas.workflow.service.IADWorkflowDAO;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.process.ProcessInfo;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Services;
-
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
- *	Workflow Process
+ * Workflow Process
  *
- *  @author Jorg Janke
- *  @version $Id: MWFProcess.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: MWFProcess.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
 public class MWFProcess extends X_AD_WF_Process
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -8992222567597358696L;
+	private Workflow _workflow = null; // lazy
+	private PO _po = null; // lazy
+	private String _processMsg = null;
 
-	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param AD_WF_Process_ID process
-	 *	@param trxName transaction
-	 */
-	public MWFProcess (Properties ctx, int AD_WF_Process_ID, String trxName)
+	public MWFProcess(final Properties ctx, final int AD_WF_Process_ID)
 	{
-		super (ctx, AD_WF_Process_ID, trxName);
-		if (AD_WF_Process_ID == 0)
-			throw new IllegalArgumentException ("Cannot create new WF Process directly");
-		m_state = new StateEngine (getWFState());
-	}	//	MWFProcess
-
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
-	public MWFProcess (Properties ctx, ResultSet rs, String trxName)
-	{
-		super(ctx, rs, trxName);
-		m_state = new StateEngine (getWFState());
-	}	//	MWFProcess
-
-	/**
-	 * 	New Constructor
-	 *	@param wf workflow
-	 *	@param pi Process Info (Record_ID)
-	 *  @deprecated
-	 *	@throws Exception
-	 */
-	@Deprecated
-	public MWFProcess (MWorkflow wf, ProcessInfo pi) throws Exception
-	{
-		this(wf, pi, wf.get_TrxName());
+		this(ctx, AD_WF_Process_ID, ITrx.TRXNAME_None);
 	}
 
-	/**
-	 * 	New Constructor
-	 *	@param wf workflow
-	 *	@param pi Process Info (Record_ID)
-	 *  @param trxName
-	 *	@throws Exception
-	 */
-	public MWFProcess (MWorkflow wf, ProcessInfo pi, String trxName) throws Exception
+	@Deprecated
+	public MWFProcess(final Properties ctx, final int AD_WF_Process_ID, final String trxName)
 	{
-		super (wf.getCtx(), 0, trxName);
-		// metas: tsa: begin: WF Process should be started using process's AD_Client_ID
+		super(ctx, AD_WF_Process_ID, trxName);
+		if (is_new())
+		{
+			throw new AdempiereException("Cannot create new WF Process directly");
+		}
+	}
+
+	public MWFProcess(final Properties ctx, final ResultSet rs, final String trxName)
+	{
+		super(ctx, rs, trxName);
+	}
+
+	public MWFProcess(final Workflow workflow, final ProcessInfo pi)
+	{
+		super(Env.getCtx(), 0, ITrx.TRXNAME_None); // always out of trx
+
+		// WF Process should be started using process's AD_Client_ID
 		if (pi.getAD_Client_ID() >= 0 && pi.getAD_Client_ID() != getAD_Client_ID())
-			setClientOrg(pi.getAD_Client_ID(), 0);
-		// metas: tsa: end
-		if (!TimeUtil.isValid(wf.getValidFrom(), wf.getValidTo()))
-			throw new IllegalStateException("Workflow not valid");
-		m_wf = wf;
-//TODO  m_pi = pi; red1 - never used  -check later
-		setAD_Workflow_ID (wf.getAD_Workflow_ID());
-		setPriority(wf.getPriority());
-		super.setWFState (WFSTATE_NotStarted);
+		{
+			setClientOrg(pi.getAD_Client_ID(), OrgId.ANY.getRepoId());
+		}
+
+		final Instant now = SystemTime.asInstant();
+		if (!TimeUtil.isBetween(now, workflow.getValidFrom(), workflow.getValidTo()))
+		{
+			throw new AdempiereException("Workflow not valid on " + now);
+		}
+
+		this._workflow = workflow;
+		setAD_Workflow_ID(workflow.getId().getRepoId());
+		setPriority(workflow.getPriority());
+		super.setWFState(WFSTATE_NotStarted);
 
 		//	Document
-		setAD_Table_ID(wf.getAD_Table_ID());
+		setAD_Table_ID(pi.getTable_ID());
 		setRecord_ID(pi.getRecord_ID());
 		if (getPO() == null)
 		{
-			setTextMsg("No PO with ID=" + pi.getRecord_ID());
-			addTextMsg(new Exception(""));
-			super.setWFState (WFSTATE_Terminated);
+			addTextMsg(new AdempiereException("No PO with ID=" + pi.getRecord_ID()));
+			super.setWFState(WFSTATE_Terminated);
 		}
 		else
-			setTextMsg(getPO());
+		{
+			addTextMsg(getPO());
+		}
+
 		//	Responsible/User
-		if (wf.getAD_WF_Responsible_ID() == 0)
+		if (workflow.getResponsibleId() == null)
+		{
 			setAD_WF_Responsible_ID();
+		}
 		else
-			setAD_WF_Responsible_ID(wf.getAD_WF_Responsible_ID());
-		setUser_ID(pi.getAD_User_ID());		//	user starting
+		{
+			setAD_WF_Responsible_ID(workflow.getResponsibleId().getRepoId());
+		}
+
+		setAD_User_ID(pi.getUserId().getRepoId()); //	user starting
+
 		//
-		m_state = new StateEngine (getWFState());
-		setProcessed (false);
+		setProcessed(false);
+
 		//	Lock Entity
-		getPO();
+		//getPO();
 		//hengsin: remove lock/unlock which is causing deadlock
 		//if (m_po != null)
-			//m_po.lock();
-	}	//	MWFProcess
+		//m_po.lock();
+	}    //	MWFProcess
 
-	/**	State Machine				*/
-	private StateEngine			m_state = null;
-	/**	Activities					*/
-	private MWFActivity[] 		m_activities = null;
-	/**	Workflow					*/
-	private MWorkflow			m_wf = null;
-	/**	Process Info				*/
-/*TODO red1 - never used
- *
-	private ProcessInfo			m_pi = null;
- */
-	/**	Persistent Object			*/
-	private PO					m_po = null;
-	/** Message from Activity		*/
-	private String				m_processMsg = null;
-
-	/**
-	 * 	Get active Activities of Process
-	 *	@param requery if true requery
-	 *	@param onlyActive only active activities
-	 *	@return array of activities
-	 */
-	public MWFActivity[] getActivities (boolean requery, boolean onlyActive)
+	private ImmutableList<MWFActivity> getActiveActivities()
 	{
-		return getActivities(requery, onlyActive, get_TrxName());
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_Activity.class)
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_AD_WF_Process_ID, getAD_WF_Process_ID())
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_Processed, false)
+				.orderBy(I_AD_WF_Activity.COLUMNNAME_AD_WF_Activity_ID)
+				.create()
+				.listImmutable(MWFActivity.class);
+	}
+
+	public Optional<I_AD_WF_Activity> getFirstActivityByWFState(@NonNull final StateEngine wfState)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_Activity.class)
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_AD_WF_Process_ID, getAD_WF_Process_ID())
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_WFState, wfState.getCode())
+				.orderBy(I_AD_WF_Activity.COLUMNNAME_AD_WF_Activity_ID)
+				.create()
+				.firstOptional(I_AD_WF_Activity.class);
+	}
+
+	public StateEngine getState()
+	{
+		return StateEngine.ofCode(getWFState());
+	}
+
+	@Override
+	@Deprecated
+	public void setWFState(final String WFState)
+	{
+		changeWFStateTo(WFState);
 	}
 
 	/**
-	 * 	Get active Activities of Process
-	 *	@param requery if true requery
-	 *	@param onlyActive only active activities
-	 *	@return array of activities
+	 * Set Process State and update Actions
 	 */
-	private MWFActivity[] getActivities (boolean requery, boolean onlyActive, String trxName)
+	public void changeWFStateTo(final String WFState)
 	{
-		if (!requery && m_activities != null)
-			return m_activities;
-		//
-		ArrayList<Object> params = new ArrayList<>();
-		StringBuffer whereClause = new StringBuffer("AD_WF_Process_ID=?");
-		params.add(getAD_WF_Process_ID());
-		if (onlyActive)
+		if (getState().isClosed())
 		{
-			whereClause.append(" AND Processed=?");
-			params.add(false);
+			return;
 		}
-		List<MWFActivity> list = new Query(getCtx(), MWFActivity.Table_Name, whereClause.toString(), trxName)
-								.setParameters(params)
-								.list(MWFActivity.class);
-		m_activities = new MWFActivity[list.size ()];
-		list.toArray (m_activities);
-		return m_activities;
-	}	//	getActivities
 
-	/**
-	 * 	Get State
-	 *	@return state
-	 */
-	public StateEngine getState()
-	{
-		return m_state;
-	}	//	getState
-
-	/**
-	 * 	Get Action Options
-	 *	@return array of valid actions
-	 */
-	public String[] getActionOptions()
-	{
-		return m_state.getActionOptions();
-	}	//	getActionOptions
-
-	/**
-	 * 	Set Process State and update Actions
-	 *	@param WFState
-	 */
-	@Override
-	public void setWFState (String WFState)
-	{
-		if (m_state == null)
-			m_state = new StateEngine (getWFState());
-		if (m_state.isClosed())
-			return;
 		if (getWFState().equals(WFState))
-			return;
-		//
-		if (m_state.isValidNewState(WFState))
 		{
-			log.debug(WFState);
-			super.setWFState (WFState);
-			m_state = new StateEngine (getWFState());
-			if (m_state.isClosed())
-				setProcessed(true);
-			save();
-			//	Force close to all Activities
-			if (m_state.isClosed())
+			return;
+		}
+
+		//
+		if (getState().isValidNewState(WFState))
+		{
+			log.debug("Set WFState={}", WFState);
+			super.setWFState(WFState);
+			if (getState().isClosed())
 			{
-				MWFActivity[] activities = getActivities(true, true);	//	requery only active
-				for (int i = 0; i < activities.length; i++)
+				setProcessed(true);
+			}
+
+			saveEx();
+
+			//	Force close to all Activities
+			if (getState().isClosed())
+			{
+				for (final MWFActivity activity : getActiveActivities())
 				{
-					if (!activities[i].isClosed())
+					if (!activity.isClosed())
 					{
-						activities[i].setTextMsg("Process:" + WFState);
-						activities[i].setWFState(WFState);
+						activity.addTextMsg("Process:" + WFState);
+						activity.changeWFStateTo(WFState);
 					}
-					if (!activities[i].isProcessed())
-						activities[i].setProcessed(true);
-					activities[i].save();
+					if (!activity.isProcessed())
+					{
+						activity.setProcessed(true);
+					}
+					activity.saveEx();
 				}
-			}	//	closed
+			}    //	closed
 		}
 		else
-			log.error("Ignored Invalid Transformation - New=" + WFState
-				+ ", Current=" + getWFState());
-	}	//	setWFState
-
+		{
+			log.warn("Ignored invalid state transition {} -> {}", getWFState(), WFState);
+		}
+	}
 
 	/**************************************************************************
 	 * 	Check Status of Activities.
 	 * 	- update Process if required
 	 * 	- start new activity
-	 * 	@param trxName transaction
 	 */
-	public void checkActivities(String trxName, PO lastPO)
+	void checkActivities(@Nullable final PO lastPO)
 	{
-		log.info("(" + getAD_Workflow_ID() + ") - " + getWFState()
-			+ (trxName == null ? "" : "[" + trxName + "]"));
-		if (m_state.isClosed())
+		if (getState().isClosed())
+		{
 			return;
+		}
 
 		if (lastPO != null && lastPO.get_ID() == this.getRecord_ID())
-			m_po = lastPO;
+		{
+			this._po = lastPO;
+		}
 
 		//
-		MWFActivity[] activities = getActivities (true, true, trxName);	//	requery active
 		String closedState = null;
 		boolean suspended = false;
 		boolean running = false;
-		for (MWFActivity activity : activities)
-		{
-			StateEngine activityState = activity.getState();
 
-			//	Completed - Start Next
-			if (activityState.isCompleted())
-			{
-				if (startNext (activity, activities, lastPO, trxName))
-					continue;
-			}
-			//
-			String activityWFState = activity.getWFState();
-			if (activityState.isClosed())
-			{
-				//	eliminate from active processed
-				activity.setProcessed(true);
-				activity.save();
-				//
-				if (closedState == null)
-					closedState = activityWFState;
-				else if (!closedState.equals(activityWFState))
-				{
-					//	Overwrite if terminated
-					if (WFSTATE_Terminated.equals(activityWFState))
-						closedState = activityWFState;
-					//	Overwrite if activity aborted and no other terminated
-					else if (WFSTATE_Aborted.equals(activityWFState) && !WFSTATE_Terminated.equals(closedState))
-						closedState = activityWFState;
-				}
-			}
-			else	//	not closed
-			{
-				closedState = null;		//	all need to be closed
-				if (activityState.isSuspended())
-					suspended = true;
-				if (activityState.isRunning())
-					running = true;
-			}
-		}	//	for all activities
-		if (activities.length == 0)
+		final ImmutableList<MWFActivity> activities = getActiveActivities();
+		if (activities.isEmpty())
 		{
-			setTextMsg("No Active Processed found");
-			addTextMsg(new Exception(""));
+			addTextMsg(new AdempiereException("No Active Processed found"));
 			closedState = WFSTATE_Terminated;
 		}
+		else
+		{
+			for (final MWFActivity activity : activities)
+			{
+				final StateEngine activityState = activity.getState();
+
+				//	Completed - Start Next
+				if (activityState.isCompleted())
+				{
+					if (startNextActivity(activity, lastPO))
+					{
+						continue;
+					}
+				}
+
+				//
+				final String activityWFState = activity.getWFState();
+				if (activityState.isClosed())
+				{
+					//	eliminate from active processed
+					activity.setProcessed(true);
+					activity.saveEx();
+					//
+					if (closedState == null)
+					{
+						closedState = activityWFState;
+					}
+					else if (!closedState.equals(activityWFState))
+					{
+						//	Overwrite if terminated
+						if (WFSTATE_Terminated.equals(activityWFState))
+						{
+							closedState = activityWFState;
+						}
+						//	Overwrite if activity aborted and no other terminated
+						else if (WFSTATE_Aborted.equals(activityWFState) && !WFSTATE_Terminated.equals(closedState))
+						{
+							closedState = activityWFState;
+						}
+					}
+				}
+				else    //	not closed
+				{
+					closedState = null;        //	all need to be closed
+					if (activityState.isSuspended())
+						suspended = true;
+					if (activityState.isRunning())
+						running = true;
+				}
+			}    //	for all activities
+		}
+
+		//
+		// Update workflow process state
 		if (closedState != null)
 		{
-			setWFState(closedState);
-			getPO();
+			changeWFStateTo(closedState);
+			//getPO();
 			//hengsin: remmove lock/unlock in workflow which is causing deadlock in many place
 			//if (m_po != null)
-				//m_po.unlock(null);
+			//m_po.unlock(null);
 		}
 		else if (suspended)
-			setWFState(WFSTATE_Suspended);
+		{
+			changeWFStateTo(WFSTATE_Suspended);
+		}
 		else if (running)
-			setWFState(WFSTATE_Running);
-	}	//	checkActivities
-
+		{
+			changeWFStateTo(WFSTATE_Running);
+		}
+	}    //	checkActivities
 
 	/**
-	 * 	Start Next Activity
-	 *	@param last last activity
-	 *	@param activities all activities
-	 *	@return true if there is a next activity
+	 * Start Next Activity
+	 *
+	 * @return true if there is a next activity
 	 */
-	private boolean startNext (MWFActivity last, MWFActivity[] activities, PO lastPO, String trxName)
+	private boolean startNextActivity(
+			@NonNull final MWFActivity lastActivity,
+			@Nullable final PO lastPO)
 	{
-		log.debug("Last=" + last);
+		log.debug("Last activity: {}", lastActivity);
+
 		//	transitions from the last processed node
-		MWFNodeNext[] transitions = getWorkflow().getNodeNexts(
-			last.getAD_WF_Node_ID(), last.getPO_AD_Client_ID());
-		if (transitions == null || transitions.length == 0)
-			return false;	//	done
+		final ImmutableList<WFNodeTransition> transitions = getWorkflow().getTransitionsFromNode(
+				WFNodeId.ofRepoId(lastActivity.getAD_WF_Node_ID()),
+				lastActivity.getPO_AD_Client_ID().orElse(ClientId.SYSTEM));
+		if (transitions.isEmpty())
+		{
+			return false;    //	done
+		}
 
 		//	We need to wait for last activity
-		if (MWFNode.JOINELEMENT_AND.equals(last.getNode().getJoinElement()))
-		{
-			//	get previous nodes
-			//	check if all have closed activities
-			//	return false for all but the last
-		}
+		//if (lastActivity.getNode().getJoinType().isAnd())
+		//{
+		//	get previous nodes
+		//	check if all have closed activities
+		//	return false for all but the last
+		//}
+
 		//	eliminate from active processed
-		last.setProcessed(true);
-		last.save();
+		lastActivity.setProcessed(true);
+		lastActivity.saveEx();
 
 		//	Start next activity
-		String split = last.getNode().getSplitElement();
-		for (int i = 0; i < transitions.length; i++)
+		final WFNodeSplitType splitType = lastActivity.getNode().getSplitType();
+		for (final WFNodeTransition transition : transitions)
 		{
 			//	Is this a valid transition?
-			if (!transitions[i].isValidFor(last))
+			if (!transition.isValidFor(lastActivity))
 				continue;
 
 			//	Start new Activity...
-			MWFActivity activity = new MWFActivity (this, transitions[i].getAD_WF_Next_ID(), lastPO);
-			activity.set_TrxName(trxName);
+			final MWFActivity activity = new MWFActivity(this, transition.getNextNodeId(), lastPO);
 			activity.run();
 
 			//	only the first valid if XOR
-			if (MWFNode.SPLITELEMENT_XOR.equals(split))
+			if (splitType.isXOR())
+			{
 				return true;
-		}	//	for all transitions
-		return true;
-	}	//	startNext
+			}
+		}    //	for all transitions
 
+		return true;
+	}    //	startNext
 
 	/**************************************************************************
 	 * 	Set Workflow Responsible.
 	 * 	Searches for a Invoker.
 	 */
-	public void setAD_WF_Responsible_ID ()
+	private void setAD_WF_Responsible_ID()
 	{
-		int AD_WF_Responsible_ID = DB.getSQLValueEx(ITrx.TRXNAME_None,
+		final int AD_WF_Responsible_ID = DB.getSQLValueEx(ITrx.TRXNAME_None,
 				Env.getUserRolePermissions(getCtx()).addAccessSQL(
-			"SELECT AD_WF_Responsible_ID FROM AD_WF_Responsible "
-			+ "WHERE ResponsibleType='H' AND COALESCE(AD_User_ID,0)=0 "
-			+ "ORDER BY AD_Client_ID DESC",
-			"AD_WF_Responsible", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ));
-		setAD_WF_Responsible_ID (AD_WF_Responsible_ID);
-	}	//	setAD_WF_Responsible_ID
+						"SELECT AD_WF_Responsible_ID FROM AD_WF_Responsible "
+								+ "WHERE ResponsibleType='H' AND COALESCE(AD_User_ID,0)=0 "
+								+ "ORDER BY AD_Client_ID DESC",
+						"AD_WF_Responsible", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ));
+		setAD_WF_Responsible_ID(AD_WF_Responsible_ID);
+	}    //	setAD_WF_Responsible_ID
+
+	private Workflow getWorkflow()
+	{
+		Workflow workflow = this._workflow;
+		if (workflow == null)
+		{
+			final WorkflowId workflowId = WorkflowId.ofRepoId(getAD_Workflow_ID());
+			workflow = Services.get(IADWorkflowDAO.class).getById(workflowId);
+			this._workflow = workflow;
+		}
+		return workflow;
+	}
 
 	/**
-	 * 	Set User from
-	 * 	- (1) Responsible
-	 *  - (2) Document Sales Rep
-	 *  - (3) Document UpdatedBy
-	 * 	- (4) Process invoker
-	 * 	@param User_ID process invoker
+	 * Start WF Execution
 	 */
-	private void setUser_ID (Integer User_ID)
+	public void startWork()
 	{
-		//	Responsible
-		MWFResponsible resp = MWFResponsible.get(getCtx(), getAD_WF_Responsible_ID());
-		//	(1) User - Directly responsible
-		int AD_User_ID = resp.getAD_User_ID();
-
-		//	Invoker - get Sales Rep or last updater of Document
-		if (AD_User_ID == 0 && resp.isInvoker())
+		if (!getState().isValidAction(StateEngine.ACTION_Start))
 		{
-			final PO po = getPO();
-			//	(2) Doc Owner
-			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
-			if (document != null)
-			{
-				AD_User_ID = document.getDoc_User_ID();
-			}
-			//	(2) Sales Rep
-			if (AD_User_ID == 0 && po != null && po.get_ColumnIndex("SalesRep_ID") != -1)
-			{
-				Object sr = po.get_Value("SalesRep_ID");
-				if (sr != null && sr instanceof Integer)
-					AD_User_ID = ((Integer)sr).intValue();
-			}
-			//	(3) UpdatedBy
-			if (AD_User_ID == 0 && po != null)
-				AD_User_ID = po.getUpdatedBy();
+			log.warn("State={} - cannot start", getWFState());
+			return;
 		}
 
-		//	(4) Process Owner
-		if (AD_User_ID == 0 && User_ID != null)
-			AD_User_ID = User_ID.intValue();
-		//	Fallback
-		if (AD_User_ID == 0)
-			AD_User_ID = Env.getAD_User_ID(getCtx());
-		//
-		setAD_User_ID(AD_User_ID);
-	}	//	setUser_ID
-
-	/**
-	 * 	Get Workflow
-	 *	@return workflow
-	 */
-	private MWorkflow getWorkflow()
-	{
-		if (m_wf == null)
-			m_wf = MWorkflow.get (getCtx(), getAD_Workflow_ID());
-		if (m_wf.get_ID() == 0)
-			throw new IllegalStateException("Not found - AD_Workflow_ID=" + getAD_Workflow_ID());
-		return m_wf;
-	}	//	getWorkflow
-
-
-	/**************************************************************************
-	 * 	Perform Action
-	 *	@param action StateEngine.ACTION_*
-	 *	@return true if valid
-	 */
-	public boolean perform (String action)
-	{
-		if (!m_state.isValidAction(action))
-		{
-			log.error("Ignored Invalid Transformation - Action=" + action
-				+ ", CurrentState=" + getWFState());
-			return false;
-		}
-		log.debug(action);
-		//	Action is Valid
-		if (StateEngine.ACTION_Start.equals(action))
-			return startWork();
-		//	Set new State
-		setWFState (m_state.getNewStateIfAction(action));
-		return true;
-	}	//	perform
-
-	/**
-	 * 	Start WF Execution
-	 *	@return true if success
-	 */
-	public boolean startWork()
-	{
-		if (!m_state.isValidAction(StateEngine.ACTION_Start))
-		{
-			log.warn("State=" + getWFState() + " - cannot start");
-			return false;
-		}
-		int AD_WF_Node_ID = getWorkflow().getAD_WF_Node_ID();
-		log.debug("AD_WF_Node_ID=" + AD_WF_Node_ID);
-		setWFState(WFSTATE_Running);
+		final WFNodeId firstWFNodeId = getWorkflow().getFirstNodeId();
+		changeWFStateTo(WFSTATE_Running);
 		try
 		{
 			//	Start first Activity with first Node
-			MWFActivity activity = new MWFActivity (this, AD_WF_Node_ID);
-			//
-			// Thread workerWF = new Thread(activity);
-			// workerWF.setName(activity.getAD_Workflow().getName() + " "
-			//		+ activity.getAD_Table().getName() + " "
-			//		+ activity.getRecord_ID());
-			// workerWF.start();
-			activity.run();
-
+			final MWFActivity firstActivity = new MWFActivity(this, firstWFNodeId);
+			firstActivity.run();
 		}
-		catch (Throwable e)
+		catch (final Throwable ex)
 		{
-			log.error("AD_WF_Node_ID=" + AD_WF_Node_ID, e);
-			setTextMsg(e.toString());
-			addTextMsg(e);
-			setWFState(StateEngine.STATE_Terminated);
-			return false;
+			log.error("firstWFNodeId={}", firstWFNodeId, ex);
+			setProcessMsg(ex);
+			changeWFStateTo(StateEngine.STATE_Terminated);
 		}
-		return true;
-	}	//	performStart
+	}
 
-
-	/**************************************************************************
-	 * 	Get Persistent Object
-	 *	@return po
-	 */
+	@Nullable
 	public PO getPO()
 	{
-		if (m_po != null)
-			return m_po;
-		if (getRecord_ID() == 0)
-			return null;
+		PO po = this._po;
+		if (po == null)
+		{
+			final int adTableId = getAD_Table_ID();
+			final int recordId = getRecord_ID();
+			if (adTableId <= 0 || recordId <= 0)
+			{
+				return null;
+			}
+			po = this._po = TableModelLoader.instance.getPO(getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited);
+		}
+		return po;
+	}
 
-		MTable table = MTable.get (getCtx(), getAD_Table_ID());
-		m_po = table.getPO(getRecord_ID(), get_TrxName());
-		return m_po;
-	}	//	getPO
-
-	/**
-	 * 	Set Text Msg (add to existing)
-	 *	@param po base object
-	 */
-	public void setTextMsg (final PO po)
+	private void addTextMsg(final PO po)
 	{
 		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
 		if (document != null)
 		{
-			setTextMsg(document.getSummary());
+			addTextMsg(document.getSummary());
 		}
-	}	//	setTextMsg
+	}
 
-	/**
-	 * 	Set Text Msg (add to existing)
-	 *	@param TextMsg msg
-	 */
-	@Override
-	public void setTextMsg (String TextMsg)
+	void addTextMsg(@Nullable final String textMsg)
 	{
-		String oldText = getTextMsg();
-		if (oldText == null || oldText.length() == 0)
-			super.setTextMsg (TextMsg);
-		else if (TextMsg != null && TextMsg.length() > 0)
-			super.setTextMsg (oldText + "\n - " + TextMsg);
-	}	//	setTextMsg
-
-	/**
-	 * 	Add to Text Msg
-	 *	@param obj some object
-	 */
-	public void addTextMsg (Object obj)
-	{
-		if (obj == null)
-			return;
-		//
-		StringBuffer TextMsg = new StringBuffer ();
-		if (obj instanceof Exception)
+		if (Check.isBlank(textMsg))
 		{
-			Exception ex = (Exception)obj;
-			if (ex.getMessage() != null && ex.getMessage().trim().length() > 0)
-			{
-				TextMsg.append(ex.toString());
-			}
-			else if (ex instanceof NullPointerException)
-			{
-				TextMsg.append(ex.getClass().getName());
-			}
-			while (ex != null)
-			{
-				StackTraceElement[] st = ex.getStackTrace();
-				for (int i = 0; i < st.length; i++)
-				{
-					StackTraceElement ste = st[i];
-					if (i == 0 || ste.getClassName().startsWith("org.compiere") || ste.getClassName().startsWith("org.adempiere"))
-						TextMsg.append(" (").append(i).append("): ")
-							.append(ste.toString())
-							.append("\n");
-				}
-				if (ex.getCause() instanceof Exception)
-					ex = (Exception)ex.getCause();
-				else
-					ex = null;
-			}
+			return;
+		}
+
+		final String oldText = StringUtils.trimBlankToNull(getTextMsg());
+		if (oldText == null)
+		{
+			super.setTextMsg(textMsg.trim());
 		}
 		else
 		{
-			TextMsg.append(obj.toString());
+			super.setTextMsg(oldText + "\n" + textMsg.trim());
 		}
-		//
-		String oldText = getTextMsg();
-		if (oldText == null || oldText.length() == 0)
-			super.setTextMsg(Util.trimSize(TextMsg.toString(),1000));
-		else if (TextMsg != null && TextMsg.length() > 0)
-			super.setTextMsg(Util.trimSize(oldText + "\n - " + TextMsg.toString(),1000));
-	}	//	addTextMsg
+	}
 
-	/**
-	 * 	Set Runtime (Error) Message
-	 *	@param msg message
-	 */
-	public void setProcessMsg (String msg)
+	private void addTextMsg(@Nullable final Throwable ex)
 	{
-		m_processMsg = msg;
-		if (msg != null && msg.length() > 0)
-			setTextMsg(msg);
-	}	//	setProcessMsg
+		if (ex == null)
+		{
+			return;
+		}
+
+		final IErrorManager errorManager = Services.get(IErrorManager.class);
+
+		addTextMsg(AdempiereException.extractMessage(ex));
+
+		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+		final AdIssueId adIssueId = errorManager.createIssue(metasfreshException);
+		setAD_Issue_ID(adIssueId.getRepoId());
+	}
 
 	/**
-	 * 	Get Runtime (Error) Message
-	 *	@return msg
+	 * Set Runtime (Error) Message
 	 */
+	void setProcessMsg(@Nullable final String msg)
+	{
+		_processMsg = msg;
+		addTextMsg(msg);
+	}
+
+	/**
+	 * Set Runtime Error Message
+	 */
+	void setProcessMsg(@NonNull final Throwable ex)
+	{
+		_processMsg = AdempiereException.extractMessage(ex);
+		addTextMsg(ex);
+	}
+
 	public String getProcessMsg()
 	{
-		return m_processMsg;
-	}	//	getProcessMsg
+		return _processMsg;
+	}
 
-}	//	MWFProcess
+}

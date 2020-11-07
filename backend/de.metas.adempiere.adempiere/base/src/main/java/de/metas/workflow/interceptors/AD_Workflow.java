@@ -1,17 +1,8 @@
-package org.compiere.wf.model.validator;
-
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.ModelValidator;
-import org.compiere.wf.api.IADWorkflowBL;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,6 +19,15 @@ import org.compiere.wf.api.IADWorkflowBL;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.workflow.interceptors;
+
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.ModelValidator;
+import de.metas.workflow.service.IADWorkflowBL;
 
 import org.slf4j.Logger;
 

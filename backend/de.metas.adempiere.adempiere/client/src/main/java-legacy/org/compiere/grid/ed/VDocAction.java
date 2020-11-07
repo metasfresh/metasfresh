@@ -218,7 +218,7 @@ public class VDocAction extends CDialog
 		/**
 		 * Check Existence of Workflow Activities
 		 */
-		final String wfStatus = MWFActivity.getActiveInfo(Env.getCtx(), m_AD_Table_ID, Record_ID);
+		final String wfStatus = MWFActivity.getActiveInfo(m_AD_Table_ID, Record_ID);
 		if (wfStatus != null)
 		{
 			ADialog.error(m_WindowNo, this, "WFActiveForRecord", wfStatus);

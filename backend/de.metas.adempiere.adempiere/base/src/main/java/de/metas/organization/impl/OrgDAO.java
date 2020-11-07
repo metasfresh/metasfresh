@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.workflow.WFResponsibleId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -203,7 +204,7 @@ public class OrgDAO implements IOrgDAO
 				.storeCreditCardNumberMode(StoreCreditCardNumberMode.ofCode(record.getStoreCreditCardData()))
 				//
 				.logoImageId(record.getLogo_ID())
-				.workflowResponsibleId(record.getAD_WF_Responsible_ID())
+				.workflowResponsibleId(WFResponsibleId.ofRepoIdOrNull(record.getAD_WF_Responsible_ID()))
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
