@@ -31,6 +31,7 @@ import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
+import de.metas.workflow.execution.WFProcessId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,11 +50,10 @@ public class WFEventAuditRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public List<WFEventAudit> getByProcessId(final int AD_WF_Process_ID)
+	public List<WFEventAudit> getByProcessId(@NonNull final WFProcessId wfProcessId)
 	{
-		return queryBL
-				.createQueryBuilderOutOfTrx(I_AD_WF_EventAudit.class)
-				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Process_ID, AD_WF_Process_ID)
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_EventAudit.class)
+				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Process_ID, wfProcessId)
 				.orderBy(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_EventAudit_ID)
 				.create()
 				.stream()
@@ -62,12 +62,11 @@ public class WFEventAuditRepository
 	}
 
 	public Optional<WFEventAudit> getLastByWFNodeId(
-			final int AD_WF_Process_ID,
+			@NonNull final WFProcessId wfProcessId,
 			@NonNull final WFNodeId nodeId)
 	{
-		return queryBL
-				.createQueryBuilderOutOfTrx(I_AD_WF_EventAudit.class)
-				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Process_ID, AD_WF_Process_ID)
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_EventAudit.class)
+				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Process_ID, wfProcessId)
 				.addEqualsFilter(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_Node_ID, nodeId)
 				.orderByDescending(I_AD_WF_EventAudit.COLUMNNAME_AD_WF_EventAudit_ID)
 				.create()
@@ -88,7 +87,7 @@ public class WFEventAuditRepository
 
 		record.setEventType(audit.getEventType().getCode());
 		record.setAD_Org_ID(audit.getOrgId().getRepoId());
-		record.setAD_WF_Process_ID(audit.getWfProcessId());
+		record.setAD_WF_Process_ID(audit.getWfProcessId().getRepoId());
 		record.setAD_WF_Node_ID(WFNodeId.toRepoId(audit.getWfNodeId()));
 
 		record.setAD_Table_ID(audit.getDocumentRef().getAD_Table_ID());
@@ -119,7 +118,7 @@ public class WFEventAuditRepository
 				.eventType(WDEventAuditType.ofCode(record.getEventType()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				//
-				.wfProcessId(record.getAD_WF_Process_ID())
+				.wfProcessId(WFProcessId.ofRepoId(record.getAD_WF_Process_ID()))
 				.wfNodeId(WFNodeId.ofRepoIdOrNull(record.getAD_WF_Node_ID()))
 				//
 				.documentRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
@@ -139,5 +138,4 @@ public class WFEventAuditRepository
 				//
 				.build();
 	}
-
 }

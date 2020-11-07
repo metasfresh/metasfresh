@@ -1,24 +1,11 @@
 package de.metas.order.event;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.ADMessageAndParams;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -29,8 +16,18 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -158,16 +155,6 @@ public class OrderUserNotifications
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
 		Services.get(INotificationBL.class).sendAfterCommit(notifications);
-	}
-
-	@Value
-	@Builder
-	public static class ADMessageAndParams
-	{
-		@NonNull
-		AdMessageKey adMessage;
-		@Singular
-		List<Object> params;
 	}
 
 	@Value

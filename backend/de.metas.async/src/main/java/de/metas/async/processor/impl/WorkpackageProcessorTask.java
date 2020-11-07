@@ -590,7 +590,6 @@ class WorkpackageProcessorTask implements Runnable
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
 				.recipientUserId(userInChargeId)
-				.subjectADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TITLE)
 				.contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
 				.contentADMessageParam(workpackageId)
 				.contentADMessageParam(errorMsg)

@@ -35,8 +35,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluator;
-import org.compiere.wf.MWFProcess;
 import org.slf4j.Logger;
 
 import java.sql.PreparedStatement;
@@ -119,17 +119,16 @@ public class DocWorkflowManager
 				.setRecord(document.get_Table_ID(), document.get_ID())
 				.build();
 
-		final MWFProcess wfProcess = WorkflowExecutor.builder()
+		final WorkflowExecutionResult result = WorkflowExecutor.builder()
 				.workflow(workflow)
-				.processInfo(pi)
+				.clientId(pi.getClientId())
+				.adLanguage(Env.getADLanguageOrBaseLanguage())
+				.documentRef(pi.getRecordRefOrNull())
+				.userId(pi.getUserId())
 				.build()
 				.start();
-		final boolean started = wfProcess != null;
-		if (started)
-		{
-			log.info("Workflow {} started for {}", workflow, document);
-			countStarted.incrementAndGet();
-		}
+
+		countStarted.incrementAndGet();
 	}
 
 	/**

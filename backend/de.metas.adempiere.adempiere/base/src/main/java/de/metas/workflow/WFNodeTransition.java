@@ -25,11 +25,11 @@ package de.metas.workflow;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.workflow.execution.WFActivity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import org.compiere.wf.MWFActivity;
 import org.slf4j.Logger;
 
 @Value
@@ -68,7 +68,7 @@ public class WFNodeTransition
 		return !isStdUserWorkflow() && getConditions().isEmpty();
 	}    //	isUnconditional
 
-	public boolean isValidFor(final MWFActivity activity)
+	public boolean isValidFor(final WFActivity activity)
 	{
 		if (isStdUserWorkflow())
 		{

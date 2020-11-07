@@ -1,7 +1,6 @@
 package de.metas.process;
 
 import com.google.common.base.Stopwatch;
-import de.metas.workflow.execution.WorkflowExecutor;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -19,6 +18,11 @@ import de.metas.session.jaxrs.IServerService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.execution.WorkflowExecutionResult;
+import de.metas.workflow.execution.WorkflowExecutor;
+import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -37,13 +41,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TrxRunnableAdapter;
-import org.compiere.wf.MWFProcess;
-import de.metas.workflow.Workflow;
-import de.metas.workflow.WorkflowId;
-import de.metas.workflow.service.IADWorkflowDAO;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.util.List;
@@ -221,7 +220,7 @@ public final class ProcessExecutor
 			{
 				//
 				// Execute the process (workflow/java/db process)
-				if (pi.getAD_Workflow_ID() > 0)
+				if (pi.getWorkflowId() != null)
 				{
 					startWorkflow();
 					return;
@@ -429,30 +428,36 @@ public final class ProcessExecutor
 		}
 	}
 
-	/**
-	 * Start Workflow.
-	 *
-	 * @return true if started
-	 */
-	private boolean startWorkflow()
+	private void startWorkflow()
 	{
-		final WorkflowId workflowId = WorkflowId.ofRepoIdOrNull(pi.getAD_Workflow_ID());
+		final WorkflowId workflowId = pi.getWorkflowId();
 		Check.assumeNotNull(workflowId, "workflowId");
 		logger.debug("startWorkflow: {} ({})", workflowId, pi);
 
-		final Workflow workflow = Services.get(IADWorkflowDAO.class).getById(workflowId);
+		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+		final Workflow workflow = workflowDAO.getById(workflowId);
 
-		// note: depending on a pi flag we also called wf.start(pi);, but that flag always had a constant value.
-		@Nullable final MWFProcess wfProcess = WorkflowExecutor.builder()
+		final WorkflowExecutionResult workflowExecutionResult = WorkflowExecutor.builder()
 				.workflow(workflow)
-				.processInfo(pi)
+				.clientId(pi.getClientId())
+				.adLanguage(Env.getADLanguageOrBaseLanguage())
+				.documentRef(pi.getRecordRefOrNull())
+				.userId(pi.getUserId())
 				.build()
-				.startAndWait();
+				.start();
+		logger.debug("Executed {} and got {}", workflowId, workflowExecutionResult);
 
-		final boolean started = wfProcess != null;
-		logger.debug("startWorkflow finish: started={}, wfProcess={}", started, wfProcess);
-
-		return started;
+		//
+		// Update process result
+		final ProcessExecutionResult processExecutionResult = pi.getResult();
+		if (workflowExecutionResult.isError())
+		{
+			processExecutionResult.markAsError(workflowExecutionResult.getSummary(), workflowExecutionResult.getException());
+		}
+		else
+		{
+			processExecutionResult.markAsSuccess(workflowExecutionResult.getSummary());
+		}
 	}   // startWorkflow
 
 	/**

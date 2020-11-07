@@ -14,6 +14,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.workflow.WorkflowId;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -111,7 +112,7 @@ public final class ProcessInfo implements Serializable
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
 		translateExcelHeaders = builder.isTranslateExcelHeaders();
-		adWorkflowId = builder.getAD_Workflow_ID();
+		adWorkflowId = builder.getWorkflowId();
 		serverProcess = builder.isServerProcess();
 		invokedByScheduler = builder.isInvokedByScheduler();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
@@ -189,7 +190,7 @@ public final class ProcessInfo implements Serializable
 
 	@Getter
 	private final boolean translateExcelHeaders;
-	private final int adWorkflowId;
+	private final WorkflowId adWorkflowId;
 
 	@Getter
 	private final boolean serverProcess;
@@ -347,7 +348,7 @@ public final class ProcessInfo implements Serializable
 		return sqlStatement;
 	}
 
-	public int getAD_Workflow_ID()
+	public WorkflowId getWorkflowId()
 	{
 		return adWorkflowId;
 	}
@@ -441,9 +442,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
-	 * @param modelClass
-	 * @param trxName
-	 * @return record or {@link Optional#absent()} if record does not exist or it does not match given <code>modelClass</code>
+	 * @return record or {@link Optional#empty()} if record does not exist or it does not match given <code>modelClass</code>
 	 */
 	public <ModelType> Optional<ModelType> getRecordIfApplies(final Class<ModelType> modelClass, final String trxName)
 	{
@@ -585,7 +584,7 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * @return the whereClause <b>but without org restrictions</b>
-	 * @deprecated please use {@link #getQueryFilter()} instead
+	 * @deprecated please use on of getQueryFilter methods instead
 	 */
 	@Deprecated
 	public String getWhereClause()
@@ -1209,11 +1208,10 @@ public final class ProcessInfo implements Serializable
 			return adProcess.isApplySecuritySettings();
 		}
 
-		private int getAD_Workflow_ID()
+		private WorkflowId getWorkflowId()
 		{
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			final int adWorkflowId = adProcess != null ? adProcess.getAD_Workflow_ID() : -1;
-			return adWorkflowId > 0 ? adWorkflowId : -1;
+			return adProcess != null ? WorkflowId.ofRepoIdOrNull(adProcess.getAD_Workflow_ID()) : null;
 		}
 
 		/**
@@ -1682,7 +1680,6 @@ public final class ProcessInfo implements Serializable
 		/**
 		 * Extracts reporting language.
 		 *
-		 * @param pi
 		 * @return Language; never returns null
 		 */
 		private Language findReportingLanguage()

@@ -20,68 +20,38 @@
  * #L%
  */
 
-package de.metas.workflow;
+package de.metas.workflow.execution;
 
-import de.metas.organization.OrgId;
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
-import de.metas.workflow.execution.WFProcessId;
+import de.metas.workflow.WFResponsibleId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.time.Instant;
 
-@Data
+@Value
 @Builder
-public class WFEventAudit
+public class WFActivityPendingInfo
 {
-	int id;
+	@NonNull WFActivityId wfActivityId;
+	@NonNull String activityName;
 
-	@NonNull
-	WDEventAuditType eventType;
-
-	@Builder.Default
-	@NonNull
-	final OrgId orgId = OrgId.ANY;
-
-	final WFProcessId wfProcessId;
+	@NonNull ClientId clientId;
 	@Nullable
-	final WFNodeId wfNodeId;
+	Instant dateLastAlert;
 
-	@NonNull
-	final TableRecordReference documentRef;
-
-	@NonNull
-	final WFResponsibleId wfResponsibleId;
-	@Nullable
-	UserId userId;
-
-	@NonNull
-	WFState wfState;
-	@Nullable
 	String textMsg;
+	String processTextMsg;
 
-	@NonNull
-	@Builder.Default
-	Instant created = SystemTime.asInstant();
+	UserId userId;
+	UserId processUserId;
+	WFResponsibleId responsibleId;
+	WFResponsibleId processResponsibleId;
 
-	@NonNull
-	@Builder.Default
-	Duration elapsedTime = Duration.ZERO;
-
-	@Nullable
-	String attributeName;
-	@Nullable
-	String attributeValueOld;
-	@Nullable
-	String attributeValueNew;
-
-	public void updateElapsedTime()
-	{
-		setElapsedTime(Duration.between(created, SystemTime.asInstant()));
-	}
+	TableRecordReference documentRef;
+	TableRecordReference processDocumentRef;
 }

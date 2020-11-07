@@ -52,8 +52,6 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 		notificationBL.send(
 				UserNotificationRequest.builder()
 						.notificationsConfig(notificationsConfig)
-						.subjectADMessage(MSG_ASYNC_PROCESSED)
-						.subjectADMessageParam(asyncBatch.getName())
 						.contentADMessage(MSG_ASYNC_PROCESSED)
 						.contentADMessageParam(asyncBatch.getName())
 						.targetAction(TargetRecordAction.of(TableRecordReference.of(asyncBatch)))

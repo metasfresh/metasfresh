@@ -26,13 +26,12 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
+import de.metas.workflow.execution.WFActivity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.PO;
 import org.compiere.model.X_AD_WF_NextCondition;
-import org.compiere.wf.MWFActivity;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -70,24 +69,17 @@ public class WFNodeTransitionCondition
 		return !andJoin;
 	}
 
-	public boolean evaluate(final MWFActivity activity)
+	public boolean evaluate(final WFActivity activity)
 	{
-		final PO po = activity.getPO();
-		if (po == null || po.get_ID() <= 0)
-		{
-			throw new AdempiereException("Could not evaluate " + po + " - " + this);
-		}
-
-		//
-		Object valueObj = po.get_ValueOfColumn(adColumnId);
+		Object valueObj = activity.getDocumentColumnValueByColumnId(adColumnId);
 		if (valueObj == null)
 			valueObj = "";
 
-		String value1 = getDecodedValue(this.conditionValue1, po);    // F3P: added value decoding
+		String value1 = getDecodedValue(this.conditionValue1, activity);    // F3P: added value decoding
 		if (value1 == null)
 			value1 = "";
 
-		String value2 = getDecodedValue(this.conditionValue2, po);    // F3P: added value decoding
+		String value2 = getDecodedValue(this.conditionValue2, activity);    // F3P: added value decoding
 		if (value2 == null)
 			value2 = "";
 
@@ -119,9 +111,10 @@ public class WFNodeTransitionCondition
 	 * COL= remaining value is interpreted as a column of the associated record
 	 *
 	 * @param sValue value to be decoded
-	 * @param po     model object bound to the activity
 	 */
-	private String getDecodedValue(final String sValue, final PO po)
+	private String getDecodedValue(
+			final String sValue,
+			final WFActivity activity)
 	{
 		String sRet = sValue;
 
@@ -129,7 +122,7 @@ public class WFNodeTransitionCondition
 		{
 			if (sValue.startsWith("@COL="))
 			{
-				final Object o = po.get_Value(sValue.substring(5));
+				final Object o = activity.getDocumentColumnValueByColumnName(sValue.substring(5));
 				if (o != null)
 				{
 					sRet = o.toString();
