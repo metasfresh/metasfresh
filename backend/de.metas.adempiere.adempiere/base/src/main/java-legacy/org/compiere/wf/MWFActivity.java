@@ -49,8 +49,10 @@ import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFNodeParameter;
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
+import de.metas.workflow.WFState;
 import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -72,12 +74,10 @@ import org.compiere.model.MNote;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.print.ReportEngine;
-import de.metas.workflow.WFState;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
-import de.metas.workflow.service.IADWorkflowDAO;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -118,6 +118,12 @@ public class MWFActivity extends X_AD_WF_Activity
 	private MWFProcess _wfProcess = null; // lazy
 	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
 
+	public MWFActivity(final Properties ctx, final int AD_WF_Activity_ID)
+	{
+		this(ctx, AD_WF_Activity_ID, ITrx.TRXNAME_None);
+	}
+
+	@Deprecated
 	public MWFActivity(final Properties ctx, final int AD_WF_Activity_ID, final String trxName)
 	{
 		super(ctx, AD_WF_Activity_ID, trxName);

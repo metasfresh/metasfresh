@@ -16,36 +16,43 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import de.metas.workflow.WFResponsible;
-import de.metas.workflow.WFResponsibleId;
-import de.metas.workflow.WFState;
-
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import de.metas.workflow.WFResponsible;
+import de.metas.workflow.WFResponsibleId;
+import de.metas.workflow.WFState;
 import de.metas.workflow.service.IADWorkflowDAO;
 
 /**
- *	Manage Workflow Activity
- *	
- *  @author Jorg Janke
- *  @version $Id: WFActivityManage.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
+ * Manage Workflow Activity
+ *
+ * @author Jorg Janke
+ * @version $Id: WFActivityManage.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
 public class WFActivityManage extends JavaProcess
 {
-	/**	Abort It				*/	
-	private boolean		p_IsAbort = false;
-	/** New User				*/
-	private int			p_AD_User_ID = 0;
-	/** New Responsible			*/
-	private int			p_AD_WF_Responsible_ID = 0;
-	/** Record					*/
-	private int			p_AD_WF_Activity_ID = 0;
-	
 	/**
-	 *  Prepare - e.g., get Parameters.
+	 * Abort It
+	 */
+	private boolean p_IsAbort = false;
+	/**
+	 * New User
+	 */
+	private int p_AD_User_ID = 0;
+	/**
+	 * New Responsible
+	 */
+	private int p_AD_WF_Responsible_ID = 0;
+	/**
+	 * Record
+	 */
+	private int p_AD_WF_Activity_ID = 0;
+
+	/**
+	 * Prepare - e.g., get Parameters.
 	 */
 	@Override
 	protected void prepare()
@@ -66,19 +73,20 @@ public class WFActivityManage extends JavaProcess
 				log.error("Unknown Parameter: " + name);
 		}
 		p_AD_WF_Activity_ID = getRecord_ID();
-	}	//	prepare
+	}    //	prepare
 
 	/**
-	 *  Perform process.
-	 *  @return Message (variables are parsed)
-	 *  @throws Exception if not successful
+	 * Perform process.
+	 *
+	 * @return Message (variables are parsed)
+	 * @throws Exception if not successful
 	 */
 	@Override
 	protected String doIt() throws Exception
 	{
-		MWFActivity activity = new MWFActivity (getCtx(), p_AD_WF_Activity_ID, get_TrxName());
+		MWFActivity activity = new MWFActivity(getCtx(), p_AD_WF_Activity_ID);
 		log.info("doIt - " + activity);
-		
+
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getAD_User_ID());
 		//	Abort
 		if (p_IsAbort)
@@ -119,8 +127,8 @@ public class WFActivityManage extends JavaProcess
 		}
 		//
 		activity.save();
-		
+
 		return msg;
-	}	//	doIt
-	
-}	//	WFActivityManage
+	}    //	doIt
+
+}    //	WFActivityManage

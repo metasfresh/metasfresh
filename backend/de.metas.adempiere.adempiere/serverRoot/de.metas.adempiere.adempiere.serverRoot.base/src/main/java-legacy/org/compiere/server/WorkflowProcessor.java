@@ -124,14 +124,14 @@ public class WorkflowProcessor extends AdempiereServer
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
+				MWFActivity activity = new MWFActivity(getCtx(), rs);
 				activity.changeWFStateTo(WFState.Completed);
 				// saves and calls MWFProcess.checkActivities();
 				count++;
 			}
 			rs.close();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("wakeup", e);
 		}
@@ -247,7 +247,7 @@ public class WorkflowProcessor extends AdempiereServer
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next())
 				{
-					MWFActivity activity = new MWFActivity(getCtx(), rs, null);
+					MWFActivity activity = new MWFActivity(getCtx(), rs);
 					boolean escalate = activity.getDateLastAlert() != null;
 					countEMails += sendEmail(activity, "ActivityOverPriority",
 							escalate, true);
@@ -302,7 +302,7 @@ public class WorkflowProcessor extends AdempiereServer
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
+				MWFActivity activity = new MWFActivity(getCtx(), rs);
 				boolean escalate = activity.getDateLastAlert() != null;
 				countEMails += sendEmail(activity, "ActivityEndWaitTime",
 						escalate, false);
@@ -356,7 +356,7 @@ public class WorkflowProcessor extends AdempiereServer
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next())
 				{
-					MWFActivity activity = new MWFActivity(getCtx(), rs, null);
+					MWFActivity activity = new MWFActivity(getCtx(), rs);
 					boolean escalate = activity.getDateLastAlert() != null;
 					countEMails += sendEmail(activity, "ActivityInactivity",
 							escalate, false);
