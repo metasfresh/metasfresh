@@ -99,11 +99,9 @@ public class WorkflowExecutor
 					.build();
 		}
 
-		final WFState state = wfProcess.getState();
-		final boolean error = state.isTerminated() || state.isAborted();
 		return WorkflowExecutionResult.builder()
 				.summary(extractSummary(wfProcess))
-				.error(error)
+				.error(wfProcess.getState().isError())
 				.build();
 	}
 
@@ -120,7 +118,7 @@ public class WorkflowExecutor
 				summary = activity.getTextMsg();
 			}
 		}
-		if (Check.isBlank(summary))
+		if (summary == null || Check.isBlank(summary))
 		{
 			summary = state.toString();
 		}

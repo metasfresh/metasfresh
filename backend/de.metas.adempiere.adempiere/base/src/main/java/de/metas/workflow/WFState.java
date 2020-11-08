@@ -66,7 +66,7 @@ public enum WFState implements ReferenceListAwareEnum
 	@Getter
 	private final String code;
 
-	private WFState(@NonNull final String code)
+	WFState(@NonNull final String code)
 	{
 		this.code = code;
 	}
@@ -148,6 +148,8 @@ public enum WFState implements ReferenceListAwareEnum
 	{
 		return Completed.equals(this);
 	}
+
+	public boolean isError() { return isAborted() || isTerminated(); }
 
 	/**
 	 * @return true if state is Aborted (Environment/Setup issue)
