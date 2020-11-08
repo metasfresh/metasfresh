@@ -30,13 +30,11 @@ import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.error.AdIssueId;
-import de.metas.event.Topic;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
@@ -93,7 +91,6 @@ import java.util.Set;
 public class WFActivity
 {
 	private static final Logger log = LogManager.getLogger(WFActivity.class);
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
 
 	private static final AdMessageKey MSG_DocumentApprovalRequest = AdMessageKey.of("DocumentApprovalRequest");
 	private static final AdMessageKey MSG_DocumentSentToApproval = AdMessageKey.of("DocumentSentToApproval");
@@ -953,13 +950,10 @@ public class WFActivity
 
 			forwardTo(approverId, msgApprovalRequest(), null);
 
-			context.sendNotification(UserNotificationRequest.builder()
-					.topic(USER_NOTIFICATIONS_TOPIC)
-					.recipientUserId(workflowInvokerId)
-					.contentADMessage(MSG_DocumentSentToApproval)
-					.contentADMessageParam(getDocumentRef())
-					.contentADMessageParam(context.getUserFullnameById(approverId))
-					.targetAction(UserNotificationRequest.TargetRecordAction.of(getDocumentRef()))
+			context.sendNotification(WFUserNotification.builder()
+					.userId(workflowInvokerId)
+					.content(MSG_DocumentSentToApproval, getDocumentRef(), context.getUserFullnameById(approverId))
+					.documentToOpen(getDocumentRef())
 					.build());
 
 			return PerformWorkResult.SUSPENDED;
@@ -1113,13 +1107,10 @@ public class WFActivity
 					+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
 					+ (getTextMsg() != null ? getTextMsg() : "");
 
-			context.sendNotification(UserNotificationRequest.builder()
-					.topic(USER_NOTIFICATIONS_TOPIC)
-					.recipientUserId(userId)
-					.contentADMessage(MSG_NotApproved)
-					.contentADMessageParam(doc.toTableRecordReference())
-					.contentADMessageParam(docInfo)
-					.targetAction(UserNotificationRequest.TargetRecordAction.of(doc.toTableRecordReference()))
+			context.sendNotification(WFUserNotification.builder()
+					.userId(userId)
+					.content(MSG_NotApproved, getDocumentRef(), docInfo)
+					.documentToOpen(getDocumentRef())
 					.build());
 		}
 
@@ -1148,13 +1139,10 @@ public class WFActivity
 
 		//
 		// Notify user
-		final TableRecordReference documentRef = getDocumentRef();
-		context.sendNotification(UserNotificationRequest.builder()
-				.topic(USER_NOTIFICATIONS_TOPIC)
-				.recipientUserId(userId)
-				.contentADMessage(subject.getAdMessage())
-				.contentADMessageParams(subject.getParams())
-				.targetAction(UserNotificationRequest.TargetRecordAction.of(documentRef))
+		context.sendNotification(WFUserNotification.builder()
+				.userId(userId)
+				.content(subject)
+				.documentToOpen(getDocumentRef())
 				.build());
 
 		context.addEventAudit(prepareEventAudit(WFEventAuditType.StateChanged)

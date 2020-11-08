@@ -37,6 +37,7 @@ import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.event.Topic;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -86,6 +87,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @EqualsAndHashCode
@@ -109,6 +111,8 @@ public final class WorkflowExecutionContext
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
 
 	@NonNull
 	@Getter
@@ -175,16 +179,11 @@ public final class WorkflowExecutionContext
 		return workflowDAO.getWFResponsibleById(wfResponsibleId);
 	}
 
-	void saveAll(@NonNull final WFProcess wfProcess)
+	void save(@NonNull final WFProcess wfProcess)
 	{
-		save(wfProcess);
-		wfProcess.getAllActivities().forEach(this::save);
+		wfProcessRepository.save(wfProcess);
 		auditRepo.save(auditList);
 	}
-
-	void save(@NonNull final WFProcess wfProcess) { wfProcessRepository.save(wfProcess); }
-
-	private void save(@NonNull final WFActivity wfActivity) { wfProcessRepository.save(wfActivity); }
 
 	public IDocument processDocument(
 			@NonNull final TableRecordReference documentRef,
@@ -250,6 +249,12 @@ public final class WorkflowExecutionContext
 	public OrgId getDocumentOrgId(@NonNull final TableRecordReference documentRef)
 	{
 		return OrgId.ofRepoId(getPO(documentRef).getAD_Org_ID());
+	}
+
+	public Optional<DocStatus> getDocumentStatus(@NonNull final TableRecordReference documentRef)
+	{
+		return Optional.ofNullable(getDocumentOrNull(documentRef))
+				.map(document -> DocStatus.ofNullableCodeOrUnknown(document.getDocStatus()));
 	}
 
 	public PO getPO(final TableRecordReference documentRef)
@@ -340,9 +345,17 @@ public final class WorkflowExecutionContext
 		return orgsRepo.getOrgInfoById(orgId);
 	}
 
-	public void sendNotification(@NonNull final UserNotificationRequest request)
+	public void sendNotification(@NonNull final WFUserNotification notification)
 	{
-		notificationBL.sendAfterCommit(request);
+		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
+				.topic(USER_NOTIFICATIONS_TOPIC)
+				.recipientUserId(notification.getUserId())
+				.contentADMessage(notification.getContent().getAdMessage())
+				.contentADMessageParams(notification.getContent().getParams())
+				.targetAction(notification.getDocumentToOpen() != null
+						? UserNotificationRequest.TargetRecordAction.of(notification.getDocumentToOpen())
+						: null)
+				.build());
 	}
 
 	public MailTextBuilder newMailTextBuilder(

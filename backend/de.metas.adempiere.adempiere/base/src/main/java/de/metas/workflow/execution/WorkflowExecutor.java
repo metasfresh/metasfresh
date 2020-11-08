@@ -22,7 +22,12 @@
 
 package de.metas.workflow.execution;
 
-import de.metas.logging.LogManager;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -36,13 +41,15 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class WorkflowExecutor
 {
-	private static final Logger log = LogManager.getLogger(WorkflowExecutor.class);
+	private static final AdMessageKey MSG_DocumentStatusChanged = AdMessageKey.of("DocumentStatusChangedNotification");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final WFProcessRepository wfProcessRepository;
 
@@ -69,16 +76,24 @@ public class WorkflowExecutor
 
 	public WorkflowExecutionResult start()
 	{
+		final HashSet<UserId> previousActiveInvokers = new HashSet<>();
+
 		//
-		// First, abort all existing processes
-		for (final WFProcessId activeProcessId : wfProcessRepository.getActiveProcessIds(context.getDocumentRef()))
+		// Check current active processes for our document.
+		// => collect the invokers so be will be able to notify them later
+		// => abort them
+		for (final WFProcess activeProcess : getActiveProcesses())
 		{
-			abort(activeProcessId);
+			previousActiveInvokers.add(activeProcess.getUserId());
+			previousActiveInvokers.add(activeProcess.getInitialUserId());
+
+			abort(activeProcess);
 		}
 
+		//
+		// Start a new process
 		final WFProcess wfProcess = new WFProcess(context);
 		final Mutable<Throwable> exceptionHolder = new Mutable<>();
-
 		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
@@ -98,7 +113,7 @@ public class WorkflowExecutor
 			@Override
 			public void doFinally()
 			{
-				context.saveAll(wfProcess);
+				context.save(wfProcess);
 			}
 		});
 
@@ -111,10 +126,54 @@ public class WorkflowExecutor
 					.build();
 		}
 
+		//
+		// Notify
+		notifyDocumentStatusChanged(wfProcess, previousActiveInvokers);
+
 		return WorkflowExecutionResult.builder()
 				.summary(extractSummary(wfProcess))
 				.error(wfProcess.getState().isError())
 				.build();
+	}
+
+	private void notifyDocumentStatusChanged(
+			@NonNull final WFProcess wfProcess,
+			@NonNull final Set<UserId> usersToNotify)
+	{
+		// Notify only if WF process was Completed (and not aborted or suspended)
+		if (!wfProcess.getState().isCompleted())
+		{
+			return;
+		}
+
+		final UserId invokerId = wfProcess.getUserId();
+		final ImmutableSet<UserId> usersToNotifyExcludingInvoker = usersToNotify
+				.stream()
+				.filter(userId -> !UserId.equals(userId, invokerId))
+				.collect(ImmutableSet.toImmutableSet());
+		if (usersToNotifyExcludingInvoker.isEmpty())
+		{
+			return;
+		}
+
+		// don't notify if we are not dealing with a real document
+		final DocStatus docStatus = wfProcess.getDocumentStatus().orElse(null);
+		if (docStatus == null)
+		{
+			return;
+		}
+
+		final String invokerName = context.getUserFullnameById(invokerId);
+		final TableRecordReference documentRef = wfProcess.getDocumentRef();
+
+		for (final UserId userId : usersToNotifyExcludingInvoker)
+		{
+			context.sendNotification(WFUserNotification.builder()
+					.userId(userId)
+					.content(MSG_DocumentStatusChanged, invokerName, documentRef, docStatus)
+					.documentToOpen(documentRef)
+					.build());
+		}
 	}
 
 	@NonNull
@@ -138,12 +197,8 @@ public class WorkflowExecutor
 		return summary;
 	}
 
-	public void abort(@NonNull final WFProcessId wfProcessId)
+	public void abort(@NonNull final WFProcess wfProcess)
 	{
-		final WFProcessState wfProcessState = wfProcessRepository.getWFProcessStateById(wfProcessId);
-		final List<WFActivityState> wfActivityStates = wfProcessRepository.getWFActivityStates(wfProcessId);
-		final WFProcess wfProcess = new WFProcess(context, wfProcessState, wfActivityStates);
-
 		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
@@ -155,8 +210,33 @@ public class WorkflowExecutor
 			@Override
 			public void doFinally()
 			{
-				context.saveAll(wfProcess);
+				context.save(wfProcess);
 			}
 		});
+	}
+
+	private List<WFProcess> getActiveProcesses()
+	{
+		final List<WFProcessId> wfProcessIds = wfProcessRepository.getActiveProcessIds(context.getDocumentRef());
+		return getWFProcesses(wfProcessIds);
+	}
+
+	private List<WFProcess> getWFProcesses(final List<WFProcessId> wfProcessIds)
+	{
+		if (wfProcessIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableMap<WFProcessId, WFProcessState> wfProcessStates = wfProcessRepository.getWFProcessStateByIds(wfProcessIds);
+		final ImmutableListMultimap<WFProcessId, WFActivityState> wfActivityStates = wfProcessRepository.getWFActivityStates(wfProcessIds);
+
+		return wfProcessIds
+				.stream()
+				.map(wfProcessId -> new WFProcess(
+						context,
+						wfProcessStates.get(wfProcessId),
+						wfActivityStates.get(wfProcessId)))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

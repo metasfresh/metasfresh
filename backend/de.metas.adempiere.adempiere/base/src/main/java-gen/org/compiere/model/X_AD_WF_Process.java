@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Process extends org.compiere.model.PO implements I_AD_WF_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1890952531L;
+	private static final long serialVersionUID = -5089017L;
 
     /** Standard Constructor */
     public X_AD_WF_Process (final Properties ctx, final int AD_WF_Process_ID, @Nullable final String trxName)
@@ -199,6 +199,21 @@ public class X_AD_WF_Process extends org.compiere.model.PO implements I_AD_WF_Pr
 	public java.lang.String getTextMsg() 
 	{
 		return get_ValueAsString(COLUMNNAME_TextMsg);
+	}
+
+	@Override
+	public void setWF_Initial_User_ID (final int WF_Initial_User_ID)
+	{
+		if (WF_Initial_User_ID < 1) 
+			set_Value (COLUMNNAME_WF_Initial_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_WF_Initial_User_ID, WF_Initial_User_ID);
+	}
+
+	@Override
+	public int getWF_Initial_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WF_Initial_User_ID);
 	}
 
 	/** 

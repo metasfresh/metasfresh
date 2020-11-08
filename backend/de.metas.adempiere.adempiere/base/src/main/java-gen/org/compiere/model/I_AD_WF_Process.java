@@ -52,7 +52,7 @@ public interface I_AD_WF_Process
 	 * System Message
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: falsei
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Message_ID (int AD_Message_ID);
@@ -385,6 +385,26 @@ public interface I_AD_WF_Process
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Initial User.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWF_Initial_User_ID (int WF_Initial_User_ID);
+
+	/**
+	 * Get Initial User.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWF_Initial_User_ID();
+
+	String COLUMNNAME_WF_Initial_User_ID = "WF_Initial_User_ID";
 
 	/**
 	 * Set Workflow State.

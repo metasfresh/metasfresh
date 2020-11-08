@@ -224,7 +224,7 @@ public class VDocAction extends CDialog
 		// Status Change
 		if (!checkStatus(m_mTab.getTableName(), Record_ID, DocStatus))
 		{
-			ADialog.error(m_WindowNo, this, "DocumentStatusChanged");
+			ADialog.error(m_WindowNo, this, "DocumentStatusChangedError");
 			return;
 		}
 

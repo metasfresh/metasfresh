@@ -107,47 +107,24 @@ public enum WFState implements ReferenceListAwareEnum
 		return Completed.equals(this)
 				|| Aborted.equals(this)
 				|| Terminated.equals(this);
-	}    //	isClosed
+	}
 
-	/**
-	 * State is Not Started
-	 *
-	 * @return true if Not Started
-	 */
 	public boolean isNotStarted()
 	{
 		return NotStarted.equals(this);
 	}    //	isNotStarted
 
-	/**
-	 * State is Running
-	 *
-	 * @return true if Running
-	 */
 	public boolean isRunning()
 	{
 		return Running.equals(this);
 	}
 
-	/**
-	 * State is Suspended
-	 *
-	 * @return true if Suspended
-	 */
 	public boolean isSuspended()
 	{
 		return Suspended.equals(this);
 	}
 
-	/**
-	 * State is Completed
-	 *
-	 * @return true if Completed
-	 */
-	public boolean isCompleted()
-	{
-		return Completed.equals(this);
-	}
+	public boolean isCompleted() { return Completed.equals(this); }
 
 	public boolean isError() { return isAborted() || isTerminated(); }
 

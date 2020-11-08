@@ -464,7 +464,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 
 	private static Duration convertDurationUnitToDuration(@Nullable final String durationUnit)
 	{
-		return durationUnit != null
+		return durationUnit != null && Check.isNotBlank(durationUnit)
 				? WFDurationUnit.ofCode(durationUnit).getDuration()
 				: Duration.ZERO;
 	}

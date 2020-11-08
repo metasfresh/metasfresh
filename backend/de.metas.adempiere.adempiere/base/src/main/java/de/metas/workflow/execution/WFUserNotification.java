@@ -22,43 +22,41 @@
 
 package de.metas.workflow.execution;
 
-import de.metas.error.AdIssueId;
+import de.metas.i18n.ADMessageAndParams;
+import de.metas.i18n.AdMessageKey;
 import de.metas.user.UserId;
-import de.metas.workflow.WFResponsibleId;
-import de.metas.workflow.WFState;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
-@Data
+@Value
 @Builder
-class WFProcessState
+class WFUserNotification
 {
-	@Nullable
-	WFProcessId wfProcessId;
+	@NonNull
+	UserId userId;
 
 	@NonNull
-	final TableRecordReference documentRef;
-
-	final int priority;
-
-	@NonNull
-	WFState wfState;
-
-	boolean processed;
-
-	@NonNull
-	final WFResponsibleId wfResponsibleId;
-	@NonNull
-	final UserId initialUserId;
-	@Nullable
-	final UserId userId;
+	ADMessageAndParams content;
 
 	@Nullable
-	String textMsg;
-	@Nullable
-	AdIssueId issueId;
+	TableRecordReference documentToOpen;
+
+	public static class WFUserNotificationBuilder
+	{
+		public WFUserNotificationBuilder content(@NonNull final AdMessageKey adMessage, @Nullable final Object... params)
+		{
+			return content(ADMessageAndParams.of(adMessage, params));
+		}
+
+		public WFUserNotificationBuilder content(@Nullable final ADMessageAndParams content)
+		{
+			this.content = content;
+			return this;
+		}
+
+	}
 }

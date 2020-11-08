@@ -23,6 +23,7 @@
 package de.metas.workflow.execution;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -30,6 +31,7 @@ import de.metas.error.AdIssueId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsibleId;
@@ -55,8 +57,11 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -65,27 +70,48 @@ public class WFProcessRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public WFProcessState getWFProcessStateById(@NonNull final WFProcessId wfProcessId)
+	public ImmutableMap<WFProcessId, WFProcessState> getWFProcessStateByIds(@NonNull final Collection<WFProcessId> wfProcessIds)
 	{
-		final I_AD_WF_Process record = InterfaceWrapperHelper.loadOutOfTrx(wfProcessId, I_AD_WF_Process.class);
+		final ImmutableList<WFProcessState> wfProcessStates = InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx(wfProcessIds, I_AD_WF_Process.class)
+				.stream()
+				.map(record -> toWFProcessState(record))
+				.collect(ImmutableList.toImmutableList());
+
+		return Maps.uniqueIndex(wfProcessStates, WFProcessState::getWfProcessId);
+	}
+
+	private static WFProcessState toWFProcessState(final I_AD_WF_Process record)
+	{
 		return WFProcessState.builder()
 				.wfProcessId(WFProcessId.ofRepoId(record.getAD_WF_Process_ID()))
+				.priority(record.getPriority())
+				.documentRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.wfState(WFState.ofCode(record.getWFState()))
 				.processed(record.isProcessed())
+				.wfResponsibleId(WFResponsibleId.ofRepoId(record.getAD_WF_Responsible_ID()))
+				.initialUserId(UserId.ofRepoId(record.getWF_Initial_User_ID()))
+				.userId(UserId.ofRepoIdOrNullIfSystem(record.getAD_User_ID()))
 				.textMsg(record.getTextMsg())
 				.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
 				.build();
 	}
 
-	public List<WFActivityState> getWFActivityStates(@NonNull final WFProcessId wfProcessId)
+	public ImmutableListMultimap<WFProcessId, WFActivityState> getWFActivityStates(@NonNull final Collection<WFProcessId> wfProcessIds)
 	{
+		if (wfProcessIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_Activity.class)
-				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_AD_WF_Process_ID, wfProcessId)
+				.addInArrayFilter(I_AD_WF_Activity.COLUMNNAME_AD_WF_Process_ID, wfProcessIds)
+				.orderBy(I_AD_WF_Activity.COLUMNNAME_AD_WF_Process_ID)
 				.orderBy(I_AD_WF_Activity.COLUMNNAME_AD_WF_Activity_ID)
 				.create()
 				.stream()
-				.map(WFProcessRepository::toWFActivityState)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						activityRecord -> WFProcessId.ofRepoId(activityRecord.getAD_WF_Process_ID()),
+						activityRecord -> toWFActivityState(activityRecord)));
 	}
 
 	private static WFActivityState toWFActivityState(final I_AD_WF_Activity record)
@@ -124,6 +150,7 @@ public class WFProcessRepository
 		record.setRecord_ID(wfProcess.getDocumentRef().getRecord_ID());
 
 		record.setAD_WF_Responsible_ID(wfProcess.getWfResponsibleId().getRepoId());
+		record.setWF_Initial_User_ID(wfProcess.getInitialUserId().getRepoId());
 		record.setAD_User_ID(UserId.toRepoId(wfProcess.getUserId()));
 
 		record.setTextMsg(wfProcess.getTextMsg());
@@ -133,13 +160,39 @@ public class WFProcessRepository
 		InterfaceWrapperHelper.save(record);
 		final WFProcessId wfProcessId = WFProcessId.ofRepoId(record.getAD_WF_Process_ID());
 		wfProcess.setWfProcessId(wfProcessId);
+
+		saveActivities(wfProcess.getAllActivities());
 	}
 
-	public void save(@NonNull final WFActivity wfActivity)
+	private void saveActivities(@NonNull final List<WFActivity> wfActivityList)
 	{
-		I_AD_WF_Activity record = wfActivity.getId() != null
-				? InterfaceWrapperHelper.loadOutOfTrx(wfActivity.getId(), I_AD_WF_Activity.class)
-				: null;
+		if (wfActivityList.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<WFActivityId> existingIds = wfActivityList.stream()
+				.map(WFActivity::getId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final HashMap<WFActivityId, I_AD_WF_Activity> existingActivityRecords = InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx(existingIds, I_AD_WF_Activity.class)
+				.stream()
+				.collect(GuavaCollectors.toHashMapByKey(activityRecord -> WFActivityId.ofRepoId(activityRecord.getAD_WF_Activity_ID())));
+
+		wfActivityList.forEach(activityRecord -> save(activityRecord, existingActivityRecords));
+	}
+
+	private void save(
+			@NonNull final WFActivity wfActivity,
+			final HashMap<WFActivityId, I_AD_WF_Activity> existingActivityRecords)
+	{
+		I_AD_WF_Activity record = wfActivity.getId() != null ? existingActivityRecords.get(wfActivity.getId()) : null;
+
+		if (record == null && wfActivity.getId() != null)
+		{
+			record = InterfaceWrapperHelper.loadOutOfTrx(wfActivity.getId(), I_AD_WF_Activity.class);
+		}
 
 		if (record == null)
 		{
@@ -166,6 +219,7 @@ public class WFProcessRepository
 		InterfaceWrapperHelper.save(record);
 		final WFActivityId id = WFActivityId.ofRepoId(record.getAD_WF_Activity_ID());
 		wfActivity.setId(id);
+		existingActivityRecords.put(id, record);
 	}
 
 	@Builder(builderMethodName = "queryPendingActivitiesOverPriority", buildMethodName = "execute", builderClassName = "$retrievePendingActivitiesOverPriority")

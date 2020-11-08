@@ -23,6 +23,7 @@
 package de.metas.workflow.execution;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
@@ -49,18 +50,13 @@ public class WFProcess
 {
 	private static final Logger log = LogManager.getLogger(WFProcess.class);
 
+	@NonNull
 	private final WorkflowExecutionContext context;
-	private final int priority;
-	private final TableRecordReference documentRef;
-
-	@NonNull
-	private final WFResponsibleId wfResponsibleId;
-	@NonNull
-	private final UserId userId;
 
 	@Nullable
 	private String processMsg;
 
+	@NonNull
 	private final WFProcessState state;
 
 	@NonNull
@@ -69,18 +65,22 @@ public class WFProcess
 	WFProcess(@NonNull final WorkflowExecutionContext context)
 	{
 		this.context = context;
-		this.priority = context.getWorkflow().getPriority();
-		this.documentRef = context.getDocumentRef();
-		this.wfResponsibleId = context.getWFResponsibleId();
-		this.userId = context.getUserId();
+		this.state = createState(context);
+		this.activities = new ArrayList<>();
+	}
 
-		this.state = WFProcessState.builder()
+	private static WFProcessState createState(final WorkflowExecutionContext context)
+	{
+		return WFProcessState.builder()
 				.wfProcessId(null)
+				.priority(context.getWorkflow().getPriority())
+				.documentRef(context.getDocumentRef())
 				.wfState(WFState.NotStarted)
 				.processed(false)
+				.wfResponsibleId(context.getWFResponsibleId())
+				.initialUserId(context.getUserId())
+				.userId(context.getUserId())
 				.build();
-
-		activities = new ArrayList<>();
 	}
 
 	WFProcess(
@@ -89,11 +89,6 @@ public class WFProcess
 			@NonNull final List<WFActivityState> wfActivityStates)
 	{
 		this.context = context;
-		this.priority = context.getWorkflow().getPriority();
-		this.documentRef = context.getDocumentRef();
-		this.wfResponsibleId = context.getWFResponsibleId();
-		this.userId = context.getUserId();
-
 		this.state = wfProcessState;
 
 		activities = new ArrayList<>(wfActivityStates.size());
@@ -124,26 +119,22 @@ public class WFProcess
 	@NonNull
 	public WorkflowId getWorkflowId() { return getContext().getWorkflow().getId(); }
 
-	int getPriority()
+	int getPriority() { return state.getPriority(); }
+
+	@NonNull WFResponsibleId getWfResponsibleId()
 	{
-		return priority;
+		return state.getWfResponsibleId();
 	}
 
-	WFResponsibleId getWfResponsibleId()
-	{
-		return wfResponsibleId;
-	}
+	@NonNull UserId getInitialUserId() { return state.getInitialUserId(); }
 
-	UserId getUserId()
-	{
-		return userId;
-	}
+	@NonNull UserId getUserId() { return state.getUserId(); }
 
-	TableRecordReference getDocumentRef()
-	{
-		return documentRef;
-	}
+	@NonNull Optional<DocStatus> getDocumentStatus() { return context.getDocumentStatus(getDocumentRef()); }
 
+	@NonNull TableRecordReference getDocumentRef() { return state.getDocumentRef(); }
+
+	@NonNull
 	public WFState getState()
 	{
 		return state.getWfState();
@@ -158,7 +149,7 @@ public class WFProcess
 	/**
 	 * Set Process State and update Actions
 	 */
-	public void changeWFStateTo(final WFState wfState)
+	public void changeWFStateTo(@NonNull final WFState wfState)
 	{
 		// No state change
 		if (getState().equals(wfState))
@@ -304,6 +295,7 @@ public class WFProcess
 		}
 	}    //	checkActivities
 
+	@NonNull
 	private WFActivity newActivity(@NonNull final WFNodeId nodeId)
 	{
 		final WFActivity activity = new WFActivity(this, nodeId);
@@ -311,11 +303,12 @@ public class WFProcess
 		return activity;
 	}
 
-	ImmutableList<WFActivity> getAllActivities()
+	@NonNull ImmutableList<WFActivity> getAllActivities()
 	{
 		return ImmutableList.copyOf(activities);
 	}
 
+	@NonNull
 	private ImmutableList<WFActivity> getActiveActivities()
 	{
 		return activities.stream()
@@ -323,6 +316,7 @@ public class WFProcess
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	public Optional<WFActivity> getFirstActivityByWFState(@NonNull final WFState wfState)
 	{
 		return activities.stream()
@@ -416,7 +410,7 @@ public class WFProcess
 		{
 			setProcessMsg(ex);
 			changeWFStateTo(WFState.Terminated);
-			
+
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
@@ -486,5 +480,4 @@ public class WFProcess
 
 	@Nullable
 	public String getProcessMsg() { return processMsg; }
-
 }
