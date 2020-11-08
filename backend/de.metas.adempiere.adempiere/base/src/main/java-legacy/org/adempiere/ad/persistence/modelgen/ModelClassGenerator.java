@@ -76,6 +76,7 @@ public class ModelClassGenerator
 
 		addImportClass(java.util.Properties.class);
 		addImportClass(java.sql.ResultSet.class);
+		addImportClass(javax.annotation.Nullable.class);
 		createImports(start);
 		// Class
 		start.append("/** Generated Model for ").append(tableName).append(NL)
@@ -98,7 +99,7 @@ public class ModelClassGenerator
 				// Standard Constructor
 				.append(NL)
 				.append("    /** Standard Constructor */").append(NL)
-				.append("    public ").append(className).append(" (final Properties ctx, final int ").append(keyColumn).append(", final String trxName)").append(NL)
+				.append("    public ").append(className).append(" (final Properties ctx, final int ").append(keyColumn).append(", @Nullable final String trxName)").append(NL)
 				.append("    {").append(NL)
 				.append("      super (ctx, ").append(keyColumn).append(", trxName);").append(NL)
 				.append("    }").append(NL)
@@ -107,7 +108,7 @@ public class ModelClassGenerator
 				// Load Constructor
 				.append(NL)
 				.append("    /** Load Constructor */").append(NL)
-				.append("    public ").append(className).append(" (final Properties ctx, final ResultSet rs, final String trxName)").append(NL)
+				.append("    public ").append(className).append(" (final Properties ctx, final ResultSet rs, @Nullable final String trxName)").append(NL)
 				.append("    {").append(NL)
 				.append("      super (ctx, rs, trxName);").append(NL)
 				.append("    }").append(NL)

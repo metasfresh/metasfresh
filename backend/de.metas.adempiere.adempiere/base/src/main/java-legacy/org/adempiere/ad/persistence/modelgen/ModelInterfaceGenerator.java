@@ -270,6 +270,7 @@ public class ModelInterfaceGenerator
 
 			final NullableType nullableType = dataTypeInfo.getNullableValueSetter();
 			addImportClasses(nullableType.getClassesToImport());
+			addImportClass(dataTypeInfo.getTypeClass());
 
 			generateJavaComment(sb, columnInfo, "Set", deprecatedSetter);
 			appendDeprecatedIfNotNull(sb, deprecatedSetter);
@@ -289,6 +290,7 @@ public class ModelInterfaceGenerator
 
 			final NullableType nullableType = dataTypeInfo.getNullableValueGetter();
 			addImportClasses(nullableType.getClassesToImport());
+			addImportClass(dataTypeInfo.getTypeClass());
 
 			generateJavaComment(sb, columnInfo, "Get", deprecatedGetter);
 			appendDeprecatedIfNotNull(sb, deprecatedGetter);
