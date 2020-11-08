@@ -176,7 +176,7 @@ public abstract class PO
 	 * @param ctx context
 	 * @param trxName transaction name
 	 */
-	public PO(final Properties ctx, final int ID, final String trxName)
+	public PO(final Properties ctx, final int ID, @Nullable final String trxName)
 	{
 		this(ctx, ID, trxName, null);
 	}   // PO
@@ -189,7 +189,7 @@ public abstract class PO
 	 *            if null, a new record is created.
 	 * @param trxName transaction name
 	 */
-	public PO(final Properties ctx, final ResultSet rs, final String trxName)
+	public PO(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
 	{
 		this(ctx, 0, trxName, rs);
 	}	// PO
@@ -214,13 +214,8 @@ public abstract class PO
 	 * @param trxName transaction name
 	 * @param rs optional - load from current result set position (no navigation, not closed)
 	 */
-	public PO(final Properties ctx, final int ID, final String trxName, final ResultSet rs)
+	public PO(@NonNull final Properties ctx, final int ID, @Nullable final String trxName, @Nullable final ResultSet rs)
 	{
-
-		if (ctx == null)
-		{
-			throw new IllegalArgumentException("No Context");
-		}
 		p_ctx = ctx;
 		m_trxName = trxName;
 
@@ -593,9 +588,8 @@ public abstract class PO
 	 *
 	 * @param ctx
 	 */
-	protected final void setCtx(final Properties ctx)
+	protected final void setCtx(@NonNull final Properties ctx)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.p_ctx = ctx;
 	}
 
