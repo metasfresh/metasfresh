@@ -11,7 +11,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO implements I_M_ShipmentSchedule_ExportAudit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2057226956L;
+	private static final long serialVersionUID = 6876153L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_ExportAudit (Properties ctx, int M_ShipmentSchedule_ExportAudit_ID, String trxName)
@@ -73,12 +73,20 @@ public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO impl
 	}
 
 	/** 
-	 * ExportStatus AD_Reference_ID=541164
-	 * Reference name: ExportStatuses
+	 * ExportStatus AD_Reference_ID=541161
+	 * Reference name: API_ExportStatus
 	 */
-	public static final int EXPORTSTATUS_AD_Reference_ID=541164;
+	public static final int EXPORTSTATUS_AD_Reference_ID=541161;
 	/** PENDING = PENDING */
 	public static final String EXPORTSTATUS_PENDING = "PENDING";
+	/** EXPORTED = EXPORTED */
+	public static final String EXPORTSTATUS_EXPORTED = "EXPORTED";
+	/** EXPORTED_AND_FORWARDED = EXPORTED_AND_FORWARDED */
+	public static final String EXPORTSTATUS_EXPORTED_AND_FORWARDED = "EXPORTED_AND_FORWARDED";
+	/** EXPORTED_FORWARD_ERROR = EXPORTED_FORWARD_ERROR */
+	public static final String EXPORTSTATUS_EXPORTED_FORWARD_ERROR = "EXPORTED_FORWARD_ERROR";
+	/** EXPORT_ERROR = EXPORT_ERROR */
+	public static final String EXPORTSTATUS_EXPORT_ERROR = "EXPORT_ERROR";
 	/** DONT_EXPORT = DONT_EXPORT */
 	public static final String EXPORTSTATUS_DONT_EXPORT = "DONT_EXPORT";
 	@Override

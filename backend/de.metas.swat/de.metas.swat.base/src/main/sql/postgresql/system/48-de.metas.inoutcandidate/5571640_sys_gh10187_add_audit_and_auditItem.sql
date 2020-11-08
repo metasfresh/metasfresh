@@ -227,8 +227,8 @@ INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy
 
 -- 2020-11-06T09:11:36.047Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE SEQUENCE M_SHIPMENTSCHEDULE_EXPORTAUDIT_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
-;
+--CREATE SEQUENCE M_SHIPMENTSCHEDULE_EXPORTAUDIT_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
+--;
 
 -- 2020-11-06T09:12:13.429Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -645,12 +645,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(577791) 
 ;
 
--- 2020-11-06T16:31:08.392Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('m_shipmentschedule_exportaudit_item','ExportStatus','VARCHAR(25)',null,'PENDING')
-;
-
--- 2020-11-06T16:43:46.635Z
+--- 2020-11-06T16:43:46.635Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,572078,2887,0,19,541543,'AD_Issue_ID',TO_TIMESTAMP('2020-11-06 17:43:46','YYYY-MM-DD HH24:MI:SS'),100,'Y','','de.metas.inout',0,10,'','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Probleme',0,0,TO_TIMESTAMP('2020-11-06 17:43:46','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
