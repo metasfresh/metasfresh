@@ -96,10 +96,10 @@ public class WFActivity
 	private static final AdMessageKey MSG_DocumentSentToApproval = AdMessageKey.of("DocumentSentToApproval");
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
-	private final WorkflowExecutionContext context;
-	private final WFProcess wfProcess;
-	private final WFNode wfNode;
-	private final TableRecordReference documentRef;
+	@NonNull private final WorkflowExecutionContext context;
+	@NonNull private final WFProcess wfProcess;
+	@NonNull private final WFNode wfNode;
+	@NonNull private final TableRecordReference documentRef;
 
 	@Nullable
 	private Optional<String> m_newValue = null;
@@ -344,7 +344,7 @@ public class WFActivity
 		return context.getDocumentColumnValueByColumnId(getDocumentRef(), AD_Column_ID);
 	}
 
-	public WFNode getNode() { return wfNode; }
+	@NonNull public WFNode getNode() { return wfNode; }
 
 	@Nullable
 	public String getTextMsg() { return state.getTextMsg(); }
@@ -585,13 +585,6 @@ public class WFActivity
 				}
 				//
 				changeWFStateTo(WFState.Running);
-
-				if (getNode() == null)
-				{
-					addTextMsg("Node not found");
-					changeWFStateTo(WFState.Aborted);
-					return;
-				}
 
 				// Do Work
 				final PerformWorkResult result = performWork();
