@@ -1,26 +1,26 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_WF_Activity
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_AD_WF_Activity extends org.compiere.model.PO implements I_AD_WF_Activity, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1195474225L;
+	private static final long serialVersionUID = -1587274328L;
 
     /** Standard Constructor */
-    public X_AD_WF_Activity (final Properties ctx, final int AD_WF_Activity_ID, final String trxName)
+    public X_AD_WF_Activity (final Properties ctx, final int AD_WF_Activity_ID, @Nullable final String trxName)
     {
       super (ctx, AD_WF_Activity_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_AD_WF_Activity (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_AD_WF_Activity (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -31,18 +31,6 @@ public class X_AD_WF_Activity extends org.compiere.model.PO implements I_AD_WF_A
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Issue getAD_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setAD_Issue(final org.compiere.model.I_AD_Issue AD_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
 	}
 
 	@Override
@@ -58,18 +46,6 @@ public class X_AD_WF_Activity extends org.compiere.model.PO implements I_AD_WF_A
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Message getAD_Message()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Message_ID, org.compiere.model.I_AD_Message.class);
-	}
-
-	@Override
-	public void setAD_Message(final org.compiere.model.I_AD_Message AD_Message)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Message_ID, org.compiere.model.I_AD_Message.class, AD_Message);
 	}
 
 	@Override
@@ -133,18 +109,6 @@ public class X_AD_WF_Activity extends org.compiere.model.PO implements I_AD_WF_A
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Node getAD_WF_Node()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
-	}
-
-	@Override
-	public void setAD_WF_Node(final org.compiere.model.I_AD_WF_Node AD_WF_Node)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class, AD_WF_Node);
-	}
-
-	@Override
 	public void setAD_WF_Node_ID (final int AD_WF_Node_ID)
 	{
 		if (AD_WF_Node_ID < 1) 
@@ -157,18 +121,6 @@ public class X_AD_WF_Activity extends org.compiere.model.PO implements I_AD_WF_A
 	public int getAD_WF_Node_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_WF_Node_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_WF_Process getAD_WF_Process()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Process_ID, org.compiere.model.I_AD_WF_Process.class);
-	}
-
-	@Override
-	public void setAD_WF_Process(final org.compiere.model.I_AD_WF_Process AD_WF_Process)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Process_ID, org.compiere.model.I_AD_WF_Process.class, AD_WF_Process);
 	}
 
 	@Override
@@ -187,18 +139,6 @@ public class X_AD_WF_Activity extends org.compiere.model.PO implements I_AD_WF_A
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
-	}
-
-	@Override
-	public void setAD_WF_Responsible(final org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class, AD_WF_Responsible);
-	}
-
-	@Override
 	public void setAD_WF_Responsible_ID (final int AD_WF_Responsible_ID)
 	{
 		if (AD_WF_Responsible_ID < 1) 
@@ -211,18 +151,6 @@ public class X_AD_WF_Activity extends org.compiere.model.PO implements I_AD_WF_A
 	public int getAD_WF_Responsible_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_WF_Responsible_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
-	}
-
-	@Override
-	public void setAD_Workflow(final org.compiere.model.I_AD_Workflow AD_Workflow)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class, AD_Workflow);
 	}
 
 	@Override

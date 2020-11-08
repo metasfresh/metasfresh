@@ -6,7 +6,6 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for AD_WF_Process
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_AD_WF_Process 
 {
 
@@ -46,11 +45,6 @@ public interface I_AD_WF_Process
 	 */
 	int getAD_Issue_ID();
 
-	@Nullable org.compiere.model.I_AD_Issue getAD_Issue();
-
-	void setAD_Issue(@Nullable org.compiere.model.I_AD_Issue AD_Issue);
-
-	ModelColumn<I_AD_WF_Process, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new ModelColumn<>(I_AD_WF_Process.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
 	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
@@ -73,11 +67,6 @@ public interface I_AD_WF_Process
 	 */
 	int getAD_Message_ID();
 
-	@Nullable org.compiere.model.I_AD_Message getAD_Message();
-
-	void setAD_Message(@Nullable org.compiere.model.I_AD_Message AD_Message);
-
-	ModelColumn<I_AD_WF_Process, org.compiere.model.I_AD_Message> COLUMN_AD_Message_ID = new ModelColumn<>(I_AD_WF_Process.class, "AD_Message_ID", org.compiere.model.I_AD_Message.class);
 	String COLUMNNAME_AD_Message_ID = "AD_Message_ID";
 
 	/**
@@ -189,11 +178,6 @@ public interface I_AD_WF_Process
 	 */
 	int getAD_WF_Responsible_ID();
 
-	org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
-
-	void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible);
-
-	ModelColumn<I_AD_WF_Process, org.compiere.model.I_AD_WF_Responsible> COLUMN_AD_WF_Responsible_ID = new ModelColumn<>(I_AD_WF_Process.class, "AD_WF_Responsible_ID", org.compiere.model.I_AD_WF_Responsible.class);
 	String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
 
 	/**
@@ -216,11 +200,6 @@ public interface I_AD_WF_Process
 	 */
 	int getAD_Workflow_ID();
 
-	org.compiere.model.I_AD_Workflow getAD_Workflow();
-
-	void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow);
-
-	ModelColumn<I_AD_WF_Process, org.compiere.model.I_AD_Workflow> COLUMN_AD_Workflow_ID = new ModelColumn<>(I_AD_WF_Process.class, "AD_Workflow_ID", org.compiere.model.I_AD_Workflow.class);
 	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**

@@ -1,26 +1,26 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_WF_Responsible
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_AD_WF_Responsible extends org.compiere.model.PO implements I_AD_WF_Responsible, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 71129782L;
+	private static final long serialVersionUID = 454491763L;
 
     /** Standard Constructor */
-    public X_AD_WF_Responsible (final Properties ctx, final int AD_WF_Responsible_ID, final String trxName)
+    public X_AD_WF_Responsible (final Properties ctx, final int AD_WF_Responsible_ID, @Nullable final String trxName)
     {
       super (ctx, AD_WF_Responsible_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_AD_WF_Responsible (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_AD_WF_Responsible (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }

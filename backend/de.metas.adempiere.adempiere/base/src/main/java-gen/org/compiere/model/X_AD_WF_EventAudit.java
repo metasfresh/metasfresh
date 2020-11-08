@@ -1,27 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_WF_EventAudit
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_AD_WF_EventAudit extends org.compiere.model.PO implements I_AD_WF_EventAudit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1971238753L;
+	private static final long serialVersionUID = 1176309950L;
 
     /** Standard Constructor */
-    public X_AD_WF_EventAudit (final Properties ctx, final int AD_WF_EventAudit_ID, final String trxName)
+    public X_AD_WF_EventAudit (final Properties ctx, final int AD_WF_EventAudit_ID, @Nullable final String trxName)
     {
       super (ctx, AD_WF_EventAudit_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_AD_WF_EventAudit (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_AD_WF_EventAudit (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -80,18 +80,6 @@ public class X_AD_WF_EventAudit extends org.compiere.model.PO implements I_AD_WF
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Node getAD_WF_Node()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
-	}
-
-	@Override
-	public void setAD_WF_Node(final org.compiere.model.I_AD_WF_Node AD_WF_Node)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class, AD_WF_Node);
-	}
-
-	@Override
 	public void setAD_WF_Node_ID (final int AD_WF_Node_ID)
 	{
 		if (AD_WF_Node_ID < 1) 
@@ -107,18 +95,6 @@ public class X_AD_WF_EventAudit extends org.compiere.model.PO implements I_AD_WF
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Process getAD_WF_Process()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Process_ID, org.compiere.model.I_AD_WF_Process.class);
-	}
-
-	@Override
-	public void setAD_WF_Process(final org.compiere.model.I_AD_WF_Process AD_WF_Process)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Process_ID, org.compiere.model.I_AD_WF_Process.class, AD_WF_Process);
-	}
-
-	@Override
 	public void setAD_WF_Process_ID (final int AD_WF_Process_ID)
 	{
 		if (AD_WF_Process_ID < 1) 
@@ -131,18 +107,6 @@ public class X_AD_WF_EventAudit extends org.compiere.model.PO implements I_AD_WF
 	public int getAD_WF_Process_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_WF_Process_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
-	}
-
-	@Override
-	public void setAD_WF_Responsible(final org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class, AD_WF_Responsible);
 	}
 
 	@Override

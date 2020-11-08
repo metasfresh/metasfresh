@@ -1,14 +1,12 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-
-import java.math.BigDecimal;
 
 /** Generated Interface for AD_WF_EventAudit
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_AD_WF_EventAudit 
 {
 
@@ -139,11 +137,6 @@ public interface I_AD_WF_EventAudit
 	 */
 	int getAD_WF_Node_ID();
 
-	org.compiere.model.I_AD_WF_Node getAD_WF_Node();
-
-	void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node);
-
-	ModelColumn<I_AD_WF_EventAudit, org.compiere.model.I_AD_WF_Node> COLUMN_AD_WF_Node_ID = new ModelColumn<>(I_AD_WF_EventAudit.class, "AD_WF_Node_ID", org.compiere.model.I_AD_WF_Node.class);
 	String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
 
 	/**
@@ -166,11 +159,6 @@ public interface I_AD_WF_EventAudit
 	 */
 	int getAD_WF_Process_ID();
 
-	org.compiere.model.I_AD_WF_Process getAD_WF_Process();
-
-	void setAD_WF_Process(org.compiere.model.I_AD_WF_Process AD_WF_Process);
-
-	ModelColumn<I_AD_WF_EventAudit, org.compiere.model.I_AD_WF_Process> COLUMN_AD_WF_Process_ID = new ModelColumn<>(I_AD_WF_EventAudit.class, "AD_WF_Process_ID", org.compiere.model.I_AD_WF_Process.class);
 	String COLUMNNAME_AD_WF_Process_ID = "AD_WF_Process_ID";
 
 	/**
@@ -193,11 +181,6 @@ public interface I_AD_WF_EventAudit
 	 */
 	int getAD_WF_Responsible_ID();
 
-	org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
-
-	void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible);
-
-	ModelColumn<I_AD_WF_EventAudit, org.compiere.model.I_AD_WF_Responsible> COLUMN_AD_WF_Responsible_ID = new ModelColumn<>(I_AD_WF_EventAudit.class, "AD_WF_Responsible_ID", org.compiere.model.I_AD_WF_Responsible.class);
 	String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
 
 	/**

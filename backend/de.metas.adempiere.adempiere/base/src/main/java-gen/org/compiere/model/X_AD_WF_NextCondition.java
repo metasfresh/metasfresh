@@ -1,4 +1,4 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
@@ -8,11 +8,10 @@ import javax.annotation.Nullable;
 /** Generated Model for AD_WF_NextCondition
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_AD_WF_NextCondition extends org.compiere.model.PO implements I_AD_WF_NextCondition, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -403655942L;
+	private static final long serialVersionUID = 559080587L;
 
     /** Standard Constructor */
     public X_AD_WF_NextCondition (final Properties ctx, final int AD_WF_NextCondition_ID, @Nullable final String trxName)
@@ -74,18 +73,6 @@ public class X_AD_WF_NextCondition extends org.compiere.model.PO implements I_AD
 	public int getAD_WF_NextCondition_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_WF_NextCondition_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_WF_NodeNext getAD_WF_NodeNext()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_NodeNext_ID, org.compiere.model.I_AD_WF_NodeNext.class);
-	}
-
-	@Override
-	public void setAD_WF_NodeNext(final org.compiere.model.I_AD_WF_NodeNext AD_WF_NodeNext)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_NodeNext_ID, org.compiere.model.I_AD_WF_NodeNext.class, AD_WF_NodeNext);
 	}
 
 	@Override

@@ -1,13 +1,11 @@
 package org.compiere.model;
 
-import java.sql.Timestamp;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_WF_NextCondition
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_AD_WF_NextCondition 
 {
 
@@ -121,11 +119,6 @@ public interface I_AD_WF_NextCondition
 	 */
 	int getAD_WF_NodeNext_ID();
 
-	org.compiere.model.I_AD_WF_NodeNext getAD_WF_NodeNext();
-
-	void setAD_WF_NodeNext(org.compiere.model.I_AD_WF_NodeNext AD_WF_NodeNext);
-
-	ModelColumn<I_AD_WF_NextCondition, org.compiere.model.I_AD_WF_NodeNext> COLUMN_AD_WF_NodeNext_ID = new ModelColumn<>(I_AD_WF_NextCondition.class, "AD_WF_NodeNext_ID", org.compiere.model.I_AD_WF_NodeNext.class);
 	String COLUMNNAME_AD_WF_NodeNext_ID = "AD_WF_NodeNext_ID";
 
 	/**

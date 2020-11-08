@@ -6,7 +6,6 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for AD_WF_Responsible
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_AD_WF_Responsible 
 {
 
