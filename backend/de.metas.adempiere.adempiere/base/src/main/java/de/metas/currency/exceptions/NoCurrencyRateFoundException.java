@@ -29,6 +29,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
@@ -43,8 +44,8 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	public NoCurrencyRateFoundException(
 			final CurrencyCode currencyFrom,
 			final CurrencyCode currencyTo,
-			final LocalDate conversionDate,
-			final ConversionTypeMethod conversionTypeMethod)
+			@Nullable final LocalDate conversionDate,
+			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
 		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod));
 	}
@@ -52,8 +53,8 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	private static ITranslatableString buildMsg(
 			final CurrencyCode currencyFrom,
 			final CurrencyCode currencyTo,
-			final LocalDate conversionDate,
-			final ConversionTypeMethod conversionTypeMethod)
+			@Nullable final LocalDate conversionDate,
+			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
 		return TranslatableStrings.builder()
 				.appendADMessage(MSG).append(" ")

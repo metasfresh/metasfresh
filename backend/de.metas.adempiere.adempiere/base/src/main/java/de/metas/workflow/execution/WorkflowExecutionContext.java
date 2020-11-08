@@ -84,7 +84,6 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -225,6 +224,7 @@ public final class WorkflowExecutionContext
 		po.saveEx();
 	}
 
+	@Nullable
 	public Object getDocumentColumnValueByColumnId(
 			@NonNull final TableRecordReference documentRef,
 			final int adColumnId)
@@ -232,9 +232,10 @@ public final class WorkflowExecutionContext
 		return getPO(documentRef).get_ValueOfColumn(adColumnId);
 	}
 
+	@Nullable
 	public Object getDocumentColumnValueByColumnName(
 			@NonNull final TableRecordReference documentRef,
-			final String columnName)
+			@NonNull final String columnName)
 	{
 		return getPO(documentRef).get_Value(columnName);
 	}
@@ -257,7 +258,7 @@ public final class WorkflowExecutionContext
 				.map(document -> DocStatus.ofNullableCodeOrUnknown(document.getDocStatus()));
 	}
 
-	public PO getPO(final TableRecordReference documentRef)
+	private PO getPO(final TableRecordReference documentRef)
 	{
 		return poByRef.computeIfAbsent(documentRef, this::retrievePO);
 	}
@@ -303,7 +304,7 @@ public final class WorkflowExecutionContext
 		}
 
 		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-				(LocalDate)null, // TODAY
+				null, // TODAY
 				(CurrencyConversionTypeId)null,
 				clientAndOrgId.getClientId(),
 				clientAndOrgId.getOrgId());

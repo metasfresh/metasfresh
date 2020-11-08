@@ -1318,7 +1318,7 @@ public abstract class PO
 	 * @param value
 	 * @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumn(final String columnName, final Object value)
+	public final boolean set_ValueOfColumn(final String columnName, @Nullable final Object value)
 	{
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
