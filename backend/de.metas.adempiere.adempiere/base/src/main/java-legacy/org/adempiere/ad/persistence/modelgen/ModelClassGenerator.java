@@ -70,7 +70,7 @@ public class ModelClassGenerator
 		//
 		final StringBuilder start = new StringBuilder()
 				.append(ModelInterfaceGenerator.COPY)
-				.append("/** Generated Model - DO NOT CHANGE */").append(NL)
+				.append("// Generated Model - DO NOT CHANGE").append(NL)
 				.append("package ").append(packageName).append(";").append(NL)
 				.append(NL);
 
@@ -82,7 +82,7 @@ public class ModelClassGenerator
 		start.append("/** Generated Model for ").append(tableName).append(NL)
 				.append(" *  @author metasfresh (generated) ").append(NL)
 				.append(" */").append(NL)
-				.append("@SuppressWarnings(\"javadoc\")").append(NL)
+				//.append("@SuppressWarnings(\"javadoc\")").append(NL) // commented out because it gives warnings in intelliJ
 				.append("public class ").append(className)
 				.append(" extends org.compiere.model.PO")
 				.append(" implements I_").append(tableName)

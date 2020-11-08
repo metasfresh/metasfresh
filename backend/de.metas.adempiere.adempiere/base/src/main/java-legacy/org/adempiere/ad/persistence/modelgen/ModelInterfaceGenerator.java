@@ -185,7 +185,7 @@ public class ModelInterfaceGenerator
 		start.append("/** Generated Interface for ").append(tableName).append("\n")
 				.append(" *  @author metasfresh (generated) \n")
 				.append(" */\n")
-				.append("@SuppressWarnings(\"javadoc\")\n") // metas
+				//.append("@SuppressWarnings(\"javadoc\")\n")  // commented out because it gives warnings in intelliJ
 				.append("public interface ").append(className).append(" {").append("\n")
 
 				.append("\tString Table_Name = \"").append(tableName).append("\";\n");
