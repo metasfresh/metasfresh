@@ -24,20 +24,19 @@ package de.metas.workflow;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.IDocument;
-import de.metas.logging.LogManager;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.workflow.execution.WFActivity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class WFNodeTransition
 {
-	private static final Logger logger = LogManager.getLogger(WFNodeTransition.class);
-
 	@NonNull
 	WFNodeTransitionId id;
 
@@ -49,8 +48,10 @@ public class WFNodeTransition
 
 	boolean stdUserWorkflow;
 
-	final WFNodeSplitType fromSplitType;
+	@NonNull
+	WFNodeSplitType fromSplitType;
 
+	@Nullable
 	String description;
 
 	int seqNo;
@@ -68,11 +69,11 @@ public class WFNodeTransition
 		return !isStdUserWorkflow() && getConditions().isEmpty();
 	}    //	isUnconditional
 
-	public boolean isValidFor(final WFActivity activity)
+	public BooleanWithReason checkAllowGoingAwayFrom(final WFActivity fromActivity)
 	{
 		if (isStdUserWorkflow())
 		{
-			final IDocument document = activity.getDocumentOrNull();
+			final IDocument document = fromActivity.getDocumentOrNull();
 			if (document != null)
 			{
 				final String docStatus = document.getDocStatus();
@@ -85,8 +86,7 @@ public class WFNodeTransition
 						|| IDocument.STATUS_Closed.equals(docStatus)
 						|| IDocument.STATUS_Reversed.equals(docStatus))
 				{
-					logger.debug("isValidFor =NO= StdUserWF - Status={} - Action={}", docStatus, docAction);
-					return false;
+					return BooleanWithReason.falseBecause("document state is not valid for a standard workflow transition (docStatus=" + docStatus + ", docAction=" + docAction + ")");
 				}
 			}
 		}
@@ -95,25 +95,27 @@ public class WFNodeTransition
 		final ImmutableList<WFNodeTransitionCondition> conditions = getConditions();
 		if (conditions.isEmpty())
 		{
-			return true;
+			return BooleanWithReason.trueBecause("no conditions");
 		}
 
 		//	First condition always AND
-		boolean ok = conditions.get(0).evaluate(activity);
+		boolean ok = conditions.get(0).evaluate(fromActivity);
 		for (int i = 1; i < conditions.size(); i++)
 		{
 			final WFNodeTransitionCondition condition = conditions.get(i);
 			if (condition.isOr())
 			{
-				ok = ok || condition.evaluate(activity);
+				ok = ok || condition.evaluate(fromActivity);
 			}
 			else
 			{
-				ok = ok && condition.evaluate(activity);
+				ok = ok && condition.evaluate(fromActivity);
 			}
 		}    //	for all conditions
 
-		return ok;
+		return ok
+				? BooleanWithReason.trueBecause("transition conditions matched")
+				: BooleanWithReason.falseBecause("transition conditions NOT matched");
 	}
 
 }

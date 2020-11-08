@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_EventAudit extends org.compiere.model.PO implements I_AD_WF_EventAudit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1176309950L;
+	private static final long serialVersionUID = 2070718024L;
 
     /** Standard Constructor */
     public X_AD_WF_EventAudit (final Properties ctx, final int AD_WF_EventAudit_ID, @Nullable final String trxName)
@@ -98,9 +98,9 @@ public class X_AD_WF_EventAudit extends org.compiere.model.PO implements I_AD_WF
 	public void setAD_WF_Process_ID (final int AD_WF_Process_ID)
 	{
 		if (AD_WF_Process_ID < 1) 
-			set_Value (COLUMNNAME_AD_WF_Process_ID, null);
+			set_ValueNoCheck (COLUMNNAME_AD_WF_Process_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_WF_Process_ID, AD_WF_Process_ID);
+			set_ValueNoCheck (COLUMNNAME_AD_WF_Process_ID, AD_WF_Process_ID);
 	}
 
 	@Override
@@ -172,6 +172,8 @@ public class X_AD_WF_EventAudit extends org.compiere.model.PO implements I_AD_WF
 	public static final String EVENTTYPE_StateChanged = "SC";
 	/** Process Completed = PX */
 	public static final String EVENTTYPE_ProcessCompleted = "PX";
+	/** Trace = TR */
+	public static final String EVENTTYPE_Trace = "TR";
 	@Override
 	public void setEventType (final java.lang.String EventType)
 	{

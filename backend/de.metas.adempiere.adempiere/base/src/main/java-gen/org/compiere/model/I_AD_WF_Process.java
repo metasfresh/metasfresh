@@ -52,7 +52,7 @@ public interface I_AD_WF_Process
 	 * System Message
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: falsei
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Message_ID (int AD_Message_ID);

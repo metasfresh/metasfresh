@@ -32,7 +32,8 @@ public enum WFEventAuditType implements ReferenceListAwareEnum
 {
 	ProcessCreated(X_AD_WF_EventAudit.EVENTTYPE_ProcessCreated),
 	StateChanged(X_AD_WF_EventAudit.EVENTTYPE_StateChanged),
-	ProcessCompleted(X_AD_WF_EventAudit.EVENTTYPE_ProcessCompleted);
+	ProcessCompleted(X_AD_WF_EventAudit.EVENTTYPE_ProcessCompleted),
+	Trace(X_AD_WF_EventAudit.EVENTTYPE_Trace);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<WFEventAuditType> typesByCode = ReferenceListAwareEnums.index(values());
 

@@ -25,10 +25,15 @@ package de.metas.workflow.execution;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.workflow.WFAction;
+import de.metas.workflow.WFEventAudit;
+import de.metas.workflow.WFEventAuditType;
+import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFNodeSplitType;
 import de.metas.workflow.WFNodeTransition;
@@ -361,8 +366,11 @@ public class WFProcess
 		for (final WFNodeTransition transition : transitions)
 		{
 			//	Can we move to next activity?
-			if (!transition.isValidFor(lastActivity))
+			final BooleanWithReason allow = transition.checkAllowGoingAwayFrom(lastActivity);
+			if (allow.isFalse())
 			{
+				final WFNode nextNode = context.getNodeById(transition.getNextNodeId());
+				logAudit("Transition to " + nextNode.getName().getDefaultValue() + " not valid because: " + allow.getReason().getDefaultValue());
 				continue;
 			}
 
@@ -379,6 +387,25 @@ public class WFProcess
 
 		return true;
 	}    //	startNext
+
+	private void logAudit(final String textMsg)
+	{
+		if (Check.isBlank(textMsg))
+		{
+			return;
+		}
+
+		context.addEventAudit(WFEventAudit.builder()
+				.eventType(WFEventAuditType.Trace)
+				.wfProcessId(getWfProcessId())
+				.documentRef(getDocumentRef())
+				.wfResponsibleId(getWfResponsibleId())
+				.userId(getUserId())
+				.wfState(getState())
+				.textMsg(textMsg)
+				.build());
+
+	}
 
 	private Workflow getWorkflow()
 	{

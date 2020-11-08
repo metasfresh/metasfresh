@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_WF_NextCondition;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @ToString
@@ -43,8 +44,11 @@ public class WFNodeTransitionCondition
 
 	private final int adColumnId;
 	private final boolean andJoin;
+	@NonNull
 	private final String operation;
+	@Nullable
 	private final String conditionValue1;
+	@Nullable
 	private final String conditionValue2;
 
 	@Builder

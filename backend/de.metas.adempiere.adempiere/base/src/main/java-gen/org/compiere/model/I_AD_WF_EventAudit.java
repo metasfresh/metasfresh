@@ -20,7 +20,7 @@ public interface I_AD_WF_EventAudit
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -54,7 +54,7 @@ public interface I_AD_WF_EventAudit
 	 * Set Table.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -64,7 +64,7 @@ public interface I_AD_WF_EventAudit
 	 * Get Table.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -121,8 +121,8 @@ public interface I_AD_WF_EventAudit
 	 * Set Knoten.
 	 * Workflow Node (activity), step or process
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setAD_WF_Node_ID (int AD_WF_Node_ID);
@@ -131,8 +131,8 @@ public interface I_AD_WF_EventAudit
 	 * Get Knoten.
 	 * Workflow Node (activity), step or process
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_WF_Node_ID();
@@ -143,7 +143,7 @@ public interface I_AD_WF_EventAudit
 	 * Set Workflow-Prozess.
 	 * Actual Workflow Process Instance
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -153,7 +153,7 @@ public interface I_AD_WF_EventAudit
 	 * Get Workflow-Prozess.
 	 * Actual Workflow Process Instance
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -165,7 +165,7 @@ public interface I_AD_WF_EventAudit
 	 * Set Workflow - Verantwortlicher.
 	 * Responsible for Workflow Execution
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -175,7 +175,7 @@ public interface I_AD_WF_EventAudit
 	 * Get Workflow - Verantwortlicher.
 	 * Responsible for Workflow Execution
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
