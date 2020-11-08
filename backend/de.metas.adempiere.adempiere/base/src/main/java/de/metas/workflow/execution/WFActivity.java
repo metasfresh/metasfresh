@@ -100,70 +100,77 @@ public class WFActivity
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	private final WorkflowExecutionContext context;
-	private WFActivityId id;
 	private final WFProcess wfProcess;
 	private final WFNode wfNode;
-	private int priority;
-	private WFState wfState;
-	private boolean processed;
 	private final TableRecordReference documentRef;
-	@Nullable
-	private String textMsg;
-	@Nullable
-	private AdIssueId issueId;
-
-	@NonNull
-	private WFResponsibleId wfResponsibleId;
-	@Nullable
-	private UserId userId;
 
 	@Nullable
 	private Optional<String> m_newValue = null;
 	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
 
 	private final Instant startTime;
-	@Nullable
-	private Instant endWaitTime;
+
+	@NonNull
+	private final WFActivityState state;
 
 	public WFActivity(
-			@NonNull final WFProcess process,
+			@NonNull final WFProcess wfProcess,
 			@NonNull final WFNodeId nodeId)
 	{
-		this.context = process.getContext();
-
-		this.wfProcess = process;
+		this.context = wfProcess.getContext();
+		this.wfProcess = wfProcess;
 		this.wfNode = context.getNodeById(nodeId);
-		this.wfState = WFState.NotStarted;
-		this.documentRef = process.getDocumentRef();
-		this.processed = false;
+		this.documentRef = wfProcess.getDocumentRef();
+		this.startTime = SystemTime.asInstant();
 
 		// Node Priority & End Duration
-		this.priority = process.getPriority();
+		int priority = wfProcess.getPriority();
 		if (wfNode.getPriority() > 0)
 		{
-			this.priority = wfNode.getPriority();
+			priority = wfNode.getPriority();
 		}
 
 		// Responsible
-		{
-			wfResponsibleId = wfNode.getResponsibleId() != null ? wfNode.getResponsibleId() : process.getWfResponsibleId();
-			final WFResponsible resp = context.getResponsibleById(wfResponsibleId);
+		final WFResponsibleId wfResponsibleId = wfNode.getResponsibleId() != null
+				? wfNode.getResponsibleId()
+				: wfProcess.getWfResponsibleId();
+		final WFResponsible resp = context.getResponsibleById(wfResponsibleId);
 
-			// User - Directly responsible
-			this.userId = resp.getUserId();
-			// Invoker - get Sales Rep or last updater of document
-			if (userId == null || resp.isInvoker())
-			{
-				userId = process.getUserId();
-			}
+		// User - Directly responsible
+		UserId userId = resp.getUserId();
+		// Invoker - get Sales Rep or last updater of document
+		if (userId == null || resp.isInvoker())
+		{
+			userId = wfProcess.getUserId();
 		}
 
-		this.startTime = SystemTime.asInstant();
-
 		final Duration durationLimit = wfNode.getDurationLimit();
-		this.endWaitTime = !durationLimit.isZero()
+		final Instant endWaitTime = !durationLimit.isZero()
 				? startTime.plus(durationLimit)
 				: null;
+
+		this.state = WFActivityState.builder()
+				.id(null)
+				.wfNodeId(wfNode.getId())
+				.priority(priority)
+				.wfState(WFState.NotStarted)
+				.processed(false)
+				.wfResponsibleId(wfResponsibleId)
+				.userId(userId)
+				.endWaitTime(endWaitTime)
+				.build();
+	}
+
+	public WFActivity(
+			@NonNull final WFProcess wfProcess,
+			@NonNull final WFActivityState state)
+	{
+		this.context = wfProcess.getContext();
+		this.wfProcess = wfProcess;
+		this.wfNode = context.getNodeById(state.getWfNodeId());
+		this.documentRef = wfProcess.getDocumentRef();
+		this.startTime = SystemTime.asInstant();
+		this.state = state;
 	}
 
 	@NonNull
@@ -175,15 +182,16 @@ public class WFActivity
 	@NonNull
 	public WFProcessId getWfProcessId() { return getWorkflowProcess().getWfProcessId(); }
 
-	public WFActivityId getId() { return id; }
+	@Nullable
+	public WFActivityId getId() { return state.getId(); }
 
-	void setId(@NonNull final WFActivityId id) { this.id = id; }
+	void setId(@NonNull final WFActivityId id) { state.setId(id); }
 
-	public int getPriority() { return priority; }
+	public int getPriority() { return state.getPriority(); }
 
 	public WFState getState()
 	{
-		return wfState;
+		return state.getWfState();
 	}
 
 	/**
@@ -207,7 +215,7 @@ public class WFActivity
 		if (getState().isValidNewState(wfState))
 		{
 			log.debug("{} -> {}, Msg={}", getState(), wfState, getTextMsg());
-			this.wfState = wfState;
+			state.setWfState(wfState);
 			//context.save(this);
 
 			logAuditStateChanged();
@@ -227,25 +235,22 @@ public class WFActivity
 	}    // setWFState
 
 	@Nullable
-	public UserId getUserId() { return this.userId; }
+	public UserId getUserId() { return state.getUserId(); }
 
-	public void setUserId(@NonNull final UserId userId) { this.userId = userId; }
+	public void setUserId(@NonNull final UserId userId) { state.setUserId(userId); }
 
-	private void setPriority(final int priority)
-	{
-		this.priority = priority;
-	}
+	private void setPriority(final int priority) { state.setPriority(priority); }
 
-	private void setEndWaitTime(@NonNull final Instant endWaitTime) { this.endWaitTime = endWaitTime; }
+	private void setEndWaitTime(@NonNull final Instant endWaitTime) { state.setEndWaitTime(endWaitTime); }
 
 	@Nullable
-	public Instant getEndWaitTime() { return endWaitTime; }
+	public Instant getEndWaitTime() { return state.getEndWaitTime(); }
 
 	public Duration getElapsedTime() { return Duration.between(startTime, SystemTime.asInstant()); }
 
-	public boolean isProcessed() { return processed; }
+	public boolean isProcessed() { return state.isProcessed(); }
 
-	void setProcessed() { this.processed = true; }
+	void setProcessed() { state.setProcessed(true); }
 
 	/**
 	 * @return true if closed
@@ -345,9 +350,9 @@ public class WFActivity
 	public WFNode getNode() { return wfNode; }
 
 	@Nullable
-	public String getTextMsg() { return textMsg; }
+	public String getTextMsg() { return state.getTextMsg(); }
 
-	private void setTextMsg(@Nullable final String textMsg) { this.textMsg = textMsg; }
+	private void setTextMsg(@Nullable final String textMsg) { state.setTextMsg(textMsg); }
 
 	public void addTextMsg(@Nullable final String textMsg)
 	{
@@ -381,28 +386,22 @@ public class WFActivity
 		setIssueId(adIssueId);
 	}
 
-	private void setIssueId(@NonNull final AdIssueId issueId) { this.issueId = issueId; }
+	private void setIssueId(@NonNull final AdIssueId issueId) { state.setIssueId(issueId); }
 
 	@Nullable
-	public AdIssueId getIssueId() { return issueId; }
+	public AdIssueId getIssueId() { return state.getIssueId(); }
 
 	/**
 	 * Set Responsible and User from Process / Node
 	 */
-	public WFResponsibleId getWFResponsibleId()
-	{
-		return wfResponsibleId;
-	}
+	public WFResponsibleId getWFResponsibleId() { return state.getWfResponsibleId(); }
 
 	private WFResponsible getResponsible()
 	{
 		return context.getResponsibleById(getWFResponsibleId());
 	}
 
-	public void setWFResponsibleId(@NonNull final WFResponsibleId wfResponsibleId)
-	{
-		this.wfResponsibleId = wfResponsibleId;
-	}
+	public void setWFResponsibleId(@NonNull final WFResponsibleId wfResponsibleId) { state.setWfResponsibleId(wfResponsibleId); }
 
 	private boolean isInvoker()
 	{

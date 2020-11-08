@@ -38,10 +38,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import java.util.List;
+
 public class WorkflowExecutor
 {
 	private static final Logger log = LogManager.getLogger(WorkflowExecutor.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final WFProcessRepository wfProcessRepository;
 
 	private final WorkflowExecutionContext context;
 
@@ -60,10 +63,19 @@ public class WorkflowExecutor
 				.documentRef(documentRef)
 				.userId(userId)
 				.build();
+
+		wfProcessRepository = context.getWfProcessRepository();
 	}
 
 	public WorkflowExecutionResult start()
 	{
+		//
+		// First, abort all existing processes
+		for (final WFProcessId activeProcessId : wfProcessRepository.getActiveProcessIds(context.getDocumentRef()))
+		{
+			abort(activeProcessId);
+		}
+
 		final WFProcess wfProcess = new WFProcess(context);
 		final Mutable<Throwable> exceptionHolder = new Mutable<>();
 
@@ -78,7 +90,7 @@ public class WorkflowExecutor
 			@Override
 			public boolean doCatch(final Throwable ex)
 			{
-				log.error("Failed starting workflow for {}", context, ex);
+				//log.warn("Failed starting workflow for {}", context, ex);
 				exceptionHolder.setValue(ex);
 				return ROLLBACK;
 			}
@@ -124,5 +136,27 @@ public class WorkflowExecutor
 		}
 
 		return summary;
+	}
+
+	public void abort(@NonNull final WFProcessId wfProcessId)
+	{
+		final WFProcessState wfProcessState = wfProcessRepository.getWFProcessStateById(wfProcessId);
+		final List<WFActivityState> wfActivityStates = wfProcessRepository.getWFActivityStates(wfProcessId);
+		final WFProcess wfProcess = new WFProcess(context, wfProcessState, wfActivityStates);
+
+		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
+		{
+			@Override
+			public void run(final String localTrxName)
+			{
+				wfProcess.changeWFStateTo(WFState.Aborted);
+			}
+
+			@Override
+			public void doFinally()
+			{
+				context.saveAll(wfProcess);
+			}
+		});
 	}
 }

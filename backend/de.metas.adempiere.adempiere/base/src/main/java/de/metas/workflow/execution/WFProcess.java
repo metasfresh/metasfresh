@@ -23,8 +23,6 @@
 package de.metas.workflow.execution;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
@@ -40,12 +38,11 @@ import de.metas.workflow.WorkflowId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class WFProcess
@@ -53,55 +50,68 @@ public class WFProcess
 	private static final Logger log = LogManager.getLogger(WFProcess.class);
 
 	private final WorkflowExecutionContext context;
-	private WFProcessId wfProcessId;
 	private final int priority;
-	private WFState wfState;
-	private boolean processed;
 	private final TableRecordReference documentRef;
 
+	@NonNull
 	private final WFResponsibleId wfResponsibleId;
+	@NonNull
 	private final UserId userId;
-	@Nullable
-	private String textMsg;
+
 	@Nullable
 	private String processMsg;
-	@Nullable
-	private AdIssueId issueId;
 
+	private final WFProcessState state;
+
+	@NonNull
 	private final ArrayList<WFActivity> activities;
 
 	WFProcess(@NonNull final WorkflowExecutionContext context)
 	{
 		this.context = context;
-
-		final Instant now = SystemTime.asInstant();
-		final Workflow workflow = context.getWorkflow();
-		if (!TimeUtil.isBetween(now, workflow.getValidFrom(), workflow.getValidTo()))
-		{
-			throw new AdempiereException("Workflow not valid on " + now);
-		}
-
-		this.priority = workflow.getPriority();
-		this.wfState = WFState.NotStarted;
+		this.priority = context.getWorkflow().getPriority();
 		this.documentRef = context.getDocumentRef();
+		this.wfResponsibleId = context.getWFResponsibleId();
+		this.userId = context.getUserId();
 
-		//	Responsible/User
-		this.wfResponsibleId = CoalesceUtil.coalesce(workflow.getResponsibleId(), WFResponsibleId.Invoker);
-		this.userId = context.getUserId(); // user starting
-
-		this.processed = false;
+		this.state = WFProcessState.builder()
+				.wfProcessId(null)
+				.wfState(WFState.NotStarted)
+				.processed(false)
+				.build();
 
 		activities = new ArrayList<>();
+	}
+
+	WFProcess(
+			@NonNull final WorkflowExecutionContext context,
+			@NonNull final WFProcessState wfProcessState,
+			@NonNull final List<WFActivityState> wfActivityStates)
+	{
+		this.context = context;
+		this.priority = context.getWorkflow().getPriority();
+		this.documentRef = context.getDocumentRef();
+		this.wfResponsibleId = context.getWFResponsibleId();
+		this.userId = context.getUserId();
+
+		this.state = wfProcessState;
+
+		activities = new ArrayList<>(wfActivityStates.size());
+		for (final WFActivityState wfActivityState : wfActivityStates)
+		{
+			activities.add(new WFActivity(this, wfActivityState));
+		}
 	}
 
 	@NonNull
 	WorkflowExecutionContext getContext() { return context; }
 
 	@Nullable
-	WFProcessId getWfProcessIdOrNull() { return wfProcessId; }
+	WFProcessId getWfProcessIdOrNull() { return state.getWfProcessId(); }
 
 	WFProcessId getWfProcessId()
 	{
+		final WFProcessId wfProcessId = getWfProcessIdOrNull();
 		if (wfProcessId == null)
 		{
 			throw new AdempiereException("WF Process was not already saved");
@@ -109,10 +119,7 @@ public class WFProcess
 		return wfProcessId;
 	}
 
-	void setWfProcessId(@NonNull final WFProcessId wfProcessId)
-	{
-		this.wfProcessId = wfProcessId;
-	}
+	void setWfProcessId(@NonNull final WFProcessId wfProcessId) { state.setWfProcessId(wfProcessId); }
 
 	@NonNull
 	public WorkflowId getWorkflowId() { return getContext().getWorkflow().getId(); }
@@ -139,17 +146,14 @@ public class WFProcess
 
 	public WFState getState()
 	{
-		return wfState;
+		return state.getWfState();
 	}
 
-	private void setState(@NonNull final WFState wfState)
-	{
-		this.wfState = wfState;
-	}
+	private void setState(@NonNull final WFState wfState) { state.setWfState(wfState); }
 
-	public boolean isProcessed() { return processed; }
+	public boolean isProcessed() { return state.isProcessed(); }
 
-	private void setProcessed() { this.processed = true; }
+	private void setProcessed() { state.setProcessed(true); }
 
 	/**
 	 * Set Process State and update Actions
@@ -410,23 +414,24 @@ public class WFProcess
 		}
 		catch (final Throwable ex)
 		{
-			log.error("firstWFNodeId={}", firstWFNodeId, ex);
 			setProcessMsg(ex);
 			changeWFStateTo(WFState.Terminated);
+			
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
 	@Nullable
-	public AdIssueId getIssueId() { return issueId; }
+	public AdIssueId getIssueId() { return state.getIssueId(); }
 
-	private void setIssueId(@NonNull final AdIssueId issueId) { this.issueId = issueId; }
+	private void setIssueId(@NonNull final AdIssueId issueId) { state.setIssueId(issueId); }
 
 	@Nullable
-	public String getTextMsg() { return textMsg; }
+	public String getTextMsg() { return state.getTextMsg(); }
 
 	private void setTextMsg(@Nullable final String textMsg)
 	{
-		this.textMsg = textMsg;
+		state.setTextMsg(textMsg);
 	}
 
 	void addTextMsg(@Nullable final String textMsg)
@@ -466,7 +471,7 @@ public class WFProcess
 	 */
 	void setProcessMsg(@Nullable final String msg)
 	{
-		processMsg = msg;
+		this.processMsg = msg;
 		addTextMsg(msg);
 	}
 

@@ -23,6 +23,8 @@
 package de.metas.workflow.execution;
 
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
@@ -68,6 +70,7 @@ import lombok.ToString;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -75,15 +78,16 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-@Builder
 @EqualsAndHashCode
 @ToString
 public final class WorkflowExecutionContext
@@ -100,10 +104,15 @@ public final class WorkflowExecutionContext
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
-	private final WFProcessRepository wfProcessRepo = SpringContextHolder.instance.getBean(WFProcessRepository.class);
+	@Getter
+	private final WFProcessRepository wfProcessRepository = SpringContextHolder.instance.getBean(WFProcessRepository.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+
+	@NonNull
+	@Getter
+	private final Instant startTime;
 
 	@NonNull
 	@Getter
@@ -126,8 +135,34 @@ public final class WorkflowExecutionContext
 	private final UserId userId;
 
 	private final HashMap<TableRecordReference, PO> poByRef = new HashMap<>();
-
 	private final WFEventAuditList auditList = new WFEventAuditList();
+
+	@Builder
+	private WorkflowExecutionContext(
+			@NonNull final Workflow workflow,
+			@NonNull final ClientId clientId,
+			@NonNull final String adLanguage,
+			@NonNull final TableRecordReference documentRef,
+			@NonNull final UserId userId)
+	{
+		this.startTime = SystemTime.asInstant();
+		this.workflow = workflow;
+		this.clientId = clientId;
+		this.adLanguage = adLanguage;
+		this.documentRef = documentRef;
+		this.userId = userId;
+
+		if (!TimeUtil.isBetween(startTime, workflow.getValidFrom(), workflow.getValidTo()))
+		{
+			throw new AdempiereException("Workflow not valid on " + startTime);
+		}
+	}
+
+	@NonNull
+	public WFResponsibleId getWFResponsibleId()
+	{
+		return CoalesceUtil.coalesce(getWorkflow().getResponsibleId(), WFResponsibleId.Invoker);
+	}
 
 	@NonNull
 	public WFNode getNodeById(@NonNull final WFNodeId nodeId)
@@ -147,9 +182,9 @@ public final class WorkflowExecutionContext
 		auditRepo.save(auditList);
 	}
 
-	void save(@NonNull final WFProcess wfProcess) { wfProcessRepo.save(wfProcess); }
+	void save(@NonNull final WFProcess wfProcess) { wfProcessRepository.save(wfProcess); }
 
-	private void save(@NonNull final WFActivity wfActivity) { wfProcessRepo.save(wfActivity); }
+	private void save(@NonNull final WFActivity wfActivity) { wfProcessRepository.save(wfActivity); }
 
 	public IDocument processDocument(
 			@NonNull final TableRecordReference documentRef,

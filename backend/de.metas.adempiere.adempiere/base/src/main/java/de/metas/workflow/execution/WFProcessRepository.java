@@ -30,6 +30,7 @@ import de.metas.error.AdIssueId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
 import lombok.Builder;
@@ -51,6 +52,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -59,6 +61,45 @@ import java.util.stream.Collectors;
 public class WFProcessRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public WFProcessState getWFProcessStateById(@NonNull final WFProcessId wfProcessId)
+	{
+		final I_AD_WF_Process record = InterfaceWrapperHelper.loadOutOfTrx(wfProcessId, I_AD_WF_Process.class);
+		return WFProcessState.builder()
+				.wfProcessId(WFProcessId.ofRepoId(record.getAD_WF_Process_ID()))
+				.wfState(WFState.ofCode(record.getWFState()))
+				.processed(record.isProcessed())
+				.textMsg(record.getTextMsg())
+				.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+				.build();
+	}
+
+	public List<WFActivityState> getWFActivityStates(@NonNull final WFProcessId wfProcessId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_Activity.class)
+				.addEqualsFilter(I_AD_WF_Activity.COLUMNNAME_AD_WF_Process_ID, wfProcessId)
+				.orderBy(I_AD_WF_Activity.COLUMNNAME_AD_WF_Activity_ID)
+				.create()
+				.stream()
+				.map(WFProcessRepository::toWFActivityState)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static WFActivityState toWFActivityState(final I_AD_WF_Activity record)
+	{
+		return WFActivityState.builder()
+				.id(WFActivityId.ofRepoId(record.getAD_WF_Activity_ID()))
+				.wfNodeId(WFNodeId.ofRepoId(record.getAD_WF_Node_ID()))
+				.priority(record.getPriority())
+				.wfState(WFState.ofCode(record.getWFState()))
+				.processed(record.isProcessed())
+				.textMsg(record.getTextMsg())
+				.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+				.wfResponsibleId(WFResponsibleId.ofRepoId(record.getAD_WF_Responsible_ID()))
+				.userId(UserId.ofRepoIdOrNullIfSystem(record.getAD_User_ID()))
+				.endWaitTime(TimeUtil.asInstant(record.getEndWaitTime()))
+				.build();
+	}
 
 	public void save(@NonNull final WFProcess wfProcess)
 	{
@@ -171,7 +212,7 @@ public class WFProcessRepository
 				+ " AND wfn.Action<>'Z'"    // not sleeping
 				+ " AND (wf.AD_WorkflowProcessor_ID IS NULL OR wf.AD_WorkflowProcessor_ID=?))";
 
-		final List<Object> sqlParams = Arrays.asList(adWorkflowProcessorId);
+		final List<Object> sqlParams = Collections.singletonList(adWorkflowProcessorId);
 		return retrieveWFActivityPendingInfoList(sql, sqlParams);
 	}
 
@@ -200,7 +241,7 @@ public class WFProcessRepository
 				+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
 				+ " AND (wf.AD_WorkflowProcessor_ID IS NULL OR wf.AD_WorkflowProcessor_ID=?))";
 
-		final List<Object> sqlParams = Arrays.asList(adWorkflowProcessorId);
+		final List<Object> sqlParams = Collections.singletonList(adWorkflowProcessorId);
 		return retrieveWFActivityPendingInfoList(sql, sqlParams);
 	}
 
@@ -275,7 +316,7 @@ public class WFProcessRepository
 		}
 
 		return activities.stream()
-				.map(activity -> toStringX(activity))
+				.map(this::toStringX)
 				.collect(Collectors.joining("\n"));
 	}
 
@@ -306,4 +347,13 @@ public class WFProcessRepository
 				.listImmutable(I_AD_WF_Activity.class);
 	}
 
+	public List<WFProcessId> getActiveProcessIds(final TableRecordReference documentRef)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_WF_Process.class)
+				.addEqualsFilter(I_AD_WF_Process.COLUMNNAME_AD_Table_ID, documentRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_WF_Process.COLUMNNAME_Record_ID, documentRef.getRecord_ID())
+				.addEqualsFilter(I_AD_WF_Process.COLUMNNAME_Processed, false)
+				.create()
+				.listDistinct(I_AD_WF_Process.COLUMNNAME_AD_WF_Process_ID, WFProcessId.class);
+	}
 }

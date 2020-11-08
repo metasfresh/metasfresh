@@ -2686,6 +2686,12 @@ public class DB
 		{
 			value = (AT)rs.getString(columnIndex);
 		}
+		else if(RepoIdAware.class.isAssignableFrom(returnType))
+		{
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
+			value = (AT)RepoIdAwares.ofRepoIdOrNull(rs.getInt(columnIndex), repoIdAwareType);
+		}
 		else
 		{
 			value = (AT)rs.getObject(columnIndex);
