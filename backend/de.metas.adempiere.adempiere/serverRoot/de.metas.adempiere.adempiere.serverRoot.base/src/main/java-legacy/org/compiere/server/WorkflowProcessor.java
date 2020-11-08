@@ -19,6 +19,7 @@ package org.compiere.server;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -329,7 +330,7 @@ public class WorkflowProcessor extends AdempiereServer
 
 		// MWFProcess process = new MWFProcess(getCtx(), activity.getAD_WF_Process_ID());
 
-		String subjectVar = activity.getActivityName();
+		final ITranslatableString subjectVar = activity.getActivityName();
 		String message = activity.getTextMsg();
 		if (message == null || message.length() == 0)
 		{

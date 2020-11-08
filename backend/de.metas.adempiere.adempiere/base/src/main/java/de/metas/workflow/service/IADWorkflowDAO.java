@@ -22,6 +22,7 @@
 
 package de.metas.workflow.service;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFNodeTransitionId;
@@ -32,6 +33,7 @@ import de.metas.workflow.WorkflowId;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_WF_Node;
 
 import java.util.Collection;
 
@@ -52,4 +54,10 @@ public interface IADWorkflowDAO extends ISingletonService
 	void createWFNode(WFNodeCreateRequest request);
 
 	WFResponsible getWFResponsibleById(@NonNull WFResponsibleId responsibleId);
+
+	void onBeforeSave(I_AD_WF_Node wfNodeRecord, boolean newRecord);
+
+	ITranslatableString getWFNodeName(
+			@NonNull WorkflowId workflowId,
+			@NonNull WFNodeId nodeId);
 }

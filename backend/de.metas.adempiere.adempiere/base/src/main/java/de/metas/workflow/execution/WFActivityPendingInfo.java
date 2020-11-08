@@ -22,6 +22,7 @@
 
 package de.metas.workflow.execution;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.workflow.WFResponsibleId;
 import lombok.Builder;
@@ -38,7 +39,7 @@ import java.time.Instant;
 public class WFActivityPendingInfo
 {
 	@NonNull WFActivityId wfActivityId;
-	@NonNull String activityName;
+	@NonNull ITranslatableString activityName;
 
 	@NonNull ClientId clientId;
 	@Nullable

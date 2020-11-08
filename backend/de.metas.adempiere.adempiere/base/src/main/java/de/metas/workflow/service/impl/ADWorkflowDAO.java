@@ -30,6 +30,7 @@ import de.metas.cache.CCache;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
@@ -62,6 +63,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process_Para;
@@ -73,6 +75,7 @@ import org.compiere.model.I_AD_WF_Responsible;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.MColumn;
 import org.compiere.model.X_AD_WF_NextCondition;
+import org.compiere.model.X_AD_WF_Node;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -459,7 +462,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		InterfaceWrapperHelper.save(record);
 	}
 
-	private static Duration convertDurationUnitToDuration(final String durationUnit)
+	private static Duration convertDurationUnitToDuration(@Nullable final String durationUnit)
 	{
 		return durationUnit != null
 				? WFDurationUnit.ofCode(durationUnit).getDuration()
@@ -486,4 +489,93 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				.build();
 	}
 
+	@Override
+	public void onBeforeSave(final I_AD_WF_Node wfNodeRecord, final boolean newRecord)
+	{
+		final I_AD_Workflow workflow = InterfaceWrapperHelper.load(wfNodeRecord.getAD_Workflow_ID(), I_AD_Workflow.class);
+		if (X_AD_Workflow.WORKFLOWTYPE_Manufacturing.equals(workflow.getWorkflowType()))
+		{
+			wfNodeRecord.setAction(X_AD_WF_Node.ACTION_WaitSleep);
+			return;
+		}
+
+		final WFNodeAction action = WFNodeAction.ofCode(wfNodeRecord.getAction());
+		if (action == WFNodeAction.WaitSleep)
+		{
+			;
+		}
+		else if (action == WFNodeAction.AppsProcess || action == WFNodeAction.AppsReport)
+		{
+			if (wfNodeRecord.getAD_Process_ID() <= 0)
+			{
+				throw new FillMandatoryException(I_AD_WF_Node.COLUMNNAME_AD_Process_ID);
+			}
+		}
+		else if (action == WFNodeAction.AppsTask)
+		{
+			if (wfNodeRecord.getAD_Task_ID() <= 0)
+			{
+				throw new FillMandatoryException("AD_Task_ID");
+			}
+		}
+		else if (action == WFNodeAction.DocumentAction)
+		{
+			if (wfNodeRecord.getDocAction() == null || wfNodeRecord.getDocAction().length() == 0)
+			{
+				throw new FillMandatoryException("DocAction");
+			}
+		}
+		else if (action == WFNodeAction.EMail)
+		{
+			if (wfNodeRecord.getR_MailText_ID() <= 0)
+			{
+				throw new FillMandatoryException("R_MailText_ID");
+			}
+		}
+		else if (action == WFNodeAction.SetVariable)
+		{
+			if (wfNodeRecord.getAttributeValue() == null)
+			{
+				throw new FillMandatoryException("AttributeValue");
+			}
+		}
+		else if (action == WFNodeAction.SubWorkflow)
+		{
+			if (wfNodeRecord.getAD_Workflow_ID() <= 0)
+			{
+				throw new FillMandatoryException("AD_Workflow_ID");
+			}
+		}
+		else if (action == WFNodeAction.UserChoice)
+		{
+			if (wfNodeRecord.getAD_Column_ID() <= 0)
+			{
+				throw new FillMandatoryException("AD_Column_ID");
+			}
+		}
+		else if (action == WFNodeAction.UserForm)
+		{
+			if (wfNodeRecord.getAD_Form_ID() <= 0)
+			{
+				throw new FillMandatoryException("AD_Form_ID");
+			}
+		}
+		else if (action == WFNodeAction.UserWindow)
+		{
+			if (wfNodeRecord.getAD_Window_ID() <= 0)
+			{
+				throw new FillMandatoryException("AD_Window_ID");
+			}
+		}
+	}
+
+	@Override
+	public ITranslatableString getWFNodeName(
+			@NonNull final WorkflowId workflowId,
+			@NonNull final WFNodeId nodeId)
+	{
+		return getById(workflowId)
+				.getNodeById(nodeId)
+				.getName();
+	}
 }

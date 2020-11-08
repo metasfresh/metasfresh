@@ -162,7 +162,7 @@ public class ADWorkflowBL implements IADWorkflowBL
 		final I_AD_WF_Node workflowNode = InterfaceWrapperHelper.newInstance(I_AD_WF_Node.class);
 
 		// Specific details
-		workflowNode.setAD_Workflow(workflow);
+		workflowNode.setAD_Workflow_ID(workflow.getAD_Workflow_ID());
 		workflowNode.setName(name);
 		workflowNode.setValue(name);
 		workflowNode.setAction(action);

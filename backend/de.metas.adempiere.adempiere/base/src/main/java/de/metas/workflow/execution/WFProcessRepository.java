@@ -27,12 +27,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.error.AdIssueId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -272,7 +275,7 @@ public class WFProcessRepository
 
 			result.add(WFActivityPendingInfo.builder()
 					.wfActivityId(WFActivityId.ofRepoId(activity.getAD_WF_Activity_ID()))
-					.activityName(activity.getAD_WF_Node().getName())
+					.activityName(getActivityName(activity))
 					//
 					.clientId(ClientId.ofRepoId(activity.getAD_Client_ID()))
 					.dateLastAlert(TimeUtil.asInstant(activity.getDateLastAlert()))
@@ -323,7 +326,7 @@ public class WFProcessRepository
 	private String toStringX(final I_AD_WF_Activity activity)
 	{
 		final StringBuilder sb = new StringBuilder();
-		sb.append(WFState.ofCode(activity.getWFState())).append(": ").append(activity.getAD_WF_Node().getName());
+		sb.append(WFState.ofCode(activity.getWFState())).append(": ").append(getActivityName(activity).getDefaultValue());
 
 		final UserId userId = UserId.ofRepoIdOrNullIfSystem(activity.getAD_User_ID());
 		if (userId != null)
@@ -334,6 +337,15 @@ public class WFProcessRepository
 		}
 
 		return sb.toString();
+	}
+
+	private ITranslatableString getActivityName(@NonNull final I_AD_WF_Activity activity)
+	{
+		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+
+		final WorkflowId workflowId = WorkflowId.ofRepoId(activity.getAD_Workflow_ID());
+		final WFNodeId wfNodeId = WFNodeId.ofRepoId(activity.getAD_WF_Node_ID());
+		return workflowDAO.getWFNodeName(workflowId, wfNodeId);
 	}
 
 	private ImmutableList<I_AD_WF_Activity> getActiveActivities(final int AD_Table_ID, final int Record_ID)
