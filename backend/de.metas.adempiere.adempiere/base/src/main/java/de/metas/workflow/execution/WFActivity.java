@@ -599,22 +599,8 @@ public class WFActivity
 
 				// Do Work
 				final PerformWorkResult result = performWork();
-				final PerformWorkResolution resolution = result.getResolution();
-				final DocStatus newDocStatus = result.getNewDocStatus();
-				docStatusChanged = newDocStatus != null;
-
-				if (resolution == PerformWorkResolution.COMPLETED)
-				{
-					changeWFStateTo(WFState.Completed);
-				}
-				else if (resolution == PerformWorkResolution.SUSPENDED)
-				{
-					changeWFStateTo(WFState.Suspended);
-				}
-				else
-				{
-					throw new AdempiereException("Unknown resolution: " + result);
-				}
+				docStatusChanged = result.getNewDocStatus() != null;
+				changeWFStateTo(result.getNewWFState());
 			}
 
 			@Override
@@ -649,21 +635,16 @@ public class WFActivity
 		});
 	}
 
-	private enum PerformWorkResolution
-	{
-		COMPLETED,
-		SUSPENDED
-	}
-
 	@Value
 	@Builder
 	private static class PerformWorkResult
 	{
-		public static final PerformWorkResult COMPLETED = builder().resolution(PerformWorkResolution.COMPLETED).build();
-		public static final PerformWorkResult SUSPENDED = builder().resolution(PerformWorkResolution.SUSPENDED).build();
+		public static final PerformWorkResult COMPLETED = builder().newWFState(WFState.Completed).build();
+		public static final PerformWorkResult SUSPENDED = builder().newWFState(WFState.Suspended).build();
+		public static final PerformWorkResult ABORTED = builder().newWFState(WFState.Aborted).build();
 
 		@NonNull
-		PerformWorkResolution resolution;
+		WFState newWFState;
 
 		@Nullable
 		@With
@@ -872,7 +853,7 @@ public class WFActivity
 			wfProcess.setProcessMsg(document.getProcessMsg());
 
 			return PerformWorkResult.builder()
-					.resolution(PerformWorkResolution.COMPLETED)
+					.newWFState(WFState.Completed)
 					.newDocStatus(DocStatus.ofCode(document.getDocStatus()))
 					.build();
 		}
