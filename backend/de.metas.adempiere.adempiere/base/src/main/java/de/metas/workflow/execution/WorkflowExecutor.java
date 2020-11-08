@@ -100,6 +100,7 @@ public class WorkflowExecutor
 			public void run(final String localTrxName)
 			{
 				wfProcess.startWork();
+				exceptionHolder.setValue(wfProcess.getProcessingResultException());
 			}
 
 			@Override
@@ -180,7 +181,7 @@ public class WorkflowExecutor
 	private static String extractSummary(@NonNull final WFProcess wfProcess)
 	{
 		final WFState state = wfProcess.getState();
-		String summary = wfProcess.getProcessMsg();
+		String summary = wfProcess.getProcessingResultMessage();
 		if (Check.isBlank(summary))
 		{
 			final WFActivity activity = wfProcess.getFirstActivityByWFState(state).orElse(null);

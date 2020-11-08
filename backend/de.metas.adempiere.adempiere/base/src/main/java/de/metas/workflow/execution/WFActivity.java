@@ -603,6 +603,9 @@ public class WFActivity
 			public boolean doCatch(final Throwable ex)
 			{
 				this.exception = ex;
+
+				wfProcess.setProcessingResultMessage(ex);
+
 				addTextMsg(ex);
 				changeWFStateTo(WFState.Terminated);
 
@@ -841,23 +844,15 @@ public class WFActivity
 		final WFProcess wfProcess = this.getWorkflowProcess();
 		log.debug("DocumentAction={}", docAction);
 
-		try
-		{
-			final IDocument document = context.processDocument(getDocumentRef(), docAction);
+		final IDocument document = context.processDocument(getDocumentRef(), docAction);
 
-			addTextMsg(document.getSummary());
-			wfProcess.setProcessMsg(document.getProcessMsg());
+		addTextMsg(document.getSummary());
+		wfProcess.setProcessingResultMessage(document.getProcessMsg());
 
-			return PerformWorkResult.builder()
-					.newWFState(WFState.Completed)
-					.newDocStatus(DocStatus.ofCode(document.getDocStatus()))
-					.build();
-		}
-		catch (final Exception ex)
-		{
-			wfProcess.setProcessMsg(ex);
-			throw ex;
-		}
+		return PerformWorkResult.builder()
+				.newWFState(WFState.Completed)
+				.newDocStatus(DocStatus.ofCode(document.getDocStatus()))
+				.build();
 	}
 
 	private void performWork_SetVariable()

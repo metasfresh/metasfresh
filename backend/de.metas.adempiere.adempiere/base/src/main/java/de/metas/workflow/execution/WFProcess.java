@@ -53,14 +53,16 @@ public class WFProcess
 	@NonNull
 	private final WorkflowExecutionContext context;
 
-	@Nullable
-	private String processMsg;
-
 	@NonNull
 	private final WFProcessState state;
 
 	@NonNull
 	private final ArrayList<WFActivity> activities;
+
+	@Nullable
+	private String processingResultMessage;
+	@Nullable
+	private Throwable processingResultException;
 
 	WFProcess(@NonNull final WorkflowExecutionContext context)
 	{
@@ -408,7 +410,7 @@ public class WFProcess
 		}
 		catch (final Throwable ex)
 		{
-			setProcessMsg(ex);
+			setProcessingResultMessage(ex);
 			changeWFStateTo(WFState.Terminated);
 
 			throw AdempiereException.wrapIfNeeded(ex);
@@ -460,24 +462,23 @@ public class WFProcess
 		setIssueId(adIssueId);
 	}
 
-	/**
-	 * Set Runtime (Error) Message
-	 */
-	void setProcessMsg(@Nullable final String msg)
+	void setProcessingResultMessage(@Nullable final String msg)
 	{
-		this.processMsg = msg;
+		this.processingResultMessage = msg;
+		this.processingResultException = null;
 		addTextMsg(msg);
 	}
 
-	/**
-	 * Set Runtime Error Message
-	 */
-	void setProcessMsg(@NonNull final Throwable ex)
+	void setProcessingResultMessage(@NonNull final Throwable ex)
 	{
-		processMsg = AdempiereException.extractMessage(ex);
+		this.processingResultMessage = AdempiereException.extractMessage(ex);
+		this.processingResultException = ex;
 		addTextMsg(ex);
 	}
 
 	@Nullable
-	public String getProcessMsg() { return processMsg; }
+	public String getProcessingResultMessage() { return processingResultMessage; }
+
+	@Nullable
+	public Throwable getProcessingResultException() { return processingResultException; }
 }
