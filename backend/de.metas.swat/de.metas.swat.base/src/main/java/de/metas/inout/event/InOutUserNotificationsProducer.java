@@ -141,7 +141,7 @@ public final class InOutUserNotificationsProducer
 
 	private AdMessageKey getNotificationAD_Message(final I_M_InOut inout)
 	{
-		final DocStatus docStatus = DocStatus.ofCode(inout.getDocStatus());
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(inout.getDocStatus());
 		if (docStatus.isReversedOrVoided())
 		{
 			return inout.isSOTrx() ? MSG_Event_ShipmentReversed : MSG_Event_ReceiptReversed;
@@ -156,7 +156,7 @@ public final class InOutUserNotificationsProducer
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		final DocStatus docStatus = DocStatus.ofCode(inout.getDocStatus());
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(inout.getDocStatus());
 		if (docStatus.isReversedOrVoided())
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
