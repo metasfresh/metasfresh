@@ -142,10 +142,7 @@ public class WFProcess
 	@NonNull TableRecordReference getDocumentRef() { return state.getDocumentRef(); }
 
 	@NonNull
-	public WFState getState()
-	{
-		return state.getWfState();
-	}
+	public WFState getState() { return state.getWfState(); }
 
 	private void setState(@NonNull final WFState wfState) { state.setWfState(wfState); }
 
@@ -370,7 +367,9 @@ public class WFProcess
 			if (allow.isFalse())
 			{
 				final WFNode nextNode = context.getNodeById(transition.getNextNodeId());
-				logAudit("Transition to " + nextNode.getName().getDefaultValue() + " not valid because: " + allow.getReason().getDefaultValue());
+				logAudit(lastActivity.getNode().getId(),
+						"Transition to " + nextNode.getName().getDefaultValue()
+								+ " not valid because: " + allow.getReason().getDefaultValue());
 				continue;
 			}
 
@@ -388,7 +387,9 @@ public class WFProcess
 		return true;
 	}    //	startNext
 
-	private void logAudit(final String textMsg)
+	private void logAudit(
+			@Nullable final WFNodeId wfNodeId,
+			@Nullable final String textMsg)
 	{
 		if (Check.isBlank(textMsg))
 		{
@@ -398,6 +399,7 @@ public class WFProcess
 		context.addEventAudit(WFEventAudit.builder()
 				.eventType(WFEventAuditType.Trace)
 				.wfProcessId(getWfProcessId())
+				.wfNodeId(wfNodeId)
 				.documentRef(getDocumentRef())
 				.wfResponsibleId(getWfResponsibleId())
 				.userId(getUserId())
