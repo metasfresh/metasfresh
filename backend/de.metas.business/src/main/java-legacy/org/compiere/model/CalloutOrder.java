@@ -394,6 +394,13 @@ public class CalloutOrder extends CalloutEngine
 						docTypeTargetId = suggestDefaultSalesOrderDocTypeId(order);
 					}
 
+					if(docTypeTargetId != null
+						&& !calloutField.getCalloutRecord().isLookupValuesContainingId(I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, docTypeTargetId))
+					{
+						log.debug("Avoid setting a document type which is not in our list of allowed document types to pick from");
+						docTypeTargetId = null;
+					}
+
 					if (docTypeTargetId != null)
 					{
 						Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
