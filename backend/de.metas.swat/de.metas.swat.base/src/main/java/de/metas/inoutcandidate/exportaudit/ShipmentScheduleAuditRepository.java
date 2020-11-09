@@ -68,7 +68,9 @@ public class ShipmentScheduleAuditRepository implements APIExportAuditRepository
 		final APIExportAudit.APIExportAuditBuilder result = APIExportAudit.<ShipmentScheduleExportAuditItem>builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.transactionId(transactionId)
-				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()));
+				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
+				.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+				.forwardedData(record.getForwardedData());
 
 		for (final I_M_ShipmentSchedule_ExportAudit_Item itemRecord : stagingData.getItemRecords())
 		{
@@ -76,10 +78,10 @@ public class ShipmentScheduleAuditRepository implements APIExportAuditRepository
 			result.item(
 					shipmentScheduleId,
 					ShipmentScheduleExportAuditItem.builder()
-							.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+							.orgId(OrgId.ofRepoId(itemRecord.getAD_Org_ID()))
 							.repoIdAware(shipmentScheduleId)
 							.exportStatus(APIExportStatus.ofCode(itemRecord.getExportStatus()))
-							.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+							.issueId(AdIssueId.ofRepoIdOrNull(itemRecord.getAD_Issue_ID()))
 							.build());
 		}
 		return result.build();

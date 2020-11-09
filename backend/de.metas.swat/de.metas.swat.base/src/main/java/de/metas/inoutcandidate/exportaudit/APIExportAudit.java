@@ -48,10 +48,8 @@ public class APIExportAudit<T extends APIExportAuditItem>
 
 	private APIExportStatus exportStatus;
 
-	@Nullable
 	private String forwardedData;
 
-	@Nullable
 	private AdIssueId issueId;
 
 	private final Map<RepoIdAware, T> items;
@@ -61,11 +59,15 @@ public class APIExportAudit<T extends APIExportAuditItem>
 			@NonNull final OrgId orgId,
 			@NonNull final String transactionId,
 			@NonNull final APIExportStatus exportStatus,
+			@Nullable final String forwardedData,
+			@Nullable final AdIssueId issueId,
 			@NonNull @Singular final Map<RepoIdAware, T> items)
 	{
 		this.orgId = orgId;
 		this.transactionId = transactionId;
 		this.exportStatus = exportStatus;
+		this.forwardedData = forwardedData;
+		this.issueId = issueId;
 		this.items = new HashMap<>(items);
 	}
 
