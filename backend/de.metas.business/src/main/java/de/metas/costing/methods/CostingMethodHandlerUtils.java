@@ -215,6 +215,7 @@ public class CostingMethodHandlerUtils
 		return CostAmount.of(result.getAmount(), acctCurrencyId);
 	}
 
+	@NonNull
 	public CurrencyConversionResult convert(
 			final CurrencyConversionContext conversionCtx,
 			final Money price,

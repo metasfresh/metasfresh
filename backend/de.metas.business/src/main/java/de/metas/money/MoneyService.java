@@ -22,7 +22,6 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
@@ -101,12 +100,7 @@ public class MoneyService
 				money.getCurrencyId(),
 				targetCurrencyId);
 
-		final BigDecimal convertedAmount = Check.assumeNotNull(
-				conversionResult.getAmount(),
-				"CurrencyConversion from currencyId={} to currencyId={} needs to work; currencyConversionContext={}, currencyConversionResult={}",
-				money.getCurrencyId(), targetCurrencyId, currencyConversionContext, conversionResult);
-
-		return Money.of(convertedAmount, targetCurrencyId);
+		return Money.of(conversionResult.getAmount(), targetCurrencyId);
 	}
 
 	public Money percentage(@NonNull final Percent percent, @NonNull final Money input)
