@@ -21,6 +21,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584400046193
@@ -78,6 +79,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584400046193
@@ -135,6 +137,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584400046193
@@ -226,6 +229,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -282,6 +286,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -338,6 +343,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -437,6 +443,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -470,6 +477,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -533,6 +541,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -566,6 +575,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -629,6 +639,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -662,6 +673,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -725,6 +737,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -758,6 +771,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -821,6 +835,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -854,6 +869,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -917,6 +933,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -950,6 +967,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1013,6 +1031,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1046,6 +1065,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1109,6 +1129,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1142,6 +1163,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1205,6 +1227,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1238,6 +1261,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1301,6 +1325,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1334,6 +1359,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1397,6 +1423,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1430,6 +1457,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1493,6 +1521,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1526,6 +1555,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1589,6 +1619,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1622,6 +1653,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1685,6 +1717,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1718,6 +1751,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1781,6 +1815,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1814,6 +1849,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1877,6 +1913,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1910,6 +1947,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1973,6 +2011,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2006,6 +2045,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2069,6 +2109,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2102,6 +2143,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2165,6 +2207,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2198,6 +2241,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2261,6 +2305,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2294,6 +2339,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2357,6 +2403,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2390,6 +2437,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.cre
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2456,6 +2504,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpCode-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2485,6 +2534,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpCode-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2553,6 +2603,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpCode-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2582,6 +2633,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpCode-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2650,6 +2702,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "mainPartner-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2678,6 +2731,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "billPartner-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2706,6 +2760,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "dropShipPartner-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2774,6 +2829,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "mainPartner-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2802,6 +2858,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "billPartner-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2830,6 +2887,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "dropShipPartner-name",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2899,6 +2957,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpGroupName",
         "vendor": false,
         "customer": true,
+        "company": true,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2929,6 +2988,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpGroupName",
         "vendor": false,
         "customer": true,
+        "company": true,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2959,6 +3019,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpGroupName",
         "vendor": false,
         "customer": true,
+        "company": true,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -2989,6 +3050,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
         "group": "bpGroupName",
         "vendor": false,
         "customer": true,
+        "company": true,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193

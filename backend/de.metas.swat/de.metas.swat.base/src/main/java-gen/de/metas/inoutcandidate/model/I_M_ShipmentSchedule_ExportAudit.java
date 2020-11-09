@@ -11,7 +11,7 @@ public interface I_M_ShipmentSchedule_ExportAudit
     /** TableName=M_ShipmentSchedule_ExportAudit */
     public static final String Table_Name = "M_ShipmentSchedule_ExportAudit";
 
-    /** AD_Table_ID=541504 */
+    /** AD_Table_ID=541543 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -31,7 +31,7 @@ public interface I_M_ShipmentSchedule_ExportAudit
 	/**
 	 * Set Issues.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -40,7 +40,7 @@ public interface I_M_ShipmentSchedule_ExportAudit
 	/**
 	 * Get Issues.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -107,6 +107,29 @@ public interface I_M_ShipmentSchedule_ExportAudit
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Export sequence number.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExportSequenceNumber (int ExportSequenceNumber);
+
+	/**
+	 * Get Export sequence number.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getExportSequenceNumber();
+
+    /** Column definition for ExportSequenceNumber */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_ExportSequenceNumber = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "ExportSequenceNumber", null);
+    /** Column name ExportSequenceNumber */
+    public static final String COLUMNNAME_ExportSequenceNumber = "ExportSequenceNumber";
+
+	/**
 	 * Set Export Status.
 	 *
 	 * <br>Type: List
@@ -128,6 +151,29 @@ public interface I_M_ShipmentSchedule_ExportAudit
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_ExportStatus = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "ExportStatus", null);
     /** Column name ExportStatus */
     public static final String COLUMNNAME_ExportStatus = "ExportStatus";
+
+	/**
+	 * Set Forwarded data.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setForwardedData (java.lang.String ForwardedData);
+
+	/**
+	 * Get Forwarded data.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getForwardedData();
+
+    /** Column definition for ForwardedData */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_ForwardedData = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "ForwardedData", null);
+    /** Column name ForwardedData */
+    public static final String COLUMNNAME_ForwardedData = "ForwardedData";
 
 	/**
 	 * Set Active.
@@ -176,33 +222,6 @@ public interface I_M_ShipmentSchedule_ExportAudit
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object> COLUMN_M_ShipmentSchedule_ExportAudit_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, Object>(I_M_ShipmentSchedule_ExportAudit.class, "M_ShipmentSchedule_ExportAudit_ID", null);
     /** Column name M_ShipmentSchedule_ExportAudit_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID = "M_ShipmentSchedule_ExportAudit_ID";
-
-	/**
-	 * Set Shipment Candidate.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Shipment Candidate.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_ShipmentSchedule_ID();
-
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule();
-
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule);
-
-    /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_ExportAudit, de.metas.inoutcandidate.model.I_M_ShipmentSchedule>(I_M_ShipmentSchedule_ExportAudit.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-    /** Column name M_ShipmentSchedule_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set API Transaction key.

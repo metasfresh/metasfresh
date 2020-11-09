@@ -28,14 +28,16 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit_Item;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -50,21 +52,35 @@ public class ShipmentScheduleAuditRepository implements APIExportAuditRepository
 			.tableName(I_M_ShipmentSchedule_ExportAudit.Table_Name)
 			.build();
 
+	@Nullable
 	public APIExportAudit<ShipmentScheduleExportAuditItem> getByTransactionId(@NonNull final String transactionId)
 	{
 		final StagingData stagingData = retrieveStagingData(transactionId);
-		final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> result = APIExportAudit
-				.<ShipmentScheduleExportAuditItem>builder()
-				.transactionId(transactionId);
-		for (final I_M_ShipmentSchedule_ExportAudit record : stagingData.getRecords())
+
+		final I_M_ShipmentSchedule_ExportAudit record = stagingData.getRecord();
+		if (record == null)
 		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
-			result.item(shipmentScheduleId,
+			return null;
+		}
+
+		final APIExportAudit.APIExportAuditBuilder result = APIExportAudit.<ShipmentScheduleExportAuditItem>builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.transactionId(transactionId)
+				.exportSequenceNumber(record.getExportSequenceNumber())
+				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
+				.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+				.forwardedData(record.getForwardedData());
+
+		for (final I_M_ShipmentSchedule_ExportAudit_Item itemRecord : stagingData.getItemRecords())
+		{
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(itemRecord.getM_ShipmentSchedule_ID());
+			result.item(
+					shipmentScheduleId,
 					ShipmentScheduleExportAuditItem.builder()
-							.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+							.orgId(OrgId.ofRepoId(itemRecord.getAD_Org_ID()))
 							.repoIdAware(shipmentScheduleId)
-							.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
-							.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+							.exportStatus(APIExportStatus.ofCode(itemRecord.getExportStatus()))
+							.issueId(AdIssueId.ofRepoIdOrNull(itemRecord.getAD_Issue_ID()))
 							.build());
 		}
 		return result.build();
@@ -73,20 +89,33 @@ public class ShipmentScheduleAuditRepository implements APIExportAuditRepository
 	public void save(@NonNull final APIExportAudit<ShipmentScheduleExportAuditItem> audit)
 	{
 		final StagingData stagingData = retrieveStagingData(audit.getTransactionId());
-
-		for (final ShipmentScheduleExportAuditItem item : audit.getItems().values())
+		I_M_ShipmentSchedule_ExportAudit record = stagingData.getRecord();
+		if (record == null)
 		{
-			I_M_ShipmentSchedule_ExportAudit record = stagingData.schedIdToRecords.get(item.getRepoIdAware().getRepoId());
-			if (record == null)
-			{
-				record = newInstance(I_M_ShipmentSchedule_ExportAudit.class);
-				record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(item.getRepoIdAware()));
-			}
-			record.setAD_Org_ID(OrgId.toRepoId(item.getOrgId()));
+			record = newInstance(I_M_ShipmentSchedule_ExportAudit.class);
 			record.setTransactionIdAPI(audit.getTransactionId());
-			record.setAD_Issue_ID(AdIssueId.toRepoId(item.getIssueId()));
-			record.setExportStatus(item.getExportStatus().getCode());
-			saveRecord(record);
+		}
+		record.setExportSequenceNumber(audit.getExportSequenceNumber());
+		record.setAD_Org_ID(audit.getOrgId().getRepoId());
+		record.setAD_Issue_ID(AdIssueId.toRepoId(audit.getIssueId()));
+		record.setExportStatus(audit.getExportStatus().getCode());
+		record.setForwardedData(audit.getForwardedData());
+		saveRecord(record);
+
+		for (final ShipmentScheduleExportAuditItem item : audit.getItems())
+		{
+			I_M_ShipmentSchedule_ExportAudit_Item itemRecord = stagingData.schedIdToRecords.get(item.getRepoIdAware().getRepoId());
+			if (itemRecord == null)
+			{
+				itemRecord = newInstance(I_M_ShipmentSchedule_ExportAudit_Item.class);
+				itemRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(item.getRepoIdAware()));
+			}
+			itemRecord.setM_ShipmentSchedule_ExportAudit_ID(record.getM_ShipmentSchedule_ExportAudit_ID());
+			itemRecord.setAD_Org_ID(OrgId.toRepoId(item.getOrgId()));
+			itemRecord.setAD_Issue_ID(AdIssueId.toRepoId(item.getIssueId()));
+			itemRecord.setExportStatus(item.getExportStatus().getCode());
+
+			saveRecord(itemRecord);
 		}
 	}
 
@@ -99,25 +128,39 @@ public class ShipmentScheduleAuditRepository implements APIExportAuditRepository
 	@NonNull
 	private StagingData retrieveStagingData0(@NonNull final String transactionId)
 	{
-		final ImmutableList<I_M_ShipmentSchedule_ExportAudit> exportAuditRecord = queryBL.createQueryBuilder(I_M_ShipmentSchedule_ExportAudit.class)
+		final I_M_ShipmentSchedule_ExportAudit exportAuditRecord = queryBL.createQueryBuilder(I_M_ShipmentSchedule_ExportAudit.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_ExportAudit.COLUMN_TransactionIdAPI, transactionId)
 				.create()
-				.listImmutable(I_M_ShipmentSchedule_ExportAudit.class);
+				.firstOnly(I_M_ShipmentSchedule_ExportAudit.class); // we have a UC on TransactionIdAPI
+		if (exportAuditRecord == null)
+		{
+			return new StagingData(ImmutableMap.of(), null, ImmutableList.of());
+		}
+
+		final ImmutableList<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItemRecords = queryBL.createQueryBuilder(I_M_ShipmentSchedule_ExportAudit_Item.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_ExportAudit_Item.COLUMN_M_ShipmentSchedule_ExportAudit_ID, exportAuditRecord.getM_ShipmentSchedule_ExportAudit_ID())
+				.create()
+				.listImmutable(I_M_ShipmentSchedule_ExportAudit_Item.class);
 
 		return new StagingData(
-				Maps.uniqueIndex(exportAuditRecord, I_M_ShipmentSchedule_ExportAudit::getM_ShipmentSchedule_ID),
-				exportAuditRecord);
+				Maps.uniqueIndex(exportAuditItemRecords, I_M_ShipmentSchedule_ExportAudit_Item::getM_ShipmentSchedule_ID),
+				exportAuditRecord,
+				exportAuditItemRecords);
 	}
 
 	@Value
 	private static class StagingData
 	{
 		@NonNull
-		ImmutableMap<Integer, I_M_ShipmentSchedule_ExportAudit> schedIdToRecords;
+		ImmutableMap<Integer, I_M_ShipmentSchedule_ExportAudit_Item> schedIdToRecords;
+
+		@Nullable
+		I_M_ShipmentSchedule_ExportAudit record;
 
 		@NonNull
-		ImmutableList<I_M_ShipmentSchedule_ExportAudit> records;
+		ImmutableList<I_M_ShipmentSchedule_ExportAudit_Item> itemRecords;
 	}
 
 }

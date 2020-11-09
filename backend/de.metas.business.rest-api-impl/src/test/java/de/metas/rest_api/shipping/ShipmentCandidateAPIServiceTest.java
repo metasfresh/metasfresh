@@ -22,18 +22,17 @@
 
 package de.metas.rest_api.shipping;
 
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
+import de.metas.location.CountryId;
+import de.metas.product.ProductRepository;
+import de.metas.util.time.SystemTime;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -58,17 +57,12 @@ import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.business.BusinessTestHelper;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
-import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
-import de.metas.location.CountryId;
-import de.metas.product.ProductRepository;
-import de.metas.util.time.SystemTime;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
+import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentCandidateAPIServiceTest
 {
@@ -125,6 +119,7 @@ class ShipmentCandidateAPIServiceTest
 	void exportShipmentCandidates_ExportError()
 	{
 		// given
+		// that shipmentSchedule alone won't work, thus we expect an error
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord(null,
 				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
 
@@ -138,17 +133,27 @@ class ShipmentCandidateAPIServiceTest
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
 		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
 		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(ExportError.getCode());
+
+		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
+		assertThat(exportAuditItems).hasSize(1);
+		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(ExportError.getCode());
 	}
 
 	@Test
 	void exportShipmentCandidates()
 	{
+		exportShipmentCandidates_performTest();
+	}
+
+	private JsonResponseShipmentCandidates exportShipmentCandidates_performTest()
+	{
 		// given
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord(null,
 				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
 
+		// now also create a location; otherwise there would be an error
 		location.setAddress1("Teststrasse 2a");
 		location.setPostal("postal");
 		location.setCity("city");
@@ -163,13 +168,50 @@ class ShipmentCandidateAPIServiceTest
 
 		assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(1);
-		assertThat(result.getItems().get(0).getCustomer().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
-		assertThat(exportAudits).hasSize(1);
 		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
 		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+
+		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
+		assertThat(exportAuditItems).hasSize(1);
+		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+
+		return result;
+	}
+
+	@Test
+	void updateStatus()
+	{
+		// given
+		final JsonResponseShipmentCandidates jsonResponseShipmentCandidates = exportShipmentCandidates_performTest();
+		final JsonMetasfreshId scheduleId = jsonResponseShipmentCandidates.getItems().get(0).getId();
+
+		final JsonRequestCandidateResultsBuilder resultsBuilder = JsonRequestCandidateResults.builder();
+
+		resultsBuilder.forwardedData("forwardedData")
+				.transactionKey(jsonResponseShipmentCandidates.getTransactionKey())
+				.item(JsonRequestCandidateResult.builder()
+						.outcome(Outcome.OK)
+						.scheduleId(scheduleId)
+						.build());
+
+		// when
+		shipmentCandidateAPIService.updateStatus(resultsBuilder.build());
+
+		// then
+		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
+		assertThat(exportAudits).hasSize(1);
+		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(jsonResponseShipmentCandidates.getTransactionKey());
+		assertThat(exportAudits.get(0).getForwardedData()).isEqualTo("forwardedData");
+		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(ExportedAndForwarded.getCode()); // since we gave a positive result, it's now also forwarded
+
+		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
+		assertThat(exportAuditItems).hasSize(1);
+		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getValue());
+		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(ExportedAndForwarded.getCode());
 	}
 
 	@Test

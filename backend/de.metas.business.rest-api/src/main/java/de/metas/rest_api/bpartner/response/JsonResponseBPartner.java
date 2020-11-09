@@ -60,6 +60,7 @@ public class JsonResponseBPartner
 	public static final String ACTIVE = "active";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
+	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 
 	private static final String CHANGE_INFO = "changeInfo";
@@ -163,6 +164,10 @@ public class JsonResponseBPartner
 	@JsonProperty(CUSTOMER)
 	boolean customer;
 
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCompany`.")
+	@JsonProperty(COMPANY)
+	boolean company;
+
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.VATaxID`.")
 	@JsonProperty(VAT_ID)
 	String vatId;
@@ -193,6 +198,7 @@ public class JsonResponseBPartner
 			@JsonProperty(GROUP_NAME) @Nullable final String group,
 			@JsonProperty(VENDOR) @NonNull final Boolean vendor,
 			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
+			@JsonProperty(COMPANY) @NonNull final Boolean company,
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
 			//
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
@@ -222,6 +228,7 @@ public class JsonResponseBPartner
 
 		this.vendor = vendor;
 		this.customer = customer;
+		this.company = company;
 
 		this.vatId = vatId;
 

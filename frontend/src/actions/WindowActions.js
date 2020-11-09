@@ -423,7 +423,7 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       })
       .catch((error) => {
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
