@@ -9,6 +9,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5-159 - WIP
+
+* https://github.com/metasfresh/metasfresh/issues/10175
+* https://github.com/metasfresh/metasfresh/issues/10023
+* https://github.com/metasfresh/metasfresh/issues/10078
+* https://github.com/metasfresh/metasfresh/issues/10174
+
 # metasfresh 5.158
 ## Features
 * metasfresh
