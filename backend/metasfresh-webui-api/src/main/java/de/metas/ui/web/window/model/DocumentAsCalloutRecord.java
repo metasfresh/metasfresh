@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -52,7 +53,7 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private final Document getDocument()
+	private Document getDocument()
 	{
 		final Document document = _documentRef.get();
 		if (document == null)
@@ -132,5 +133,11 @@ import lombok.NonNull;
 	{
 		// TODO dataSave: save document but also update the DocumentsCollection!
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
+	{
+		return getDocument().getLookupValueById(columnName, id).isPresent();
 	}
 }

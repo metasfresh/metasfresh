@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import javax.swing.event.EventListenerList;
 
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -1303,6 +1304,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			includedTab.dataRefreshAll();
 		}
 		dataRefresh();
+	}
+
+	@Override
+	public boolean isLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	/**
