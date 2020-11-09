@@ -10,17 +10,18 @@ INSERT INTO m_shipmentschedule_exportaudit (m_shipmentschedule_exportaudit_id,
                                             UpdatedBy,
                                             IsActive)
 SELECT nextval('m_shipmentschedule_exportaudit_seq') AS m_shipmentschedule_exportaudit_id,
-       TransactionIdAPI,
-       min(ExportStatus)                             AS ExportStatus, --all items with the same TransactionIdAPI have the same
-       AD_Client_ID,
-       AD_Org_ID,
-       min(created)                                  AS Created,
+       eai.TransactionIdAPI,
+       min(eai.ExportStatus)                         AS ExportStatus, --all items with the same TransactionIdAPI have the same
+       eai.AD_Client_ID,
+       0                                             AS AD_Org_ID,
+       min(eai.created)                              AS Created,
        99                                            AS CreatedBy,
-       min(updated)                                  AS Updated,
+       min(eai.updated)                              AS Updated,
        99                                            AS UpdatedBy,
        'Y'                                           AS IsActive
 FROM m_shipmentschedule_exportaudit_item eai
-GROUP BY TransactionIdAPI, AD_Client_ID, AD_Org_ID
+WHERE NOT exists(SELECT 1 FROM m_shipmentschedule_exportaudit existing_ea WHERE existing_ea.TransactionIdAPI = eai.TransactionIdAPI)
+GROUP BY TransactionIdAPI, AD_Client_ID
 ;
 
 UPDATE m_shipmentschedule_exportaudit_item i
