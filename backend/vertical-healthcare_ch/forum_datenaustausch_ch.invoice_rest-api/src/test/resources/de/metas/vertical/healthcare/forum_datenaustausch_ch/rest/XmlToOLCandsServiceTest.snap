@@ -1,10 +1,10 @@
-de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest=[ {
+de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest_KV=[ {
   "requests" : [ {
     "org" : {
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -83,17 +83,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -139,7 +139,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -249,7 +249,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -269,7 +269,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -348,17 +348,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -404,7 +404,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -514,7 +514,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -534,7 +534,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -613,17 +613,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -669,7 +669,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -779,7 +779,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -799,7 +799,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -878,17 +878,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -934,7 +934,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -1044,7 +1044,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -1064,7 +1064,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -1143,17 +1143,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -1199,7 +1199,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -1309,7 +1309,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -1329,7 +1329,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -1408,17 +1408,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -1464,7 +1464,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -1574,7 +1574,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -1594,7 +1594,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -1673,17 +1673,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -1729,7 +1729,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -1839,7 +1839,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -1859,7 +1859,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -1938,17 +1938,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -1994,7 +1994,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -2104,7 +2104,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -2124,7 +2124,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -2203,17 +2203,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -2259,7 +2259,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -2369,7 +2369,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -2389,7 +2389,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -2468,17 +2468,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -2524,7 +2524,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -2634,7 +2634,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -2654,7 +2654,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -2733,17 +2733,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -2789,7 +2789,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -2899,7 +2899,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -2919,7 +2919,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -2998,17 +2998,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -3054,7 +3054,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -3164,7 +3164,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -3184,7 +3184,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -3263,17 +3263,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -3319,7 +3319,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -3429,7 +3429,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -3449,7 +3449,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -3528,17 +3528,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -3584,7 +3584,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -3694,7 +3694,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -3714,7 +3714,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -3793,17 +3793,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -3849,7 +3849,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -3959,7 +3959,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -3979,7 +3979,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -4058,17 +4058,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -4114,7 +4114,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -4224,7 +4224,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -4244,7 +4244,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -4323,17 +4323,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -4379,7 +4379,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -4489,7 +4489,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -4509,7 +4509,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -4588,17 +4588,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -4644,7 +4644,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -4754,7 +4754,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -4774,7 +4774,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -4853,17 +4853,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -4909,7 +4909,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -5019,7 +5019,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -5039,7 +5039,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -5118,17 +5118,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -5174,7 +5174,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -5284,7 +5284,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -5304,7 +5304,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -5383,17 +5383,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -5439,7 +5439,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -5549,7 +5549,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -5568,13 +5568,13 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
 } ]
 
 
-de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest2=[ {
+de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest_KV_2=[ {
   "requests" : [ {
     "org" : {
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -5653,17 +5653,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -5709,7 +5709,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -5819,7 +5819,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -5839,7 +5839,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -5918,17 +5918,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -5974,7 +5974,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -6084,7 +6084,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -6104,7 +6104,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -6183,17 +6183,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -6239,7 +6239,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -6349,7 +6349,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -6369,7 +6369,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -6448,17 +6448,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -6504,7 +6504,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -6614,7 +6614,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -6634,7 +6634,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -6713,17 +6713,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -6769,7 +6769,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -6879,7 +6879,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -6899,7 +6899,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -6978,17 +6978,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -7034,7 +7034,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -7144,7 +7144,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -7164,7 +7164,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -7243,17 +7243,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -7299,7 +7299,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -7409,7 +7409,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -7429,7 +7429,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -7508,17 +7508,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -7564,7 +7564,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -7674,7 +7674,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -7694,7 +7694,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -7773,17 +7773,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -7829,7 +7829,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -7939,7 +7939,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -7959,7 +7959,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -8038,17 +8038,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -8094,7 +8094,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -8204,7 +8204,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -8224,7 +8224,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -8303,17 +8303,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -8359,7 +8359,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -8469,7 +8469,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -8489,7 +8489,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -8568,17 +8568,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -8624,7 +8624,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -8734,7 +8734,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -8754,7 +8754,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -8833,17 +8833,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -8889,7 +8889,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -8999,7 +8999,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -9019,7 +9019,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -9098,17 +9098,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -9154,7 +9154,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -9264,7 +9264,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -9284,7 +9284,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -9363,17 +9363,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -9419,7 +9419,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -9529,7 +9529,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -9549,7 +9549,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -9628,17 +9628,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -9684,7 +9684,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -9794,7 +9794,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -9814,7 +9814,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -9893,17 +9893,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -9949,7 +9949,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -10059,7 +10059,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -10079,7 +10079,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -10158,17 +10158,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -10214,7 +10214,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -10324,7 +10324,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -10344,7 +10344,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -10423,17 +10423,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -10479,7 +10479,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -10589,7 +10589,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -10609,7 +10609,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -10688,17 +10688,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -10744,7 +10744,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -10854,7 +10854,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },
@@ -10874,7 +10874,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       },
       "bpartner" : {
@@ -10953,17 +10953,17 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "glnSet" : true,
           "shipTo" : true,
           "shipToSet" : true,
-          "shipToDefault" : null,
-          "shipToDefaultSet" : false,
+          "shipToDefault" : true,
+          "shipToDefaultSet" : true,
           "billTo" : true,
           "billToSet" : true,
-          "billToDefault" : null,
-          "billToDefaultSet" : false,
+          "billToDefault" : true,
+          "billToDefaultSet" : true,
           "syncAdvise" : null,
           "syncAdviseSet" : false
         },
         "contact" : {
-          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
+          "externalId" : "EAN-2011234567890_singlePerson",
           "externalIdSet" : true,
           "metasfreshBPartnerId" : null,
           "metasfreshBPartnerIdSet" : false,
@@ -11009,7 +11009,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "syncAdviseSet" : false
         },
         "syncAdvise" : {
-          "ifNotExists" : "FAIL",
+          "ifNotExists" : "CREATE",
           "ifExists" : "DONT_UPDATE"
         },
         "bpartnerLookupAdvise" : "GLN"
@@ -11119,7 +11119,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       "type" : "SERVICE",
       "uomCode" : "MJ",
       "syncAdvise" : {
-        "ifNotExists" : "FAIL",
+        "ifNotExists" : "CREATE",
         "ifExists" : "DONT_UPDATE"
       }
     },

@@ -1,14 +1,14 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-
-import org.junit.jupiter.api.Test;
-
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static de.metas.rest_api.ordercandidates.impl.TestMasterdata.RESOURCE_PATH;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ public class JsonOLCandCreateBulkRequestTest
 	@Test
 	public void test_realJson() throws IOException
 	{
-		final JsonOLCandCreateBulkRequest bulkRequest = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
+		final JsonOLCandCreateBulkRequest bulkRequest = JsonOLCandUtil.loadJsonOLCandCreateBulkRequest(RESOURCE_PATH + "JsonOLCandCreateBulkRequest.json");
 		testSerializeDeserialize(bulkRequest, JSONObjectMapper.forClass(JsonOLCandCreateBulkRequest.class));
 	}
 
