@@ -22,40 +22,15 @@
 
 package de.metas.rest_api.shipping;
 
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.lang.IPair;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.springframework.stereotype.Service;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.UnmodifiableIterator;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartner;
@@ -135,6 +110,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +120,6 @@ import java.util.function.Function;
 
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 
 @Service
 class ShipmentCandidateAPIService

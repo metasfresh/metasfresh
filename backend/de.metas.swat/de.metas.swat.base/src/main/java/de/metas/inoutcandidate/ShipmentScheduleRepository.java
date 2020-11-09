@@ -40,6 +40,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -80,7 +83,7 @@ public class ShipmentScheduleRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-	private IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
