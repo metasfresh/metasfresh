@@ -163,6 +163,48 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
+	 * Set Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_Location_ID (int Bill_Location_ID);
+
+	/**
+	 * Get Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_Location_ID();
+
+    /** Column name Bill_Location_ID */
+    public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_User_ID();
+
+    /** Column name Bill_User_ID */
+    public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
 	 * Set Address.
 	 *
 	 * <br>Type: Text
@@ -1013,8 +1055,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1023,8 +1065,8 @@ public interface I_M_ShipmentSchedule
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1265,6 +1307,29 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
+	 * Set Nr of order line candidates with the same PO ref.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference);
+
+	/**
+	 * Get Nr of order line candidates with the same PO ref.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getNrOfOLCandsWithSamePOReference();
+
+    /** Column definition for NrOfOLCandsWithSamePOReference */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
+    /** Column name NrOfOLCandsWithSamePOReference */
+    public static final String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
+
+	/**
 	 * Set Pick From Order.
 	 *
 	 * <br>Type: Search
@@ -1290,6 +1355,31 @@ public interface I_M_ShipmentSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.eevolution.model.I_PP_Order> COLUMN_PickFrom_Order_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.eevolution.model.I_PP_Order>(I_M_ShipmentSchedule.class, "PickFrom_Order_ID", org.eevolution.model.I_PP_Order.class);
     /** Column name PickFrom_Order_ID */
     public static final String COLUMNNAME_PickFrom_Order_ID = "PickFrom_Order_ID";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPOReference (java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPOReference();
+
+    /** Column definition for POReference */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "POReference", null);
+    /** Column name POReference */
+    public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Bereitstellungsdatum.
@@ -1873,52 +1963,4 @@ public interface I_M_ShipmentSchedule
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Nr of order line candidates with the same PO ref.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference);
-
-	/**
-	 * Get Nr of order line candidates with the same PO ref.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getNrOfOLCandsWithSamePOReference();
-
-	/** Column definition for NrOfOLCandsWithSamePOReference */
-	public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
-	/** Column name NrOfOLCandsWithSamePOReference */
-	public static final String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
-
-	/**
-	 * Set Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPOReference (java.lang.String POReference);
-
-	/**
-	 * Get Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getPOReference();
-
-	/** Column definition for POReference */
-	public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "POReference", null);
-	/** Column name POReference */
-	public static final String COLUMNNAME_POReference = "POReference";
 }

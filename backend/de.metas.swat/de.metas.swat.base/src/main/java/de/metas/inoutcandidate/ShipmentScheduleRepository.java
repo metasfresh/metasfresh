@@ -26,6 +26,9 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -140,9 +143,15 @@ public class ShipmentScheduleRepository
 		final ShipmentSchedule.ShipmentScheduleBuilder shipmentScheduleBuilder = ShipmentSchedule.builder()
 				.id(shipmentScheduleId)
 				.orgId(orgId)
-				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
-				.locationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
-				.contactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
+
+				.shipBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
+				.shipLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
+				.shipContactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
+
+				.billBPartnerId(BPartnerId.ofRepoIdOrNull(record.getBill_BPartner_ID()))
+				.billLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getBill_BPartner_ID(), record.getBill_Location_ID()))
+				.billContactId(BPartnerContactId.ofRepoIdOrNull(record.getBill_BPartner_ID(), record.getBill_User_ID()))
+
 				.orderAndLineId(orderAndLineId)
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
