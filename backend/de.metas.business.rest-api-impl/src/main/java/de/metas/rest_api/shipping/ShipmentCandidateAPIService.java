@@ -333,7 +333,9 @@ class ShipmentCandidateAPIService
 			shipBPartnerBuilder
 					.contactEmail(contact.getEmail())
 					.contactName(contact.getName())
-					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+					//.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()))
+					.contactPhone(contact.getPhone()) // in the legacy-DPD-export, we also export the phone-number; not the mobile-number
+			;
 			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", bPartnerContactId.getRepoId());
 		}
 
