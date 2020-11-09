@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -66,7 +67,7 @@ final class BPartnerCompositeCacheByLookupKey
 
 	public Collection<BPartnerComposite> getAllOrLoad(
 			@NonNull final Collection<BPartnerCompositeLookupKey> keys,
-			@NonNull final Function<Collection<BPartnerCompositeLookupKey>, Map<BPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+			@NonNull final Function<Set<BPartnerCompositeLookupKey>, Map<BPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
 	{
 		return cache.getAllOrLoad(keys, valuesLoader);
 	}

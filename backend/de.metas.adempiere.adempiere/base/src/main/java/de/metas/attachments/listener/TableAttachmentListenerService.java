@@ -116,7 +116,7 @@ public class TableAttachmentListenerService
 			final AdMessageKey adMessageContent = adMessageDAO.retrieveValueById(attachmentListenerSettings.getAdMessageId()).orElse(null);
 
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-					.contentADMessage(adMessageContent != null ? adMessageContent.toAD_Message() : null)
+					.contentADMessage(adMessageContent != null ? adMessageContent : null)
 					.contentADMessageParam(listenerWorkStatus.getValue())
 					.recipientUserId(Env.getLoggedUserId())
 					.targetAction(UserNotificationRequest.TargetRecordAction.of(tableRecordReference))

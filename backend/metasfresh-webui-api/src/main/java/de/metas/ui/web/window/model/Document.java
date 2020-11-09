@@ -18,6 +18,10 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.engine.IDocument;
+import de.metas.process.ProcessInfo;
+import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -1206,12 +1210,29 @@ public final class Document
 			throw new DocumentProcessingException("Not all changes could be saved", this, docAction);
 		}
 
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
 		//
 		// Actually process the document
 		// TODO: trigger the document workflow instead!
 		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
-		final String expectedDocStatus = null; // N/A
-		Services.get(IDocumentBL.class).processEx(this, docAction, expectedDocStatus);
+		final ButtonFieldActionDescriptor buttonActionDescriptor = docActionField.getDescriptor().getButtonActionDescriptor();
+		if(buttonActionDescriptor != null)
+		{
+			final IDocument workflowDocument = documentBL.getDocument(this);
+			final ProcessId workflowStarterProcessId = buttonActionDescriptor.getProcessId();
+			ProcessInfo.builder()
+					.setAD_Process_ID(workflowStarterProcessId.toAdProcessId())
+					.setRecord(workflowDocument.toTableRecordReference())
+					.buildAndPrepareExecution()
+					.onErrorThrowException()
+					.executeSync();
+		}
+		else
+		{
+			final String expectedDocStatus = null; // N/A
+			documentBL.processEx(this, docAction, expectedDocStatus);
+		}
 
 		//
 		// Refresh it

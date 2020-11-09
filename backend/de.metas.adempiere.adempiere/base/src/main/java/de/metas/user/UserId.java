@@ -1,18 +1,16 @@
 package de.metas.user;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -43,7 +41,9 @@ public class UserId implements RepoIdAware
 	public static final UserId SYSTEM = new UserId(0);
 	public static final UserId METASFRESH = new UserId(100);
 
-	/** Used by the reports service when it accesses the REST-API */
+	/**
+	 * Used by the reports service when it accesses the REST-API
+	 */
 	public static final UserId JSON_REPORTS = new UserId(540057);
 
 	@JsonCreator
@@ -53,6 +53,7 @@ public class UserId implements RepoIdAware
 		return Check.assumeNotNull(userId, "Unable to create a userId for repoId={}", repoId);
 	}
 
+	@Nullable
 	public static UserId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == SYSTEM.getRepoId())
@@ -79,6 +80,12 @@ public class UserId implements RepoIdAware
 		return id != null ? id : UserId.SYSTEM;
 	}
 
+	@Nullable
+	public static UserId ofRepoIdOrNullIfSystem(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	public static Optional<UserId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
@@ -96,7 +103,7 @@ public class UserId implements RepoIdAware
 		return userId != null ? userId.getRepoId() : defaultValue;
 	}
 
-	public static boolean equals(final UserId userId1, final UserId userId2)
+	public static boolean equals(@Nullable final UserId userId1, @Nullable final UserId userId2)
 	{
 		return Objects.equals(userId1, userId2);
 	}
@@ -123,11 +130,5 @@ public class UserId implements RepoIdAware
 	public boolean isRegularUser()
 	{
 		return !isSystemUser();
-	}
-
-	@Nullable
-	public static UserId ofRepoIdOrNullIfSystem(@Nullable final Integer repoId)
-	{
-		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
 	}
 }

@@ -1576,14 +1576,21 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if <i>any</i> of the given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
 		return helpers.isValueChanged(model, columnNames);
 	}
+
+	/**
+	 * @return true if <i>any</i> of the given column names where changed
+	 */
+	public static boolean isValueChanged(final Object model, final String... columnNames)
+	{
+		return helpers.isValueChanged(model, ImmutableSet.copyOf(columnNames));
+	}
+
 
 	@Deprecated
 	public static boolean isPOValueChanged(final Object model, final String columnName)
