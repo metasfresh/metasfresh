@@ -1,5 +1,5 @@
 
--- rename the exxisting M_ShipmentSchedule_ExportAudit to M_ShipmentSchedule_ExportAudit_Item
+-- rename the existing M_ShipmentSchedule_ExportAudit to M_ShipmentSchedule_ExportAudit_Item
 
 /* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule_ExportAudit','ALTER TABLE M_ShipmentSchedule_ExportAudit RENAME COLUMN M_ShipmentSchedule_ExportAudit_ID TO M_ShipmentSchedule_ExportAudit_Item_ID;');
 /* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule_ExportAudit','ALTER TABLE M_ShipmentSchedule_ExportAudit RENAME TO M_ShipmentSchedule_ExportAudit_Item;');
@@ -94,7 +94,6 @@ DROP INDEX IF EXISTS m_shipmentschedule_exportaudit_transactionidapi_uc
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 CREATE UNIQUE INDEX M_ShipmentSchedule_ExportAudit_TransactionIdAPI_UC ON M_ShipmentSchedule_ExportAudit (TransactionIdAPI) WHERE IsActive='Y'
 ;
-
 
 ALTER TABLE public.M_ShipmentSchedule_ExportAudit_Item
     ADD COLUMN M_ShipmentSchedule_ExportAudit_ID NUMERIC(10)

@@ -625,11 +625,6 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,572072,541045,540556,0,TO_TIMESTAMP('2020-11-06 11:33:54','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y',10,TO_TIMESTAMP('2020-11-06 11:33:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2020-11-06T10:33:56.351Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX M_ShipmentSchedule_ExportAudit_TransactionIdAPI_UC ON M_ShipmentSchedule_ExportAudit (TransactionIdAPI) WHERE IsActive='Y'
-;
-
 -- 2020-11-06T16:31:07.158Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,572077,577791,0,17,541164,541504,'ExportStatus',TO_TIMESTAMP('2020-11-06 17:31:07','YYYY-MM-DD HH24:MI:SS'),100,'N','PENDING','de.metas.inoutcandidate',0,25,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Export Status',0,0,TO_TIMESTAMP('2020-11-06 17:31:07','YYYY-MM-DD HH24:MI:SS'),100,0)
