@@ -28,7 +28,6 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit_Item;
 import de.metas.organization.OrgId;
@@ -36,7 +35,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -68,6 +66,7 @@ public class ShipmentScheduleAuditRepository implements APIExportAuditRepository
 		final APIExportAudit.APIExportAuditBuilder result = APIExportAudit.<ShipmentScheduleExportAuditItem>builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.transactionId(transactionId)
+				.exportSequenceNumber(record.getExportSequenceNumber())
 				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
 				.issueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
 				.forwardedData(record.getForwardedData());
@@ -96,6 +95,7 @@ public class ShipmentScheduleAuditRepository implements APIExportAuditRepository
 			record = newInstance(I_M_ShipmentSchedule_ExportAudit.class);
 			record.setTransactionIdAPI(audit.getTransactionId());
 		}
+		record.setExportSequenceNumber(audit.getExportSequenceNumber());
 		record.setAD_Org_ID(audit.getOrgId().getRepoId());
 		record.setAD_Issue_ID(AdIssueId.toRepoId(audit.getIssueId()));
 		record.setExportStatus(audit.getExportStatus().getCode());

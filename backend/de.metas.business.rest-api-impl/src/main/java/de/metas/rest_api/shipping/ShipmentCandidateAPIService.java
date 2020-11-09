@@ -158,13 +158,6 @@ class ShipmentCandidateAPIService
 		final String transactionKey = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey))
 		{
-			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
-					APIExportAudit
-							.<ShipmentScheduleExportAuditItem>builder()
-							.transactionId(transactionKey)
-							.orgId(OrgId.ANY)
-							.exportStatus(APIExportStatus.Exported); // status might be changed to "error" down the line
-
 			final List<ShipmentSchedule> shipmentSchedules = loadShipmentSchedulesToExport(limit);
 
 			if (shipmentSchedules.isEmpty())
@@ -185,6 +178,14 @@ class ShipmentCandidateAPIService
 			final ImmutableMap<ShipperId, String> shipperId2InternalName = loadShipperInternalNameByIds(idsRegistry);
 
 			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextShipmentCandidateSeqNo();
+
+			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
+					APIExportAudit
+							.<ShipmentScheduleExportAuditItem>builder()
+							.transactionId(transactionKey)
+							.exportSequenceNumber(exportSequenceNumber)
+							.orgId(OrgId.ANY) // currently, this audit *might* export shipment scheds from different orgs
+							.exportStatus(APIExportStatus.Exported); // status might be changed to "error" down the line
 
 			final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
 					.hasMoreItems(limit.isLimitHitOrExceeded(shipmentSchedules))

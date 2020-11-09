@@ -50,6 +50,8 @@ public class APIExportAudit<T extends APIExportAuditItem>
 
 	private String forwardedData;
 
+	private final int exportSequenceNumber;
+
 	private AdIssueId issueId;
 
 	private final Map<RepoIdAware, T> items;
@@ -58,6 +60,7 @@ public class APIExportAudit<T extends APIExportAuditItem>
 	private APIExportAudit(
 			@NonNull final OrgId orgId,
 			@NonNull final String transactionId,
+			@NonNull final int exportSequenceNumber,
 			@NonNull final APIExportStatus exportStatus,
 			@Nullable final String forwardedData,
 			@Nullable final AdIssueId issueId,
@@ -65,6 +68,7 @@ public class APIExportAudit<T extends APIExportAuditItem>
 	{
 		this.orgId = orgId;
 		this.transactionId = transactionId;
+		this.exportSequenceNumber = exportSequenceNumber;
 		this.exportStatus = exportStatus;
 		this.forwardedData = forwardedData;
 		this.issueId = issueId;
