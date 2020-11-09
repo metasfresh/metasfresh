@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps.wf;
 
+import de.metas.util.Check;
 import de.metas.workflow.WFNodeId;
 import lombok.NonNull;
 
@@ -206,7 +207,7 @@ public class WFLine extends Component
 		}
 
 		//	Paint Description in red
-		if (m_description != null)
+		if (!Check.isBlank(m_description))
 		{
 			Graphics2D g2D = (Graphics2D)g;
 			Font font = new Font("Dialog", Font.PLAIN, 9);
