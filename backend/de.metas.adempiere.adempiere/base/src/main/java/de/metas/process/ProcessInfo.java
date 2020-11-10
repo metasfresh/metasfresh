@@ -1041,7 +1041,7 @@ public final class ProcessInfo implements Serializable
 			return _adPInstance;
 		}
 
-		public ProcessInfoBuilder setPInstanceId(final PInstanceId pinstanceId)
+		public ProcessInfoBuilder setPInstanceId(@Nullable final PInstanceId pinstanceId)
 		{
 			this.pInstanceId = pinstanceId;
 			return this;
@@ -1123,7 +1123,7 @@ public final class ProcessInfo implements Serializable
 			return setAD_Process_ID(AdProcessId.ofRepoIdOrNull(adProcessId));
 		}
 
-		public ProcessInfoBuilder setAD_Process_ID(final AdProcessId adProcessId)
+		public ProcessInfoBuilder setAD_Process_ID(@Nullable final AdProcessId adProcessId)
 		{
 			this.adProcessId = adProcessId;
 			return this;
