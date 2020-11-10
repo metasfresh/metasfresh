@@ -230,7 +230,8 @@ export default class Attributes extends Component {
               }),
               () => {
                 cb && cb();
-                onBlur && onBlur(prop, value, id);
+                // onBlur && onBlur(prop, value, id);
+                // - aparrently this is not used anymore - removed to fix the https://github.com/metasfresh/metasfresh/issues/10201
               }
             );
           });
