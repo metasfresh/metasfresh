@@ -16,11 +16,9 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_QUICK_ACTIONS,
   DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  FETCHED_QUICK_ACTIONS,
   FETCH_TOP_ACTIONS,
   FETCH_TOP_ACTIONS_FAILURE,
   FETCH_TOP_ACTIONS_SUCCESS,
@@ -120,7 +118,6 @@ export const initialState = {
   // this only feeds data to details view now
   master: initialMasterState,
 
-  quickActions: {},
   indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
@@ -133,19 +130,6 @@ export const initialState = {
   },
   filter: {},
 };
-
-export const NO_SELECTION = [];
-
-const getQuickactionsData = (state, { windowType, viewId }) => {
-  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
-
-  return state.windowHandler.quickActions[key] || NO_SELECTION;
-};
-
-export const getQuickactions = createSelector(
-  [getQuickactionsData],
-  (actions) => actions
-);
 
 /**
  * @method getData
@@ -685,30 +669,6 @@ export default function windowHandler(state = initialState, action) {
         indicator: action.state,
       };
 
-    // QUICK ACTIONS
-    case FETCHED_QUICK_ACTIONS:
-      return {
-        ...state,
-        quickActions: {
-          ...state.quickActions,
-          [`${action.payload.windowId}${
-            action.payload.id ? `-${action.payload.id}` : ''
-          }`]: action.payload.data,
-        },
-      };
-    case DELETE_QUICK_ACTIONS: {
-      const key = `${action.payload.windowId}${
-        action.payload.id ? `-${action.payload.id}` : ''
-      }`;
-      const newQuickActions = { ...state.quickActions };
-
-      delete newQuickActions[key];
-
-      return {
-        ...state,
-        quickActions: newQuickActions,
-      };
-    }
     // TOP ACTIONS
     case FETCH_TOP_ACTIONS:
       return {
