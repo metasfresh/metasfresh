@@ -125,7 +125,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 				getView().removeHUIdsAndInvalidate(huIdsToReverse);
 
 				// Notify all active views that given receipt schedules were changed
-				viewsRepo.notifyRecordsChanged(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
+				viewsRepo.notifyRecordsChangedAsync(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
 			}
 		}
 

@@ -25,9 +25,12 @@ package de.metas.ui.web.debug;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
@@ -38,7 +41,6 @@ import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuil
 import de.metas.notification.UserNotificationTargetType;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
@@ -69,9 +71,11 @@ import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -88,6 +92,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -104,6 +111,8 @@ import java.util.Set;
 public class DebugRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/debug";
+
+	private static final Logger logger = LogManager.getLogger(Logger.class);
 
 	@Autowired
 	private UserSession userSession;
@@ -528,5 +537,75 @@ public class DebugRestController
 		}
 
 		return map;
+	}
+
+	@GetMapping("/stressTest/massCacheInvalidation")
+	public void stressTest_massCacheInvalidation(
+			@RequestParam(name = "tableName") @NonNull final String tableName,
+			@RequestParam(name = "eventsCount", defaultValue = "1000") final int eventsCount,
+			@RequestParam(name = "batchSize", defaultValue = "10") final int batchSize)
+	{
+		userSession.assertLoggedIn();
+		Check.assumeGreaterThanZero(eventsCount, "eventsCount");
+		Check.assumeGreaterThanZero(batchSize, "batchSize");
+
+		final CacheMgt cacheMgt = CacheMgt.get();
+
+		final int tableSize = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COUNT(1) FROM " + tableName);
+		if (tableSize <= 0)
+		{
+			throw new AdempiereException("Table " + tableName + " is empty");
+		}
+		if (tableSize < batchSize)
+		{
+			throw new AdempiereException("Table size(" + tableSize + ") shall be bigger than batch size(" + batchSize + ")");
+		}
+
+		int countEventsGenerated = 0;
+
+		final ArrayList<CacheInvalidateRequest> buffer = new ArrayList<>(batchSize);
+
+		while (countEventsGenerated <= eventsCount)
+		{
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				pstmt = DB.prepareStatement("SELECT " + tableName + "_ID FROM " + tableName + " ORDER BY " + tableName + "_ID", ITrx.TRXNAME_None);
+				rs = pstmt.executeQuery();
+				while (rs.next())
+				{
+					if (buffer.size() >= batchSize)
+					{
+						final Stopwatch stopwatch = Stopwatch.createStarted();
+						cacheMgt.reset(CacheInvalidateMultiRequest.of(buffer));
+						stopwatch.stop();
+
+						// logger.info("Sent a CacheInvalidateMultiRequest of {} events. So far we sent {} of {}. It took {}.",
+						// 		buffer.size(), countEventsGenerated, eventsCount, stopwatch);
+
+						buffer.clear();
+					}
+
+					final int recordId = rs.getInt(1);
+					buffer.add(CacheInvalidateRequest.rootRecord(tableName, recordId));
+					countEventsGenerated++;
+				}
+			}
+			catch (SQLException ex)
+			{
+				throw new DBException(ex);
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+			}
+		}
+
+		if (buffer.size() >= batchSize)
+		{
+			cacheMgt.reset(CacheInvalidateMultiRequest.of(buffer));
+			buffer.clear();
+		}
 	}
 }
