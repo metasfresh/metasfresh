@@ -534,7 +534,6 @@ class WidgetRenderer extends PureComponent {
             attributeType="pattribute"
             viewId={viewId}
             onFocus={onFocus}
-            onBlur={onBlurWithParams}
             rowIndex={rowIndex}
             updateHeight={updateHeight}
           />
