@@ -76,7 +76,7 @@ public interface ICurrencyBL extends ISingletonService
 			OrgId adOrgId);
 
 	@Deprecated
-	@Nullable
+	@NonNull
 	BigDecimal convertBase(
 			BigDecimal amt,
 			CurrencyId currencyFromId,
@@ -86,7 +86,7 @@ public interface ICurrencyBL extends ISingletonService
 			@NonNull OrgId orgId);
 
 	@Deprecated
-	@Nullable
+	@NonNull
 	BigDecimal convert(
 			BigDecimal amt,
 			CurrencyId currencyFromId,
@@ -107,6 +107,7 @@ public interface ICurrencyBL extends ISingletonService
 	 * @return converted amount
 	 */
 	@Deprecated
+	@NonNull
 	BigDecimal convert(
 			BigDecimal amt,
 			CurrencyId currencyFromId,
@@ -114,13 +115,14 @@ public interface ICurrencyBL extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
-	@Nullable
+	@NonNull
 	CurrencyConversionResult convert(
 			CurrencyConversionContext conversionCtx,
 			BigDecimal amt,
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId);
 
+	@NonNull
 	default CurrencyConversionResult convert(
 			@NonNull final CurrencyConversionContext conversionCtx,
 			@NonNull final Money amt,

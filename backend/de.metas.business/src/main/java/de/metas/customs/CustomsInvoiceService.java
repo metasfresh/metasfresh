@@ -248,11 +248,6 @@ public class CustomsInvoiceService
 				Env.getClientId(),
 				Env.getOrgId());
 
-		if (shipmentLinePriceConverted == null)
-		{
-			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
-		}
-
 		return priceActual.toBuilder().money(Money.of(shipmentLinePriceConverted, currencyId)).build();
 	}
 
