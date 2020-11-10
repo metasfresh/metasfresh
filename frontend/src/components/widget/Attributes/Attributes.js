@@ -203,7 +203,7 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handlePatch = (prop, value, id, cb) => {
-    const { attributeType, onBlur } = this.props;
+    const { attributeType } = this.props;
     const { data, loading } = this.state;
 
     if (!loading && data) {
@@ -231,7 +231,7 @@ export default class Attributes extends Component {
               () => {
                 cb && cb();
                 // onBlur && onBlur(prop, value, id);
-                // - aparrently this is not used anymore - removed to fix the https://github.com/metasfresh/metasfresh/issues/10201
+                // - aparrently this is not used anymore - removed to fix the dup PATCH https://github.com/metasfresh/metasfresh/issues/10201
               }
             );
           });
