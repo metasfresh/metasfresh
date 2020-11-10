@@ -16,7 +16,8 @@
 
     <properties>
         <migration-sql-basedir></migration-sql-basedir>
-        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+        <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencies>
@@ -36,12 +37,12 @@
         <dependency>
             <groupId>de.metas.common.util</groupId>
             <artifactId>de-metas-common-util</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
         </dependency>
         <dependency>
             <groupId>de.metas.common.rest_api</groupId>
             <artifactId>de-metas-common-rest_api</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>

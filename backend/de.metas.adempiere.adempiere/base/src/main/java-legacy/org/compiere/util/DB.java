@@ -969,11 +969,9 @@ public class DB
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @param sql
 	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @return number of rows updated
-	 * @throws DBException
 	 */
 	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
 	{
@@ -984,12 +982,10 @@ public class DB
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @param sql
 	 * @param params  statement parameters
 	 * @param trxName transaction
 	 * @param timeOut optional timeOut parameter
 	 * @return number of rows updated
-	 * @throws DBException
 	 */
 	public int executeUpdateEx(final String sql, final Object[] params, final String trxName, final int timeOut) throws DBException
 	{
@@ -1003,7 +999,7 @@ public class DB
 	 *
 	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
-	public int executeUpdateEx(final String sql, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
 	{
 		final Object[] params = null;
 		final int timeOut = 0;
@@ -2359,8 +2355,6 @@ public class DB
 	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
-	 * @param columnName
-	 * @param paramsIn
 	 * @param paramsOut  if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
@@ -2750,7 +2744,8 @@ public class DB
 		T retrieveRowOrNull(ResultSet rs) throws SQLException;
 	}
 
-	public <T> List<T> retrieveRowsOutOfTrx(
+	@NonNull
+	public static <T> List<T> retrieveRowsOutOfTrx(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2758,7 +2753,8 @@ public class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
 	}
 
-	public <T> List<T> retrieveRows(
+	@NonNull
+	public static <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2766,7 +2762,8 @@ public class DB
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
 	}
 
-	private <T> List<T> retrieveRows(
+	@NonNull
+	private static <T> List<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@Nullable final String trxName,

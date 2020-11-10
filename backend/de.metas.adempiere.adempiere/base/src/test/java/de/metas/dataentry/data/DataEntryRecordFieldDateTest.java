@@ -7,11 +7,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.common.util.time.SystemTime;
 import org.junit.Test;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

@@ -76,6 +76,7 @@ public class ReceiptService
 		this.attributeSetHelper = attributeSetHelper;
 	}
 
+	@NonNull
 	public List<InOutId> updateReceiptCandidatesAndGenerateReceipts(@NonNull final JsonCreateReceiptsRequest request)
 	{
 		final ReceiptScheduleCache cache = new ReceiptScheduleCache(receiptScheduleDAO);
@@ -166,7 +167,6 @@ public class ReceiptService
 
 	private void validateCreateReceiptInfo(@NonNull final JsonCreateReceiptInfo jsonCreateReceiptInfo, @NonNull final ReceiptScheduleCache cache)
 	{
-
 		final I_M_ReceiptSchedule receiptSchedule = cache.getById(extractReceiptScheduleId(jsonCreateReceiptInfo));
 
 		if (receiptSchedule.isProcessed())
@@ -230,10 +230,12 @@ public class ReceiptService
 
 		return Optional.of(
 				ApplyReceiptScheduleChangesRequest.builder()
-				.receiptScheduleId(extractReceiptScheduleId(createReceiptInfo))
-				.qtyInStockingUOM(createReceiptInfo.getMovementQuantity())
-				.attributes(createAttributeInstanceReqList)
-				.build());
+						.receiptScheduleId(extractReceiptScheduleId(createReceiptInfo))
+						.qtyInStockingUOM(createReceiptInfo.getMovementQuantity())
+						.attributes(createAttributeInstanceReqList)
+						.externalResourceURL(createReceiptInfo.getExternalResourceURL())
+						.build()
+				);
 	}
 
 	//

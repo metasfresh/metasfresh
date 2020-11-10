@@ -3,6 +3,7 @@ package de.metas.ui.web.upload;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MImage;
@@ -16,7 +17,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.util.FileUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

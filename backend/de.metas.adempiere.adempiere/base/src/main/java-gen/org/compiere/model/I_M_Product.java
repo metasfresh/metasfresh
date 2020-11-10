@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for M_Product
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_Product 
@@ -14,16 +14,9 @@ public interface I_M_Product
     /** AD_Table_ID=208 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
@@ -36,31 +29,8 @@ public interface I_M_Product
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Obligatorische Zusatzangaben.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAdditional_produktinfos (java.lang.String Additional_produktinfos);
-
-	/**
-	 * Get Obligatorische Zusatzangaben.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAdditional_produktinfos();
-
-    /** Column definition for Additional_produktinfos */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Additional_produktinfos = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Additional_produktinfos", null);
-    /** Column name Additional_produktinfos */
-    public static final String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
-
-	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -69,8 +39,8 @@ public interface I_M_Product
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -82,57 +52,27 @@ public interface I_M_Product
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Klassifizierung.
-	 * Classification for grouping
+	 * Set Additional Product Info.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setClassification (java.lang.String Classification);
+	public void setAdditional_produktinfos (java.lang.String Additional_produktinfos);
 
 	/**
-	 * Get Klassifizierung.
-	 * Classification for grouping
+	 * Get Additional Product Info.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getClassification();
+	public java.lang.String getAdditional_produktinfos();
 
-    /** Column definition for Classification */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Classification = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Classification", null);
-    /** Column name Classification */
-    public static final String COLUMNNAME_Classification = "Classification";
-
-	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for Additional_produktinfos */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Additional_produktinfos = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Additional_produktinfos", null);
+    /** Column name Additional_produktinfos */
+    public static final String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
 
 	/**
 	 * Set Umsatzrealisierung.
@@ -164,7 +104,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_C_RevenueRecognition_ID = "C_RevenueRecognition_ID";
 
 	/**
-	 * Set Maßeinheit.
+	 * Set UOM.
 	 * Unit of Measure
 	 *
 	 * <br>Type: Table
@@ -174,7 +114,7 @@ public interface I_M_Product
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
+	 * Get UOM.
 	 * Unit of Measure
 	 *
 	 * <br>Type: Table
@@ -187,7 +127,60 @@ public interface I_M_Product
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Auszeichnungsname.
+	 * Set Klassifizierung.
+	 * Classification for grouping
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setClassification (java.lang.String Classification);
+
+	/**
+	 * Get Klassifizierung.
+	 * Classification for grouping
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getClassification();
+
+    /** Column definition for Classification */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Classification = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Classification", null);
+    /** Column name Classification */
+    public static final String COLUMNNAME_Classification = "Classification";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Customer Label Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -196,7 +189,7 @@ public interface I_M_Product
 	public void setCustomerLabelName (java.lang.String CustomerLabelName);
 
 	/**
-	 * Get Auszeichnungsname.
+	 * Get Customer Label Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -210,7 +203,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -219,7 +212,7 @@ public interface I_M_Product
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -496,7 +489,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
@@ -506,7 +499,7 @@ public interface I_M_Product
 	public void setHelp (java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
@@ -546,7 +539,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_ImageURL = "ImageURL";
 
 	/**
-	 * Set Zutaten.
+	 * Set Ingredients.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -555,7 +548,7 @@ public interface I_M_Product
 	public void setIngredients (java.lang.String Ingredients);
 
 	/**
-	 * Get Zutaten.
+	 * Get Ingredients.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -569,7 +562,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_Ingredients = "Ingredients";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -579,7 +572,7 @@ public interface I_M_Product
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -619,8 +612,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_IsBOM = "IsBOM";
 
 	/**
-	 * Set Wird provisioniert.
-	 * Markiert Produkte, zu denen prinzipiell eine Provisionierung stattfinden kann, sofern die entsprechenden Einstellungen und Verträge hinterlegt sind.
+	 * Set Is commissioned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -629,8 +621,7 @@ public interface I_M_Product
 	public void setIsCommissioned (boolean IsCommissioned);
 
 	/**
-	 * Get Wird provisioniert.
-	 * Markiert Produkte, zu denen prinzipiell eine Provisionierung stattfinden kann, sofern die entsprechenden Einstellungen und Verträge hinterlegt sind.
+	 * Get Is commissioned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -769,7 +760,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_IsPickListPrintDetails = "IsPickListPrintDetails";
 
 	/**
-	 * Set Wird Eingekauft.
+	 * Set Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -778,7 +769,7 @@ public interface I_M_Product
 	public void setIsPurchased (boolean IsPurchased);
 
 	/**
-	 * Get Wird Eingekauft.
+	 * Get Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -838,6 +829,29 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_IsSelfService = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "IsSelfService", null);
     /** Column name IsSelfService */
     public static final String COLUMNNAME_IsSelfService = "IsSelfService";
+
+	/**
+	 * Set Show EG.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsShowEG (boolean IsShowEG);
+
+	/**
+	 * Get Show EG.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isShowEG();
+
+    /** Column definition for IsShowEG */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_IsShowEG = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "IsShowEG", null);
+    /** Column name IsShowEG */
+    public static final String COLUMNNAME_IsShowEG = "IsShowEG";
 
 	/**
 	 * Set Verkauft.
@@ -988,29 +1002,6 @@ public interface I_M_Product
     public static final String COLUMNNAME_LowLevel = "LowLevel";
 
 	/**
-	 * Set Hersteller.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setManufacturer_ID (int Manufacturer_ID);
-
-	/**
-	 * Get Hersteller.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getManufacturer_ID();
-
-    /** Column name Manufacturer_ID */
-    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
-
-	/**
 	 * Set Merkmals-Satz.
 	 * Product Attribute Set
 	 *
@@ -1040,7 +1031,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
 
 	/**
-	 * Set Merkmale.
+	 * Set Ausprägung Merkmals-Satz.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
@@ -1050,7 +1041,7 @@ public interface I_M_Product
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
+	 * Get Ausprägung Merkmals-Satz.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
@@ -1125,7 +1116,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_FreightCategory_ID = "M_FreightCategory_ID";
 
 	/**
-	 * Set Lagerort.
+	 * Set Locator.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
@@ -1135,7 +1126,7 @@ public interface I_M_Product
 	public void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
+	 * Get Locator.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
@@ -1148,8 +1139,8 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Set Product Category.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -1158,8 +1149,8 @@ public interface I_M_Product
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Get Product Category.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -1171,8 +1162,8 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1181,8 +1172,8 @@ public interface I_M_Product
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1219,7 +1210,30 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
 
 	/**
-	 * Set MRP ausschliessen.
+	 * Set Manufacturer.
+	 * Manufacturer of the Product
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer_ID (int Manufacturer_ID);
+
+	/**
+	 * Get Manufacturer.
+	 * Manufacturer of the Product
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getManufacturer_ID();
+
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
+
+	/**
+	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1228,7 +1242,7 @@ public interface I_M_Product
 	public void setMRP_Exclude (java.lang.String MRP_Exclude);
 
 	/**
-	 * Get MRP ausschliessen.
+	 * Get Exclude from MRP.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1265,7 +1279,54 @@ public interface I_M_Product
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Pck. Gr..
+	 * Set Nettogewicht.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setNetWeight (java.math.BigDecimal NetWeight);
+
+	/**
+	 * Get Nettogewicht.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getNetWeight();
+
+    /** Column definition for NetWeight */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_NetWeight = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "NetWeight", null);
+    /** Column name NetWeight */
+    public static final String COLUMNNAME_NetWeight = "NetWeight";
+
+	/**
+	 * Set Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackage_UOM_ID (int Package_UOM_ID);
+
+	/**
+	 * Get Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPackage_UOM_ID();
+
+    /** Column name Package_UOM_ID */
+    public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
+
+	/**
+	 * Set Package Size.
+	 * Size of a package
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1274,7 +1335,8 @@ public interface I_M_Product
 	public void setPackageSize (java.lang.String PackageSize);
 
 	/**
-	 * Get Pck. Gr..
+	 * Get Package Size.
+	 * Size of a package
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1288,28 +1350,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_PackageSize = "PackageSize";
 
 	/**
-	 * Set Verpackungseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPackage_UOM_ID (int Package_UOM_ID);
-
-	/**
-	 * Get Verpackungseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPackage_UOM_ID();
-
-    /** Column name Package_UOM_ID */
-    public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
-
-	/**
-	 * Set Verarbeiten.
+	 * Set Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1318,7 +1359,7 @@ public interface I_M_Product
 	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Verarbeiten.
+	 * Get Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1386,25 +1427,31 @@ public interface I_M_Product
     public static final String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
-	 * Set Kundenbetreuer.
+	 * Set Ursprungsland.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSalesRep_ID (int SalesRep_ID);
+	public void setRawMaterialOrigin_ID (int RawMaterialOrigin_ID);
 
 	/**
-	 * Get Kundenbetreuer.
+	 * Get Ursprungsland.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSalesRep_ID();
+	public int getRawMaterialOrigin_ID();
 
-    /** Column name SalesRep_ID */
-    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+	public org.compiere.model.I_C_Country getRawMaterialOrigin();
+
+	public void setRawMaterialOrigin(org.compiere.model.I_C_Country RawMaterialOrigin);
+
+    /** Column definition for RawMaterialOrigin_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_Country> COLUMN_RawMaterialOrigin_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_Country>(I_M_Product.class, "RawMaterialOrigin_ID", org.compiere.model.I_C_Country.class);
+    /** Column name RawMaterialOrigin_ID */
+    public static final String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
 
 	/**
 	 * Set Aufwandsart.
@@ -1434,6 +1481,58 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_ExpenseType> COLUMN_S_ExpenseType_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_ExpenseType>(I_M_Product.class, "S_ExpenseType_ID", org.compiere.model.I_S_ExpenseType.class);
     /** Column name S_ExpenseType_ID */
     public static final String COLUMNNAME_S_ExpenseType_ID = "S_ExpenseType_ID";
+
+	/**
+	 * Set Ressource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Ressource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getS_Resource_ID();
+
+	public org.compiere.model.I_S_Resource getS_Resource();
+
+	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+
+    /** Column definition for S_Resource_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+    /** Column name S_Resource_ID */
+    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSalesRep_ID (int SalesRep_ID);
+
+	/**
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSalesRep_ID();
+
+    /** Column name SalesRep_ID */
+    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Regaltiefe.
@@ -1536,33 +1635,27 @@ public interface I_M_Product
     public static final String COLUMNNAME_SKU = "SKU";
 
 	/**
-	 * Set Ressource.
-	 * Resource
+	 * Set Storage Details.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Resource_ID (int S_Resource_ID);
+	public void setStorageDetails (java.lang.String StorageDetails);
 
 	/**
-	 * Get Ressource.
-	 * Resource
+	 * Get Storage Details.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Resource_ID();
+	public java.lang.String getStorageDetails();
 
-	public org.compiere.model.I_S_Resource getS_Resource();
-
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-    /** Column definition for S_Resource_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+    /** Column definition for StorageDetails */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_StorageDetails = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "StorageDetails", null);
+    /** Column name StorageDetails */
+    public static final String COLUMNNAME_StorageDetails = "StorageDetails";
 
 	/**
 	 * Set UnitsPerPack.
@@ -1616,7 +1709,7 @@ public interface I_M_Product
 
 	/**
 	 * Set UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1626,7 +1719,7 @@ public interface I_M_Product
 
 	/**
 	 * Get UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1640,7 +1733,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_UPC = "UPC";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -1655,7 +1748,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
@@ -1668,7 +1761,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
@@ -1678,7 +1771,7 @@ public interface I_M_Product
 	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
@@ -1718,7 +1811,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_VersionNo = "VersionNo";
 
 	/**
-	 * Set Volumen.
+	 * Set Volume.
 	 * Volume of a product
 	 *
 	 * <br>Type: Amount
@@ -1728,7 +1821,7 @@ public interface I_M_Product
 	public void setVolume (java.math.BigDecimal Volume);
 
 	/**
-	 * Get Volumen.
+	 * Get Volume.
 	 * Volume of a product
 	 *
 	 * <br>Type: Amount
@@ -1743,7 +1836,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_Volume = "Volume";
 
 	/**
-	 * Set Lager- und Transporttemperatur.
+	 * Set Warehouse Temperature.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1752,7 +1845,7 @@ public interface I_M_Product
 	public void setWarehouse_temperature (java.lang.String Warehouse_temperature);
 
 	/**
-	 * Get Lager- und Transporttemperatur.
+	 * Get Warehouse Temperature.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1766,7 +1859,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_Warehouse_temperature = "Warehouse_temperature";
 
 	/**
-	 * Set Gewicht.
+	 * Set Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Amount
@@ -1776,7 +1869,7 @@ public interface I_M_Product
 	public void setWeight (java.math.BigDecimal Weight);
 
 	/**
-	 * Get Gewicht.
+	 * Get Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Amount
@@ -1789,4 +1882,28 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Weight = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Weight", null);
     /** Column name Weight */
     public static final String COLUMNNAME_Weight = "Weight";
+    
+    
+	/**
+	 * Set Commodity Number.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_CommodityNumber_ID (int M_CommodityNumber_ID);
+
+	/**
+	 * Get Commodity Number.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_CommodityNumber_ID();
+
+	/** Column definition for M_CommodityNumber_ID */
+	public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_M_CommodityNumber_ID = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "M_CommodityNumber_ID", null);
+	/** Column name M_CommodityNumber_ID */
+	public static final String COLUMNNAME_M_CommodityNumber_ID = "M_CommodityNumber_ID";
 }

@@ -11,11 +11,11 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
-import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.NewManualInvoiceCandidateBuilder;
@@ -75,8 +75,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static de.metas.util.Check.isEmpty;
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -212,8 +212,8 @@ public class CreateInvoiceCandidatesService
 
 		// uomId
 		final UomId uomId = lookupUomId(
-				X12DE355.ofNullableCode(item.getUomCode()), 
-				productId, 
+				X12DE355.ofNullableCode(item.getUomCode()),
+				productId,
 				item);
 		candidate.invoicingUomId(uomId);
 
@@ -270,11 +270,15 @@ public class CreateInvoiceCandidatesService
 		{
 			final List<InvoiceDetailItem> invoiceDetailItems = item.getInvoiceDetailItems()
 					.stream()
-					.map(jsonDetail -> new InvoiceDetailItem(
-							jsonDetail.getSeqNo(),
-							jsonDetail.getLabel(),
-							jsonDetail.getDescription(),
-							jsonDetail.getDate()))
+					.map(jsonDetail -> InvoiceDetailItem.builder()
+							.seqNo(jsonDetail.getSeqNo())
+							.label(jsonDetail.getLabel())
+							.description(jsonDetail.getDescription())
+							.date(jsonDetail.getDate())
+							.price(jsonDetail.getPrice())
+							.note(jsonDetail.getNote())
+							.orgId(orgId)
+							.build())
 					.collect(Collectors.toList());
 
 			candidate.invoiceDetailItems(invoiceDetailItems);
@@ -508,7 +512,7 @@ public class CreateInvoiceCandidatesService
 
 		final UomId priceUomId = lookupUomId(
 				X12DE355.ofNullableCode(jsonPrice.getPriceUomCode()),
-				productId, 
+				productId,
 				item);
 
 		final ProductPrice price = ProductPrice.builder()

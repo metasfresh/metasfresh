@@ -383,6 +383,7 @@ class Modal extends Component {
 
           this.removeModal();
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Modal.handleStart error: ', error);
         } finally {
           if (this.mounted) {
@@ -770,5 +771,7 @@ const mapStateToProps = (state, props) => {
     parentViewId,
   };
 };
+
+export { Modal as DisconnectedModal };
 
 export default connect(mapStateToProps)(Modal);

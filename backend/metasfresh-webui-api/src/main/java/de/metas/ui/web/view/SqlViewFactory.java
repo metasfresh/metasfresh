@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -69,7 +69,6 @@ import lombok.NonNull;
  * Creates {@link DefaultView}s with are backed by a {@link SqlViewBinding}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class SqlViewFactory implements IViewFactory
@@ -165,7 +164,7 @@ public class SqlViewFactory implements IViewFactory
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
-				.addStickyFilter(extractReferencedDocumentFilter(
+				.addStickyFilterSkipDuplicates(extractReferencedDocumentFilter(
 						windowId,
 						request.getSingleReferencingDocumentPathOrNull(),
 						request.getDocumentReferenceId()))
@@ -185,7 +184,7 @@ public class SqlViewFactory implements IViewFactory
 		if (!request.getFilterOnlyIds().isEmpty())
 		{
 			final String keyColumnName = sqlViewBinding.getSqlViewKeyColumnNamesMap().getSingleKeyColumnName();
-			viewBuilder.addStickyFilter(DocumentFilter.inArrayFilter(keyColumnName, keyColumnName, request.getFilterOnlyIds()));
+			viewBuilder.addStickyFilterSkipDuplicates(DocumentFilter.inArrayFilter(keyColumnName, keyColumnName, request.getFilterOnlyIds()));
 		}
 
 		return viewBuilder.build();
@@ -259,7 +258,7 @@ public class SqlViewFactory implements IViewFactory
 			}
 			else
 			{
-				value = SystemTime.asZonedDateTime();
+				value = de.metas.common.util.time.SystemTime.asZonedDateTime();
 			}
 		}
 		else

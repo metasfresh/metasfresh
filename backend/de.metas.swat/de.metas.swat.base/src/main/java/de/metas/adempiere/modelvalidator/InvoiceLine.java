@@ -75,7 +75,7 @@ public class InvoiceLine implements ModelValidator
 			{
 
 				logger.debug("Reevaluating tax for " + il);
-				invoiceLineBL.setTax(po.getCtx(), il, po.get_TrxName());
+				invoiceLineBL.setTaxBasedOnShipment(il, po.get_TrxName());
 
 				logger.debug("Setting TaxAmtInfo for " + il);
 				invoiceLineBL.setTaxAmtInfo(po.getCtx(), il, po.get_TrxName());

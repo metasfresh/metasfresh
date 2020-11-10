@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationInfo;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
@@ -35,6 +37,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -75,6 +78,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
 	private final ShipperTransportationRepository shipperTransportationRepository = SpringContextHolder.instance.getBean(ShipperTransportationRepository.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	@Override
 	public List<I_M_Package> addHUsToShipperTransportation(final ShipperTransportationId shipperTransportationId, final Collection<I_M_HU> hus)
@@ -192,14 +196,9 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Create M_Packages
-			final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
-					.inOutId(request.getShipmentId())
-					.shipperId(shipperId)
-					.processed(request.isProcessed())
-					.trackingCodes(request.getTrackingNumbers())
-					.build();
+			final List<CreatePackagesRequest> createPackagesRequestList = buildCreatePackageRequest(shipperId, request);
 
-			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequest);
+			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequestList);
 			result.addAll(mPackages);
 
 			//
@@ -353,7 +352,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	}
 
 	@NonNull
-	public ShipperTransportationId addTrackingCodesForInOutWithoutHU(@NonNull final AddTrackingCodesForInOutWithoutHUReq req)
+	public ShipperTransportationId addTrackingInfosForInOutWithoutHU(@NonNull final AddTrackingInfosForInOutWithoutHUReq req)
 	{
 		final I_M_InOut shipment = inOutDAO.getById(req.getInOutId());
 
@@ -364,20 +363,27 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipperId(req.getShipperId())
 				.shipperBPartnerAndLocationId(shipFromBPLocation.getId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
-				.shipDate(req.getShipDate())
+				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
 
 		final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.builder()
 				.shipment(InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class))
-				.trackingNumbers(req.getTrackingCodes())
+				.packageInfos(req.getPackageInfos())
 				.processed(true)// mark the M_Package records as processed
 				.build();
 
 		addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
 
 		return shipperTransportationId;
+	}
+
+	public void processShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		final I_M_ShipperTransportation shipperTransportation = getById(shipperTransportationId);
+
+		docActionBL.processEx(shipperTransportation, IDocument.ACTION_Complete);
 	}
 
 	private BPartnerLocationInfo getShipFromBPartnerAndLocation(final I_M_InOut shipment)
@@ -387,5 +393,34 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final BPartnerLocationId warehouseBPLocationId = BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
 		final BPartnerLocationInfo warehouseBPLocationInfo = bPartnerLocationInfoRepository.getByBPartnerLocationId(warehouseBPLocationId);
 		return warehouseBPLocationInfo;
+	}
+
+	@NonNull
+	private List<CreatePackagesRequest> buildCreatePackageRequest(@NonNull final ShipperId shipperId, @NonNull final CreatePackagesForInOutRequest request)
+	{
+		if (Check.isEmpty(request.getPackageInfos()))
+		{
+			final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
+					.inOutId(request.getShipmentId())
+					.shipperId(shipperId)
+					.processed(request.isProcessed())
+					.build();
+
+			return ImmutableList.of(createPackagesRequest);
+		}
+
+		return request.getPackageInfos()
+				.stream()
+				.map(packageInfo ->  CreatePackagesRequest.builder()
+						.inOutId(request.getShipmentId())
+						.shipperId(shipperId)
+						.processed(request.isProcessed())
+						//
+						.trackingCode(packageInfo.getTrackingNumber())
+						.weight(packageInfo.getWeight())
+						.trackingURL(packageInfo.getTrackingUrl())
+						.build()
+				)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

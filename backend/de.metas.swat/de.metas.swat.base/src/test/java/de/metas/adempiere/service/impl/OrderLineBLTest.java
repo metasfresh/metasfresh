@@ -78,7 +78,7 @@ public class OrderLineBLTest
 		I_C_OrderLine orderline = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, ITrx.TRXNAME_None);
 
 		final I_C_UOM uom = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, ITrx.TRXNAME_None);
-		uom.setX12DE355("UOM");
+		uom.setX12DE355("uom");
 		InterfaceWrapperHelper.save(uom);
 
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
@@ -104,7 +104,7 @@ public class OrderLineBLTest
 		InterfaceWrapperHelper.save(plv);
 
 		final I_C_UOM priceUom = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, ITrx.TRXNAME_None);
-		priceUom.setX12DE355("UOM");
+		priceUom.setX12DE355("uom");
 		InterfaceWrapperHelper.save(priceUom);
 
 		// Define conversion: uom->priceUom

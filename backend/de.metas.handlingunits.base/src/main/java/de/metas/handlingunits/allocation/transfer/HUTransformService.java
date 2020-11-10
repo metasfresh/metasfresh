@@ -25,6 +25,7 @@ package de.metas.handlingunits.allocation.transfer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -73,7 +74,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -200,11 +200,7 @@ public class HUTransformService
 
 	public BigDecimal getMaximumQtyTU(@NonNull final I_M_HU tu)
 	{
-		if (handlingUnitsBL.isAggregateHU(tu))
-		{
-			return handlingUnitsDAO.retrieveParentItem(tu).getQty();
-		}
-		return BigDecimal.ONE;
+		return handlingUnitsBL.getTUsCount(tu).toBigDecimal();
 	}
 
 	public Quantity getMaximumQtyCU(@NonNull final I_M_HU cu, @NonNull final I_C_UOM uom)

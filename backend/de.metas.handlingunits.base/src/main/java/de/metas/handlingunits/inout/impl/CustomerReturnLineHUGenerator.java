@@ -1,29 +1,8 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TrxRunnable;
-import org.compiere.util.TrxRunnableAdapter;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -37,6 +16,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.GenericListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -49,7 +29,27 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
+import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TrxRunnable;
+import org.compiere.util.TrxRunnableAdapter;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -109,6 +109,7 @@ public class CustomerReturnLineHUGenerator
 	private final List<I_M_InOutLine> _inOutLines = new ArrayList<>();
 	private final Map<Integer, IProductStorage> _inOutLine2productStorage = new HashMap<>();
 	private Quantity _qtyToAllocateTarget = null;
+	private List<IHUTrxListener> _customerListeners = new ArrayList<>(); //default value, to be set by de.metas.handlingunits.inout.impl.CustomerReturnLineHUGenerator.setIHUTrxListeners
 
 	//
 	// Status
@@ -431,6 +432,8 @@ public class CustomerReturnLineHUGenerator
 		final IContextAware contextProvider = getContextInitial();
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing(contextProvider);
 
+		huContext.getTrxListeners().addListeners(this._customerListeners);
+
 		final I_M_InOutLine inOutLine = getSingleInOutLineOrNull();
 
 		// ForceQtyAllocation=true, because
@@ -509,6 +512,14 @@ public class CustomerReturnLineHUGenerator
 
 		markNotConfigurable();
 		return _lutuProducer;
+	}
+
+	public CustomerReturnLineHUGenerator setIHUTrxListeners(@NonNull final List<IHUTrxListener> customerListeners)
+	{
+		assertConfigurable();
+
+		this._customerListeners = customerListeners;
+		return this;
 	}
 
 }

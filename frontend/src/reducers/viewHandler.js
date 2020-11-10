@@ -19,7 +19,9 @@ import {
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
   RESET_VIEW,
+  SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
+  UNSET_INCLUDED_VIEW,
   UPDATE_VIEW_DATA_ERROR,
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
@@ -57,7 +59,15 @@ export const viewState = {
   hasShowIncluded: false,
 };
 
-export const initialState = { views: {}, modals: {} };
+export const initialState = {
+  views: {},
+  modals: {},
+  includedView: {
+    viewId: null,
+    windowId: null,
+    viewProfileId: null,
+  },
+};
 
 const selectView = (state, id, isModal) => {
   return isModal
@@ -336,6 +346,8 @@ export default function viewHandler(state = initialState, action) {
       const type = getViewType(isModal);
       const view = getLocalView(state, id, isModal);
 
+      // we're not setting `pending` to false, as it'll be reset
+      // by fetching the document
       return {
         ...state,
         [`${type}`]: {
@@ -347,7 +359,6 @@ export default function viewHandler(state = initialState, action) {
             size,
             // TODO: Should we always set it to 1 ?
             page: 1,
-            pending: false,
           },
         },
       };
@@ -444,6 +455,37 @@ export default function viewHandler(state = initialState, action) {
       }
 
       return state;
+    }
+    case SET_INCLUDED_VIEW: {
+      const { id, viewId, viewProfileId } = action.payload;
+
+      return {
+        ...state,
+        includedView: {
+          ...state.includedView,
+          viewId,
+          windowId: id,
+          viewProfileId,
+        },
+      };
+    }
+    case UNSET_INCLUDED_VIEW: {
+      const { windowId, viewId } = state.includedView;
+      const { id: newWindowId, viewId: newViewId, forceClose } = action.payload;
+
+      if (forceClose || (windowId === newWindowId && viewId === newViewId)) {
+        // only close includedView if it hasn't changed since
+        return {
+          ...state,
+          includedView: {
+            viewId: null,
+            windowId: null,
+            viewProfileId: null,
+          },
+        };
+      } else {
+        return state;
+      }
     }
 
     case DELETE_VIEW: {

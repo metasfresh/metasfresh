@@ -2,7 +2,7 @@ import React from 'react';
 import { mount, shallow, render } from 'enzyme';
 
 import Checkbox from '../../../components/widget/Checkbox';
-import fixtures from '../../../../test_setup/fixtures/checkbox.json';
+import fixtures from '../../../../test_setup/fixtures/widget/checkbox.json';
 
 const createDummyProps = function(props) {
   return {

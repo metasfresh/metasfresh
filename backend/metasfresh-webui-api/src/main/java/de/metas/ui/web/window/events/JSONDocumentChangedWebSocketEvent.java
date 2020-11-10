@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -22,7 +23,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.util.time.SystemTime;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -94,7 +94,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		this.windowId = windowId;
 		this.id = id;
 
-		timestamp = DateTimeConverters.toJson(SystemTime.asInstant(), SystemTime.zoneId());
+		timestamp = DateTimeConverters.toJson(SystemTime.asInstant(), de.metas.common.util.time.SystemTime.zoneId());
 	}
 
 	private JSONDocumentChangedWebSocketEvent(@NonNull final JSONDocumentChangedWebSocketEvent from)

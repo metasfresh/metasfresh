@@ -137,8 +137,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * </ul>
 	 * <p>
 	 * If the given ic is manual, if it doesn't reference a C_OrderLine or if its {@code Discount} is equal to its {@code Discount_Override}, then the method does nothing.
-	 *
-	 * @param ic
 	 */
 	void setPriceActual_Override(I_C_Invoice_Candidate ic);
 
@@ -157,28 +155,23 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Gets amounts precision. Taken from currency, default 2.
 	 *
-	 * @param ic
 	 * @return precision used to calculate amounts
 	 */
 	CurrencyPrecision getPrecisionFromCurrency(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Invalidates those invoice candidates that reference the given invoice schedule
-	 *
-	 * @param invoiceSchedule
 	 */
 	void invalidateForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
 
 	/**
 	 * This method updates certain fields of the given invoice candidate. It's available for invocation from the outside for the case of 'manual' invoice candidates
 	 *
-	 * @param ctx
 	 * @param ic  the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
 	 */
 	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
 
 	/**
-	 * @param cand
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
 	 */
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
@@ -201,8 +194,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * This information is currently used by {@link de.metas.invoicecandidate.process.C_Invoice_Candidate_Update}.
 	 * <p>
 	 * Used inside the invalidate code within {@link IInvoiceCandDAO}, to avoid invalidating candidates while the process validates or creates them.
-	 *
-	 * @return
 	 */
 	boolean isUpdateProcessInProgress();
 
@@ -238,8 +229,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
-	 *
-	 * @param invoice
 	 */
 	void handleCompleteForInvoice(org.compiere.model.I_C_Invoice invoice);
 
@@ -287,9 +276,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * See {@link #setError(I_C_Invoice_Candidate, String, I_AD_Note)}
 	 *
-	 * @param ic
-	 * @param errorMsg
-	 * @param note
 	 * @param askForDeleteRegeneration error message will append request to the user asking him/her to delete invoice candidate after problem was fixed and wait for its regeneration
 	 */
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
@@ -299,7 +285,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Retrieve tax override if set, C_Tax otherwise
 	 *
-	 * @param candidate
 	 * @return tax override if set, C_Tax otherwise; never return null
 	 */
 	I_C_Tax getTaxEffective(I_C_Invoice_Candidate candidate);
@@ -316,15 +301,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
 	 * <p>
 	 * Candidate will not be saved.
-	 *
-	 * @param candidate
 	 */
 	void updatePOReferenceFromOrder(I_C_Invoice_Candidate candidate);
 
 	/**
 	 * For the given invoice candidate, make sure that itself and all candidates partner are invalidated, <b>if</b> the partner has a certain invoice schedule.
-	 *
-	 * @param ic
 	 */
 	void invalidateForPartnerIfInvoiceRuleDemandsIt(I_C_Invoice_Candidate ic);
 
@@ -357,8 +338,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Close the given invoice candidate.
 	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate.
 	 * Also close the shipment schedules on which the invoice candidates are based
-	 *
-	 * @param candidate
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
 

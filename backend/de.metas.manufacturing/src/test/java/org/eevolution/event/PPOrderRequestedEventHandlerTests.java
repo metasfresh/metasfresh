@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -61,11 +62,11 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -200,8 +201,8 @@ public class PPOrderRequestedEventHandlerTests
 		ppOrderPojo = PPOrder.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(adClientId, orgId))
 				.materialDispoGroupId(PPORDER_POJO_GROUPID)
-				.datePromised(SystemTime.asInstant())
-				.dateStartSchedule(SystemTime.asInstant())
+				.datePromised(de.metas.common.util.time.SystemTime.asInstant())
+				.dateStartSchedule(de.metas.common.util.time.SystemTime.asInstant())
 				.plantId(ResourceId.ofRepoId(110))
 				.orderLineId(orderLine.getC_OrderLine_ID())
 				.productDescriptor(productDescriptor)
@@ -292,7 +293,7 @@ public class PPOrderRequestedEventHandlerTests
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
-				.dateOrdered(SystemTime.asInstant())
+				.dateOrdered(de.metas.common.util.time.SystemTime.asInstant())
 				.ppOrder(ppOrderPojo)
 				.build();
 
@@ -319,7 +320,8 @@ public class PPOrderRequestedEventHandlerTests
 		SpringContextHolder.registerJUnitBean(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
 
 		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
-		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory);
+		final ReplenishInfoRepository replenishInfoRepository = new ReplenishInfoRepository();
+		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory, replenishInfoRepository);
 
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(

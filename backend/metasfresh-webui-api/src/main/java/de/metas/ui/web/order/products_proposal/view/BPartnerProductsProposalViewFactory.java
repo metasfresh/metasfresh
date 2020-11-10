@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -31,7 +32,6 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

@@ -142,6 +142,24 @@
             <xsd:pattern value="[YN]"/>
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:simpleType name="InvoicableQtyBasedOnEnum">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="CatchWeight">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="CatchWeight"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Nominal">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="Nominal"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
     <xsd:element name="EDI_cctop_invoic_v" type="EDI_cctop_invoic_vType"/>
     <xsd:element name="EDI_cctop_invoic_500_v" type="EDI_cctop_invoic_500_vType"/>
     <xsd:element name="EDI_cctop_000_v" type="EDI_cctop_000_vType"/>
@@ -485,6 +503,7 @@
             <xsd:element minOccurs="0" name="CountryCode_3digit" type="xsd:string"/>
             <xsd:element minOccurs="0" name="CreditMemoReasonText" type="xsd:string"/>
             <xsd:element minOccurs="0" name="VATaxID" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
         <xsd:attribute ref="ReplicationEvent"/>
@@ -761,8 +780,10 @@
             <xsd:element minOccurs="0" name="UPC_TU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="PriceActual" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="EanCom_Invoice_UOM" type="xsd:string"/>
+            <xsd:element name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
             <xsd:element minOccurs="0" name="OrderPOReference" type="xsd:string"/>
             <xsd:element minOccurs="0" name="QtyDeliveredInInvoiceUOM" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyDeliveredInUOM" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="OrderLine" type="xsd:integer"/>
         </xsd:sequence>
     </xsd:complexType>
@@ -781,6 +802,7 @@
             <xsd:element minOccurs="0" name="C_Currency_ID" type="EDI_Exp_C_CurrencyType"/>
             <xsd:element minOccurs="0" name="HandOver_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
             <xsd:element minOccurs="0" name="DropShip_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
+            <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
         <xsd:attribute ref="ReplicationEvent"/>

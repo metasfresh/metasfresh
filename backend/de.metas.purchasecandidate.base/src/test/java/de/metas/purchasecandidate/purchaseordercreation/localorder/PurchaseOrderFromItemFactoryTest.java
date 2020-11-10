@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -41,7 +42,6 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

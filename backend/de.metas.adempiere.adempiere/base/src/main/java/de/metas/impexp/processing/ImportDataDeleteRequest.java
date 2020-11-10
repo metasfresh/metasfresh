@@ -2,7 +2,10 @@ package de.metas.impexp.processing;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.api.Params;
+
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,11 +36,18 @@ import lombok.Value;
 public class ImportDataDeleteRequest
 {
 	@NonNull
+	String importTableName;
+
+	@NonNull
 	ImportDataDeleteMode mode;
 
 	@Nullable
 	String viewSqlWhereClause;
-	
+
 	@Nullable
 	String selectionSqlWhereClause;
+
+	@NonNull
+	@Default
+	Params additionalParameters = Params.EMPTY;
 }

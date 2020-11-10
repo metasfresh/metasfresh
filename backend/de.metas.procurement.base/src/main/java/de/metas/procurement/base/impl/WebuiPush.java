@@ -2,6 +2,7 @@ package de.metas.procurement.base.impl;
 
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -27,7 +28,6 @@ import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.husToPick.process;
 
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.X_C_DocType;
@@ -32,7 +33,6 @@ import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 

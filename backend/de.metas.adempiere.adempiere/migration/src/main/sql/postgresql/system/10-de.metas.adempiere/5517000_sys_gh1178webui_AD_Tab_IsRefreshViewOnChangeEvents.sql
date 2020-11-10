@@ -20,8 +20,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-03-25T18:03:32.657
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Tab','ALTER TABLE public.AD_Tab ADD COLUMN IsRefreshViewOnChangeEvents CHAR(1) DEFAULT ''N'' CHECK (IsRefreshViewOnChangeEvents IN (''Y'',''N'')) NOT NULL')
-;
+-- moved to 5517000_sys_gh1178webui_AD_Tab_IsRefreshViewOnChangeEvents_DDL.sql
+--/* DDL */ SELECT public.db_alter_table('AD_Tab','ALTER TABLE public.AD_Tab ADD COLUMN IsRefreshViewOnChangeEvents CHAR(1) DEFAULT ''N'' CHECK (IsRefreshViewOnChangeEvents IN (''Y'',''N'')) NOT NULL')
+--;
 
 -- 2019-03-25T18:03:53.776
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

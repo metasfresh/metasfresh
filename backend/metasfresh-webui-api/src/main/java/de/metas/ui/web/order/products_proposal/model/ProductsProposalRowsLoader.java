@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -42,6 +43,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
@@ -56,7 +58,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -181,6 +182,7 @@ public final class ProductsProposalRowsLoader
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
 						.thenComparing(ProductsProposalRow::getProductName))
+				.filter(p -> !Services.get(IProductDAO.class).getById(p.getProductId()).isDiscontinued())
 				.collect(ImmutableList.toImmutableList());
 	}
 

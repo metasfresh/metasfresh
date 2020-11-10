@@ -26,6 +26,7 @@ package org.eevolution.mrp.api.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
@@ -54,7 +55,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class MRPBL implements IMRPBL
 {

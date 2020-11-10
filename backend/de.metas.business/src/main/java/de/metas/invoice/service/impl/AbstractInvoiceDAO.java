@@ -355,7 +355,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
+	public List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return loadByRepoIdAwares(ImmutableSet.copyOf(invoiceIds), org.compiere.model.I_C_Invoice.class);
 	}

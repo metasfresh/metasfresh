@@ -1,20 +1,45 @@
-package de.metas.banking.payment.paymentallocation.service;
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /**
  * Wraps a credit memo {@link PayableDocument} and behaves like a {@link IPaymentDocument}.
- * 
+ *
  * @author tsa
  *
  */
@@ -47,9 +72,9 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	}
 
 	@Override
-	public OrgId getOrgId()
+	public ClientAndOrgId getClientAndOrgId()
 	{
-		return creditMemoPayableDoc.getOrgId();
+		return creditMemoPayableDoc.getClientAndOrgId();
 	}
 
 	@Override
@@ -95,7 +120,7 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	}
 
 	@Override
-	public Money calculateProjectedOverUnderAmt(Money payAmountToAllocate)
+	public Money calculateProjectedOverUnderAmt(@NonNull final Money payAmountToAllocate)
 	{
 		return creditMemoPayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(payAmountToAllocate.negate()));
 	}
@@ -118,12 +143,6 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 			return false;
 		}
 
-		// if currency differs, do not allow payment
-		if (!CurrencyId.equals(payable.getCurrencyId(), creditMemoPayableDoc.getCurrencyId()))
-		{
-			return false;
-		}
-
 		return true;
 	}
 
@@ -139,4 +158,16 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		return creditMemoPayableDoc.getCurrencyId();
 	}
 
+	@Override
+	public LocalDate getDate()
+	{
+		return creditMemoPayableDoc.getDate();
+	}
+
+	@Nullable
+	@Override
+	public CurrencyConversionTypeId getCurrencyConversionTypeId()
+	{
+		return creditMemoPayableDoc.getCurrencyConversionTypeId();
+	}
 }

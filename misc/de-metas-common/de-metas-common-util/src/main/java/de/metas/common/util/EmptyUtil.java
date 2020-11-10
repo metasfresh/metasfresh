@@ -105,7 +105,7 @@ public class EmptyUtil
 	/**
 	 * @return true if bd is null or bd.signum() is zero
 	 */
-	public boolean isEmpty(final BigDecimal bd)
+	public boolean isEmpty(@Nullable final BigDecimal bd)
 	{
 		return bd == null || bd.signum() == 0;
 	}
@@ -113,7 +113,7 @@ public class EmptyUtil
 	/**
 	 * @return true if the array is null or it's length is zero.
 	 */
-	public <T> boolean isEmpty(final T[] arr)
+	public <T> boolean isEmpty(@Nullable final T[] arr)
 	{
 		return arr == null || arr.length == 0;
 	}
@@ -121,7 +121,7 @@ public class EmptyUtil
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
-	public boolean isEmpty(final Collection<?> collection)
+	public boolean isEmpty(@Nullable final Collection<?> collection)
 	{
 		return collection == null || collection.isEmpty();
 	}

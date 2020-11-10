@@ -27,6 +27,7 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -56,7 +57,6 @@ import de.metas.handlingunits.snapshot.impl.HUSnapshotDAO;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.junit.jupiter.api.Test;
 
 public class HUSnapshotDAOTest extends AbstractHUTest

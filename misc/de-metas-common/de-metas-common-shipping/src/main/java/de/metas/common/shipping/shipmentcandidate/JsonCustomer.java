@@ -67,6 +67,9 @@ public class JsonCustomer
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String language;
 
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String shipmentAllocationBestBeforePolicy;
+
 	@JsonCreator
 	@Builder
 	public JsonCustomer(
@@ -83,7 +86,8 @@ public class JsonCustomer
 			@JsonProperty("city") @NonNull final String city,
 			@JsonProperty("countryCode") @Nullable final String countryCode,
 			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo,
-			@JsonProperty("language") @Nullable final String language
+			@JsonProperty("language") @Nullable final String language,
+			@JsonProperty("shipmentAllocationBestBeforePolicy") @Nullable final String shipmentAllocationBestBeforePolicy
 	)
 	{
 		this.companyName = companyName;
@@ -100,5 +104,6 @@ public class JsonCustomer
 		this.countryCode = countryCode;
 		this.deliveryInfo = deliveryInfo;
 		this.language = language;
+		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 	}
 }

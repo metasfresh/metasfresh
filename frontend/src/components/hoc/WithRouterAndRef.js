@@ -16,4 +16,15 @@ const withRouterAndRef = (Wrapped) => {
   return WithRouterAndRef;
 };
 
-export default withRouterAndRef;
+const withForwardedRef = (Wrapped) => {
+  const handle = (props, ref) => {
+    return <Wrapped {...props} forwardedRef={ref} />;
+  };
+
+  const name = Wrapped.displayName || Wrapped.name;
+  handle.displayName = `withForwardedRef(${name})`;
+
+  return forwardRef(handle);
+};
+
+export { withRouterAndRef, withForwardedRef };

@@ -24,8 +24,8 @@ package de.metas.material.planning.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.quantity.Quantity;
-import de.metas.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;

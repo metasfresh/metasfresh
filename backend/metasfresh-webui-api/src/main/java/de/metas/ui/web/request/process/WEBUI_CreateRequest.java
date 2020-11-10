@@ -1,10 +1,33 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.request.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.sql.Timestamp;
 import java.util.Optional;
 
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -34,28 +57,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondition
 {
@@ -121,8 +122,10 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 	{
 		final I_R_Request request = requestDAO.createEmptyRequest();
 		request.setR_RequestType_ID(requestTypeDAO.retrieveDefaultRequestTypeIdOrFirstActive().getRepoId());
-		request.setDateTrx(SystemTime.asDayTimestamp());
-		request.setStartDate(SystemTime.asDayTimestamp());
+		final Timestamp date = SystemTime.asDayTimestamp();
+		request.setDateTrx(date);
+		request.setStartDate(date);
+		request.setStartTime(date);
 		return request;
 	}
 

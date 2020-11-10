@@ -1,14 +1,10 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -24,8 +20,11 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -58,7 +57,7 @@ public final class PPOrderAdvisedHandler
 	private final PostMaterialEventService materialEventService;
 
 	/**
-	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
+	 * @param materialEventService needed in case we directly request a {@link PPOrderAdvisedEvent}'s proposed PP_Order to be created.
 	 */
 	public PPOrderAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
@@ -105,10 +104,16 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(
+	protected CandidatesQuery createPreExistingSupplyCandidateQuery(
 			@NonNull final PPOrder ppOrder,
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
+		final CandidateId supplyCandidateId = CandidateId.ofRepoIdOrNull(supplyRequiredDescriptor.getSupplyCandidateId());
+		if (supplyCandidateId != null)
+		{ // the original request already contained an existing supply-candidate's ID that we need to update now.
+			return CandidatesQuery.fromId(supplyCandidateId);
+		}
+
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetail(demandDetail);
 

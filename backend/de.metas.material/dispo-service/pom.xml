@@ -14,7 +14,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir>75-material-dispo</migration-sql-basedir>
+		<migration-sql-basedir></migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

@@ -1,16 +1,20 @@
 package org.eevolution.api;
 
-import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPPOrderBL extends ISingletonService
 {
@@ -81,4 +85,10 @@ public interface IPPOrderBL extends ISingletonService
 	void closeAllActivities(PPOrderId orderId);
 
 	Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(PPOrderId pickingOrderId);
+
+	void updateCanBeExportedAfter(@NonNull I_PP_Order order);
+
+	void updateCanBeExportedFrom(@NonNull I_PP_Order ppOrder);
+
+	void updateExportStatus(@NonNull APIExportStatus newExportStatus, @NonNull PInstanceId pinstanceId);
 }

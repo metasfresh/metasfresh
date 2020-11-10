@@ -1,20 +1,45 @@
-package de.metas.banking.payment.paymentallocation.service;
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /**
  * Wraps a given purchase invoice as an inbound payment document which we will try to allocate to some other sales invoice that we issued.
- * 
+ * <p>
  * In other words, if we issued a sales invoice to one of our customers,
  * but the "customer" issued an purchase invoice to us, that purchase invoice can be used to compensate our customer invoice.
  */
@@ -55,9 +80,9 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	@Override
-	public OrgId getOrgId()
+	public ClientAndOrgId getClientAndOrgId()
 	{
-		return purchaseInvoicePayableDoc.getOrgId();
+		return purchaseInvoicePayableDoc.getClientAndOrgId();
 	}
 
 	@Override
@@ -91,7 +116,7 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	@Override
-	public void addAllocatedAmt(Money allocatedAmtToAdd)
+	public void addAllocatedAmt(final Money allocatedAmtToAdd)
 	{
 		purchaseInvoicePayableDoc.addAllocatedAmounts(AllocationAmounts.ofPayAmt(allocatedAmtToAdd.negate()));
 	}
@@ -103,7 +128,7 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	@Override
-	public Money calculateProjectedOverUnderAmt(Money amountToAllocate)
+	public Money calculateProjectedOverUnderAmt(final Money amountToAllocate)
 	{
 		return purchaseInvoicePayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
 	}
@@ -122,17 +147,25 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 		}
 
 		// if currency differs, do not allow payment
-		if (!CurrencyId.equals(payable.getCurrencyId(), purchaseInvoicePayableDoc.getCurrencyId()))
-		{
-			return false;
-		}
-
-		return true;
+		return CurrencyId.equals(payable.getCurrencyId(), purchaseInvoicePayableDoc.getCurrencyId());
 	}
 
 	@Override
 	public CurrencyId getCurrencyId()
 	{
 		return purchaseInvoicePayableDoc.getCurrencyId();
+	}
+
+	@Override
+	public LocalDate getDate()
+	{
+		return purchaseInvoicePayableDoc.getDate();
+	}
+
+	@Nullable
+	@Override
+	public CurrencyConversionTypeId getCurrencyConversionTypeId()
+	{
+		return purchaseInvoicePayableDoc.getCurrencyConversionTypeId();
 	}
 }

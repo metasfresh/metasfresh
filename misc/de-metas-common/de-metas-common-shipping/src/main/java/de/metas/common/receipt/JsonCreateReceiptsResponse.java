@@ -22,10 +22,12 @@
 
 package de.metas.common.receipt;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Value;
@@ -34,11 +36,21 @@ import java.util.List;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize( builder = JsonCreateReceiptsResponse.JsonCreateReceiptsResponseBuilder.class)
 public class JsonCreateReceiptsResponse
 {
 	@JsonProperty("createdReceiptIdList")
 	List<JsonMetasfreshId> createdReceiptIdList;
+
+	@JsonProperty("createdReturnIdList")
+	List<JsonMetasfreshId> createdReturnIdList;
+
+
+	@JsonPOJOBuilder(withPrefix = "")
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class JsonCreateReceiptsResponseBuilder
+	{
+	}
 }

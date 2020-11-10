@@ -1,7 +1,28 @@
 package de.metas.ui.web.pickingV2.productsToPick.rows.factory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.eevolution.api.IPPOrderBL;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -41,25 +62,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.eevolution.api.IPPOrderBL;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -103,8 +105,8 @@ public final class ProductsToPickRowsDataFactory
 
 	private final boolean considerAttributes;
 
-	public static final String ATTR_LotNumber_String = LotNumberDateAttributeDAO.ATTR_LotNumber_String;
-	public static final AttributeCode ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
+	public static final String ATTR_LotNumber_String = AttributeConstants.ATTR_LotNumber_String;
+	public static final AttributeCode ATTR_LotNumber = AttributeConstants.ATTR_LotNumber;
 
 	public static final String ATTR_BestBeforeDate_String = AttributeConstants.ATTR_BestBeforeDate_String;
 	public static final AttributeCode ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
@@ -281,7 +283,7 @@ public final class ProductsToPickRowsDataFactory
 			return ImmutableList.of();
 		}
 
-		final ImmutableSet<HuId> huIdsAvailableToPick = ImmutableSet.<HuId>builder()
+		final ImmutableSet<HuId> huIdsAvailableToPick = ImmutableSet.<HuId> builder()
 				.addAll(getHuIdsReservedForSalesOrderLine(packageable)) // reserved HUs first
 				.addAll(getHuIdsAvailableToAllocate(packageable))
 				.build();
@@ -294,7 +296,7 @@ public final class ProductsToPickRowsDataFactory
 
 		return rowsWithZeroQty.stream()
 				.sorted(Comparator
-						.<ProductsToPickRow>comparingInt(row -> row.isHuReservedForThisRow() ? 0 : 1) // consider reserved HU first
+						.<ProductsToPickRow> comparingInt(row -> row.isHuReservedForThisRow() ? 0 : 1) // consider reserved HU first
 						.thenComparing(bestBeforePolicy.comparator(ProductsToPickRow::getExpiringDate))) // then first/last expiring HU
 				.map(row -> allocateRowFromHU(row, packageable))
 				.filter(Objects::nonNull)
@@ -354,9 +356,7 @@ public final class ProductsToPickRowsDataFactory
 	}
 
 	@Nullable
-	private ProductsToPickRow allocateRowFromHU(
-			final ProductsToPickRow row,
-			final AllocablePackageable packageable)
+	private ProductsToPickRow allocateRowFromHU(final ProductsToPickRow row, final AllocablePackageable packageable)
 	{
 		if (packageable.isAllocated())
 		{
@@ -380,9 +380,7 @@ public final class ProductsToPickRowsDataFactory
 		return row.withQty(qty);
 	}
 
-	private ProductsToPickRow createZeroQtyRowFromHU(
-			@NonNull final AllocablePackageable packageable,
-			@NonNull final HuId pickFromHUId)
+	private ProductsToPickRow createZeroQtyRowFromHU(@NonNull final AllocablePackageable packageable, @NonNull final HuId pickFromHUId)
 	{
 		final boolean isPickFromHU = packageable.getIssueToOrderBOMLineId() == null;
 		if (isPickFromHU)
@@ -504,8 +502,7 @@ public final class ProductsToPickRowsDataFactory
 				.withUpdatesFromPickingCandidateIfNotNull(existingPickingCandidate);
 	}
 
-	@Nullable
-	private String buildLotNumberFromHuId(@Nullable final HuId huId)
+	private String buildLotNumberFromHuId(final HuId huId)
 	{
 		if (huId == null)
 		{
@@ -520,7 +517,6 @@ public final class ProductsToPickRowsDataFactory
 		return "<" + huId.getRepoId() + ">";
 	}
 
-	@Nullable
 	private LookupValue getLocatorLookupValueByHuId(final HuId huId)
 	{
 		final I_M_HU hu = storages.getHU(huId);
@@ -581,9 +577,7 @@ public final class ProductsToPickRowsDataFactory
 		return rows;
 	}
 
-	private AllocablePackageable toBOMLineAllocablePackageable(
-			final QtyCalculationsBOMLine bomLine,
-			final AllocablePackageable finishedGoodPackageable)
+	private AllocablePackageable toBOMLineAllocablePackageable(final QtyCalculationsBOMLine bomLine, final AllocablePackageable finishedGoodPackageable)
 	{
 		final Quantity qty = bomLine.computeQtyRequired(finishedGoodPackageable.getQtyToAllocate());
 
@@ -594,9 +588,7 @@ public final class ProductsToPickRowsDataFactory
 				.build();
 	}
 
-	private AllocablePackageable toBOMLineAllocablePackageable(
-			final PickingCandidateIssueToBOMLine issueToBOMLine,
-			final AllocablePackageable finishedGoodPackageable)
+	private AllocablePackageable toBOMLineAllocablePackageable(final PickingCandidateIssueToBOMLine issueToBOMLine, final AllocablePackageable finishedGoodPackageable)
 	{
 		return finishedGoodPackageable.toBuilder()
 				.productId(issueToBOMLine.getProductId())

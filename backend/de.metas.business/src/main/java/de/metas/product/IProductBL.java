@@ -43,6 +43,8 @@ import lombok.NonNull;
 public interface IProductBL extends ISingletonService
 {
 	I_M_Product getById(ProductId productId);
+	
+	ProductId getProductIdByValue(String productValue);
 
 	UOMPrecision getUOMPrecision(I_M_Product product);
 

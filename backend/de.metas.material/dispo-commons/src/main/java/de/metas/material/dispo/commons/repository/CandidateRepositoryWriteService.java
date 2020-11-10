@@ -1,30 +1,9 @@
 package de.metas.material.dispo.commons.repository;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.NULL_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -54,6 +33,25 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Objects;
+
+import static de.metas.material.dispo.commons.candidate.IdConstants.NULL_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -102,9 +100,6 @@ public class CandidateRepositoryWriteService
 
 	/**
 	 * Similar to {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)}, but the given {@code candidate}'s {@code seqNo} (if specified at all!) will only be persisted if none is stored yet.
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	public SaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
 	{
@@ -294,7 +289,7 @@ public class CandidateRepositoryWriteService
 	 * @return either returns the record contained in the given candidateRecord (but updated) or a new record.
 	 */
 	private I_MD_Candidate updateOrCreateCandidateRecord(
-			final I_MD_Candidate candidateRecord,
+			@Nullable final I_MD_Candidate candidateRecord,
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
@@ -306,7 +301,7 @@ public class CandidateRepositoryWriteService
 				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
 				candidateRecord, candidate);
 
-		final I_MD_Candidate candidateRecordToUse = candidateRecord == null ? newInstance(I_MD_Candidate.class) : candidateRecord;
+		final I_MD_Candidate candidateRecordToUse = CoalesceUtil.coalesce(candidateRecord, newInstance(I_MD_Candidate.class));
 
 		updateCandidateRecordFromCandidate(candidateRecordToUse, candidate, preserveExistingSeqNo);
 
@@ -339,6 +334,7 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setM_Warehouse_ID(WarehouseId.toRepoId(materialDescriptor.getWarehouseId()));
 
 		candidateRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(materialDescriptor.getCustomerId()));
+		candidateRecord.setIsReservedForCustomer(materialDescriptor.isReservedForCustomer());
 
 		candidateRecord.setM_Product_ID(materialDescriptor.getProductId());
 		candidateRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
@@ -348,6 +344,9 @@ public class CandidateRepositoryWriteService
 		final BigDecimal quantity = candidate.getQuantity();
 		candidateRecord.setQty(stripZerosAfterTheDigit(quantity));
 		candidateRecord.setDateProjected(TimeUtil.asTimestamp(materialDescriptor.getDate()));
+
+		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
+		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
 
 		updatCandidateRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
 
@@ -655,7 +654,7 @@ public class CandidateRepositoryWriteService
 	public DeleteResult deleteCandidatebyId(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
-		DeleteResult deleteResult = new DeleteResult(candidateId, DateAndSeqNo
+		final DeleteResult deleteResult = new DeleteResult(candidateId, DateAndSeqNo
 				.builder()
 				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
 				.seqNo(candidateRecord.getSeqNo())

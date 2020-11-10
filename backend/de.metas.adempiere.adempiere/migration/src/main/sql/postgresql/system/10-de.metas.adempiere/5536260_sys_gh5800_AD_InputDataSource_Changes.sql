@@ -83,10 +83,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(620) 
 ;
 
--- 2019-11-15T15:55:12.592Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_InputDataSource','ALTER TABLE public.AD_InputDataSource ADD COLUMN Value VARCHAR(250)')
-;
+-- Moved to 5536259_sys_gh5800_AD_InputDataSource_Changes_DDL
+-- -- 2019-11-15T15:55:12.592Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- /* DDL */ SELECT public.db_alter_table('AD_InputDataSource','ALTER TABLE public.AD_InputDataSource ADD COLUMN Value VARCHAR(250)')
+-- ;
 
 -- 2019-11-15T15:55:37.759Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -103,10 +104,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(543939) 
 ;
 
--- 2019-11-15T15:55:38.549Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_InputDataSource','ALTER TABLE public.AD_InputDataSource ADD COLUMN ExternalId VARCHAR(250)')
-;
+-- Moved to 5536259_sys_gh5800_AD_InputDataSource_Changes_DDL
+-- -- 2019-11-15T15:55:38.549Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- /* DDL */ SELECT public.db_alter_table('AD_InputDataSource','ALTER TABLE public.AD_InputDataSource ADD COLUMN ExternalId VARCHAR(250)')
+-- ;
 
 -- 2019-11-15T15:56:40.349Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -123,10 +125,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(983) 
 ;
 
--- 2019-11-15T15:56:41.907Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_InputDataSource','ALTER TABLE public.AD_InputDataSource ADD COLUMN URL VARCHAR(250)')
-;
+-- Moved to 5536259_sys_gh5800_AD_InputDataSource_Changes_DDL
+-- -- 2019-11-15T15:56:41.907Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- /* DDL */ SELECT public.db_alter_table('AD_InputDataSource','ALTER TABLE public.AD_InputDataSource ADD COLUMN URL VARCHAR(250)')
+-- ;
 
 
 

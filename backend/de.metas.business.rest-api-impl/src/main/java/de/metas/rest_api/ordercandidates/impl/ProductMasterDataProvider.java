@@ -1,5 +1,16 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
+
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -20,16 +31,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Product;
-
-import javax.annotation.Nullable;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -87,12 +89,12 @@ final class ProductMasterDataProvider
 		@NonNull
 		UomId uomId;
 
-		@With
+		@Wither
 		boolean justCreated;
 	}
 
 	private final CCache<ProductCacheKey, ProductInfo> productInfoCache = CCache
-			.<ProductCacheKey, ProductInfo>builder()
+			.<ProductCacheKey, ProductInfo> builder()
 			.cacheName(this.getClass().getSimpleName() + "-productInfoCache")
 			.tableName(I_M_Product.Table_Name)
 			.build();
@@ -122,7 +124,7 @@ final class ProductMasterDataProvider
 		if (existingProductId != null && !ifExists.isUpdate())
 		{
 			final UomId uomId = getProductUOMId(
-					existingProductId,
+					existingProductId, 
 					X12DE355.ofNullableCode(jsonProductInfo.getUomCode()));
 			return ProductInfo.builder()
 					.productId(existingProductId)

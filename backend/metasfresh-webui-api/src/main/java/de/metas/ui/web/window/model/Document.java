@@ -146,7 +146,7 @@ public final class Document
 	//
 	// Parent & children
 	private final Document _parentDocument;
-	private final Map<DetailId, IIncludedDocumentsCollection> includedDocuments;
+	private final ImmutableMap<DetailId, IIncludedDocumentsCollection> includedDocuments;
 
 	//
 	// Evaluatee
@@ -175,7 +175,7 @@ public final class Document
 		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
 	}
 
-	private Document(final Builder builder)
+	private Document(@NonNull final Builder builder)
 	{
 		entityDescriptor = builder.getEntityDescriptor();
 		_parentDocument = builder.getParentDocument();
@@ -1532,7 +1532,8 @@ public final class Document
 		return includedDocuments.getDocumentById(rowId);
 	}
 
-	public OrderedDocumentsList getIncludedDocuments(final DetailId detailId, final DocumentQueryOrderByList orderBys)
+	@NonNull
+	public OrderedDocumentsList getIncludedDocuments(@NonNull final DetailId detailId, @Nullable final DocumentQueryOrderByList orderBys)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocuments(orderBys);
@@ -1559,7 +1560,7 @@ public final class Document
 		final IIncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
 		if (includedDocumentsForDetailId == null)
 		{
-			throw new IllegalArgumentException("detailId '" + detailId + "' not found for " + this);
+			throw new AdempiereException("detailId '" + detailId + "' not found for " + this);
 		}
 		return includedDocumentsForDetailId;
 	}

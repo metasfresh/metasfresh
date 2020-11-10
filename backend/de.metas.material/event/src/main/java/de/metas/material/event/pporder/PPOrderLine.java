@@ -1,19 +1,18 @@
 package de.metas.material.event.pporder;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -70,6 +69,9 @@ public class PPOrderLine
 
 	ProductDescriptor productDescriptor;
 
+	@Nullable
+	MinMaxDescriptor minMaxDescriptor;
+
 	/** qty in stocking UOM */
 	BigDecimal qtyRequired;
 
@@ -84,6 +86,7 @@ public class PPOrderLine
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered)
@@ -96,6 +99,7 @@ public class PPOrderLine
 		this.ppOrderLineId = ppOrderLineId;
 		this.receipt = receipt;
 		this.productDescriptor = productDescriptor;
+		this.minMaxDescriptor = minMaxDescriptor;
 
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = qtyDelivered;

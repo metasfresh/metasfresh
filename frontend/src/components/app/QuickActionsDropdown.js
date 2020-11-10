@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
@@ -8,15 +8,9 @@ import { connect } from 'react-redux';
  * @module QuickActionsDropdown
  * @extends Component
  */
-class QuickActionsDropdown extends Component {
-  constructor(props) {
-    super(props);
-  }
-
+class QuickActionsDropdown extends PureComponent {
   /**
    * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
    */
   handleClickOutside = () => {
     const { handleClickOutside } = this.props;
@@ -26,8 +20,7 @@ class QuickActionsDropdown extends Component {
 
   /**
    * @method componentDidMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Focus on the first quick action
    */
   componentDidMount() {
     document.getElementsByClassName('quick-actions-item')[0].focus();
@@ -35,10 +28,8 @@ class QuickActionsDropdown extends Component {
 
   /**
    * @method handleKeyDown
-   * @summary ToDo: Describe the method
    * @param {*} event
    * @param {*} action
-   * @todo Write the documentation
    */
   handleKeyDown = (e, action) => {
     e.preventDefault();
@@ -71,9 +62,8 @@ class QuickActionsDropdown extends Component {
 
   /**
    * @method handleItem
-   * @summary ToDo: Describe the method
+   * @summary Focus on the selected quick action
    * @param {*} item
-   * @todo Write the documentation
    */
   handleItem = (item) => {
     document.getElementsByClassName('quick-actions-item')[item].focus();
@@ -83,11 +73,6 @@ class QuickActionsDropdown extends Component {
     this.item = ref;
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const { actions, handleClick } = this.props;
 

@@ -7,12 +7,13 @@ import _ from 'lodash';
 import viewHandler, { viewState, initialState } from '../../reducers/viewHandler';
 import tablesHandler, {  getTableId } from '../../reducers/tables';
 import windowState from '../../reducers/windowHandler';
-import { initialState as listState } from '../../reducers/listHandler';
+import { getEntityRelatedId } from '../../reducers/filters';
 
 import * as viewActions from '../../actions/ViewActions';
 import { createTableData } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
+import { formatFilters, populateFiltersCaptions } from '../../utils/filterHelpers';
 
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
@@ -29,7 +30,6 @@ const createStore = function(state = {}) {
       viewHandler: initialState,
       tables: { ...tablesHandler(undefined, {}) },
       windowHandler: windowState,
-      listHandler: listState,
     },
     state
   );
@@ -67,6 +67,26 @@ describe('ViewActions synchronous', () => {
     expect(action.payload).toHaveProperty('id', id);
     expect(action.payload).toHaveProperty('showIncludedView', show);
   });
+
+  it('should call SET_INCLUDED_VIEW action with correct payload', () => {
+    const id = viewLayout.windowId;
+    const viewId = viewData.viewId;
+    const action = viewActions.setIncludedView({ windowId: id, viewId });
+
+    expect(action.type).toEqual(ACTION_TYPES.SET_INCLUDED_VIEW);
+    expect(action.payload).toHaveProperty('id', id);
+    expect(action.payload).toHaveProperty('viewId', viewId);
+  });
+
+  it('should call UNSET_INCLUDED_VIEW action with correct payload', () => {
+    const id = viewLayout.windowId;
+    const viewId = viewData.viewId;
+    const action = viewActions.unsetIncludedView({ windowId: id, viewId });
+
+    expect(action.type).toEqual(ACTION_TYPES.UNSET_INCLUDED_VIEW);
+    expect(action.payload).toHaveProperty('id', id);
+    expect(action.payload).toHaveProperty('viewId', viewId);
+  }); 
 });
 
 describe('ViewActions thunks', () => {
@@ -227,6 +247,7 @@ describe('ViewActions thunks', () => {
         'result',
         'firstRow'
       ]),
+      ...limitedViewLayout,
       headerElements: limitedViewData.columnsByFieldName,
       keyProperty: 'id',
     })
@@ -279,7 +300,64 @@ describe('ViewActions thunks', () => {
       });
   });
 
-  it(`dispatches 'TOGGLE_INCLUDED_VIEW' and 'SET_LIST_INCLUDED_VIEW' actions when
+  it(`dispatches 'CREATE_FILTER' with properly formatted filters when fetching filtered view rows data`, () => {
+    const limitedViewLayout = fixtures.viewLayout2;
+    const limitedViewData = fixtures.basicViewData2;
+    const limitedCreateViewData = _.omit(
+      limitedViewData,
+      ['columnsByFieldName', 'result', 'firstRow', 'pageLength', 'headerProperties']
+    );
+    const { windowId, viewId, pageLength, columnsByFieldName } = limitedViewData;
+    const page = 1;
+    const state = createStore({
+      viewHandler: {
+        views: {
+          [windowId]: {
+            layout: { ...limitedViewLayout },
+            ...limitedCreateViewData,
+          },
+        },
+      },
+    });
+    const store = mockStore(state);
+    const filterId = getEntityRelatedId({ windowId, viewId });
+    const activeFiltersCaptions = populateFiltersCaptions({
+      filterData: limitedViewLayout.filters,
+      filtersActive: limitedViewData.filters,
+    });
+    const filtersActive = formatFilters({
+      filtersData: limitedViewLayout.filters,
+      filtersActive: limitedViewData.filters,
+    });
+
+    const filtersData = {
+      filterData: limitedViewLayout.filters, // set the proper layout for the filters
+      filtersActive,
+      activeFiltersCaptions,
+    };
+
+    const payload2 = {
+      id: filterId,
+      data: filtersData,
+    };
+    const expectedActions = [
+      { type: ACTION_TYPES.CREATE_FILTER, payload: payload2}
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+      (page - 1)}&pageLength=${pageLength}`)
+      .reply(200, _.cloneDeep(limitedViewData));
+
+    return store
+      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: false }))
+      .then(() => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      });
+  });
+
+  it(`dispatches 'TOGGLE_INCLUDED_VIEW' and 'SET_INCLUDED_VIEW' actions when
    fetching view rows data for included views`, () => {
     const layoutData = gridLayoutFixtures.layout2_parent;
     const rowsData = gridRowFixtures.data2_parent;
@@ -304,12 +382,12 @@ describe('ViewActions thunks', () => {
       id: windowId, showIncludedView: true, isModal: true,
     };
     const payload2 = {
-      windowType: includedWindowId, viewId: includedViewId, viewProfileId: null,
+      id: includedWindowId, viewId: includedViewId, viewProfileId: null,
     };
 
     const expectedActions = [
       { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload1 },
-      { type: ACTION_TYPES.SET_LIST_INCLUDED_VIEW, payload: payload2 },
+      { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload2 },
     ];
 
     nock(config.API_URL)
@@ -325,7 +403,7 @@ describe('ViewActions thunks', () => {
       });
   });
 
-  it(`dispatches 'CLOSE_LIST_INCLUDED_VIEW' action with viewId from the listHandler if it exists`, () => {
+  it(`dispatches 'UNSET_INCLUDED_VIEW' action with viewId from the 'includedView' if it exists`, () => {
     const layoutData = gridLayoutFixtures.layout2_parent;
     const rowsData = gridRowFixtures.data2_parent;
     const { windowId, viewId, pageLength } = rowsData;
@@ -341,15 +419,12 @@ describe('ViewActions thunks', () => {
             layout: { ...layoutData },
           },
         },
-      },
-      listHandler: {
-        ...listState,
         includedView: {
           viewId: includedViewId,
           windowType: includedWindowId,
           viewProfileId: null,
         }
-      }
+      },
     });
     const store = mockStore(state);
 
@@ -357,12 +432,12 @@ describe('ViewActions thunks', () => {
       id: windowId, showIncludedView: true, isModal: true,
     };
     const payload2 = {
-      windowType: includedWindowId, viewId: includedViewId, viewProfileId: null,
+      id: includedWindowId, viewId: includedViewId, viewProfileId: null,
     };
 
     const expectedActions = [
       { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload1 },
-      { type: ACTION_TYPES.SET_LIST_INCLUDED_VIEW, payload: payload2 },
+      { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload2 },
     ];
 
     nock(config.API_URL)

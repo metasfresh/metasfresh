@@ -1,0 +1,5 @@
+-- 2020-09-16T15:25:46.894Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_CountryArea_Assign (AD_Client_ID,AD_Org_ID,C_Country_ID,C_CountryArea_Assign_ID,C_CountryArea_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy,ValidFrom) VALUES (1000000,1000000,163,540038,540000,TO_TIMESTAMP('2020-09-16 18:25:46','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2020-09-16 18:25:46','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('1970-01-01','YYYY-MM-DD'))
+;
+

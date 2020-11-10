@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -19,7 +20,6 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.document.engine.IDocument;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

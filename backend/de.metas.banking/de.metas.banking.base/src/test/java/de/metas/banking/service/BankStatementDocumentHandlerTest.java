@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -38,7 +39,6 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 
 /*
@@ -72,7 +72,7 @@ public class BankStatementDocumentHandlerTest
 
 	private final String metasfreshIban = "123456";
 	private final LocalDate statementDate = SystemTime.asLocalDate();
-	private final LocalDate valutaDate = SystemTime.asLocalDate();
+	private final LocalDate valutaDate = de.metas.common.util.time.SystemTime.asLocalDate();
 
 	private CurrencyId euroCurrencyId;
 	private BankAccountId euroOrgBankAccountId;

@@ -65,7 +65,7 @@ public class ProductRepository
 		return products.build();
 	}
 
-	public Product ofRecord(@NonNull final I_M_Product productRecord)
+	private static Product ofRecord(@NonNull final I_M_Product productRecord)
 	{
 		final int manufacturerId = productRecord.getManufacturer_ID();
 
@@ -81,6 +81,8 @@ public class ProductRepository
 				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
 				.packageSize(productRecord.getPackageSize())
 				.weight(productRecord.getWeight())
+				.stocked(productRecord.isStocked())
+				.commodityNumberId(CommodityNumberId.ofRepoIdOrNull(productRecord.getM_CommodityNumber_ID()))
 				.build();
 	}
 }

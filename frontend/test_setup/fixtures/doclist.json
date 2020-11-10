@@ -1,0 +1,22 @@
+{
+  "props1": {
+    "query": {
+      "page": "1",
+      "viewId": "540371-3"
+    },
+    "windowId": "540371"
+  },
+  "state1": {
+    "routing": {
+      "locationBeforeTransitions": {
+        "pathname": "/window/540371",
+        "search": "?page=1&viewId=540371-3",
+        "hash": "",
+        "action": "REPLACE",
+        "key": "izn5oz",
+        "page": 1,
+        "viewId": "540371-3"
+      }
+    }
+  }
+}

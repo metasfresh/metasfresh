@@ -1,10 +1,8 @@
-package org.eevolution.api.impl;
-
 /*
  * #%L
- * de.metas.adempiere.libero.libero
+ * de.metas.manufacturing
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,40 +20,31 @@ package org.eevolution.api.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.material.planning.WorkingTime;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.IPPRoutingRepository;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPOrderQuantities;
-import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.material.planning.pporder.PPRouting;
-import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
-import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+package org.eevolution.api.impl;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nullable;
+
+import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -72,17 +61,48 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
+import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.Optional;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+
+import ch.qos.logback.classic.Level;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.material.planning.WorkingTime;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.material.planning.pporder.PPRouting;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMBL orderBOMService = Services.get(IPPOrderBOMBL.class);
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
@@ -92,6 +112,9 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
+
+	@VisibleForTesting
+	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
 
 	@Override
 	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
@@ -380,7 +403,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
-		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
+		final ZonedDateTime reportDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
@@ -426,5 +449,101 @@ public class PPOrderBL implements IPPOrderBL
 
 		return Optional.of(orderBOMService.getQtyCalculationsBOM(pickingOrder));
 	}
+
+	@Override
+	public void updateCanBeExportedAfter(@NonNull final I_PP_Order order)
+	{
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(order.getExportStatus(), APIExportStatus.Pending);
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
+		order.setCanBeExportedFrom(computeCanBeExportedFrom(exportStatus, clientAndOrgId));
+	}
+
+	private Timestamp computeCanBeExportedFrom(
+			@NonNull final APIExportStatus exportStatus,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		// we see "not-yet-set" as equivalent to "pending"
+		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
+		{
+			logger.debug("computeCanBeExportedAfter: CanBeExportedFrom=MAX({}) because exportStatus={}", Env.MAX_DATE, exportStatus);
+			return Env.MAX_DATE;
+		}
+
+		final Duration canBeExportedAfter = getCanBeExportedAfter(clientAndOrgId);
+
+		final Instant now = SystemTime.asInstant();
+		final Instant canBeExportedFrom = now.plus(canBeExportedAfter);
+		logger.debug("computeCanBeExportedAfter: CanBeExportedFrom={} ({} + {})", canBeExportedFrom, now, canBeExportedAfter);
+
+		return TimeUtil.asTimestamp(canBeExportedFrom);
+	}
+
+	private Duration getCanBeExportedAfter(final ClientAndOrgId clientAndOrgId)
+	{
+		final int seconds = sysConfigBL.getIntValue(
+				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
+				0, // default
+				clientAndOrgId.getClientId().getRepoId(),
+				clientAndOrgId.getOrgId().getRepoId());
+
+		return seconds > 0 ? Duration.ofSeconds(seconds) : Duration.ZERO;
+	}
+
+	@Override
+	public void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final AtomicInteger allCounter = new AtomicInteger(0);
+		final AtomicInteger updatedCounter = new AtomicInteger(0);
+
+		queryBL.createQueryBuilder(I_PP_Order.class)
+				.setOnlySelection(pinstanceId)
+				.create()
+				.iterateAndStream()
+				.forEach(record -> {
+					allCounter.incrementAndGet();
+					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+					{
+						return;
+					}
+					record.setExportStatus(newExportStatus.getCode());
+					updateCanBeExportedFrom(record);
+					InterfaceWrapperHelper.saveRecord(record);
+
+					updatedCounter.incrementAndGet();
+				});
+
+		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} PP_Order", updatedCounter.get(), allCounter.get());
+	}
+
+
+
+
+
+	@Override
+	public void updateCanBeExportedFrom(@NonNull final I_PP_Order ppOrder)
+	{
+		// we see "not-yet-set" as equivalent to "pending"
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(ppOrder.getExportStatus(), APIExportStatus.Pending);
+		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
+		{
+			ppOrder.setCanBeExportedFrom(Env.MAX_DATE);
+			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", ppOrder.getExportStatus(), Env.MAX_DATE);
+			return;
+		}
+
+		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
+				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
+				ppOrder.getAD_Client_ID(),
+				ppOrder.getAD_Org_ID());
+		if (canBeExportedAfterSeconds >= 0)
+		{
+			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
+			ppOrder.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
+			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, ppOrder.getCanBeExportedFrom());
+		}
+	}
+
 
 }

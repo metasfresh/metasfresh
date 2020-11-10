@@ -22,10 +22,14 @@
 
 package de.metas.rest_api.shipping;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.UnmodifiableIterator;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -49,6 +53,7 @@ import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates.JsonResponseShipmentCandidatesBuilder;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
@@ -64,6 +69,9 @@ import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -72,6 +80,10 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.RestApiUtils;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -80,19 +92,23 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,89 +128,71 @@ class ShipmentCandidateAPIService
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
 	private final BPartnerCompositeRepository bPartnerCompositeRepository;
 	private final ProductRepository productRepository;
+	private final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	public ShipmentCandidateAPIService(
 			@NonNull final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
 			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository,
-			@NonNull final ProductRepository productRepository)
+			@NonNull final ProductRepository productRepository,
+			@NonNull final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider)
 	{
 		this.shipmentScheduleAuditRepository = shipmentScheduleAuditRepository;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 		this.productRepository = productRepository;
+		this.exportSequenceNumberProvider = exportSequenceNumberProvider;
 	}
 
 	/**
 	 * Exports them; Flags them as "exported - don't touch"; creates an export audit table with one line per shipment schedule.
 	 */
-	public JsonResponseShipmentCandidates exportShipmentCandidates(final int limit)
+	public JsonResponseShipmentCandidates exportShipmentCandidates(@NonNull final QueryLimit limit)
 	{
-		final String transactionId = UUID.randomUUID().toString();
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionId))
+		final String transactionKey = UUID.randomUUID().toString();
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey))
 		{
-			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
-					APIExportAudit
-							.<ShipmentScheduleExportAuditItem>builder()
-							.transactionId(transactionId);
+			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder = APIExportAudit
+					.<ShipmentScheduleExportAuditItem> builder()
+					.transactionId(transactionKey);
 
-			final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
-					.limit(limit)
-					.canBeExportedFrom(Instant.now())
-					.exportStatus(APIExportStatus.Pending)
-					.build();
-			final List<ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+			final List<ShipmentSchedule> shipmentSchedules = loadShipmentSchedulesToExport(limit);
+
 			if (shipmentSchedules.isEmpty())
 			{ // return empty result and call it a day
-				return JsonResponseShipmentCandidates.builder().hasMoreItems(false).transactionKey(transactionId).build();
+				return JsonResponseShipmentCandidates.empty(transactionKey);
 			}
 
-			final IdsRegistry.IdsRegistryBuilder idsRegistryBuilder = IdsRegistry.builder();
-			for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
-			{
-				idsRegistryBuilder
-						.shipmentScheduleId(shipmentSchedule.getId())
-						.asiId(shipmentSchedule.getAttributeSetInstanceId())
-						.orderId(shipmentSchedule.getOrderId())
-						.bPartnerId(shipmentSchedule.getCustomerId())
-						.productId(shipmentSchedule.getProductId());
-			}
-			final IdsRegistry idsRegistry = idsRegistryBuilder.build();
+			final IdsRegistry idsRegistry = buildIdsRegistry(shipmentSchedules);
 
-			final Map<AttributeSetInstanceId, ImmutableAttributeSet> attributesForASIs;
-			if (idsRegistry.getAsiIds().isEmpty())
-			{
-				attributesForASIs = ImmutableMap.of();
-			}
-			else
-			{
-				attributesForASIs = attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
-			}
+			final Map<AttributeSetInstanceId, ImmutableAttributeSet> attributesForASIs = loadAttributesForASIs(idsRegistry);
+
+			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = loadOrdersByOrderId(idsRegistry);
+
+			final ImmutableMap<OrderAndLineId, I_C_OrderLine> idToOrderLineRecord = loadOrdersLinesById(idsRegistry);
+
+			final ImmutableMap<ProductId, Product> productId2Product = Maps.uniqueIndex(productRepository.getByIds(idsRegistry.getProductIds()), Product::getId);
+
+			final ImmutableMap<ShipperId, String> shipperId2InternalName = loadShipperInternalNameByIds(idsRegistry);
+
+			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextShipmentCandidateSeqNo();
 
 			final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
-					.hasMoreItems(shipmentSchedules.size() == limit)
-					.transactionKey(transactionId);
-
-			final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, idsRegistry.getOrderIds())
-					.create()
-					.stream()
-					.collect(ImmutableMap.toImmutableMap(
-							orderRecord -> OrderId.ofRepoId(orderRecord.getC_Order_ID()),
-							Function.identity()
-					));
+					.hasMoreItems(limit.isLimitHitOrExceeded(shipmentSchedules))
+					.transactionKey(transactionKey)
+					.exportSequenceNumber(exportSequenceNumber);
 
 			final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner = Maps.uniqueIndex(
 					bPartnerCompositeRepository.getByIds(idsRegistry.getBPartnerIds()),
 					bp -> bp.getBpartner().getId());
-
-			final ImmutableMap<ProductId, Product> productId2Product = Maps.uniqueIndex(productRepository.getByIds(idsRegistry.getProductIds()), Product::getId);
 
 			for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
 			{
@@ -203,9 +201,10 @@ class ShipmentCandidateAPIService
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(shipmentSchedule, attributesForASIs);
 					final JsonCustomer customer = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner);
 					final JsonProduct product = createJsonProduct(shipmentSchedule, customer.getLanguage(), productId2Product);
-					final I_C_Order orderRecord = orderIdToOrderRecord.get(shipmentSchedule.getOrderId());
-					final Quantity quantity = shipmentSchedule.getQuantityToDeliver();
-					final List<JsonQuantity> quantities = createJsonQuantities(quantity);
+
+					final List<JsonQuantity> quantityToDeliver = createJsonQuantities(shipmentSchedule.getQuantityToDeliver());
+
+					final List<JsonQuantity> orderedQty = createJsonQuantities(shipmentSchedule.getOrderedQuantity());
 
 					final JsonResponseShipmentCandidateBuilder itemBuilder = JsonResponseShipmentCandidate.builder()
 							.id(JsonMetasfreshId.of(shipmentSchedule.getId().getRepoId()))
@@ -213,14 +212,16 @@ class ShipmentCandidateAPIService
 							.customer(customer)
 							.product(product)
 							.attributeSetInstance(jsonAttributeSetInstance)
-							.quantities(quantities)
-							.dateOrdered(shipmentSchedule.getDateOrdered());
-					if (orderRecord != null)
-					{
-						itemBuilder
-								.orderDocumentNo(orderRecord.getDocumentNo())
-								.poReference(orderRecord.getPOReference());
-					}
+							.quantities(quantityToDeliver)
+							.orderedQty(orderedQty)
+							.dateOrdered(shipmentSchedule.getDateOrdered())
+							.numberOfItemsForSameShipment(shipmentSchedule.getNumberOfItemsForSameShipment());
+
+					setOrderReferences(itemBuilder, shipmentSchedule, orderIdToOrderRecord);
+
+					setNetPrices(itemBuilder, shipmentSchedule, idToOrderLineRecord);
+
+					setShipperInternalName(itemBuilder, shipmentSchedule, shipperId2InternalName);
 
 					result.item(itemBuilder.build());
 					createExportedAuditItem(shipmentSchedule, auditBuilder);
@@ -241,7 +242,10 @@ class ShipmentCandidateAPIService
 	@NonNull
 	private ImmutableList<JsonQuantity> createJsonQuantities(@NonNull final Quantity quantity)
 	{
-		return ImmutableList.of(JsonQuantity.builder().qty(quantity.toBigDecimal()).uomCode(quantity.getUOMSymbol()).build());
+		return ImmutableList.of(JsonQuantity.builder()
+				.qty(quantity.toBigDecimal())
+				.uomCode(quantity.getX12DE355().getCode())
+				.build());
 	}
 
 	private JsonCustomer createJsonCustomer(
@@ -286,7 +290,8 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
-				.companyName(CoalesceUtil.coalesce(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
+				.companyName(CoalesceUtil.firstNotEmptyTrimmed(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
+				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
 				.street(splitStreetAndHouseNumber.getLeft())
 				.streetNo(splitStreetAndHouseNumber.getRight())
 				.addressSuffix1(location.getAddress2())
@@ -307,8 +312,31 @@ class ShipmentCandidateAPIService
 			customerBuilder
 					.contactEmail(contact.getEmail())
 					.contactName(contact.getName())
-					.contactPhone(CoalesceUtil.coalesce(contact.getMobilePhone(), contact.getPhone()));
+					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", shipmentSchedule.getContactId().getRepoId());
 		}
+		else if (composite.getContacts().size() == 1)
+		{ // shipment candidate has no contact, but the bpartner has only one
+			final BPartnerContact contact = composite.getContacts().get(0);
+			customerBuilder
+					.contactEmail(contact.getEmail())
+					.contactName(contact.getName())
+					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+			logger.debug("Exporting single-contact AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
+		}
+		else
+		{ // see if we have a shipto-contact
+			final BPartnerContact contact = composite.extractContact(c -> c.getContactType().getIsShipToDefaultOr(false)).orElse(null);
+			if (contact != null)
+			{
+				customerBuilder
+						.contactEmail(contact.getEmail())
+						.contactName(contact.getName())
+						.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
+				logger.debug("Exporting shipToDefault AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
+			}
+		}
+
 		return customerBuilder.build();
 	}
 
@@ -324,7 +352,8 @@ class ShipmentCandidateAPIService
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight());
+				.weight(product.getWeight())
+				.stocked(product.isStocked());
 		if (product.getDescription() != null)
 		{
 			productBuilder.description(product.getDescription().translate(adLanguage));
@@ -396,13 +425,16 @@ class ShipmentCandidateAPIService
 		Set<AttributeSetInstanceId> asiIds;
 
 		@Singular
-		Set<OrderId> orderIds;
+		Set<OrderAndLineId> orderAndLineIds;
 
 		@Singular
 		Set<BPartnerId> bPartnerIds;
 
 		@Singular
 		Set<ProductId> productIds;
+
+		@Singular
+		Set<ShipperId> shipperIds;
 	}
 
 	/**
@@ -491,6 +523,225 @@ class ShipmentCandidateAPIService
 				.stackTrace(errorItem.getStackTrace())
 				.loggerName(logger.getName())
 				.build());
+	}
+
+	private void setNetPrices(
+			@NonNull final JsonResponseShipmentCandidateBuilder candidateBuilder,
+			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final Map<OrderAndLineId, I_C_OrderLine> ids2OrderLines)
+	{
+		if (shipmentSchedule.getOrderAndLineId() == null)
+		{
+			return;// nothing to do
+		}
+
+		final I_C_OrderLine orderLine = ids2OrderLines.get(shipmentSchedule.getOrderAndLineId());
+
+		if (orderLine == null)
+		{
+			logger.warn("***WARNING: No orderLine found in ids2OrderLines : {} for orderAndLineId: {}", ids2OrderLines, shipmentSchedule.getOrderAndLineId());
+			return;
+		}
+
+		final BigDecimal orderedQtyNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, shipmentSchedule.getOrderedQuantity());
+		final BigDecimal qtyToDeliverNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, shipmentSchedule.getQuantityToDeliver());
+		final BigDecimal deliveredQtyNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, shipmentSchedule.getDeliveredQuantity());
+
+		candidateBuilder.orderedQtyNetPrice(orderedQtyNetPrice);
+		candidateBuilder.qtyToDeliverNetPrice(qtyToDeliverNetPrice);
+		candidateBuilder.deliveredQtyNetPrice(deliveredQtyNetPrice);
+	}
+
+	@NonNull
+	private ImmutableMap<OrderId, I_C_Order> loadOrdersByOrderId(@NonNull final IdsRegistry idsRegistry)
+	{
+		if (Check.isEmpty(idsRegistry.getOrderAndLineIds()))
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableSet<OrderId> orderIds = idsRegistry.getOrderAndLineIds()
+				.stream()
+				.map(OrderAndLineId::getOrderId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						orderRecord -> OrderId.ofRepoId(orderRecord.getC_Order_ID()),
+						Function.identity()));
+
+		return orderIdToOrderRecord;
+	}
+
+	@NonNull
+	private ImmutableMap<OrderAndLineId, I_C_OrderLine> loadOrdersLinesById(@NonNull final IdsRegistry idsRegistry)
+	{
+		if (Check.isEmpty(idsRegistry.getOrderAndLineIds()))
+		{
+			return ImmutableMap.of();
+		}
+
+		return orderDAO.getOrderLinesByIds(idsRegistry.getOrderAndLineIds(), I_C_OrderLine.class)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						(orderLine) -> OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()),
+						Function.identity()));
+	}
+
+	@NonNull
+	private Map<AttributeSetInstanceId, ImmutableAttributeSet> loadAttributesForASIs(@NonNull final IdsRegistry idsRegistry)
+	{
+		if (Check.isEmpty(idsRegistry.getAsiIds()))
+		{
+			return ImmutableMap.of();
+		}
+
+		return attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
+	}
+
+	private IdsRegistry buildIdsRegistry(@NonNull final List<ShipmentSchedule> schedules)
+	{
+		final IdsRegistry.IdsRegistryBuilder idsRegistryBuilder = IdsRegistry.builder();
+
+		for (final ShipmentSchedule shipmentSchedule : schedules)
+		{
+			idsRegistryBuilder
+					.shipmentScheduleId(shipmentSchedule.getId())
+					.bPartnerId(shipmentSchedule.getCustomerId())
+					.productId(shipmentSchedule.getProductId());
+
+			if (shipmentSchedule.getAttributeSetInstanceId() != null)
+			{
+				idsRegistryBuilder.asiId(shipmentSchedule.getAttributeSetInstanceId());
+			}
+
+			if (shipmentSchedule.getOrderAndLineId() != null)
+			{
+				idsRegistryBuilder.orderAndLineId(shipmentSchedule.getOrderAndLineId());
+			}
+
+			if (shipmentSchedule.getShipperId() != null)
+			{
+				idsRegistryBuilder.shipperId(shipmentSchedule.getShipperId());
+			}
+		}
+
+		return idsRegistryBuilder.build();
+	}
+
+	@NonNull
+	private List<ShipmentSchedule> loadShipmentSchedulesToExport(@NonNull final QueryLimit limit)
+	{
+		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
+				.canBeExportedFrom(SystemTime.asInstant())
+				.onlyIfAllFromOrderExportable(true)
+				.exportStatus(APIExportStatus.Pending)
+				.includeWithQtyToDeliverZero(true)
+				.fromCompleteOrderOrNullOrder(true)
+				.orderByOrderId(true)
+				.build();
+
+		final List<ShipmentSchedule> shipmentSchedulesOrderedByOrderId = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+		List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
+
+		int counter = 0;
+		for (ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
+		{
+			if (schedule.getOrderAndLineId() == null && counter < limit.toInt() - 1)
+			{
+				schedulesToBeExported.add(schedule);
+				counter++;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (counter == limit.toInt())
+		{
+			return schedulesToBeExported;
+		}
+
+		final List<ShipmentSchedule> nonNullOrderShipmentSchedules = shipmentSchedulesOrderedByOrderId.stream()
+				.filter(sched -> sched.getOrderAndLineId() != null)
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableListMultimap<OrderId, ShipmentSchedule> schedulesForOrderIds = Multimaps.index(nonNullOrderShipmentSchedules, sched -> sched.getOrderAndLineId().getOrderId());
+
+		int ordersLeftToExport = limit.toInt() - counter;
+
+		final UnmodifiableIterator<OrderId> orderIdIterator = schedulesForOrderIds.keySet().iterator();
+
+		while (orderIdIterator.hasNext() && ordersLeftToExport > 0)
+		{
+			final OrderId currentOrderId = orderIdIterator.next();
+			schedulesToBeExported.addAll(schedulesForOrderIds.get(currentOrderId));
+			ordersLeftToExport--;
+		}
+
+		return schedulesToBeExported;
+
+	}
+
+	private ImmutableMap<ShipperId, String> loadShipperInternalNameByIds(@NonNull final IdsRegistry idsRegistry)
+	{
+		if (Check.isEmpty(idsRegistry.getShipperIds()))
+		{
+			return ImmutableMap.of();
+		}
+
+		return shipperDAO.getByIds(idsRegistry.getShipperIds()).entrySet()
+				.stream()
+				.filter(entry -> Check.isNotBlank(entry.getValue().getInternalName()))
+				.map(entry -> new HashMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().getInternalName()))
+				.collect(ImmutableMap.toImmutableMap(HashMap.SimpleImmutableEntry::getKey, HashMap.SimpleImmutableEntry::getValue));
+	}
+
+	private void setShipperInternalName(
+			@NonNull final JsonResponseShipmentCandidateBuilder candidateBuilder,
+			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final Map<ShipperId, String> shipperId2InternalName)
+	{
+		final ShipperId shipperId = shipmentSchedule.getShipperId();
+
+		if (shipperId == null)
+		{
+			return;// nothing to do
+		}
+
+		candidateBuilder.shipperInternalSearchKey(shipperId2InternalName.get(shipperId));
+	}
+
+	private void setOrderReferences(
+			@NonNull final JsonResponseShipmentCandidateBuilder candidateBuilder,
+			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final Map<OrderId, I_C_Order> id2Order)
+	{
+		final OrderId orderId = shipmentSchedule.getOrderAndLineId() != null
+				? shipmentSchedule.getOrderAndLineId().getOrderId()
+				: null;
+
+		if (orderId == null)
+		{
+			return; // nothing to do
+		}
+
+		final I_C_Order orderRecord = id2Order.get(orderId);
+
+		if (orderRecord == null)
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("*** WARNING: No I_C_Order was found in id2Order: {} for orderId: {}!", id2Order, orderId);
+			return;
+		}
+
+		candidateBuilder.orderDocumentNo(orderRecord.getDocumentNo());
+		candidateBuilder.poReference(orderRecord.getPOReference());
+		candidateBuilder.deliveryInfo(orderRecord.getDeliveryInfo());
 	}
 
 	private static class ShipmentCandidateExportException extends AdempiereException

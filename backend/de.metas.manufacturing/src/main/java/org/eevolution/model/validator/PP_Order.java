@@ -1,23 +1,7 @@
 package org.eevolution.model.validator;
 
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.pporder.PPOrderChangedEvent;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderLineId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.Timestamp;
+
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -39,7 +23,24 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
-import java.sql.Timestamp;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_PP_Order.class)
 public class PP_Order
@@ -177,6 +178,11 @@ public class PP_Order
 			{
 				ppOrder.setOrderType(null);
 			}
+		}
+		
+		if(changeType.isNew() || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_CanBeExportedFrom))
+		{
+			ppOrderBL.updateCanBeExportedAfter(ppOrder);
 		}
 	}
 

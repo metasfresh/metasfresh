@@ -29,8 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -41,11 +43,11 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class InvoiceBLTest
 {
@@ -56,6 +58,8 @@ public class InvoiceBLTest
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");

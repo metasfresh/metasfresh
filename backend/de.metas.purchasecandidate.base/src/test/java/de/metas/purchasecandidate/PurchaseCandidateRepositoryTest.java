@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
@@ -29,7 +30,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -142,7 +142,7 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateAllocRecord.setC_PurchaseCandidate(purchaseCandidateRecord);
 		purchaseCandidateAllocRecord.setC_OrderPO_ID(purchaseOrderLineRecord.getC_Order_ID());
 		purchaseCandidateAllocRecord.setC_OrderLinePO(purchaseOrderLineRecord);
-		purchaseCandidateAllocRecord.setDatePromised(SystemTime.asTimestamp());
+		purchaseCandidateAllocRecord.setDatePromised(de.metas.common.util.time.SystemTime.asTimestamp());
 		purchaseCandidateAllocRecord.setRemotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		saveRecord(purchaseCandidateAllocRecord);
 

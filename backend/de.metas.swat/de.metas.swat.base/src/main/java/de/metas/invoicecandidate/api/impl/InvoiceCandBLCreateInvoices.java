@@ -1,5 +1,85 @@
 package de.metas.invoicecandidate.api.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvBL;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
+import de.metas.invoicecandidate.api.IInvoiceGenerator;
+import de.metas.invoicecandidate.api.IInvoiceHeader;
+import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.model.I_C_Invoice;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.ExternalIdsUtil;
+import de.metas.logging.TableRecordMDC;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.collections.IdentityHashSet;
+import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnable;
+import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -27,86 +107,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
-import org.compiere.util.TrxRunnable2;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.AdMessageId;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvBL;
-import de.metas.lang.ExternalIdsUtil;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
-import de.metas.invoicecandidate.api.IInvoiceGenerator;
-import de.metas.invoicecandidate.api.IInvoiceHeader;
-import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
-import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
-import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.model.I_C_Invoice;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.logging.TableRecordMDC;
-import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.collections.IdentityHashSet;
-import de.metas.workflow.api.IWFExecutionFactory;
-import lombok.NonNull;
-
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 {
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P = AdMessageKey.of("InvoiceCandBL_Processing_Error");
@@ -130,6 +130,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	//
 	// Parameters
@@ -327,7 +328,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 								invoiceHeader.getDateAcct() // task 08437
 						),
 						I_C_Invoice.class);
-				setC_DocType(invoice, invoiceHeader);
+
 
 				// Validate M_PriceList_ID
 				final int invoicePriceListId = invoice.getM_PriceList_ID();
@@ -343,8 +344,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice = create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(invoiceHeader.getC_PaymentTerm_ID());
 
-				setC_DocType(invoice, invoiceHeader);
-
 				final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced(), timeZone));
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
@@ -356,6 +355,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
+			
+			setC_DocType(invoice, invoiceHeader);
+			
+			
 			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(invoiceHeader.getBillBPartnerId(), invoiceHeader.getBill_User_ID());
@@ -564,6 +567,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					//
 					// Note that this also sets the order line's C_Tax_ID
 					invoiceLine.setC_OrderLine_ID(orderLineId.getRepoId());
+					final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId.getRepoId());
+					if (orderLine != null)
+					{
+						invoiceLine.setC_Project_ID(orderLine.getC_Project_ID());
+					}
 
 					// // 07242
 					// // Also set the tax from the orderLine
@@ -713,7 +721,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 		}
 
-		/** This method is called by a transaction listener. We run it out of trx to avoid any sort or interference this the trx the listener is fired from. */
+		/**
+		 * This method is called by a transaction listener. We run it out of trx to avoid any sort or interference this the trx the listener is fired from.
+		 */
 		private void resetQtyAndPriceOverrideOutOfTrx(@NonNull final InvoiceCandidateId invoiceCandidateId)
 		{
 			final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getByIdOutOfTrx(invoiceCandidateId);
@@ -1007,10 +1017,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					saveRecord(note);
 					// @formatter:off
 					// for the time being, always output the warning, because we don't currently use the AD_Note feature and therefore the note wont be read.
-//					if (developerModeBL.isEnabled())
-//					{
+					//					if (developerModeBL.isEnabled())
+					//					{
 					logger.warn(error.getLocalizedMessage(), error);
-//					}
+					//					}
 					// @formatter:on
 				}
 				else

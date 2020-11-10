@@ -64,6 +64,13 @@ SELECT
 		WHERE AD_Reference_ID=540014 -- C_CreditMemo_Reason
 		AND Value=i.CreditMemoReason
 	) AS CreditMemoReasonText
+    , (select CASE
+                   WHEN array_length(array_agg(DISTINCT ol.invoicableqtybasedon), 1) = 1
+                       THEN (array_agg(DISTINCT ol.invoicableqtybasedon))[1]
+                    ELSE NULL
+               END
+    from c_orderline ol
+    where ol.c_order_id=o.c_order_id) as invoicableqtybasedon
 	, cc.CountryCode
 	, cc.CountryCode_3Digit
 	, cc.CountryCode as AD_Language

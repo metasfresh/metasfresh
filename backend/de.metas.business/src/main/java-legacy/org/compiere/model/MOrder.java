@@ -26,6 +26,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -60,7 +61,6 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -161,7 +161,7 @@ public class MOrder extends X_C_Order implements IDocument
 			setPosted(false);
 
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
-			setDatePromised(SystemTime.asDayTimestamp()); // task 06269 (see KurzBeschreibung)
+			setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp()); // task 06269 (see KurzBeschreibung)
 			setDateOrdered(new Timestamp(System.currentTimeMillis()));
 
 			setChargeAmt(BigDecimal.ZERO);
@@ -1130,6 +1130,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 		for (final MOrderLine line : getLinesRequery())
 		{
+			line.setC_Order_CompensationGroup_ID(-1);
 			line.deleteEx(true);
 		}
 
