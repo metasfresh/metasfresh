@@ -886,12 +886,8 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")
 	public ResponseEntity<byte[]> getDocumentPrint(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("filename") final String filename)
 	{
 		userSession.assertLoggedIn();
