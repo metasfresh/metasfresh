@@ -779,7 +779,7 @@ import java.util.stream.Collectors;
 				.setCtxColumnName(labelsValueColumnName)
 				.setDisplayType(CoalesceUtil.coalesce(labelsSelectorField.getAD_Reference_ID(),labelsValueColumn.getAD_Reference_ID()))
 				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, labelsValueColumn.getAD_Reference_ID()))
-				.setAD_Reference_Value_ID(labelsValueColumn.getAD_Reference_Value_ID())
+				.setAD_Reference_Value_ID(CoalesceUtil.coalesce(labelsSelectorField.getAD_Reference_Value_ID(),labelsValueColumn.getAD_Reference_Value_ID()))
 				.setAD_Val_Rule_ID(CoalesceUtil.coalesce(labelsSelectorField.getAD_Val_Rule_ID(),labelsValueColumn.getAD_Val_Rule_ID()))
 				.buildForDefaultScope();
 
