@@ -83,7 +83,6 @@ public class LocalReportServer implements IReportServer
 
 	private IReportEngine createReportEngine(final ReportContext reportContext)
 	{
-		if(true) throw new AdempiereException("PULA!");
 		//
 		// Get report template's file extension
 		final String reportTemplatePath = reportContext.getReportTemplatePath();
