@@ -30,6 +30,8 @@ import org.compiere.print.JRReportViewerProvider;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -93,13 +95,13 @@ public abstract class ReportStarter extends JavaProcess
 			if (reportPrintingInfo.isForceSync())
 			{
 				// gh #1160 if the caller want you to execute synchronously, then do just that
-				startProcess0(pi, reportPrintingInfo);
+				startProcess0(reportPrintingInfo);
 			}
 			else
 			{
 				// task 08283: direct print can be done in background; no need to let the user wait for this
 				taskExecutorService.submit(
-						() -> startProcess0(pi, reportPrintingInfo),
+						() -> startProcess0(reportPrintingInfo),
 						ReportStarter.class.getSimpleName());
 			}
 		}
@@ -207,7 +209,7 @@ public abstract class ReportStarter extends JavaProcess
 		}
 	}
 
-	private static final String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
+	private static String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
 	{
 		final String fileBasename = CoalesceUtil.firstValidValue(
 				basename -> !Check.isEmpty(basename, true),
@@ -221,6 +223,7 @@ public abstract class ReportStarter extends JavaProcess
 		return FileUtil.stripIllegalCharacters(filename);
 	}
 
+	@Nullable
 	private static String extractReportBasename_IfDocument(final ProcessInfo pi)
 	{
 		final TableRecordReference recordRef = pi.getRecordRefOrNull();
@@ -290,7 +293,7 @@ public abstract class ReportStarter extends JavaProcess
 		}
 	}
 
-	private void startProcess0(final ProcessInfo pi, final ReportPrintingInfo reportPrintingInfo)
+	private void startProcess0(final ReportPrintingInfo reportPrintingInfo)
 	{
 		try
 		{
@@ -317,7 +320,7 @@ public abstract class ReportStarter extends JavaProcess
 
 	@Value
 	@Builder
-	private static final class ReportPrintingInfo
+	private static class ReportPrintingInfo
 	{
 		ProcessInfo processInfo;
 
