@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
@@ -769,15 +770,17 @@ import java.util.stream.Collectors;
 			labelsLinkColumnName = linkColumnName;
 		}
 
-		final I_AD_Column labelsValueColumn = labelsUIElement.getLabels_Selector_Field().getAD_Column();
+		final I_AD_Field labelsSelectorField = labelsUIElement.getLabels_Selector_Field();
+		
+		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
 		final LookupDescriptor labelsValuesLookupDescriptor = SqlLookupDescriptor.builder()
 				.setCtxTableName(labelsTableName)
 				.setCtxColumnName(labelsValueColumnName)
-				.setDisplayType(labelsValueColumn.getAD_Reference_ID())
+				.setDisplayType(CoalesceUtil.coalesce(labelsSelectorField.getAD_Reference_ID(),labelsValueColumn.getAD_Reference_ID()))
 				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, labelsValueColumn.getAD_Reference_ID()))
-				.setAD_Reference_Value_ID(labelsValueColumn.getAD_Reference_Value_ID())
-				.setAD_Val_Rule_ID(labelsValueColumn.getAD_Val_Rule_ID())
+				.setAD_Reference_Value_ID(CoalesceUtil.coalesce(labelsSelectorField.getAD_Reference_Value_ID(),labelsValueColumn.getAD_Reference_Value_ID()))
+				.setAD_Val_Rule_ID(CoalesceUtil.coalesce(labelsSelectorField.getAD_Val_Rule_ID(),labelsValueColumn.getAD_Val_Rule_ID()))
 				.buildForDefaultScope();
 
 		return LabelsLookup.builder()
