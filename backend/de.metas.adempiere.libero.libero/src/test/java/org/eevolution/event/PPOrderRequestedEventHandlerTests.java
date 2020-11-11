@@ -19,6 +19,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Order;
@@ -101,8 +102,12 @@ public class PPOrderRequestedEventHandlerTests
 		workflow.setIsValid(true);
 		save(workflow);
 
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+		save(uomRecord);
+
 		bomMainProduct = newInstance(I_M_Product.class);
 		bomMainProduct.setIsVerified(true);
+		bomMainProduct.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		save(bomMainProduct);
 
 		final I_PP_Product_BOM productBom = newInstance(I_PP_Product_BOM.class);
@@ -128,6 +133,7 @@ public class PPOrderRequestedEventHandlerTests
 		final I_PP_Product_BOMLine bomCoProductLine;
 		{
 			bomCoProduct = newInstance(I_M_Product.class);
+			bomCoProduct.setC_UOM_ID(uomRecord.getC_UOM_ID());
 			bomCoProduct.setIsVerified(true);
 			save(bomCoProduct);
 
@@ -141,6 +147,7 @@ public class PPOrderRequestedEventHandlerTests
 		final I_PP_Product_BOMLine bomComponentLine;
 		{
 			bomComponentProduct = newInstance(I_M_Product.class);
+			bomComponentProduct.setC_UOM_ID(uomRecord.getC_UOM_ID());
 			bomComponentProduct.setIsVerified(true);
 			save(bomComponentProduct);
 
