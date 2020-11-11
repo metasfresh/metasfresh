@@ -1,7 +1,37 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.Adempiere;
+import org.compiere.model.GridFieldDefaultFilterDescriptor;
+import org.compiere.model.GridFieldVO;
+import org.compiere.model.GridTabVO;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.X_AD_UI_ElementField;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Evaluatees;
+import org.elasticsearch.client.Client;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
@@ -36,35 +66,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.Adempiere;
-import org.compiere.model.GridFieldDefaultFilterDescriptor;
-import org.compiere.model.GridFieldVO;
-import org.compiere.model.GridTabVO;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_UI_Element;
-import org.compiere.model.I_AD_UI_ElementField;
-import org.compiere.model.X_AD_UI_ElementField;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatees;
-import org.elasticsearch.client.Client;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -774,13 +775,25 @@ import java.util.stream.Collectors;
 		
 		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
+		
+		final int referenceIDToUse = labelsSelectorField.getAD_Reference_ID() > 0
+				? labelsSelectorField.getAD_Reference_ID()
+				: labelsValueColumn.getAD_Reference_ID();
+
+		final int referenceValueIDToUse = labelsSelectorField.getAD_Reference_Value_ID() > 0
+				? labelsSelectorField.getAD_Reference_Value_ID()
+				: labelsValueColumn.getAD_Reference_Value_ID();
+
+		final int valRulIDToUse = labelsSelectorField.getAD_Val_Rule_ID() > 0
+				? labelsSelectorField.getAD_Val_Rule_ID()
+				: labelsValueColumn.getAD_Val_Rule_ID();
+
 		final LookupDescriptor labelsValuesLookupDescriptor = SqlLookupDescriptor.builder()
-				.setCtxTableName(labelsTableName)
-				.setCtxColumnName(labelsValueColumnName)
-				.setDisplayType(CoalesceUtil.coalesce(labelsSelectorField.getAD_Reference_ID(),labelsValueColumn.getAD_Reference_ID()))
-				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, labelsValueColumn.getAD_Reference_ID()))
-				.setAD_Reference_Value_ID(CoalesceUtil.coalesce(labelsSelectorField.getAD_Reference_Value_ID(),labelsValueColumn.getAD_Reference_Value_ID()))
-				.setAD_Val_Rule_ID(CoalesceUtil.coalesce(labelsSelectorField.getAD_Val_Rule_ID(),labelsValueColumn.getAD_Val_Rule_ID()))
+				.setCtxTableName(labelsTableName).setCtxColumnName(labelsValueColumnName)
+				.setDisplayType(referenceIDToUse)
+				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, referenceIDToUse))
+				.setAD_Reference_Value_ID(referenceValueIDToUse)
+				.setAD_Val_Rule_ID(valRulIDToUse)
 				.buildForDefaultScope();
 
 		return LabelsLookup.builder()
