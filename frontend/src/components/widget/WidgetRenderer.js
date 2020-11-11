@@ -577,7 +577,7 @@ class WidgetRenderer extends PureComponent {
             readonly={readonly}
             className={this.getClassNames()}
             onChange={(value) =>
-              this.handlePatch(widgetField, {
+              onPatch(widgetField, {
                 values: value,
               })
             }
