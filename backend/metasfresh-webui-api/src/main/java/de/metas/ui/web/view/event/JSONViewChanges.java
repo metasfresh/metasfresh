@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.view.event;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -25,24 +47,24 @@ public class JSONViewChanges implements WebsocketEndpointAware
 	}
 
 	@JsonProperty("viewId")
-	final String viewId;
+	String viewId;
 	@JsonProperty("windowId")
-	final WindowId windowId;
+	WindowId windowId;
 
 	@JsonProperty("fullyChanged")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	final Boolean fullyChanged;
+	Boolean fullyChanged;
 
 	@JsonProperty("changedIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	final Set<String> changedIds;
+	Set<String> changedIds;
 
 	@JsonProperty("headerPropertiesChanged")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	final Boolean headerPropertiesChanged;
+	Boolean headerPropertiesChanged;
 
 	@JsonIgnore
-	final WebsocketTopicName websocketEndpoint;
+	WebsocketTopicName websocketEndpoint;
 
 	private JSONViewChanges(@NonNull final ViewChanges changes)
 	{
@@ -72,24 +94,3 @@ public class JSONViewChanges implements WebsocketEndpointAware
 	}
 }
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
