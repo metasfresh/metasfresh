@@ -281,6 +281,7 @@ class ActionButton extends PureComponent {
   };
 
   documentCompleteStatus = () => {
+    if (this.isDisabled()) return false;
     const { list } = this.state;
 
     this.handleChangeStatus(list.find((elem) => elem.key === 'CO'));
@@ -291,11 +292,23 @@ class ActionButton extends PureComponent {
   };
 
   /**
+   * @method isDisabled
+   * @summary the action button can be disabled when it has the property readonly `true` but it can also be disabled in case
+   *          of a process running situation or when a modal window is active
+   */
+  isDisabled = () => {
+    const { modalVisible, readonly, processStatus } = this.props;
+    return readonly || processStatus === 'pending' || modalVisible
+      ? true
+      : false;
+  };
+
+  /**
    * @method render
    * @summary Main render function for the ActionButton
    */
   render() {
-    const { data, modalVisible, readonly, processStatus } = this.props;
+    const { data, modalVisible } = this.props;
     const { list, prompt } = this.state;
     const abrev = get(data, ['status', 'value', 'key'], null);
     const status = this.getStatusContext(abrev);
@@ -311,20 +324,13 @@ class ActionButton extends PureComponent {
       }
     });
 
-    /**
-     * the button can be disabled when it has the property readonly `true` but it can also be disabled in case
-     * of a process running situation or when a modal window is active
-     */
-    const isDisabled =
-      readonly || processStatus === 'pending' || modalVisible ? true : false;
-
     return (
       <div
         onKeyDown={this.handleKeyDown}
         className={classnames(
           'meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler',
           {
-            disabled: isDisabled,
+            disabled: this.isDisabled(),
           }
         )}
         tabIndex={modalVisible ? -1 : 0}
