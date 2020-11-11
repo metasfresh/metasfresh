@@ -1047,14 +1047,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		return String.valueOf(pgBackendPID);
 	}
 
-	/** @deprecated OIDs are deprecated in PostgreSQL */
-	@Deprecated
-	@Override
-	public String getRowIdSql(final String tableName)
-	{
-		return "oid";
-	}
-
 	private static List<String> getAquiredConnectionInfos(final ComboPooledDataSource dataSource) throws Exception
 	{
 		final List<String> infos = BasicResourcePool_MetasfreshObserver.getAquiredConnectionInfos(dataSource);
