@@ -13,6 +13,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -42,7 +44,7 @@ final class WebsocketEventsLog
 	private final AtomicInteger logEventsMaxSize = new AtomicInteger(500);
 	private final List<WebsocketEventLogRecord> loggedEvents = new LinkedList<>();
 
-	public void logEvent(final WebsocketTopicName destination, final Object event)
+	public void logEvent(final WebsocketTopicName destination, @Nullable final Object event)
 	{
 		if (!logEventsEnabled.get())
 		{

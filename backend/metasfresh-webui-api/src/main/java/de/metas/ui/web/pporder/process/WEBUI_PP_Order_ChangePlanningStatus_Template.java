@@ -74,6 +74,6 @@ class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Templa
 		ppOrderLinesView.invalidateAll();
 		
 		final PPOrderId ppOrderId = ppOrderLinesView.getPpOrderId();
-		viewsRepo.notifyRecordChanged(I_PP_Order.Table_Name, ppOrderId.getRepoId());
+		viewsRepo.notifyRecordsChangedAsync(I_PP_Order.Table_Name, ppOrderId.getRepoId());
 	}
 }
