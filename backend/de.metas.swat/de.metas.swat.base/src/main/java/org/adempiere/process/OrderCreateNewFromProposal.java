@@ -189,12 +189,12 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 			final boolean isSalesProposalOrQuotation = docTypeBL.isSalesProposalOrQuotation(docTypeId.get());
 			if (!isSalesProposalOrQuotation)
 			{
-				return ProcessPreconditionsResolution.reject();
+				return ProcessPreconditionsResolution.rejectWithInternalReason("is not sales proposal or quotation");
 			}
 		}
 		else
 		{
-			ProcessPreconditionsResolution.reject();
+			ProcessPreconditionsResolution.rejectWithInternalReason("no C_DocTypeTarget_ID");
 		}
 
 		return ProcessPreconditionsResolution.accept();
