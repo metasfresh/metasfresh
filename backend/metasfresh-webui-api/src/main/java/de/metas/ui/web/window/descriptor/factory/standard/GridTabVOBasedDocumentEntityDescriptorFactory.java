@@ -13,6 +13,7 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -784,17 +785,25 @@ import lombok.NonNull;
 				? labelsSelectorField.getAD_Reference_Value_ID()
 				: labelsValueColumn.getAD_Reference_Value_ID();
 
-		final int valRulIDToUse = labelsSelectorField.getAD_Val_Rule_ID() > 0
+		final int valRuleIDToUse = labelsSelectorField.getAD_Val_Rule_ID() > 0
 				? labelsSelectorField.getAD_Val_Rule_ID()
 				: labelsValueColumn.getAD_Val_Rule_ID();
 
-		final LookupDescriptor labelsValuesLookupDescriptor = SqlLookupDescriptor.builder()
-				.setCtxTableName(labelsTableName).setCtxColumnName(labelsValueColumnName)
+		final SqlLookupDescriptor.Builder labelsValuesLookupDescriptorBuilder = SqlLookupDescriptor.builder()
+				.setCtxTableName(labelsTableName)
+				.setCtxColumnName(labelsValueColumnName)
 				.setDisplayType(referenceIDToUse)
 				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, referenceIDToUse))
 				.setAD_Reference_Value_ID(referenceValueIDToUse)
-				.setAD_Val_Rule_ID(valRulIDToUse)
-				.buildForDefaultScope();
+				.setAD_Val_Rule_ID(valRuleIDToUse);
+
+		if (Check.isNotBlank(labelsTab.getWhereClause()))
+		{
+			final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
+			labelsValuesLookupDescriptorBuilder.addValidationRule(validationRuleFactory.createSQLValidationRule(labelsTab.getWhereClause()));
+		}
+
+		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
 		return LabelsLookup.builder()
 				.labelsTableName(labelsTableName)
