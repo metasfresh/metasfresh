@@ -68,4 +68,6 @@ public interface ICalloutRecord
 	void dataRefreshRecursively();
 
 	boolean isLookupValuesContainingId(@NonNull String columnName, @NonNull RepoIdAware id);
+
+	boolean isDocumentLookupValuesContainingId(@NonNull String columnName, @NonNull RepoIdAware id);
 }

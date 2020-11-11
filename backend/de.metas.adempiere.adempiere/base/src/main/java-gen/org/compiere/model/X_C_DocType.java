@@ -133,6 +133,9 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 		return ii.intValue();
 	}
 
+	/** WarehouseOrder = WP */
+	public static final int DOCTYPE_TEST_APPLIANCE = 541004;
+
 	/** Set Belegart.
 		@param C_DocType_ID
 		Document type or rules

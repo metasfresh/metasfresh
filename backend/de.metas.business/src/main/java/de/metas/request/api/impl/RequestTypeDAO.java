@@ -41,6 +41,8 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	static final String InternalName_CustomerComplaint = "A_CustomerComplaint";
 	@VisibleForTesting
 	static final String InternalName_VendorComplaint = "B_VendorComplaint";
+	@VisibleForTesting
+	static final String InternalName_TestAppliance = "T_TestAppliance";
 
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -54,6 +56,12 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public RequestTypeId retrieveCustomerRequestTypeId()
 	{
 		return retrieveRequestTypeIdByInternalName(InternalName_CustomerComplaint);
+	}
+
+	@Override
+	public RequestTypeId retrieveTestApplianceRequestTypeId()
+	{
+		return retrieveRequestTypeIdByInternalName(InternalName_TestAppliance);
 	}
 
 	private RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)

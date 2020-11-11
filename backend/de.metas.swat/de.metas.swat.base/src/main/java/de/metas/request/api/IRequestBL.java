@@ -1,5 +1,6 @@
 package de.metas.request.api;
 
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_R_Request;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -50,4 +51,6 @@ public interface IRequestBL extends ISingletonService
 	I_R_Request createRequestFromInOutLine(I_M_InOutLine line);
 
 	I_R_Request createRequestFromDDOrderLine(I_DD_OrderLine line);
+
+	I_R_Request createRequestFromOrder(I_C_Order order);
 }

@@ -1,13 +1,8 @@
 package de.metas.request.api;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.QualityNoteId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.request.RequestTypeId;
@@ -15,6 +10,10 @@ import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -52,6 +51,8 @@ public class RequestCandidate
 	UserId userId;
 
 	TableRecordReference recordRef;
+
+	OrderId orderId;
 
 	@NonNull
 	ZonedDateTime dateDelivered;
