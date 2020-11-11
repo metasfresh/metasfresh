@@ -266,8 +266,8 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			TotalQtyCUBreakdownCalculator.Builder builder = TotalQtyCUBreakdownCalculator.builder();
 
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.convertQtyToLUTUConfigurationUOM(
-					Quantity.of(shipmentSchedule.getQtyOrdered(),
-							Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID())),
+					shipmentSchedule.getQtyOrdered(),
+					Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID()),
 					lutuConfiguration);
 
 			builder.setQtyCUsTotal(qtyCUsTotal.getQty());

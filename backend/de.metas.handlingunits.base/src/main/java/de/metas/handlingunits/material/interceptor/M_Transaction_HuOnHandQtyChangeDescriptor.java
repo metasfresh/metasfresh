@@ -115,7 +115,7 @@ public class M_Transaction_HuOnHandQtyChangeDescriptor
 
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final BigDecimal quantity = productStorage.getQtyInStockingUOM();
+			final BigDecimal quantity = productStorage.getQtyInStockingUOM().toBigDecimal();
 
 			final HUOnHandQtyChangeDescriptor event = builder
 					.quantity(deleted ? BigDecimal.ZERO : quantity)

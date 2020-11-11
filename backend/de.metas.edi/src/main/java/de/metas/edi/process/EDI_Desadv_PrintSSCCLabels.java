@@ -14,8 +14,9 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.report.ReportResultData;
 import org.adempiere.util.Services;
+import org.compiere.report.ReportResultData;
+
 import lombok.NonNull;
 
 /*
@@ -48,7 +49,7 @@ public class EDI_Desadv_PrintSSCCLabels extends JavaProcess implements IProcessP
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize().isNoSelection())
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
@@ -71,7 +72,7 @@ public class EDI_Desadv_PrintSSCCLabels extends JavaProcess implements IProcessP
 
 		final ReportResultData reportResult = desadvBL.printSSCC18_Labels(getCtx(), list);
 
-		getProcessInfo().getResult().setReportData(reportResult);
+		getProcessInfo().getResult().setReportData(reportResult.getReportData(), reportResult.getReportFilename(),reportResult.getReportContentType());
 
 		return MSG_OK;
 	}

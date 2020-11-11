@@ -31,11 +31,13 @@ import org.adempiere.util.Services;
 import org.apache.ecs.xhtml.code;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.OrgId;
 
 public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerator
 {
@@ -66,7 +68,7 @@ public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerat
 		final int serialNumber = hu.getM_HU_ID();
 		Check.errorIf(serialNumber <= 0, "M_HU_ID={} for M_HU={}", serialNumber, hu);
 
-		final SSCC18 sscc18 = creator.generate(ctx, serialNumber);
+		final SSCC18 sscc18 = creator.generate(OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(ctx)), serialNumber);
 		return creator.toString(sscc18, false); // humanReadable=false
 	}
 }

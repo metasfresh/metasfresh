@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -39,7 +39,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -67,9 +67,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
+import org.compiere.report.ReportResultData;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -210,7 +215,7 @@ public class DesadvBL implements IDesadvBL
 
 		//
 		// set infos from C_BPartner_Product
-		final I_C_BPartner_Product bPartnerProduct = bPartnerProductDAO.retrieveBPartnerProductAssociation(buyerBPartner, product, orgId);
+		final I_C_BPartner_Product bPartnerProduct = bPartnerProductDAO.retrieveBPartnerProductAssociation(Env.getCtx(),buyerBPartnerId.getRepoId(), productId.getRepoId(), orgId.getRepoId());
 		// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments
 		// instead, just don't set the values and let the user fix it in the DESADV window later on
 		// Check.assumeNotNull(bPartnerProduct, "there is a C_BPartner_Product for C_BPArtner {} and M_Product {}", inOut.getC_BPartner(), inOutLine.getM_Product());
@@ -296,7 +301,11 @@ public class DesadvBL implements IDesadvBL
 			desadv.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
 			desadv.setDropShip_Location_ID(order.getDropShip_Location_ID());
 
-			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
+			final I_C_BPartner_Location billToLocation = orderBL.getBillToLocation(order);
+			if(billToLocation!= null)
+			{
+				desadv.setBill_Location_ID(billToLocation.getC_BPartner_Location_ID());
+			}
 			// note: the minimal acceptable fulfillment is currently set by a model interceptor
 			InterfaceWrapperHelper.save(desadv);
 		}
@@ -414,12 +423,13 @@ public class DesadvBL implements IDesadvBL
 
 		final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
 		final I_M_HU_PI_Item_Product tuPIItemProduct = extractHUPIItemProduct(orderRecord, orderLineRecord);
+		final I_C_UOM uomRecord = uomDAO.getById(qtyToAdd.getStockQty().getUomId());
 
 		final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
-				productId,
-				qtyToAdd.getStockQty().getUomId(),
-				BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
+				inOutLineRecord.getM_Product(),
+				uomRecord,
+				orderRecord.getC_BPartner(),
 				false/* noLUForVirtualTU */);
 
 		final StockQtyAndUOMQty maxQtyCUsPerLU;
@@ -533,20 +543,23 @@ public class DesadvBL implements IDesadvBL
 		packRecord.setQtyItemCapacity(qtyCUInStockUOM.toBigDecimal());
 
 		// get minimum best before of all HUs and sub-HUs
+		final I_M_Attribute bestBeforeDateAttributeRecord = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_BestBeforeDate.getCode());
 		final Date bestBefore = rootHU.extractSingleAttributeValue(
-				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
+				attrSet -> attrSet.hasAttribute(bestBeforeDateAttributeRecord) ? attrSet.getValueAsDate(bestBeforeDateAttributeRecord) : null,
 				TimeUtil::min);
 		packRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
 
 		// Lot
-		final String lotNumber = rootHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
+		final I_M_Attribute lotNumberAttributeRecord = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_LotNumber.getCode());
+		final String lotNumber = rootHU.getAttributes().getValueAsString(lotNumberAttributeRecord);
 		if (!Check.isEmpty(lotNumber, true))
 		{
 			packRecord.setLotNumber(lotNumber);
 		}
 
 		// SSCC18
-		final String sscc18 = rootHU.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
+		final I_M_Attribute sscc18AttributeRecord = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
+		final String sscc18 = rootHU.getAttributes().getValueAsString(sscc18AttributeRecord);
 		if (isEmpty(sscc18, true))
 		{
 			packRecord.setIsManual_IPA_SSCC18(true);
@@ -620,9 +633,11 @@ public class DesadvBL implements IDesadvBL
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
-		if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+		final I_M_Attribute bestBeforeAttributeRecord = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_BestBeforeDate.getCode());
+
+		if (attributeSet.hasAttribute(bestBeforeAttributeRecord))
 		{
-			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
+			final Date bestBeforeDate = attributeSet.getValueAsDate(bestBeforeAttributeRecord);
 			return Optional.of(TimeUtil.asTimestamp(bestBeforeDate));
 		}
 		return Optional.empty();
@@ -632,9 +647,11 @@ public class DesadvBL implements IDesadvBL
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
-		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNumber))
+		final I_M_Attribute lotNumberAttributeRecord = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_LotNumber.getCode());
+
+		if (attributeSet.hasAttribute(lotNumberAttributeRecord))
 		{
-			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNumber);
+			final String lotNumber = attributeSet.getValueAsString(lotNumberAttributeRecord);
 			return Optional.of(lotNumber);
 		}
 		return Optional.empty();
@@ -883,39 +900,38 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	// TODO port DESADV - see if we need this
-//	@Override
-//	public ReportResultData printSSCC18_Labels(
-//			@NonNull final Properties ctx,
-//			@NonNull final Collection<Integer> desadvLinePack_IDs_ToPrint)
-//	{
-//		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
-//
-//		//
-//		// Create the process info based on AD_Process and AD_PInstance
-//		final ProcessExecutionResult result = ProcessInfo.builder()
-//				.setCtx(ctx)
-//				.setAD_ProcessByValue(AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print)
-//				//
-//				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
-//				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
-//						+ " where AD_PInstance_ID=" + ReportConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
-//						+ " order by EDI_DesadvLine_SSCC_ID")
-//				//
-//				// Execute the actual printing process
-//				.buildAndPrepareExecution()
-//				.onErrorThrowException()
-//				// Create a selection with the EDI_DesadvLine_Pack_IDs that we need to print.
-//				// The report will fetch it from selection.
-//				.callBefore(pi -> DB.createT_Selection(pi.getPinstanceId(), desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
-//				.executeSync()
-//				.getResult();
-//
-//		return ReportResultData.builder()
-//				.reportData(result.getReportData())
-//				.reportFilename(result.getReportFilename())
-//				.reportContentType(result.getReportContentType())
-//				.build();
-//	}
+	@Override
+	public ReportResultData printSSCC18_Labels(
+			@NonNull final Properties ctx,
+			@NonNull final Collection<Integer> desadvLinePack_IDs_ToPrint)
+	{
+		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
+
+		//
+		// Create the process info based on AD_Process and AD_PInstance
+		final ProcessExecutor executor = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_ProcessByValue(AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print)
+				//
+				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
+				.addParameter(JasperConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
+						+ " where AD_PInstance_ID=" + JasperConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
+						+ " order by EDI_DesadvLine_SSCC_ID")
+				//
+				// Execute the actual printing process
+				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
+				// The report will fetch it from selection.
+				.callBefore(pi -> DB.createT_Selection(pi.getAD_PInstance_ID(), desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
+				.executeSync();
+
+		return ReportResultData.builder()
+				.reportData(executor.getResult().getReportData())
+				.reportContentType(executor.getResult().getReportContentType())
+				.reportFilename(executor.getResult().getReportFilename())
+				.build();
+	}
 
 	@Override
 	public void setMinimumPercentage(@NonNull final I_EDI_Desadv desadv)
@@ -961,7 +977,7 @@ public class DesadvBL implements IDesadvBL
 
 		// log a message that includes all the skipped lines'documentNo and percentage
 		final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(
-				MSG_EDI_DESADV_RefuseSending,
+				MSG_EDI_DESADV_RefuseSending.toAD_Message(),
 				minimumSumPercentage, skippedDesadvsString.toString());
 		return Optional.of(msg);
 	}

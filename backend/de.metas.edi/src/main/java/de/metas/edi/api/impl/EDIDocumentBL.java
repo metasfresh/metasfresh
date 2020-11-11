@@ -13,44 +13,42 @@ package de.metas.edi.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
+import org.compiere.model.X_C_Invoice;
 
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.DocStatus;
-import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
@@ -60,85 +58,86 @@ import de.metas.edi.model.I_C_BPartner_Location;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-
-import lombok.NonNull;
+import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class EDIDocumentBL implements IEDIDocumentBL
 {
 	private static final String ERR_NotExistsShipmentForOrderError = "NotExistsShipmentForOrderError";
 
-	private static final Logger logger = LogManager.getLogger(EDIDocumentBL.class);
-
 	@Override
-	public boolean updateEdiEnabled(@NonNull final I_EDI_Document_Extension document)
+	public boolean updateEdiEnabled(final I_EDI_Document_Extension document)
 	{
-		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		// EDI applies only for customer invoices and shipments
-		if (!document.isSOTrx() && document.isEdiEnabled())
+		if (!document.isSOTrx())
 		{
-			loggable.addLog("IsSoTrx=false; => update IsEdiEnabled to false");
 			document.setIsEdiEnabled(false); // 08619: don't assume that the flag is already false from the beginning, but make sure it is false now
 			return document.isEdiEnabled();
 		}
 
 		// task 05721: Set isEDIEnabled to false and disable the button for reversals
-		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(document.getDocStatus());
-		if (docStatus.isReversed() && document.isEdiEnabled())
+		if (X_C_Invoice.DOCSTATUS_Reversed.equals(document.getDocStatus()) || document.getReversal_ID() > 0)
 		{
-			loggable.addLog("DocStatus={} is reversed; => update IsEdiEnabled to false", docStatus);
 			document.setIsEdiEnabled(false);
 			return document.isEdiEnabled();
 		}
 
-		if (document.getReversal_ID() > 0 && document.isEdiEnabled())
-		{
-			loggable.addLog("Reversal_ID={} (i.e. >0); => update IsEdiEnabled to false", docStatus);
-			document.setIsEdiEnabled(false);
-			return document.isEdiEnabled();
-		}
-
-		logger.debug("return non-updated isEdiEnabled={}", document.isEdiEnabled());
 		return document.isEdiEnabled();
+		// final I_C_BPartner bpartner = InterfaceWrapperHelper.create(document.getC_BPartner(), I_C_BPartner.class);
+		// if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
+		// {
+		// // BPartner was not set yet, nothing to do
+		// return document.isEdiEnabled();
+		// }
+		//
+		// document.setIsEdiEnabled(bpartner.isEdiRecipient());
+		// return bpartner.isEdiRecipient();
 	}
 
 	@Override
-	public List<Exception> isValidInvoice(@NonNull final I_C_Invoice invoice)
+	public List<Exception> isValidInvoice(final I_C_Invoice invoice)
 	{
-		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		final List<Exception> feedback = new ArrayList<>();
 		final String EDIStatus = invoice.getEDI_ExportStatus();
 		if (!invoice.isEdiEnabled() && !I_EDI_Document.EDI_EXPORTSTATUS_Invalid.equals(EDIStatus))
 		{
-			loggable.addLog("isValidInvoice - C_Invoice_ID={} has IsEdiEnabled={}, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(), invoice.isEdiEnabled(), EDIStatus);
 			return feedback;
 		}
 
-		feedback.addAll(isValidPartner(invoice.getC_BPartner(), true/* isPartOfInvoiceValidation */));
+		feedback.addAll(isValidPartner(invoice.getC_BPartner()));
+		feedback.addAll(isValidBPLocation(invoice.getC_BPartner_Location()));
 
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final org.compiere.model.I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
-		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
+		// TODO not used right now
+		// final IBPartnerOrgBL bpOrgBL = Services.get(IBPartnerOrgBL.class);
+		// final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+		// final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+		//
+		// final I_AD_Org org = InterfaceWrapperHelper.create(ctx, invoice.getAD_Org_ID(), I_AD_Org.class, trxName);
+		//
+		// final org.compiere.model.I_C_BPartner orgBP = bpOrgBL.retrieveLinkedBPartner(org);
+		// feedback.addAll(isValidPartner(orgBP));
+		//
+		// final org.compiere.model.I_C_BPartner_Location orgBPLocation = bpOrgBL.retrieveOrgBPLocation(ctx, org.getAD_Org_ID(), trxName);
+		// if (orgBPLocation.isRemitTo() && orgBPLocation.isActive())
+		// {
+		// feedback.addAll(isValidBPLocation(orgBPLocation));
+		// }
 
 		// task 09182: for return material credit memos, we don't have or need an (imported) EDI ORDERS PoReference
 		// task 09811: guard against NPE when invoice is not yet completed and therefore doesn'T yet have a docType
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final I_C_DocType docType = invoice.getC_DocType_ID() > 0
-				? docTypeDAO.getById(invoice.getC_DocType_ID())
-				: docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
+				? invoice.getC_DocType()
+				: invoice.getC_DocTypeTarget();
 
 		final boolean invoiceIsRMCreditMemo = docType != null
 				&& Services.get(IInvoiceBL.class).isCreditMemo(docType.getDocBaseType())
@@ -162,6 +161,11 @@ public class EDIDocumentBL implements IEDIDocumentBL
 						org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID, order.getDocumentNo()));
 			}
 		}
+		// 05768 took out poreference mandatory
+		// if (Check.isEmpty(invoice.getPOReference()))
+		// {
+		// feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_Invoice.COLUMNNAME_POReference));
+		// }
 
 		final Set<String> ilMissingFields = new HashSet<>();
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice);
@@ -173,7 +177,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line);
 			}
 
-			if (il.getC_OrderLine_ID() <= 0 && !invoiceIsRMCreditMemo)
+			if (il.getC_OrderLine_ID() <= 0
+					&& !invoiceIsRMCreditMemo)
 			{
 				// task 09182: on line level, we need an order line reference,
 				// only for docSubType='CS' an orderLine does not have to be linked to an invoiceLine for successful EDI export.
@@ -187,41 +192,178 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.add(new EDIFillMandatoryException(ilMissingFields));
 		}
 
-		if (logger.isDebugEnabled() && !feedback.isEmpty())
-		{
-			logger.debug("Invoice validation problem(s) found; feedback={}", buildFeedback(feedback));
-		}
 		return feedback;
 	}
 
 	@Override
-	public List<Exception> isValidDesAdv(@NonNull final I_EDI_Desadv desadvRecord)
+	public List<Exception> isValidDesAdv(final I_EDI_Desadv desadv)
 	{
-		final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+		// TODO implement, use a lot of code from isValidInOut
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<Exception> isValidInOut(final I_M_InOut inOut)
+	{
 		final List<Exception> feedback = new ArrayList<>();
 
-		final ImmutableList<ITranslatableString> errorMsgs = desadvBL.createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList.of(desadvRecord));
-		for (final ITranslatableString msg : errorMsgs)
+		if (!inOut.isEdiEnabled())
 		{
-			feedback.add(new AdempiereException(msg.translate(Env.getAD_Language())));
+			return feedback;
 		}
+
+		final org.compiere.model.I_C_BPartner bPartner = inOut.getC_BPartner();
+
+		feedback.addAll(isValidPartner(bPartner));
+		feedback.addAll(isValidBPLocation(inOut.getC_BPartner_Location()));
+
+		final org.compiere.model.I_C_BPartner dropShipPartner = inOut.getDropShip_BPartner();
+		if (dropShipPartner != null && dropShipPartner.getC_BPartner_ID() > 0)
+		{
+			feedback.addAll(isValidPartner(dropShipPartner));
+		}
+
+		final org.compiere.model.I_C_BPartner_Location dropShipLocation = inOut.getDropShip_Location();
+		if (dropShipLocation != null && dropShipLocation.getC_BPartner_Location_ID() > 0)
+		{
+			feedback.addAll(isValidBPLocation(dropShipLocation));
+		}
+
+		// 05768 took out poreference mandatory
+		// if (Check.isEmpty(inOut.getPOReference()))
+		// {
+		// feedback.add(new EDIFillMandatoryException(org.compiere.model.I_M_InOut.COLUMNNAME_POReference));
+		// }
+
+		Check.assumeNotNull(inOut.getC_Order(), "C_Order not null");
+		final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
+		final String trxName = InterfaceWrapperHelper.getTrxName(inOut);
+
+		final int handOverPartnerId = order.getHandOver_Partner_ID();
+		if (handOverPartnerId > 0)
+		{
+			final org.compiere.model.I_C_BPartner handOverPartner = InterfaceWrapperHelper.create(
+					ctx, handOverPartnerId, org.compiere.model.I_C_BPartner.class, trxName);
+			feedback.addAll(isValidPartner(handOverPartner));
+		}
+
+		final int handOverLocationId = order.getHandOver_Location_ID();
+		if (handOverLocationId > 0)
+		{
+			final org.compiere.model.I_C_BPartner_Location handOverLocation = InterfaceWrapperHelper.create(
+					ctx, handOverLocationId, org.compiere.model.I_C_BPartner_Location.class, trxName);
+			feedback.addAll(isValidBPLocation(handOverLocation));
+		}
+
+		if (order.getC_Currency_ID() <= 0)
+		{
+			feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID, order.getDocumentNo(), org.compiere.model.I_C_Order.COLUMNNAME_C_Currency_ID));
+		}
+
+		final org.compiere.model.I_C_BPartner billBPartner = order.getBill_BPartner();
+		if (billBPartner != null && billBPartner.getC_BPartner_ID() > 0)
+		{
+			feedback.addAll(isValidPartner(billBPartner));
+		}
+
+		final org.compiere.model.I_C_BPartner_Location billLocation = order.getBill_Location();
+		if (billLocation != null && billLocation.getC_BPartner_Location_ID() > 0)
+		{
+			feedback.addAll(isValidBPLocation(billLocation));
+		}
+
+		final Set<String> iolMissingFields = new HashSet<>();
+		final Set<String> olMissingFields = new HashSet<>();
+		final List<I_M_InOutLine> inOutLines = Services.get(IInOutDAO.class).retrieveLines(inOut, I_M_InOutLine.class);
+		final List<de.metas.interfaces.I_C_OrderLine> inOutOrderLines = new ArrayList<>(); // orderLines for inOutLines
+		for (final I_M_InOutLine inOutLine : inOutLines)
+		{
+			if (inOutLine.isPackagingMaterial())
+			{
+				continue; // nothing to check, because PackagingMaterial lines won't be exported anyways
+			}
+
+			if (inOutLine.getLine() <= 0)
+			{
+				iolMissingFields.add(org.compiere.model.I_M_InOutLine.COLUMNNAME_Line);
+			}
+
+			if (inOutLine.getC_UOM_ID() <= 0)
+			{
+				iolMissingFields.add(org.compiere.model.I_M_InOutLine.COLUMNNAME_C_UOM_ID);
+			}
+
+			if (inOutLine.getM_Product_ID() <= 0)
+			{
+				iolMissingFields.add(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID);
+			}
+
+			if (Check.isEmpty(inOutLine.getMovementQty()))
+			{
+				iolMissingFields.add(org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty);
+			}
+
+			Check.assumeNotNull(inOutLine.getC_OrderLine_ID() > 0, "C_OrderLine_ID of {} should not be null", inOutLine);
+			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(),
+					de.metas.handlingunits.model.I_C_OrderLine.class);
+
+			if (orderLine.getQtyItemCapacity() == null) // may be 0
+			{
+				olMissingFields.add(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+			}
+
+			if (orderLine.getLine() <= 0)
+			{
+				olMissingFields.add(I_C_OrderLine.COLUMNNAME_Line);
+			}
+
+			final I_M_Product product = inOutLine.getM_Product();
+
+			final int orgId = product.getAD_Org_ID();
+
+			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, orgId);
+			if (bPartnerProduct == null)
+			{
+				feedback.add(new EDIMissingDependencyException("Missing C_BPartner_Product for partner " + bPartner.getValue() + " and product " + product.getValue()));
+			}
+
+			inOutOrderLines.add(orderLine);
+		}
+
+		final List<de.metas.interfaces.I_C_OrderLine> orderOverdeliveryLines = Services.get(IOrderDAO.class).retrieveOrderLines(order);
+		orderOverdeliveryLines.removeAll(inOutOrderLines); // remove already checked inOut-orderLines of this order
+		for (final de.metas.interfaces.I_C_OrderLine orderLine : inOutOrderLines)
+		{
+			if (orderLine.getLine() <= 0)
+			{
+				olMissingFields.add(I_C_OrderLine.COLUMNNAME_Line);
+			}
+		}
+
+		if (!iolMissingFields.isEmpty())
+		{
+			feedback.add(new EDIFillMandatoryException(iolMissingFields));
+		}
+
+		if (!olMissingFields.isEmpty())
+		{
+			feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID, order.getDocumentNo(), olMissingFields));
+		}
+
 		return feedback;
 	}
 
 	@Override
-	public List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner)
+	public List<Exception> isValidPartner(final org.compiere.model.I_C_BPartner partner)
 	{
-		return isValidPartner(bpartner, false/* isPartOfInvoiceValidation */);
-	}
+		Check.assumeNotNull(partner, "C_BPartner not null when validating it");
 
-	private List<Exception> isValidPartner(
-			@NonNull final org.compiere.model.I_C_BPartner bpartner,
-			final boolean isPartOfInvoiceValidation)
-	{
 		final List<Exception> feedback = new ArrayList<>();
 		final List<String> missingFields = new ArrayList<>();
 
-		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
+		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(partner, I_C_BPartner.class);
 		final boolean isEdiRecipient = ediPartner.isEdiDesadvRecipient() || ediPartner.isEdiInvoicRecipient();
 		if (!isEdiRecipient)
 		{
@@ -233,8 +375,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
 		}
 
-		final boolean checkForAggregationRule = !isPartOfInvoiceValidation; // if we validate for an already existing invoice we don't need to bother for the partner's aggregation rule
-		if (checkForAggregationRule && !hasValidInvoiceAggregation(ediPartner))
+		if (!hasValidInvoiceAggregation(ediPartner))
 		{
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Invalid_Invoice_Aggregation_Error)));
 		}
@@ -246,7 +387,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 		if (!missingFields.isEmpty())
 		{
-			feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartner.getValue(), missingFields));
+			feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, partner.getValue(), missingFields));
 		}
 
 		return feedback;
@@ -257,7 +398,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		//
 		// Get the BPartner's invoice header aggregation that will be actually used to aggregate sales invoices
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ediPartner);
-		final boolean isSOTrx = true; // we are checking only Sales side because we don't EDI purchase invoices
+		final boolean isSOTrx = true; // we are checking only Sales side (per Tobias advice)
 		final IAggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
 
 		// Make sure that aggregation includes C_Order_ID or POReference
@@ -270,8 +411,10 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		return true;
 	}
 
-	private List<Exception> isValidBPLocation(@NonNull final org.compiere.model.I_C_BPartner_Location bpLocation)
+	private List<Exception> isValidBPLocation(final org.compiere.model.I_C_BPartner_Location bpLocation)
 	{
+		Check.assumeNotNull(bpLocation, "C_BPartner_Location not null when validating it");
+
 		final List<Exception> feedback = new ArrayList<>();
 
 		final I_C_BPartner_Location ediLocation = InterfaceWrapperHelper.create(bpLocation, I_C_BPartner_Location.class);
@@ -309,7 +452,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	@Override
 	public IExport<? extends I_EDI_Document> createExport(
 			final Properties ctx,
-			final ClientId clientId,
+			final int clientId,
 			final int tableId,
 			final int recordId,
 			final String trxName)
@@ -327,7 +470,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			verifyRecordId(recordId, tableIdentifier);
 
 			final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, recordId, I_C_Invoice.class, trxName);
-			export = new C_InvoiceExport(invoice, tableIdentifier, clientId);
+			export = new C_InvoiceExport(invoice, tableIdentifier, ClientId.ofRepoId(clientId));
 		}
 		else if (I_EDI_Desadv.Table_Name.equals(tableName))
 		{
@@ -335,7 +478,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			verifyRecordId(recordId, tableIdentifier);
 
 			final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(ctx, recordId, I_EDI_Desadv.class, trxName);
-			export = new EDI_DESADVExport(desadv, tableIdentifier, clientId);
+			export = new EDI_DESADVExport(desadv, tableIdentifier, ClientId.ofRepoId(clientId));
 		}
 		else
 		{
@@ -354,7 +497,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	}
 
 	@Override
-	public String buildFeedback(@NonNull final List<Exception> feedback)
+	public String buildFeedback(final List<Exception> feedback)
 	{
 		final StringBuilder feedbackBuilder = new StringBuilder();
 		for (final Exception feedbackElement : feedback)

@@ -64,6 +64,22 @@ public final class Quantity implements Comparable<Quantity>
 		return QTY_INFINITE.compareTo(qty) == 0;
 	}
 
+	public static Quantity addNullables(@Nullable final Quantity qty1, @Nullable final Quantity qty2)
+	{
+		if (qty1 == null)
+		{
+			return qty2;
+		}
+		else if (qty2 == null)
+		{
+			return qty1;
+		}
+		else
+		{
+			return qty1.add(qty2);
+		}
+	}
+	
 	public static BigDecimal toBigDecimal(@Nullable final Quantity quantity)
 	{
 		if (quantity == null)

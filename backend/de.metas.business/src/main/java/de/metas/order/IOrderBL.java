@@ -81,9 +81,6 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Returns the given order's <code>C_BPartner_Location</code>, or if set then returns the <code>Bill_Location</code>.
-	 *
-	 * @param order
-	 * @return
 	 */
 	I_C_BPartner_Location getBillToLocation(I_C_Order order);
 

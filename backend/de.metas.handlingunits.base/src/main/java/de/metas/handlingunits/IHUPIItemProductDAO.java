@@ -53,6 +53,8 @@ public interface IHUPIItemProductDAO extends ISingletonService
 {
 	int VIRTUAL_HU_PI_Item_Product_ID = 101;
 
+	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
+
 	IHUPIItemProductQuery createHUPIItemProductQuery();
 
 	List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(I_M_HU_PI_Item itemDef);
@@ -147,7 +149,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	/**
 	 * Invoke {@link #retrieveTUs(Properties, I_M_Product, I_C_BPartner, boolean)} with {@code allowInfiniteCapacity = false}.
-	 * 
+	 *
 	 * @param ctx
 	 * @param cuProduct
 	 * @param bpartner

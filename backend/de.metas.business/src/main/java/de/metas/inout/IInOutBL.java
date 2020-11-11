@@ -35,6 +35,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 
+import de.metas.quantity.StockQtyAndUOMQty;
+
 /**
  * Generic API regarding {@link I_M_InOut} and it's lines, transactions, allocations etc.
  *
@@ -43,6 +45,16 @@ import org.compiere.model.I_M_PricingSystem;
  */
 public interface IInOutBL extends ISingletonService
 {
+	/**
+	 * @return the quantity, with {@link StockQtyAndUOMQty#getUOMQtyOpt()} being present <b>only</b> if the given line effectively has a catch quantity.
+	 */
+	StockQtyAndUOMQty getStockQtyAndCatchQty(I_M_InOutLine inoutLine);
+
+	/**
+	 * @return return movementQty and qtyEntered.
+	 */
+	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
+
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
 	 *

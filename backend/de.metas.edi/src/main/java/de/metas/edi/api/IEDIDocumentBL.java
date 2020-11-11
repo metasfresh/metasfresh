@@ -26,12 +26,12 @@ package de.metas.edi.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.service.ClientId;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 
@@ -49,6 +49,8 @@ public interface IEDIDocumentBL extends ISingletonService
 	boolean updateEdiEnabled(I_EDI_Document_Extension document);
 
 	List<Exception> isValidInvoice(I_C_Invoice invoice);
+
+	List<Exception> isValidInOut(I_M_InOut inOut);
 
 	List<Exception> isValidDesAdv(I_EDI_Desadv desadv);
 
@@ -68,7 +70,7 @@ public interface IEDIDocumentBL extends ISingletonService
 	/**
 	 * @return EDI export processor
 	 */
-	IExport<? extends I_EDI_Document> createExport(Properties ctx, ClientId clientId, int tableId, int recordId, String trxName);
+	IExport<? extends I_EDI_Document> createExport(Properties ctx, int clientId, int tableId, int recordId, String trxName);
 
 	/**
 	 * @param feedback

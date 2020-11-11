@@ -30,14 +30,16 @@ import org.compiere.model.I_C_UOM;
 
 public interface IUOMDAO extends ISingletonService
 {
+	String X12DE355_COLI = "COLI";
+	String X12DE355_TU = "TU";
 	String X12DE355_Each = "PCE";
 	int C_UOM_ID_Each = 100;
 	String X12DE355_Kilogram = "KGM";
 
 	I_C_UOM getById(int uomId);
-	
+
 	I_C_UOM getById(UomId uomId);
-	
+
 	/**
 	 *
 	 * @param ctx
@@ -63,5 +65,10 @@ public interface IUOMDAO extends ISingletonService
 	 */
 	I_C_UOM retrieveEachUOM(Properties ctx);
 
-
+	/**
+	 * Tells if the given UOM is used for TUs.
+	 * This is significant because in order to convert from the TU to a CU-quantity,
+	 * we need to look at the respective PIIP or {@code QtyItemCapacity} and not at any UOM-conversion-rate.
+	 */
+	boolean isUOMForTUs(UomId uomId);
 }

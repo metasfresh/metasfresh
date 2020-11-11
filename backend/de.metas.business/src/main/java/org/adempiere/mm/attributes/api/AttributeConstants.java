@@ -28,7 +28,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public final class AttributeConstants
+public class AttributeConstants
 {
 
 	/**

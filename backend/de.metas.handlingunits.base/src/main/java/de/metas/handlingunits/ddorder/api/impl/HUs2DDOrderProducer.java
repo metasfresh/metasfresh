@@ -64,6 +64,10 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -474,15 +478,13 @@ public class HUs2DDOrderProducer
 		private final List<I_M_HU> hus = new ArrayList<>();
 
 		private BigDecimal qtyInSourceUOM = BigDecimal.ZERO;
-		private BigDecimal qtyInStockingUOM = BigDecimal.ZERO;
+		private Quantity _qtyInStockingUOM = null;
 
 		private I_M_HU_PI_Item_Product piItemProduct;
 		private Map<org.compiere.model.I_M_Attribute, Object> attributes = ImmutableMap.of();
 
 		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage)
 		{
-			super();
-
 			final ArrayKeyBuilder aggregationKeyBuilder = Util.mkKey();
 
 			//
@@ -523,7 +525,7 @@ public class HUs2DDOrderProducer
 			addHUProductStorage(huProductStorage);
 		}
 
-		public final ArrayKey getAggregationKey()
+		public ArrayKey getAggregationKey()
 		{
 			Check.assumeNotNull(aggregationKey, "aggregationKey not null");
 			return aggregationKey;
@@ -538,8 +540,8 @@ public class HUs2DDOrderProducer
 			final BigDecimal huQtyInSourceUOM = candidateToAdd.getQtyInSourceUOM();
 			this.qtyInSourceUOM = this.qtyInSourceUOM.add(huQtyInSourceUOM);
 
-			final BigDecimal huQtyInStockingUOM = candidateToAdd.getQtyInStockingUOM();
-			this.qtyInStockingUOM = this.qtyInStockingUOM.add(huQtyInStockingUOM);
+			final Quantity huQtyInStockingUOM = Quantitys.create(candidateToAdd.getQtyInStockingUOM(), ProductId.ofRepoId(candidateToAdd.getM_Product().getM_Product_ID()));
+			addQtyInStockingUOM(huQtyInStockingUOM);
 		}
 
 		private void addHUProductStorage(final IHUProductStorage huProductStorage)
@@ -550,21 +552,20 @@ public class HUs2DDOrderProducer
 			final BigDecimal huQtyInSourceUOM = huProductStorage.getQty();
 			this.qtyInSourceUOM = this.qtyInSourceUOM.add(huQtyInSourceUOM);
 
-			final BigDecimal huQtyInStockingUOM = huProductStorage.getQtyInStockingUOM();
-			this.qtyInStockingUOM = this.qtyInStockingUOM.add(huQtyInStockingUOM);
+			addQtyInStockingUOM(huProductStorage.getQtyInStockingUOM());
 		}
 
-		public final I_M_Locator getM_Locator_From()
+		public I_M_Locator getM_Locator_From()
 		{
 			return locatorFrom;
 		}
 
-		public final I_M_Product getM_Product()
+		public I_M_Product getM_Product()
 		{
 			return product;
 		}
 
-		public final I_C_UOM getC_UOM()
+		public I_C_UOM getC_UOM()
 		{
 			return uom;
 		}
@@ -576,7 +577,13 @@ public class HUs2DDOrderProducer
 
 		public BigDecimal getQtyInStockingUOM()
 		{
-			return qtyInStockingUOM;
+			Check.assumeNotNull(_qtyInStockingUOM, "qtyInStockingUOM shall be initialized");
+			return _qtyInStockingUOM.toBigDecimal();
+		}
+
+		private void addQtyInStockingUOM(@NonNull final Quantity qtyToAdd)
+		{
+			this._qtyInStockingUOM = Quantity.addNullables(_qtyInStockingUOM, qtyToAdd);
 		}
 
 		public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()

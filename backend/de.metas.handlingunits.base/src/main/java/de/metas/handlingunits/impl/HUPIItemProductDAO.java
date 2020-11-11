@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -57,6 +59,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU;
@@ -73,6 +76,12 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
 	@VisibleForTesting
 	public static final int NO_HU_PI_Item_Product_ID = 100;
+
+	@Override
+	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
+	{
+		return loadOutOfTrx(id, I_M_HU_PI_Item_Product.class);
+	}
 
 	@Override
 	public IHUPIItemProductQuery createHUPIItemProductQuery()

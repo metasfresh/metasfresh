@@ -32,6 +32,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -197,6 +198,15 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			huPackingAware.setQtyTU(qtyTU);
 			setQtyCUFromQtyTU(huPackingAware, qtyTU.intValue());
 		}
+	}
+
+	@Override
+	public boolean isInfiniteCapacityTU(final IHUPackingAware huPackingAware)
+	{
+		final IHUPIItemProductBL piItemProductBL = Services.get(IHUPIItemProductBL.class);
+
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNone(huPackingAware.getM_HU_PI_Item_Product_ID());
+		return piItemProductBL.isInfiniteCapacity(piItemProductId);
 	}
 
 }

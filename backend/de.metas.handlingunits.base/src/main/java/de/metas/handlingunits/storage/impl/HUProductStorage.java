@@ -10,12 +10,12 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -125,11 +125,11 @@ import de.metas.uom.IUOMConversionBL;
 	}
 
 	@Override
-	public final BigDecimal getQtyInStockingUOM()
+	public final Quantity getQtyInStockingUOM()
 	{
 		final I_M_Product product = getM_Product();
 		final I_C_UOM uom = product.getC_UOM();
-		return getQty(uom);
+		return Quantity.of(getQty(uom), uom);
 	}
 
 	@Override

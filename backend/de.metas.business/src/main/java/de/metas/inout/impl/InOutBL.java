@@ -57,6 +57,10 @@ import org.compiere.util.CacheMgt;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import lombok.NonNull;
 
 public class InOutBL implements IInOutBL
@@ -141,6 +145,31 @@ public class InOutBL implements IInOutBL
 	{
 		final IPricingContext pricingCtx = createPricingCtx(inOutLine);
 		return getProductPrice(pricingCtx);
+	}
+
+	@Override
+	public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+
+		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
+				inoutLine.getMovementQty(),
+				productId,
+				null, null);
+		return qtyToAllocate;
+	}
+
+	@Override
+	public StockQtyAndUOMQty getStockQtyAndQtyInUOM(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
+		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
+				inoutLine.getMovementQty(),
+				productId,
+				inoutLine.getQtyEntered(),
+				uomId);
+		return qtyToAllocate;
 	}
 
 	@Override

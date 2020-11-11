@@ -95,7 +95,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 
 		// final I_C_Queue_Block block = queue.enqueueBlock(ctx);
 		final IWorkPackageBlockBuilder builder = queue.newBlock()
-				.setAD_PInstance_Creator_ID(getPinstanceId())
+				.setAD_PInstance_Creator_ID(getAD_PInstance_ID())
 				.setContext(getCtx());
 
 		// Enqueue selected desadvs as workpackages

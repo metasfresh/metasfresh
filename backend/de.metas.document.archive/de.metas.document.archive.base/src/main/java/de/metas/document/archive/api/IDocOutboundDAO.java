@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
@@ -65,10 +66,11 @@ public interface IDocOutboundDAO extends ISingletonService
 	/**
 	 * Retrieve {@link I_C_Doc_Outbound_Log} for give archive (AD_Table_ID and Record_ID fields will be used for matching)
 	 *
-	 * @param archive
 	 * @return {@link I_C_Doc_Outbound_Log} record or null if not found
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(I_AD_Archive archive);
+
+	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
 
 	/**
 	 * Find among the given <code>log</code>'s {@link I_C_Doc_Outbound_Log_Line}s the latest one with action <code>PDF</code> (i.e highest ID)
@@ -85,7 +87,7 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * @param queryBuilder
 	 */
 	void addPDFArchiveLogLineFilters(IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder);
-	
+
 	/**
 	 *  Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
 	 * @param contextProvider

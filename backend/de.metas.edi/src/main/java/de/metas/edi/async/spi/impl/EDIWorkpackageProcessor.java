@@ -31,11 +31,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import de.metas.edi.model.I_EDI_Document_Extension;
-import de.metas.i18n.ITranslatableString;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
@@ -47,7 +45,6 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import lombok.NonNull;
-import org.compiere.util.Env;
 
 public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -82,7 +79,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			final int documentRecordId = documentTableRecordIdPair.getRecordId();
 			final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(
 					ctx,
-					ClientId.ofRepoId(workpackage.getAD_Client_ID()),
+					workpackage.getAD_Client_ID(),
 					documentTableId,
 					documentRecordId,
 					localTrxName);

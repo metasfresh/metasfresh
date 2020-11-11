@@ -1,5 +1,8 @@
 package de.metas.edi.api;
 
+import java.util.Collection;
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.edi
@@ -23,6 +26,7 @@ package de.metas.edi.api;
  */
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.report.ReportResultData;
 
 import com.google.common.collect.ImmutableList;
 
@@ -32,6 +36,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.i18n.ITranslatableString;
 
 public interface IDesadvBL extends ISingletonService
@@ -82,8 +87,7 @@ public interface IDesadvBL extends ISingletonService
 	/**
 	 * Print SSCC18 labels for given {@link I_EDI_DesadvLine_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
 	 */
-	// TODO port DESADV - see if we need this
-	//ReportResultData printSSCC18_Labels(Properties ctx, Collection<Integer> desadvLineSSCC_IDs_ToPrint);
+	ReportResultData printSSCC18_Labels(Properties ctx, Collection<Integer> desadvLineSSCC_IDs_ToPrint);
 
 	/**
 	 * Set the current minimum sum percentage taken from the sys config 'de.metas.esb.edi.DefaultMinimumPercentage'
