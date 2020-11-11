@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { get } from 'lodash';
-
+import classnames from 'classnames';
 import { fetchTopActions } from '../../actions/WindowActions';
 import { dropdownRequest } from '../../actions/GenericActions';
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
@@ -295,7 +295,7 @@ class ActionButton extends PureComponent {
    * @summary Main render function for the ActionButton
    */
   render() {
-    const { data, modalVisible } = this.props;
+    const { data, modalVisible, readonly, processStatus } = this.props;
     const { list, prompt } = this.state;
     const abrev = get(data, ['status', 'value', 'key'], null);
     const status = this.getStatusContext(abrev);
@@ -311,10 +311,22 @@ class ActionButton extends PureComponent {
       }
     });
 
+    /**
+     * the button can be disabled when it has the property readonly `true` but it can also be disabled in case
+     * of a process running situation or when a modal window is active
+     */
+    const isDisabled =
+      readonly || processStatus === 'pending' || modalVisible ? true : false;
+
     return (
       <div
         onKeyDown={this.handleKeyDown}
-        className="meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler"
+        className={classnames(
+          'meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler',
+          {
+            disabled: isDisabled,
+          }
+        )}
         tabIndex={modalVisible ? -1 : 0}
         ref={this.setRef}
         onBlur={this.handleDropdownBlur}
@@ -372,10 +384,13 @@ ActionButton.propTypes = {
   dataId: PropTypes.any,
   docId: PropTypes.any,
   activeTab: PropTypes.string,
+  readonly: PropTypes.boolean,
+  processStatus: PropTypes.string,
 };
 
-const mapStateToProps = ({ windowHandler }) => ({
+const mapStateToProps = ({ windowHandler, appHandler }) => ({
   modalVisible: windowHandler.modal.visible,
+  processStatus: appHandler.processStatus,
 });
 
 export default connect(
