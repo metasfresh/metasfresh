@@ -2,7 +2,8 @@ package de.metas.print.impl;
 
 import de.metas.print.IPrintService;
 import de.metas.print.IPrintServiceRegistry;
-import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 public class PrintServiceRegistry implements IPrintServiceRegistry
 {
@@ -11,21 +12,19 @@ public class PrintServiceRegistry implements IPrintServiceRegistry
 	@Override
 	public IPrintService getPrintService()
 	{
-		Check.errorIf(service == null, "Missing IJasperService implementation");
+		final IPrintService service = this.service;
+		if (service == null)
+		{
+			throw new AdempiereException("Missing " + IPrintService.class + " implementation");
+		}
 		return service;
 	}
 
 	@Override
-	public IPrintService registerJasperService(final IPrintService jasperService)
+	public IPrintService registerJasperService(@NonNull final IPrintService newService)
 	{
 		final IPrintService oldService = this.service;
-		this.service = jasperService;
+		this.service = newService;
 		return oldService;
-	}
-
-	@Override
-	public boolean isServiceRegistered()
-	{
-		return service != null;
 	}
 }

@@ -39,6 +39,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
+import org.compiere.print.ReportEngineType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -245,7 +246,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	private File createPDF(File file)
 	{
-		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.DISTRIBUTION_ORDER, getDD_Order_ID());
+		ReportEngine re = ReportEngine.get(getCtx(), ReportEngineType.DISTRIBUTION_ORDER, getDD_Order_ID());
 		if (re == null)
 		{
 			return null;

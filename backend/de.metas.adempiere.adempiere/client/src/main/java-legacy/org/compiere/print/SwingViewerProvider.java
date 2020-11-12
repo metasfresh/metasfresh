@@ -26,6 +26,7 @@ import org.compiere.util.Env;
  * @author Low Heng Sin
  *
  */
+@Deprecated // TODO delete me
 public class SwingViewerProvider implements ReportViewerProvider
 {
 	public static final transient SwingViewerProvider instance = new SwingViewerProvider();

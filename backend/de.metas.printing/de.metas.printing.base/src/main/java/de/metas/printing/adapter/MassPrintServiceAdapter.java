@@ -22,11 +22,11 @@ package de.metas.printing.adapter;
  * #L%
  */
 
+import de.metas.process.ProcessInfoParameter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PrintInfo;
-import org.compiere.report.AbstractPrintService;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -41,7 +41,7 @@ import lombok.NonNull;
 /**
  * Adapt the Printing Service ( {@link IPrintService}) to our printing module.
  */
-public final class MassPrintServiceAdapter extends AbstractPrintService
+public final class MassPrintServiceAdapter implements IPrintService
 {
 	private static final Logger logger = LogManager.getLogger(MassPrintServiceAdapter.class);
 
@@ -103,5 +103,68 @@ public final class MassPrintServiceAdapter extends AbstractPrintService
 		// Save archive. This will trigger the printing...
 		InterfaceWrapperHelper.save(archive);
 		logger.debug("Archive: {}", archive);
+	}
+
+	private PrintInfo extractPrintInfo(@NonNull final ProcessInfo pi)
+	{
+		// make sure that we never have zero copies. Apparently ADempiere
+		// thinks of "copies" as the number of printouts _additional_ to the
+		// original document while the java printing API thinks of copies as
+		// the absolute number of printouts and thus doesn't accept any
+		// number <=0.
+		int numberOfPrintouts = 1;
+		PrintInfo printInfo = null;
+
+		if (pi.getParameter() != null)
+		{
+			for (final ProcessInfoParameter param : pi.getParameter())
+			{
+				final String parameterName = param.getParameterName();
+				final Object objParam = param.getParameter();
+
+				if (objParam == null)
+				{
+					continue;
+				}
+
+				if (objParam instanceof PrintInfo)
+				{
+					printInfo = (PrintInfo)objParam;
+					numberOfPrintouts = printInfo.getCopies();
+
+					if (numberOfPrintouts <= 0)
+					{
+						logger.debug("Setting numberOfPrintouts from 0 (specified by printInfo) to 1");
+						numberOfPrintouts = 1;
+					}
+					break;
+				}
+				else if (PARAM_PrintCopies.equals(parameterName))
+				{
+					numberOfPrintouts = param.getParameterAsInt();
+					if (numberOfPrintouts <= 0)
+					{
+						logger.debug("Setting numberOfPrintouts from 0 (specified by " + PARAM_PrintCopies + ") to 1");
+						numberOfPrintouts = 1;
+					}
+				}
+			}
+		}
+
+		//
+		// Do a copy of found print info, or create a new one
+		if (printInfo == null)
+		{
+			printInfo = new PrintInfo(pi);
+		}
+		else
+		{
+			printInfo = new PrintInfo(printInfo);
+		}
+
+		// Update printInfo
+		printInfo.setCopies(numberOfPrintouts < 1 ? 1 : numberOfPrintouts);
+
+		return printInfo;
 	}
 }

@@ -61,6 +61,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.print.ReportEngine;
+import org.compiere.print.ReportEngineType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
@@ -514,7 +515,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 	private File createPDF(final File file)
 	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.MANUFACTURING_ORDER, getPP_Order_ID());
+		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngineType.MANUFACTURING_ORDER, getPP_Order_ID());
 		if (re == null)
 		{
 			return null;

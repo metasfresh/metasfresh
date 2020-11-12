@@ -61,6 +61,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
+import org.compiere.print.ReportEngineType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -808,7 +809,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 	private File createPDF(final File file)
 	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.INVOICE, getC_Invoice_ID(), get_TrxName());
+		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngineType.INVOICE, getC_Invoice_ID(), get_TrxName());
 		if (re == null)
 		{
 			return null;

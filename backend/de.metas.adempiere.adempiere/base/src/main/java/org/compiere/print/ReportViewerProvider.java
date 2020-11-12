@@ -21,6 +21,7 @@ package org.compiere.print;
  * @author Low Heng Sin
  *
  */
+@Deprecated // TODO delete me
 public interface ReportViewerProvider
 {
 	public void openViewer(ReportEngine re);

@@ -27,6 +27,7 @@ import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
+import org.compiere.print.ReportEngineType;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -369,9 +370,9 @@ public class DefaultModelArchiver
 
 		//
 		// Create ReportEngine
-		final int reportEngineDocumentType = ReportEngine.getTypeByTableId(tableId);
+		final ReportEngineType reportEngineDocumentType = ReportEngine.getTypeByTableId(tableId);
 		ReportEngine reportEngine = null;
-		if (reportEngineDocumentType > -1)         // important: 0 is also fine! -1 means "not found"
+		if (reportEngineDocumentType != null)
 		{
 			// we are dealing with document reporting
 			final PInstanceId pInstanceId = null; // N/A

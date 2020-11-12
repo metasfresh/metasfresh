@@ -1,24 +1,6 @@
 package de.metas.handlingunits.report;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.compiere.print.ReportEngine;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
@@ -37,6 +19,21 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.compiere.print.ReportEngineUtil;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -151,12 +148,12 @@ public class HUReportExecutor
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterCommit(innerTrx));
+				.registerHandlingMethod(huReportTrxListener::afterCommit);
 
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_CLOSE)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterClose(innerTrx));
+				.registerHandlingMethod(huReportTrxListener::afterClose);
 
 		huReportTrxListener.setListenerWasRegistered();
 	}
@@ -192,7 +189,7 @@ public class HUReportExecutor
 	{
 		final Set<BPartnerId> huBPartnerIds = hus.stream()
 				.map(HUToReport::getBPartnerId)
-				.filter(bpartnerId -> bpartnerId != null)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		return extractReportingLanguageFromBPartnerIds(huBPartnerIds);
 	}
@@ -225,7 +222,7 @@ public class HUReportExecutor
 				.setWindowNo(request.getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguageToUse)
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(ctx))
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngineUtil.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
 				.addParameter(IPrintService.PARAM_PrintCopies, request.getCopies())
 				.setPrintPreview(request.getPrintPreview())
 				//
@@ -257,7 +254,7 @@ public class HUReportExecutor
 		 * Therefore (and because right now there is not time to get to the root of the problem),
 		 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
 		 *
-		 * @task https://github.com/metasfresh/metasfresh/issues/1263
+		 * task https://github.com/metasfresh/metasfresh/issues/1263
 		 *
 		 */
 		private boolean commitWasDone = false;

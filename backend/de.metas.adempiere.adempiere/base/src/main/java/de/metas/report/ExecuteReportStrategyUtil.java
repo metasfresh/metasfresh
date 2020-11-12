@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.print.ReportEngine;
+import org.compiere.print.ReportEngineUtil;
 import org.compiere.util.Env;
 
 import com.lowagie.text.Document;
@@ -59,7 +60,7 @@ public class ExecuteReportStrategyUtil
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(jasperProcessId)
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngineUtil.getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
 				.addParameter(IPrintService.PARAM_PrintCopies, 1)
 				.setArchiveReportData(false) // don't archive it! just give us the PDF data
 				.setPrintPreview(false)

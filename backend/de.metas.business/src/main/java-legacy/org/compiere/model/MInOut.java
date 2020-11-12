@@ -40,6 +40,7 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
+import org.compiere.print.ReportEngineType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -667,7 +668,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	public File createPDF(final File file)
 	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.SHIPMENT, getM_InOut_ID(), get_TrxName());
+		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngineType.SHIPMENT, getM_InOut_ID(), get_TrxName());
 		if (re == null)
 		{
 			return null;

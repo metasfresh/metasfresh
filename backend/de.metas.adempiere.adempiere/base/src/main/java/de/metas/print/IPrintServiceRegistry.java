@@ -17,7 +17,5 @@ public interface IPrintServiceRegistry extends ISingletonService
 	/**
 	 * @return the jasper service that was previously installed, or <code>null</code>.
 	 */
-	IPrintService registerJasperService(IPrintService jasperService);
-
-	boolean isServiceRegistered();
+	IPrintService registerJasperService(IPrintService newService);
 }

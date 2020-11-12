@@ -74,6 +74,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.print.ReportEngine;
+import org.compiere.print.ReportEngineType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -703,7 +704,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	public File createPDF(final File file)
 	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.ORDER, getC_Order_ID(), get_TrxName());
+		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngineType.ORDER, getC_Order_ID(), get_TrxName());
 		if (re == null)
 		{
 			return null;

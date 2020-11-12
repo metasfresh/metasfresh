@@ -1381,9 +1381,9 @@ public final class ProcessInfo implements Serializable
 		 *
 		 * @param adLanguage optional report language
 		 */
-		public ProcessInfoBuilder setReportLanguage(final String adLanguage)
+		public ProcessInfoBuilder setReportLanguage(@Nullable final String adLanguage)
 		{
-			this.reportLanguage = Check.isEmpty(adLanguage, true) ? null : Language.getLanguage(adLanguage);
+			this.reportLanguage = Check.isBlank(adLanguage) ? null : Language.getLanguage(adLanguage);
 			return this;
 		}
 
