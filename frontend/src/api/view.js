@@ -257,17 +257,19 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
 //   return await Promise.all(requests);
 // }
 
-export async function quickActionsRequest(
+export async function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
   selectedIds,
   childView,
-  parentView
-) {
+  parentView,
+}) {
   // const requests = [];
   let request = null;
   let query = null;
+
+  // console.log('PARAMS: ', windowId, viewId, selectedIds, childView, parentView)
 
   if (parentView.viewId) {
     query = getQueryString({

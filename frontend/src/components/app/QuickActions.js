@@ -13,19 +13,12 @@ import QuickActionsContextShortcuts from '../keyshortcuts/QuickActionsContextSho
 import {
   getQuickActions,
   getQuickActionsId,
-} from '../../reducers/windowHandler';
+} from '../../reducers/actionsHandler';
 import { openModal } from '../../actions/WindowActions';
 import { fetchQuickActions, deleteQuickActions } from '../../actions/Actions';
 
 import Tooltips from '../tooltips/Tooltips.js';
 import QuickActionsDropdown from './QuickActionsDropdown';
-
-const initialState = {
-  isDropdownOpen: false,
-  btnTooltip: false,
-  listTooltip: false,
-  // loading: false,
-};
 
 /**
  * @file Class based component.
@@ -38,7 +31,13 @@ export class QuickActions extends Component {
   constructor(props) {
     super(props);
 
-    this.state = initialState;
+    // this.state = initialState;
+    this.state = {
+      isDropdownOpen: false,
+      btnTooltip: false,
+      listTooltip: false,
+      // loading: false,
+    };
 
     // this.fetchActions = this.fetchActions.bind(this);
 
@@ -77,11 +76,11 @@ export class QuickActions extends Component {
   // };
 
   componentWillUnmount = () => {
-    const { deleteQuickActions, viewId, windowType } = this.props;
+    const { deleteQuickActions, viewId, windowId } = this.props;
 
     this.mounted = false;
 
-    deleteQuickActions(windowType, viewId);
+    deleteQuickActions(windowId, viewId);
   };
 
   // UNSAFE_componentWillReceiveProps = (nextProps) => {
@@ -174,7 +173,7 @@ export class QuickActions extends Component {
   onClick = (e) => {
     e.preventDefault;
 
-    const { actions } = this.props;
+    const { quickActions: { actions } } = this.props;
 
     this.handleClick(actions[0]);
   };
@@ -192,7 +191,7 @@ export class QuickActions extends Component {
       return;
     }
 
-    this.setState({ loading: true });
+    // this.setState({ loading: true });
 
     openModal(
       action.caption,
@@ -315,9 +314,13 @@ export class QuickActions extends Component {
    * @summary Toggles the dropdown element
    */
   toggleDropdown = (action = null) => {
-    const { actions } = this.props;
-    if (action && actions && actions[0].processId === action.processId) {
+    const {
+      quickActions: { actions },
+    } = this.props;
+
+    if (action && actions.length && actions[0].processId === action.processId) {
       this.setState({ isDropdownOpen: false }); // hide the dropdown when first action is clicked
+
       return;
     }
     this.setState({ isDropdownOpen: !this.state.isDropdownOpen });
@@ -359,15 +362,15 @@ export class QuickActions extends Component {
    * @todo Write the documentation
    */
   render() {
-    const { isDropdownOpen, btnTooltip, listTooltip, loading } = this.state;
+    const { isDropdownOpen, btnTooltip, listTooltip /*loading*/ } = this.state;
     const {
-      actions,
+      quickActions: { actions, pending },
       shouldNotUpdate,
       processStatus,
       disabled,
       className,
     } = this.props;
-    const disabledDuringProcessing = processStatus === 'pending' || loading;
+    const disabledDuringProcessing = processStatus === 'pending' || pending;
 
     if (actions.length) {
       return (
@@ -448,7 +451,7 @@ export class QuickActions extends Component {
  * @typedef {object} Props Component props
  * @prop {func} dispatch
  * @prop {object} childView
- * @prop {string} windowType
+ * @prop {string} windowId
  * @prop {string} [viewId]
  * @prop {string} [viewProfileId]
  * @prop {bool} [fetchOnInit]
@@ -471,7 +474,7 @@ QuickActions.propTypes = {
   // from <DocumentList>
   childView: PropTypes.object.isRequired,
   parentView: PropTypes.object.isRequired,
-  windowType: PropTypes.string.isRequired,
+  windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
   viewProfileId: PropTypes.string,
   fetchOnInit: PropTypes.bool,
@@ -488,8 +491,9 @@ QuickActions.propTypes = {
 
 const mapStateToProps = (state, { viewId, windowId }) => {
   const id = getQuickActionsId({ windowId, viewId });
+
   return {
-    actions: getQuickActions(state, id),
+    quickActions: getQuickActions(state, id),
   };
 };
 

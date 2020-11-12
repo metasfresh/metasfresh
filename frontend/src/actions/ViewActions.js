@@ -33,11 +33,12 @@ import {
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
-import { getTableId } from '../reducers/tables';
+import { getTableId, getTable } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
-import { createFilter, deleteFilter } from './FiltersActions';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import { createFilter, deleteFilter } from './FiltersActions';
+import { fetchQuickActions } from './Actions';
 
 /**
  * @method resetView
@@ -396,6 +397,41 @@ export function fetchDocument({
             })
           );
         }
+
+        const table = getTable(state, tableId);
+        console.log('TABLEDATA: ', table.selected)
+
+        // get quickactions
+        dispatch(
+          fetchQuickActions({
+            windowId,
+            viewId,
+            selectedIds: table.selected,
+            viewProfileId: null,
+            parentView: {},
+            childView: {},
+          })
+        );
+        // viewProfileId: includedView.viewProfileId || rawModal.viewProfileId
+
+        // childView={
+        //   hasIncluded
+        //     ? {
+        //         viewId: includedView.viewId,
+        //         viewSelectedIds: childSelected,
+        //         windowType: includedView.windowId,
+        //       }
+        //     : NO_VIEW
+        // }
+        // parentView={
+        //   isIncluded
+        //     ? {
+        //         viewId: parentDefaultViewId,
+        //         viewSelectedIds: parentSelected,
+        //         windowType: parentWindowType,
+        //       }
+        //     : NO_VIEW
+        // }
 
         return Promise.resolve(response.data);
       })
