@@ -2,6 +2,7 @@ package de.metas.report;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.io.Files;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -18,7 +19,6 @@ import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -26,8 +26,6 @@ import lombok.Value;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.print.JRReportViewerProvider;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -60,10 +58,6 @@ public abstract class ReportStarter extends JavaProcess
 	// services
 	private static final Logger logger = LogManager.getLogger(ReportStarter.class);
 
-	private static JRReportViewerProvider swingJRReportViewerProvider;
-
-	private static JRReportViewerProvider viewerProvider = null;
-
 	private final transient ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
 	private final transient IPrintServiceRegistry printServiceRegistry = Services.get(IPrintServiceRegistry.class);
 
@@ -77,7 +71,7 @@ public abstract class ReportStarter extends JavaProcess
 	 * </ul>
 	 */
 	@Override
-	protected final String doIt() throws Exception
+	protected final String doIt()
 	{
 		final ProcessInfo pi = getProcessInfo();
 
@@ -108,19 +102,6 @@ public abstract class ReportStarter extends JavaProcess
 		return MSG_OK;
 	}
 
-	/**
-	 * Set jasper report viewer provider.
-	 */
-	public static void setNonSwingViewerProvider(@NonNull final JRReportViewerProvider provider)
-	{
-		viewerProvider = provider;
-	}
-
-	public static void setSwingViewerProvider(@NonNull final JRReportViewerProvider provider)
-	{
-		swingJRReportViewerProvider = provider;
-	}
-
 	private void startProcessDirectPrint(@NonNull final ReportPrintingInfo reportPrintingInfo)
 	{
 		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
@@ -131,16 +112,14 @@ public abstract class ReportStarter extends JavaProcess
 		printService.print(result, pi);
 	}
 
-	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
+	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo)
 	{
 		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
 
 		final OutputType desiredOutputType;
 		if (reportPrintingInfo.isPrintPreview())
 		{
-			// Get the jasper report viewer provider and ask it what format it wants
-			final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
-			desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+			desiredOutputType = null;
 		}
 		else
 		{
@@ -198,15 +177,6 @@ public abstract class ReportStarter extends JavaProcess
 		}
 
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
-
-		//
-		// Print preview (if swing client)
-		if (reportPrintingInfo.isPrintPreview()
-				&& Ini.isSwingClient()
-				&& swingJRReportViewerProvider != null)
-		{
-			swingJRReportViewerProvider.openViewer(result.getReportData(), outputType, processInfo);
-		}
 	}
 
 	private static String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
@@ -276,21 +246,6 @@ public abstract class ReportStarter extends JavaProcess
 			info.reportingSystemType(ReportingSystemType.Other);
 		}
 		return info.build();
-	}
-
-	/**
-	 * @return {@link JRReportViewerProvider} or null
-	 */
-	private JRReportViewerProvider getJRReportViewerProviderOrNull()
-	{
-		if (Ini.isSwingClient())
-		{
-			return swingJRReportViewerProvider;
-		}
-		else
-		{
-			return viewerProvider;
-		}
 	}
 
 	private void startProcess0(final ReportPrintingInfo reportPrintingInfo)

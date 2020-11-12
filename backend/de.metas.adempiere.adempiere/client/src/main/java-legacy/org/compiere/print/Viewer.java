@@ -133,7 +133,7 @@ import net.miginfocom.swing.MigLayout;
  * 				<li>FR [ 1762466 ] Add "Window" menu to report viewer.
  * 				<li>FR [ 1894640 ] Report Engine: Excel Export support
  */
-public class Viewer extends CFrame
+class Viewer extends CFrame
 	implements ActionListener, WindowStateListener
 {
 	private static final long serialVersionUID = 5629054363187020694L;

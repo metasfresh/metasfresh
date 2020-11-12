@@ -564,7 +564,7 @@ public class ProcessExecutionResult
 		return printFormat;
 	}
 
-	public void setReportData(final byte[] data, final String filename, final String contentType)
+	public void setReportData(final byte[] data, @Nullable final String filename, final String contentType)
 	{
 		reportData = data;
 		reportFilename = filename;

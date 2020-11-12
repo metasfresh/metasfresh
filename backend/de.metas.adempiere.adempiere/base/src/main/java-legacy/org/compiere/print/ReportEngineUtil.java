@@ -62,16 +62,6 @@ public class ReportEngineUtil
 {
 	private static final Logger log = LogManager.getLogger(ReportEngineUtil.class);
 
-	@Value(staticConstructor = "of")
-	private static class ReportEngineTypeAndRecordId
-	{
-		@With
-		@NonNull ReportEngineType type;
-
-		@With
-		int recordId;
-	}
-
 	@Value
 	@Builder
 	public static class StandardDocumentReportInfo
@@ -93,6 +83,84 @@ public class ReportEngineUtil
 		int copies;
 
 		BPartnerId bpartnerId;
+	}
+	public static void startJasperReportsProcess(@NonNull final ProcessInfo processInfo)
+	{
+		final AdProcessId adProcessId = processInfo.getAdProcessId();
+
+		final ReportEngineType reportEngineDocumentType = ReportEngineType.ofProcessIdOrNull(adProcessId);
+		if (reportEngineDocumentType != null)
+		{
+			final StandardDocumentReportInfo reportInfo = getStandardDocumentReportInfo(
+					reportEngineDocumentType,
+					processInfo.getRecord_ID(),
+					-1 // adPrintFormatToUseId
+			);
+			startJasperReportsProcess(processInfo, reportInfo.getJasperProcessId());
+		}
+		else
+		{
+			startJasperReportsProcess(processInfo, processInfo.getAdProcessId());
+		}
+	}
+
+	private static final void startJasperReportsProcess(
+			@NonNull final ProcessInfo processInfo,
+			@NonNull final AdProcessId jasperProcessId)
+	{
+		final ProcessExecutionResult jasperProcessResult = ProcessInfo.builder()
+				//
+				.setCtx(processInfo.getCtx())
+				.setCreateTemporaryCtx()
+				.setClientId(processInfo.getClientId())
+				.setUserId(processInfo.getUserId())
+				.setRoleId(processInfo.getRoleId())
+				.setWhereClause(processInfo.getWhereClause())
+				.setWindowNo(processInfo.getWindowNo())
+				.setTabNo(processInfo.getTabNo())
+				.setPrintPreview(processInfo.isPrintPreview())
+				//
+				.setAD_Process_ID(jasperProcessId)
+				.setRecord(processInfo.getRecordRefOrNull())
+				.setReportLanguage(processInfo.getReportLanguage())
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
+				// TODO .addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
+				//
+				// Execute Process
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
+
+		//
+		// Throw exception in case of failure
+		jasperProcessResult.propagateErrorIfAny();
+
+		//
+		// Update caller process result
+		final ProcessExecutionResult callerProcessResult = processInfo.getResult();
+		callerProcessResult.setReportData(jasperProcessResult.getReportData(), jasperProcessResult.getReportFilename(), jasperProcessResult.getReportContentType());
+	}
+
+
+	public static String getBarcodeServlet(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getValue(ReportConstants.SYSCONFIG_BarcodeServlet,
+				null,  // defaultValue,
+				clientId.getRepoId(),
+				orgId.getRepoId());
+	}
+
+	@Value(staticConstructor = "of")
+	private static class ReportEngineTypeAndRecordId
+	{
+		@With
+		@NonNull ReportEngineType type;
+
+		@With
+		int recordId;
 	}
 
 	@NonNull
@@ -190,7 +258,7 @@ public class ReportEngineUtil
 		// Order - Print Shipment or Invoice
 		if (type == ReportEngineType.ORDER)
 		{
-			final ReportEngineUtil.ReportEngineTypeAndRecordId what = getDocumentWhat(Record_ID);
+			final ReportEngineTypeAndRecordId what = getDocumentWhat(Record_ID);
 			type = what.getType();
 			Record_ID = what.getRecordId();
 		}    // Order
@@ -507,73 +575,4 @@ public class ReportEngineUtil
 				.bpartnerId(bpartnerId)
 				.build();
 	}
-
-	public static void startJasperReportsProcess(@NonNull final ProcessInfo processInfo)
-	{
-		final AdProcessId adProcessId = processInfo.getAdProcessId();
-
-		final ReportEngineType reportEngineDocumentType = ReportEngineType.ofProcessIdOrNull(adProcessId);
-		if (reportEngineDocumentType != null)
-		{
-			final ReportEngineUtil.StandardDocumentReportInfo reportInfo = getStandardDocumentReportInfo(
-					reportEngineDocumentType,
-					processInfo.getRecord_ID(),
-					-1 // adPrintFormatToUseId
-			);
-			ReportEngineUtil.startJasperReportsProcess(processInfo, reportInfo.getJasperProcessId());
-		}
-		else
-		{
-			ReportEngineUtil.startJasperReportsProcess(processInfo, processInfo.getAdProcessId());
-		}
-	}
-
-	public static final void startJasperReportsProcess(
-			@NonNull final ProcessInfo processInfo,
-			@NonNull final AdProcessId jasperProcessId)
-	{
-		final ProcessExecutionResult jasperProcessResult = ProcessInfo.builder()
-				//
-				.setCtx(processInfo.getCtx())
-				.setCreateTemporaryCtx()
-				.setClientId(processInfo.getClientId())
-				.setUserId(processInfo.getUserId())
-				.setRoleId(processInfo.getRoleId())
-				.setWhereClause(processInfo.getWhereClause())
-				.setWindowNo(processInfo.getWindowNo())
-				.setTabNo(processInfo.getTabNo())
-				.setPrintPreview(processInfo.isPrintPreview())
-				//
-				.setAD_Process_ID(jasperProcessId)
-				.setRecord(processInfo.getRecordRefOrNull())
-				.setReportLanguage(processInfo.getReportLanguage())
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngineUtil.getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
-				// TODO .addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
-				//
-				// Execute Process
-				.buildAndPrepareExecution()
-				.executeSync()
-				.getResult();
-
-		//
-		// Throw exception in case of failure
-		jasperProcessResult.propagateErrorIfAny();
-
-		//
-		// Update caller process result
-		final ProcessExecutionResult callerProcessResult = processInfo.getResult();
-		callerProcessResult.setReportData(jasperProcessResult.getReportData(), jasperProcessResult.getReportFilename(), jasperProcessResult.getReportContentType());
-	}
-
-	public static String getBarcodeServlet(
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
-	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		return sysConfigBL.getValue(ReportConstants.SYSCONFIG_BarcodeServlet,
-				null,  // defaultValue,
-				clientId.getRepoId(),
-				orgId.getRepoId());
-	}
-
 }

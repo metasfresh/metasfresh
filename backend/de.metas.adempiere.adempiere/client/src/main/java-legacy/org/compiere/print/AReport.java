@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.RowSet;
-import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
 import org.compiere.apps.ADialog;
+import org.compiere.apps.AMenu;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
@@ -243,7 +243,13 @@ public class AReport implements ActionListener
 			final ReportEngine re = new ReportEngine (Env.getCtx(), pf, m_query, info);
 			re.setWhereExtended(m_whereExtended);
 			re.setWindowNo(WindowNo);
-			ReportCtl.preview(re);
+
+			final Viewer viewer = new Viewer(re);
+			final JFrame top = Env.getWindow(Env.WINDOW_MAIN);
+			if (top instanceof AMenu)
+			{
+				((AMenu)top).getWindowManager().add(viewer);
+			}
 		}
 	}	//	launchReport
 
