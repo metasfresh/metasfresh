@@ -54,7 +54,7 @@ public class RequestDAO implements IRequestDAO
 		request.setAD_Table_ID(candidate.getRecordRef() != null ? candidate.getRecordRef().getAD_Table_ID() : -1);
 		request.setRecord_ID(candidate.getRecordRef() != null ? candidate.getRecordRef().getRecord_ID() : -1);
 		request.setC_BPartner_ID(BPartnerId.toRepoId(candidate.getPartnerId()));
-		request.setC_Order_ID(candidate.getOrderId().getRepoId() > 0 ? candidate.getOrderId().getRepoId() : 0);
+		request.setC_Order_ID(candidate.getOrderId() != null ? candidate.getOrderId().getRepoId() : 0);
 		request.setAD_User_ID(UserId.toRepoId(candidate.getUserId()));
 		request.setR_RequestType_ID(candidate.getRequestTypeId().getRepoId());
 		request.setM_QualityNote_ID(QualityNoteId.toRepoId(candidate.getQualityNoteId()));
