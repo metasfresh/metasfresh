@@ -2,11 +2,8 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-// import Queue from 'simple-promise-queue';
 import cx from 'classnames';
-// import _ from 'lodash';
 
-// import { quickActionsRequest } from '../../api';
 import keymap from '../../shortcuts/keymap';
 import QuickActionsContextShortcuts from '../keyshortcuts/QuickActionsContextShortcuts';
 
@@ -31,19 +28,12 @@ export class QuickActions extends Component {
   constructor(props) {
     super(props);
 
-    // this.state = initialState;
     this.state = {
       isDropdownOpen: false,
       btnTooltip: false,
       listTooltip: false,
       // loading: false,
     };
-
-    // this.fetchActions = this.fetchActions.bind(this);
-
-    // this.queue = new Queue({
-    //   autoStart: true,
-    // });
   }
 
   // componentDidMount = () => {
@@ -173,7 +163,9 @@ export class QuickActions extends Component {
   onClick = (e) => {
     e.preventDefault;
 
-    const { quickActions: { actions } } = this.props;
+    const {
+      quickActions: { actions },
+    } = this.props;
 
     this.handleClick(actions[0]);
   };
@@ -466,7 +458,7 @@ export class QuickActions extends Component {
  */
 QuickActions.propTypes = {
   // from @connect
-  actions: PropTypes.array,
+  quickActions: PropTypes.object,
   openModal: PropTypes.func.isRequired,
   fetchQuickActions: PropTypes.func.isRequired,
   deleteQuickActions: PropTypes.func.isRequired,

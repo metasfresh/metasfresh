@@ -98,7 +98,6 @@ export default class DocumentList extends Component {
       closeOverlays,
       parentDefaultViewId,
       inBackground,
-      fetchQuickActionsOnInit,
       // TODO: Check if we need two separate flags
       isModal,
       inModal,
@@ -137,7 +136,6 @@ export default class DocumentList extends Component {
       childSelected,
       parentSelected,
       onUpdateQuickActions,
-      setQuickActionsComponentRef,
       filterId,
     } = this.props;
     const {
@@ -287,12 +285,10 @@ export default class DocumentList extends Component {
               <QuickActions
                 className="header-element align-items-center"
                 processStatus={processStatus}
-                ref={setQuickActionsComponentRef}
                 selected={selected}
                 viewId={viewId}
                 windowId={windowId}
                 viewProfileId={viewProfileId}
-                fetchOnInit={fetchQuickActionsOnInit}
                 disabled={hasIncluded && blurWhenOpen}
                 shouldNotUpdate={inBackground && !hasIncluded}
                 inBackground={disablePaginationShortcuts}

@@ -186,7 +186,6 @@ class Container extends PureComponent {
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
                       parentWindowType={rawModal.windowId}
-                      fetchQuickActionsOnInit
                       isModal
                       isIncluded
                       processStatus={processStatus}

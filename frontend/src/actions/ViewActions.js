@@ -399,19 +399,7 @@ export function fetchDocument({
         }
 
         const table = getTable(state, tableId);
-        console.log('TABLEDATA: ', table.selected)
 
-        // get quickactions
-        dispatch(
-          fetchQuickActions({
-            windowId,
-            viewId,
-            selectedIds: table.selected,
-            viewProfileId: null,
-            parentView: {},
-            childView: {},
-          })
-        );
         // viewProfileId: includedView.viewProfileId || rawModal.viewProfileId
 
         // childView={
@@ -432,6 +420,18 @@ export function fetchDocument({
         //       }
         //     : NO_VIEW
         // }
+
+        // get quickactions
+        dispatch(
+          fetchQuickActions({
+            windowId,
+            viewId,
+            selectedIds: table.selected,
+            viewProfileId: null,
+            parentView: {},
+            childView: {},
+          })
+        );
 
         return Promise.resolve(response.data);
       })

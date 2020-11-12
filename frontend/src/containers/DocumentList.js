@@ -270,14 +270,6 @@ class DocumentListContainer extends Component {
   };
 
   /**
-   * @method setQuickActionsComponentRef
-   * @summary Store ref to the quick actions component
-   */
-  setQuickActionsComponentRef = (ref) => {
-    this.quickActionsComponent = ref;
-  };
-
-  /**
    * @method updateQuickActions
    * @summary Trigger the QuickActions component to fetch quick actions for the new selection
    */
@@ -787,7 +779,6 @@ class DocumentListContainer extends Component {
         onRedirectToNewDocument={this.onRedirectToNewDocument}
         onResetInitialFilters={this.resetInitialFilters}
         onUpdateQuickActions={this.updateQuickActions}
-        setQuickActionsComponentRef={this.setQuickActionsComponentRef}
       />
     );
   }

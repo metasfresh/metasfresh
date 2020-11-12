@@ -121,7 +121,6 @@ class DocList extends PureComponent {
             includedView={includedView}
             inBackground={rawModal.visible}
             inModal={modal.visible}
-            fetchQuickActionsOnInit
             processStatus={processStatus}
             disablePaginationShortcuts={modal.visible || rawModal.visible}
             sort={queryCopy.sort}
@@ -146,7 +145,6 @@ class DocList extends PureComponent {
                 parentDefaultViewId={viewId}
                 updateParentSelectedIds={this.handleUpdateParentSelectedIds}
                 viewProfileId={includedView.viewProfileId}
-                fetchQuickActionsOnInit
                 processStatus={processStatus}
                 isIncluded
                 inBackground={false}

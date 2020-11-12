@@ -1,10 +1,7 @@
-// import _ from 'lodash';
-
 import { quickActionsRequest, topActionsRequest } from '../api';
 import {
   DELETE_QUICK_ACTIONS,
   DELETE_TOP_ACTIONS,
-  // FETCHED_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS_FAILURE,
   FETCH_QUICK_ACTIONS_SUCCESS,
@@ -17,18 +14,14 @@ import { getQuickActionsId } from '../reducers/actionsHandler';
 import { getTable } from '../reducers/tables';
 
 /*
- * Action creator called when quick actions are successfully fetched
+ * @method getTableActions
+ * @summary Action creator that calls the quick actions fetch internally for
+ * when we're updating the table selection 
+ 
+ * @param {string} id - table id
+ * @param {number} windowId
+ * @param {string} viewId
  */
-// export function fetchQuickActions(windowId, id, data) {
-//   return {
-//     type: FETCHED_QUICK_ACTIONS,
-//     payload: {
-//       data,
-//       windowId,
-//       id,
-//     },
-//   };
-// }
 export function getTableActions({ tableId, windowId, viewId }) {
   return (dispatch, getState) => {
     const state = getState();
@@ -52,6 +45,17 @@ export function getTableActions({ tableId, windowId, viewId }) {
   };
 }
 
+/**
+ * @method fetchQuickActions
+ * @summary Fetches the quick actions
+ *
+ * @param {*} windowId
+ * @param {*} viewId
+ * @param {*} viewProfileId
+ * @param {*} selectedIds
+ * @param {*} childView
+ * @param {*} parentView
+ */
 export function fetchQuickActions({
   windowId,
   viewId,
@@ -100,123 +104,39 @@ export function fetchQuickActions({
 }
 
 /**
- * @async
- * @method renderCancelButton
- * @summary ToDo: Describe the method
+ * @method deleteQuickActions
+ * @summary Action creator to delete quick actions from the store
+ *
  * @param {*} windowId
  * @param {*} viewId
- * @param {*} viewProfileId
- * @param {*} selected
- * @param {*} childView
- * @param {*} parentView
- * @param {*} resolve
- * @param {*} reject
- * @todo Rewrite this as an action creator
  */
+export function deleteQuickActions(windowId, viewId) {
+  const id = getQuickActionsId({ windowId, viewId });
 
-/*
-export async function fetchActions(
-  windowId,
-  viewId,
-  viewProfileId,
-  selected,
-  childView,
-  parentView //,
-  // resolve,
-  // reject
-) {
-  // const { fetchedQuickActions } = this.props;
-  // if (!this.mounted) {
-  //   return resolve();
-  // }
-
-  // if (windowId && viewId) {
-    await quickActionsRequest(
-      windowId,
-      viewId,
-      viewProfileId,
-      selected,
-      childView,
-      parentView
-    )
-      .then((result) => {
-        const [respRel, resp] = result;
-
-        // if (this.mounted) {
-        //   const currentActions =
-        //     resp && resp.data ? resp.data.actions : respRel.data.actions;
-        //   const relatedActions =
-        //     resp && resp.data ? respRel.data.actions : null;
-
-        //   if (
-        //     (parentView.viewId || childView.viewId) &&
-        //     relatedActions &&
-        //     !_.isEmpty(parentView)
-        //   ) {
-        //     const windowType = parentView.windowType
-        //       ? parentView.windowType
-        //       : childView.windowType;
-        //     const id = parentView.viewId
-        //       ? parentView.viewId
-        //       : childView.viewId;
-        //     fetchedQuickActions(windowType, id, relatedActions);
-        //   }
-
-        //   // fetchedQuickActions(windowId, viewId, currentActions);
-
-        //   return this.setState(
-        //     {
-        //       loading: false,
-        //     },
-        //     resolve
-        //   );
-        // }
-      })
-      .catch((e) => {
-        // eslint-disable-next-line no-console
-        console.error(e);
-
-        // if (this.mounted) {
-        //   return this.setState(
-        //     {
-        //       loading: false,
-        //     },
-        //     reject
-        //   );
-        // }
-      });
-  // } else {
-    // if (this.mounted) {
-    //   return this.setState(
-    //     {
-    //       loading: false,
-    //     },
-    //     resolve
-    //   );
-    // }
-  // }
-}
-*/
-
-/*
- * Action creator to delete quick actions from the store
- */
-export function deleteQuickActions(windowId, id) {
   return {
     type: DELETE_QUICK_ACTIONS,
-    payload: {
-      windowId,
-      id,
-    },
+    payload: { id },
   };
 }
 
+/**
+ * @method deleteTopActions
+ * @summary Deletes tab's actions
+ */
 export function deleteTopActions() {
   return {
     type: DELETE_TOP_ACTIONS,
   };
 }
 
+/**
+ * @method fetchTopActions
+ * @summary Fetches tab's top actions
+ *
+ * @param {*} windowType
+ * @param {*} docId
+ * @param {*} tabId
+ */
 export function fetchTopActions(windowType, docId, tabId) {
   return (dispatch) => {
     dispatch({
