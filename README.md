@@ -2,8 +2,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/30ecd0d9ba8a4561a60335644b592418)](https://www.codacy.com/gh/metasfresh/metasfresh?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh&amp;utm_campaign=Badge_Grade)
 [![release](https://img.shields.io/badge/release-5.158-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.158)
-[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
+<!-- [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh) -->
 
 ![Twitter Follow](https://img.shields.io/twitter/follow/metasfresh?style=social)
 
@@ -16,9 +16,10 @@ Equipped with wide and detailed functionality, metasfresh fits for companies fro
 
 It has a 3-tier architecture with Rest-API and a Web User Frontend developed in HTML5/ ReactJS/ Redux.
 
-![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36896187-f5ed2e48-1e11-11e8-9c41-a7878c148f81.gif)
+![metasfresh-sales-order](https://github.com/metasfresh/metasfresh/blob/master/images/sales-order-recording-metasfresh.gif)
+<!-- ![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36896187-f5ed2e48-1e11-11e8-9c41-a7878c148f81.gif) -->
 
-<img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
+<img src="/images/screenshot-kpi-dashboard-new.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order-new.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt-new.png" width="33%" alt="Material Receipt Window"></img>
 
 ## Installation
 We publish a stable Release of metasfresh every Friday - ok, we skip 1 week at the end of the year ;-) . You can download it [here](https://metasfresh.com/en/download/#latest-server-update).

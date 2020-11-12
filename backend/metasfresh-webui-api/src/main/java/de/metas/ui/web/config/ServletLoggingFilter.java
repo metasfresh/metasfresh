@@ -94,10 +94,10 @@ public class ServletLoggingFilter implements Filter
 		{
 			//
 			// log the request
-			if (logger.isInfoEnabled())
+			if (logger.isDebugEnabled())
 			{
 				final String requestInfo = extractRequestInfo(request);
-				logger.info("Executed in {}: {}", stopwatch.stop(), requestInfo);
+				logger.debug("Executed in {}: {}", stopwatch.stop(), requestInfo);
 			}
 
 			//
