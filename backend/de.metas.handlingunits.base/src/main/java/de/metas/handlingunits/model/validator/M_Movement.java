@@ -58,6 +58,8 @@ public class M_Movement
 {
 	public static final transient M_Movement instance = new M_Movement();
 
+	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+
 	@Init
 	public void onInit()
 	{
@@ -169,93 +171,14 @@ public class M_Movement
 	public void moveHandlingUnits(final I_M_Movement movement)
 	{
 		final boolean doReversal = false;
-		moveHandlingUnits(movement, doReversal);
+		huMovementBL.moveHandlingUnits(movement, doReversal);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void unmoveHandlingUnits(final I_M_Movement movement)
 	{
 		final boolean doReversal = true;
-		moveHandlingUnits(movement, doReversal);
-	}
-
-	private void moveHandlingUnits(final I_M_Movement movement, final boolean doReversal)
-	{
-		final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
-		final Date movementDate = movement.getMovementDate();
-
-		try (final ITemporaryDateTrx dateTrx = IHUContext.DateTrxProvider.temporarySet(movementDate))
-		{
-			for (final I_M_MovementLine movementLine : movementDAO.retrieveLines(movement, I_M_MovementLine.class))
-			{
-				moveHandlingUnits(movementLine, doReversal);
-			}
-		}
-	}
-
-	private void moveHandlingUnits(final I_M_MovementLine movementLine, final boolean doReversal)
-	{
-		final I_M_Locator locatorFrom;
-		final I_M_Locator locatorTo;
-		if (!doReversal)
-		{
-			locatorFrom = movementLine.getM_Locator();
-			locatorTo = movementLine.getM_LocatorTo();
-		}
-		else
-		{
-			locatorFrom = movementLine.getM_LocatorTo();
-			locatorTo = movementLine.getM_Locator();
-		}
-
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(movementLine);
-		for (final I_M_HU hu : hus)
-		{
-			moveHandlingUnit(hu, locatorFrom, locatorTo, doReversal);
-		}
-	}
-
-	private void moveHandlingUnit(
-			final I_M_HU hu,
-			final I_M_Locator locatorFrom, final I_M_Locator locatorTo,
-			final boolean doReversal)
-	{
-		//
-		// Make sure hu's current locator is the locator from which we need to move
-		final int huLocatorIdOld = hu.getM_Locator_ID();
-		final int locatorFromId = locatorFrom.getM_Locator_ID();
-		final int locatorToId = locatorTo.getM_Locator_ID();
-		Check.assume(huLocatorIdOld > 0
-				&& (huLocatorIdOld == locatorFromId || huLocatorIdOld == locatorToId),
-				"HU Locator was supposed to be {} or {}, but was {}", locatorFrom, locatorTo, hu.getM_Locator_ID());
-
-		// If already moved, then do nothing.
-		if (huLocatorIdOld == locatorToId)
-		{
-			return;
-		}
-
-		//
-		// Update HU's Locator
-		// FIXME: refactor this and have a common way of setting HU's locator
-		hu.setM_Locator_ID(locatorToId);
-
-		// Activate HU (not needed, but we want to be sure)
-		// (even if we do reversals)
-
-		// NOTE: as far as we know, HUContext won't be used by setHUStatus, because the status "active" doesn't
-		// trigger a movement to/from empties warehouse. In this case a movement is already created from a lager to another.
-		// So no HU leftovers.
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
-		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-
-		// Save changed HU
-		handlingUnitsDAO.saveHU(hu);
+		huMovementBL.moveHandlingUnits(movement, doReversal);
 	}
 
 }
