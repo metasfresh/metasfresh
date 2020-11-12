@@ -194,7 +194,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 		}
 		else
 		{
-			ProcessPreconditionsResolution.rejectWithInternalReason("no C_DocTypeTarget_ID");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no C_DocTypeTarget_ID");
 		}
 
 		return ProcessPreconditionsResolution.accept();
