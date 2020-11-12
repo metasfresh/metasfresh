@@ -46,13 +46,6 @@ public class R_Request_CreateFromOrder_Async extends WorkpackageProcessorAdapter
 	 * Schedule the request creation based on the given order id
 	 * <p>
 	 * The request will contain information taken from the order
-	 * <li>inout
-	 * <li>product
-	 * <li>partner
-	 * <li>dateDelivered
-	 * <li>qualityNotice
-	 * <li>org
-	 * <li>linked salesrep of the org, etc.
 	 */
 	public static void createWorkpackage(final int orderId)
 	{
@@ -105,7 +98,7 @@ public class R_Request_CreateFromOrder_Async extends WorkpackageProcessorAdapter
 		final I_C_Order order = queueDAO.retrieveItems(workPackage, I_C_Order.class, localTrxName).get(0);
 
 		// create a request based on the order's information.
-		requestBL.createRequestFromOrder(order);
+		requestBL.createTestApplianceRequestFromOrder(order);
 
 		return Result.SUCCESS;
 	}

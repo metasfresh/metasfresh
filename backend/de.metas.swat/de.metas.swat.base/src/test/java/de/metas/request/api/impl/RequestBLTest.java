@@ -1,14 +1,17 @@
 package de.metas.request.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
+import de.metas.inout.api.impl.QualityNoteDAO;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.request.api.IRequestBL;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
@@ -18,14 +21,12 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.inout.api.impl.QualityNoteDAO;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.request.api.IRequestBL;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -52,6 +53,7 @@ import de.metas.util.Services;
 public class RequestBLTest
 {
 	private IRequestBL requestBL;
+	private IRequestTypeDAO requestTypeDAO;
 
 	@BeforeEach
 	public void init()
@@ -59,6 +61,7 @@ public class RequestBLTest
 		AdempiereTestHelper.get().init();
 
 		this.requestBL = Services.get(IRequestBL.class);
+		this.requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	}
 
 	@Test
@@ -115,6 +118,28 @@ public class RequestBLTest
 
 	}
 
+	@Test
+	public void createTestApplianceRequestFromOrder()
+	{
+		final I_C_Order order = createOrder();
+
+		final I_R_Request request = requestBL.createTestApplianceRequestFromOrder(order);
+
+		assertThat(request.getAD_Org_ID()).isEqualTo(order.getAD_Org_ID());
+		assertThat(request.getM_Product_ID()).isEqualTo(order.getM_Product_ID());
+		assertThat(request.getR_RequestType_ID()).isEqualTo(requestTypeDAO.retrieveTestApplianceRequestTypeId());
+		assertThat(request.getAD_Table_ID()).isEqualTo(getTableId(I_C_Order.class));
+		assertThat(request.getRecord_ID()).isEqualTo(order.getC_Order_ID());
+		assertThat(request.getC_BPartner_ID()).isEqualTo(order.getC_BPartner_ID());
+		assertThat(request.getAD_User_ID()).isEqualTo(order.getAD_User_ID());
+		assertThat(request.getDateDelivered()).isEqualTo(order.getDatePromised());
+		assertThat(request.getSummary()).isEqualTo(order.getDescription());
+		assertThat(request.getConfidentialType()).isEqualTo(X_R_Request.CONFIDENTIALTYPE_Internal);
+		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(0);
+		assertThat(request.getPerformanceType()).isNullOrEmpty();
+
+	}
+
 	private I_DD_Order createDDOrder()
 	{
 		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
@@ -129,6 +154,19 @@ public class RequestBLTest
 
 		save(ddOrder);
 		return ddOrder;
+	}
+
+	private I_C_Order createOrder()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+
+		order.setIsSOTrx(true);
+		order.setC_BPartner_ID(createPartner("Partner 3").getC_BPartner_ID());
+		order.setAD_User_ID(createUser("User 3").getAD_User_ID());
+		order.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
+
+		save(order);
+		return order;
 	}
 
 	private I_DD_OrderLine createDDOrderLine(final I_DD_Order ddOrder)

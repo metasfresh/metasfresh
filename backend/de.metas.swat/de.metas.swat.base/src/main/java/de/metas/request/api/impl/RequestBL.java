@@ -1,21 +1,6 @@
 package de.metas.request.api.impl;
 
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.QualityNoteId;
@@ -34,6 +19,19 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_R_Request;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
 
 /*
  * #%L
@@ -170,7 +168,7 @@ public class RequestBL implements IRequestBL
 	}
 
 	@Override
-	public I_R_Request createRequestFromOrder(@NonNull final I_C_Order order)
+	public I_R_Request createTestApplianceRequestFromOrder(@NonNull final I_C_Order order)
 	{
 		final RequestTypeId requestTypeId = requestTypeDAO.retrieveTestApplianceRequestTypeId();
 
@@ -178,7 +176,6 @@ public class RequestBL implements IRequestBL
 				.summary(order.getDescription()) // TODO: Decide what to put here
 				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
-				.productId(ProductId.ofRepoId(order.getM_Product_ID()))
 				.recordRef(TableRecordReference.of(order))
 				.requestTypeId(requestTypeId)
 				.partnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))

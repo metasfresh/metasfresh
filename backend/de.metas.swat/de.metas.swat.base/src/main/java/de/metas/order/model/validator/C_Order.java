@@ -1,6 +1,10 @@
 package de.metas.order.model.validator;
 
+import de.metas.event.IEventBusFactory;
+import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.request.service.async.spi.impl.R_Request_CreateFromOrder_Async;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -16,8 +20,8 @@ public class C_Order
 	public void onInit()
 	{
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		//   Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InOutUserNotificationsProducer.EVENTBUS_TOPIC);
-		//   Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(ReturnInOutUserNotificationsProducer.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InOutUserNotificationsProducer.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(ReturnInOutUserNotificationsProducer.EVENTBUS_TOPIC);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
