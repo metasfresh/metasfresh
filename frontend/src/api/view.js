@@ -269,8 +269,6 @@ export async function quickActionsRequest({
   let request = null;
   let query = null;
 
-  // console.log('PARAMS: ', windowId, viewId, selectedIds, childView, parentView)
-
   if (parentView.viewId) {
     query = getQueryString({
       viewProfileId,

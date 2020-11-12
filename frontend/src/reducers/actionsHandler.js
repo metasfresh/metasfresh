@@ -29,16 +29,6 @@ export const getQuickActions = createSelector(
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
-    // case FETCHED_QUICK_ACTIONS:
-    //   return {
-    //     ...state,
-    //     quickActions: {
-    //       ...state.quickActions,
-    //       [`${action.payload.windowId}${
-    //         action.payload.id ? `-${action.payload.id}` : ''
-    //       }`]: action.payload.data,
-    //     },
-    //   };
     case FETCH_QUICK_ACTIONS: {
       const { id } = action.payload;
 

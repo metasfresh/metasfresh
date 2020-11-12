@@ -107,7 +107,6 @@ export default class DocumentList extends Component {
       isIncluded,
       disablePaginationShortcuts,
       autofocus,
-      updateParentSelectedIds,
       modal,
       parentWindowType,
       viewData,
@@ -334,7 +333,6 @@ export default class DocumentList extends Component {
                 handleChangePage={onChangePage}
                 mainTable={true}
                 updateDocList={onFetchLayoutAndData}
-                onSelectionChanged={updateParentSelectedIds}
                 onSortTable={onSortData}
                 tabIndex={0}
                 disableOnClickOutside={clickOutsideLock}
