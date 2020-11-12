@@ -1356,16 +1356,18 @@ public class GridTable extends AbstractTableModel
 		//	cannot save
 		if (!m_open)
 		{
-			log.warn("Error - Open=" + m_open);
+			log.warn("Cannot save because grid table is not open");
 			return SAVE_ERROR;
 		}
 		//	no need - not changed - row not positioned - no Value changed
 		if (m_rowChanged == -1)
 		{
 			log.info("NoNeed - Changed=" + m_changed + ", Row=" + m_rowChanged);
-		//	return SAVE_ERROR;
+			//	return SAVE_ERROR;
 			if (!manualCmd)
+			{
 				return SAVE_OK;
+			}
 		}
 		//  Value not changed
 		if (m_rowData == null)
@@ -1388,7 +1390,9 @@ public class GridTable extends AbstractTableModel
 		if (m_rowChanged == -1)
 		{
 			if (m_newRow != -1)     //  new row and nothing changed - might be OK
+			{
 				m_rowChanged = m_newRow;
+			}
 			else
 			{
 				fireDataStatusEEvent("SaveErrorNoChange", "", true);

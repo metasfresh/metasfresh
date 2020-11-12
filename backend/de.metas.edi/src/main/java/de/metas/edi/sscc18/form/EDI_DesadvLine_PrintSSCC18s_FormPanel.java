@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IPair;
-import org.compiere.Adempiere;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.swing.CPanel;
@@ -54,7 +53,7 @@ import de.metas.edi.sscc18.IPrintableDesadvLineSSCC18Labels;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
+import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import org.adempiere.util.Services;
 
 /**
@@ -281,7 +280,7 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 
 	private void doCreateAndPrintSSCC18Labels()
 	{
-		final SSCC18CodeBL sscc18CodeService = Adempiere.getBean(SSCC18CodeBL.class);
+		final ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
 
 		new DesadvLineSSCC18Generator(sscc18CodeService)
 				.setContext(PlainContextAware.newOutOfTrxAllowThreadInherited(getCtx()))

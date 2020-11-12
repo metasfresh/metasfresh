@@ -178,8 +178,7 @@ public class DesadvBL implements IDesadvBL
 
 		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
 		final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
-		final org.compiere.model.I_C_BPartner buyerBPartner = bpartnerDAO.getById(buyerBPartnerId, org.compiere.model.I_C_BPartner.class);
-
+		
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, orderRecord);
 		newDesadvLine.setEDI_Desadv(desadvRecord);
 		newDesadvLine.setLine(orderLineRecord.getLine());

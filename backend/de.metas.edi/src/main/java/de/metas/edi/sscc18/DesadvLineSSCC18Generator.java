@@ -33,7 +33,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
@@ -42,8 +41,8 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
+import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 
@@ -61,7 +60,7 @@ public class DesadvLineSSCC18Generator
 	private static final transient Logger logger = LogManager.getLogger(DesadvLineSSCC18Generator.class);
 
 	// services
-	private final transient SSCC18CodeBL sscc18CodeBL;
+	private final transient ISSCC18CodeBL sscc18CodeBL;
 	private final transient IDesadvBL desadvBL = Services.get(IDesadvBL.class);
 
 	//
@@ -75,7 +74,7 @@ public class DesadvLineSSCC18Generator
 	/** {@link I_EDI_DesadvLine_SSCC} IDs to print */
 	private final Set<Integer> desadvLineSSCC_IDs_ToPrint = new LinkedHashSet<>();
 
-	public DesadvLineSSCC18Generator(@NonNull final SSCC18CodeBL sscc18CodeService)
+	public DesadvLineSSCC18Generator(@NonNull final ISSCC18CodeBL sscc18CodeService)
 	{
 		this.sscc18CodeBL = sscc18CodeService;
 	}
@@ -239,6 +238,7 @@ public class DesadvLineSSCC18Generator
 		// Create SSCC record
 		final I_EDI_DesadvLine_Pack desadvLineSSCC = InterfaceWrapperHelper.create(ctx, I_EDI_DesadvLine_Pack.class, trxName);
 		desadvLineSSCC.setAD_Org_ID(desadvLine.getAD_Org_ID());
+		desadvLineSSCC.setEDI_Desadv_ID(desadvLine.getEDI_Desadv_ID());
 		desadvLineSSCC.setEDI_DesadvLine(desadvLine);
 		desadvLineSSCC.setIPA_SSCC18(ipaSSCC18);
 		desadvLineSSCC.setQtyCU(luQtys.getQtyCUsPerTU());
