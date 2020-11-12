@@ -9,11 +9,12 @@ import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.print.IPrintService;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.DocumentReportService;
 import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -23,7 +24,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.compiere.print.ReportEngineUtil;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -222,8 +222,8 @@ public class HUReportExecutor
 				.setWindowNo(request.getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguageToUse)
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngineUtil.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
-				.addParameter(IPrintService.PARAM_PrintCopies, request.getCopies())
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies())
 				.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction

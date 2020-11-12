@@ -1,11 +1,27 @@
 package de.metas.document.archive.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
+import com.google.common.collect.Table;
+import de.metas.async.Async_Constants;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
+import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
+import de.metas.report.StandardDocumentReportType;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -24,31 +40,16 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MQuery;
-import org.compiere.model.PrintInfo;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
-import org.compiere.print.ReportEngineType;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import de.metas.async.Async_Constants;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
-import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -74,7 +75,7 @@ import lombok.NonNull;
 
 public class DefaultModelArchiver
 {
-	public static final DefaultModelArchiver of(final Object record)
+	public static DefaultModelArchiver of(final Object record)
 	{
 		return new DefaultModelArchiver()
 				.setRecord(record);
@@ -134,9 +135,9 @@ public class DefaultModelArchiver
 		final ReportEngine reportEngine = createReportEngine();
 		//
 		// PrintInfo (needed for archiving)
-		final PrintInfo printInfo = reportEngine.getPrintInfo();
+		final ArchiveInfo archiveInfo = reportEngine.getPrintInfo();
 
-		ITableRecordReference reference = TableRecordReference.of(printInfo.getAD_Table_ID(), printInfo.getRecord_ID());
+		ITableRecordReference reference = archiveInfo.getRecordRef();
 
 		//
 		// Create AD_Archive and save it
@@ -155,18 +156,18 @@ public class DefaultModelArchiver
 			final MPrintFormat printFormat = reportEngine.getPrintFormat();
 			if (printFormat != null && printFormat.getJasperProcess_ID() > 0)
 			{
-				printInfo.setAD_Process_ID(printFormat.getJasperProcess_ID());
+				archiveInfo.setProcessId(AdProcessId.ofRepoId(printFormat.getJasperProcess_ID()));
 			}
-			logger.debug("PrintInfo: {}", printInfo);
+			logger.debug("PrintInfo: {}", archiveInfo);
 
 			final boolean forceArchive = true; // always force archive (i.e. don't check again if document needs to be archived)
-			archive = InterfaceWrapperHelper.create(archiveBL.archive(pdfData, printInfo, forceArchive, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
+			archive = InterfaceWrapperHelper.create(archiveBL.archive(pdfData, archiveInfo, forceArchive, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
 			archive.setC_Doc_Outbound_Config(getC_Doc_Outbound_Config_OrNull()); // 09417: reference the config and it's settings will decide if a printing queue item shall be created
 
 			// https://github.com/metasfresh/metasfresh/issues/1240
 			// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
 			// but it needs to be available in case the system has to create a printing queue item for this archive
-			IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
+			IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, archiveInfo.getCopies());
 
 			//
 			// forward async batch if there is one
@@ -370,7 +371,7 @@ public class DefaultModelArchiver
 
 		//
 		// Create ReportEngine
-		final ReportEngineType reportEngineDocumentType = ReportEngine.getTypeByTableId(tableId);
+		final StandardDocumentReportType reportEngineDocumentType = ReportEngine.getTypeByTableId(tableId);
 		ReportEngine reportEngine = null;
 		if (reportEngineDocumentType != null)
 		{
@@ -383,13 +384,13 @@ public class DefaultModelArchiver
 		if (reportEngine == null)
 		{
 			final MQuery query = createMQuery(record);
-			final PrintInfo printInfo = createPrintInfo();
+			final ArchiveInfo archiveInfo = createArchiveInfo();
 
 			final boolean readFromDisk = false; // we can go with the cached version, because there is code making sure that we only get a cached version which has an equal ctx!
 
 			//
 			// Print format
-			int printFormatId = findBP_PrintFormat_ID(record, printInfo.getC_BPartner_ID());
+			int printFormatId = findBP_PrintFormat_ID(record, archiveInfo.getBpartnerId());
 			if (printFormatId <= 0)
 			{
 				printFormatId = getAD_PrintFormat_ID();
@@ -409,7 +410,7 @@ public class DefaultModelArchiver
 				printFormat = null;
 			}
 
-			reportEngine = new ReportEngine(ctx, printFormat, query, printInfo, trxName);
+			reportEngine = new ReportEngine(ctx, printFormat, query, archiveInfo, trxName);
 		}
 		logger.debug("ReportEngine: {} (DocumentType:{})", reportEngine, reportEngineDocumentType);
 
@@ -417,34 +418,32 @@ public class DefaultModelArchiver
 	}
 
 	@VisibleForTesting
-	public PrintInfo createPrintInfo()
+	public ArchiveInfo createArchiveInfo()
 	{
 		final Object record = getRecord();
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(record);
-		final int recordId = InterfaceWrapperHelper.getId(record);
+		final TableRecordReference recordRef = TableRecordReference.of(record);
 
 		final String documentNo = docActionBL.getDocumentNo(record);
 
-		final PrintInfo printInfo = new PrintInfo(documentNo, adTableId, recordId);
-		// printInfo.setAD_Process_ID(process_ID); // no process
-		printInfo.setAD_Table_ID(adTableId);
+		final ArchiveInfo archiveInfo = new ArchiveInfo(documentNo, recordRef);
+		// archiveInfo.setAD_Process_ID(process_ID); // no process
 
-		final Integer bpartnerId = InterfaceWrapperHelper.getValueOrNull(record, COLUMNNAME_C_BPartner_ID);
-		if (bpartnerId != null && bpartnerId > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(InterfaceWrapperHelper.getValueOrNull(record, COLUMNNAME_C_BPartner_ID));
+		if (bpartnerId != null)
 		{
-			printInfo.setC_BPartner_ID(bpartnerId);
+			archiveInfo.setBpartnerId(bpartnerId);
 		}
 
-		printInfo.setCopies(1); // TODO: C_BPartner.DocumentCopies + C_DocType.DocumentCopies
-		printInfo.setDocumentCopy(false); // TODO: check if document was already printed (e.g. check IsPrinted flag)
-		printInfo.setHelp(null);
-		printInfo.setWithDialog(false);
-		// printInfo.setName(name);
-		// printInfo.setDescription(description);
-		// printInfo.setPrinterName(printerName);
-		// printInfo.setRecord_ID(record_ID);
+		archiveInfo.setCopies(1); // TODO: C_BPartner.DocumentCopies + C_DocType.DocumentCopies
+		archiveInfo.setDocumentCopy(false); // TODO: check if document was already printed (e.g. check IsPrinted flag)
+		archiveInfo.setHelp(null);
+		archiveInfo.setWithDialog(false);
+		// archiveInfo.setName(name);
+		// archiveInfo.setDescription(description);
+		// archiveInfo.setPrinterName(printerName);
+		// archiveInfo.setRecord_ID(record_ID);
 
-		return printInfo;
+		return archiveInfo;
 	}
 
 	private void createCCFile(@NonNull final I_AD_Archive archive)
@@ -472,9 +471,9 @@ public class DefaultModelArchiver
 		return query;
 	}
 
-	private int findBP_PrintFormat_ID(final Object model, final int bpartnerId)
+	private int findBP_PrintFormat_ID(final Object model, final BPartnerId bpartnerId)
 	{
-		if (bpartnerId <= 0)
+		if (bpartnerId == null)
 		{
 			return -1;
 		}

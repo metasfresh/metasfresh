@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.compiere.print;
+package de.metas.report;
 
 import de.metas.process.AdProcessId;
 import lombok.Getter;
@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 
 /*************************************************************************/
 
-public enum ReportEngineType
+public enum StandardDocumentReportType
 {
 	ORDER(I_C_Order.Table_Name, I_C_Order.COLUMNNAME_C_Order_ID),
 	SHIPMENT(I_M_InOut.Table_Name, I_M_InOut.COLUMNNAME_M_InOut_ID),
@@ -55,7 +55,7 @@ public enum ReportEngineType
 	@Nullable
 	private final String keyColumnName;
 
-	ReportEngineType(
+	StandardDocumentReportType(
 			@Nullable final String baseTableName,
 			@Nullable final String keyColumnName)
 	{
@@ -64,37 +64,41 @@ public enum ReportEngineType
 	}
 
 	@Nullable
-	public static final ReportEngineType ofProcessIdOrNull(final AdProcessId adProcessId)
+	public static final StandardDocumentReportType ofProcessIdOrNull(@Nullable final AdProcessId adProcessId)
 	{
-		if (adProcessId.getRepoId() == 110)
+		if (adProcessId == null)
 		{
-			return ReportEngineType.ORDER;
+			return null;
+		}
+		else if (adProcessId.getRepoId() == 110)
+		{
+			return StandardDocumentReportType.ORDER;
 		}
 		else if (adProcessId.getRepoId() == 116)
 		{
-			return ReportEngineType.INVOICE;
+			return StandardDocumentReportType.INVOICE;
 		}
 		else if (adProcessId.getRepoId() == 117)
 		{
-			return ReportEngineType.SHIPMENT;
+			return StandardDocumentReportType.SHIPMENT;
 		}
 		else if (adProcessId.getRepoId() == 217)
 		{
-			return ReportEngineType.PROJECT;
+			return StandardDocumentReportType.PROJECT;
 		}
 		else if (adProcessId.getRepoId() == 159)
 		{
-			return ReportEngineType.DUNNING;
+			return StandardDocumentReportType.DUNNING;
 		}
 		// else if(adProcessId == 313) // Payment // => will be handled on upper level
 		// return;
 		if (adProcessId.getRepoId() == 53028) // Rpt PP_Order
 		{
-			return ReportEngineType.MANUFACTURING_ORDER;
+			return StandardDocumentReportType.MANUFACTURING_ORDER;
 		}
 		if (adProcessId.getRepoId() == 53044) // Rpt DD_Order
 		{
-			return ReportEngineType.DISTRIBUTION_ORDER;
+			return StandardDocumentReportType.DISTRIBUTION_ORDER;
 		}
 		else
 		{

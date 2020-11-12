@@ -25,20 +25,24 @@ package org.adempiere.archive.api.impl;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.adempiere.ad.table.api.IADTableDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.pdf.Document;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.PrintInfo;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.compiere.model.X_AD_Client;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.util.Env;
@@ -51,40 +55,40 @@ import de.metas.util.Services;
 public class ArchiveBL implements IArchiveBL
 {
 	@Override
-	public int archive(final byte[] data, final PrintInfo printInfo)
+	public int archive(final byte[] data, final ArchiveInfo archiveInfo)
 	{
 		final boolean force = false;
-		final I_AD_Archive archive = archive(data, printInfo, force);
+		final I_AD_Archive archive = archive(data, archiveInfo, force);
 		return archive == null ? -1 : archive.getAD_Archive_ID();
 	}
 
 	@Override
-	public I_AD_Archive archive(final byte[] data, final PrintInfo printInfo, final boolean force)
+	public I_AD_Archive archive(final byte[] data, final ArchiveInfo archiveInfo, final boolean force)
 	{
-		return archive(data, printInfo, force, ITrx.TRXNAME_None);
+		return archive(data, archiveInfo, force, ITrx.TRXNAME_None);
 	}
 
 	@Override
 	public I_AD_Archive archive(final byte[] data,
-			final PrintInfo printInfo,
+			final ArchiveInfo archiveInfo,
 			final boolean force,
 			final String trxName)
 	{
 		final boolean save = true;
-		return archive(data, printInfo, force, save, trxName);
+		return archive(data, archiveInfo, force, save, trxName);
 	}
 
 	@Override
 	public I_AD_Archive archive(final byte[] data,
-			final PrintInfo printInfo,
+			final ArchiveInfo archiveInfo,
 			final boolean force,
 			final boolean save,
 			final String trxName)
 	{
 		final Properties ctx = Env.getCtx();
-		if (force || isToArchive(ctx, printInfo))
+		if (force || isToArchive(ctx, archiveInfo))
 		{
-			return archive0(ctx, data, printInfo, save, trxName);
+			return archive0(ctx, data, archiveInfo, save, trxName);
 		}
 
 		return null;
@@ -92,12 +96,12 @@ public class ArchiveBL implements IArchiveBL
 
 	@Override
 	public I_AD_Archive archive(final LayoutEngine layout,
-			final PrintInfo printInfo,
+			final ArchiveInfo archiveInfo,
 			final boolean force,
 			final String trxName)
 	{
 		final Properties ctx = layout.getCtx();
-		if (force || isToArchive(ctx, printInfo))
+		if (force || isToArchive(ctx, archiveInfo))
 		{
 			final byte[] data = Document.getPDFAsArray(layout.getPageable(false));	// No Copy
 			if (data == null)
@@ -105,7 +109,7 @@ public class ArchiveBL implements IArchiveBL
 				return null;
 			}
 
-			return archive0(ctx, data, printInfo, true, trxName);
+			return archive0(ctx, data, archiveInfo, true, trxName);
 		}
 
 		return null;
@@ -113,32 +117,35 @@ public class ArchiveBL implements IArchiveBL
 
 	private I_AD_Archive archive0(final Properties ctx,
 			final byte[] data,
-			final PrintInfo info,
+			final ArchiveInfo archiveInfo,
 			final boolean save,
 			final String trxName)
 	{
 		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
-		final Properties ctxToUse = createContext(ctx, info, trxName);
+		final Properties ctxToUse = createContext(ctx, archiveInfo, trxName);
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctxToUse);
 		final I_AD_Archive archive = storage.newArchive(ctxToUse, trxName);
 
 		// FRESH-218: extract and set the language to the archive
-		final String language = getLanguageFromReport(ctxToUse, info, trxName);
+		final String language = getLanguageFromReport(ctxToUse, archiveInfo, trxName);
 		archive.setAD_Language(language);
 
-		archive.setName(info.getName());
-		archive.setIsReport(info.isReport());
+		archive.setName(archiveInfo.getName());
+		archive.setIsReport(archiveInfo.isReport());
 		//
-		archive.setAD_Process_ID(info.getAD_Process_ID());
-		archive.setAD_Table_ID(info.getAD_Table_ID());
-		archive.setRecord_ID(info.getRecord_ID());
-		archive.setC_BPartner_ID(info.getC_BPartner_ID());
+		archive.setAD_Process_ID(AdProcessId.toRepoId(archiveInfo.getProcessId()));
+
+		final TableRecordReference recordRef = archiveInfo.getRecordRef();
+		archive.setAD_Table_ID(recordRef != null ? recordRef.getAD_Table_ID() : -1);
+		archive.setRecord_ID(recordRef != null ? recordRef.getRecord_ID() : -1);
+
+		archive.setC_BPartner_ID(BPartnerId.toRepoId(archiveInfo.getBpartnerId()));
 		storage.setBinaryData(archive, data);
 
 		//FRESH-349: Set ad_pinstance
-		
-		archive.setAD_PInstance_ID(PInstanceId.toRepoId(info.getAD_PInstance_ID()));
+
+		archive.setAD_PInstance_ID(PInstanceId.toRepoId(archiveInfo.getPInstanceId()));
 
 		if (save)
 		{
@@ -148,21 +155,17 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	/**
-	 * Return the BPartner's language, in case the info has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
+	 * Return the BPartner's language, in case the archiveInfo has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
 	 * in the given context
 	 *
-	 * @param ctx
-	 * @param info
-	 * @param trxName
-	 * @return
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-218
+	 * Task https://metasfresh.atlassian.net/browse/FRESH-218
 	 */
-	private String getLanguageFromReport(Properties ctx, PrintInfo info, String trxName)
+	private String getLanguageFromReport(Properties ctx, ArchiveInfo archiveInfo, String trxName)
 	{
 		// the language from the given context. In case there will be no other language to fit the logic, this is the value to be returned.
 		final String initialLanguage = Env.getAD_Language(ctx);
 
-		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, info.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(archiveInfo.getProcessId());
 
 		// make sure there is a process set in the PrintInfo
 		if (process == null)
@@ -178,23 +181,14 @@ public class ArchiveBL implements IArchiveBL
 			return initialLanguage;
 		}
 
-		final int tableID = info.getAD_Table_ID();
-		final int recordID = info.getRecord_ID();
-
-		if (tableID <= 0)
+		final TableRecordReference recordRef = archiveInfo.getRecordRef();
+		if (recordRef == null)
 		{
 			return initialLanguage;
 		}
-
-		if (recordID <= 0)
-		{
-			return initialLanguage;
-		}
-
-		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableID);
 
 		// make sure the record linked with the PrintInfo is bpartner aware (has a C_BPartner_ID column)
-		final IBPartnerAware bpRecord = InterfaceWrapperHelper.create(ctx, tableName, recordID, IBPartnerAware.class, trxName);
+		final IBPartnerAware bpRecord = recordRef.getModel(new PlainContextAware(ctx, trxName), IBPartnerAware.class);
 
 		if (bpRecord == null)
 		{
@@ -217,23 +211,15 @@ public class ArchiveBL implements IArchiveBL
 
 	}
 
-	private final Properties createContext(final Properties ctx, final PrintInfo info, final String trxName)
+	private final Properties createContext(final Properties ctx, final ArchiveInfo archiveInfo, final String trxName)
 	{
-		final int adTableId = info.getAD_Table_ID();
-
-		if (adTableId <= 0)
+		final TableRecordReference recordRef = archiveInfo.getRecordRef();
+		if(recordRef == null)
 		{
 			return ctx;
 		}
 
-		final int recordId = info.getRecord_ID();
-		if (recordId <= 0)
-		{
-			return ctx;
-		}
-
-		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
-		final IClientOrgAware record = InterfaceWrapperHelper.create(ctx, tableName, recordId, IClientOrgAware.class, trxName);
+		final IClientOrgAware record = recordRef.getModel(new PlainContextAware(ctx, trxName), IClientOrgAware.class);
 		if (record == null)
 		{
 			// attached record was not found. return the initial context (an error was already logged by loader)
@@ -249,13 +235,13 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public boolean isToArchive(final PrintInfo printInfo)
+	public boolean isToArchive(final ArchiveInfo archiveInfo)
 	{
 		final Properties ctx = Env.getCtx();
-		return isToArchive(ctx, printInfo);
+		return isToArchive(ctx, archiveInfo);
 	}
 
-	public boolean isToArchive(final Properties ctx, final PrintInfo printInfo)
+	public boolean isToArchive(final Properties ctx, final ArchiveInfo archiveInfo)
 	{
 		final String autoArchive = getAutoArchiveType(ctx);
 
@@ -267,8 +253,8 @@ public class ArchiveBL implements IArchiveBL
 		// Archive External only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_ExternalDocuments))
 		{
-			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window
-					|| printInfo.isReport())
+			if (archiveInfo == null // avoid NPE when exporting to PDF from the print preview window
+					|| archiveInfo.isReport())
 			{
 				return false;
 			}
@@ -276,8 +262,8 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
-			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window
-					|| printInfo.isReport())
+			if (archiveInfo == null // avoid NPE when exporting to PDF from the print preview window
+					|| archiveInfo.isReport())
 			{
 				return false;
 			}

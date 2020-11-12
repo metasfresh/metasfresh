@@ -3,7 +3,7 @@ package de.metas.document.archive.async.spi.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.PrintInfo;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,9 +60,9 @@ public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
-	private PrintInfo createPrintInfo(final Object record)
+	private ArchiveInfo createArchiveInfo(final Object record)
 	{
-		return processor.createModelArchiver(record).createPrintInfo();
+		return processor.createModelArchiver(record).createArchiveInfo();
 	}
 
 	/**
@@ -76,12 +76,12 @@ public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 		dunningDoc.setC_BPartner_ID(12345);
 		InterfaceWrapperHelper.save(dunningDoc);
 
-		final PrintInfo printInfo = createPrintInfo(dunningDoc);
+		final ArchiveInfo archiveInfo = createArchiveInfo(dunningDoc);
 
-		Assert.assertEquals("Invalid DocumentNo", "ExpectedDocumentNo", printInfo.getName());
-		Assert.assertEquals("Invalid AD_Table_ID", InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class), printInfo.getAD_Table_ID());
-		Assert.assertEquals("Invalid Record_ID", dunningDoc.getC_DunningDoc_ID(), printInfo.getRecord_ID());
-		Assert.assertEquals("Invalid C_BPartner_ID", dunningDoc.getC_BPartner_ID(), printInfo.getC_BPartner_ID());
+		Assert.assertEquals("Invalid DocumentNo", "ExpectedDocumentNo", archiveInfo.getName());
+		Assert.assertEquals("Invalid AD_Table_ID", InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class), archiveInfo.getRecordRef().getAD_Table_ID());
+		Assert.assertEquals("Invalid Record_ID", dunningDoc.getC_DunningDoc_ID(), archiveInfo.getRecordRef().getRecord_ID());
+		Assert.assertEquals("Invalid C_BPartner_ID", dunningDoc.getC_BPartner_ID(), archiveInfo.getBpartnerId().getRepoId());
 	}
 
 }

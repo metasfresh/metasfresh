@@ -26,20 +26,19 @@ import java.util.List;
 import javax.sql.RowSet;
 import javax.swing.*;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AMenu;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
-import org.compiere.model.PrintInfo;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ui.ProcessDialog;
-import de.metas.logging.LogManager;
 
 /**
  *	Application Report Launcher.
@@ -51,6 +50,7 @@ import de.metas.logging.LogManager;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: AReport.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
+@Deprecated // TODO delete me
 public class AReport implements ActionListener
 {
 	/**
@@ -234,10 +234,9 @@ public class AReport implements ActionListener
 		// It's a default report using the standard printing engine
 		else
 		{
-			final PrintInfo info = new PrintInfo(
+			final ArchiveInfo info = new ArchiveInfo(
 					pf.getName(),
-					pf.getAD_Table_ID(),
-					Record_ID);
+					TableRecordReference.of(pf.getAD_Table_ID(), Record_ID));
 			info.setDescription(m_query.getInfo());
 			
 			final ReportEngine re = new ReportEngine (Env.getCtx(), pf, m_query, info);

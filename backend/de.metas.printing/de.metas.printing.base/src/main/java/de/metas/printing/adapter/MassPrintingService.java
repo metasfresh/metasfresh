@@ -22,34 +22,26 @@ package de.metas.printing.adapter;
  * #L%
  */
 
-import de.metas.process.ProcessInfoParameter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.PrintInfo;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
-import de.metas.print.IPrintService;
+import de.metas.printing.IMassPrintingService;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.archive.api.ArchiveInfo;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
-/**
- * Adapt the Printing Service ( {@link IPrintService}) to our printing module.
- */
-public final class MassPrintServiceAdapter implements IPrintService
+@Service
+public final class MassPrintingService implements IMassPrintingService
 {
-	private static final Logger logger = LogManager.getLogger(MassPrintServiceAdapter.class);
-
-	public static final transient MassPrintServiceAdapter INSTANCE = new MassPrintServiceAdapter();
-
-	private MassPrintServiceAdapter()
-	{
-	}
+	private static final Logger logger = LogManager.getLogger(MassPrintingService.class);
 
 	/**
 	 * Exports the given data to PDF and creates an <code>AD_Archive</code> with <code>IsDirectPrint='Y'</code> (to trigger a <code>C_Printing_Queue</code> record being created) and
@@ -63,7 +55,7 @@ public final class MassPrintServiceAdapter implements IPrintService
 		// services
 		final IArchiveBL archiveService = Services.get(IArchiveBL.class);
 
-		final PrintInfo printInfo = extractPrintInfo(processInfo);
+		final ArchiveInfo archiveInfo = extractArchiveInfo(processInfo);
 
 		//
 		// Create the archive
@@ -79,7 +71,7 @@ public final class MassPrintServiceAdapter implements IPrintService
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
 				archiveService.archive(
 						executeReportResult.getReportData(),
-						printInfo,
+						archiveInfo,
 						forceArchiving,
 						save,
 						trxName),
@@ -97,7 +89,7 @@ public final class MassPrintServiceAdapter implements IPrintService
 		// https://github.com/metasfresh/metasfresh/issues/1240
 		// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
 		// but it needs to be available in case the system has to create a printing queue item for this archive
-		IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
+		IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, archiveInfo.getCopies());
 
 		//
 		// Save archive. This will trigger the printing...
@@ -105,15 +97,15 @@ public final class MassPrintServiceAdapter implements IPrintService
 		logger.debug("Archive: {}", archive);
 	}
 
-	private PrintInfo extractPrintInfo(@NonNull final ProcessInfo pi)
+	private ArchiveInfo extractArchiveInfo(@NonNull final ProcessInfo pi)
 	{
-		// make sure that we never have zero copies. Apparently ADempiere
+		// make sure that we never have zero copies. Apparently metasfresh
 		// thinks of "copies" as the number of printouts _additional_ to the
 		// original document while the java printing API thinks of copies as
 		// the absolute number of printouts and thus doesn't accept any
 		// number <=0.
 		int numberOfPrintouts = 1;
-		PrintInfo printInfo = null;
+		ArchiveInfo archiveInfo = null;
 
 		if (pi.getParameter() != null)
 		{
@@ -127,14 +119,14 @@ public final class MassPrintServiceAdapter implements IPrintService
 					continue;
 				}
 
-				if (objParam instanceof PrintInfo)
+				if (objParam instanceof ArchiveInfo)
 				{
-					printInfo = (PrintInfo)objParam;
-					numberOfPrintouts = printInfo.getCopies();
+					archiveInfo = (ArchiveInfo)objParam;
+					numberOfPrintouts = archiveInfo.getCopies();
 
 					if (numberOfPrintouts <= 0)
 					{
-						logger.debug("Setting numberOfPrintouts from 0 (specified by printInfo) to 1");
+						logger.debug("Setting numberOfPrintouts from 0 (specified by archiveInfo) to 1");
 						numberOfPrintouts = 1;
 					}
 					break;
@@ -153,18 +145,18 @@ public final class MassPrintServiceAdapter implements IPrintService
 
 		//
 		// Do a copy of found print info, or create a new one
-		if (printInfo == null)
+		if (archiveInfo == null)
 		{
-			printInfo = new PrintInfo(pi);
+			archiveInfo = new ArchiveInfo(pi);
 		}
 		else
 		{
-			printInfo = new PrintInfo(printInfo);
+			archiveInfo = archiveInfo.copy();
 		}
 
-		// Update printInfo
-		printInfo.setCopies(numberOfPrintouts < 1 ? 1 : numberOfPrintouts);
+		// Update archiveInfo
+		archiveInfo.setCopies(numberOfPrintouts < 1 ? 1 : numberOfPrintouts);
 
-		return printInfo;
+		return archiveInfo;
 	}
 }

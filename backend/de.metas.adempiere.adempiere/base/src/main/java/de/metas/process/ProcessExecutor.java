@@ -8,6 +8,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.organization.OrgId;
+import de.metas.report.DocumentReportService;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
@@ -32,11 +33,11 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.X_AD_Rule;
-import org.compiere.print.ReportEngineUtil;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -245,7 +246,8 @@ public final class ProcessExecutor
 				}
 				else if (isReport)
 				{
-					ReportEngineUtil.startJasperReportsProcess(pi);
+					final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+					documentReportService.createReport(pi);
 					pi.getResult().setSummary("Report");
 				}
 			}

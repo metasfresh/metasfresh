@@ -58,12 +58,15 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -72,9 +75,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.print.ReportEngine;
-import org.compiere.print.ReportEngineType;
+import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -676,41 +680,13 @@ public class MOrder extends X_C_Order implements IDocument
 		return documentInfo.toString();
 	}    // getDocumentInfo
 
-	/**
-	 * Create PDF
-	 *
-	 * @return File or null
-	 */
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final Exception e)
-		{
-			log.error("Could not create PDF - " + e.getMessage());
-		}
-		return null;
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReport(getCtx(), StandardDocumentReportType.ORDER, getC_Order_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}    // getPDF
-
-	/**
-	 * Create PDF file
-	 *
-	 * @param file output file
-	 * @return file if success
-	 */
-	public File createPDF(final File file)
-	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngineType.ORDER, getC_Order_ID(), get_TrxName());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	}    // createPDF
 
 	/**************************************************************************
 	 * Get <b>active</b> Lines of Order

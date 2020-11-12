@@ -14,10 +14,11 @@ import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.PrintInfo;
+import org.adempiere.archive.api.ArchiveInfo;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
@@ -211,14 +212,12 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 	private void createArchive(I_C_Print_Package printPackage, byte[] data, final I_C_Async_Batch asyncBatch, final int current, final String trxName)
 	{
-		final String tableName = InterfaceWrapperHelper.getModelTableName(printPackage);
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		final int recordId = InterfaceWrapperHelper.getId(printPackage);
+		final TableRecordReference printPackageRef = TableRecordReference.of(printPackage);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 
 		final org.adempiere.archive.api.IArchiveBL archiveService = Services.get(org.adempiere.archive.api.IArchiveBL.class);
-		final PrintInfo printInfo = new PrintInfo(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat(), adTableId, recordId);
-		final I_AD_Archive archive = archiveService.archive(data, printInfo, true, trxName);
+		final ArchiveInfo archiveInfo = new ArchiveInfo(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat(), printPackageRef);
+		final I_AD_Archive archive = archiveService.archive(data, archiveInfo, true, trxName);
 		final de.metas.printing.model.I_AD_Archive directArchive = InterfaceWrapperHelper.create(archive, de.metas.printing.model.I_AD_Archive.class);
 		directArchive.setIsDirectEnqueue(true);
 

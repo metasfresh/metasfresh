@@ -6,8 +6,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
-import de.metas.print.IPrintService;
-import de.metas.print.IPrintServiceRegistry;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
@@ -26,6 +25,7 @@ import lombok.Value;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -59,7 +59,6 @@ public abstract class ReportStarter extends JavaProcess
 	private static final Logger logger = LogManager.getLogger(ReportStarter.class);
 
 	private final transient ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
-	private final transient IPrintServiceRegistry printServiceRegistry = Services.get(IPrintServiceRegistry.class);
 
 	protected abstract ExecuteReportStrategy getExecuteReportStrategy();
 
@@ -108,7 +107,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(pi, OutputType.PDF);
 
-		final IPrintService printService = printServiceRegistry.getPrintService();
+		final IMassPrintingService printService = SpringContextHolder.instance.getBean(IMassPrintingService.class);
 		printService.print(result, pi);
 	}
 

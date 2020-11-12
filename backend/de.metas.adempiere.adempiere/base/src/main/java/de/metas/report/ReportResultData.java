@@ -1,8 +1,15 @@
 package de.metas.report;
 
+import com.google.common.io.Files;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.MimeType;
+
+import java.io.File;
+import java.io.IOException;
 
 /*
  * #%L
@@ -26,7 +33,9 @@ import lombok.Value;
  * #L%
  */
 
-/** Tiny and hopefully helpful class to exchange reporting data. */
+/**
+ * Tiny and hopefully helpful class to exchange reporting data.
+ */
 @Value
 public class ReportResultData
 {
@@ -45,6 +54,37 @@ public class ReportResultData
 		this.reportData = reportData;
 		this.reportFilename = reportFilename;
 		this.reportContentType = reportContentType;
+	}
+
+	public File writeToTemporaryFile(final String filenamePrefix)
+	{
+		final File file = createTemporaryFile(filenamePrefix);
+
+		try
+		{
+			Files.write(reportData, file);
+			return file;
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed writing " + file.getAbsolutePath(), ex);
+		}
+
+	}
+
+	@NonNull
+	private File createTemporaryFile(final String filenamePrefix)
+	{
+		try
+		{
+			final String ext = MimeType.getExtensionByType(reportContentType);
+			final String suffix = Check.isNotBlank(ext) ? "." + ext : "";
+			return File.createTempFile(filenamePrefix, suffix);
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed creating temporary file with `" + filenamePrefix + "` prefix", ex);
+		}
 	}
 
 }

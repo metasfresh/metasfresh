@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.compiere.print;
+package de.metas.report;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -36,94 +36,124 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
-import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MClient;
 import org.compiere.model.X_C_DocType;
+import org.compiere.print.MPrintFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Properties;
 
-@UtilityClass
-public class ReportEngineUtil
+@Service
+public class DocumentReportService
 {
-	private static final Logger log = LogManager.getLogger(ReportEngineUtil.class);
+	private static final Logger log = LogManager.getLogger(DocumentReportService.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	@Value
-	@Builder
-	public static class StandardDocumentReportInfo
+	public void createReport(@NonNull final ProcessInfo processInfo)
 	{
-		@NonNull
-		ReportEngineType type;
+		final ReportResultData documentReportResult = createReport(DocumentReportRequest.builder()
+				.callingFromProcessId(processInfo.getAdProcessId())
+				.documentRef(processInfo.getRecordRefOrNull())
+				.clientId(processInfo.getClientId())
+				.orgId(processInfo.getOrgId())
+				.userId(processInfo.getUserId())
+				.roleId(processInfo.getRoleId())
+				.windowNo(processInfo.getWindowNo())
+				.tabNo(processInfo.getTabNo())
+				.printPreview(processInfo.isPrintPreview())
+				.reportLanguage(processInfo.getReportLanguage())
+				.build());
 
-		int adPrintFormatId;
-		MPrintFormat adPrintFormat;
-		AdProcessId jasperProcessId;
-
-		@NonNull
-		Language language;
-
-		int recordId;
-
-		String documentNo;
-
-		int copies;
-
-		BPartnerId bpartnerId;
+		final ProcessExecutionResult callerProcessResult = processInfo.getResult();
+		callerProcessResult.setReportData(
+				documentReportResult.getReportData(),
+				documentReportResult.getReportFilename(),
+				documentReportResult.getReportContentType());
 	}
-	public static void startJasperReportsProcess(@NonNull final ProcessInfo processInfo)
-	{
-		final AdProcessId adProcessId = processInfo.getAdProcessId();
 
-		final ReportEngineType reportEngineDocumentType = ReportEngineType.ofProcessIdOrNull(adProcessId);
+	public ReportResultData createStandardDocumentReport(
+			@NonNull Properties ctx,
+			@NonNull StandardDocumentReportType type,
+			int recordId)
+	{
+		final String tableName = type.getBaseTableName();
+		if (tableName == null)
+		{
+			throw new AdempiereException("Cannot determine table name for " + type);
+		}
+
+		final StandardDocumentReportInfo standardDocumentReportInfo = getStandardDocumentReportInfo(
+				type,
+				recordId,
+				-1 // adPrintFormatToUseId
+		);
+
+		final DocumentReportRequest request = DocumentReportRequest.builder()
+				.documentRef(TableRecordReference.of(tableName, recordId))
+				.clientId(Env.getClientId(ctx))
+				.orgId(Env.getOrgId(ctx))
+				.userId(Env.getLoggedUserId(ctx))
+				.roleId(Env.getLoggedRoleId(ctx))
+				.printPreview(true)
+				.build();
+
+		return startJasperReportsProcess(request, standardDocumentReportInfo.getJasperProcessId());
+	}
+
+	public ReportResultData createReport(@NonNull final DocumentReportRequest request)
+	{
+		final AdProcessId callingFromProcessId = request.getCallingFromProcessId();
+		final StandardDocumentReportType reportEngineDocumentType = StandardDocumentReportType.ofProcessIdOrNull(callingFromProcessId);
 		if (reportEngineDocumentType != null)
 		{
 			final StandardDocumentReportInfo reportInfo = getStandardDocumentReportInfo(
 					reportEngineDocumentType,
-					processInfo.getRecord_ID(),
+					request.getDocumentRef().getRecord_ID(),
 					-1 // adPrintFormatToUseId
 			);
-			startJasperReportsProcess(processInfo, reportInfo.getJasperProcessId());
+			return startJasperReportsProcess(request, reportInfo.getJasperProcessId());
 		}
 		else
 		{
-			startJasperReportsProcess(processInfo, processInfo.getAdProcessId());
+			return startJasperReportsProcess(request, callingFromProcessId);
 		}
 	}
 
-	private static final void startJasperReportsProcess(
-			@NonNull final ProcessInfo processInfo,
+	private ReportResultData startJasperReportsProcess(
+			@NonNull final DocumentReportRequest request,
 			@NonNull final AdProcessId jasperProcessId)
 	{
 		final ProcessExecutionResult jasperProcessResult = ProcessInfo.builder()
 				//
-				.setCtx(processInfo.getCtx())
+				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
-				.setClientId(processInfo.getClientId())
-				.setUserId(processInfo.getUserId())
-				.setRoleId(processInfo.getRoleId())
-				.setWhereClause(processInfo.getWhereClause())
-				.setWindowNo(processInfo.getWindowNo())
-				.setTabNo(processInfo.getTabNo())
-				.setPrintPreview(processInfo.isPrintPreview())
+				.setClientId(request.getClientId())
+				.setUserId(request.getUserId())
+				.setRoleId(request.getRoleId())
+				.setWindowNo(request.getWindowNo())
+				.setTabNo(request.getTabNo())
+				.setPrintPreview(request.isPrintPreview())
 				//
 				.setAD_Process_ID(jasperProcessId)
-				.setRecord(processInfo.getRecordRefOrNull())
-				.setReportLanguage(processInfo.getReportLanguage())
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
+				.setRecord(request.getDocumentRef())
+				.setReportLanguage(request.getReportLanguage())
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(request.getClientId(), request.getOrgId()))
 				// TODO .addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
 				//
 				// Execute Process
@@ -135,36 +165,27 @@ public class ReportEngineUtil
 		// Throw exception in case of failure
 		jasperProcessResult.propagateErrorIfAny();
 
-		//
-		// Update caller process result
-		final ProcessExecutionResult callerProcessResult = processInfo.getResult();
-		callerProcessResult.setReportData(jasperProcessResult.getReportData(), jasperProcessResult.getReportFilename(), jasperProcessResult.getReportContentType());
+		return ReportResultData.builder()
+				.reportFilename(jasperProcessResult.getReportFilename())
+				.reportContentType(jasperProcessResult.getReportContentType())
+				.reportData(jasperProcessResult.getReportData())
+				.build();
 	}
-
 
 	public static String getBarcodeServlet(
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		return sysConfigBL.getValue(ReportConstants.SYSCONFIG_BarcodeServlet,
+		return sysConfigBL.getValue(
+				ReportConstants.SYSCONFIG_BarcodeServlet,
 				null,  // defaultValue,
 				clientId.getRepoId(),
 				orgId.getRepoId());
 	}
 
-	@Value(staticConstructor = "of")
-	private static class ReportEngineTypeAndRecordId
-	{
-		@With
-		@NonNull ReportEngineType type;
-
-		@With
-		int recordId;
-	}
-
 	@NonNull
-	private static ReportEngineTypeAndRecordId getDocumentWhat(final int orderId)
+	private ReportEngineTypeAndRecordId getDocumentWhat(final int orderId)
 	{
 		final DocBaseAndSubType docBaseTypeAndSubType = retrieveDocBaseTypeAndSubTypeByOrderId(orderId);
 		final String docSubType = docBaseTypeAndSubType.getDocSubType();
@@ -174,27 +195,25 @@ public class ReportEngineUtil
 		{
 			final int invoiceId = retrieveLastInvoiceIdByOrderId(orderId);
 			return invoiceId > 0
-					? ReportEngineTypeAndRecordId.of(ReportEngineType.INVOICE, invoiceId)
-					: ReportEngineTypeAndRecordId.of(ReportEngineType.ORDER, orderId);
+					? ReportEngineTypeAndRecordId.of(StandardDocumentReportType.INVOICE, invoiceId)
+					: ReportEngineTypeAndRecordId.of(StandardDocumentReportType.ORDER, orderId);
 		}
 		else if (X_C_DocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType))
 		{
 			final int inoutId = retrieveLastInOutIdByOrderId(orderId);
 			return inoutId > 0
-					? ReportEngineTypeAndRecordId.of(ReportEngineType.SHIPMENT, inoutId)
-					: ReportEngineTypeAndRecordId.of(ReportEngineType.ORDER, orderId);
+					? ReportEngineTypeAndRecordId.of(StandardDocumentReportType.SHIPMENT, inoutId)
+					: ReportEngineTypeAndRecordId.of(StandardDocumentReportType.ORDER, orderId);
 		}
 		else
 		{
-			return ReportEngineTypeAndRecordId.of(ReportEngineType.ORDER, orderId);
+			return ReportEngineTypeAndRecordId.of(StandardDocumentReportType.ORDER, orderId);
 		}
 	}
 
-	private static DocBaseAndSubType retrieveDocBaseTypeAndSubTypeByOrderId(final int orderId)
+	private DocBaseAndSubType retrieveDocBaseTypeAndSubTypeByOrderId(final int orderId)
 	{
 		final DocTypeId docTypeId = retrieveDocTypeByOrderId(orderId);
-
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		return docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 	}
 
@@ -248,15 +267,15 @@ public class ReportEngineUtil
 	}
 
 	@NonNull
-	public static StandardDocumentReportInfo getStandardDocumentReportInfo(
-			ReportEngineType type,
+	public StandardDocumentReportInfo getStandardDocumentReportInfo(
+			StandardDocumentReportType type,
 			int Record_ID,
 			final int adPrintFormatToUseId)
 	{
 		Check.assumeGreaterThanZero(Record_ID, "Record_ID");
 
 		// Order - Print Shipment or Invoice
-		if (type == ReportEngineType.ORDER)
+		if (type == StandardDocumentReportType.ORDER)
 		{
 			final ReportEngineTypeAndRecordId what = getDocumentWhat(Record_ID);
 			type = what.getType();
@@ -273,11 +292,11 @@ public class ReportEngineUtil
 		// Get Document Info
 		final String sql;
 		final int printFormatColumnIndex;
-		if (type == ReportEngineType.CHECK)
+		if (type == StandardDocumentReportType.CHECK)
 		{
 			throw new AdempiereException("Not supported for type " + type);
 		}
-		else if (type == ReportEngineType.DUNNING)
+		else if (type == StandardDocumentReportType.DUNNING)
 		{
 			printFormatColumnIndex = 1;
 			sql = "SELECT dl.Dunning_PrintFormat_ID,"
@@ -289,11 +308,11 @@ public class ReportEngineUtil
 					+ " INNER JOIN C_DunningLevel dl ON (dl.C_DunningLevel_ID=d.C_DunningLevel_ID) "
 					+ "WHERE d.C_DunningRunEntry_ID=?";            // info from Dunning
 		}
-		else if (type == ReportEngineType.REMITTANCE)
+		else if (type == StandardDocumentReportType.REMITTANCE)
 		{
 			throw new UnsupportedOperationException("Not supported for type " + type);
 		}
-		else if (type == ReportEngineType.PROJECT)
+		else if (type == StandardDocumentReportType.PROJECT)
 		{
 			printFormatColumnIndex = 1;
 			sql = "SELECT pf.Project_PrintFormat_ID,"
@@ -305,7 +324,7 @@ public class ReportEngineUtil
 					+ "WHERE d.C_Project_ID=?"                    // info from PrintForm
 					+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) ORDER BY pf.AD_Org_ID DESC";
 		}
-		else if (type == ReportEngineType.MANUFACTURING_ORDER)
+		else if (type == StandardDocumentReportType.MANUFACTURING_ORDER)
 		{
 			printFormatColumnIndex = 1;
 			sql = "SELECT COALESCE(bppf_pporder.AD_PrintFormat_ID, pf.Manuf_Order_PrintFormat_ID),"
@@ -326,7 +345,7 @@ public class ReportEngineUtil
 					+ "WHERE d.PP_Order_ID=?"                    // info from PrintForm
 					+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) ORDER BY pf.AD_Org_ID DESC";
 		}
-		else if (type == ReportEngineType.DISTRIBUTION_ORDER)
+		else if (type == StandardDocumentReportType.DISTRIBUTION_ORDER)
 		{
 			printFormatColumnIndex = 1;
 			sql = "SELECT COALESCE(bppf_ddorder.AD_PrintFormat_ID, pf.Distrib_Order_PrintFormat_ID),"
@@ -347,13 +366,13 @@ public class ReportEngineUtil
 					+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) ORDER BY pf.AD_Org_ID DESC";
 		}
 		// Fix [2574162] Priority to choose invoice print format not working
-		else if (type == ReportEngineType.ORDER || type == ReportEngineType.INVOICE)
+		else if (type == StandardDocumentReportType.ORDER || type == StandardDocumentReportType.INVOICE)
 		{
-			if (type == ReportEngineType.ORDER)
+			if (type == StandardDocumentReportType.ORDER)
 			{
 				printFormatColumnIndex = 1;
 			}
-			else if (type == ReportEngineType.INVOICE)
+			else if (type == StandardDocumentReportType.INVOICE)
 			{
 				printFormatColumnIndex = 3;
 			}
@@ -403,7 +422,7 @@ public class ReportEngineUtil
 					+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) "
 					+ "ORDER BY pf.AD_Org_ID DESC";
 		}
-		else if (type == ReportEngineType.SHIPMENT)
+		else if (type == StandardDocumentReportType.SHIPMENT)
 		{
 			printFormatColumnIndex = 2;
 			// Get PrintFormat from Org or 0 of document client
@@ -481,12 +500,12 @@ public class ReportEngineUtil
 			rs = pstmt.executeQuery();
 			if (rs.next())    // first record only
 			{
-				if (type == ReportEngineType.CHECK
-						|| type == ReportEngineType.DUNNING
-						|| type == ReportEngineType.REMITTANCE
-						|| type == ReportEngineType.PROJECT
-						|| type == ReportEngineType.MANUFACTURING_ORDER
-						|| type == ReportEngineType.DISTRIBUTION_ORDER)
+				if (type == StandardDocumentReportType.CHECK
+						|| type == StandardDocumentReportType.DUNNING
+						|| type == StandardDocumentReportType.REMITTANCE
+						|| type == StandardDocumentReportType.PROJECT
+						|| type == StandardDocumentReportType.MANUFACTURING_ORDER
+						|| type == StandardDocumentReportType.DISTRIBUTION_ORDER)
 				{
 					adPrintFormatId = rs.getInt(printFormatColumnIndex);
 					copies = 1;
@@ -499,7 +518,7 @@ public class ReportEngineUtil
 					}
 
 					bpartnerId = BPartnerId.ofRepoIdOrNull(rs.getInt(4));
-					if (type == ReportEngineType.DUNNING)
+					if (type == StandardDocumentReportType.DUNNING)
 					{
 						Timestamp ts = rs.getTimestamp(5);
 						documentNo = ts.toString();
@@ -513,7 +532,7 @@ public class ReportEngineUtil
 				{
 					// Set PrintFormat
 					adPrintFormatId = rs.getInt(printFormatColumnIndex);
-					if (type != ReportEngineType.INVOICE && rs.getInt(9) > 0)        // C_DocType.adPrintFormatId
+					if (type != StandardDocumentReportType.INVOICE && rs.getInt(9) > 0)        // C_DocType.adPrintFormatId
 					{
 						adPrintFormatId = rs.getInt(9);
 					}
@@ -574,5 +593,15 @@ public class ReportEngineUtil
 				.copies(copies)
 				.bpartnerId(bpartnerId)
 				.build();
+	}
+
+	@Value(staticConstructor = "of")
+	private static class ReportEngineTypeAndRecordId
+	{
+		@With
+		@NonNull StandardDocumentReportType type;
+
+		@With
+		int recordId;
 	}
 }

@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.derkurier;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.printing.IMassPrintingService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -18,7 +19,6 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.print.IPrintService;
 import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
@@ -212,7 +212,7 @@ public class DerKurierClient implements ShipperGatewayClient
 					.setAD_Process_ID(adProcessId)
 					.setRecord(deliveryOrderTableRecordReference) // we want the jasper to be archived and attached to the delivery order
 					.addParameter(
-							IPrintService.PARAM_PrintCopies,
+							IMassPrintingService.PARAM_PrintCopies,
 							1)
 					.addParameter(
 							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,

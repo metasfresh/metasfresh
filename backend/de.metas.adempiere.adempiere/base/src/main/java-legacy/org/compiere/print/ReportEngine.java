@@ -17,15 +17,17 @@
 package org.compiere.print;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
-import de.metas.print.IPrintService;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.DocumentReportService;
+import de.metas.report.StandardDocumentReportInfo;
+import de.metas.report.StandardDocumentReportType;
 import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
@@ -34,11 +36,12 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
-import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.XhtmlDocument;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.link;
@@ -47,10 +50,10 @@ import org.apache.ecs.xhtml.table;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.th;
 import org.apache.ecs.xhtml.tr;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
-import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -121,7 +124,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param query Optional Query
 	 * @param info  print info
 	 */
-	public ReportEngine(Properties ctx, @NonNull final MPrintFormat pf, MQuery query, PrintInfo info)
+	public ReportEngine(Properties ctx, @NonNull final MPrintFormat pf, MQuery query, ArchiveInfo info)
 	{
 		this(ctx, pf, query, info, null);
 	}    // ReportEngine
@@ -135,7 +138,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param info    print info
 	 * @param trxName
 	 */
-	public ReportEngine(Properties ctx, @Nullable final MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
+	public ReportEngine(Properties ctx, @Nullable final MPrintFormat pf, MQuery query, ArchiveInfo info, String trxName)
 	{
 
 		if (pf != null)
@@ -172,7 +175,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	/**
 	 * Print Info
 	 */
-	private PrintInfo m_info;
+	private ArchiveInfo m_info;
 	/**
 	 * Query
 	 */
@@ -351,7 +354,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 *
 	 * @return info
 	 */
-	public PrintInfo getPrintInfo()
+	public ArchiveInfo getPrintInfo()
 	{
 		return m_info;
 	}    // getPrintInfo
@@ -1037,9 +1040,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_Process_ID(getPrintFormat().getJasperProcess_ID())
-				.setRecord(getPrintInfo().getAD_Table_ID(), getPrintInfo().getRecord_ID())
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngineUtil.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
-				.addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
+				.setRecord(getPrintInfo().getRecordRef())
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, getPrintInfo().getCopies())
 				.setPrintPreview(true) // don't archive it! just give us the PDF data
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
@@ -1281,39 +1284,22 @@ public class ReportEngine implements PrintServiceAttributeListener
 		if (format == null)
 			return null;
 		//
-		PrintInfo info = new PrintInfo(pi);
-		info.setAD_Table_ID(AD_Table_ID);
+		ArchiveInfo info = new ArchiveInfo(pi);
 
 		return new ReportEngine(ctx, format, query, info);
 	}    // get
 
 	@Nullable
-	public static ReportEngine get(Properties ctx, ReportEngineType type, int Record_ID)
-	{
-		return get(ctx, type, Record_ID, ITrx.TRXNAME_None);
-	}
-
-	/**************************************************************************
-	 * Get Document Print Engine for Document Type.
-	 */
-	@Nullable
-	public static ReportEngine get(Properties ctx, ReportEngineType type, int Record_ID, String trxName)
-	{
-		final int adPrintFormatToUseId = -1; // auto-detect
-		final PInstanceId pInstanceId = null;
-		return get(ctx, type, Record_ID, pInstanceId, adPrintFormatToUseId, trxName);
-	}
-
-	@Nullable
 	public static ReportEngine get(
 			final Properties ctx,
-			ReportEngineType type,
+			StandardDocumentReportType type,
 			int Record_ID,
 			final PInstanceId pInstanceId,
 			final int adPrintFormatToUseId,
 			final String trxName)
 	{
-		final ReportEngineUtil.StandardDocumentReportInfo standardReportInfo = ReportEngineUtil.getStandardDocumentReportInfo(
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final StandardDocumentReportInfo standardReportInfo = documentReportService.getStandardDocumentReportInfo(
 				type,
 				Record_ID,
 				adPrintFormatToUseId);
@@ -1336,16 +1322,15 @@ public class ReportEngine implements PrintServiceAttributeListener
 		final int adTableId = type.getBaseTableName() != null
 				? Services.get(IADTableDAO.class).retrieveTableId(type.getBaseTableName())
 				: -1;
-		PrintInfo info = new PrintInfo(
+		ArchiveInfo info = new ArchiveInfo(
 				DocumentNo,
-				adTableId,
-				Record_ID,
-				BPartnerId.toRepoId(standardReportInfo.getBpartnerId()));
+				TableRecordReference.ofOrNull(adTableId, Record_ID));
+		info.setBpartnerId(standardReportInfo.getBpartnerId());
 		info.setCopies(standardReportInfo.getCopies());
 		info.setDocumentCopy(false);        // true prints "Copy" on second
 		info.setPrinterName(format.getPrinterName());
 
-		info.setAD_PInstance_ID(pInstanceId);
+		info.setPInstanceId(pInstanceId);
 
 		// Engine
 		return new ReportEngine(ctx, format, query, info, trxName);
@@ -1359,10 +1344,10 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param type      document type
 	 * @param Record_ID record id
 	 */
-	public static void printConfirm(final ReportEngineType type, final int Record_ID)
+	public static void printConfirm(final StandardDocumentReportType type, final int Record_ID)
 	{
 		final StringBuilder sql = new StringBuilder();
-		if (type == ReportEngineType.ORDER || type == ReportEngineType.SHIPMENT || type == ReportEngineType.INVOICE)
+		if (type == StandardDocumentReportType.ORDER || type == StandardDocumentReportType.SHIPMENT || type == StandardDocumentReportType.INVOICE)
 		{
 			sql.append("UPDATE ").append(type.getBaseTableName())
 					.append(" SET DatePrinted=now(), IsPrinted='Y' WHERE ")
@@ -1407,7 +1392,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	}
 
 	@Nullable
-	public static ReportEngineType getTypeByTableId(int tableId)
+	public static StandardDocumentReportType getTypeByTableId(int tableId)
 	{
 		if (tableId <= 0)
 		{
@@ -1415,7 +1400,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		}
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
 
-		for (ReportEngineType type : ReportEngineType.values())
+		for (StandardDocumentReportType type : StandardDocumentReportType.values())
 		{
 			if (tableName.equals(type.getBaseTableName()))
 			{
