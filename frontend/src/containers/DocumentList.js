@@ -154,7 +154,7 @@ class DocumentListContainer extends Component {
      * middleware reacting to route changes and reducers
      */
     if (
-      (nextProps.viewId !== nextProps.queryViewId && nextProps.queryViewId) ||
+      (nextProps.viewId !== nextProps.queryViewId && nextProps.queryViewId) || // for the case when you applied a filter and come back via browser back button
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
