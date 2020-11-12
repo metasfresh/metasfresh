@@ -1,9 +1,9 @@
 import { produce /*, original*/ } from 'immer';
-import { createSelector } from 're-reselect';
+import { createSelector } from 'reselect';
+import { get } from 'lodash';
 
 import {
   DELETE_QUICK_ACTIONS,
-  // FETCHED_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS_FAILURE,
   FETCH_QUICK_ACTIONS_SUCCESS,
@@ -16,16 +16,11 @@ export const initialSingleActionsState = {
   error: false,
 };
 
-export const NO_SELECTION = [];
-
-export const getQuickActionsId = (windowId, viewId) =>
+export const getQuickActionsId = ({ windowId, viewId }) =>
   `${windowId}${viewId ? `-${viewId}` : ''}`;
 
-const getQuickActionsData = (state, key) => {
-  // const key = getQuickActionsId(windowId, viewId);
-
-  return state.actionsHandler.quickActions[key] || NO_SELECTION;
-};
+const getQuickActionsData = (state, key) =>
+  get(state, ['actionsHandler', key], initialSingleActionsState);
 
 export const getQuickActions = createSelector(
   [getQuickActionsData],
@@ -44,33 +39,13 @@ const reducer = produce((draftState, action) => {
     //       }`]: action.payload.data,
     //     },
     //   };
-    // case DELETE_QUICK_ACTIONS: {
-    //   const key = `${action.payload.windowId}${
-    //     action.payload.id ? `-${action.payload.id}` : ''
-    //   }`;
-    //   const newQuickActions = { ...state.quickActions };
-
-    //   delete newQuickActions[key];
-
-    //   return {
-    //     ...state,
-    //     quickActions: newQuickActions,
-    //   };
-    // }
-    // case FETCHED_QUICK_ACTIONS: {
-    //   const { id, data } = action.payload;
-
-    //   draftState[id] = {
-    //     ...initialSingleActionsState,
-    //     ...data,
-    //   };
-    //   return;
-    // }
     case FETCH_QUICK_ACTIONS: {
       const { id } = action.payload;
 
-      draftState[id].pending = true;
-      draftState[id].error = false;
+      draftState[id] = {
+        ...initialSingleActionsState,
+        pending: true,
+      };
 
       return;
     }
