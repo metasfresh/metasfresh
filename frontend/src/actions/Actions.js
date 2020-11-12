@@ -14,6 +14,7 @@ import {
 } from '../constants/ActionTypes';
 
 import { getQuickActionsId } from '../reducers/actionsHandler';
+import { getTable } from '../reducers/tables';
 
 /*
  * Action creator called when quick actions are successfully fetched
@@ -28,6 +29,28 @@ import { getQuickActionsId } from '../reducers/actionsHandler';
 //     },
 //   };
 // }
+export function getTableActions({ tableId, windowId, viewId }) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const table = getTable(state, tableId);
+    const selectedIds = table.selected;
+
+    const viewProfileId = null;
+    const childView = {};
+    const parentView = {};
+
+    dispatch(
+      fetchQuickActions({
+        windowId,
+        viewId,
+        viewProfileId,
+        selectedIds,
+        childView,
+        parentView,
+      })
+    );
+  };
+}
 
 export function fetchQuickActions({
   windowId,

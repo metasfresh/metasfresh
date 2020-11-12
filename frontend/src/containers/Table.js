@@ -61,11 +61,13 @@ class TableContainer extends PureComponent {
       }
     }
 
-    updateTableSelection(
-      getTableId({ windowId, viewId, docId, tabId }),
-      newSelected,
-      keyProperty
-    ).then(() => {
+    updateTableSelection({
+      id: getTableId({ windowId, viewId, docId, tabId }),
+      selection: newSelected,
+      keyProperty,
+      windowId,
+      viewId,
+    }).then(() => {
       cb && cb();
     });
 
@@ -90,7 +92,12 @@ class TableContainer extends PureComponent {
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
     if (!newSelected.length) {
-      deselectTableRows(tableId, [id]);
+      deselectTableRows({
+        id: tableId,
+        selection: [id],
+        windowId,
+        viewId,
+      });
     }
 
     return newSelected;
@@ -101,7 +108,12 @@ class TableContainer extends PureComponent {
 
     callback && callback();
 
-    deselectTableRows(getTableId({ windowId, viewId, docId, tabId }), []);
+    deselectTableRows({
+      id: getTableId({ windowId, viewId, docId, tabId }),
+      selection: [],
+      windowId,
+      viewId,
+    });
   };
 
   // TODO: This re-fetches quick actions on editing row. Can be cemoved once

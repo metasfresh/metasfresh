@@ -242,7 +242,12 @@ class DocumentListContainer extends Component {
             });
 
             if (removedRows.length) {
-              deselectTableRows(tableId, removedRows);
+              deselectTableRows({
+                id: tableId,
+                selection: removedRows,
+                windowId,
+                viewId,
+              });
             } else {
               // TODO: Quick actions should probably be handled via redux
               this.updateQuickActions();

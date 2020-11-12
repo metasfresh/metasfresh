@@ -1,9 +1,12 @@
 import { reduce, cloneDeep } from 'lodash';
 
+import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
+
+import { getTableActions } from '../actions/Actions';
+
 import { getView } from '../reducers/viewHandler';
 import { getTable } from '../reducers/tables';
-import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 
 /**
  * @method createTable
@@ -62,17 +65,6 @@ export function setActiveSort(id, active) {
   return {
     type: types.SET_ACTIVE_SORT,
     payload: { id, active },
-  };
-}
-
-/**
- * @method deselectTableRows
- * @summary deselect rows or deselect all if an empty `ids` array is provided
- */
-export function deselectTableRows(id, selection) {
-  return {
-    type: types.DESELECT_TABLE_ROWS,
-    payload: { id, selection },
   };
 }
 
@@ -547,14 +539,45 @@ export function collapseTableRow({ tableId, collapse, node }) {
  * @param {array} selection - array of selected items. This will be validated
  * for existence in the rows data by the reducer, but not for duplication
  * @param {string} keyProperty=id - `id` or `rowId` depending on the table type
+ * @param {number} windowId
+ * @param {string} viewId
  */
-export function updateTableSelection(id, selection, keyProperty = 'id') {
+export function updateTableSelection({
+  id,
+  selection,
+  keyProperty = 'id',
+  windowId,
+  viewId,
+}) {
   return (dispatch) => {
     dispatch({
       type: types.UPDATE_TABLE_SELECTION,
       payload: { id, selection, keyProperty },
     });
 
+    // update quick actions
+    dispatch(getTableActions({ tableId: id, windowId, viewId }));
+
     return Promise.resolve(selection);
+  };
+}
+
+/**
+ * @method deselectTableRows
+ * @summary deselect rows or deselect all if an empty `ids` array is provided
+ *
+ * @param {string} id - table id
+ * @param {array} selection - array of items to deselect
+ * @param {number} windowId
+ * @param {string} viewId
+ */
+export function deselectTableRows({ id, selection, windowId, viewId }) {
+  return (dispatch) => {
+    dispatch({
+      type: types.DESELECT_TABLE_ROWS,
+      payload: { id, selection },
+    });
+
+    dispatch(getTableActions({ tableId: id, windowId, viewId }));
   };
 }
