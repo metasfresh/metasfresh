@@ -1,15 +1,23 @@
 package org.adempiere.process;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
@@ -26,10 +34,12 @@ import org.slf4j.Logger;
 import java.sql.Timestamp;
 import java.util.Optional;
 
-public final class OrderCreateNewFromProposal extends JavaProcess
+public final class OrderCreateNewFromProposal extends JavaProcess implements IProcessPrecondition
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final Optional<AdWindowId> orderWindowId = RecordZoomWindowFinder.findAdWindowId(I_C_Order.Table_Name);
 
 	private MOrder sourceOrder;
@@ -70,7 +80,6 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		childCRS.setParentPO(to);
 		childCRS.setBase(true);
 		childCRS.copyRecord(sourceOrder, get_TrxName());
-
 
 		newOrder.setDatePromised(sourceOrder.getDatePromised());
 		newOrder.setPreparationDate(sourceOrder.getPreparationDate());
@@ -159,4 +168,35 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		}
 	}
 
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		if (context.isMoreThanOneSelected())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final int orderId = context.getSingleSelectedRecordId();
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderId));
+		final Optional<DocTypeId> docTypeId = DocTypeId.optionalOfRepoId(order.getC_DocTypeTarget_ID());
+		if (docTypeId.isPresent())
+		{
+			final boolean isSalesProposalOrQuotation = docTypeBL.isSalesProposalOrQuotation(docTypeId.get());
+			if (!isSalesProposalOrQuotation)
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("is not sales proposal or quotation");
+			}
+		}
+		else
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no C_DocTypeTarget_ID");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 }
