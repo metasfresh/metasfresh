@@ -42,11 +42,14 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -55,12 +58,12 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -242,6 +245,9 @@ public class HUMovementBL implements IHUMovementBL
 
 	private void moveHandlingUnit(final I_M_HU hu, final LocatorId locatorToId)
 	{
+		final SourceHUsService sourceHuService = SourceHUsService.get();
+		final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
+
 		//
 		// Make sure hu's current locator is the locator from which we need to move
 		// final int huLocatorIdOld = hu.getM_Locator_ID();
@@ -251,6 +257,15 @@ public class HUMovementBL implements IHUMovementBL
 		if (Objects.equals(locatorFromId, locatorToId))
 		{
 			return;
+		}
+
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+
+		final boolean isSourceHU = sourceHuService.isSourceHu(huId);
+
+		if (isSourceHU)
+		{
+			sourceHuService.deleteSourceHuMarker(huId);
 		}
 
 		//
@@ -277,5 +292,13 @@ public class HUMovementBL implements IHUMovementBL
 
 		// Save changed HU
 		handlingUnitsDAO.saveHU(hu);
+
+		final I_M_Locator locatorTo = warehousesDAO.getLocatorById(locatorToId);
+
+		final I_M_Warehouse warehouseTo = warehousesDAO.getById(WarehouseId.ofRepoId(locatorTo.getM_Warehouse_ID()));
+		if (warehouseTo.isReceiveAsSourceHU())
+		{
+			sourceHuService.addSourceHuMarker(huId);
+		}
 	}
 }
