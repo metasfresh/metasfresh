@@ -139,10 +139,4 @@ import java.lang.ref.WeakReference;
 		return getDocument().getLookupValueById(columnName, id).isPresent();
 	}
 
-	@Override
-	public boolean isDocumentLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
-	{
-		return getDocument().getFieldLookupValues(columnName).containsId(id);
-	}
-
 }

@@ -1,18 +1,17 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.Set;
-
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatees;
 
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.Set;
 
 /*
  * #%L
@@ -41,6 +40,7 @@ import lombok.ToString;
 public class SqlForFetchingLookupById
 {
 	public static final CtxName SQL_PARAM_KeyId = CtxNames.parse("SqlKeyId");
+	public static final CtxName SQL_PARAM_FilterSql = CtxNames.parse("FilterSql");
 
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
 	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
@@ -64,6 +64,7 @@ public class SqlForFetchingLookupById
 	{
 		return sql.resolvePartial(Evaluatees
 				.mapBuilder()
+				.put(SQL_PARAM_FilterSql, joinOnColumnNameFQ)
 				.put(SQL_PARAM_KeyId, joinOnColumnNameFQ)
 				.put(SQL_PARAM_ShowInactive, SQL_PARAM_VALUE_ShowInactive_Yes)
 				.build());

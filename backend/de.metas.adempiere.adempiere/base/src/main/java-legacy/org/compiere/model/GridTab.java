@@ -1309,12 +1309,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public boolean isDocumentLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	/**
 	 * Refresh row data
 	 *

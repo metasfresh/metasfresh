@@ -394,7 +394,7 @@ public class CalloutOrder extends CalloutEngine
 					}
 
 					if (docTypeTargetId != null
-							&& !calloutField.getCalloutRecord().isDocumentLookupValuesContainingId(I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, docTypeTargetId))
+							&& !calloutField.getCalloutRecord().isLookupValuesContainingId(I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, docTypeTargetId))
 					{
 						log.debug("Avoid setting a document type which is not in our list of allowed document types to pick from");
 						docTypeTargetId = null;
