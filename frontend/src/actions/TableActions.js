@@ -556,7 +556,9 @@ export function updateTableSelection({
     });
 
     // update quick actions
-    dispatch(getTableActions({ tableId: id, windowId, viewId }));
+    if (viewId) {
+      dispatch(getTableActions({ tableId: id, windowId, viewId }));
+    }
 
     return Promise.resolve(selection);
   };
@@ -578,6 +580,8 @@ export function deselectTableRows({ id, selection, windowId, viewId }) {
       payload: { id, selection },
     });
 
-    dispatch(getTableActions({ tableId: id, windowId, viewId }));
+    if (viewId) {
+      dispatch(getTableActions({ tableId: id, windowId, viewId }));
+    }
   };
 }

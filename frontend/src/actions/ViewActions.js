@@ -400,38 +400,19 @@ export function fetchDocument({
 
         const table = getTable(state, tableId);
 
-        // viewProfileId: includedView.viewProfileId || rawModal.viewProfileId
-
-        // childView={
-        //   hasIncluded
-        //     ? {
-        //         viewId: includedView.viewId,
-        //         viewSelectedIds: childSelected,
-        //         windowType: includedView.windowId,
-        //       }
-        //     : NO_VIEW
-        // }
-        // parentView={
-        //   isIncluded
-        //     ? {
-        //         viewId: parentDefaultViewId,
-        //         viewSelectedIds: parentSelected,
-        //         windowType: parentWindowType,
-        //       }
-        //     : NO_VIEW
-        // }
-
         // get quickactions
-        dispatch(
-          fetchQuickActions({
-            windowId,
-            viewId,
-            selectedIds: table.selected,
-            viewProfileId: null,
-            parentView: {},
-            childView: {},
-          })
-        );
+        if (viewId) {
+          dispatch(
+            fetchQuickActions({
+              windowId,
+              viewId,
+              selectedIds: table.selected,
+              viewProfileId: null,
+              parentView: {},
+              childView: {},
+            })
+          );
+        }
 
         return Promise.resolve(response.data);
       })
