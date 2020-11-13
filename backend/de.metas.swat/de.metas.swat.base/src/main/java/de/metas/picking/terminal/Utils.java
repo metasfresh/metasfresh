@@ -35,8 +35,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.I_M_PackagingTreeItem;
@@ -59,6 +57,8 @@ import de.metas.picking.legacy.form.PackingTreeModel;
 import de.metas.picking.legacy.form.UsedBin;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionContext;
 import lombok.NonNull;
 
 /**

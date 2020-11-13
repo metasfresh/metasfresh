@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.service.ISequenceDAO;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,6 +46,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.DocumentConstants;
+import lombok.NonNull;
 
 public class ADTableDAO implements IADTableDAO
 {
@@ -105,6 +107,12 @@ public class ADTableDAO implements IADTableDAO
 		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?", adColumnId);
 	}
 
+	@Override
+	public String retrieveTableName(@NonNull final AdTableId adTableId)
+	{
+		return retrieveTableName(adTableId.getRepoId());
+	}
+	
 	@Override
 	public String retrieveTableName(final int adTableId)
 	{

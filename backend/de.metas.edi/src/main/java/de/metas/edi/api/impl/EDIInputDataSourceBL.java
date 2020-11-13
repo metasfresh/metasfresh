@@ -1,6 +1,6 @@
 package de.metas.edi.api.impl;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_AD_InputDataSource;
@@ -30,15 +30,15 @@ import de.metas.edi.model.I_AD_InputDataSource;
 public class EDIInputDataSourceBL implements IEDIInputDataSourceBL
 {
 	@Override
-	public boolean isEDIInputDataSource(final de.metas.impex.model.I_AD_InputDataSource inputDataSource)
+	public boolean isEDIInputDataSource(final int inputDataSourceId)
 	{
-		if (inputDataSource == null)
+		if (inputDataSourceId <= 0)
 		{
 			// shall not happen
 			return false;
 		}
 		
-		final I_AD_InputDataSource ediInputDataSource = InterfaceWrapperHelper.create(inputDataSource, I_AD_InputDataSource.class);
+		final I_AD_InputDataSource ediInputDataSource = loadOutOfTrx(inputDataSourceId, I_AD_InputDataSource.class);
 		return ediInputDataSource.isEdiEnabled();
 	}
 }

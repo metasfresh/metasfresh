@@ -36,18 +36,17 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAdapter;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyChildrenFilter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -55,6 +54,7 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyVisitor;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyVisitor.VisitResult;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.collections.IdentityHashSet;
 
 /* package */abstract class AbstractHUKey extends TerminalKey implements IHUKey
 {

@@ -40,7 +40,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
@@ -66,6 +65,7 @@ import de.metas.dunning.spi.IDunningConfigurator;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.logging.LogManager;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 
 public class DunningBL implements IDunningBL

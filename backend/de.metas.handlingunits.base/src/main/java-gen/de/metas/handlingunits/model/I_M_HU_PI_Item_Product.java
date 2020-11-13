@@ -180,6 +180,52 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set TU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEAN_TU (java.lang.String EAN_TU);
+
+	/**
+	 * Get TU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEAN_TU();
+
+    /** Column definition for EAN_TU */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_EAN_TU = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "EAN_TU", null);
+    /** Column name EAN_TU */
+    public static final String COLUMNNAME_EAN_TU = "EAN_TU";
+
+	/**
+	 * Set GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGTIN (java.lang.String GTIN);
+
+	/**
+	 * Get GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGTIN();
+
+    /** Column definition for GTIN */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_GTIN = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "GTIN", null);
+    /** Column name GTIN */
+    public static final String COLUMNNAME_GTIN = "GTIN";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -249,6 +295,35 @@ public interface I_M_HU_PI_Item_Product
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsInfiniteCapacity = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsInfiniteCapacity", null);
     /** Column name IsInfiniteCapacity */
     public static final String COLUMNNAME_IsInfiniteCapacity = "IsInfiniteCapacity";
+
+	/**
+	 * Set LU Fallback-Verpackungscode.
+	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_LU_Fallback_ID (int M_HU_PackagingCode_LU_Fallback_ID);
+
+	/**
+	 * Get LU Fallback-Verpackungscode.
+	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackagingCode_LU_Fallback_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode_LU_Fallback();
+
+	public void setM_HU_PackagingCode_LU_Fallback(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode_LU_Fallback);
+
+    /** Column definition for M_HU_PackagingCode_LU_Fallback_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode> COLUMN_M_HU_PackagingCode_LU_Fallback_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode>(I_M_HU_PI_Item_Product.class, "M_HU_PackagingCode_LU_Fallback_ID", de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+    /** Column name M_HU_PackagingCode_LU_Fallback_ID */
+    public static final String COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID = "M_HU_PackagingCode_LU_Fallback_ID";
 
 	/**
 	 * Set Packvorschrift Position.

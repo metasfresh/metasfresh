@@ -26,6 +26,8 @@ package org.adempiere.util.collections;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.util.collections.CompositePredicate;
+
 public class CompositePredicateTest
 {
 	@Test(expected = Exception.class)

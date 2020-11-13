@@ -39,7 +39,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Menu;
@@ -51,6 +50,7 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.collections.IteratorUtils;
 import de.metas.process.JavaProcess;
 
 public class AD_Migration_CreateFromEntityType extends JavaProcess

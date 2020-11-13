@@ -41,7 +41,7 @@ public interface ILoggable
 	 * @param msg
 	 * @param msgParameters
 	 */
-	public void addLog(String msg, Object... msgParameters);
+	ILoggable addLog(String msg, Object... msgParameters);
 
 	/**
 	 * Create a new {@link ILoggable} instance that delegates {@link #addLog(String, Object...)} invokations to this instance and in addition logs to the given logger.

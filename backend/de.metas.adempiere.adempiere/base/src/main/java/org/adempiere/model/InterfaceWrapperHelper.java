@@ -72,6 +72,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 /**
  * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
@@ -326,17 +328,27 @@ public class InterfaceWrapperHelper
 		return bean;
 	}
 
+	public static <T> T loadOutOfTrx(@NonNull final RepoIdAware id, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(id.getRepoId(), modelClass);
+	}
+
 	/**
 	 * Loads given model, out of transaction.
 	 * NOTE: to be used, mainly for loading master data models.
+	 * NOTE: when we are where we want to be, this will only be invoked from repositories!
 	 *
 	 * @param id model's ID
-	 * @param modelClass
 	 * @return loaded model
 	 */
 	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
+	}
+
+	public static <T> T load(final RepoIdAware id, final Class<T> modelClass)
+	{
+		return load(id.getRepoId(), modelClass);
 	}
 
 	/**
@@ -515,6 +527,25 @@ public class InterfaceWrapperHelper
 		{
 			setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 		}
+	}
+
+	public static void saveAll(@NonNull final Collection<?> models)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(InterfaceWrapperHelper::saveRecord);
+	}
+
+	/**
+	 * Does the same as {@link #save(Object)},
+	 * but this method can be static-imported into repository implementations which usually have their own method named "save()".
+	 */
+	public static void saveRecord(final Object model)
+	{
+		save(model);
 	}
 
 	public static void save(final Object model)

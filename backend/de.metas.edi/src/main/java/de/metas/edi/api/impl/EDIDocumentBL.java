@@ -10,12 +10,12 @@ package de.metas.edi.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +35,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
@@ -61,7 +62,6 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
-import de.metas.edi.process.export.impl.M_InOutExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.i18n.IMsgBL;
@@ -320,7 +320,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			}
 
 			final I_M_Product product = inOutLine.getM_Product();
-			
+
 			final int orgId = product.getAD_Org_ID();
 
 			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, orgId);
@@ -364,14 +364,15 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final List<String> missingFields = new ArrayList<>();
 
 		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(partner, I_C_BPartner.class);
-		if (!ediPartner.isEdiRecipient())
+		final boolean isEdiRecipient = ediPartner.isEdiDesadvRecipient() || ediPartner.isEdiInvoicRecipient();
+		if (!isEdiRecipient)
 		{
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getEdiRecipientGLN(), true))
+		if (Check.isEmpty(ediPartner.getEdiDesadvRecipientGLN(), true))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiRecipientGLN);
+			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
 		}
 
 		if (!hasValidInvoiceAggregation(ediPartner))
@@ -449,7 +450,12 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	}
 
 	@Override
-	public IExport<? extends I_EDI_Document> createExport(final Properties ctx, final int clientId, final int tableId, final int recordId, final String trxName)
+	public IExport<? extends I_EDI_Document> createExport(
+			final Properties ctx,
+			final int clientId,
+			final int tableId,
+			final int recordId,
+			final String trxName)
 	{
 		//
 		// Services
@@ -464,15 +470,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			verifyRecordId(recordId, tableIdentifier);
 
 			final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, recordId, I_C_Invoice.class, trxName);
-			export = new C_InvoiceExport(invoice, tableIdentifier, clientId);
-		}
-		else if (org.compiere.model.I_M_InOut.Table_Name.equals(tableName))
-		{
-			final String tableIdentifier = org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
-			verifyRecordId(recordId, tableIdentifier);
-
-			final I_M_InOut inOut = InterfaceWrapperHelper.create(ctx, recordId, I_M_InOut.class, trxName);
-			export = new M_InOutExport(inOut, tableIdentifier, clientId);
+			export = new C_InvoiceExport(invoice, tableIdentifier, ClientId.ofRepoId(clientId));
 		}
 		else if (I_EDI_Desadv.Table_Name.equals(tableName))
 		{
@@ -480,7 +478,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			verifyRecordId(recordId, tableIdentifier);
 
 			final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(ctx, recordId, I_EDI_Desadv.class, trxName);
-			export = new EDI_DESADVExport(desadv, tableIdentifier, clientId);
+			export = new EDI_DESADVExport(desadv, tableIdentifier, ClientId.ofRepoId(clientId));
 		}
 		else
 		{

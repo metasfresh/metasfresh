@@ -58,7 +58,7 @@ public class EDIExport extends JavaProcess
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
 		final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(getCtx(), getAD_Client_ID(), getTable_ID(), recordId, get_TrxName());
-		final List<Exception> feedback = export.createExport();
+		final List<Exception> feedback = export.doExport();
 		if (feedback == null || feedback.isEmpty())
 		{
 			return "OK";

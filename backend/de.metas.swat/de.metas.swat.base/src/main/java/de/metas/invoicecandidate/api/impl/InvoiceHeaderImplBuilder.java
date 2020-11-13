@@ -31,11 +31,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MPriceList;
 import org.compiere.util.TimeUtil;
+
+import de.metas.util.collections.ListUtils;
 
 /**
  * {@link InvoiceHeaderImpl} builder class used to collect invoice header values and make sure they match.

@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,8 +32,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
@@ -57,6 +55,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionContext;
 import lombok.NonNull;
 
 public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
@@ -200,7 +200,6 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setQtyCU(tuCapacity.getCapacityQty());
 		}
 
-		
 		//
 		// LU Configuration
 		final I_M_HU_PI_Item luPIItem;
@@ -449,10 +448,14 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	}
 
 	@Override
-	public int calculateQtyLUForTotalQtyCUs(final I_M_HU_LUTU_Configuration lutuConfiguration, final BigDecimal qtyCUsTotal, final I_C_UOM qtyCUsTotalUOM)
+	public int calculateQtyLUForTotalQtyCUs(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final Quantity qtyCUsTotal)
 	{
-		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
+		return calculateQtyLUForTotalQtyCUs(lutuConfiguration, qtyCUsTotal.toBigDecimal(), qtyCUsTotal.getUOM());
+	}
 
+	@Override
+	public int calculateQtyLUForTotalQtyCUs(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, final BigDecimal qtyCUsTotal, final I_C_UOM qtyCUsTotalUOM)
+	{
 		if (qtyCUsTotal == null || qtyCUsTotal.signum() <= 0)
 		{
 			return 0;
@@ -549,8 +552,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 	@Override
 	public void adjustForTotalQtyTUsAndCUs(
-			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, 
-			@NonNull final BigDecimal qtyTUsTotal, 
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
+			@NonNull final BigDecimal qtyTUsTotal,
 			@NonNull final BigDecimal qtyCUsTotal)
 	{
 		//

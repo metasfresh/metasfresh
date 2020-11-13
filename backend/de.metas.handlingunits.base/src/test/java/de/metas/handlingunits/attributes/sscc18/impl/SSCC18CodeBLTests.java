@@ -10,20 +10,18 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -37,17 +35,19 @@ import org.junit.Test;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
+import de.metas.organization.OrgId;
 
 public class SSCC18CodeBLTests
 {
-	private Properties ctx;
+	private OrgId orgId;
 	private SSCC18CodeBL sscc18CodeBL;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		ctx = Env.getCtx();
+
+		orgId = OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx()));
 
 		// BL under test
 		sscc18CodeBL = (SSCC18CodeBL)Services.get(ISSCC18CodeBL.class);
@@ -106,7 +106,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(orgId, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"01000000", // expected,
@@ -119,7 +119,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("0000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(orgId, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -132,7 +132,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(orgId, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -145,7 +145,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("2");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(orgId, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,

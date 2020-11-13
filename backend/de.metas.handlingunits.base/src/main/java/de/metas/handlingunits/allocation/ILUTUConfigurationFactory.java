@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ import de.metas.quantity.Quantity;
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
 	/**
-	 * 
+	 *
 	 * @param tuPIItemProduct may not be {@code null}
 	 * @param cuProduct
 	 * @param cuUOM
@@ -49,9 +49,9 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record
-	 * 
+	 *
 	 * @param lutuConfiguration
-	 * 
+	 *
 	 * @return
 	 */
 	ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration lutuConfiguration);
@@ -68,7 +68,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Decide if both parameters are not {@code null} and are "equal enough" (according to location, status, bpartner etc) for the LUTU-config user interface.
-	 * 
+	 *
 	 * @param lutuConfiguration1
 	 * @param lutuConfiguration2
 	 * @return
@@ -118,17 +118,18 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Calculate how many LUs we would need (using given configuration) for given total CU quantity
-	 * 
-	 * @param lutuConfiguration
+	 *
 	 * @param qtyCUsTotal total CU quantity
 	 * @param qtyCUsTotalUOM total CU quantity's UOM
 	 * @return how many LUs are needed or ZERO if we are dealing with infinite capacities
 	 */
 	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, BigDecimal qtyCUsTotal, I_C_UOM qtyCUsTotalUOM);
 
+	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, Quantity qtyCUsTotal);
+
 	/**
 	 * Calculates how many CUs (in total).
-	 * 
+	 *
 	 * @param lutuConfiguration
 	 * @return quantity; could be infinite or zero.
 	 */
@@ -136,10 +137,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Converts given quantity to {@link I_M_HU_LUTU_Configuration}'s UOM.
-	 * 
-	 * @param qty
-	 * @param qtyUOM
-	 * @param lutuConfiguration
+	 *
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
 	Quantity convertQtyToLUTUConfigurationUOM(BigDecimal qty, I_C_UOM qtyUOM, I_M_HU_LUTU_Configuration lutuConfiguration);

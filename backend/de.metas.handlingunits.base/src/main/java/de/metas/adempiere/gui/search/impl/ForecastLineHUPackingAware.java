@@ -28,7 +28,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -38,6 +37,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.uom.IUOMConversionBL;
 
 public class ForecastLineHUPackingAware implements IHUPackingAware
 {

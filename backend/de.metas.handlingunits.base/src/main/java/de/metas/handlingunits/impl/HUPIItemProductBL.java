@@ -33,6 +33,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
@@ -45,6 +46,11 @@ import lombok.NonNull;
 
 public class HUPIItemProductBL implements IHUPIItemProductBL
 {
+	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
+	{
+		return Services.get(IHUPIItemProductDAO.class).getById(id);
+	}
+
 	@Override
 	public List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(
 			@NonNull final I_M_HU_PI_Version version,
@@ -115,6 +121,23 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	public boolean isVirtualHUPIItemProduct(final I_M_HU_PI_Item_Product piip)
 	{
 		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID;
+	}
+
+	@Override
+	public boolean isInfiniteCapacity(@NonNull final HUPIItemProductId id)
+	{
+		if (id.isVirtualHU())
+		{
+			return true;
+		}
+
+		final I_M_HU_PI_Item_Product piip = getById(id);
+		if (piip == null)
+		{
+			return true;
+		}
+
+		return piip.isInfiniteCapacity();
 	}
 
 	@Override

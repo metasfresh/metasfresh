@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -209,4 +210,6 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
+
+	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 }

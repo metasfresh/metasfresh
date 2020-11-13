@@ -27,7 +27,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.uom.IUOMConversionBL;
 import lombok.NonNull;
 
 public class InOutLineHUPackingAware implements IHUPackingAware

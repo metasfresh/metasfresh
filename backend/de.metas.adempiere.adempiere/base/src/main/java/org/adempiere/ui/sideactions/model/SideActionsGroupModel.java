@@ -29,9 +29,9 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 
-import org.adempiere.util.collections.ListUtils;
-
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.collections.ListUtils;
 
 /**
  * {@link ISideActionsGroupModel} default implementation.

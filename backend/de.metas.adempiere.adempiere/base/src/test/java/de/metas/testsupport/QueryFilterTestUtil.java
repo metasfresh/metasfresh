@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.collections.ListUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
+import de.metas.util.collections.ListUtils;
 import lombok.NonNull;
 
 /*

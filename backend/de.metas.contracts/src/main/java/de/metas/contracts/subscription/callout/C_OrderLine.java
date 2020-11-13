@@ -32,7 +32,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -43,6 +42,7 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.uom.IUOMConversionBL;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine

@@ -32,6 +32,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.util.collections.ListUtils;
+
 public class ListUtilsTest
 {
 	@Test

@@ -33,10 +33,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.util.Util;
 
 import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.util.collections.ListUtils;
 
 public class CompositeAggregationKeyBuilder<ModelType> implements IAggregationKeyBuilder<ModelType>
 {

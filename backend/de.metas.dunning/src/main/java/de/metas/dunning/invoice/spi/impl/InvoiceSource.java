@@ -30,8 +30,6 @@ import java.util.Iterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ConvertIteratorWrapper;
-import org.adempiere.util.collections.Converter;
 import org.compiere.model.I_C_InvoicePaySchedule;
 import org.compiere.util.TimeUtil;
 
@@ -42,6 +40,8 @@ import de.metas.dunning.api.impl.DunnableDoc;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.dunning.spi.impl.AbstractDunnableSource;
+import de.metas.util.collections.ConvertIteratorWrapper;
+import de.metas.util.collections.Converter;
 
 public class InvoiceSource extends AbstractDunnableSource
 {

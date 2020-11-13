@@ -10,7 +10,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.IteratorUtils;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -33,6 +32,7 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
 import de.metas.logging.LogManager;
+import de.metas.util.collections.IteratorUtils;
 
 /*
  * #%L

@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,6 +25,7 @@ package org.adempiere.mm.attributes.api.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,8 +39,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -53,6 +59,7 @@ import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -411,4 +418,81 @@ public class AttributeDAO implements IAttributeDAO
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
 	}
+
+
+	public I_M_AttributeSetInstance getAttributeSetInstanceById(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		return load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
+	{
+		if (asiId.isNone())
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		final List<I_M_AttributeInstance> instances = retrieveAttributeInstances(asiId);
+		return createImmutableAttributeSet(instances);
+	}
+
+
+	private ImmutableAttributeSet createImmutableAttributeSet(final Collection<I_M_AttributeInstance> instances)
+	{
+		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
+		for (final I_M_AttributeInstance instance : instances)
+		{
+			final Object value = extractAttributeInstanceValue(instance);
+			builder.attributeValue(instance.getM_Attribute_ID(), value);
+		}
+		return builder.build();
+	}
+
+	public I_M_Attribute getAttributeById(final int attributeId)
+	{
+		// assume table level caching is enabled
+		return InterfaceWrapperHelper.loadOutOfTrx(attributeId, I_M_Attribute.class);
+	}
+
+	private Object extractAttributeInstanceValue(final I_M_AttributeInstance instance)
+	{
+		final I_M_Attribute attribute = getAttributeById(instance.getM_Attribute_ID());
+		final String attributeValueType = attribute.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			return instance.getValueDate();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			return instance.getValue();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			return instance.getValueNumber();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			return instance.getValue();
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported attributeValueType=" + attributeValueType)
+					.setParameter("instance", instance)
+					.setParameter("attribute", attribute)
+					.appendParametersToMessage();
+		}
+	}
+
+	public List<I_M_AttributeInstance> retrieveAttributeInstances(final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		if (attributeSetInstanceId.isNone())
+		{
+			return ImmutableList.of();
+		}
+
+		I_M_AttributeSetInstance asi = getAttributeSetInstanceById(attributeSetInstanceId);
+		return retrieveAttributeInstances(asi);
+	}
+
 }

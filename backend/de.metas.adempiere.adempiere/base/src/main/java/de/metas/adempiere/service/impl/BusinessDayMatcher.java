@@ -31,10 +31,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.IBusinessDayMatcher;
+import de.metas.util.collections.ListUtils;
 
 /* package */class BusinessDayMatcher implements IBusinessDayMatcher
 {

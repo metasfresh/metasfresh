@@ -37,7 +37,6 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Movement;
@@ -45,6 +44,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_MovementLine;
+import de.metas.util.collections.ListUtils;
 
 public class PackingMaterialsExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

@@ -33,7 +33,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
+
+import de.metas.util.collections.ListUtils;
 
 public class DaysOfWeekExploder implements IDateSequenceExploder
 {

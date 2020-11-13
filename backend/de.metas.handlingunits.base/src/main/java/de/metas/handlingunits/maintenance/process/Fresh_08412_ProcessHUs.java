@@ -40,7 +40,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -70,6 +69,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.process.JavaProcess;
+import de.metas.util.collections.IteratorUtils;
 
 /**
  *

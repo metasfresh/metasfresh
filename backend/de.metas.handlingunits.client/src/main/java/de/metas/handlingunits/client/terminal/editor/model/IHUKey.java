@@ -29,8 +29,8 @@ import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 
 public interface IHUKey extends ITerminalKey, IDisposable
 {

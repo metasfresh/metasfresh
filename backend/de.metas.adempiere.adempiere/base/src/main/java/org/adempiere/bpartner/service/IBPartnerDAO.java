@@ -36,9 +36,15 @@ import org.compiere.model.I_M_Shipper;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 
 public interface IBPartnerDAO extends ISingletonService
 {
+	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
+
+	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
+
 	/**
 	 *
 	 * @param value
@@ -275,5 +281,4 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
-
 }

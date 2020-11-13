@@ -42,11 +42,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.exceptions.PriceListNotFoundException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
@@ -70,6 +67,9 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionContext;
+import de.metas.util.collections.ListUtils;
 
 public class OrderBL implements IOrderBL
 {

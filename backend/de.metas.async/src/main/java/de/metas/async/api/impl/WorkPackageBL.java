@@ -47,7 +47,7 @@ public class WorkPackageBL implements IWorkPackageBL
 		return new ILoggable()
 		{
 			@Override
-			public void addLog(final String msg, final Object... msgParamters)
+			public ILoggable addLog(final String msg, final Object... msgParamters)
 			{
 				// NOTE: always create the logs out of transaction because we want them to be persisted even if the workpackage processing fails
 				final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
@@ -56,6 +56,8 @@ public class WorkPackageBL implements IWorkPackageBL
 				logRecord.setC_Queue_WorkPackage(workPackage);
 				logRecord.setMsgText(StringUtils.formatMessage(msg, msgParamters));
 				InterfaceWrapperHelper.save(logRecord);
+
+				return this;
 			}
 		};
 	}

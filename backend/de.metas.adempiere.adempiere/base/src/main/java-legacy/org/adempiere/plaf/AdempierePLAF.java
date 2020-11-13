@@ -29,6 +29,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.collections.ListUtils;
+
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
@@ -38,7 +40,6 @@ import javax.swing.plaf.metal.MetalTheme;
 
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.plaf.PlafRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.ColorBlind;

@@ -29,6 +29,9 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public interface IAttributeStorageFactoryService extends ISingletonService
 {
+	/** Create a "standard" attribute storage factory, ready to use. */
+	IAttributeStorageFactory createHUAttributeStorageFactory();
+	
 	/**
 	 * Calls {@link #createHUAttributeStorageFactory(IHUAttributesDAO)} with the default {@link IHUAttributesDAO} implementation (no decoupled or on-commit saves).
 	 * <p>
@@ -45,7 +48,5 @@ public interface IAttributeStorageFactoryService extends ISingletonService
 	 */
 	IAttributeStorageFactory prepareHUAttributeStorageFactory(IHUAttributesDAO huAttributesDAO);
 
-	void addAttributeStorageFactory(
-			Class<? extends IAttributeStorageFactory> attributeStorageFactoryClass);
-
+	void addAttributeStorageFactory(Class<? extends IAttributeStorageFactory> attributeStorageFactoryClass);
 }

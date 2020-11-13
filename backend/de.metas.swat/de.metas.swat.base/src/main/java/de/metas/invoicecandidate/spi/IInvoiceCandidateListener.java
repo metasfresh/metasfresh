@@ -42,25 +42,25 @@ public interface IInvoiceCandidateListener
 	 * Method called when invoice line was created from {@link IInvoiceLineRW} and {@link I_C_Invoice_Candidate}s.
 	 *
 	 * The method will be called after invoice line is created but before it will be saved. The listener has the opportunity to change things there.
-	 *
-	 * @param invoiceLine
-	 * @param fromInvoiceLine
-	 * @param fromCandidates
 	 */
-	void onBeforeInvoiceLineCreated(I_C_InvoiceLine invoiceLine, IInvoiceLineRW fromInvoiceLine, List<I_C_Invoice_Candidate> fromCandidates);
+	default void onBeforeInvoiceLineCreated(I_C_InvoiceLine invoiceLine, IInvoiceLineRW fromInvoiceLine, List<I_C_Invoice_Candidate> fromCandidates)
+	{
+		// nothing
+	}
 
 	/**
 	 * Method called before an invoice is completed. It is needed for particular details to be set, no matter from what project they come from
-	 *
-	 * @param invoice
-	 * @param fromCandidates
 	 */
-	void onBeforeInvoiceComplete(I_C_Invoice invoice, List<I_C_Invoice_Candidate> fromCandidates);
+	default void onBeforeInvoiceComplete(I_C_Invoice invoice, List<I_C_Invoice_Candidate> fromCandidates)
+	{
+		// nothing
+	}
 
 	/**
 	 * Method called before an invoice candidate is closed
-	 *
-	 * @param invoice candidate
 	 */
-	void onBeforeClosed(I_C_Invoice_Candidate candidate);
+	default void onBeforeClosed(I_C_Invoice_Candidate candidate)
+	{
+		// nothing
+	}
 }

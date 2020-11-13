@@ -1,5 +1,7 @@
 package de.metas.product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -41,10 +44,34 @@ import org.compiere.model.I_M_Product_Category;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class ProductDAO implements IProductDAO
 {
+	@Override
+	public I_M_Product getById(@NonNull final ProductId productId)
+	{
+		return getById(productId, I_M_Product.class);
+	}
+
+	@Override
+	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
+	{
+		final T product = load(productId, productClass); // we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		if (product == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Product_ID@: " + productId);
+		}
+		return product;
+	}
+
+	@Override
+	public I_M_Product getById(final int productId)
+	{
+		return getById(ProductId.ofRepoId(productId), I_M_Product.class);
+	}
+
 	@Override
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_UPC)
 	public I_M_Product retrieveProductByUPC(@CacheCtx final Properties ctx, final String upc)

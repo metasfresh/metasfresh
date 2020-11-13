@@ -260,8 +260,8 @@ public class ADProcessDAO implements IADProcessDAO
 				.processId(tableProcess.getAD_Process_ID())
 				.tableId(tableProcess.getAD_Table_ID())
 				.windowId(tableProcess.getAD_Window_ID())
-				.webuiQuickAction(tableProcess.isWEBUI_QuickAction())
-				.webuiDefaultQuickAction(tableProcess.isWEBUI_QuickAction_Default())
+				.webuiQuickAction(tableProcess.isWEBUI_ViewQuickAction())
+				.webuiDefaultQuickAction(tableProcess.isWEBUI_ViewQuickAction_Default())
 				.build();
 	}
 
@@ -485,12 +485,12 @@ public class ADProcessDAO implements IADProcessDAO
 			return descriptorsMap.values().stream();
 		}
 
-		private static final ArrayKey mkKey(final int adTableId, final int adWindowId)
+		private static ArrayKey mkKey(final int adTableId, final int adWindowId)
 		{
 			return ArrayKey.of(adTableId > 0 ? adTableId : AD_Table_ID_Any, adWindowId > 0 ? adWindowId : AD_Window_ID_Any);
 		}
 
-		private static final ImmutableSet<ArrayKey> mkKeysFromSpecificToGeneral(final int adTableId, final int adWindowId)
+		private static ImmutableSet<ArrayKey> mkKeysFromSpecificToGeneral(final int adTableId, final int adWindowId)
 		{
 			return ImmutableSet.of(
 					mkKey(adTableId, adWindowId) //

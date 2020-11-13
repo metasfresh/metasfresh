@@ -34,6 +34,9 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.uom.UomId;
+import lombok.NonNull;
+
 public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
@@ -102,13 +105,41 @@ public interface IProductBL extends ISingletonService
 	 */
 	String getCostingMethod(I_M_Product product, I_C_AcctSchema as);
 
+	@Deprecated
+	default I_C_UOM getStockingUOM(I_M_Product product)
+	{
+		return getStockUOM(product);
+	}
+
 	/**
-	 * Gets UOM used in material storage of given <code>product</code>.
-	 *
-	 * @param product
-	 * @return UOM; never return null;
+	 * @return UOM used in material storage; never return null;
 	 */
-	I_C_UOM getStockingUOM(I_M_Product product);
+	I_C_UOM getStockUOM(I_M_Product product);
+
+	/**
+	 * @return UOM used in material storage; never return null;
+	 */
+	I_C_UOM getStockUOM(int productId);
+
+	/**
+	 * @return UOM used in material storage; never return null;
+	 */
+	default I_C_UOM getStockUOM(@NonNull final ProductId productId)
+	{
+		return getStockUOM(productId.getRepoId());
+	}
+
+	@NonNull
+	default UomId getStockUOMId(@NonNull final ProductId productId)
+	{
+		return getStockUOMId(productId.getRepoId());
+	}
+
+	@NonNull
+	default UomId getStockUOMId(final int productId)
+	{
+		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
+	}
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.

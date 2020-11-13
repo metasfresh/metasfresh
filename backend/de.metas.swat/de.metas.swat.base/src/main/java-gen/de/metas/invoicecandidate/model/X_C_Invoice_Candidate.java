@@ -6,10 +6,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Invoice_Candidate
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
+public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -79,15 +79,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Statusmeldung.
-		@param AD_Note_ID 
+		@param AD_Note_ID
 		System-Nachricht
 	  */
 	@Override
 	public void setAD_Note_ID (int AD_Note_ID)
 	{
-		if (AD_Note_ID < 1) 
+		if (AD_Note_ID < 1)
 			set_Value (COLUMNNAME_AD_Note_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Note_ID, Integer.valueOf(AD_Note_ID));
 	}
 
@@ -95,7 +95,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return System-Nachricht
 	  */
 	@Override
-	public int getAD_Note_ID () 
+	public int getAD_Note_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Note_ID);
 		if (ii == null)
@@ -116,15 +116,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set DB-Tabelle.
-		@param AD_Table_ID 
+		@param AD_Table_ID
 		Database Table information
 	  */
 	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
-		if (AD_Table_ID < 1) 
+		if (AD_Table_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
@@ -132,7 +132,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Database Table information
 	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
 		if (ii == null)
@@ -153,15 +153,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Betreuer.
-		@param AD_User_InCharge_ID 
+		@param AD_User_InCharge_ID
 		Person, die bei einem fachlichen Problem vom System informiert wird.
 	  */
 	@Override
 	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
 	{
-		if (AD_User_InCharge_ID < 1) 
+		if (AD_User_InCharge_ID < 1)
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
 	}
 
@@ -169,7 +169,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Person, die bei einem fachlichen Problem vom System informiert wird.
 	  */
 	@Override
-	public int getAD_User_InCharge_ID () 
+	public int getAD_User_InCharge_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
 		if (ii == null)
@@ -188,13 +188,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Freigabe zur Fakturierung.
 		@return Freigabe zur Fakturierung	  */
 	@Override
-	public boolean isApprovalForInvoicing () 
+	public boolean isApprovalForInvoicing ()
 	{
 		Object oo = get_Value(COLUMNNAME_ApprovalForInvoicing);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -213,15 +213,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Rechnungspartner.
-		@param Bill_BPartner_ID 
+		@param Bill_BPartner_ID
 		Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_BPartner_ID (int Bill_BPartner_ID)
 	{
-		if (Bill_BPartner_ID < 1) 
+		if (Bill_BPartner_ID < 1)
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
 	}
 
@@ -229,7 +229,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_BPartner_ID () 
+	public int getBill_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
 		if (ii == null)
@@ -247,7 +247,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Name Rechnungspartner.
 		@return Name Rechnungspartner	  */
 	@Override
-	public java.lang.String getBill_BPartner_Name () 
+	public java.lang.String getBill_BPartner_Name ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Bill_BPartner_Name);
 	}
@@ -265,15 +265,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Rechnungsstandort.
-		@param Bill_Location_ID 
+		@param Bill_Location_ID
 		Standort des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_Location_ID (int Bill_Location_ID)
 	{
-		if (Bill_Location_ID < 1) 
+		if (Bill_Location_ID < 1)
 			set_Value (COLUMNNAME_Bill_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_Location_ID, Integer.valueOf(Bill_Location_ID));
 	}
 
@@ -281,7 +281,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Standort des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_Location_ID () 
+	public int getBill_Location_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_Location_ID);
 		if (ii == null)
@@ -302,15 +302,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Rechnungskontakt.
-		@param Bill_User_ID 
+		@param Bill_User_ID
 		Ansprechpartner des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_User_ID (int Bill_User_ID)
 	{
-		if (Bill_User_ID < 1) 
+		if (Bill_User_ID < 1)
 			set_Value (COLUMNNAME_Bill_User_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_User_ID, Integer.valueOf(Bill_User_ID));
 	}
 
@@ -318,7 +318,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Ansprechpartner des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_User_ID () 
+	public int getBill_User_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
 		if (ii == null)
@@ -339,15 +339,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Kostenstelle.
-		@param C_Activity_ID 
+		@param C_Activity_ID
 		Kostenstelle
 	  */
 	@Override
 	public void setC_Activity_ID (int C_Activity_ID)
 	{
-		if (C_Activity_ID < 1) 
+		if (C_Activity_ID < 1)
 			set_Value (COLUMNNAME_C_Activity_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
@@ -355,7 +355,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Kostenstelle
 	  */
 	@Override
-	public int getC_Activity_ID () 
+	public int getC_Activity_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
 		if (ii == null)
@@ -376,15 +376,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Kosten.
-		@param C_Charge_ID 
+		@param C_Charge_ID
 		Zusätzliche Kosten
 	  */
 	@Override
 	public void setC_Charge_ID (int C_Charge_ID)
 	{
-		if (C_Charge_ID < 1) 
+		if (C_Charge_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Charge_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
 	}
 
@@ -392,7 +392,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Zusätzliche Kosten
 	  */
 	@Override
-	public int getC_Charge_ID () 
+	public int getC_Charge_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
 		if (ii == null)
@@ -413,15 +413,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Kursart.
-		@param C_ConversionType_ID 
+		@param C_ConversionType_ID
 		Kursart
 	  */
 	@Override
 	public void setC_ConversionType_ID (int C_ConversionType_ID)
 	{
-		if (C_ConversionType_ID < 1) 
+		if (C_ConversionType_ID < 1)
 			set_Value (COLUMNNAME_C_ConversionType_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_ConversionType_ID, Integer.valueOf(C_ConversionType_ID));
 	}
 
@@ -429,7 +429,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Kursart
 	  */
 	@Override
-	public int getC_ConversionType_ID () 
+	public int getC_ConversionType_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ConversionType_ID);
 		if (ii == null)
@@ -450,15 +450,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Währung.
-		@param C_Currency_ID 
+		@param C_Currency_ID
 		Die Währung für diesen Eintrag
 	  */
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
@@ -466,7 +466,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Die Währung für diesen Eintrag
 	  */
 	@Override
-	public int getC_Currency_ID () 
+	public int getC_Currency_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
@@ -487,15 +487,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Rechnungs-Belegart.
-		@param C_DocTypeInvoice_ID 
+		@param C_DocTypeInvoice_ID
 		Document type used for invoices generated from this sales document
 	  */
 	@Override
 	public void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID)
 	{
-		if (C_DocTypeInvoice_ID < 1) 
+		if (C_DocTypeInvoice_ID < 1)
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, Integer.valueOf(C_DocTypeInvoice_ID));
 	}
 
@@ -503,7 +503,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Document type used for invoices generated from this sales document
 	  */
 	@Override
-	public int getC_DocTypeInvoice_ID () 
+	public int getC_DocTypeInvoice_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeInvoice_ID);
 		if (ii == null)
@@ -528,16 +528,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_ILCandHandler_ID (int C_ILCandHandler_ID)
 	{
-		if (C_ILCandHandler_ID < 1) 
+		if (C_ILCandHandler_ID < 1)
 			set_Value (COLUMNNAME_C_ILCandHandler_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_ILCandHandler_ID, Integer.valueOf(C_ILCandHandler_ID));
 	}
 
 	/** Get Rechnungskandidaten-Controller.
 		@return Rechnungskandidaten-Controller	  */
 	@Override
-	public int getC_ILCandHandler_ID () 
+	public int getC_ILCandHandler_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ILCandHandler_ID);
 		if (ii == null)
@@ -558,15 +558,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Aggregator.
-		@param C_Invoice_Candidate_Agg_ID 
+		@param C_Invoice_Candidate_Agg_ID
 		Definiert Richtlinien zur Aggregation von Datensätzen mit ggf. unterschiedlichen Produkten zu einem einzigen Datensatz
 	  */
 	@Override
 	public void setC_Invoice_Candidate_Agg_ID (int C_Invoice_Candidate_Agg_ID)
 	{
-		if (C_Invoice_Candidate_Agg_ID < 1) 
+		if (C_Invoice_Candidate_Agg_ID < 1)
 			set_Value (COLUMNNAME_C_Invoice_Candidate_Agg_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Invoice_Candidate_Agg_ID, Integer.valueOf(C_Invoice_Candidate_Agg_ID));
 	}
 
@@ -574,7 +574,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Definiert Richtlinien zur Aggregation von Datensätzen mit ggf. unterschiedlichen Produkten zu einem einzigen Datensatz
 	  */
 	@Override
-	public int getC_Invoice_Candidate_Agg_ID () 
+	public int getC_Invoice_Candidate_Agg_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Agg_ID);
 		if (ii == null)
@@ -599,16 +599,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_HeaderAggregation_Effective_ID (int C_Invoice_Candidate_HeaderAggregation_Effective_ID)
 	{
-		if (C_Invoice_Candidate_HeaderAggregation_Effective_ID < 1) 
+		if (C_Invoice_Candidate_HeaderAggregation_Effective_ID < 1)
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID, Integer.valueOf(C_Invoice_Candidate_HeaderAggregation_Effective_ID));
 	}
 
 	/** Get Abrechnungsgruppe eff..
 		@return Abrechnungsgruppe eff.	  */
 	@Override
-	public int getC_Invoice_Candidate_HeaderAggregation_Effective_ID () 
+	public int getC_Invoice_Candidate_HeaderAggregation_Effective_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID);
 		if (ii == null)
@@ -633,16 +633,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_HeaderAggregation_ID (int C_Invoice_Candidate_HeaderAggregation_ID)
 	{
-		if (C_Invoice_Candidate_HeaderAggregation_ID < 1) 
+		if (C_Invoice_Candidate_HeaderAggregation_ID < 1)
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, Integer.valueOf(C_Invoice_Candidate_HeaderAggregation_ID));
 	}
 
 	/** Get Abrechnungsgruppe.
 		@return Abrechnungsgruppe	  */
 	@Override
-	public int getC_Invoice_Candidate_HeaderAggregation_ID () 
+	public int getC_Invoice_Candidate_HeaderAggregation_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID);
 		if (ii == null)
@@ -667,16 +667,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Invoice_Candidate_HeaderAggregation_Override_ID (int C_Invoice_Candidate_HeaderAggregation_Override_ID)
 	{
-		if (C_Invoice_Candidate_HeaderAggregation_Override_ID < 1) 
+		if (C_Invoice_Candidate_HeaderAggregation_Override_ID < 1)
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID, Integer.valueOf(C_Invoice_Candidate_HeaderAggregation_Override_ID));
 	}
 
 	/** Get Abrechnungsgruppe abw..
 		@return Abrechnungsgruppe abw.	  */
 	@Override
-	public int getC_Invoice_Candidate_HeaderAggregation_Override_ID () 
+	public int getC_Invoice_Candidate_HeaderAggregation_Override_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID);
 		if (ii == null)
@@ -685,15 +685,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Rechnungskandidat.
-		@param C_Invoice_Candidate_ID 
+		@param C_Invoice_Candidate_ID
 		Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	  */
 	@Override
 	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
 	{
-		if (C_Invoice_Candidate_ID < 1) 
+		if (C_Invoice_Candidate_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, Integer.valueOf(C_Invoice_Candidate_ID));
 	}
 
@@ -701,7 +701,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	  */
 	@Override
-	public int getC_Invoice_Candidate_ID () 
+	public int getC_Invoice_Candidate_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
 		if (ii == null)
@@ -722,7 +722,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Terminplan Rechnung.
-		@param C_InvoiceSchedule_ID 
+		@param C_InvoiceSchedule_ID
 		Plan für die Rechnungsstellung
 	  */
 	@Override
@@ -734,7 +734,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Plan für die Rechnungsstellung
 	  */
 	@Override
-	public int getC_InvoiceSchedule_ID () 
+	public int getC_InvoiceSchedule_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
 		if (ii == null)
@@ -755,7 +755,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Auftragspartner.
-		@param C_Order_BPartner 
+		@param C_Order_BPartner
 		The partner from C_Order
 	  */
 	@Override
@@ -767,7 +767,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return The partner from C_Order
 	  */
 	@Override
-	public int getC_Order_BPartner () 
+	public int getC_Order_BPartner ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_BPartner);
 		if (ii == null)
@@ -792,16 +792,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID)
 	{
-		if (C_Order_CompensationGroup_ID < 1) 
+		if (C_Order_CompensationGroup_ID < 1)
 			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, Integer.valueOf(C_Order_CompensationGroup_ID));
 	}
 
 	/** Get Order Compensation Group.
 		@return Order Compensation Group	  */
 	@Override
-	public int getC_Order_CompensationGroup_ID () 
+	public int getC_Order_CompensationGroup_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_CompensationGroup_ID);
 		if (ii == null)
@@ -822,15 +822,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Auftrag.
-		@param C_Order_ID 
+		@param C_Order_ID
 		Order
 	  */
 	@Override
 	public void setC_Order_ID (int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
+		if (C_Order_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
 	}
 
@@ -838,7 +838,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Order
 	  */
 	@Override
-	public int getC_Order_ID () 
+	public int getC_Order_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
 		if (ii == null)
@@ -859,15 +859,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Auftragsposition.
-		@param C_OrderLine_ID 
+		@param C_OrderLine_ID
 		Auftragsposition
 	  */
 	@Override
 	public void setC_OrderLine_ID (int C_OrderLine_ID)
 	{
-		if (C_OrderLine_ID < 1) 
+		if (C_OrderLine_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
 	}
 
@@ -875,7 +875,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Auftragsposition
 	  */
 	@Override
-	public int getC_OrderLine_ID () 
+	public int getC_OrderLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
 		if (ii == null)
@@ -905,7 +905,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Zahlungsbedingung eff..
 		@return Zahlungsbedingung eff.	  */
 	@Override
-	public int getC_PaymentTerm_Effective_ID () 
+	public int getC_PaymentTerm_Effective_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_Effective_ID);
 		if (ii == null)
@@ -926,15 +926,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
+		@param C_PaymentTerm_ID
 		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
 	{
-		if (C_PaymentTerm_ID < 1) 
+		if (C_PaymentTerm_ID < 1)
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
@@ -942,7 +942,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
-	public int getC_PaymentTerm_ID () 
+	public int getC_PaymentTerm_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
 		if (ii == null)
@@ -963,15 +963,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Zahlungsbedingung abw..
-		@param C_PaymentTerm_Override_ID 
+		@param C_PaymentTerm_Override_ID
 		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
 	public void setC_PaymentTerm_Override_ID (int C_PaymentTerm_Override_ID)
 	{
-		if (C_PaymentTerm_Override_ID < 1) 
+		if (C_PaymentTerm_Override_ID < 1)
 			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, Integer.valueOf(C_PaymentTerm_Override_ID));
 	}
 
@@ -979,7 +979,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
-	public int getC_PaymentTerm_Override_ID () 
+	public int getC_PaymentTerm_Override_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_Override_ID);
 		if (ii == null)
@@ -1009,7 +1009,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Steuer eff..
 		@return Steuer eff.	  */
 	@Override
-	public int getC_Tax_Effective_ID () 
+	public int getC_Tax_Effective_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_Effective_ID);
 		if (ii == null)
@@ -1030,15 +1030,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Steuer.
-		@param C_Tax_ID 
+		@param C_Tax_ID
 		Steuerart
 	  */
 	@Override
 	public void setC_Tax_ID (int C_Tax_ID)
 	{
-		if (C_Tax_ID < 1) 
+		if (C_Tax_ID < 1)
 			set_Value (COLUMNNAME_C_Tax_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Tax_ID, Integer.valueOf(C_Tax_ID));
 	}
 
@@ -1046,7 +1046,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Steuerart
 	  */
 	@Override
-	public int getC_Tax_ID () 
+	public int getC_Tax_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_ID);
 		if (ii == null)
@@ -1067,15 +1067,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Steuer abw..
-		@param C_Tax_Override_ID 
+		@param C_Tax_Override_ID
 		Abweichender Steuersatz
 	  */
 	@Override
 	public void setC_Tax_Override_ID (int C_Tax_Override_ID)
 	{
-		if (C_Tax_Override_ID < 1) 
+		if (C_Tax_Override_ID < 1)
 			set_Value (COLUMNNAME_C_Tax_Override_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Tax_Override_ID, Integer.valueOf(C_Tax_Override_ID));
 	}
 
@@ -1083,7 +1083,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Abweichender Steuersatz
 	  */
 	@Override
-	public int getC_Tax_Override_ID () 
+	public int getC_Tax_Override_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_Override_ID);
 		if (ii == null)
@@ -1104,15 +1104,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Maßeinheit.
-		@param C_UOM_ID 
+		@param C_UOM_ID
 		Maßeinheit
 	  */
 	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
 	{
-		if (C_UOM_ID < 1) 
+		if (C_UOM_ID < 1)
 			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
@@ -1120,7 +1120,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Maßeinheit
 	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
@@ -1129,7 +1129,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Buchungsdatum.
-		@param DateAcct 
+		@param DateAcct
 		Accounting Date
 	  */
 	@Override
@@ -1142,13 +1142,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Accounting Date
 	  */
 	@Override
-	public java.sql.Timestamp getDateAcct () 
+	public java.sql.Timestamp getDateAcct ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
 	/** Set Rechnungsdatum.
-		@param DateInvoiced 
+		@param DateInvoiced
 		Datum auf der Rechnung
 	  */
 	@Override
@@ -1161,13 +1161,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Datum auf der Rechnung
 	  */
 	@Override
-	public java.sql.Timestamp getDateInvoiced () 
+	public java.sql.Timestamp getDateInvoiced ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvoiced);
 	}
 
 	/** Set Auftragsdatum.
-		@param DateOrdered 
+		@param DateOrdered
 		Datum des Auftrags
 	  */
 	@Override
@@ -1180,13 +1180,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Datum des Auftrags
 	  */
 	@Override
-	public java.sql.Timestamp getDateOrdered () 
+	public java.sql.Timestamp getDateOrdered ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
 	/** Set Zugesagter Termin.
-		@param DatePromised 
+		@param DatePromised
 		Zugesagter Termin für diesen Auftrag
 	  */
 	@Override
@@ -1198,13 +1198,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Zugesagter Termin für diesen Auftrag
 	  */
 	@Override
-	public java.sql.Timestamp getDatePromised () 
+	public java.sql.Timestamp getDatePromised ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
 	}
 
 	/** Set Abrechnung ab.
-		@param DateToInvoice 
+		@param DateToInvoice
 		Termin ab dem die Rechnung erstellt werden darf
 	  */
 	@Override
@@ -1217,13 +1217,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Termin ab dem die Rechnung erstellt werden darf
 	  */
 	@Override
-	public java.sql.Timestamp getDateToInvoice () 
+	public java.sql.Timestamp getDateToInvoice ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateToInvoice);
 	}
 
 	/** Set Abrechnung ab eff..
-		@param DateToInvoice_Effective 
+		@param DateToInvoice_Effective
 		Enthält den Wert aus "Abrechnung ab" oder der Überschreibe-Wert aus "Abrechnung ab abw.
 	  */
 	@Override
@@ -1235,13 +1235,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Enthält den Wert aus "Abrechnung ab" oder der Überschreibe-Wert aus "Abrechnung ab abw.
 	  */
 	@Override
-	public java.sql.Timestamp getDateToInvoice_Effective () 
+	public java.sql.Timestamp getDateToInvoice_Effective ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateToInvoice_Effective);
 	}
 
 	/** Set Abrechnung ab abw..
-		@param DateToInvoice_Override 
+		@param DateToInvoice_Override
 		Überschreibt den regulären Termin ab dem die Rechnung erstellt werden darf
 	  */
 	@Override
@@ -1254,7 +1254,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Überschreibt den regulären Termin ab dem die Rechnung erstellt werden darf
 	  */
 	@Override
-	public java.sql.Timestamp getDateToInvoice_Override () 
+	public java.sql.Timestamp getDateToInvoice_Override ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateToInvoice_Override);
 	}
@@ -1270,7 +1270,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Lieferdatum.
 		@return Lieferdatum	  */
 	@Override
-	public java.sql.Timestamp getDeliveryDate () 
+	public java.sql.Timestamp getDeliveryDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DeliveryDate);
 	}
@@ -1286,7 +1286,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
@@ -1302,7 +1302,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Schlusstext.
 		@return Schlusstext	  */
 	@Override
-	public java.lang.String getDescriptionBottom () 
+	public java.lang.String getDescriptionBottom ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DescriptionBottom);
 	}
@@ -1318,13 +1318,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Kopfbeschreibung.
 		@return Kopfbeschreibung	  */
 	@Override
-	public java.lang.String getDescriptionHeader () 
+	public java.lang.String getDescriptionHeader ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DescriptionHeader);
 	}
 
 	/** Set Rabatt %.
-		@param Discount 
+		@param Discount
 		Abschlag in Prozent
 	  */
 	@Override
@@ -1337,7 +1337,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Abschlag in Prozent
 	  */
 	@Override
-	public java.math.BigDecimal getDiscount () 
+	public java.math.BigDecimal getDiscount ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
@@ -1346,7 +1346,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Rabatt abw. %.
-		@param Discount_Override 
+		@param Discount_Override
 		Abschlag in Prozent
 	  */
 	@Override
@@ -1359,7 +1359,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Abschlag in Prozent
 	  */
 	@Override
-	public java.math.BigDecimal getDiscount_Override () 
+	public java.math.BigDecimal getDiscount_Override ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount_Override);
 		if (bd == null)
@@ -1378,7 +1378,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Fehlermeldung.
 		@return Fehlermeldung	  */
 	@Override
-	public java.lang.String getErrorMsg () 
+	public java.lang.String getErrorMsg ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
 	}
@@ -1396,15 +1396,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set First ship location.
-		@param First_Ship_BPLocation_ID 
+		@param First_Ship_BPLocation_ID
 		BParter location of first shipment/receipt
 	  */
 	@Override
 	public void setFirst_Ship_BPLocation_ID (int First_Ship_BPLocation_ID)
 	{
-		if (First_Ship_BPLocation_ID < 1) 
+		if (First_Ship_BPLocation_ID < 1)
 			set_Value (COLUMNNAME_First_Ship_BPLocation_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_First_Ship_BPLocation_ID, Integer.valueOf(First_Ship_BPLocation_ID));
 	}
 
@@ -1412,7 +1412,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return BParter location of first shipment/receipt
 	  */
 	@Override
-	public int getFirst_Ship_BPLocation_ID () 
+	public int getFirst_Ship_BPLocation_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_First_Ship_BPLocation_ID);
 		if (ii == null)
@@ -1420,7 +1420,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** 
+	/**
 	 * GroupCompensationAmtType AD_Reference_ID=540759
 	 * Reference name: GroupCompensationAmtType
 	 */
@@ -1441,13 +1441,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Compensation Amount Type.
 		@return Compensation Amount Type	  */
 	@Override
-	public java.lang.String getGroupCompensationAmtType () 
+	public java.lang.String getGroupCompensationAmtType ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationAmtType);
 	}
 
 	/** Set Compensation base amount.
-		@param GroupCompensationBaseAmt 
+		@param GroupCompensationBaseAmt
 		Base amount for calculating percentage group compensation
 	  */
 	@Override
@@ -1460,7 +1460,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Base amount for calculating percentage group compensation
 	  */
 	@Override
-	public java.math.BigDecimal getGroupCompensationBaseAmt () 
+	public java.math.BigDecimal getGroupCompensationBaseAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GroupCompensationBaseAmt);
 		if (bd == null)
@@ -1479,7 +1479,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Compensation percentage.
 		@return Compensation percentage	  */
 	@Override
-	public java.math.BigDecimal getGroupCompensationPercentage () 
+	public java.math.BigDecimal getGroupCompensationPercentage ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GroupCompensationPercentage);
 		if (bd == null)
@@ -1487,7 +1487,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** 
+	/**
 	 * GroupCompensationType AD_Reference_ID=540758
 	 * Reference name: GroupCompensationType
 	 */
@@ -1508,7 +1508,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Compensation Type.
 		@return Compensation Type	  */
 	@Override
-	public java.lang.String getGroupCompensationType () 
+	public java.lang.String getGroupCompensationType ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
 	}
@@ -1524,7 +1524,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Kopf-Aggregationsmerkmal.
 		@return Kopf-Aggregationsmerkmal	  */
 	@Override
-	public java.lang.String getHeaderAggregationKey () 
+	public java.lang.String getHeaderAggregationKey ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey);
 	}
@@ -1534,16 +1534,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setHeaderAggregationKeyBuilder_ID (int HeaderAggregationKeyBuilder_ID)
 	{
-		if (HeaderAggregationKeyBuilder_ID < 1) 
+		if (HeaderAggregationKeyBuilder_ID < 1)
 			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, Integer.valueOf(HeaderAggregationKeyBuilder_ID));
 	}
 
 	/** Get Header aggregation builder.
 		@return Header aggregation builder	  */
 	@Override
-	public int getHeaderAggregationKeyBuilder_ID () 
+	public int getHeaderAggregationKeyBuilder_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_HeaderAggregationKeyBuilder_ID);
 		if (ii == null)
@@ -1562,12 +1562,12 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Kopf-Aggregationsmerkmal (vorgegeben).
 		@return Kopf-Aggregationsmerkmal (vorgegeben)	  */
 	@Override
-	public java.lang.String getHeaderAggregationKey_Calc () 
+	public java.lang.String getHeaderAggregationKey_Calc ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey_Calc);
 	}
 
-	/** 
+	/**
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1581,7 +1581,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Sofort = I */
 	public static final String INVOICERULE_Sofort = "I";
 	/** Set Rechnungsstellung.
-		@param InvoiceRule 
+		@param InvoiceRule
 		"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
 	  */
 	@Override
@@ -1595,12 +1595,12 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
 	  */
 	@Override
-	public java.lang.String getInvoiceRule () 
+	public java.lang.String getInvoiceRule ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule);
 	}
 
-	/** 
+	/**
 	 * InvoiceRule_Effective AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1624,12 +1624,12 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Rechnungsstellung eff..
 		@return Rechnungsstellung eff.	  */
 	@Override
-	public java.lang.String getInvoiceRule_Effective () 
+	public java.lang.String getInvoiceRule_Effective ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule_Effective);
 	}
 
-	/** 
+	/**
 	 * InvoiceRule_Override AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1643,7 +1643,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Sofort = I */
 	public static final String INVOICERULE_OVERRIDE_Sofort = "I";
 	/** Set Rechnungsstellung abw..
-		@param InvoiceRule_Override 
+		@param InvoiceRule_Override
 		Erlaubt es, eine abweichende Rechnungsstellungsregel vorzugeben.
 	  */
 	@Override
@@ -1657,13 +1657,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Erlaubt es, eine abweichende Rechnungsstellungsregel vorzugeben.
 	  */
 	@Override
-	public java.lang.String getInvoiceRule_Override () 
+	public java.lang.String getInvoiceRule_Override ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule_Override);
 	}
 
 	/** Set Status Terminplan.
-		@param InvoiceScheduleAmtStatus 
+		@param InvoiceScheduleAmtStatus
 		Bei Geschätspartnern, deren Rechnungs-Terminplan einen Grenzbetrag hat, zeigt dieses Feld an, ob der Grenzbetrag unterschritten ist.
 	  */
 	@Override
@@ -1676,39 +1676,36 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Bei Geschätspartnern, deren Rechnungs-Terminplan einen Grenzbetrag hat, zeigt dieses Feld an, ob der Grenzbetrag unterschritten ist.
 	  */
 	@Override
-	public java.lang.String getInvoiceScheduleAmtStatus () 
+	public java.lang.String getInvoiceScheduleAmtStatus ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceScheduleAmtStatus);
 	}
 
-	/** Set Erhält EDI-Belege.
-		@param IsEdiRecipient 
-		Erhält EDI-Belege
-	  */
-	@Override
-	public void setIsEdiRecipient (boolean IsEdiRecipient)
-	{
-		set_ValueNoCheck (COLUMNNAME_IsEdiRecipient, Boolean.valueOf(IsEdiRecipient));
-	}
+	/** Set Erhält EDI-INVOIC.
+	@param IsEdiInvoicRecipient Erhält EDI-INVOIC	  */
+@Override
+public void setIsEdiInvoicRecipient (boolean IsEdiInvoicRecipient)
+{
+	set_ValueNoCheck (COLUMNNAME_IsEdiInvoicRecipient, Boolean.valueOf(IsEdiInvoicRecipient));
+}
 
-	/** Get Erhält EDI-Belege.
-		@return Erhält EDI-Belege
-	  */
-	@Override
-	public boolean isEdiRecipient () 
+/** Get Erhält EDI-INVOIC.
+	@return Erhält EDI-INVOIC	  */
+@Override
+public boolean isEdiInvoicRecipient ()
+{
+	Object oo = get_Value(COLUMNNAME_IsEdiInvoicRecipient);
+	if (oo != null)
 	{
-		Object oo = get_Value(COLUMNNAME_IsEdiRecipient);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		 if (oo instanceof Boolean)
+			 return ((Boolean)oo).booleanValue();
+		return "Y".equals(oo);
 	}
+	return false;
+}
 
 	/** Set Fehler.
-		@param IsError 
+		@param IsError
 		Ein Fehler ist bei der Durchführung aufgetreten
 	  */
 	@Override
@@ -1721,13 +1718,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Ein Fehler ist bei der Durchführung aufgetreten
 	  */
 	@Override
-	public boolean isError () 
+	public boolean isError ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsError);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1744,20 +1741,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Group Compensation Line.
 		@return Group Compensation Line	  */
 	@Override
-	public boolean isGroupCompensationLine () 
+	public boolean isGroupCompensationLine ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsGroupCompensationLine);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set In Dispute.
-		@param IsInDispute 
+		@param IsInDispute
 		Document is in dispute
 	  */
 	@Override
@@ -1770,13 +1767,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Document is in dispute
 	  */
 	@Override
-	public boolean isInDispute () 
+	public boolean isInDispute ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsInDispute);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1793,20 +1790,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Lieferung/ Wareneingang freigeben.
 		@return Lieferung/ Wareneingang freigeben	  */
 	@Override
-	public boolean isInOutApprovedForInvoicing () 
+	public boolean isInOutApprovedForInvoicing ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsInOutApprovedForInvoicing);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Manuell.
-		@param IsManual 
+		@param IsManual
 		Dies ist ein manueller Vorgang
 	  */
 	@Override
@@ -1819,13 +1816,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Dies ist ein manueller Vorgang
 	  */
 	@Override
-	public boolean isManual () 
+	public boolean isManual ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsManual);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1841,13 +1838,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Ist Material-Vorgang.
 		@return Ist Material-Vorgang	  */
 	@Override
-	public boolean isMaterialTracking () 
+	public boolean isMaterialTracking ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsMaterialTracking);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1864,20 +1861,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Verpackungsmaterial.
 		@return Verpackungsmaterial	  */
 	@Override
-	public boolean isPackagingMaterial () 
+	public boolean isPackagingMaterial ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsPackagingMaterial);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set andrucken.
-		@param IsPrinted 
+		@param IsPrinted
 		Indicates if this document / line is printed
 	  */
 	@Override
@@ -1890,20 +1887,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Indicates if this document / line is printed
 	  */
 	@Override
-	public boolean isPrinted () 
+	public boolean isPrinted ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsPrinted);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Sales Transaction.
-		@param IsSOTrx 
+		@param IsSOTrx
 		This is a Sales Transaction
 	  */
 	@Override
@@ -1916,21 +1913,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return This is a Sales Transaction
 	  */
 	@Override
-	public boolean isSOTrx () 
+	public boolean isSOTrx ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsSOTrx);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Preis inklusive Steuern.
-		@param IsTaxIncluded 
-		Tax is included in the price 
+		@param IsTaxIncluded
+		Tax is included in the price
 	  */
 	@Override
 	public void setIsTaxIncluded (boolean IsTaxIncluded)
@@ -1939,22 +1936,22 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Preis inklusive Steuern.
-		@return Tax is included in the price 
+		@return Tax is included in the price
 	  */
 	@Override
-	public boolean isTaxIncluded () 
+	public boolean isTaxIncluded ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsTaxIncluded);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** 
+	/**
 	 * IsTaxIncluded_Override AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1964,8 +1961,8 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** No = N */
 	public static final String ISTAXINCLUDED_OVERRIDE_No = "N";
 	/** Set Preis inkl. Steuern abw..
-		@param IsTaxIncluded_Override 
-		Tax is included in the price 
+		@param IsTaxIncluded_Override
+		Tax is included in the price
 	  */
 	@Override
 	public void setIsTaxIncluded_Override (java.lang.String IsTaxIncluded_Override)
@@ -1975,16 +1972,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Preis inkl. Steuern abw..
-		@return Tax is included in the price 
+		@return Tax is included in the price
 	  */
 	@Override
-	public java.lang.String getIsTaxIncluded_Override () 
+	public java.lang.String getIsTaxIncluded_Override ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsTaxIncluded_Override);
 	}
 
 	/** Set zur Verrechnung.
-		@param IsToClear 
+		@param IsToClear
 		Leistung wird nicht unmittelbar in Rechnung gestellt, sondern mit anderen Posten (z.B. Pauschale) verrechnet
 	  */
 	@Override
@@ -1997,20 +1994,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Leistung wird nicht unmittelbar in Rechnung gestellt, sondern mit anderen Posten (z.B. Pauschale) verrechnet
 	  */
 	@Override
-	public boolean isToClear () 
+	public boolean isToClear ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsToClear);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set zu Akt..
-		@param IsToRecompute 
+		@param IsToRecompute
 		Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	  */
 	@Override
@@ -2022,20 +2019,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	  */
 	@Override
-	public boolean isToRecompute () 
+	public boolean isToRecompute ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsToRecompute);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Zeile Nr..
-		@param Line 
+		@param Line
 		Einzelne Zeile in dem Dokument
 	  */
 	@Override
@@ -2048,7 +2045,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Einzelne Zeile in dem Dokument
 	  */
 	@Override
-	public int getLine () 
+	public int getLine ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
 		if (ii == null)
@@ -2057,7 +2054,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Zeilen-Aggregationsmerkmal.
-		@param LineAggregationKey 
+		@param LineAggregationKey
 		Wird vom System gesetzt und legt fest, welche Kandidaten zu einer Rechnungszeile zusammen gefasst (aggregiert) werden sollen.
 	  */
 	@Override
@@ -2070,7 +2067,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Wird vom System gesetzt und legt fest, welche Kandidaten zu einer Rechnungszeile zusammen gefasst (aggregiert) werden sollen.
 	  */
 	@Override
-	public java.lang.String getLineAggregationKey () 
+	public java.lang.String getLineAggregationKey ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey);
 	}
@@ -2080,16 +2077,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setLineAggregationKeyBuilder_ID (int LineAggregationKeyBuilder_ID)
 	{
-		if (LineAggregationKeyBuilder_ID < 1) 
+		if (LineAggregationKeyBuilder_ID < 1)
 			set_Value (COLUMNNAME_LineAggregationKeyBuilder_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_LineAggregationKeyBuilder_ID, Integer.valueOf(LineAggregationKeyBuilder_ID));
 	}
 
 	/** Get Line aggregation builder.
 		@return Line aggregation builder	  */
 	@Override
-	public int getLineAggregationKeyBuilder_ID () 
+	public int getLineAggregationKeyBuilder_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_LineAggregationKeyBuilder_ID);
 		if (ii == null)
@@ -2098,7 +2095,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Aggregations-Zusatz.
-		@param LineAggregationKey_Suffix 
+		@param LineAggregationKey_Suffix
 		Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
 	  */
 	@Override
@@ -2111,13 +2108,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
 	  */
 	@Override
-	public java.lang.String getLineAggregationKey_Suffix () 
+	public java.lang.String getLineAggregationKey_Suffix ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey_Suffix);
 	}
 
 	/** Set Zeilennetto.
-		@param LineNetAmt 
+		@param LineNetAmt
 		Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
 	  */
 	@Override
@@ -2130,7 +2127,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
 	  */
 	@Override
-	public java.math.BigDecimal getLineNetAmt () 
+	public java.math.BigDecimal getLineNetAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
 		if (bd == null)
@@ -2151,15 +2148,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Lieferung/Wareneingang.
-		@param M_InOut_ID 
+		@param M_InOut_ID
 		Material Shipment Document
 	  */
 	@Override
 	public void setM_InOut_ID (int M_InOut_ID)
 	{
-		if (M_InOut_ID < 1) 
+		if (M_InOut_ID < 1)
 			set_Value (COLUMNNAME_M_InOut_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
 	}
 
@@ -2167,7 +2164,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Material Shipment Document
 	  */
 	@Override
-	public int getM_InOut_ID () 
+	public int getM_InOut_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
 		if (ii == null)
@@ -2188,15 +2185,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Version Preisliste.
-		@param M_PriceList_Version_ID 
+		@param M_PriceList_Version_ID
 		Bezeichnet eine einzelne Version der Preisliste
 	  */
 	@Override
 	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID)
 	{
-		if (M_PriceList_Version_ID < 1) 
+		if (M_PriceList_Version_ID < 1)
 			set_Value (COLUMNNAME_M_PriceList_Version_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_PriceList_Version_ID, Integer.valueOf(M_PriceList_Version_ID));
 	}
 
@@ -2204,7 +2201,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Bezeichnet eine einzelne Version der Preisliste
 	  */
 	@Override
-	public int getM_PriceList_Version_ID () 
+	public int getM_PriceList_Version_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID);
 		if (ii == null)
@@ -2225,15 +2222,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Preissystem.
-		@param M_PricingSystem_ID 
+		@param M_PricingSystem_ID
 		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	  */
 	@Override
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		if (M_PricingSystem_ID < 1) 
+		if (M_PricingSystem_ID < 1)
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
 	}
 
@@ -2241,7 +2238,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	  */
 	@Override
-	public int getM_PricingSystem_ID () 
+	public int getM_PricingSystem_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
@@ -2262,7 +2259,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Produkt Kategorie.
-		@param M_Product_Category_ID 
+		@param M_Product_Category_ID
 		Kategorie eines Produktes
 	  */
 	@Override
@@ -2274,7 +2271,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Kategorie eines Produktes
 	  */
 	@Override
-	public int getM_Product_Category_ID () 
+	public int getM_Product_Category_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
 		if (ii == null)
@@ -2295,15 +2292,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Produkt.
-		@param M_Product_ID 
+		@param M_Product_ID
 		Produkt, Leistung, Artikel
 	  */
 	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
-		if (M_Product_ID < 1) 
+		if (M_Product_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
@@ -2311,7 +2308,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Produkt, Leistung, Artikel
 	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
 		if (ii == null)
@@ -2320,7 +2317,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Berechneter Betrag.
-		@param NetAmtInvoiced 
+		@param NetAmtInvoiced
 		Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	  */
 	@Override
@@ -2333,7 +2330,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	  */
 	@Override
-	public java.math.BigDecimal getNetAmtInvoiced () 
+	public java.math.BigDecimal getNetAmtInvoiced ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_NetAmtInvoiced);
 		if (bd == null)
@@ -2342,7 +2339,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set zu berechn. Betrag.
-		@param NetAmtToInvoice 
+		@param NetAmtToInvoice
 		Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	  */
 	@Override
@@ -2355,7 +2352,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	  */
 	@Override
-	public java.math.BigDecimal getNetAmtToInvoice () 
+	public java.math.BigDecimal getNetAmtToInvoice ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_NetAmtToInvoice);
 		if (bd == null)
@@ -2364,7 +2361,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Referenz.
-		@param POReference 
+		@param POReference
 		Referenz-Nummer des Kunden
 	  */
 	@Override
@@ -2377,13 +2374,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Referenz-Nummer des Kunden
 	  */
 	@Override
-	public java.lang.String getPOReference () 
+	public java.lang.String getPOReference ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
 	/** Set Einzelpreis.
-		@param PriceActual 
+		@param PriceActual
 		Effektiver Preis
 	  */
 	@Override
@@ -2396,7 +2393,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Effektiver Preis
 	  */
 	@Override
-	public java.math.BigDecimal getPriceActual () 
+	public java.math.BigDecimal getPriceActual ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
@@ -2415,7 +2412,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Preis Eff. Netto.
 		@return Preis Eff. Netto	  */
 	@Override
-	public java.math.BigDecimal getPriceActual_Net_Effective () 
+	public java.math.BigDecimal getPriceActual_Net_Effective ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual_Net_Effective);
 		if (bd == null)
@@ -2424,7 +2421,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Einzelpreis abw..
-		@param PriceActual_Override 
+		@param PriceActual_Override
 		Effektiver Preis
 	  */
 	@Override
@@ -2437,7 +2434,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Effektiver Preis
 	  */
 	@Override
-	public java.math.BigDecimal getPriceActual_Override () 
+	public java.math.BigDecimal getPriceActual_Override ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual_Override);
 		if (bd == null)
@@ -2446,7 +2443,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Preis.
-		@param PriceEntered 
+		@param PriceEntered
 		Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
 	  */
 	@Override
@@ -2459,7 +2456,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
 	  */
 	@Override
-	public java.math.BigDecimal getPriceEntered () 
+	public java.math.BigDecimal getPriceEntered ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
 		if (bd == null)
@@ -2478,7 +2475,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Preis Abw..
 		@return Preis Abw.	  */
 	@Override
-	public java.math.BigDecimal getPriceEntered_Override () 
+	public java.math.BigDecimal getPriceEntered_Override ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered_Override);
 		if (bd == null)
@@ -2503,16 +2500,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setPrice_UOM_ID (int Price_UOM_ID)
 	{
-		if (Price_UOM_ID < 1) 
+		if (Price_UOM_ID < 1)
 			set_Value (COLUMNNAME_Price_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
 	}
 
 	/** Get Preiseinheit.
 		@return Preiseinheit	  */
 	@Override
-	public int getPrice_UOM_ID () 
+	public int getPrice_UOM_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
 		if (ii == null)
@@ -2520,7 +2517,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** 
+	/**
 	 * Priority AD_Reference_ID=154
 	 * Reference name: _PriorityRule
 	 */
@@ -2536,7 +2533,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Minor = 9 */
 	public static final String PRIORITY_Minor = "9";
 	/** Set Priority.
-		@param Priority 
+		@param Priority
 		Indicates if this request is of a high, medium or low priority.
 	  */
 	@Override
@@ -2550,14 +2547,14 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Indicates if this request is of a high, medium or low priority.
 	  */
 	@Override
-	public java.lang.String getPriority () 
+	public java.lang.String getPriority ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Priority);
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -2566,16 +2563,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -2592,19 +2589,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Verarbeitet (System).
 		@return Verarbeitet (System)	  */
 	@Override
-	public boolean isProcessed_Calc () 
+	public boolean isProcessed_Calc ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed_Calc);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** 
+	/**
 	 * Processed_Override AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -2625,7 +2622,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Verarbeitet abw..
 		@return Verarbeitet abw.	  */
 	@Override
-	public java.lang.String getProcessed_Override () 
+	public java.lang.String getProcessed_Override ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Processed_Override);
 	}
@@ -2640,19 +2637,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Process Now.
 		@return Process Now	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** 
+	/**
 	 * ProductType AD_Reference_ID=270
 	 * Reference name: M_Product_ProductType
 	 */
@@ -2668,7 +2665,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Online = O */
 	public static final String PRODUCTTYPE_Online = "O";
 	/** Set Produktart.
-		@param ProductType 
+		@param ProductType
 		Art von Produkt
 	  */
 	@Override
@@ -2681,13 +2678,13 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Art von Produkt
 	  */
 	@Override
-	public java.lang.String getProductType () 
+	public java.lang.String getProductType ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductType);
 	}
 
 	/** Set Gelieferte Menge.
-		@param QtyDelivered 
+		@param QtyDelivered
 		Gelieferte Menge
 	  */
 	@Override
@@ -2700,7 +2697,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Gelieferte Menge
 	  */
 	@Override
-	public java.math.BigDecimal getQtyDelivered () 
+	public java.math.BigDecimal getQtyDelivered ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
 		if (bd == null)
@@ -2709,7 +2706,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Berechn. Menge.
-		@param QtyInvoiced 
+		@param QtyInvoiced
 		Menge, die bereits in Rechnung gestellt wurde
 	  */
 	@Override
@@ -2722,7 +2719,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Menge, die bereits in Rechnung gestellt wurde
 	  */
 	@Override
-	public java.math.BigDecimal getQtyInvoiced () 
+	public java.math.BigDecimal getQtyInvoiced ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
 		if (bd == null)
@@ -2731,7 +2728,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Bestellt/ Beauftragt.
-		@param QtyOrdered 
+		@param QtyOrdered
 		Bestellt/ Beauftragt
 	  */
 	@Override
@@ -2744,7 +2741,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Bestellt/ Beauftragt
 	  */
 	@Override
-	public java.math.BigDecimal getQtyOrdered () 
+	public java.math.BigDecimal getQtyOrdered ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
@@ -2763,7 +2760,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get QtyOrderedOverUnder.
 		@return QtyOrderedOverUnder	  */
 	@Override
-	public java.math.BigDecimal getQtyOrderedOverUnder () 
+	public java.math.BigDecimal getQtyOrderedOverUnder ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrderedOverUnder);
 		if (bd == null)
@@ -2772,7 +2769,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Zu berechn. Menge eff..
-		@param QtyToInvoice 
+		@param QtyToInvoice
 		Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	  */
 	@Override
@@ -2785,7 +2782,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoice () 
+	public java.math.BigDecimal getQtyToInvoice ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice);
 		if (bd == null)
@@ -2804,7 +2801,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Zu berechn. Menge vor Qualitätsabzug.
 		@return Zu berechn. Menge vor Qualitätsabzug	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount () 
+	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceBeforeDiscount);
 		if (bd == null)
@@ -2813,7 +2810,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Zu berechn. Menge In Preiseinheit.
-		@param QtyToInvoiceInPriceUOM 
+		@param QtyToInvoiceInPriceUOM
 		Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
 	  */
 	@Override
@@ -2826,7 +2823,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
 	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM () 
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM);
 		if (bd == null)
@@ -2835,7 +2832,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Zu berechn. Menge abw..
-		@param QtyToInvoice_Override 
+		@param QtyToInvoice_Override
 		Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
 	  */
 	@Override
@@ -2848,7 +2845,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
 	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoice_Override () 
+	public java.math.BigDecimal getQtyToInvoice_Override ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_Override);
 		if (bd == null)
@@ -2857,7 +2854,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Zu berechn. Menge abw. erl..
-		@param QtyToInvoice_OverrideFulfilled 
+		@param QtyToInvoice_OverrideFulfilled
 		Angabe über den Teil der abweichenden Menge, der bereits in Rechnung gestellt wurde
 	  */
 	@Override
@@ -2870,7 +2867,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Angabe über den Teil der abweichenden Menge, der bereits in Rechnung gestellt wurde
 	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoice_OverrideFulfilled () 
+	public java.math.BigDecimal getQtyToInvoice_OverrideFulfilled ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_OverrideFulfilled);
 		if (bd == null)
@@ -2879,7 +2876,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Minderwertige Menge.
-		@param QtyWithIssues 
+		@param QtyWithIssues
 		Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
 	  */
 	@Override
@@ -2892,7 +2889,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
 	  */
 	@Override
-	public java.math.BigDecimal getQtyWithIssues () 
+	public java.math.BigDecimal getQtyWithIssues ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssues);
 		if (bd == null)
@@ -2901,7 +2898,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Minderwertige Menge eff..
-		@param QtyWithIssues_Effective 
+		@param QtyWithIssues_Effective
 		Liefermenge, die nicht fakturiert wird soll. Der Wert weicht von "Minderwertige Menge" ab, wenn ein abweichender "Qualitätsabzug %" Wert gesetzt wurde.
 	  */
 	@Override
@@ -2914,7 +2911,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Liefermenge, die nicht fakturiert wird soll. Der Wert weicht von "Minderwertige Menge" ab, wenn ein abweichender "Qualitätsabzug %" Wert gesetzt wurde.
 	  */
 	@Override
-	public java.math.BigDecimal getQtyWithIssues_Effective () 
+	public java.math.BigDecimal getQtyWithIssues_Effective ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssues_Effective);
 		if (bd == null)
@@ -2933,7 +2930,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Qualitätsabzug %.
 		@return Qualitätsabzug %	  */
 	@Override
-	public java.math.BigDecimal getQualityDiscountPercent () 
+	public java.math.BigDecimal getQualityDiscountPercent ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent);
 		if (bd == null)
@@ -2951,7 +2948,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Qualitätsabzug % Eff..
 		@return Qualitätsabzug % Eff.	  */
 	@Override
-	public java.math.BigDecimal getQualityDiscountPercent_Effective () 
+	public java.math.BigDecimal getQualityDiscountPercent_Effective ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent_Effective);
 		if (bd == null)
@@ -2970,7 +2967,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Qualitätsabzug % abw..
 		@return Qualitätsabzug % abw.	  */
 	@Override
-	public java.math.BigDecimal getQualityDiscountPercent_Override () 
+	public java.math.BigDecimal getQualityDiscountPercent_Override ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent_Override);
 		if (bd == null)
@@ -2978,7 +2975,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** 
+	/**
 	 * QualityInvoiceLineGroupType AD_Reference_ID=540617
 	 * Reference name: QualityInvoiceLineGroupType
 	 */
@@ -3009,7 +3006,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Rechnungspositionsart.
 		@return Rechnungspositionsart	  */
 	@Override
-	public java.lang.String getQualityInvoiceLineGroupType () 
+	public java.lang.String getQualityInvoiceLineGroupType ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_QualityInvoiceLineGroupType);
 	}
@@ -3025,21 +3022,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get ReasonDiscount.
 		@return ReasonDiscount	  */
 	@Override
-	public java.lang.String getReasonDiscount () 
+	public java.lang.String getReasonDiscount ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ReasonDiscount);
 	}
 
 	/** Set Datensatz-ID.
-		@param Record_ID 
+		@param Record_ID
 		Direct internal record ID
 	  */
 	@Override
 	public void setRecord_ID (int Record_ID)
 	{
-		if (Record_ID < 0) 
+		if (Record_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
@@ -3047,7 +3044,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Direct internal record ID
 	  */
 	@Override
-	public int getRecord_ID () 
+	public int getRecord_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
 		if (ii == null)
@@ -3068,15 +3065,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Ref_PackingMaterial_InOutLine_ID.
-		@param Ref_PackingMaterial_InOutLine_ID 
+		@param Ref_PackingMaterial_InOutLine_ID
 		Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
 	  */
 	@Override
 	public void setRef_PackingMaterial_InOutLine_ID (int Ref_PackingMaterial_InOutLine_ID)
 	{
-		if (Ref_PackingMaterial_InOutLine_ID < 1) 
+		if (Ref_PackingMaterial_InOutLine_ID < 1)
 			set_Value (COLUMNNAME_Ref_PackingMaterial_InOutLine_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Ref_PackingMaterial_InOutLine_ID, Integer.valueOf(Ref_PackingMaterial_InOutLine_ID));
 	}
 
@@ -3084,7 +3081,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
 	  */
 	@Override
-	public int getRef_PackingMaterial_InOutLine_ID () 
+	public int getRef_PackingMaterial_InOutLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_PackingMaterial_InOutLine_ID);
 		if (ii == null)
@@ -3093,7 +3090,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Status nach Akt..
-		@param SchedulerResult 
+		@param SchedulerResult
 		Informationen des Aktualisierungsprozesses
 	  */
 	@Override
@@ -3106,7 +3103,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		@return Informationen des Aktualisierungsprozesses
 	  */
 	@Override
-	public java.lang.String getSchedulerResult () 
+	public java.lang.String getSchedulerResult ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SchedulerResult);
 	}
@@ -3122,7 +3119,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Restbetrag.
 		@return Restbetrag	  */
 	@Override
-	public java.math.BigDecimal getSplitAmt () 
+	public java.math.BigDecimal getSplitAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SplitAmt);
 		if (bd == null)
@@ -3140,7 +3137,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Total des Auftrags.
 		@return Total des Auftrags	  */
 	@Override
-	public java.math.BigDecimal getTotalOfOrder () 
+	public java.math.BigDecimal getTotalOfOrder ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOfOrder);
 		if (bd == null)
@@ -3158,7 +3155,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Auftrag Total ohne Rabatt.
 		@return Auftrag Total ohne Rabatt	  */
 	@Override
-	public java.math.BigDecimal getTotalOfOrderExcludingDiscount () 
+	public java.math.BigDecimal getTotalOfOrderExcludingDiscount ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOfOrderExcludingDiscount);
 		if (bd == null)

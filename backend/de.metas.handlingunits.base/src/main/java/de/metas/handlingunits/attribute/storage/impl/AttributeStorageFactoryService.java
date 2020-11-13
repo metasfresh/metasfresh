@@ -24,6 +24,9 @@ package de.metas.handlingunits.attribute.storage.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.adempiere.util.Services;
+
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -41,6 +44,13 @@ public class AttributeStorageFactoryService implements IAttributeStorageFactoryS
 		addAttributeStorageFactory(HUAttributeStorageFactory.class);
 		addAttributeStorageFactory(ASIAttributeStorageFactory.class);
 		addAttributeStorageFactory(ASIAwareAttributeStorageFactory.class);
+	}
+
+	@Override
+	public IAttributeStorageFactory createHUAttributeStorageFactory()
+	{
+		final IHUStorageFactory huStorageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+		return createHUAttributeStorageFactory(huStorageFactory, HUAttributesDAO.instance);
 	}
 
 	@Override

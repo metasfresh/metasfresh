@@ -52,12 +52,12 @@ import lombok.NonNull;
  */
 public final class ImmutableAttributeSet implements IAttributeSet
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final ImmutableAttributeSet ofValuesIndexByAttributeId(
+	public static ImmutableAttributeSet ofValuesIndexByAttributeId(
 			@Nullable final Map<Object, Object> valuesByAttributeIdObj)
 	{
 		if (valuesByAttributeIdObj == null || valuesByAttributeIdObj.isEmpty())
@@ -140,7 +140,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return attributes.containsKey(attribute.getM_Attribute_ID());
 	}
 
-	private final void assertAttributeExists(final I_M_Attribute attribute)
+	private void assertAttributeExists(final I_M_Attribute attribute)
 	{
 		if (!hasAttribute(attribute))
 		{

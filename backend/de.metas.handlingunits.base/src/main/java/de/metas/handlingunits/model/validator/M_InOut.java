@@ -61,7 +61,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 
 @Interceptor(I_M_InOut.class)
-@Component
+@Component("de.metas.handlingunits.model.validator.M_InOut")
 public class M_InOut
 {
 	@Init
@@ -345,7 +345,7 @@ public class M_InOut
 
 	/**
 	 * Generate DD_Orders from receipt (if needed).
-	 * 
+	 *
 	 * @param inout
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })

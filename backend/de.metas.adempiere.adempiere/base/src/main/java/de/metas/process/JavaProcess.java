@@ -952,7 +952,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 * @param number number or null
 	 * @param msg message or null
 	 */
-	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
+	public void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
 		getResult().addLog(id, date, number, msg);
 	}	// addLog
@@ -963,12 +963,13 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 * @param msg message
 	 */
 	@Override
-	public final void addLog(final String msg, final Object... msgParameters)
+	public final JavaProcess addLog(final String msg, final Object... msgParameters)
 	{
 		if (msg != null)
 		{
 			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
 		}
+		return this;
 	}	// addLog
 
 	/**
