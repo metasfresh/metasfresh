@@ -345,10 +345,6 @@ public final class StringUtils
 
 	/**
 	 * Formats the given message the using {@link Format}.
-	 *
-	 * @param message
-	 * @param params
-	 * @return
 	 */
 	public static String formatJavaTextFormatMessage(final String message, Object... params)
 	{
