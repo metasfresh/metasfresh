@@ -14,6 +14,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -57,7 +58,7 @@ import lombok.Value;
 
 /**
  * *
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 
@@ -108,8 +109,8 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "flatrateConditionsNew")
-	public static I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule, 
-			final String typeConditions, @NonNull final I_C_Calendar calendar, 
+	public static I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule,
+			final String typeConditions, @NonNull final I_C_Calendar calendar,
 			@NonNull final I_M_PricingSystem pricingSystem, final boolean isAutoRenew)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
@@ -182,20 +183,20 @@ public class FlatrateTermDataFactory
 		final private I_C_TaxCategory taxCategory;
 		final private I_C_Tax tax;
 	}
-	
-	
+
+
 	@Builder(builderMethodName = "productAndPricingNew")
 	public static ProductAndPricingSystem createProductAndPricing(final String productValue, final String productName,
 			@NonNull final I_C_Country country,	@NonNull final Timestamp validFrom, final boolean isTaxInclcuded)
 	{
 		final I_C_TaxCategory taxCategory = createTaxCategory();
-		
+
 		final I_C_Tax tax  = taxNew()
 				.country(country)
 				.taxCategory(taxCategory)
 				.validFrom(TimeUtil.addDays(validFrom, -10))
 				.build();
-		
+
 		final I_M_Product product = productNew()
 				.value(productValue)
 				.name(productName)
@@ -229,8 +230,8 @@ public class FlatrateTermDataFactory
 				.priceListVersion(priceListVersion)
 				.build();
 	}
-	
-	
+
+
 	private static I_C_TaxCategory createTaxCategory()
 	{
 		final I_C_TaxCategory taxCategory  = newInstance(I_C_TaxCategory.class);
@@ -238,7 +239,7 @@ public class FlatrateTermDataFactory
 		save(taxCategory);
 		return taxCategory;
 	}
-	
+
 	@Builder(builderMethodName = "taxNew")
 	public static I_C_Tax createTax(@NonNull final I_C_TaxCategory taxCategory, @NonNull final I_C_Country country, @NonNull final Timestamp validFrom)
 	{
@@ -259,10 +260,13 @@ public class FlatrateTermDataFactory
 	@Builder(builderMethodName = "productNew")
 	public static I_M_Product createProduct(final String value, final String name)
 	{
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		save(uom);
+
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setValue(value);
 		product.setName(name);
-
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		save(product);
 		return product;
 	}
@@ -314,7 +318,7 @@ public class FlatrateTermDataFactory
 		save(productPrice);
 		return productPrice;
 	}
-	
+
 	@Builder(builderMethodName = "productAcctNew")
 	public static I_M_Product_Acct createProductAcct(final I_M_Product product, final I_C_AcctSchema acctSchema)
 	{

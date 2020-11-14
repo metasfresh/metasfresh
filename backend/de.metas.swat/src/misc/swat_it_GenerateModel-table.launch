@@ -10,6 +10,7 @@
 <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
+<stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="de.metas.swat.base"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./src/main/java-gen/org/compiere/model/&#13;&#10;org.compiere.model&#13;&#10;'de.metas.swat'&#13;&#10;&quot; '${string_prompt:TableName}' &quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.swat.base"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
