@@ -69,7 +69,6 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 
 	// AD_Messages
 	private static final String MSG_SelectAll = "SelectAll";
-	private static final String MSG_PrintExistingSSCCs = "PrintExistingSSCCs";
 
 	//
 	// Models
@@ -81,7 +80,6 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 	// UI
 	private FormFrame frame;
 	private ITerminalCheckboxField chkSelectAll;
-	private ITerminalCheckboxField chkPrintExistingSSCCs;
 	private ITerminalTable2<IPrintableDesadvLineSSCC18Labels> desadvLinesTable;
 
 	public EDI_DesadvLine_PrintSSCC18s_FormPanel()
@@ -137,14 +135,10 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 			chkSelectAll.setTextAndTranslate(MSG_SelectAll);
 			desadvLinesTableModel.bindSelectAllCheckbox(chkSelectAll);
 
-			chkPrintExistingSSCCs = terminalFactory.createTerminalCheckbox(MSG_PrintExistingSSCCs);
-			chkPrintExistingSSCCs.setTextAndTranslate(MSG_PrintExistingSSCCs);
-
 			// Layout
 			final CPanel panelTop = new CPanel();
 			panelTop.setLayout(new FlowLayout()); // horizontal flow
 			panelTop.add(SwingTerminalFactory.getUI(chkSelectAll));
-			panelTop.add(SwingTerminalFactory.getUI(chkPrintExistingSSCCs));
 			contentPanel.add(panelTop, BorderLayout.NORTH);
 		}
 
@@ -273,9 +267,10 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 		return Env.getCtx();
 	}
 
+	/** @return always true because the SSCC18s are now created as soon as inout lines are added to a DESADV-Line, so they always pre-exist. */
 	private final boolean isPrintExistingSSCCs()
 	{
-		return chkPrintExistingSSCCs.getValue();
+		return true;
 	}
 
 	private void doCreateAndPrintSSCC18Labels()
