@@ -70,19 +70,7 @@
     </dependencyManagement>
 
     <dependencies>
-        <!--
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
--->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -106,17 +94,6 @@
             <artifactId>camel-spring-javaconfig</artifactId>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.camel</groupId>-->
-        <!--            <artifactId>camel-main</artifactId>-->
-        <!--            <exclusions>-->
-        <!--                <exclusion>-->
-        <!--                    <artifactId>slf4j-api</artifactId>-->
-        <!--                    <groupId>org.slf4j</groupId>-->
-        <!--                </exclusion>-->
-        <!--            </exclusions>-->
-        <!--        </dependency>-->
-
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-endpointdsl</artifactId>
@@ -128,46 +105,12 @@
             <artifactId>camel-rabbitmq-starter</artifactId>
             <version>${camel.version}</version>
         </dependency>
-        <!--
-                <dependency>
-                    <groupId>org.apache.camel</groupId>
-                    <artifactId>camel-script</artifactId>
-                </dependency>
-        -->
+
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-jaxb-starter</artifactId>
             <version>${camel.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>jakarta.xml.bind</groupId>-->
-<!--            <artifactId>jakarta.xml.bind-api</artifactId>-->
-<!--            <version>2.3.3</version>-->
-<!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>javax.xml.bind</groupId>-->
-        <!--            <artifactId>jaxb-api</artifactId>-->
-        <!--            <version>2.3.1</version>-->
-        <!--            <exclusions>-->
-        <!--                <exclusion>-->
-        <!--                    <groupId>javax.activation</groupId>-->
-        <!--                    <artifactId>javax.activation-api</artifactId>-->
-        <!--                </exclusion>-->
-        <!--            </exclusions>-->
-        <!--        </dependency>-->
-
-<!--        &lt;!&ndash; java.lang.NoClassDefFoundError: com/sun/istack/FinalArrayList &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.sun.xml.bind</groupId>-->
-<!--            <artifactId>jaxb-core</artifactId>-->
-<!--            <version>2.3.0.1</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; java.lang.ClassNotFoundException: com.sun.xml.bind.v2.ContextFactory &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.sun.xml.bind</groupId>-->
-<!--            <artifactId>jaxb-impl</artifactId>-->
-<!--            <version>2.3.2</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
@@ -185,28 +128,12 @@
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-jacksonxml-starter</artifactId>
             <version>${camel.version}</version>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>jakarta.xml.bind</groupId>-->
-<!--                    <artifactId>jakarta.xml.bind-api</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-databind</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-annotations</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -223,16 +150,6 @@
             <groupId>org.milyn</groupId>
             <artifactId>milyn-smooks-camel</artifactId>
             <version>${smooks.version}</version>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <artifactId>commons-logging</artifactId>-->
-<!--                    <groupId>commons-logging</groupId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>xalan</groupId>-->
-<!--                    <artifactId>xalan</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>org.milyn</groupId>
@@ -245,24 +162,6 @@
             <version>${smooks.version}</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.milyn</groupId>-->
-        <!--            <artifactId>milyn-smooks-all</artifactId>-->
-        <!--            <version>${smooks.version}</version>-->
-        <!--            <exclusions>-->
-        <!--                &lt;!&ndash; excluding xercesImpl to get rid of org.xml.sax.SAXNotRecognizedException:-->
-        <!--                    Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not-->
-        <!--                    recognized. thx to http://stackoverflow.com/questions/25644023/error-unmarshalling-xml-in-java-8-secure-processing-org-xml-sax-saxnotrecognize &ndash;&gt;-->
-        <!--                <exclusion>-->
-        <!--                    <artifactId>xercesImpl</artifactId>-->
-        <!--                    <groupId>xerces</groupId>-->
-        <!--                </exclusion>-->
-        <!--                <exclusion>-->
-        <!--                    <artifactId>commons-logging</artifactId>-->
-        <!--                    <groupId>commons-logging</groupId>-->
-        <!--                </exclusion>-->
-        <!--            </exclusions>-->
-        <!--        </dependency>-->
         <!-- needed by smooks -->
         <dependency>
             <artifactId>commons-logging</artifactId>
@@ -292,12 +191,6 @@
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>${logstash-logback-encoder.version}</version>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-databind</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
 
         <!-- testing -->
