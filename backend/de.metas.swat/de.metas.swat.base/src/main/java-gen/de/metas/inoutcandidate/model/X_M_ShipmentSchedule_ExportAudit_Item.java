@@ -4,23 +4,23 @@ package de.metas.inoutcandidate.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for M_ShipmentSchedule_ExportAudit
+/** Generated Model for M_ShipmentSchedule_ExportAudit_Item
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO implements I_M_ShipmentSchedule_ExportAudit, org.compiere.model.I_Persistent 
+public class X_M_ShipmentSchedule_ExportAudit_Item extends org.compiere.model.PO implements I_M_ShipmentSchedule_ExportAudit_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 6876153L;
+	private static final long serialVersionUID = -1606467633L;
 
     /** Standard Constructor */
-    public X_M_ShipmentSchedule_ExportAudit (Properties ctx, int M_ShipmentSchedule_ExportAudit_ID, String trxName)
+    public X_M_ShipmentSchedule_ExportAudit_Item (Properties ctx, int M_ShipmentSchedule_ExportAudit_Item_ID, String trxName)
     {
-      super (ctx, M_ShipmentSchedule_ExportAudit_ID, trxName);
+      super (ctx, M_ShipmentSchedule_ExportAudit_Item_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_ShipmentSchedule_ExportAudit (Properties ctx, ResultSet rs, String trxName)
+    public X_M_ShipmentSchedule_ExportAudit_Item (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -49,27 +49,15 @@ public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO impl
 	public void setAD_Issue_ID (int AD_Issue_ID)
 	{
 		if (AD_Issue_ID < 1) 
-			set_Value (COLUMNNAME_AD_Issue_ID, null);
+			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
 	}
 
 	@Override
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
-	}
-
-	@Override
-	public void setExportSequenceNumber (int ExportSequenceNumber)
-	{
-		set_Value (COLUMNNAME_ExportSequenceNumber, Integer.valueOf(ExportSequenceNumber));
-	}
-
-	@Override
-	public int getExportSequenceNumber() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ExportSequenceNumber);
 	}
 
 	/** 
@@ -103,15 +91,15 @@ public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setForwardedData (java.lang.String ForwardedData)
+	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit getM_ShipmentSchedule_ExportAudit()
 	{
-		set_Value (COLUMNNAME_ForwardedData, ForwardedData);
+		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.class);
 	}
 
 	@Override
-	public java.lang.String getForwardedData() 
+	public void setM_ShipmentSchedule_ExportAudit(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit M_ShipmentSchedule_ExportAudit)
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ForwardedData);
+		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.class, M_ShipmentSchedule_ExportAudit);
 	}
 
 	@Override
@@ -130,14 +118,44 @@ public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setTransactionIdAPI (java.lang.String TransactionIdAPI)
+	public void setM_ShipmentSchedule_ExportAudit_Item_ID (int M_ShipmentSchedule_ExportAudit_Item_ID)
 	{
-		set_Value (COLUMNNAME_TransactionIdAPI, TransactionIdAPI);
+		if (M_ShipmentSchedule_ExportAudit_Item_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_Item_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_Item_ID, Integer.valueOf(M_ShipmentSchedule_ExportAudit_Item_ID));
 	}
 
 	@Override
-	public java.lang.String getTransactionIdAPI() 
+	public int getM_ShipmentSchedule_ExportAudit_Item_ID() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TransactionIdAPI);
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ExportAudit_Item_ID);
+	}
+
+	@Override
+	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
+	}
+
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+	}
+
+	@Override
+	public int getM_ShipmentSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 }

@@ -113,6 +113,7 @@ public class JsonRetrieverService
 			.put(BPartner.URL_3, JsonResponseBPartner.URL_3)
 			.put(BPartner.VENDOR, JsonResponseBPartner.VENDOR)
 			.put(BPartner.CUSTOMER, JsonResponseBPartner.CUSTOMER)
+			.put(BPartner.COMPANY, JsonResponseBPartner.COMPANY)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
 			.build();
 
@@ -278,6 +279,7 @@ public class JsonRetrieverService
 				.url3(bpartner.getUrl3())
 				.vendor(bpartner.isVendor())
 				.customer(bpartner.isCustomer())
+				.company(bpartner.isCompany())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
 				.build();

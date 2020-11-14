@@ -38,9 +38,10 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -54,6 +55,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.DeliveryRule;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -67,6 +69,38 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.model.I_PP_Order;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /**
  * Default implementation for sales order lines.
@@ -76,6 +110,7 @@ import lombok.NonNull;
 @Component
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
+	private static IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
@@ -243,7 +278,16 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			@NonNull final I_C_Order order)
 	{
 		shipmentSchedule.setPriorityRule(order.getPriorityRule());
-		shipmentSchedule.setBill_BPartner_ID(order.getBill_BPartner_ID());
+
+		final BPartnerLocationId billToLocationId = orderBL.getBillToLocationId(order);
+		shipmentSchedule.setBill_BPartner_ID(billToLocationId.getBpartnerId().getRepoId());
+		shipmentSchedule.setBill_Location_ID(billToLocationId.getRepoId());
+		if(orderBL.hasBillToContactId(order))
+		{
+			final BPartnerContactId billToContactId = orderBL.getBillToContactId(order);
+			shipmentSchedule.setBill_User_ID(BPartnerContactId.toRepoId(billToContactId));
+		}
+
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
 		shipmentSchedule.setM_Tour_ID(order.getM_Tour_ID());
@@ -295,7 +339,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveModelsWithMissingCandidates(
+	public Iterator<?> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
 			final String trxName)
 	{
@@ -306,7 +350,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
 		final TypedSqlQueryFilter<I_C_OrderLine> orderLinesFilter = TypedSqlQueryFilter.of(wc);
 
-		final Iterator<I_C_OrderLine> orderLines = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(orderLinesFilter)
@@ -316,8 +360,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_C_OrderLine.class);
-
-		return orderLines;
 	}
 
 	/**
@@ -332,7 +374,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		return salesOrderLine::getQtyOrdered;
 	}
 
-	private PPOrderId createPickingOrderIfNeeded(final I_C_OrderLine salesOrderLine)
+	@Nullable
+	private PPOrderId createPickingOrderIfNeeded(@NonNull final I_C_OrderLine salesOrderLine)
 	{
 		final PickingBOMService pickingBOMService = SpringContextHolder.instance.getBean(PickingBOMService.class);
 		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);

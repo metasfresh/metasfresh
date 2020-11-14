@@ -37,7 +37,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
+@ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonRequestBPartner
 {
 	@ApiModelProperty(position = 10, required = false, //

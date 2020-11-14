@@ -30,7 +30,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.UnmodifiableIterator;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -66,6 +68,7 @@ import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem;
+import de.metas.inoutcandidate.exportaudit.ShipmentScheduleExportAuditItem.ShipmentScheduleExportAuditItemBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -117,7 +120,6 @@ import java.util.function.Function;
 
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndForwarded;
-import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 
 @Service
 class ShipmentCandidateAPIService
@@ -160,10 +162,6 @@ class ShipmentCandidateAPIService
 		final String transactionKey = UUID.randomUUID().toString();
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", transactionKey))
 		{
-			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder = APIExportAudit
-					.<ShipmentScheduleExportAuditItem> builder()
-					.transactionId(transactionKey);
-
 			final List<ShipmentSchedule> shipmentSchedules = loadShipmentSchedulesToExport(limit);
 
 			if (shipmentSchedules.isEmpty())
@@ -185,6 +183,14 @@ class ShipmentCandidateAPIService
 
 			final int exportSequenceNumber = exportSequenceNumberProvider.provideNextShipmentCandidateSeqNo();
 
+			final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder =
+					APIExportAudit
+							.<ShipmentScheduleExportAuditItem>builder()
+							.transactionId(transactionKey)
+							.exportSequenceNumber(exportSequenceNumber)
+							.orgId(OrgId.ANY) // currently, this audit *might* export shipment scheds from different orgs
+							.exportStatus(APIExportStatus.Exported); // status might be changed to "error" down the line
+
 			final JsonResponseShipmentCandidatesBuilder result = JsonResponseShipmentCandidates.builder()
 					.hasMoreItems(limit.isLimitHitOrExceeded(shipmentSchedules))
 					.transactionKey(transactionKey)
@@ -199,8 +205,14 @@ class ShipmentCandidateAPIService
 				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentSchedule.getId()))
 				{
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(shipmentSchedule, attributesForASIs);
-					final JsonCustomer customer = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner);
-					final JsonProduct product = createJsonProduct(shipmentSchedule, customer.getLanguage(), productId2Product);
+
+					final JsonCustomer shipBPartner = createJsonCustomer(
+							shipmentSchedule.getShipBPartnerId(),
+							shipmentSchedule.getShipLocationId(),
+							shipmentSchedule.getShipContactId(),
+							bpartnerIdToBPartner);
+
+					final JsonProduct product = createJsonProduct(shipmentSchedule, shipBPartner.getLanguage(), productId2Product);
 
 					final List<JsonQuantity> quantityToDeliver = createJsonQuantities(shipmentSchedule.getQuantityToDeliver());
 
@@ -209,13 +221,23 @@ class ShipmentCandidateAPIService
 					final JsonResponseShipmentCandidateBuilder itemBuilder = JsonResponseShipmentCandidate.builder()
 							.id(JsonMetasfreshId.of(shipmentSchedule.getId().getRepoId()))
 							.orgCode(orgDAO.retrieveOrgValue(shipmentSchedule.getOrgId()))
-							.customer(customer)
+							.shipBPartner(shipBPartner)
 							.product(product)
 							.attributeSetInstance(jsonAttributeSetInstance)
 							.quantities(quantityToDeliver)
 							.orderedQty(orderedQty)
 							.dateOrdered(shipmentSchedule.getDateOrdered())
 							.numberOfItemsForSameShipment(shipmentSchedule.getNumberOfItemsForSameShipment());
+
+					if (shipmentSchedule.getBillBPartnerId() != null && shipmentSchedule.getBillLocationId() != null)
+					{
+						final JsonCustomer billBPartner = createJsonCustomer(
+								shipmentSchedule.getBillBPartnerId(),
+								shipmentSchedule.getBillLocationId(),
+								shipmentSchedule.getBillContactId(),
+								bpartnerIdToBPartner);
+						itemBuilder.billBPartner(billBPartner);
+					}
 
 					setOrderReferences(itemBuilder, shipmentSchedule, orderIdToOrderRecord);
 
@@ -249,16 +271,18 @@ class ShipmentCandidateAPIService
 	}
 
 	private JsonCustomer createJsonCustomer(
-			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final BPartnerLocationId bPartnerLocationId,
+			@Nullable final BPartnerContactId bPartnerContactId,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
-		final BPartnerComposite composite = bpartnerIdToBPartner.get(shipmentSchedule.getCustomerId());
+		final BPartnerComposite composite = bpartnerIdToBPartner.get(bpartnerId);
 		final BPartnerLocation location = composite
-				.extractLocation(shipmentSchedule.getLocationId())
+				.extractLocation(bPartnerLocationId)
 				.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's location from the shipment schedule's bPartner")
 						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
-						.setParameter("C_BPartner_Location_ID", shipmentSchedule.getLocationId().getRepoId()));
+						.setParameter("C_BPartner_ID", bpartnerId.getRepoId())
+						.setParameter("C_BPartner_Location_ID", bPartnerLocationId.getRepoId()));
 
 		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(location.getAddress1());
 		if (splitStreetAndHouseNumber == null)
@@ -289,7 +313,8 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
-		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
+		final JsonCustomerBuilder shipBPartnerBuilder = JsonCustomer.builder()
+				.company(bpartner.isCompany())
 				.companyName(CoalesceUtil.firstNotEmptyTrimmed(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
 				.street(splitStreetAndHouseNumber.getLeft())
@@ -301,43 +326,24 @@ class ShipmentCandidateAPIService
 				.city(city)
 				.countryCode(location.getCountryCode())
 				.language(adLanguage);
-		if (shipmentSchedule.getContactId() != null)
+		if (bPartnerContactId != null)
 		{
-			final BPartnerContact contact = composite.extractContact(shipmentSchedule.getContactId())
+			final BPartnerContact contact = composite.extractContact(bPartnerContactId)
 					.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
 							.appendParametersToMessage()
-							.setParameter("C_BPartner_ID", shipmentSchedule.getCustomerId().getRepoId())
-							.setParameter("AD_User_ID", shipmentSchedule.getContactId().getRepoId()));
+							.setParameter("C_BPartner_ID", bpartnerId.getRepoId())
+							.setParameter("AD_User_ID", bPartnerContactId.getRepoId()));
 
-			customerBuilder
+			shipBPartnerBuilder
 					.contactEmail(contact.getEmail())
 					.contactName(contact.getName())
-					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
-			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", shipmentSchedule.getContactId().getRepoId());
-		}
-		else if (composite.getContacts().size() == 1)
-		{ // shipment candidate has no contact, but the bpartner has only one
-			final BPartnerContact contact = composite.getContacts().get(0);
-			customerBuilder
-					.contactEmail(contact.getEmail())
-					.contactName(contact.getName())
-					.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
-			logger.debug("Exporting single-contact AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
-		}
-		else
-		{ // see if we have a shipto-contact
-			final BPartnerContact contact = composite.extractContact(c -> c.getContactType().getIsShipToDefaultOr(false)).orElse(null);
-			if (contact != null)
-			{
-				customerBuilder
-						.contactEmail(contact.getEmail())
-						.contactName(contact.getName())
-						.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()));
-				logger.debug("Exporting shipToDefault AD_User_ID={} from the shipment-schedule", contact.getId().getRepoId());
-			}
+					//.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()))
+					.contactPhone(contact.getPhone()) // in the legacy-DPD-export, we also export the phone-number; not the mobile-number
+			;
+			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", bPartnerContactId.getRepoId());
 		}
 
-		return customerBuilder.build();
+		return shipBPartnerBuilder.build();
 	}
 
 	private JsonProduct createJsonProduct(
@@ -379,14 +385,12 @@ class ShipmentCandidateAPIService
 			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder)
 	{
-		final OrgId orgId = shipmentSchedule.getOrgId();
-
 		auditBuilder.item(
 				shipmentSchedule.getId(),
 				ShipmentScheduleExportAuditItem.builder()
 						.exportStatus(APIExportStatus.Exported)
 						.repoIdAware(shipmentSchedule.getId())
-						.orgId(orgId)
+						.orgId(shipmentSchedule.getOrgId())
 						.build());
 	}
 
@@ -404,14 +408,16 @@ class ShipmentCandidateAPIService
 				.summary(e.getMessage())
 				.build());
 
-		auditBuilder.item(
-				shipmentSchedule.getId(),
-				ShipmentScheduleExportAuditItem.builder()
-						.exportStatus(APIExportStatus.ExportError)
-						.repoIdAware(shipmentSchedule.getId())
-						.issueId(adIssueId)
-						.orgId(orgId)
-						.build());
+		auditBuilder
+				.exportStatus(APIExportStatus.ExportError)
+				.item(
+						shipmentSchedule.getId(),
+						ShipmentScheduleExportAuditItem.builder()
+								.exportStatus(APIExportStatus.ExportError)
+								.repoIdAware(shipmentSchedule.getId())
+								.issueId(adIssueId)
+								.orgId(orgId)
+								.build());
 	}
 
 	@Value
@@ -453,60 +459,80 @@ class ShipmentCandidateAPIService
 			logger.debug("given results is empty; -> return");
 			return;
 		}
-		final APIExportAudit<ShipmentScheduleExportAuditItem> auditRecords = shipmentScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
-		if (auditRecords == null)
+		final APIExportAudit<ShipmentScheduleExportAuditItem> exportAudit = shipmentScheduleAuditRepository.getByTransactionId(results.getTransactionKey());
+		if (exportAudit == null)
 		{
 			logger.debug("Given results.transactionKey={} does not match any audit records; -> return", results.getTransactionKey());
 			return;
 		}
+
+		exportAudit.setForwardedData(results.getForwardedData());
+		exportAudit.setIssueId(generalAdIssueId);
+
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = CollectionUtils.extractDistinctElementsIntoSet(
 				results.getItems(),
 				item -> ShipmentScheduleId.ofRepoId(item.getScheduleId().getValue()));
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getByIds(shipmentScheduleIds);
 
-		for (final JsonRequestCandidateResult resultItem : results.getItems())
+		APIExportStatus overallStatus = ExportedAndForwarded;
+		for (final JsonRequestCandidateResult jsonResultItem : results.getItems())
 		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(resultItem.getScheduleId().getValue());
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(jsonResultItem.getScheduleId().getValue());
 			final ShipmentSchedule shipmentSchedule = shipmentSchedules.get(shipmentScheduleId);
 			if (shipmentSchedule == null)
 			{
 				continue; // also shouldn't happen, unless we do some API-testing with static JSON stuff
 			}
 
-			ShipmentScheduleExportAuditItem auditRecord = auditRecords.getItemById(shipmentScheduleId);
-			if (auditRecord == null) // should not happen, but we don't want to make a fuzz in case it does
-			{
-				auditRecord = ShipmentScheduleExportAuditItem.builder()
-						.orgId(shipmentSchedule.getOrgId())
-						.repoIdAware(shipmentScheduleId)
-						.exportStatus(Pending)
-						.build();
-				auditRecords.addItem(auditRecord);
-			}
+			final ShipmentScheduleExportAuditItemBuilder builder = createOrGetAuditItemBuilder(exportAudit, shipmentScheduleId)
+					.orgId(shipmentSchedule.getOrgId());
 
-			final APIExportStatus status;
-			switch (resultItem.getOutcome())
+			final APIExportStatus itemStatus;
+			switch (jsonResultItem.getOutcome())
 			{
 				case OK:
-					status = ExportedAndForwarded;
+					itemStatus = ExportedAndForwarded;
 					break;
 				case ERROR:
-					status = ExportedAndError;
+					itemStatus = ExportedAndError;
+					overallStatus = ExportedAndError;
 
-					final AdIssueId specificAdIssueId = createADIssue(resultItem.getError());
-					auditRecord.setIssueId(CoalesceUtil.coalesce(specificAdIssueId, generalAdIssueId));
+					final AdIssueId specificAdIssueId = createADIssue(jsonResultItem.getError());
+					builder.issueId(CoalesceUtil.coalesce(specificAdIssueId));
 					break;
 				default:
-					throw new AdempiereException("resultItem has unexpected outcome=" + resultItem.getOutcome())
+					throw new AdempiereException("jsonResultItem has unexpected outcome=" + jsonResultItem.getOutcome())
 							.setParameter("TransactionIdAPI", results.getTransactionKey())
-							.setParameter("resultItem", resultItem);
+							.setParameter("jsonResultItem", jsonResultItem);
 			}
+			builder.exportStatus(itemStatus);
+			exportAudit.addItem(builder.build());
 
-			auditRecord.setExportStatus(status);
-			shipmentSchedule.setExportStatus(status);
+			shipmentSchedule.setExportStatus(itemStatus);
 		}
+
+		exportAudit.setExportStatus(overallStatus);
+
 		shipmentScheduleRepository.saveAll(shipmentSchedules.values());
-		shipmentScheduleAuditRepository.save(auditRecords);
+		shipmentScheduleAuditRepository.save(exportAudit);
+	}
+
+	private ShipmentScheduleExportAuditItemBuilder createOrGetAuditItemBuilder(
+			@NonNull final APIExportAudit<ShipmentScheduleExportAuditItem> exportAudit,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final ShipmentScheduleExportAuditItemBuilder builder;
+
+		final ShipmentScheduleExportAuditItem existingExportAuditItem = exportAudit.getItemById(shipmentScheduleId);
+		if (existingExportAuditItem == null) // should not happen, but we don't want to make a fuzz in case it does
+		{
+			return ShipmentScheduleExportAuditItem.builder()
+					.repoIdAware(shipmentScheduleId);
+		}
+		else
+		{
+			return existingExportAuditItem.toBuilder();
+		}
 	}
 
 	@Nullable
@@ -611,8 +637,13 @@ class ShipmentCandidateAPIService
 		{
 			idsRegistryBuilder
 					.shipmentScheduleId(shipmentSchedule.getId())
-					.bPartnerId(shipmentSchedule.getCustomerId())
+					.bPartnerId(shipmentSchedule.getShipBPartnerId())
 					.productId(shipmentSchedule.getProductId());
+
+			if (shipmentSchedule.getBillBPartnerId() != null)
+			{
+				idsRegistryBuilder.bPartnerId(shipmentSchedule.getShipBPartnerId());
+			}
 
 			if (shipmentSchedule.getAttributeSetInstanceId() != null)
 			{
