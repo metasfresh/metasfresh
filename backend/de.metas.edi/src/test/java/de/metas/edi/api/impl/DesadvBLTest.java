@@ -95,8 +95,8 @@ class DesadvBLTest
 
 		// invoke the method under test
 		desadvBL.setQty(
-				productId,
 				desadvLinePackRecord,
+				productId,
 				Quantitys.create("99999", eachUomId) /* qtyCUInStockUom */,
 
 				StockQtyAndUOMQty.builder()
@@ -123,7 +123,7 @@ class DesadvBLTest
 	 * => expect the deadvLine to have 9PCE, 1COLI and 20KGM
 	 */
 	@Test
-	void addOrSubtractInOutLineQtys_iolQtyWithKGM()
+	void addOrSubtractInOutLineQty_iolQtyWithKGM()
 	{
 		// given
 		final I_EDI_Desadv desadvRecord = newInstance(I_EDI_Desadv.class);
@@ -144,7 +144,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQtys(desadvLineRecord, inOutLineQty, true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
@@ -158,7 +158,7 @@ class DesadvBLTest
 	 * => expect the deadvLine to have 9PCE and 18KGM
 	 */
 	@Test
-	void addOrSubtractInOutLineQtys_iolQtyWithPCE()
+	void addOrSubtractInOutLineQty_iolQtyWithPCE()
 	{
 		// given
 		final I_EDI_Desadv desadvRecord = newInstance(I_EDI_Desadv.class);
@@ -179,7 +179,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQtys(desadvLineRecord, inOutLineQty, true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
