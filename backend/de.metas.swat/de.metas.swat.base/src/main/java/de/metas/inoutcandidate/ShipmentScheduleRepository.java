@@ -40,6 +40,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -57,7 +60,6 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -81,7 +83,7 @@ public class ShipmentScheduleRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-	private IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
@@ -186,9 +188,15 @@ public class ShipmentScheduleRepository
 		final ShipmentSchedule.ShipmentScheduleBuilder shipmentScheduleBuilder = ShipmentSchedule.builder()
 				.id(shipmentScheduleId)
 				.orgId(orgId)
-				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
-				.locationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
-				.contactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
+
+				.shipBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(record))
+				.shipLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(record))
+				.shipContactId(shipmentScheduleEffectiveBL.getBPartnerContactId(record))
+
+				.billBPartnerId(BPartnerId.ofRepoIdOrNull(record.getBill_BPartner_ID()))
+				.billLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getBill_BPartner_ID(), record.getBill_Location_ID()))
+				.billContactId(BPartnerContactId.ofRepoIdOrNull(record.getBill_BPartner_ID(), record.getBill_User_ID()))
+
 				.orderAndLineId(orderAndLineId)
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
@@ -279,7 +287,7 @@ public class ShipmentScheduleRepository
 
 		@Builder.Default
 		boolean orderByOrderId = false;
-		
+
 		/**
 		 * Only export a shipment schedule if its order doesn't have schedules which are not yet ready to be exported.
 		 */

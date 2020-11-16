@@ -296,7 +296,7 @@ public class DesadvBL implements IDesadvBL
 			desadv.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
 			desadv.setDropShip_Location_ID(order.getDropShip_Location_ID());
 
-			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
+			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationId(order)));
 			// note: the minimal acceptable fulfillment is currently set by a model interceptor
 			InterfaceWrapperHelper.save(desadv);
 		}
