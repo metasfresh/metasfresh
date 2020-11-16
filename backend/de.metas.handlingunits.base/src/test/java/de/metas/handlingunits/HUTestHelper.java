@@ -1034,10 +1034,6 @@ public class HUTestHelper
 		pi.setName(name);
 		InterfaceWrapperHelper.save(pi);
 
-		// // Create some several dummy versions
-		// createVersion(hu, false);
-		// createVersion(hu, false);
-
 		// Create the current version
 		final HuPackingInstructionsVersionId huPIVersionId = null;
 		createVersion(pi, true, huUnitType, huPIVersionId);
