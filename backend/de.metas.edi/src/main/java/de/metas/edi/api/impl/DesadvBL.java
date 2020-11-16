@@ -699,7 +699,8 @@ public class DesadvBL implements IDesadvBL
 		InterfaceWrapperHelper.save(inOutLineRecord);
 	}
 
-	private void addOrSubtractInOutLineQtys(
+	@VisibleForTesting
+	void addOrSubtractInOutLineQtys(
 			final I_EDI_DesadvLine desadvLineRecord,
 			final StockQtyAndUOMQty inOutLineQty,
 			final boolean add)
