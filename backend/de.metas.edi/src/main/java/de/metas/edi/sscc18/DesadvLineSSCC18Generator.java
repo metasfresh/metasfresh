@@ -239,11 +239,13 @@ public class DesadvLineSSCC18Generator
 		final I_EDI_DesadvLine_Pack desadvLineSSCC = InterfaceWrapperHelper.create(ctx, I_EDI_DesadvLine_Pack.class, trxName);
 		desadvLineSSCC.setAD_Org_ID(desadvLine.getAD_Org_ID());
 		desadvLineSSCC.setEDI_Desadv_ID(desadvLine.getEDI_Desadv_ID());
-		desadvLineSSCC.setEDI_DesadvLine(desadvLine);
+		desadvLineSSCC.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
 		desadvLineSSCC.setIPA_SSCC18(ipaSSCC18);
 		desadvLineSSCC.setQtyCU(luQtys.getQtyCUsPerTU());
 		desadvLineSSCC.setQtyTU(luQtys.getQtyTUsPerLU().intValueExact());
 		desadvLineSSCC.setQtyCUsPerLU(luQtys.getQtyCUsPerLU());
+		desadvLineSSCC.setMovementQty(desadvLine.getQtyDeliveredInUOM());
+		desadvLineSSCC.setC_UOM_ID(desadvLine.getC_UOM_ID());
 		InterfaceWrapperHelper.save(desadvLineSSCC);
 
 		return desadvLineSSCC;
