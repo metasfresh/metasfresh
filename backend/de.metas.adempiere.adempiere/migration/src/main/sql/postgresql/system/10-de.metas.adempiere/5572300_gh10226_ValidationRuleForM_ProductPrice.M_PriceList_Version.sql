@@ -12,9 +12,3 @@ and exists
 ;
 
 
--- 2020-11-16T09:10:19.622Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET AD_Val_Rule_ID=540524, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-11-16 11:10:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2760
-;
-
-
