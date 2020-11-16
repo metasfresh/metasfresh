@@ -11,7 +11,10 @@ import {
 } from '../constants/ActionTypes';
 
 import { getQuickActionsId } from '../reducers/actionsHandler';
-import { getTable } from '../reducers/tables';
+import { getTable, getSelection } from '../reducers/tables';
+
+import { viewState, getView } from '../reducers/viewHandler';
+// import { getTable, getTableId, getSelection } from '../reducers/tables';
 
 /*
  * @method getTableActions
@@ -22,7 +25,7 @@ import { getTable } from '../reducers/tables';
  * @param {number} windowId
  * @param {string} viewId
  */
-export function getTableActions({ tableId, windowId, viewId }) {
+export function getTableActions({ tableId, windowId, viewId, isModal }) {
   return (dispatch, getState) => {
     const state = getState();
     const table = getTable(state, tableId);
@@ -42,6 +45,98 @@ export function getTableActions({ tableId, windowId, viewId }) {
         parentView,
       })
     );
+
+    dispatch(
+      fetchParentQuickActions({
+        windowId,
+        viewId,
+        isModal,
+      })
+    );
+  };
+}
+
+export function fetchParentQuickActions({
+  windowId,
+  viewId,
+  isModal,
+}) {
+  return (dispatch, getState) => {
+  //DocList
+    const state = getState();
+    const includedView = state.viewHandler.includedView.windowId
+      ? state.viewHandler.includedView
+      : null;
+    const modal = state.windowHandler.modal;
+    const rawModal = state.windowHandler.rawModal;
+    const master = getView(state, windowId, isModal);
+    const layout = master.layout;
+
+    let isIncluded = false;
+    if (isModal) {
+      isIncluded = includedView && includedView.windowId && includedView.viewId;
+    } else {
+      isIncluded =
+        includedView &&
+        includedView.viewId &&
+        !rawModal.visible &&
+        !modal.visible;
+    }
+
+  // documentListHelper
+    let childTableId = null;
+    const childSelector = getSelection();
+
+    if (includedView && includedView.windowId) {
+      childTableId = getTableId({
+        windowId: includedView.windowId,
+        viewId: includedView.viewId,
+      });
+    }
+
+    // let parentTableId = null;
+    // const parentSelector = getSelection();
+    // const { parentWindowType, parentDefaultViewId } = props;
+    // if (parentWindowType) {
+    //   parentTableId = getTableId({
+    //     windowId: parentWindowType,
+    //     viewId: parentDefaultViewId,
+    //   });
+    // }
+
+    // return {
+    //   childSelected: childSelector(state, childTableId),
+    //   parentSelected: parentSelector(state, parentTableId),
+    //   modal: state.windowHandler.modal,
+    // };
+
+  // DocumentList container
+    const hasIncluded =
+      layout &&
+      layout.includedView &&
+      includedView &&
+      includedView.windowId &&
+      includedView.viewId;
+
+  // DocumentList component
+    // childView={
+    //   hasIncluded
+    //     ? {
+    //         viewId: includedView.viewId,
+    //         viewSelectedIds: childSelected,
+    //         windowType: includedView.windowId,
+    //       }
+    //     : NO_VIEW
+    // }
+    // parentView={
+    //   isIncluded
+    //     ? {
+    //         viewId: parentDefaultViewId,
+    //         viewSelectedIds: parentSelected,
+    //         windowType: parentWindowType,
+    //       }
+    //     : NO_VIEW
+    // }
   };
 }
 
