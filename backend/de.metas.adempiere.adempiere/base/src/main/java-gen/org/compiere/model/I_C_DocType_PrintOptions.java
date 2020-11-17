@@ -162,6 +162,48 @@ public interface I_C_DocType_PrintOptions
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Print Logo.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPRINTER_OPTS_IsPrintLogo (boolean PRINTER_OPTS_IsPrintLogo);
+
+	/**
+	 * Get Print Logo.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPRINTER_OPTS_IsPrintLogo();
+
+	ModelColumn<I_C_DocType_PrintOptions, Object> COLUMN_PRINTER_OPTS_IsPrintLogo = new ModelColumn<>(I_C_DocType_PrintOptions.class, "PRINTER_OPTS_IsPrintLogo", null);
+	String COLUMNNAME_PRINTER_OPTS_IsPrintLogo = "PRINTER_OPTS_IsPrintLogo";
+
+	/**
+	 * Set Print Totals.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPRINTER_OPTS_IsPrintTotals (boolean PRINTER_OPTS_IsPrintTotals);
+
+	/**
+	 * Get Print Totals.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPRINTER_OPTS_IsPrintTotals();
+
+	ModelColumn<I_C_DocType_PrintOptions, Object> COLUMN_PRINTER_OPTS_IsPrintTotals = new ModelColumn<>(I_C_DocType_PrintOptions.class, "PRINTER_OPTS_IsPrintTotals", null);
+	String COLUMNNAME_PRINTER_OPTS_IsPrintTotals = "PRINTER_OPTS_IsPrintTotals";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

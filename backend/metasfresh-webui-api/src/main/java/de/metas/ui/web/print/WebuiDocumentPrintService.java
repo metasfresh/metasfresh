@@ -111,6 +111,7 @@ public class WebuiDocumentPrintService
 			jsonOptionsList.add(JSONDocumentPrintingOption.builder()
 					.caption(caption)
 					.description(description)
+					.internalName(internalName)
 					.value(value.isTrue())
 					.build());
 		}

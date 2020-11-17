@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I_C_DocType_PrintOptions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1100775862L;
+	private static final long serialVersionUID = 389041262L;
 
     /** Standard Constructor */
     public X_C_DocType_PrintOptions (final Properties ctx, final int C_DocType_PrintOptions_ID, @Nullable final String trxName)
@@ -73,5 +73,29 @@ public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setPRINTER_OPTS_IsPrintLogo (final boolean PRINTER_OPTS_IsPrintLogo)
+	{
+		set_Value (COLUMNNAME_PRINTER_OPTS_IsPrintLogo, PRINTER_OPTS_IsPrintLogo);
+	}
+
+	@Override
+	public boolean isPRINTER_OPTS_IsPrintLogo() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_PRINTER_OPTS_IsPrintLogo);
+	}
+
+	@Override
+	public void setPRINTER_OPTS_IsPrintTotals (final boolean PRINTER_OPTS_IsPrintTotals)
+	{
+		set_Value (COLUMNNAME_PRINTER_OPTS_IsPrintTotals, PRINTER_OPTS_IsPrintTotals);
+	}
+
+	@Override
+	public boolean isPRINTER_OPTS_IsPrintTotals() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_PRINTER_OPTS_IsPrintTotals);
 	}
 }

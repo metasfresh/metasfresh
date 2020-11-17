@@ -63,7 +63,8 @@ public class DocTypePrintOptionsRepository
 	private static DocumentPrintOptions toDocumentPrintOptions(@NonNull final I_C_DocType_PrintOptions record)
 	{
 		return DocumentPrintOptions.builder()
-				// TODO implement
+				.option(DocumentPrintOptions.OPTION_IsPrintLogo, record.isPRINTER_OPTS_IsPrintLogo())
+				.option(DocumentPrintOptions.OPTION_IsPrintTotals, record.isPRINTER_OPTS_IsPrintTotals())
 				.build();
 	}
 }

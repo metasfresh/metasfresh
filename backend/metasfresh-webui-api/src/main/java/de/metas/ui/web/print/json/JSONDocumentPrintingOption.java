@@ -24,6 +24,7 @@ package de.metas.ui.web.print.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -31,7 +32,8 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class JSONDocumentPrintingOption
 {
-	String caption;
-	String description;
+	@NonNull String caption;
+	@NonNull String description;
+	@NonNull String internalName;
 	boolean value;
 }
