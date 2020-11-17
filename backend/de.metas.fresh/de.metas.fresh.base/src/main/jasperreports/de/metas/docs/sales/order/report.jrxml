@@ -265,7 +265,7 @@
 		<band height="24">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="f4aecc68-d647-409b-bde5-65f943103dc3">
-					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y") || $F{isoffer}.equals("N")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
