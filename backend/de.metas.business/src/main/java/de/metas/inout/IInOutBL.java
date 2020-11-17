@@ -44,6 +44,8 @@ import java.util.List;
  */
 public interface IInOutBL extends ISingletonService
 {
+	I_M_InOut getById(@NonNull InOutId inoutId);
+
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
 	/**

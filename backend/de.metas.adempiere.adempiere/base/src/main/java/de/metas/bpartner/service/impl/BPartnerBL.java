@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -706,5 +707,11 @@ public class BPartnerBL implements IBPartnerBL
 		final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
 		return PaymentRule.optionalOfCode(bpGroup.getPaymentRule());
+	}
+
+	@Override
+	public BPartnerPrintFormatMap getPrintFormats(final @NonNull BPartnerId bpartnerId)
+	{
+		return bpartnersRepo.getPrintFormats(bpartnerId);
 	}
 }

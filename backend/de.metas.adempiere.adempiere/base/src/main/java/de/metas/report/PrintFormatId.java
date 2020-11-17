@@ -22,38 +22,44 @@
 
 package de.metas.report;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.i18n.Language;
-import de.metas.process.AdProcessId;
-import lombok.Builder;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
 
 @Value
-@Builder(toBuilder = true)
-public class StandardDocumentReportInfo
+public class PrintFormatId implements RepoIdAware
 {
-	@NonNull TableRecordReference recordRef;
+	@JsonCreator
+	public static PrintFormatId ofRepoId(final int repoId)
+	{
+		return new PrintFormatId(repoId);
+	}
 
-	@NonNull PrintFormatId printFormatId;
-	AdProcessId reportProcessId;
+	public static PrintFormatId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new PrintFormatId(repoId) : null;
+	}
 
-	int copies;
+	int repoId;
 
-	String documentNo;
-	BPartnerId bpartnerId;
-	DocTypeId docTypeId;
-	Language language;
+	private PrintFormatId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_PrintFormat_ID");
+	}
 
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptionDescriptorsList printOptionsDescriptor = DocumentPrintOptionDescriptorsList.EMPTY;
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
 
-	@With
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
+	public static int toRepoId(@Nullable final PrintFormatId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
 }

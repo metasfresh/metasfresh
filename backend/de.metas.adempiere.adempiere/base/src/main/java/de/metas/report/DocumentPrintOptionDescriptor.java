@@ -22,47 +22,23 @@
 
 package de.metas.report;
 
-import de.metas.i18n.Language;
-import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
+import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class DocumentReportRequest
+public class DocumentPrintOptionDescriptor
 {
-	@Nullable
-	AdProcessId callingFromProcessId;
-
-	@NonNull TableRecordReference documentRef;
-
-	@NonNull ClientId clientId;
-	@NonNull OrgId orgId;
-	@NonNull UserId userId;
-	@NonNull RoleId roleId;
-	@Builder.Default
-	int windowNo = Env.WINDOW_MAIN;
-	@Builder.Default
-	int tabNo = 0;
-
-	boolean printPreview;
-	@Builder.Default
-	int printCopies = 1;
-
-	Language reportLanguage;
+	public static final String PROCESS_PARAM_PRINTER_OPTIONS_PREFIX = "PRINTER_OPTS_";
 
 	@NonNull
-	@Builder.Default
-	@With
-	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
+	String internalName;
+
+	@NonNull
+	ITranslatableString name;
+
+	@NonNull
+	ITranslatableString description;
 }

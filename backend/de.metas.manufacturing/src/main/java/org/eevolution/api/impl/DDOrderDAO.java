@@ -59,6 +59,12 @@ public class DDOrderDAO implements IDDOrderDAO
 	private final  IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
+	public I_DD_Order getById(final int ddOrderId)
+	{
+		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
+	}
+
+	@Override
 	public List<I_DD_OrderLine> retrieveLines(final I_DD_Order ddOrder)
 	{
 		Check.assumeNotNull(ddOrder, "ddOrder not null");

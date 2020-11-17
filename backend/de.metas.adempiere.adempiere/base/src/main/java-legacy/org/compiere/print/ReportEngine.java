@@ -26,6 +26,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.report.DocumentReportService;
+import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportInfo;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.report.server.ReportConstants;
@@ -1299,13 +1300,13 @@ public class ReportEngine implements PrintServiceAttributeListener
 			final String trxName)
 	{
 		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-		final StandardDocumentReportInfo standardReportInfo = documentReportService.getStandardDocumentReportInfo(
+		final StandardDocumentReportInfo standardReportInfo = documentReportService.getDocumentReportInfo(
 				type,
 				Record_ID,
-				adPrintFormatToUseId);
+				PrintFormatId.ofRepoIdOrNull(adPrintFormatToUseId));
 
 		// Get Format & Data
-		MPrintFormat format = standardReportInfo.getAdPrintFormat();
+		MPrintFormat format = MPrintFormat.get(Env.getCtx(), standardReportInfo.getPrintFormatId().getRepoId(), false);
 		format.setLanguage(standardReportInfo.getLanguage());        // BP Language if Multi-Lingual
 		// if (!Env.isBaseLanguage(language, DOC_TABLES[type]))
 		format.setTranslationLanguage(standardReportInfo.getLanguage());

@@ -22,38 +22,29 @@
 
 package de.metas.report;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.i18n.Language;
-import de.metas.process.AdProcessId;
-import lombok.Builder;
+import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
 
 @Value
-@Builder(toBuilder = true)
-public class StandardDocumentReportInfo
+public class DocumentPrintOptionDescriptorsList
 {
-	@NonNull TableRecordReference recordRef;
+	public static final DocumentPrintOptionDescriptorsList EMPTY = new DocumentPrintOptionDescriptorsList(ImmutableList.of());
 
-	@NonNull PrintFormatId printFormatId;
-	AdProcessId reportProcessId;
+	ImmutableList<DocumentPrintOptionDescriptor> options;
 
-	int copies;
+	private DocumentPrintOptionDescriptorsList(@NonNull List<DocumentPrintOptionDescriptor> options)
+	{
+		this.options = ImmutableList.copyOf(options);
+	}
 
-	String documentNo;
-	BPartnerId bpartnerId;
-	DocTypeId docTypeId;
-	Language language;
+	public static DocumentPrintOptionDescriptorsList of(@NonNull List<DocumentPrintOptionDescriptor> options)
+	{
+		return !options.isEmpty()
+				? new DocumentPrintOptionDescriptorsList(options)
+				: EMPTY;
+	}
 
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptionDescriptorsList printOptionsDescriptor = DocumentPrintOptionDescriptorsList.EMPTY;
-
-	@With
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
 }

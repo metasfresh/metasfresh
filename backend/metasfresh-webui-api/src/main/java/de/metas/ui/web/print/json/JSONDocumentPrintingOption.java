@@ -20,29 +20,18 @@
  * #L%
  */
 
-package de.metas.ui.web.print;
+package de.metas.ui.web.print.json;
 
-import de.metas.report.DocumentPrintOptions;
-import de.metas.security.RoleId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.user.UserId;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class WebuiDocumentPrintRequest
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+public class JSONDocumentPrintingOption
 {
-	@NonNull
-	final DocumentPath documentPath;
-
-	@NonNull
-	final UserId userId;
-	@NonNull
-	final RoleId roleId;
-
-	@NonNull
-	@Builder.Default
-	final DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
+	String caption;
+	String description;
+	boolean value;
 }

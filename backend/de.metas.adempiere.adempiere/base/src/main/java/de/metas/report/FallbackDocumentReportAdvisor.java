@@ -22,38 +22,31 @@
 
 package de.metas.report;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.i18n.Language;
-import de.metas.process.AdProcessId;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.With;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.exceptions.AdempiereException;
 
-@Value
-@Builder(toBuilder = true)
-public class StandardDocumentReportInfo
+// @Component // IMPORTANT: don't annotate it with Component
+final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 {
-	@NonNull TableRecordReference recordRef;
+	@Override
+	public String getHandledTableName()
+	{
+		return "*";
+	}
 
-	@NonNull PrintFormatId printFormatId;
-	AdProcessId reportProcessId;
-
-	int copies;
-
-	String documentNo;
-	BPartnerId bpartnerId;
-	DocTypeId docTypeId;
-	Language language;
+	@Override
+	public StandardDocumentReportType getStandardDocumentReportType()
+	{
+		return null;
+	}
 
 	@NonNull
-	@Builder.Default
-	DocumentPrintOptionDescriptorsList printOptionsDescriptor = DocumentPrintOptionDescriptorsList.EMPTY;
+	public StandardDocumentReportInfo getDocumentReportInfo(
+			@NonNull final StandardDocumentReportType type,
+			final int Record_ID,
+			final PrintFormatId adPrintFormatToUseId)
+	{
+		throw new AdempiereException("Type not handled: " + type);
+	}
 
-	@With
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
 }

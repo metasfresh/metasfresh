@@ -22,7 +22,9 @@
 
 package de.metas.ui.web.print;
 
+import de.metas.report.DocumentPrintOptions;
 import de.metas.report.ReportResultData;
+import de.metas.ui.web.print.json.JSONDocumentPrintingOptions;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -36,7 +38,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @Api
 @RestController
@@ -60,7 +65,8 @@ public class DocumentPrintRestController
 	public ResponseEntity<byte[]> createDocumentPrint(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
-			@PathVariable("filename") final String filename)
+			@PathVariable("filename") final String filename,
+			@RequestParam final Map<String, String> requestParams)
 	{
 		userSession.assertLoggedIn();
 
@@ -71,6 +77,7 @@ public class DocumentPrintRestController
 				.documentPath(documentPath)
 				.userId(userSession.getLoggedUserId())
 				.roleId(userSession.getLoggedRoleId())
+				.printOptions(DocumentPrintOptions.ofMap(requestParams))
 				.build());
 
 		final byte[] reportData = documentPrint.getReportData();
@@ -82,5 +89,18 @@ public class DocumentPrintRestController
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
 		return new ResponseEntity<>(reportData, headers, HttpStatus.OK);
+	}
+
+	@GetMapping("/{windowId}/{documentId}/printingOptions")
+	public JSONDocumentPrintingOptions getPrintingOptions(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+
+		return documentPrintService.getPrintingOptions(documentPath, userSession.getAD_Language());
 	}
 }

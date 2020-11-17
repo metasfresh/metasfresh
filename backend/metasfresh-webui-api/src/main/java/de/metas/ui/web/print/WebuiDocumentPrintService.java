@@ -23,16 +23,25 @@
 package de.metas.ui.web.print;
 
 import de.metas.process.AdProcessId;
+import de.metas.report.DocumentPrintOptionDescriptor;
+import de.metas.report.DocumentPrintOptionDescriptorsList;
+import de.metas.report.DocumentPrintOptions;
 import de.metas.report.DocumentReportRequest;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportInfo;
+import de.metas.ui.web.print.json.JSONDocumentPrintingOption;
+import de.metas.ui.web.print.json.JSONDocumentPrintingOptions;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 @Service
 public class WebuiDocumentPrintService
@@ -67,8 +76,52 @@ public class WebuiDocumentPrintService
 				.roleId(request.getRoleId())
 				.windowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
 				.printPreview(true)
+				.printOptions(request.getPrintOptions())
 				//.setJRDesiredOutputType(OutputType.PDF)
 				.build());
 	}
 
+	public JSONDocumentPrintingOptions getPrintingOptions(
+			@NonNull final DocumentPath documentPath,
+			@NonNull final String adLanguage)
+	{
+		final DocumentEntityDescriptor entityDescriptor = documentCollection.getDocumentEntityDescriptor(documentPath.getWindowId());
+		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
+		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
+
+		final StandardDocumentReportInfo info = documentReportService.getDocumentReportInfo(printProcessId, recordRef);
+
+		return toJSONDocumentPrintingOptions(info.getPrintOptionsDescriptor(), info.getPrintOptions(), adLanguage);
+	}
+
+	private static JSONDocumentPrintingOptions toJSONDocumentPrintingOptions(
+			@NonNull final DocumentPrintOptionDescriptorsList printOptionsDescriptor,
+			@NonNull final DocumentPrintOptions printOptions,
+			@NonNull final String adLanguage)
+	{
+		final ArrayList<JSONDocumentPrintingOption> jsonOptionsList = new ArrayList<>();
+
+		for (final DocumentPrintOptionDescriptor option : printOptionsDescriptor.getOptions())
+		{
+			final String caption = option.getName().translate(adLanguage);
+			final String description = option.getDescription().translate(adLanguage);
+			final String internalName = option.getInternalName();
+			final OptionalBoolean value = printOptions.getOption(internalName);
+
+			jsonOptionsList.add(JSONDocumentPrintingOption.builder()
+					.caption(caption)
+					.description(description)
+					.value(value.isTrue())
+					.build());
+		}
+
+		if (jsonOptionsList.isEmpty())
+		{
+			return JSONDocumentPrintingOptions.EMPTY;
+		}
+
+		return JSONDocumentPrintingOptions.builder()
+				.options(jsonOptionsList)
+				.build();
+	}
 }

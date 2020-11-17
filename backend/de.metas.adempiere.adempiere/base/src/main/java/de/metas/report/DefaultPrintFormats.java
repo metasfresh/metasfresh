@@ -22,47 +22,29 @@
 
 package de.metas.report;
 
-import de.metas.i18n.Language;
-import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class DocumentReportRequest
+public class DefaultPrintFormats
 {
+	public static DefaultPrintFormats NONE = DefaultPrintFormats.builder().build();
+
 	@Nullable
-	AdProcessId callingFromProcessId;
+	PrintFormatId orderPrintFormatId;
 
-	@NonNull TableRecordReference documentRef;
+	@Nullable
+	PrintFormatId shipmentPrintFormatId;
 
-	@NonNull ClientId clientId;
-	@NonNull OrgId orgId;
-	@NonNull UserId userId;
-	@NonNull RoleId roleId;
-	@Builder.Default
-	int windowNo = Env.WINDOW_MAIN;
-	@Builder.Default
-	int tabNo = 0;
+	@Nullable
+	PrintFormatId invoicePrintFormatId;
 
-	boolean printPreview;
-	@Builder.Default
-	int printCopies = 1;
+	@Nullable
+	PrintFormatId manufacturingOrderPrintFormatId;
 
-	Language reportLanguage;
-
-	@NonNull
-	@Builder.Default
-	@With
-	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
+	@Nullable
+	PrintFormatId distributionOrderPrintFormatId;
 }

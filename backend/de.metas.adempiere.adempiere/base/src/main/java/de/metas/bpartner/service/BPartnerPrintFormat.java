@@ -20,40 +20,19 @@
  * #L%
  */
 
-package de.metas.report;
+package de.metas.bpartner.service;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
-import de.metas.i18n.Language;
-import de.metas.process.AdProcessId;
+import de.metas.report.PrintFormatId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 @Value
-@Builder(toBuilder = true)
-public class StandardDocumentReportInfo
+@Builder
+public class BPartnerPrintFormat
 {
-	@NonNull TableRecordReference recordRef;
+	@NonNull DocTypeId docTypeId;
 
 	@NonNull PrintFormatId printFormatId;
-	AdProcessId reportProcessId;
-
-	int copies;
-
-	String documentNo;
-	BPartnerId bpartnerId;
-	DocTypeId docTypeId;
-	Language language;
-
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptionDescriptorsList printOptionsDescriptor = DocumentPrintOptionDescriptorsList.EMPTY;
-
-	@With
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
 }
