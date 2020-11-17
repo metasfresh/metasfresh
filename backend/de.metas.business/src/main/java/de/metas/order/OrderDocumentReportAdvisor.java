@@ -35,7 +35,9 @@ import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportInfo;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -143,11 +145,17 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 
 	private DocumentPrintOptions getDocumentPrintOptions(@NonNull final I_C_Order order)
 	{
-		final boolean isPrintTotals = true; // TODO introduce C_Order.IsPrintTotals
-
-		return DocumentPrintOptions.builder()
-				.option(DocumentPrintOptions.OPTION_IsPrintTotals, isPrintTotals)
-				.build();
+		final OptionalBoolean printTotals = StringUtils.toOptionalBoolean(order.getPRINTER_OPTS_IsPrintTotals());
+		if(printTotals.isPresent())
+		{
+			return DocumentPrintOptions.builder()
+					.option(DocumentPrintOptions.OPTION_IsPrintTotals, printTotals.isTrue())
+					.build();
+		}
+		else
+		{
+			return DocumentPrintOptions.NONE;
+		}
 	}
 
 
