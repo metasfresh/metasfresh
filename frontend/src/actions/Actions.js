@@ -10,11 +10,9 @@ import {
   FETCH_TOP_ACTIONS_SUCCESS,
 } from '../constants/ActionTypes';
 
-import { getQuickActionsId } from '../reducers/actionsHandler';
-import { getTable, getSelection } from '../reducers/tables';
-
-import { viewState, getView } from '../reducers/viewHandler';
-// import { getTable, getTableId, getSelection } from '../reducers/tables';
+import { getQuickActionsId, getQuickActions } from '../reducers/actionsHandler';
+import { getTable } from '../reducers/tables';
+import { getView } from '../reducers/viewHandler';
 
 /*
  * @method getTableActions
@@ -30,10 +28,7 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
     const state = getState();
     const table = getTable(state, tableId);
     const selectedIds = table.selected;
-
     const viewProfileId = null;
-    const childView = {};
-    const parentView = {};
 
     dispatch(
       fetchQuickActions({
@@ -41,102 +36,90 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
         viewId,
         viewProfileId,
         selectedIds,
-        childView,
-        parentView,
       })
     );
 
     dispatch(
-      fetchParentQuickActions({
+      fetchIncludedQuickActions({
         windowId,
-        viewId,
+        selectedIds,
         isModal,
       })
     );
   };
 }
 
-export function fetchParentQuickActions({
-  windowId,
-  viewId,
-  isModal,
-}) {
+/*
+ * @method fetchIncludedQuickActions
+ * @summary Action creator that calls the quick actions fetch internally for parent/child
+ * quick actions, when a table selection has changed
+ *
+ * @param {string} id - table id
+ * @param {array} selectedIds
+ * @param {boolean} isModal
+ */
+export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
   return (dispatch, getState) => {
-  //DocList
     const state = getState();
     const includedView = state.viewHandler.includedView.windowId
       ? state.viewHandler.includedView
       : null;
-    const modal = state.windowHandler.modal;
-    const rawModal = state.windowHandler.rawModal;
-    const master = getView(state, windowId, isModal);
-    const layout = master.layout;
 
-    let isIncluded = false;
-    if (isModal) {
-      isIncluded = includedView && includedView.windowId && includedView.viewId;
-    } else {
-      isIncluded =
-        includedView &&
-        includedView.viewId &&
-        !rawModal.visible &&
-        !modal.visible;
+    // we're only interested in included view's quick actions if it
+    // actually exists
+    if (includedView) {
+      let fetch = false;
+      let fetchWindowId = null;
+      let fetchViewId = null;
+      let parentView = null;
+      let childView = null;
+      const isParent = includedView.parentId === windowId;
+      const isChild = includedView.windowId === windowId;
+
+      if (isParent) {
+        fetchWindowId = includedView.windowId;
+        childView = getView(state, fetchWindowId, isModal);
+        fetchViewId = childView.viewId;
+        const childQuickActionsId = getQuickActionsId({
+          windowId: fetchWindowId,
+          viewId: fetchViewId,
+        });
+        const childQuickActions = getQuickActions(state, childQuickActionsId);
+
+        // only update quick actions if they're not already requested
+        if (!childQuickActions.pending) {
+          fetch = true;
+        }
+      } else if (isChild) {
+        fetchWindowId = includedView.parentId;
+        parentView = getView(state, fetchWindowId, isModal);
+        fetchViewId = parentView.viewId;
+        const parentQuickActionsId = getQuickActionsId({
+          windowId: fetchWindowId,
+          viewId: fetchViewId,
+        });
+        const parentQuickActions = getQuickActions(state, parentQuickActionsId);
+
+        if (!parentQuickActions.pending) {
+          fetch = true;
+        }
+      }
+
+      console.log('fetchIncludedQuickActions: ', isParent, isChild, childView, parentView, fetch, fetchWindowId, fetchViewId)
+
+      if ((isParent || isChild) && fetch) {
+        dispatch(
+          fetchQuickActions({
+            windowId: fetchWindowId,
+            viewId: fetchViewId,
+            viewProfileId: null,
+            selectedIds,
+            parentView,
+            childView,
+          })
+        );
+      }
     }
-
-  // documentListHelper
-    let childTableId = null;
-    const childSelector = getSelection();
-
-    if (includedView && includedView.windowId) {
-      childTableId = getTableId({
-        windowId: includedView.windowId,
-        viewId: includedView.viewId,
-      });
-    }
-
-    // let parentTableId = null;
-    // const parentSelector = getSelection();
-    // const { parentWindowType, parentDefaultViewId } = props;
-    // if (parentWindowType) {
-    //   parentTableId = getTableId({
-    //     windowId: parentWindowType,
-    //     viewId: parentDefaultViewId,
-    //   });
-    // }
-
-    // return {
-    //   childSelected: childSelector(state, childTableId),
-    //   parentSelected: parentSelector(state, parentTableId),
-    //   modal: state.windowHandler.modal,
-    // };
-
-  // DocumentList container
-    const hasIncluded =
-      layout &&
-      layout.includedView &&
-      includedView &&
-      includedView.windowId &&
-      includedView.viewId;
-
-  // DocumentList component
-    // childView={
-    //   hasIncluded
-    //     ? {
-    //         viewId: includedView.viewId,
-    //         viewSelectedIds: childSelected,
-    //         windowType: includedView.windowId,
-    //       }
-    //     : NO_VIEW
-    // }
-    // parentView={
-    //   isIncluded
-    //     ? {
-    //         viewId: parentDefaultViewId,
-    //         viewSelectedIds: parentSelected,
-    //         windowType: parentWindowType,
-    //       }
-    //     : NO_VIEW
-    // }
   };
 }
 
