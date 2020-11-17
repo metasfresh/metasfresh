@@ -6,7 +6,9 @@ import { push } from 'react-router-redux';
 import classnames from 'classnames';
 
 import { deleteRequest } from '../../api';
-import { duplicateRequest, openFile } from '../../actions/GenericActions';
+import {
+  duplicateRequest /* , openFile */,
+} from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
@@ -355,13 +357,34 @@ class Header extends PureComponent {
    * @param {string} docNo
    */
   handlePrint = (windowId, docId, docNo) => {
-    openFile(
-      'window',
-      windowId,
-      docId,
-      'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
+    const { dispatch, viewId } = this.props;
+
+    dispatch(
+      openModal(
+        'Printing options',
+        windowId,
+        'static',
+        null,
+        null,
+        false,
+        viewId,
+        [Number(docNo)],
+        docId,
+        null,
+        null,
+        null,
+        null,
+        null,
+        'printing'
+      )
     );
+    // openFile(
+    //   'window',
+    //   windowId,
+    //   docId,
+    //   'print',
+    //   `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
+    // );
   };
 
   /**
