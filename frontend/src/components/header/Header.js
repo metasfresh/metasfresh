@@ -355,13 +355,33 @@ class Header extends PureComponent {
    * @param {string} docNo
    */
   handlePrint = (windowId, docId, docNo) => {
-    openFile(
-      'window',
-      windowId,
-      docId,
-      'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
+    const { dispatch, viewId } = this.props;
+    dispatch(
+      openModal(
+        'Printing options',
+        windowId,
+        'static',
+        null,
+        null,
+        false,
+        viewId,
+        docNo,
+        docId,
+        null,
+        null,
+        null,
+        null,
+        null,
+        'printing'
+      )
     );
+    // openFile(
+    //   'window',
+    //   windowId,
+    //   docId,
+    //   'print',
+    //   `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
+    // );
   };
 
   /**
