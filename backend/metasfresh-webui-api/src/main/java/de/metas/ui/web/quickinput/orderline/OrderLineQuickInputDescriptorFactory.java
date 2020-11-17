@@ -1,6 +1,15 @@
 package de.metas.ui.web.quickinput.orderline;
 
+import java.util.Optional;
+import java.util.Set;
+
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -25,13 +34,6 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.DisplayType;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -147,7 +149,6 @@ import java.util.Set;
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
-					.hideDiscontinued(true)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.build();
@@ -158,7 +159,6 @@ import java.util.Set;
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
-					.hideDiscontinued(true)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.build();

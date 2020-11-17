@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -34,6 +33,7 @@ import lombok.Value;
 import java.util.List;
 
 @Value
+
 public class ROW
 {
 	@JacksonXmlProperty(isAttribute = true, localName = "MODID")
@@ -44,9 +44,9 @@ public class ROW
 
 	@JsonProperty("COL")
 	@JacksonXmlElementWrapper(useWrapping = false)
-	ImmutableList<COL> cols;
+	List<COL> cols;
 
-	@Builder(toBuilder = true)
+	@Builder
 	@JsonCreator
 	public ROW(
 			@JacksonXmlProperty(isAttribute = true, localName = "MODID") final String modId,
@@ -55,6 +55,6 @@ public class ROW
 	{
 		this.modId = modId;
 		this.recordId = recordId;
-		this.cols = ImmutableList.copyOf(cols);
+		this.cols = cols;
 	}
 }

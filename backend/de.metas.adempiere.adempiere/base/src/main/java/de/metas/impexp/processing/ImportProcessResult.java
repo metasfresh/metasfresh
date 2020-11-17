@@ -2,15 +2,10 @@ package de.metas.impexp.processing;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.OptionalInt;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.impexp.ActualImportRecordsResult;
-import de.metas.impexp.ValidateImportRecordsResult;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -31,36 +26,48 @@ public final class ImportProcessResult
 		return new ImportProcessResultCollector(targetTableName);
 	}
 
-	@NonNull
+	/** target table name, where the records were imported (e.g. C_BPartner) */
+	private final String targetTableName;
+	private final OptionalInt countInsertsIntoTargetTable;
+	private final OptionalInt countUpdatesIntoTargetTable;
+
+	/** import table name, FROM where the records are imported (e.g. I_BPartner) */
+	private final String importTableName;
+	private final OptionalInt countImportRecordsConsidered;
+	private final OptionalInt countImportRecordsDeleted;
+	private final OptionalInt countImportRecordsWithErrors;
+
 	private final Instant importStartTime;
-	@NonNull
 	private final Instant importEndTime;
-
-	@NonNull
-	ValidateImportRecordsResult importRecordsValidation;
-
-	@Nullable
-	ActualImportRecordsResult actualImport;
 
 	private ImportProcessResult(@NonNull final ImportProcessResultCollector collector)
 	{
+		this.targetTableName = collector.targetTableName;
+		this.countInsertsIntoTargetTable = collector.countInsertsIntoTargetTable.toOptionalInt();
+		this.countUpdatesIntoTargetTable = collector.countUpdatesIntoTargetTable.toOptionalInt();
+
+		this.importTableName = collector.importTableName;
+		this.countImportRecordsConsidered = collector.countImportRecordsConsidered.toOptionalInt();
+		this.countImportRecordsDeleted = collector.countImportRecordsDeleted.toOptionalInt();
+		this.countImportRecordsWithErrors = collector.countImportRecordsWithErrors.toOptionalInt();
+
 		this.importStartTime = collector.importStartTime;
 		this.importEndTime = Instant.now();
+	}
 
-		this.importRecordsValidation = ValidateImportRecordsResult.builder()
-				.importTableName(collector.importTableName)
-				.countImportRecordsDeleted(collector.countImportRecordsDeleted.toIntOr(0))
-				.countImportRecordsWithValidationErrors(collector.countImportRecordsWithValidationErrors.toOptionalInt())
-				.build();
+	public String getCountInsertsIntoTargetTableString()
+	{
+		return counterToString(getCountInsertsIntoTargetTable());
+	}
 
-		this.actualImport = ActualImportRecordsResult.builder()
-				.targetTableName(collector.targetTableName)
-				.importTableName(collector.importTableName)
-				.countImportRecordsConsidered(collector.countImportRecordsConsidered.toOptionalInt())
-				.countInsertsIntoTargetTable(collector.countInsertsIntoTargetTable.toOptionalInt())
-				.countUpdatesIntoTargetTable(collector.countUpdatesIntoTargetTable.toOptionalInt())
-				.errors(collector.actualImportErrors)
-				.build();
+	public String getCountUpdatesIntoTargetTableString()
+	{
+		return counterToString(getCountUpdatesIntoTargetTable());
+	}
+
+	private static String counterToString(final OptionalInt counter)
+	{
+		return counter.isPresent() ? String.valueOf(counter.getAsInt()) : "N/A";
 	}
 
 	public Duration getDuration()
@@ -77,38 +84,23 @@ public final class ImportProcessResult
 	@ToString
 	public static class ImportProcessResultCollector
 	{
-		@NonNull
-		private final Instant importStartTime;
-
-		//
-		// Records cleanup before validation+import
-		private final Counter countImportRecordsDeleted = new Counter();
-
-		//
-		// Mass validation
-		private final Counter countImportRecordsWithValidationErrors = new Counter();
-
-		//
-		// Actual data import
-		@NonNull
-		private String importTableName;
-		@Nullable
-		private final String targetTableName;
-		private final Counter countImportRecordsConsidered = new Counter();
 		/** target table name, where the records were imported (e.g. C_BPartner) */
+		private final String targetTableName;
+
 		private final Counter countInsertsIntoTargetTable = new Counter();
 		private final Counter countUpdatesIntoTargetTable = new Counter();
-		private final ArrayList<ActualImportRecordsResult.Error> actualImportErrors = new ArrayList<>();
+
+		private String importTableName;
+		private final Counter countImportRecordsConsidered = new Counter();
+		private final Counter countImportRecordsDeleted = new Counter();
+		private final Counter countImportRecordsWithErrors = new Counter();
+
+		private final Instant importStartTime;
 
 		private ImportProcessResultCollector(@NonNull final String targetTableName)
 		{
 			this.targetTableName = targetTableName;
 			this.importStartTime = Instant.now();
-		}
-
-		public ImportProcessResult toResult()
-		{
-			return new ImportProcessResult(this);
 		}
 
 		public ImportProcessResultCollector importTableName(@NonNull final String importTableName)
@@ -117,21 +109,9 @@ public final class ImportProcessResult
 			return this;
 		}
 
-		public void setCountImportRecordsDeleted(final int countImportRecordsDeleted)
+		public ImportProcessResult toResult()
 		{
-			Check.assumeGreaterOrEqualToZero(countImportRecordsDeleted, "countImportRecordsDeleted");
-			this.countImportRecordsDeleted.set(countImportRecordsDeleted);
-		}
-
-		public void setCountImportRecordsWithValidationErrors(final int count)
-		{
-			Check.assumeGreaterOrEqualToZero(count, "count");
-			this.countImportRecordsWithValidationErrors.set(count);
-		}
-
-		public void addCountImportRecordsConsidered(final int count)
-		{
-			countImportRecordsConsidered.add(count);
+			return new ImportProcessResult(this);
 		}
 
 		public void addInsertsIntoTargetTable(final int count)
@@ -144,9 +124,21 @@ public final class ImportProcessResult
 			countUpdatesIntoTargetTable.add(count);
 		}
 
-		public void actualImportError(@NonNull final ActualImportRecordsResult.Error error)
+		public void addCountImportRecordsConsidered(final int count)
 		{
-			actualImportErrors.add(error);
+			countImportRecordsConsidered.add(count);
+		}
+
+		public void setCountImportRecordsDeleted(final int countImportRecordsDeleted)
+		{
+			Check.assumeGreaterOrEqualToZero(countImportRecordsDeleted, "countImportRecordsDeleted");
+			this.countImportRecordsDeleted.set(countImportRecordsDeleted);
+		}
+
+		public void setCountImportRecordsWithErrors(final int countImportRecordsWithErrors)
+		{
+			Check.assumeGreaterOrEqualToZero(countImportRecordsWithErrors, "countImportRecordsWithErrors");
+			this.countImportRecordsWithErrors.set(countImportRecordsWithErrors);
 		}
 	}
 
@@ -176,11 +168,6 @@ public final class ImportProcessResult
 		public OptionalInt toOptionalInt()
 		{
 			return unknownValue ? OptionalInt.empty() : OptionalInt.of(value);
-		}
-
-		public int toIntOr(final int defaultValue)
-		{
-			return unknownValue ? defaultValue : value;
 		}
 	}
 }

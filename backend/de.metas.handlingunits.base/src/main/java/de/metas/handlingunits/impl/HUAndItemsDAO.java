@@ -60,7 +60,16 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 					.setEmptyNotStaled();
 		}
 
-		InterfaceWrapperHelper.saveRecord(hu);
+		// task 07600
+		final String huTrxName = InterfaceWrapperHelper.getTrxName(hu);
+		Services.get(ITrxManager.class).run(huTrxName, new TrxRunnable()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				InterfaceWrapperHelper.save(hu, localTrxName);
+			}
+		});
 
 		//
 		// If our HU was deactivated/destroyed => removed it from Parent's cache

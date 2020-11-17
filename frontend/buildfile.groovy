@@ -55,6 +55,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		sh 'yarn install'
 		sh 'yarn lint --quiet'
 							
+		sh "yarn add jest jest-junit --dev"
 		if(params.MF_MF_SKIP_UNIT_TESTS)
 		{
 			echo "params.MF_MF_SKIP_UNIT_TESTS=${params.MF_MF_SKIP_UNIT_TESTS}, so we skip the jest unit tests."

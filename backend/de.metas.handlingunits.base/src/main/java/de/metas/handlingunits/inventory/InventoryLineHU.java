@@ -153,11 +153,6 @@ public class InventoryLineHU
 		return qtyBook;
 	}
 
-	public Quantity getQtyCountMinusBooked()
-	{
-		return getQtyCount().subtract(getQtyBook());
-	}
-
 	/**
 	 * @param qtyCountToAdd needs to have the same UOM as this instance's current qtyCount.
 	 */
@@ -188,10 +183,5 @@ public class InventoryLineHU
 				.map(InventoryLineHU::getHuId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	public InventoryLineHU withHuId(final @NonNull HuId huId)
-	{
-		return toBuilder().huId(huId).build();
 	}
 }

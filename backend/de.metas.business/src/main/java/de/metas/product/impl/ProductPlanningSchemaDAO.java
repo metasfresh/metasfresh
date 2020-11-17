@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.product.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -27,25 +5,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.util.GuavaCollectors;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
@@ -63,15 +34,31 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
-import javax.annotation.Nullable;
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 @UtilityClass
 final class ProductPlanningSchemaDAO
 {
-
-	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	@NonNull
 	public static ProductPlanningSchema getById(@NonNull final ProductPlanningSchemaId schemaId)
 	{
 		final I_M_Product_PlanningSchema record = loadOutOfTrx(schemaId, I_M_Product_PlanningSchema.class);
@@ -83,28 +70,23 @@ final class ProductPlanningSchemaDAO
 	}
 
 	/**
-	 * Returns the Product Planning Schema entries with the given Product Planning Schema Selector and Org.
+	 * @return All the active Product Planning Schema entries with the given Product Planning Schema Selector
 	 */
-	@NonNull
-	public static ImmutableSet<ProductPlanningSchema> retrieveSchemasForSelectorAndOrg(
-			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector,
-			@NonNull final OrgId orgId)
+	public static List<ProductPlanningSchema> retrieveSchemasForSelector(
+			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector)
 	{
-		return queryBL
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_PlanningSchema.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
-				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
-				.list()
 				.stream()
-				.map(ProductPlanningSchemaDAO::toProductPlanningSchema)
-				.collect(ImmutableSet.toImmutableSet());
+				.map(record -> toProductPlanningSchema(record))
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	@NonNull
-	private static ProductPlanningSchema toProductPlanningSchema(@NonNull final I_M_Product_PlanningSchema record)
+	private static ProductPlanningSchema toProductPlanningSchema(final I_M_Product_PlanningSchema record)
 	{
 		return ProductPlanningSchema.builder()
 				.id(ProductPlanningSchemaId.ofRepoId(record.getM_Product_PlanningSchema_ID()))
@@ -161,7 +143,7 @@ final class ProductPlanningSchemaDAO
 	public static List<I_PP_Product_Planning> retrieveProductPlanningsForSchemaId(
 			@NonNull final ProductPlanningSchemaId schemaId)
 	{
-		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schemaId)
@@ -170,14 +152,28 @@ final class ProductPlanningSchemaDAO
 	}
 
 	/**
+	 * @return All the active products with the given product planning schema selector
+	 */
+	public static Set<ProductId> retrieveProductIdsForSchemaSelector(
+			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
+				.create()
+				.listIds(ProductId::ofRepoId);
+	}
+
+	/**
 	 * @return the product planning for the given product and schema if found, null otherwise.
 	 */
-	@Nullable
 	public static I_PP_Product_Planning retrievePlanningForProductAndSchema(
 			@NonNull final ProductId productId,
 			@NonNull final ProductPlanningSchemaId schemaId)
 	{
-		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
@@ -194,7 +190,7 @@ final class ProductPlanningSchemaDAO
 	 */
 	public static Stream<I_M_Product> streamProductsWithNoProductPlanningButWithSchemaSelector()
 	{
-		final IQueryBL queryBL = ProductPlanningSchemaDAO.queryBL;
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQuery<I_PP_Product_Planning> existentProductPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()

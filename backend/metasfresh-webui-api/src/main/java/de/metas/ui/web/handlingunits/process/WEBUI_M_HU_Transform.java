@@ -1,17 +1,13 @@
 package de.metas.ui.web.handlingunits.process;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -31,7 +27,6 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -82,12 +77,7 @@ public class WEBUI_M_HU_Transform
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	private final HUTransformService huTransformService = HUTransformService.newInstance();
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-	private static final String SYS_CONFIG_ENABLE_MOVEMENT = "WEBUI_M_HU_Transform.enableMovement";
+	private HUTransformService huTransformService = HUTransformService.newInstance();
 
 	//
 	// Parameters
@@ -135,18 +125,6 @@ public class WEBUI_M_HU_Transform
 	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM_TU)
 	private boolean p_HUPlanningReceiptOwnerPM_TU;
 
-
-	protected static final String PARAM_MOVE_TO_WAREHOUSE_ID = "MoveToWarehouseId";
-	@Param(parameterName = PARAM_MOVE_TO_WAREHOUSE_ID)
-	private I_M_Warehouse moveToWarehouse;
-
-
-	protected static final String PARAM_SHOW_WAREHOUSE_ID = "ShowWarehouseID";
-	@Param(parameterName = PARAM_SHOW_WAREHOUSE_ID)
-	public boolean showWarehouse;
-
-	private final boolean isMoveToDifferentWarehouseEnabled = sysConfigBL.getBooleanValue(SYS_CONFIG_ENABLE_MOVEMENT, false);
-
 	protected WebuiHUTransformParametersFiller newParametersFiller()
 	{
 		final HUEditorView view = getView();
@@ -157,7 +135,6 @@ public class WEBUI_M_HU_Transform
 				.selectedRow(selectedRow)
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))
 				.checkExistingHUsInsideView(view.getParameterAsBoolean(PARAM_CheckExistingHUsInsideView, false))
-				.isMoveToDifferentWarehouseEnabled(isMoveToDifferentWarehouseEnabled)
 				.build();
 	}
 
@@ -264,8 +241,6 @@ public class WEBUI_M_HU_Transform
 				.build();
 
 		final WebuiHUTransformCommandResult result = command.execute();
-		moveToWarehouse(result);
-
 		updateViewFromResult(result);
 
 		return MSG_OK;
@@ -371,11 +346,6 @@ public class WEBUI_M_HU_Transform
 		{
 			onParameterChanged_ActionCUToNewTUs();
 		}
-
-		if (PARAM_Action.equals(parameterName))
-		{
-			setShowWarehouseFlag();
-		}
 	}
 
 	private void onParameterChanged_ActionTUToNewLUs(final String parameterName)
@@ -409,29 +379,6 @@ public class WEBUI_M_HU_Transform
 
 			p_M_HU_PI_Item_Product = packingItemOptional.get();
 			p_QtyCU = realCUQty.min(packingItemOptional.get().getQty());
-		}
-	}
-
-	private void moveToWarehouse(final WebuiHUTransformCommandResult result)
-	{
-		if (moveToWarehouse != null && showWarehouse)
-		{
-			final ImmutableList<I_M_HU> createdHUs = result.getHuIdsCreated()
-					.stream()
-					.map(handlingUnitsDAO::getById)
-					.collect(ImmutableList.toImmutableList());
-
-			huMovementBL.moveHUsToWarehouse(createdHUs, moveToWarehouse);
-		}
-	}
-
-	private void setShowWarehouseFlag()
-	{
-		this.showWarehouse = newParametersFiller().getShowWarehouseFlag();
-
-		if (!this.showWarehouse)
-		{
-			this.moveToWarehouse = null;
 		}
 	}
 }

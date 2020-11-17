@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.repository.query;
 
+import java.util.List;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -17,9 +19,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.With;
-
-import java.util.List;
+import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ import java.util.List;
  *
  */
 @Value
-@With
+@Wither
 public final class CandidatesQuery
 {
 	/**
@@ -146,7 +146,8 @@ public final class CandidatesQuery
 	CandidateId id;
 
 	/**
-	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
+	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.<br>
+	 * -1 means {@link #PARENT_ID_UNSPECIFIED}
 	 */
 	CandidateId parentId;
 

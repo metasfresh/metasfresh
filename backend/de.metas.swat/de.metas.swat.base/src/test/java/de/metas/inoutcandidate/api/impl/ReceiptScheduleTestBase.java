@@ -22,25 +22,19 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
-import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
-import de.metas.interfaces.I_C_DocType;
-import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Org;
@@ -62,18 +56,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
+import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.interfaces.I_C_DocType;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public abstract class ReceiptScheduleTestBase
 {
 	@BeforeAll
-	public static void staticInit()
+	public final static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 		POJOWrapper.setDefaultStrictValues(false);
@@ -177,14 +181,14 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 		Mockito.when(productAcctDAO.retrieveActivityForAcct(
-				Matchers.any(),
+				(ClientId)Matchers.any(),
 				Matchers.eq(orgId),
-				Matchers.any()))
+				(ProductId)Matchers.any()))
 				.thenReturn(activityId);
 
 		// #653
-		attr_LotNumberDate = createM_Attribute(AttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
-		attr_LotNumber = createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		setup();
 	}
@@ -291,7 +295,7 @@ public abstract class ReceiptScheduleTestBase
 		return createOrder(warehouse);
 	}
 
-	protected I_C_Order createOrder(@Nullable final I_M_Warehouse warehouse)
+	protected I_C_Order createOrder(final I_M_Warehouse warehouse)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setC_Order_ID(0);
@@ -315,6 +319,10 @@ public abstract class ReceiptScheduleTestBase
 
 	/**
 	 * Creates a new order line for the given order and product.
+	 *
+	 * @param order
+	 * @param product
+	 * @return
 	 */
 	protected I_C_OrderLine createOrderLine(final I_C_Order order, final I_M_Product product)
 	{

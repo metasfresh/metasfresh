@@ -33,12 +33,8 @@ const createStore = function(state = {}) {
 
 const props = {
   ...entryTableProps,
-  modalVisible: false,
-  timeZone: 'Europe/Berlin',
   onBlurWidget: jest.fn(),
   addRefToWidgets: jest.fn(),
-  addShortcut: jest.fn(),
-  disableShortcut: jest.fn(),
 };
 
 describe('EntryTable', () => {
@@ -61,7 +57,7 @@ describe('EntryTable', () => {
     });
     const store = mockStore(initialState);
 
-    const wrapperEntryTable = shallow(
+    const wrapperEntryTable = mount(
       <Provider store={store}>
         <EntryTable {...props} />
       </Provider>

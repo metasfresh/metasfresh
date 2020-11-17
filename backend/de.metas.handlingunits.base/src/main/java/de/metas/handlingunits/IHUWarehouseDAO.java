@@ -22,13 +22,12 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.util.ISingletonService;
-import org.adempiere.warehouse.WarehouseId;
+import java.util.List;
+
 import org.compiere.model.I_M_Warehouse;
 
-import java.util.List;
-import java.util.Set;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.util.ISingletonService;
 
 public interface IHUWarehouseDAO extends ISingletonService
 {
@@ -66,13 +65,4 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 * This method fails if no Warehouses were found.
 	 */
 	List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouses();
-
-	/**
-	 * Retrieve the first warehouseId with  <code>de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse</code> = `Y`
-	 *
-	 * @throws org.adempiere.exceptions.AdempiereException if no such a warehouse could be found.
-	 */
-	WarehouseId retrieveQuarantineWarehouseId();
-
-	Set<WarehouseId> retrieveQualityReturnWarehouseIds();
 }

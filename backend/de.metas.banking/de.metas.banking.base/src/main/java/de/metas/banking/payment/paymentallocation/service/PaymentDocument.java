@@ -1,32 +1,8 @@
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -55,6 +31,9 @@ import java.time.LocalDate;
 public class PaymentDocument implements IPaymentDocument
 {
 	@Getter
+	private final OrgId orgId;
+
+	@Getter
 	private final PaymentId paymentId;
 	@Getter
 	private final BPartnerId bpartnerId;
@@ -75,14 +54,9 @@ public class PaymentDocument implements IPaymentDocument
 	@Getter
 	private final LocalDate dateTrx;
 
-	@Getter
-	private final ClientAndOrgId clientAndOrgId;
-
-	@Getter
-	private final CurrencyConversionTypeId currencyConversionTypeId;
-
 	@Builder
 	private PaymentDocument(
+			@NonNull final OrgId orgId,
 			@NonNull final PaymentId paymentId,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String documentNo,
@@ -90,17 +64,15 @@ public class PaymentDocument implements IPaymentDocument
 			//
 			@NonNull final Money openAmt,
 			@NonNull final Money amountToAllocate,
-			@NonNull final ClientAndOrgId clientAndOrgId,
-			@NonNull final LocalDate dateTrx,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
+			@NonNull final LocalDate dateTrx
 	)
 	{
-		final OrgId orgId = clientAndOrgId.getOrgId();
 		if (!orgId.isRegular())
 		{
 			throw new AdempiereException("Transactional organization expected: " + orgId);
 		}
 
+		this.orgId = orgId;
 		this.paymentId = paymentId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
@@ -113,8 +85,6 @@ public class PaymentDocument implements IPaymentDocument
 		this.amountToAllocate = amountToAllocate;
 		this.allocatedAmt = amountToAllocate.toZero();
 		this.dateTrx = dateTrx;
-		this.clientAndOrgId = clientAndOrgId;
-		this.currencyConversionTypeId = currencyConversionTypeId;
 	}
 
 	@Override
@@ -153,12 +123,6 @@ public class PaymentDocument implements IPaymentDocument
 	}
 
 	@Override
-	public LocalDate getDate()
-	{
-		return dateTrx;
-	}
-
-	@Override
 	public boolean isFullyAllocated()
 	{
 		return getAmountToAllocate().signum() == 0;
@@ -167,13 +131,16 @@ public class PaymentDocument implements IPaymentDocument
 	private Money getOpenAmtRemaining()
 	{
 		final Money totalAllocated = allocatedAmt;
-		return openAmtInitial.subtract(totalAllocated);
+		final Money openAmtRemaining = openAmtInitial.subtract(totalAllocated);
+		return openAmtRemaining;
 	}
 
 	@Override
 	public Money calculateProjectedOverUnderAmt(@NonNull final Money amountToAllocate)
 	{
-		return getOpenAmtRemaining().subtract(amountToAllocate);
+		final Money projectedOverUnderAmt = getOpenAmtRemaining()
+				.subtract(amountToAllocate);
+		return projectedOverUnderAmt;
 	}
 
 	@Override

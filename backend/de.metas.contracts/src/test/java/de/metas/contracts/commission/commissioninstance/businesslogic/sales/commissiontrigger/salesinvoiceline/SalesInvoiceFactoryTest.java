@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
-import de.metas.currency.CurrencyRepository;
 import de.metas.util.time.SystemTime;
 import io.github.jsonSnapshot.SnapshotMatcher;
 
@@ -61,8 +59,6 @@ class SalesInvoiceFactoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		
-		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		salesInvoiceFactory = new SalesInvoiceFactory(new CommissionProductService());
 	}

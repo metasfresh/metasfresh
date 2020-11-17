@@ -1,5 +1,9 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -18,9 +22,6 @@ import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
 
 /*
  * #%L
@@ -49,6 +50,11 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	private final CandidateChangeService candidateChangeService;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
+	/**
+	 *
+	 * @param candidateChangeService
+	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
+	 */
 	PPOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
@@ -74,7 +80,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
 
-		final CandidatesQuery preExistingSupplyQuery = createPreExistingSupplyCandidateQuery(ppOrder, supplyRequiredDescriptor);
+		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrder, supplyRequiredDescriptor);
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
 
 		final CandidateBuilder builder = existingCandidateOrNull != null
@@ -104,7 +110,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 		return headerCandidateWithGroupId;
 	}
 
-	protected abstract CandidatesQuery createPreExistingSupplyCandidateQuery(
+	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
 			@NonNull PPOrder ppOrder,
 			@Nullable SupplyRequiredDescriptor supplyRequiredDescriptor);
 

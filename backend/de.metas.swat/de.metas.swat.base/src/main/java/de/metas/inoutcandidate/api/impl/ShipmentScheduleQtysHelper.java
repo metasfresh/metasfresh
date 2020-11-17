@@ -1,6 +1,15 @@
 package de.metas.inoutcandidate.api.impl;
 
+import java.math.BigDecimal;
+
+import org.adempiere.inout.util.DeliveryLineCandidate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -10,13 +19,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
-import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -118,11 +120,11 @@ import java.math.BigDecimal;
 	}
 
 	/**
-	 * Method sets the given {@code sched}'s {@code QtyToDeliver} value in case the previous allocation runs did <b>not</b> allocate a qty to deliver.
-	 * Note that if the effective delivery rule is "FORCE", then we still need to set a qty even in that case.
+	 * Method sets the give {@code sched}'s {@code QtyToDeliver} value in case the previous allocation runs did <b>not</b> allocate a qty to deliver. Note that if the effective delivery rule is
+	 * "FORCE", then we still need to set a qty even in that case.
 	 */
 	@VisibleForTesting
-	/* package */ static void setQtyToDeliverForDiscardedShipmentSchedule(final I_M_ShipmentSchedule discardedShipmentSchedule)
+	/* package */static void setQtyToDeliverForDiscardedShipmentSchedule(final I_M_ShipmentSchedule discardedShipmentSchedule)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(discardedShipmentSchedule);
@@ -146,9 +148,7 @@ import java.math.BigDecimal;
 			final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(discardedShipmentSchedule);
 
 			// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
-			final BigDecimal qtyToDeliver = computeQtyToDeliver(
-					qtyOrdered,
-					discardedShipmentSchedule.getQtyDelivered().add(discardedShipmentSchedule.getQtyPickList()));
+			final BigDecimal qtyToDeliver = computeQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList());
 
 			logger.debug("DeliveryRule={}; QtyOrdered={}; QtyPickList={} -> set QtyToDeliver to {}",
 					deliveryRule, qtyOrdered, discardedShipmentSchedule.getQtyPickList(), qtyToDeliver);
@@ -175,13 +175,13 @@ import java.math.BigDecimal;
 
 	public static BigDecimal computeQtyToDeliver(
 			@NonNull final BigDecimal qtyRequired,
-			@NonNull final BigDecimal qtyPickedOrOnDraftShipmentOrShipped)
+			@NonNull final BigDecimal qtyPickedOrOnDraftShipment)
 	{
 
-		final BigDecimal qtyToDeliver = qtyRequired.subtract(qtyPickedOrOnDraftShipmentOrShipped);
+		BigDecimal qtyToDeliver = qtyRequired.subtract(qtyPickedOrOnDraftShipment);
 		final BigDecimal result = qtyToDeliver.signum() > 0 ? qtyToDeliver : BigDecimal.ZERO;
 
-		logger.debug("qtyRequired={}; qtyPicked_Or_OnDraftShipment_Or_Shipped={}; -> qtyToDeliver={}", qtyRequired, qtyPickedOrOnDraftShipmentOrShipped, result);
+		logger.debug("qtyRequired={}; qtyPickedOrOnDraftShipment={}; -> qtyToDeliver={}", qtyRequired, qtyPickedOrOnDraftShipment, result);
 		return result;
 	}
 

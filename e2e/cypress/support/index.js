@@ -45,7 +45,7 @@ before(function() {
   cy.loginViaAPI().wait(300);
 
   Cypress.Cookies.defaults({
-    preserve: ['SESSION', 'isLogged'],
+    whitelist: ['SESSION', 'isLogged'],
   });
 });
 

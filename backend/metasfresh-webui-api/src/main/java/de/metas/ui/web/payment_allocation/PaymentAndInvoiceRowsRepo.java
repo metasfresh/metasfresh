@@ -134,7 +134,18 @@ public class PaymentAndInvoiceRowsRepo
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<PaymentRow> rowsNotEmpty = dontAllowEmptyPaymentRowsWorkaround(rowsMaybeEmpty);
+		final ImmutableList<PaymentRow> rowsNotEmpty;
+		if (rowsMaybeEmpty.isEmpty())
+		{
+			// Problem: the right table is an includedView of the main table row (left table). If there are no payments, the invoices table is not shown even if we have invoices.
+			// Solution (workaround): this dummy row is needed because we want to display the right table (invoices) at all times
+			// see de.metas.ui.web.payment_allocation.PaymentRow.isSingleColumn and de.metas.ui.web.payment_allocation.PaymentRow.getSingleColumnCaption
+			rowsNotEmpty = ImmutableList.of(PaymentRow.DEFAULT_PAYMENT_ROW);
+		}
+		else
+		{
+			rowsNotEmpty = rowsMaybeEmpty;
+		}
 
 		return PaymentRows.builder()
 				.repository(this)
@@ -171,7 +182,6 @@ public class PaymentAndInvoiceRowsRepo
 				.payAmt(paymentToAllocate.getPayAmt())
 				.openAmt(paymentToAllocate.getOpenAmt())
 				.paymentDirection(paymentToAllocate.getPaymentDirection())
-				.currencyConversionTypeId(paymentToAllocate.getCurrencyConversionTypeId())
 				.build();
 	}
 
@@ -226,7 +236,6 @@ public class PaymentAndInvoiceRowsRepo
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())
 				.serviceFeeAmt(serviceFeeAmount.orElse(null))
-				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.build();
 	}
 
@@ -299,34 +308,10 @@ public class PaymentAndInvoiceRowsRepo
 				.additionalPaymentIdsToInclude(paymentIds)
 				.build();
 
-		final ImmutableList<PaymentRow> paymentRowsMaybeEmpty = paymentAllocationRepo.retrievePaymentsToAllocate(query)
+		return paymentAllocationRepo.retrievePaymentsToAllocate(query)
 				.stream()
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
-
-		return dontAllowEmptyPaymentRowsWorkaround(paymentRowsMaybeEmpty);
-	}
-
-	/**
-	 * Problem: the right table (invoices) is an includedView of the main table row (payments - left table).
-	 * <p>
-	 * If there are no payments, the invoices table is not shown even if we have invoices.
-	 * Solution (workaround): this dummy row is needed because we want to display the right table (invoices) at all times
-	 *
-	 * @see PaymentRow#isSingleColumn()
-	 * @see PaymentRow#getSingleColumnCaption()
-	 */
-	@NonNull
-	private ImmutableList<PaymentRow> dontAllowEmptyPaymentRowsWorkaround(final ImmutableList<PaymentRow> rowsMaybeEmpty)
-	{
-		if (rowsMaybeEmpty.isEmpty())
-		{
-			return ImmutableList.of(PaymentRow.DEFAULT_PAYMENT_ROW);
-		}
-		else
-		{
-			return rowsMaybeEmpty;
-		}
 	}
 
 	public Optional<PaymentRow> getPaymentRowByPaymentId(

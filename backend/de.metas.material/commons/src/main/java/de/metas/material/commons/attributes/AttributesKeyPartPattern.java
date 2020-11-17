@@ -1,7 +1,17 @@
 package de.metas.material.commons.attributes;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.jgoodies.common.base.Objects;
+
 import de.metas.material.event.commons.AttributeKeyPartType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
@@ -10,13 +20,6 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeValueId;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -368,8 +371,7 @@ final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPatt
 		{
 			return AttributeKeyPartType.AttributeIdAndValue.equals(part.getType())
 					&& Objects.equals(this.attributeId, part.getAttributeId())
-					&& (Check.isEmpty(this.value) //no value means all values allowed
-							|| Objects.equals(this.value, part.getValue()));
+					&& Objects.equals(this.value, part.getValue());
 		}
 		else if (type == AttributeKeyPartPatternType.AttributeId)
 		{

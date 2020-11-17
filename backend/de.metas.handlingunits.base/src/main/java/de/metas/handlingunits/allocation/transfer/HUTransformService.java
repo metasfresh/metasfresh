@@ -200,7 +200,11 @@ public class HUTransformService
 
 	public BigDecimal getMaximumQtyTU(@NonNull final I_M_HU tu)
 	{
-		return handlingUnitsBL.getTUsCount(tu).toBigDecimal();
+		if (handlingUnitsBL.isAggregateHU(tu))
+		{
+			return handlingUnitsDAO.retrieveParentItem(tu).getQty();
+		}
+		return BigDecimal.ONE;
 	}
 
 	public Quantity getMaximumQtyCU(@NonNull final I_M_HU cu, @NonNull final I_C_UOM uom)

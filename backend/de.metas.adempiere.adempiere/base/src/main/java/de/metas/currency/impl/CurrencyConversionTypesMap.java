@@ -75,7 +75,6 @@ final class CurrencyConversionTypesMap
 		return conversionType;
 	}
 
-	@NonNull
 	public CurrencyConversionType getDefaultConversionType(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,

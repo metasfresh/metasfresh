@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
@@ -51,7 +50,6 @@ import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.model.X_C_Commission_Instance;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -98,8 +96,6 @@ class C_InvoiceFacadeServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		
-		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		final CommissionProductService commissionProductService = new CommissionProductService();
 		final SalesInvoiceFactory salesInvoiceFactory = new SalesInvoiceFactory(commissionProductService);

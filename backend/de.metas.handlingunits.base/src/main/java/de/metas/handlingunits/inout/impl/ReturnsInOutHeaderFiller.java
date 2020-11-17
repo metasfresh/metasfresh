@@ -1,13 +1,13 @@
 package de.metas.handlingunits.inout.impl;
 
-import de.metas.inout.IInOutBL;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.Timestamp;
+
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import de.metas.inout.IInOutBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,11 +60,8 @@ class ReturnsInOutHeaderFiller
 	private int bpartnerId;
 	private int bpartnerLocationId;
 	private Timestamp movementDate;
-	private Timestamp dateReceived;
 	private int warehouseId;
 	private I_C_Order order;
-	private String externalId;
-	private String externalResourceURL;
 
 	private ReturnsInOutHeaderFiller()
 	{
@@ -117,12 +114,6 @@ class ReturnsInOutHeaderFiller
 				returnsInOut.setMovementDate(movementDate);
 				returnsInOut.setDateAcct(movementDate);
 			}
-
-			final Timestamp dateReceived = getDateReceived();
-			if (dateReceived != null)
-			{
-				returnsInOut.setDateReceived(dateReceived);
-			}
 		}
 
 		//
@@ -153,9 +144,6 @@ class ReturnsInOutHeaderFiller
 				returnsInOut.setC_Order(order);
 			}
 		}
-
-		returnsInOut.setExternalId(getExternalId());
-		returnsInOut.setExternalResourceURL(getExternalResourceURL());
 	}
 
 	public ReturnsInOutHeaderFiller setMovementType(final String movementType)
@@ -224,7 +212,7 @@ class ReturnsInOutHeaderFiller
 		return warehouseId;
 	}
 
-	public ReturnsInOutHeaderFiller setOrder(@Nullable final I_C_Order order)
+	public ReturnsInOutHeaderFiller setOrder(final I_C_Order order)
 	{
 		this.order = order;
 		return this;
@@ -233,38 +221,5 @@ class ReturnsInOutHeaderFiller
 	private I_C_Order getOrder()
 	{
 		return order;
-	}
-
-	public ReturnsInOutHeaderFiller setExternalId(@Nullable final String externalId)
-	{
-		this.externalId = externalId;
-		return this;
-	}
-
-	private String getExternalId()
-	{
-		return this.externalId;
-	}
-
-	private String getExternalResourceURL()
-	{
-		return this.externalResourceURL;
-	}
-
-	public ReturnsInOutHeaderFiller setExternalResourceURL(@Nullable final String externalResourceURL)
-	{
-		this.externalResourceURL = externalResourceURL;
-		return this;
-	}
-
-	public ReturnsInOutHeaderFiller setDateReceived(@Nullable final Timestamp dateReceived)
-	{
-		this.dateReceived = dateReceived;
-		return this;
-	}
-
-	private Timestamp getDateReceived()
-	{
-		return dateReceived;
 	}
 }

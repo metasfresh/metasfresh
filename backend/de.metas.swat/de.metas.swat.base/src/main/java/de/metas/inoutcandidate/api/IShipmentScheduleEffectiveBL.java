@@ -85,10 +85,13 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	/**
 	 * @return the effective {@code QtyOrdered}. Where it's coming from is determined from different values and flags of the given {@code sched}.
 	 */
-	BigDecimal computeQtyOrdered(@NonNull I_M_ShipmentSchedule sched);
+	BigDecimal computeQtyOrdered(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Get the delivery date effective based on DeliveryDate and DeliveryDate_Override
+	 *
+	 * @param sched
+	 * @return
 	 */
 	ZonedDateTime getDeliveryDate(I_M_ShipmentSchedule sched);
 

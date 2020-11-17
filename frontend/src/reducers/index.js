@@ -6,7 +6,7 @@ import menuHandler from './menuHandler';
 import windowHandler from './windowHandler';
 import pluginsHandler from './pluginsHandler';
 import viewHandler from './viewHandler';
-import filters from './filters';
+import filters from './filterHandler';
 import commentsPanel from './commentsPanel';
 import tables from './tables';
 

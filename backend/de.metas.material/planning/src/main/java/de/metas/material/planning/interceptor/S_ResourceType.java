@@ -11,7 +11,6 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.material.planning.IResourceDAO;
 import de.metas.util.Services;
-import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -35,7 +34,6 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 @Interceptor(I_S_ResourceType.class)
-@Component
 public class S_ResourceType
 {
 	static final S_ResourceType INSTANCE = new S_ResourceType();

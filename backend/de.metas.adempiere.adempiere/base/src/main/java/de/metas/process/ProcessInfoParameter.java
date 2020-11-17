@@ -23,13 +23,10 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 
 /**
@@ -203,13 +200,6 @@ public final class ProcessInfoParameter implements Serializable
 	{
 		return mapper.apply(getParameterAsInt(-1));
 	}
-	
-	@Nullable
-	public <T extends RepoIdAware> T getParameterAsRepoId(@NonNull final Class<T> type)
-	{
-		return RepoIdAwares.ofRepoIdOrNull(getParameterAsInt(-1), type);
-	}
-
 
 	public int getParameter_ToAsInt()
 	{

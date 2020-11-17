@@ -38,7 +38,6 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceipt
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
@@ -524,7 +523,6 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				.builder()
 				.ctx(ctx)
 				.receiptSchedules(receiptSchedules)
-				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.selectedHuIds(selectedHuIds)
 				.build();
 

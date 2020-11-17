@@ -4,17 +4,12 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -46,39 +41,28 @@ import lombok.Value;
 
 /**
  * Builds up a list of HUs for certain product, locator and warehouse, which have stock
- *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Value
 public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 {
-	// services
-	IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	HuForInventoryLineFactory huForInventoryLineFactory;
-
-	WarehouseId warehouseId;
 	LocatorId locatorId;
+	WarehouseId warehouseId;
 	ProductId productId;
-	AttributeSetInstanceId asiId;
+	HuForInventoryLineFactory huForInventoryLineFactory;
 
 	@Builder
 	private LocatorAndProductStrategy(
-			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
-			//
-			@Nullable final WarehouseId warehouseId,
 			@Nullable final LocatorId locatorId,
+			@Nullable final WarehouseId warehouseId,
 			@Nullable final ProductId productId,
-			@Nullable final AttributeSetInstanceId asiId)
+			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory)
 	{
-		this.huForInventoryLineFactory = huForInventoryLineFactory;
-
 		this.locatorId = locatorId;
 		this.warehouseId = warehouseId;
 		this.productId = productId;
-		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
+		this.huForInventoryLineFactory = huForInventoryLineFactory;
 
 		if (warehouseId != null && locatorId != null)
 		{
@@ -91,9 +75,11 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	@Override
 	public Stream<HuForInventoryLine> streamHus()
 	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
-				.setOnlyTopLevelHUs()
-				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+				.setOnlyTopLevelHUs();
 
 		if (warehouseId != null)
 		{
@@ -108,32 +94,11 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 			huQueryBuilder.addOnlyWithProductId(productId);
 		}
 
-		if (asiId.isRegular())
-		{
-			appendAttributeFilters(huQueryBuilder);
-		}
+		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
 
 		return huQueryBuilder
-				.createQueryBuilder()
-				.clearOrderBys().orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
-				.create()
+				.createQuery()
 				.iterateAndStream()
 				.flatMap(huForInventoryLineFactory::ofHURecord);
-	}
-
-	private void appendAttributeFilters(final IHUQueryBuilder huQueryBuilder)
-	{
-		final ImmutableAttributeSet storageRelevantAttributes = attributeDAO.getImmutableAttributeSetById(asiId)
-				.filterOnlyStorageRelevantAttributes();
-		if (storageRelevantAttributes.isEmpty())
-		{
-			return;
-		}
-
-		for (final AttributeId attributeId : storageRelevantAttributes.getAttributeIds())
-		{
-			final Object value = storageRelevantAttributes.getValue(attributeId);
-			huQueryBuilder.addOnlyWithAttribute(attributeId, value);
-		}
 	}
 }

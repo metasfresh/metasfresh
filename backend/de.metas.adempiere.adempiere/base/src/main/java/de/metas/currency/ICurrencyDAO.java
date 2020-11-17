@@ -6,15 +6,12 @@ package de.metas.currency;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -61,10 +58,9 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 
-	@NonNull CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
+	CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 
-	@Nullable
 	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

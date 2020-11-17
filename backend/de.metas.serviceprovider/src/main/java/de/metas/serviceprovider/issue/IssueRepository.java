@@ -238,13 +238,11 @@ public class IssueRepository
 				.roughEstimation(record.getRoughEstimation())
 				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
 				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
-				.latestActivityOnIssue(TimeUtil.asInstant(record.getLatestActivity()))
-				.latestActivityOnSubIssues(TimeUtil.asInstant(record.getLatestActivityOnSubIssues()))
+				.latestActivityOnIssue(record.getLatestActivity() != null ? record.getLatestActivity().toInstant() : null)
+				.latestActivityOnSubIssues(record.getLatestActivityOnSubIssues() != null ? record.getLatestActivityOnSubIssues().toInstant() : null)
 				.externalIssueNo(record.getExternalIssueNo())
 				.externalIssueURL(record.getIssueURL())
 				.processed(record.isProcessed())
-				.deliveredDate(TimeUtil.asLocalDate(record.getDeliveredDate()))
-				.processedTimestamp(TimeUtil.asInstant(record.getProcessedDate()))
 				.build();
 	}
 
@@ -287,7 +285,6 @@ public class IssueRepository
 		record.setPlannedUATDate(TimeUtil.asTimestamp(issueEntity.getPlannedUATDate()));
 
 		record.setDeliveryPlatform(issueEntity.getDeliveryPlatform());
-		record.setDeliveredDate(TimeUtil.asTimestamp(issueEntity.getDeliveredDate()));
 
 		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
 		record.setIssueURL(issueEntity.getExternalIssueURL());

@@ -239,6 +239,9 @@ public class MSequence extends X_AD_Sequence
 			{
 				DB.close(rs, pstmt);
 				DB.close(conn);
+				pstmt = null;
+				rs = null;
+				conn = null;
 			}
 		}
 	}	// getNextID
@@ -509,7 +512,9 @@ public class MSequence extends X_AD_Sequence
 	/**
 	 * Get next number for Key column
 	 *
+	 * @param AD_Client_ID client
 	 * @param TableName table name
+	 * @param trxName optional Transaction Name
 	 * @return next no or (-1=error)
 	 */
 	public static synchronized int getNextOfficialID_HTTP(String TableName)
@@ -529,7 +534,9 @@ public class MSequence extends X_AD_Sequence
 	/**
 	 * Get next number for Key column
 	 *
+	 * @param AD_Client_ID client
 	 * @param TableName table name
+	 * @param trxName optional Transaction Name
 	 * @return next no or (-1=error)
 	 */
 	public static synchronized int getNextProjectID_HTTP(String TableName)

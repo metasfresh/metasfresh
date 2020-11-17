@@ -1,6 +1,20 @@
 package de.metas.ui.web.handlingunits.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Stream;
+
+import de.metas.organization.ClientAndOrgId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.springframework.context.annotation.Profile;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.Profiles;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
@@ -14,7 +28,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -23,19 +36,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.springframework.context.annotation.Profile;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -61,11 +61,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Process used to receive HUs for more then one receipt schedule.
- * <p>
+ *
  * It creates one VHU for each receipt schedule, using it's remaining quantity to move.
  *
  * @author metas-dev <dev@metasfresh.com>
- * https://github.com/metasfresh/metasfresh-webui/issues/182
+ *
+ * @task https://github.com/metasfresh/metasfresh-webui/issues/182
+ *
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProcess
@@ -116,7 +118,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		// Make sure each of them are eligible for receiving
 		{
 			final ProcessPreconditionsResolution rejectResolution = receiptSchedules.stream()
-					.map(WEBUI_M_ReceiptSchedule_ReceiveHUs_Base::checkEligibleForReceivingHUs)
+					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_ReceiveHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
 					.filter(resolution -> !resolution.isAccepted())
 					.findFirst()
 					.orElse(null);
@@ -133,7 +135,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		{
 			final long bpartnersCount = receiptSchedules
 					.stream()
-					.map(receiptScheduleBL::getC_BPartner_Effective_ID)
+					.map(receiptSchedule -> receiptScheduleBL.getC_BPartner_Effective_ID(receiptSchedule))
 					.distinct()
 					.count();
 			if (bpartnersCount != 1)
@@ -148,11 +150,11 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 	@Override
 	@RunOutOfTrx
-	protected final String doIt()
+	protected final String doIt() throws Exception
 	{
 		final List<I_M_HU> hus = streamReceiptSchedulesToReceive()
 				.map(this::createPlanningVHU)
-				.filter(Objects::nonNull)
+				.filter(hu -> hu != null)
 				.collect(GuavaCollectors.toImmutableList());
 
 		openHUsToReceive(hus);
@@ -167,7 +169,6 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 				.stream(I_M_ReceiptSchedule.class);
 	}
 
-	@Nullable
 	private I_M_HU createPlanningVHU(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		//
@@ -205,9 +206,6 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 			throw new HUException("One and only one VHU was expected but we got: " + hus);
 		}
 		final I_M_HU vhu = hus.get(0);
-
-		updateAttributes(vhu, receiptSchedule);
-
 		InterfaceWrapperHelper.setTrxName(vhu, ITrx.TRXNAME_None);
 		return vhu;
 	}
@@ -220,11 +218,11 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 	protected BigDecimal getEffectiveQtyToReceive(final I_M_ReceiptSchedule rs)
 	{
-		return getDefaultAvailableQtyToReceive(rs);
+		BigDecimal defaultAvailableQtyToReceive = getDefaultAvailableQtyToReceive(rs);
+		return defaultAvailableQtyToReceive;
 	}
 
-	@Nullable
-	private IAllocationRequest createAllocationRequest(final I_M_ReceiptSchedule rs)
+	private final IAllocationRequest createAllocationRequest(final I_M_ReceiptSchedule rs)
 	{
 		// Get Qty
 		final BigDecimal qty = getEffectiveQtyToReceive(rs);

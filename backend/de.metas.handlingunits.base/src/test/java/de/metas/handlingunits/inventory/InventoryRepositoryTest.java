@@ -266,8 +266,7 @@ class InventoryRepositoryTest
 			inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 
 			final I_M_InventoryLine_HU inventoryLineHURecord = newInstance(I_M_InventoryLine_HU.class);
-			inventoryLineHURecord.setM_Inventory_ID(inventoryId.getRepoId());
-			inventoryLineHURecord.setM_InventoryLine_ID(inventoryLineRecord.getM_InventoryLine_ID());
+			inventoryLineHURecord.setM_InventoryLine(inventoryLineRecord);
 			inventoryLineHURecord.setQtyBook(new BigDecimal("2"));
 			inventoryLineHURecord.setQtyCount(new BigDecimal("10"));
 			inventoryLineHURecord.setC_UOM_ID(uomRecord.getC_UOM_ID());

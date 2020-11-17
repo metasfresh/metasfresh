@@ -1,8 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -15,7 +13,6 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 /**
  * Provides specific business logic for interconnection between manufacturing order and handling units module.
@@ -26,8 +23,6 @@ import lombok.NonNull;
 public interface IHUPPOrderBL extends ISingletonService
 {
 	I_PP_Order getById(PPOrderId ppOrderId);
-
-	List<I_PP_Order> getByIds(@NonNull Set<PPOrderId> ppOrderIds);
 
 	/**
 	 * Create a {@link IDocumentLUTUConfigurationManager} for HUs that can be received for the given {@code ppOrder}.<br>

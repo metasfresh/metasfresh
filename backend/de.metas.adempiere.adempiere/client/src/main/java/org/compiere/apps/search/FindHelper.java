@@ -10,17 +10,18 @@ package org.compiere.apps.search;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,13 +35,16 @@ import org.compiere.util.DB;
 import de.metas.adempiere.util.Permutation;
 import de.metas.util.Check;
 
-import javax.annotation.Nullable;
-
+/**
+ * 
+ * @author tsa
+ * 
+ */
 public final class FindHelper
 {
 	public static final String COLUMNNAME_Search = "Search";
 
-	public static void addStringRestriction(final MQuery query, final String columnName, final String value, final String infoName, final boolean isIdentifier)
+	public static void addStringRestriction(MQuery query, String columnName, String value, String infoName, boolean isIdentifier)
 	{
 		if (COLUMNNAME_Search.equalsIgnoreCase(columnName))
 		{
@@ -57,7 +61,7 @@ public final class FindHelper
 		}
 		else if (valueStr.indexOf('%') == -1)
 		{
-			final String valueSQL = "UPPER(" + DB.TO_STRING(valueStr) + ")";
+			String valueSQL = "UPPER(" + DB.TO_STRING(valueStr) + ")";
 			query.addRestriction("UPPER(" + columnName + ")", Operator.EQUAL, valueSQL, infoName, value);
 		}
 		else
@@ -67,24 +71,24 @@ public final class FindHelper
 	}
 
 	// metas-2009_0021_AP1_CR064
-	private static void addStringRestriction_Search(final MQuery query, final String columnName, String value, final String infoName, final boolean isIdentifier)
+	private static void addStringRestriction_Search(MQuery query, String columnName, String value, String infoName, boolean isIdentifier)
 	{
 		value = value.trim();
 		// metas: Permutationen ueber alle Search-Kombinationen
 		// z.B. 3 Tokens ergeben 3! Moeglichkeiten als Ergebnis.
 		if (value.contains(" "))
 		{
-			final StringTokenizer st = new StringTokenizer(value, " ");
-			final int tokens = st.countTokens();
-			final String[] input = new String[tokens];
-			final Permutation perm = new Permutation();
+			StringTokenizer st = new StringTokenizer(value, " ");
+			int tokens = st.countTokens();
+			String input[] = new String[tokens];
+			Permutation perm = new Permutation();
 			perm.setMaxIndex(tokens - 1);
 			for (int token = 0; token < tokens; token++)
 			{
 				input[token] = st.nextToken();
 			}
 			perm.permute(input, tokens - 1);
-			final Iterator<String> itr = perm.getResult().iterator();
+			Iterator<String> itr = perm.getResult().iterator();
 
 			while (itr.hasNext())
 			{
@@ -105,26 +109,39 @@ public final class FindHelper
 
 	/**
 	 * When dealing with String comparison ("LIKE") use this method instead of simply building the String.
-	 * <p>
+	 * 
 	 * This method provides reliability when it comes to comparison behavior
-	 * <p>
+	 * 
 	 * E.G. when searching for "123" it shall match "%123%" and when searching for "123%" it shall match exactly that and NOT "%123%".
-	 * <p>
+	 * 
 	 * In other words, the user receives exactly what he asks for
+	 * 
+	 * @param columnSQL
+	 * @param value
+	 * @param isIdentifier
+	 * @param params
+	 * @return
 	 */
-	public static String buildStringRestriction(final String columnSQL, final Object value, final boolean isIdentifier, final List<Object> params)
+	public static String buildStringRestriction(String columnSQL, Object value, boolean isIdentifier, List<Object> params)
 	{
 		return buildStringRestriction(null, columnSQL, value, isIdentifier, params);
 	}
 
 	/**
 	 * apply function to parameter cg: task: 02381
+	 * 
+	 * @param criteriaFunction
+	 * @param columnSQL
+	 * @param value
+	 * @param isIdentifier
+	 * @param params
+	 * @return
 	 */
-	public static String buildStringRestriction(@Nullable final String criteriaFunction, final String columnSQL, final Object value, final boolean isIdentifier, final List<Object> params)
+	public static String buildStringRestriction(String criteriaFunction, String columnSQL, Object value, boolean isIdentifier, List<Object> params)
 	{
 		final String valueStr = prepareSearchString(value, isIdentifier);
-		String whereClause;
-		if (Check.isBlank(criteriaFunction))
+		String whereClause = null;
+		if (Check.isEmpty(criteriaFunction, true))
 		{
 			whereClause = "UPPER(" + DBConstants.FUNC_unaccent_string(columnSQL) + ")"
 					+ " LIKE"
@@ -132,7 +149,6 @@ public final class FindHelper
 		}
 		else
 		{
-			//noinspection ConstantConditions
 			whereClause = "UPPER(" + DBConstants.FUNC_unaccent_string(columnSQL) + ")"
 					+ " LIKE "
 					+ "UPPER(" + DBConstants.FUNC_unaccent_string(criteriaFunction.replaceFirst(columnSQL, "?")) + ")";
@@ -141,9 +157,9 @@ public final class FindHelper
 		return whereClause;
 	}
 
-	public static String buildStringRestriction(final String columnSQL, final int displayType, final Object value, final Object valueTo, final boolean isRange, final List<Object> params)
+	public static String buildStringRestriction(String columnSQL, int displayType, Object value, Object valueTo, boolean isRange, List<Object> params)
 	{
-		final StringBuffer where = new StringBuffer();
+		StringBuffer where = new StringBuffer();
 		if (isRange)
 		{
 			if (value != null || valueTo != null)
@@ -172,12 +188,12 @@ public final class FindHelper
 		return where.toString();
 	}
 
-	public static String prepareSearchString(final Object value)
+	public static String prepareSearchString(Object value)
 	{
 		return prepareSearchString(value, false);
 	}
 
-	public static String prepareSearchString(final Object value, final boolean isIdentifier)
+	public static String prepareSearchString(Object value, boolean isIdentifier)
 	{
 		if (value == null || value.toString().length() == 0)
 		{

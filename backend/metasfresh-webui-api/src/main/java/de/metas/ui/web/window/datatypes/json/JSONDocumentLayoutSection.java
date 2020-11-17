@@ -16,8 +16,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.Closabl
 import io.swagger.annotations.ApiModel;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -82,10 +80,6 @@ public final class JSONDocumentLayoutSection
 	@JsonInclude(Include.NON_EMPTY)
 	private final String description;
 
-	@JsonProperty("uiStyle")
-	@JsonInclude(Include.NON_EMPTY)
-	private final String uiStyle;
-
 	@JsonProperty("columns")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
@@ -98,16 +92,14 @@ public final class JSONDocumentLayoutSection
 			final DocumentLayoutSectionDescriptor section,
 			final JSONDocumentLayoutOptions options)
 	{
-		this.title = extractTitle(section, options);
-		this.uiStyle = section.getUiStyle();
+		this.title = exctractTitle(section, options);
 
 		this.description = section.getDescription(options.getAdLanguage()).trim();
 		this.columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), options);
 		this.closableMode = JSONClosableMode.ofClosableMode(section.getClosableMode());
 	}
 
-	@Nullable
-	private static String extractTitle(
+	private String exctractTitle(
 			@NonNull final DocumentLayoutSectionDescriptor section,
 			@NonNull final JSONDocumentLayoutOptions options)
 	{

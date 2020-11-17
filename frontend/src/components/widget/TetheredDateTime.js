@@ -10,25 +10,18 @@ class TetheredDateTime extends DateTime {
   constructor(props) {
     super(props);
 
-    // we set this fn as debounced to have 300ms for catching any double clicks
-    // that might happen
-    this.debouncedSetDate = debounce(this.debouncedSetDate, 300, {
-      leading: false,
-      trailing: true,
+    this.updateSelectedDate = debounce(this.updateSelectedDate, 300, {
+      leading: true,
+      trailing: false,
     });
-
-    // and if doubleclick happened, we can cancel this function call and
-    // only trigger the doubleclick handler
-    props.setDebounced(this.debouncedSetDate);
   }
 
-  handleClick = () => {
+  handleClick = () =>
     this.onInputChange({
       target: {
         value: this.state.viewDate,
       },
     });
-  };
 
   onInputKey = (e) => {
     if (
@@ -41,23 +34,11 @@ class TetheredDateTime extends DateTime {
   };
 
   updateSelectedDate = (e, close) => {
-    // we need to persist the event as it might be reused in the 300ms
-    // debounce wait
-    e.persist();
-
-    this.debouncedSetDate(e, close);
-  };
-
-  debouncedSetDate = (e, close) => {
     if (this.props.onFocusInput) {
       this.props.onFocusInput();
     }
 
-    // because event is debounced, currentTarget gets lost and `react-datetime`
-    // uses it to get the day value
-    e.currentTarget = e.target;
-
-    super.updateSelectedDate(e, close);
+    return super.updateSelectedDate(e, close);
   };
 
   render() {

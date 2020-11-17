@@ -1,5 +1,10 @@
 package de.metas.handlingunits.trace;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.OptionalInt;
+
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
@@ -10,11 +15,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 /*
  * #%L
@@ -112,8 +112,7 @@ public class HUTraceEvent
 				.ppOrderId(ppOrderId)
 				.docStatus(docStatus)
 				.docTypeId(docTypeId)
-				.huTrxLineId(huTrxLineId)
-		        .vhuSourceId(vhuSourceId);
+				.huTrxLineId(huTrxLineId);
 
 	}
 }

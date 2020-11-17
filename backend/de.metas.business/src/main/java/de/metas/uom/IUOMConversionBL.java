@@ -78,6 +78,10 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
 
+	/**
+	 * @deprecated please consider using {@link #convertQuantityTo(Quantity, UOMConversionContext, UomId)}
+	 */
+	@Deprecated
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
 
 	/**

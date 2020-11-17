@@ -86,7 +86,7 @@ public class ProcessRestController
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
 			@NonNull @PathVariable("value") final String processValue,
-			@Nullable @RequestBody(required = false) final RunProcessRequest request)
+			@Nullable @RequestBody final RunProcessRequest request)
 	{
 
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);
@@ -146,14 +146,14 @@ public class ProcessRestController
 	{
 		if (processExecutionResult.isError())
 		{
-			throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(processExecutionResult.getThrowable());
 		}
-		else if (Check.isNotBlank(processExecutionResult.getStringResult()))
+		else if (Check.isNotBlank(processExecutionResult.getJsonResult()))
 		{
 			return ResponseEntity
 					.ok()
-					.contentType(MediaType.valueOf(processExecutionResult.getStringResultContentType()))
-					.body(processExecutionResult.getStringResult());
+					.contentType(MediaType.APPLICATION_JSON_UTF8)
+					.body(processExecutionResult.getJsonResult());
 		}
 		else if (Check.isNotBlank(processExecutionResult.getReportFilename()))
 		{

@@ -602,7 +602,6 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	@NonNull
 	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery query)
 	{
 		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, RetrieveAvailableHUsToPickFilters::retrieveFullTreeAndExcludePickingHUs);

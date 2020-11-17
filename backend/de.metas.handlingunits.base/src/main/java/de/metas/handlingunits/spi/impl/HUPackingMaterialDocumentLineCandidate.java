@@ -26,8 +26,10 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.NullComparator;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -109,6 +111,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	 */
 	/* package */ HUPackingMaterialDocumentLineCandidate(final I_M_Product product, final I_M_Material_Tracking materialTracking, final I_M_Locator locator)
 	{
+		super();
 		Check.assumeNotNull(product, "product not null");
 		this.product = product;
 
@@ -116,7 +119,8 @@ public final class HUPackingMaterialDocumentLineCandidate
 
 		this.materialTracking = materialTracking;
 
-		uom = Services.get(IUOMDAO.class).getEachUOM();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
+		uom = Services.get(IUOMDAO.class).retrieveEachUOM(ctx);
 	}
 
 	@Override

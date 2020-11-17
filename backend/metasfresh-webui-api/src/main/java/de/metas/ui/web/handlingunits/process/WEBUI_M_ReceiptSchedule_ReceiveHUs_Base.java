@@ -32,12 +32,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,8 +46,9 @@ import de.metas.util.Services;
 
 /**
  * Base class for receiving HUs from selected receipt schedule.
- *
+ * 
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 /* package */ abstract class WEBUI_M_ReceiptSchedule_ReceiveHUs_Base extends ReceiptScheduleBasedProcess
 {
@@ -78,9 +79,7 @@ import de.metas.util.Services;
 		return checkEligibleForReceivingHUs(receiptSchedule);
 	}
 
-	/**
-	 * @return true if given receipt schedule is eligible for receiving HUs
-	 */
+	/** @return true if given receipt schedule is eligible for receiving HUs */
 	public static final ProcessPreconditionsResolution checkEligibleForReceivingHUs(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		// Receipt schedule shall not be already closed
@@ -149,10 +148,6 @@ import de.metas.util.Services;
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
-
-		hus.forEach(hu -> {
-			updateAttributes(hu, receiptSchedule);
-		});
 		openHUsToReceive(hus);
 
 		return MSG_OK;

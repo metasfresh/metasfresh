@@ -1,12 +1,13 @@
 package de.metas.material.event.commons;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
  * #%L
@@ -40,12 +41,6 @@ public class SupplyRequiredDescriptor
 	/** the MD_Candidate_ID of the record which the required supply is about. */
 	int demandCandidateId;
 
-	/**
-	 * The MD_Candidate_ID of the "unspecific" supply-record that was already optimistically created.
-	 * It shall be updated by the response to this descriptor.
-	 */
-	int supplyCandidateId;
-
 	int shipmentScheduleId;
 
 	int forecastId;
@@ -64,7 +59,6 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
 			@JsonProperty("demandCandidateId") final int demandCandidateId,
-			@JsonProperty("supplyCandidateId") final int supplyCandidateId,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("forecastId") final int forecastId,
 			@JsonProperty("forecastLineId") final int forecastLineId,
@@ -73,7 +67,6 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
-		this.supplyCandidateId = supplyCandidateId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
 
@@ -86,5 +79,6 @@ public class SupplyRequiredDescriptor
 		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
 
 		this.subscriptionProgressId = subscriptionProgressId > 0 ? subscriptionProgressId : -1;
+
 	}
 }

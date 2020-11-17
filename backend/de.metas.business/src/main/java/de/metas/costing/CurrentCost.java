@@ -10,6 +10,7 @@ import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -153,11 +154,7 @@ public final class CurrentCost
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		assertCostCurrency(amt);
-		
-		if(qty.signum() == 0 && amt.signum() != 0)
-		{
-			throw new AdempiereException("Qty shall not be zero when amount is non zero: "+amt);
-		}
+		Check.assume(qty.signum() != 0, "qty not zero");
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);

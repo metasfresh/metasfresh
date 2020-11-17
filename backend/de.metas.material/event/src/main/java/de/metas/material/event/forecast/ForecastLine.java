@@ -1,13 +1,14 @@
 package de.metas.material.event.forecast;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
  * #%L
@@ -35,7 +36,8 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 @Builder
 public class ForecastLine
 {
-	int forecastLineId;
+
+	private int forecastLineId;
 
 	MaterialDescriptor materialDescriptor;
 

@@ -22,13 +22,11 @@
 
 package de.metas.postgrest.client;
 
-import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.postgrest.config.PostgRESTConfig;
 import de.metas.postgrest.config.PostgRESTConfigRepository;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -61,7 +59,8 @@ public class PostgRESTClient
 	public String performGet(@NonNull final GetRequest getRequest)
 	{
 		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(getRequest.getBaseURL());
-		Loggables.withLogger(log, Level.DEBUG).addLog("*** performGet(): for request {}", getRequest);
+
+		log.debug("*** performGet(): for request {}", getRequest);
 
 		if (!Check.isEmpty(getRequest.getPathVariables()))
 		{
@@ -73,7 +72,7 @@ public class PostgRESTClient
 			builder.queryParams(getRequest.getQueryParameters());
 		}
 
-		final HttpEntity<String> request = new HttpEntity<>(buildHttpHeaders(getRequest.getResponseFormat()));
+		final HttpEntity<String> request = new HttpEntity<>( buildHttpHeaders() );
 
 		final URI uri = builder.build().encode().toUri();
 
@@ -83,7 +82,7 @@ public class PostgRESTClient
 
 		if (responseWithErrors)
 		{
-			throw new AdempiereException("Something went wrong when retrieving from postgREST!, response body:" + responseEntity.getBody());
+			throw new AdempiereException("Something went wrong when retrieving from postgREST!, response body:" + responseEntity.getBody() );
 		}
 
 		log.debug("*** PostgRESTClient.performGet(), response: {}", responseEntity.getBody());
@@ -91,11 +90,10 @@ public class PostgRESTClient
 		return responseEntity.getBody();
 	}
 
-	private HttpHeaders buildHttpHeaders(@NonNull final PostgRESTResponseFormat responseFormat)
+	private HttpHeaders buildHttpHeaders()
 	{
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Collections.singletonList(MediaType.valueOf(responseFormat.getContentType())));
-
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 		return headers;
 	}
 

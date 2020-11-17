@@ -82,12 +82,12 @@ Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogE
   cy.waitForSaveIndicator();
 });
 
-Cypress.Commands.add('executeQuickActionWithRightSideTable', (actionName, isModal = false) => {
+Cypress.Commands.add('executeQuickActionWithRightSideTable', actionName => {
   cy.log(`executeQuickActionWithRightSideTable ${actionName}`);
   const layoutAlias = 'layout_' + new Date().getTime();
   cy.waitForSaveIndicator();
   cy.server();
   cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as(layoutAlias);
-  cy.executeQuickAction(actionName, isModal, false);
+  cy.executeQuickAction(actionName, true, false);
   cy.wait(`@${layoutAlias}`);
 });

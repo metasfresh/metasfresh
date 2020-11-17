@@ -66,12 +66,12 @@ export function setActiveSort(id, active) {
 }
 
 /**
- * @method deselectTableRows
- * @summary deselect rows or deselect all if an empty `ids` array is provided
+ * @method deselectTableItems
+ * @summary deselect items or deselect all if an empty `ids` array is provided
  */
-export function deselectTableRows(id, selection) {
+export function deselectTableItems(id, selection) {
   return {
-    type: types.DESELECT_TABLE_ROWS,
+    type: types.DESELECT_TABLE_ITEMS,
     payload: { id, selection },
   };
 }
@@ -123,7 +123,7 @@ export function updateTabRowsData(id, rows) {
 
 /**
  * @method updateTableRowProperty
- * @summary Update single row
+ * @summary Update table selection - select items
  *
  * @param {string} id - table id
  * @param {number} rowId - rowId
@@ -241,18 +241,11 @@ export function updateGridTable(tableId, tableResponse) {
     // this check is only for unit tests purposes
     if (state.tables) {
       const tableExists = state.tables[tableId];
-      const isModal = !!tableResponse.modalId;
-      const windowId = isModal
-        ? tableResponse.modalId
-        : tableResponse.windowType || tableResponse.windowId;
-
-      const tableLayout = getView(getState(), windowId, isModal).layout;
 
       if (tableExists) {
         const { indentSupported } = tableExists;
         const tableData = createTableData({
           ...tableResponse,
-          ...tableLayout,
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
@@ -280,6 +273,12 @@ export function updateGridTable(tableId, tableResponse) {
 
         return Promise.resolve(true);
       } else {
+        const isModal = !!tableResponse.modalId;
+        const windowId = isModal
+          ? tableResponse.modalId
+          : tableResponse.windowType || tableResponse.windowId;
+
+        const tableLayout = getView(getState(), windowId, isModal).layout;
         const tableData = createTableData({
           ...tableResponse,
           ...tableLayout,

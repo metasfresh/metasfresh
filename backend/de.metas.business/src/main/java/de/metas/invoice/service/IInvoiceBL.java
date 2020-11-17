@@ -1,20 +1,5 @@
 package de.metas.invoice.service;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.X_C_DocType;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -37,9 +22,23 @@ import org.compiere.model.X_C_DocType;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.X_C_DocType;
+
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -50,7 +49,6 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -426,16 +424,4 @@ public interface IInvoiceBL extends ISingletonService
 	 * - set Price_UOM_ID to C_InvoiceLine.C_UOM_ID
 	 */
 	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
-
-	/**
-	 * 
-	 * @param invoice
-	 * @param discountAmt - the value is not AP corrected. The correction is done inside this function
-	 * @param date
-	 */
-	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
-
-	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
-
-	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 }

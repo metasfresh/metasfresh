@@ -1,16 +1,19 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import { omit } from 'lodash';
+import React, { Component } from 'react';
 
-import WidgetWrapper from '../containers/WidgetWrapper';
+import MasterWidget from './widget/MasterWidget';
 import Loader from './app/Loader';
 
 /**
  * @file Class based component.
  * @module Process
- * @extends PureComponent
+ * @extends Component
  */
-class Process extends PureComponent {
+class Process extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   /**
    * @method renderElements
    * @summary ToDo: Describe the method
@@ -19,39 +22,43 @@ class Process extends PureComponent {
    * @param {*} type
    * @todo Write the documentation
    */
-  renderElements = () => {
-    const { layout, type, disabled } = this.props;
+  renderElements = (layout, data, type) => {
+    const { disabled } = this.props;
     const elements = layout.elements;
-
-    return elements.map((elem, idx) => {
-      const element = omit(elem, ['fields']);
-
+    return elements.map((elem, id) => {
+      const widgetData = elem.fields.map((item) => data[item.field] || -1);
       return (
-        <div key={`${idx}-${layout.pinstanceId}`}>
-          <WidgetWrapper
-            renderMaster={true}
-            dataSource="process"
-            layoutId={`${idx}`}
+        <div key={`${id}-${layout.pinstanceId}`}>
+          <MasterWidget
             entity="process"
-            key={`element${idx}`}
-            windowId={type}
+            key={'element' + id}
+            windowType={type}
             dataId={layout.pinstanceId}
+            widgetData={widgetData}
             isModal={true}
             disabled={disabled}
-            autoFocus={idx === 0}
-            {...element}
+            autoFocus={id === 0}
+            {...elem}
           />
         </div>
       );
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
-    const { disabled, layout } = this.props;
+    const { data, layout, type, disabled } = this.props;
     return (
       <div key="window" className="window-wrapper process-wrapper">
         {disabled && <Loader loaderType="bootstrap" />}
-        {!disabled && layout && layout.elements && this.renderElements()}
+        {!disabled &&
+          layout &&
+          layout.elements &&
+          this.renderElements(layout, data, type)}
       </div>
     );
   }
@@ -63,6 +70,7 @@ class Process extends PureComponent {
  * @prop {*} data
  * @prop {*} layout
  * @prop {*} type
+ * @todo Check title, buttons. Which proptype? Required or optional?
  */
 Process.propTypes = {
   disabled: PropTypes.bool,

@@ -51,7 +51,6 @@ import java.util.Properties;
 
 import javax.swing.event.ListSelectionEvent;
 
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
@@ -325,7 +324,7 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 			M_Warehouse_ID = new Query(ctx, org.compiere.model.I_M_Warehouse.Table_Name, "", ITrx.TRXNAME_None)
 					.setClient_ID()
 					.setRequiredAccess(Access.READ)
-					.setLimit(QueryLimit.ONE)
+					.setLimit(1)
 					.setOrderBy(org.compiere.model.I_M_Warehouse.COLUMNNAME_Name)
 					.firstId();
 			if (M_Warehouse_ID > 0)

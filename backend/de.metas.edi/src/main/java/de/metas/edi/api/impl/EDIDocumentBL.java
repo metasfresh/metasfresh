@@ -226,9 +226,9 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getEdiDesadvRecipientGLN(), true))
+		if (Check.isEmpty(ediPartner.getEdiRecipientGLN(), true))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
+			missingFields.add(I_C_BPartner.COLUMNNAME_EdiRecipientGLN);
 		}
 
 		final boolean checkForAggregationRule = !isPartOfInvoiceValidation; // if we validate for an already existing invoice we don't need to bother for the partner's aggregation rule

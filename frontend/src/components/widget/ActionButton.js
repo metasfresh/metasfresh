@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { get } from 'lodash';
 
 import { fetchTopActions } from '../../actions/WindowActions';
 import { dropdownRequest } from '../../actions/GenericActions';
@@ -141,7 +140,7 @@ class ActionButton extends PureComponent {
   handleChangeStatus = (status) => {
     const prompt = { ...this.state.prompt };
     const promptOpenClone = { ...prompt.isOpen };
-    if (Object.prototype.hasOwnProperty.call(status, 'validationInformation')) {
+    if (status.hasOwnProperty('validationInformation')) {
       promptOpenClone[status.key] = true;
       this.setState({
         prompt: {
@@ -167,7 +166,7 @@ class ActionButton extends PureComponent {
   getStatusClassName = (abrev) => {
     const { data } = this.props;
 
-    if (get(data, ['action', 'value', 'key'], null) !== abrev) {
+    if (data.action.value && data.action.value.key !== abrev) {
       return '';
     }
 
@@ -273,7 +272,7 @@ class ActionButton extends PureComponent {
     this.processStatus(
       list.find(
         (elem) =>
-          Object.prototype.hasOwnProperty.call(elem, 'validationInformation') &&
+          elem.hasOwnProperty('validationInformation') &&
           elem.key === activePrompt
       ),
       true
@@ -297,7 +296,7 @@ class ActionButton extends PureComponent {
   render() {
     const { data, modalVisible } = this.props;
     const { list, prompt } = this.state;
-    const abrev = get(data, ['status', 'value', 'key'], null);
+    const abrev = data.status.value && data.status.value.key;
     const status = this.getStatusContext(abrev);
     let value;
 

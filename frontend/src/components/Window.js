@@ -12,7 +12,6 @@ import Section from './window/Section';
 import Dropzone from './Dropzone';
 import { INITIALLY_CLOSED } from '../constants/Constants';
 
-const EMPTY_OBJECT = {};
 /**
  * @file Class based component.
  * @module Window
@@ -188,7 +187,6 @@ class Window extends PureComponent {
         queryOnActivate,
         supportQuickInput,
         defaultOrderBys,
-        orderBy,
         singleRowDetailView,
       } = elem;
       elem.tabIndex = this.tabIndex.tabs;
@@ -266,7 +264,7 @@ class Window extends PureComponent {
             toggleFullScreen={this.toggleTableFullScreen}
             entity="window"
             key={tabId}
-            orderBy={orderBy || defaultOrderBys}
+            orderBy={defaultOrderBys}
             docId={dataId}
             tabIndex={this.tabIndex.tabs}
             queryOnActivate={queryOnActivate}
@@ -324,7 +322,7 @@ class Window extends PureComponent {
    * @param {*} isDataEntry
    * @param {*} extendedData
    */
-  renderSections = (sections, isDataEntry, extendedData = EMPTY_OBJECT) => {
+  renderSections = (sections, isDataEntry, extendedData = {}) => {
     const {
       layout: { windowId },
       tabId,
@@ -344,21 +342,27 @@ class Window extends PureComponent {
       return (
         <Section
           key={`section-${sectionIndex}`}
+          //
           sectionLayout={sectionLayout}
           sectionIndex={sectionIndex}
+          //
           windowId={windowId}
           tabId={tabId || extendedData.tabId}
           rowId={rowId}
           dataId={dataId}
+          //
           data={data}
           isDataEntry={isDataEntry}
           extendedData={extendedData}
+          //
           isModal={isModal}
           isAdvanced={isAdvanced}
           isFullScreen={fullScreen}
+          //
           onBlurWidget={this.handleBlurWidget}
           addRefToWidgets={this.addRefToWidgets}
           requestElementGroupFocus={this.requestElementGroupFocus}
+          //
           isSectionCollapsed={isSectionCollapsed}
           toggleSectionCollapsed={this.toggleSectionCollapsed}
         />
@@ -421,6 +425,10 @@ class Window extends PureComponent {
     }
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       layout: { sections, tabs },

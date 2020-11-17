@@ -9,7 +9,6 @@ import org.adempiere.warehouse.LocatorId;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.inventory.InventoryLineHU;
@@ -17,6 +16,7 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.quantity.Quantity;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.NonFinal;
@@ -143,7 +143,7 @@ public class DraftInventoryLinesCreator
 		createdOrUpdatedLines.put(aggregationKey, inventoryLineBuilder.build());
 	}
 
-	public static InventoryLineHU toInventoryLineHU(final HuForInventoryLine huForInventoryLine)
+	private static InventoryLineHU toInventoryLineHU(final HuForInventoryLine huForInventoryLine)
 	{
 		final Quantity quantityBooked = huForInventoryLine.getQuantityBooked();
 		final Quantity quantityCount = CoalesceUtil.coalesce(huForInventoryLine.getQuantityCount(), quantityBooked);

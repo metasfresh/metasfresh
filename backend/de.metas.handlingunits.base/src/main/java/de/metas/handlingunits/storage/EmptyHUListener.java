@@ -1,6 +1,9 @@
 package de.metas.handlingunits.storage;
 
-import de.metas.handlingunits.HuId;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -8,10 +11,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.function.Consumer;
 
 /*
  * #%L
@@ -23,12 +22,12 @@ import java.util.function.Consumer;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,11 +56,6 @@ public class EmptyHUListener
 	{
 		final String description = null;
 		return new EmptyHUListener(consumer, description);
-	}
-
-	public static EmptyHUListener collectDestroyedHUIdsTo(@NonNull final Collection<HuId> collector)
-	{
-		return doBeforeDestroyed(hu -> collector.add(HuId.ofRepoId(hu.getM_HU_ID())));
 	}
 
 	private EmptyHUListener(

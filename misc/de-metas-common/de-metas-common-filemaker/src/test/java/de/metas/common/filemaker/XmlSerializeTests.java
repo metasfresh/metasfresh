@@ -22,13 +22,23 @@
 
 package de.metas.common.filemaker;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-
+import com.ctc.wstx.api.WstxInputProperties;
+import com.ctc.wstx.api.WstxOutputProperties;
+import com.ctc.wstx.stax.WstxInputFactory;
+import com.ctc.wstx.stax.WstxOutputFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlFactory;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class XmlSerializeTests
 {

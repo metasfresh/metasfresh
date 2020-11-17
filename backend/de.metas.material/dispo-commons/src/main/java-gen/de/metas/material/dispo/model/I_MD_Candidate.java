@@ -2,7 +2,7 @@ package de.metas.material.dispo.model;
 
 
 /** Generated Interface for MD_Candidate
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_MD_Candidate 
@@ -14,10 +14,17 @@ public interface I_MD_Candidate
     /** AD_Table_ID=540808 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 1 - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -29,8 +36,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -39,8 +46,8 @@ public interface I_MD_Candidate
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -52,8 +59,7 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Business Partner .
-	 * Identifies a Business Partner
+	 * Set Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -62,8 +68,7 @@ public interface I_MD_Candidate
 	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
 
 	/**
-	 * Get Business Partner .
-	 * Identifies a Business Partner
+	 * Get Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -104,8 +109,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -119,8 +124,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -155,8 +160,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_DateProjected = "DateProjected";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -165,8 +170,8 @@ public interface I_MD_Candidate
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -180,31 +185,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set ATP reserved for customer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsReservedForCustomer (boolean IsReservedForCustomer);
-
-	/**
-	 * Get ATP reserved for customer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isReservedForCustomer();
-
-    /** Column definition for IsReservedForCustomer */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_IsReservedForCustomer = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "IsReservedForCustomer", null);
-    /** Column name IsReservedForCustomer */
-    public static final String COLUMNNAME_IsReservedForCustomer = "IsReservedForCustomer";
-
-	/**
-	 * Set Attributes.
-	 * Attribute Instances for Products
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -213,8 +195,8 @@ public interface I_MD_Candidate
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Attributes.
-	 * Attribute Instances for Products
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -232,7 +214,7 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Business case.
+	 * Set Geschäftsvorfall.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -241,7 +223,7 @@ public interface I_MD_Candidate
 	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase);
 
 	/**
-	 * Get Business case.
+	 * Get Geschäftsvorfall.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -403,8 +385,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -413,8 +395,8 @@ public interface I_MD_Candidate
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -426,7 +408,7 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Shipment Candidate.
+	 * Set Lieferdisposition.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -435,7 +417,7 @@ public interface I_MD_Candidate
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Shipment Candidate.
+	 * Get Lieferdisposition.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -449,8 +431,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -459,8 +441,8 @@ public interface I_MD_Candidate
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -472,8 +454,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Quantity.
-	 * Quantity
+	 * Set Menge.
+	 * Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -482,8 +464,8 @@ public interface I_MD_Candidate
 	public void setQty (java.math.BigDecimal Qty);
 
 	/**
-	 * Get Quantity.
-	 * Quantity
+	 * Get Menge.
+	 * Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -524,7 +506,7 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_Qty_AvailableToPromise = "Qty_AvailableToPromise";
 
 	/**
-	 * Set Fulfilled quantity.
+	 * Set Erledigte Menge.
 	 * Summe der bereits eingetretenden Materialbewegungen
 	 *
 	 * <br>Type: Quantity
@@ -534,7 +516,7 @@ public interface I_MD_Candidate
 	public void setQtyFulfilled (java.math.BigDecimal QtyFulfilled);
 
 	/**
-	 * Get Fulfilled quantity.
+	 * Get Erledigte Menge.
 	 * Summe der bereits eingetretenden Materialbewegungen
 	 *
 	 * <br>Type: Quantity
@@ -576,57 +558,9 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
 
 	/**
-	 * Set Höchstmenge.
-	 * Maximaler ATP. Wenn die Material-Dispo eine Aufstockung veranlasst, dann auf diese Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setReplenish_MaxQty (java.math.BigDecimal Replenish_MaxQty);
-
-	/**
-	 * Get Höchstmenge.
-	 * Maximaler ATP. Wenn die Material-Dispo eine Aufstockung veranlasst, dann auf diese Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getReplenish_MaxQty();
-
-    /** Column definition for Replenish_MaxQty */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Replenish_MaxQty = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Replenish_MaxQty", null);
-    /** Column name Replenish_MaxQty */
-    public static final String COLUMNNAME_Replenish_MaxQty = "Replenish_MaxQty";
-
-	/**
-	 * Set Minimal ATP.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setReplenish_MinQty (java.math.BigDecimal Replenish_MinQty);
-
-	/**
-	 * Get Minimal ATP.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getReplenish_MinQty();
-
-    /** Column definition for Replenish_MinQty */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Replenish_MinQty = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Replenish_MinQty", null);
-    /** Column name Replenish_MinQty */
-    public static final String COLUMNNAME_Replenish_MinQty = "Replenish_MinQty";
-
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -635,9 +569,9 @@ public interface I_MD_Candidate
 	public void setSeqNo (int SeqNo);
 
 	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -674,8 +608,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -689,8 +623,8 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

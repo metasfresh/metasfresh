@@ -27,8 +27,6 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import de.metas.organization.ClientAndOrgId;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
@@ -41,7 +39,6 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
@@ -245,7 +242,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(paymentRow.getCurrencyISOCode()).getId();
 
 		return PaymentDocument.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), paymentRow.getOrgId()))
+				.orgId(paymentRow.getOrgId())
 				.paymentId(PaymentId.ofRepoId(paymentRow.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(paymentRow.getC_BPartner_ID()))
 				.paymentDirection(paymentRow.getPaymentDirection())
@@ -253,7 +250,6 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 				.openAmt(Money.of(paymentRow.getOpenAmtConv_APAdjusted(), currencyId))
 				.amountToAllocate(Money.of(paymentRow.getAppliedAmt_APAdjusted(), currencyId))
 				.dateTrx(TimeUtil.asLocalDate(paymentRow.getDocumentDate()))
-				// .currencyConversionTypeId() null for swing
 				.build();
 
 	}

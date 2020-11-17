@@ -26,14 +26,13 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
 import de.metas.util.time.SystemTime;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
@@ -48,9 +47,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportError;
@@ -100,16 +97,11 @@ class ShipmentCandidateAPIServiceTest
 		uom = BusinessTestHelper.createUOM("stockUOM");
 		product = BusinessTestHelper.createProduct("product", uom);
 
-		final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider = Mockito.mock(ShipmentCandidateExportSequenceNumberProvider.class);
-		Mockito.doReturn(1).when(exportSequenceNumberProvider).provideNextShipmentCandidateSeqNo();
-
-		shipmentCandidateAPIService =
-				new ShipmentCandidateAPIService(
-						new ShipmentScheduleAuditRepository(),
-						new ShipmentScheduleRepository(),
-						new BPartnerCompositeRepository(new MockLogEntriesRepository()),
-						new ProductRepository(),
-						exportSequenceNumberProvider);
+		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
+				new ShipmentScheduleAuditRepository(),
+				new ShipmentScheduleRepository(),
+				new BPartnerCompositeRepository(new MockLogEntriesRepository()),
+				new ProductRepository());
 	}
 
 	@Test
@@ -119,7 +111,7 @@ class ShipmentCandidateAPIServiceTest
 		final I_M_ShipmentSchedule shipmentScheduleRecord = createShipmentScheduleRecord();
 
 		// when
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(QueryLimit.ofInt(500));
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(500);
 
 		// then
 		assertThat(result.isHasMoreItems()).isFalse();
@@ -144,7 +136,7 @@ class ShipmentCandidateAPIServiceTest
 		saveRecord(location);
 
 		// when
-		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(QueryLimit.ofInt(500));
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(500);
 
 		// then
 		refresh(shipmentScheduleRecord);
@@ -172,9 +164,6 @@ class ShipmentCandidateAPIServiceTest
 		record.setM_Product_ID(product.getM_Product_ID());
 		record.setCanBeExportedFrom(TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
 		record.setExportStatus(APIExportStatus.Pending.getCode());
-		record.setQtyOrdered(new BigDecimal("10"));
-		record.setQtyDelivered(new BigDecimal("9"));
-		record.setQtyToDeliver(new BigDecimal("8"));
 		saveRecord(record);
 
 		return record;

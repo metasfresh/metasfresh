@@ -1,14 +1,74 @@
 package de.metas.inoutcandidate.api.impl;
 
-import ch.qos.logback.classic.Level;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
+import org.adempiere.inout.util.DeliveryLineCandidate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
+import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -18,6 +78,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
@@ -50,60 +111,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.util.DeliveryGroupCandidate;
-import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
-import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
-import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
-import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
@@ -122,6 +129,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				shipmentScheduleReferencedLineFactory,
 				pickingBOMService);
 	}
+
+	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleUpdater.class.getName() + "#ProcessedByBackgroundProcess";
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 
@@ -308,44 +317,46 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// finally update the shipment schedule entries
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
-			final I_M_ShipmentSchedule schedRecord = olAndSched.getSched();
-			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(schedRecord); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
+			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 
-			schedRecord.setAllowConsolidateInOut(isAllowConsolidateShipment(bpartnerId));
+			sched.setAllowConsolidateInOut(isAllowConsolidateShipment(bpartnerId));
 
-			updatePreparationAndDeliveryDate(schedRecord);
+			updatePreparationAndDeliveryDate(sched);
 
 			//
 			// Delivery Day related info:
 			// TODO: invert dependency add make this pluggable from de.metas.tourplanning module
-			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(schedRecord);
+			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(sched);
 
 			// task 09358: ol.qtyReserved should be as correct as QtyOrdered and QtyDelivered, but in some cases isn't. this here is a workaround to the problem
 			// task 09869: don't rely on ol anyways
-			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
-			schedRecord.setQtyDelivered(qtyDelivered);
-			schedRecord.setQtyReserved(BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered())));
+			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+			sched.setQtyDelivered(qtyDelivered);
+			sched.setQtyReserved(BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(sched.getQtyDelivered())));
 
 			updateLineNetAmt(olAndSched);
 
 			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, secondRun);
 
-			updateProcessedFlag(schedRecord);
-			if (schedRecord.isProcessed())
+			markAsChangedByUpdateProcess(sched);
+
+			updateProcessedFlag(sched);
+			if (sched.isProcessed())
 			{
 				// 04870 : Delivery rule force assumes we deliver full quantity ordered if qtyToDeliver_Override is null.
 				// 06019 : check both DeliveryRule, as DeliveryRule_Override
-				final boolean deliveryRuleIsForced = DeliveryRule.FORCE.equals(shipmentScheduleEffectiveBL.getDeliveryRule(schedRecord));
+				final boolean deliveryRuleIsForced = DeliveryRule.FORCE.equals(shipmentScheduleEffectiveBL.getDeliveryRule(sched));
 				if (deliveryRuleIsForced)
 				{
-					schedRecord.setQtyToDeliver(BigDecimal.ZERO);
+					sched.setQtyToDeliver(BigDecimal.ZERO);
 				}
 				else
 				{
-					Check.errorUnless(schedRecord.getQtyToDeliver().signum() == 0, "{} has QtyToDeliver = {} (should be zero)", schedRecord, schedRecord.getQtyToDeliver());
+					Check.errorUnless(sched.getQtyToDeliver().signum() == 0, "{} has QtyToDeliver = {} (should be zero)", sched, sched.getQtyToDeliver());
 				}
 
-				shipmentSchedulePA.save(schedRecord);
+				shipmentSchedulePA.save(sched);
 
 				continue;
 			}
@@ -354,8 +365,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// I talked with Mark and he observed that in the wiki-page of 08459 it is specified differently.
 			// I will let it here nevertheless, so we can keep track of it's way to work
 
-			final BPartnerId partnerId = BPartnerId.ofRepoId(schedRecord.getC_BPartner_ID());
-			final ProductId productId = ProductId.ofRepoId(schedRecord.getM_Product_ID());
+			final BPartnerId partnerId = BPartnerId.ofRepoId(sched.getC_BPartner_ID());
+			final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 
 			// FRESH-334 retrieve the bp product for org or for org 0
 			final I_M_Product product = productsService.getById(productId);
@@ -365,7 +376,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			if (bpp == null)
 			{
 				// in case no dropship bpp entry was found, the schedule shall not be dropship
-				schedRecord.setIsDropShip(false);
+				sched.setIsDropShip(false);
 			}
 			else
 			{
@@ -374,24 +385,24 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				{
 					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID,
 					// set the customer's vendor for the given product in the schedule
-					schedRecord.setC_BPartner_Vendor_ID(bpp.getC_BPartner_Vendor_ID());
+					sched.setC_BPartner_Vendor_ID(bpp.getC_BPartner_Vendor_ID());
 				}
 
 				// set the dropship flag in shipment schedule as it is in the bpp
-				schedRecord.setIsDropShip(isDropShip);
+				sched.setIsDropShip(isDropShip);
 			}
 
 			// 08860
 			// update preparation date override based on delivery date effective
 			// DO this only if the preparationDate_Override was not already set manually or by the process
-			if (schedRecord.getDeliveryDate_Override() != null && schedRecord.getPreparationDate_Override() == null)
+			if (sched.getDeliveryDate_Override() != null && sched.getPreparationDate_Override() == null)
 			{
-				final ZonedDateTime deliveryDate = shipmentScheduleEffectiveBL.getDeliveryDate(schedRecord);
+				final ZonedDateTime deliveryDate = shipmentScheduleEffectiveBL.getDeliveryDate(sched);
 
-				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(schedRecord);
-				final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(schedRecord);
+				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(sched);
+				final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 
-				final ZonedDateTime calculationTime = TimeUtil.asZonedDateTime(schedRecord.getCreated());
+				final ZonedDateTime calculationTime = TimeUtil.asZonedDateTime(sched.getCreated());
 				final ImmutablePair<TourId, ZonedDateTime> tourAndDate = deliveryDayBL.calculateTourAndPreparationDate(
 						contextAwareSched,
 						SOTrx.SALES,
@@ -401,18 +412,16 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
 				final ZonedDateTime preparationDate = tourAndDate.getRight();
-				schedRecord.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
-				schedRecord.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
+				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
+				sched.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
 			}
 
-			shipmentScheduleBL.updateExportStatus(schedRecord);
-			shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
+			shipmentScheduleBL.updateCanBeExportedAfter(sched);
 
-			schedRecord.setPOReference(olAndSched.getSalesOrderPORef());
-
-			shipmentSchedulePA.save(schedRecord);
+			shipmentSchedulePA.save(sched);
 		}
 	}
+
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(
 			@NonNull final Properties ctx,
@@ -749,7 +758,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	/**
-	 * task 08336
+	 * @param sched
+	 * @return
+	 * @task 08336
 	 */
 	@VisibleForTesting
 	void updateProcessedFlag(@NonNull final I_M_ShipmentSchedule sched)
@@ -863,6 +874,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
 
 		sched.setCatch_UOM_ID(catchUomRepoId);
+	}
+
+	@Override
+	public boolean isChangedByUpdateProcess(final I_M_ShipmentSchedule sched)
+	{
+		final Boolean isUpdateProcess = InterfaceWrapperHelper.getDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess);
+		return isUpdateProcess == null ? false : isUpdateProcess.booleanValue();
+	}
+
+	private void markAsChangedByUpdateProcess(final I_M_ShipmentSchedule sched)
+	{
+		InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 	}
 
 	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)

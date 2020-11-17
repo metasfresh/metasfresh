@@ -8,6 +8,7 @@ import {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
+  filtersToMap,
   DLpropTypes,
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
@@ -32,6 +33,11 @@ export default class DocumentList extends Component {
     this.state = {
       clickOutsideLock: false,
       toggleWidth: 0,
+      // in some scenarios we don't want to reload table data
+      // after edit, as it triggers request, collapses rows and looses selection
+      // TODO: This value is not really used anywhere anymore, so it's either
+      // solved elsewhere, or doesn't work
+      rowEdited: false,
     };
   }
 
@@ -59,15 +65,20 @@ export default class DocumentList extends Component {
   };
 
   /**
-   * @method onTableRowEdited
+   * @method setTableRowEdited
    * @summary ToDo: Describe the method.
    * @todo TODO: This triggers re-fetching of quickactions. We should handle that via redux
    * or in the quickactions component somehow
    */
-  onTableRowEdited = () => {
+  setTableRowEdited = (val) => {
     const { onUpdateQuickActions } = this.props;
 
-    onUpdateQuickActions();
+    this.setState(
+      {
+        rowEdited: val,
+      },
+      onUpdateQuickActions
+    );
   };
 
   /**
@@ -131,6 +142,7 @@ export default class DocumentList extends Component {
       hasIncluded,
       onRedirectToNewDocument,
       onShowIncludedViewOnSelect,
+      onClearStaticFilters,
       onSortData,
       onShowSelectedIncludedView,
       table,
@@ -138,7 +150,6 @@ export default class DocumentList extends Component {
       parentSelected,
       onUpdateQuickActions,
       setQuickActionsComponentRef,
-      filterId,
     } = this.props;
     const {
       staticFilters,
@@ -243,6 +254,7 @@ export default class DocumentList extends Component {
                     initialValuesNulled,
                   }}
                   windowType={windowId}
+                  filterData={filtersToMap(layout.filters)}
                   updateDocList={onFilterChange}
                   resetInitialValues={onResetInitialFilters}
                 />
@@ -250,12 +262,8 @@ export default class DocumentList extends Component {
 
               {staticFilters && (
                 <FiltersStatic
-                  {...{
-                    filterId,
-                    windowId,
-                    viewId,
-                  }}
                   data={staticFilters}
+                  clearFilters={onClearStaticFilters}
                 />
               )}
             </div>
@@ -303,7 +311,7 @@ export default class DocumentList extends Component {
                     ? {
                         viewId: includedView.viewId,
                         viewSelectedIds: childSelected,
-                        windowType: includedView.windowId,
+                        windowType: includedView.windowType,
                       }
                     : NO_VIEW
                 }
@@ -332,7 +340,7 @@ export default class DocumentList extends Component {
                 ref={this.setTableRef}
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
-                onRowEdited={this.onTableRowEdited}
+                onRowEdited={this.setTableRowEdited}
                 updateQuickActions={onUpdateQuickActions}
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
@@ -376,7 +384,7 @@ export default class DocumentList extends Component {
                   <DataLayoutWrapper
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
-                    onRowEdited={this.onTableRowEdited}
+                    onRowEdited={this.setTableRowEdited}
                     supportAttribute={table.supportAttribute}
                     setClickOutsideLock={this.setClickOutsideLock}
                     {...{ viewId, selected, inBackground, windowId }}
@@ -414,6 +422,7 @@ DocumentList.propTypes = {
   onChangePage: PropTypes.func,
   onFilterChange: PropTypes.func,
   onRedirectToDocument: PropTypes.func,
+  onClearStaticFilters: PropTypes.func,
   onResetInitialFilters: PropTypes.func,
   onRedirectToNewDocument: PropTypes.func,
   onUpdateQuickActions: PropTypes.func,

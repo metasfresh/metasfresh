@@ -2,7 +2,7 @@ package de.metas.serviceprovider.model;
 
 
 /** Generated Interface for S_FailedTimeBooking
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_S_FailedTimeBooking 
@@ -14,10 +14,17 @@ public interface I_S_FailedTimeBooking
     /** AD_Table_ID=541487 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -29,8 +36,8 @@ public interface I_S_FailedTimeBooking
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -39,8 +46,8 @@ public interface I_S_FailedTimeBooking
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -52,8 +59,8 @@ public interface I_S_FailedTimeBooking
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -67,8 +74,8 @@ public interface I_S_FailedTimeBooking
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -128,20 +135,20 @@ public interface I_S_FailedTimeBooking
     public static final String COLUMNNAME_ExternalSystem = "ExternalSystem";
 
 	/**
-	 * Set Error Message.
+	 * Set Import-Fehler.
 	 * Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setImportErrorMsg (java.lang.String ImportErrorMsg);
 
 	/**
-	 * Get Error Message.
+	 * Get Import-Fehler.
 	 * Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -153,8 +160,8 @@ public interface I_S_FailedTimeBooking
     public static final String COLUMNNAME_ImportErrorMsg = "ImportErrorMsg";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -163,8 +170,8 @@ public interface I_S_FailedTimeBooking
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -224,8 +231,8 @@ public interface I_S_FailedTimeBooking
     public static final String COLUMNNAME_S_FailedTimeBooking_ID = "S_FailedTimeBooking_ID";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -239,8 +246,8 @@ public interface I_S_FailedTimeBooking
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

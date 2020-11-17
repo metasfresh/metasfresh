@@ -47,14 +47,6 @@ public class JsonProduct
 
 	BigDecimal weight;
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String documentNote;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String commodityNumberValue;
-
-	boolean stocked;
-
 	@JsonCreator
 	@Builder
 	private JsonProduct(
@@ -62,18 +54,12 @@ public class JsonProduct
 			@JsonProperty("name") @NonNull final String name,
 			@JsonProperty("description") @Nullable final String description,
 			@JsonProperty("packageSize") @Nullable final String packageSize,
-			@JsonProperty("weight") @Nullable final BigDecimal weight,
-			@JsonProperty("stocked") @NonNull final Boolean stocked,
-			@JsonProperty("documentNote") @Nullable final String documentNote,
-			@JsonProperty("commodityNumberValue") @Nullable final String commodityNumberValue)
+			@JsonProperty("weight") @Nullable final BigDecimal weight)
 	{
 		this.productNo = productNo;
 		this.name = name;
 		this.description = description;
 		this.packageSize = packageSize;
 		this.weight = weight;
-		this.stocked = stocked;
-		this.documentNote = documentNote;
-		this.commodityNumberValue = commodityNumberValue;
 	}
 }

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User_AuthToken;
@@ -57,7 +56,7 @@ public class UserAuthTokenRepository
 				.createQueryBuilder(I_AD_User_AuthToken.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AuthToken, token)
-				.setLimit(QueryLimit.TWO)
+				.setLimit(2)
 				.create()
 				.list(I_AD_User_AuthToken.class);
 
@@ -105,7 +104,7 @@ public class UserAuthTokenRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
-				.setLimit(QueryLimit.TWO)
+				.setLimit(2)
 				.create()
 				.list(I_AD_User_AuthToken.class);
 

@@ -51,12 +51,18 @@ describe('Create a single HU', function() {
   });
 
   it('Create a new single-HU inventory doc', function() {
+    let uomName;
+    cy.fixture('product/simple_product.json').then(productJson => {
+      uomName = getLanguageSpecific(productJson, 'c_uom');
+    });
+
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
       const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
 
       const inventoryLine = new InventoryLine()
         .setProductName(productName)
         .setQuantity(productQty)
+        .setC_UOM_ID(uomName)
         .setM_Locator_ID(locatorId)
         .setIsCounted(true);
 

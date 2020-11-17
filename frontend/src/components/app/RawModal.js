@@ -6,9 +6,9 @@ import classnames from 'classnames';
 
 import { deleteViewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
-import { PATCH_RESET } from '../../constants/ActionTypes';
 
-import { unsetIncludedView } from '../../actions/ViewActions';
+import { PATCH_RESET } from '../../constants/ActionTypes';
+import { closeListIncludedView } from '../../actions/ListActions';
 import { addNotification } from '../../actions/AppActions';
 import {
   closeModal,
@@ -243,8 +243,8 @@ class RawModal extends Component {
         closeRawModal(),
         deleteTable(tableId),
         closeModal(),
-        unsetIncludedView({
-          windowId: windowId,
+        closeListIncludedView({
+          windowType: windowId,
           viewId,
           forceClose: true,
         }),
@@ -322,6 +322,10 @@ class RawModal extends Component {
     return <ModalContextShortcuts {...shortcutActions} />;
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       modalTitle,

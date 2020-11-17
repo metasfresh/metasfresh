@@ -119,7 +119,6 @@ describe('TableActions grid', () => {
     });
     const tableData_update = createTableData({
       ...rowResponse,
-      ...layoutResponse,
       headerElements: rowResponse.columnsByFieldName,
       keyProperty: 'id',
     });

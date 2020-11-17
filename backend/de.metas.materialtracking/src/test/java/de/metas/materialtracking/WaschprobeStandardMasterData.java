@@ -56,7 +56,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialComparator;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -183,17 +182,17 @@ public class WaschprobeStandardMasterData
 		return uom;
 	}
 
-	public I_C_UOM createUOMByX12DE355(final X12DE355 x12de355, final int precision)
+	public I_C_UOM createUOMByX12DE355(final String x12de355, final int precision)
 	{
-		I_C_UOM uom = Services.get(IUOMDAO.class).getByX12DE355IfExists(x12de355).orElse(null);
+		I_C_UOM uom = Services.get(IUOMDAO.class).retrieveByX12DE355(context.getCtx(), x12de355, false); // throwExIfNull == false
 		if (uom == null)
 		{
 			uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class, context);
 		}
-		uom.setName(x12de355.getCode());
-		uom.setUOMSymbol(x12de355.getCode());
+		uom.setName(x12de355);
+		uom.setUOMSymbol(x12de355);
 		uom.setStdPrecision(precision);
-		uom.setX12DE355(x12de355.getCode());
+		uom.setX12DE355(x12de355);
 		InterfaceWrapperHelper.save(uom);
 		return uom;
 	}

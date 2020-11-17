@@ -1,6 +1,9 @@
 package de.metas.ui.web.process;
 
-import de.metas.process.ProcessExecutionResult;
+import java.io.File;
+
+import org.compiere.util.Util;
+
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -13,9 +16,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Value;
-import org.compiere.util.Util;
-
-import java.io.File;
 
 /*
  * #%L
@@ -65,21 +65,18 @@ public final class ProcessInstanceResult
 	private final String summary;
 	private final boolean error;
 	private final ResultAction action;
-	private final boolean openInNewTab;
 
 	@Builder
 	private ProcessInstanceResult(
 			@NonNull final DocumentId instanceId,
 			final String summary,
 			final boolean error,
-			final ResultAction action,
-			final boolean openInNewTab)
+			final ResultAction action)
 	{
 		this.instanceId = instanceId;
 		this.summary = summary;
 		this.error = error;
 		this.action = action;
-		this.openInNewTab = openInNewTab;
 	}
 
 	public boolean isSuccess()
@@ -114,8 +111,6 @@ public final class ProcessInstanceResult
 	{
 	}
 
-
-
 	@lombok.Value
 	@lombok.Builder
 	public static final class OpenReportAction implements ResultAction
@@ -144,7 +139,7 @@ public final class ProcessInstanceResult
 		private final ViewId viewId;
 		private final ViewProfileId profileId;
 		@Builder.Default
-		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB_OVERLAY;
+		private final boolean modalOverlay = true;
 	}
 
 	@lombok.Value
@@ -169,9 +164,7 @@ public final class ProcessInstanceResult
 	{
 		@NonNull
 		private final DocumentPath documentPath;
-		@Builder.Default
-		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB;
-
+		private final boolean modal;
 	}
 
 	@lombok.Value

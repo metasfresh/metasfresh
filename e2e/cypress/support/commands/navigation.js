@@ -247,9 +247,7 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
   // in the future cypress may retry on element detached, but that's not the case as of 2020-05-22
   cy.wait(`@${quickActionsAlias}`);
 
-  cy.get(`div[title="${columnAndValue.value}"]`).click(); // select the item with a simple click on it
-
-  // return cy.selectRowByColumnAndValue(columnAndValue, true, force);
+  return cy.selectRowByColumnAndValue(columnAndValue, modal, force);
 });
 
 /**

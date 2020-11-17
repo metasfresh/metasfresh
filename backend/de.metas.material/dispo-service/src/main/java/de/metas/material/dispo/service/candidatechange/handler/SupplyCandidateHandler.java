@@ -1,7 +1,15 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import static java.math.BigDecimal.ZERO;
+
+import java.util.Collection;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -11,12 +19,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-
-import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -83,7 +85,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 
 		if (!candidateSaveResult.isDateChanged() && !candidateSaveResult.isQtyChanged())
 		{
-			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing more to do, because the candidate didn't change any ATP quantity.
+			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing to do
 		}
 
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();

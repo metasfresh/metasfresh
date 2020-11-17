@@ -58,7 +58,4 @@ public class DataImportRequest
 	@NonNull
 	@Default
 	IParams additionalParameters = IParams.NULL;
-
-	boolean processImportRecordsSynchronously;
-	boolean stopOnFirstError;
 }

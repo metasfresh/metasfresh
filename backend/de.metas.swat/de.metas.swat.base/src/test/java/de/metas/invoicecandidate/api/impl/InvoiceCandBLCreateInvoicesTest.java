@@ -144,8 +144,6 @@ public class InvoiceCandBLCreateInvoicesTest
 		icTestSupport.initStuff();
 		icTestSupport.registerModelInterceptors();
 
-		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();

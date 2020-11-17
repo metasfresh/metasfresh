@@ -2,7 +2,6 @@ package de.metas.inventory;
 
 import java.util.stream.Stream;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_DocType;
 
 import com.google.common.collect.ImmutableMap;
@@ -55,11 +54,8 @@ public enum AggregationType
 	@Getter
 	private final DocBaseAndSubType docBaseAndSubType;
 
-	private static ImmutableMap<DocBaseAndSubType, AggregationType> byDocType = Stream.of(values())
+	private static ImmutableMap<DocBaseAndSubType, AggregationType> docType2aggregationMode = Stream.of(values())
 			.collect(ImmutableMap.toImmutableMap(AggregationType::getDocBaseAndSubType, t -> t));
-
-	private static ImmutableMap<HUAggregationType, AggregationType> byHUAggregationType = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(AggregationType::getHuAggregationType, t -> t));
 
 	private AggregationType(
 			@NonNull final HUAggregationType huAggregationType,
@@ -76,17 +72,7 @@ public enum AggregationType
 
 	public static AggregationType getByDocTypeOrNull(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		return byDocType.get(docBaseAndSubType);
-	}
-
-	public static AggregationType getByHUAggregationType(@NonNull final HUAggregationType huAggregationType)
-	{
-		final AggregationType type = byHUAggregationType.get(huAggregationType);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + AggregationType.class + " found for " + huAggregationType);
-		}
-		return type;
+		return docType2aggregationMode.get(docBaseAndSubType);
 	}
 
 }

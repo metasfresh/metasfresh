@@ -1,16 +1,14 @@
 package de.metas.handlingunits.inout;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.inout.api.IInOutMovementBL;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.impl.ReceiptSchedule_WarehouseDest_Test;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
-import de.metas.interfaces.I_M_Movement;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -27,14 +25,17 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.business.BusinessTestHelper;
+import de.metas.inout.api.IInOutMovementBL;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.impl.ReceiptSchedule_WarehouseDest_Test;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
+import de.metas.interfaces.I_M_Movement;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -60,6 +61,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_WarehouseDest_Test
 {
+
 	@Test
 	public void createDistributionOrder_noMovementCreated()
 	{
@@ -146,6 +148,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 	private I_PP_Product_Planning createProductPlanning(final int productID, final I_DD_NetworkDistribution nwDist, final String onmaterialreceiptwithdestwarehouse)
 	{
+
 		final I_PP_Product_Planning prodPlanning = newInstance(I_PP_Product_Planning.class);
 		prodPlanning.setDD_NetworkDistribution(nwDist);
 		prodPlanning.setM_Product_ID(productID);

@@ -1,12 +1,14 @@
 package de.metas.util.lang;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.Value;
+import static de.metas.util.Check.isEmpty;
 
 import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,23 +38,20 @@ public class ExternalId
 	String value;
 
 	@JsonCreator
-	@NonNull
 	public static ExternalId of(@NonNull final String value)
 	{
 		return new ExternalId(value);
 	}
 
-	@Nullable
 	public static ExternalId ofOrNull(@Nullable final String value)
 	{
-		if (Check.isBlank(value))
+		if (isEmpty(value, true))
 		{
 			return null;
 		}
 		return new ExternalId(value);
 	}
 
-	@Nullable
 	public static String toValue(@Nullable final ExternalId externalId)
 	{
 		if (externalId == null)

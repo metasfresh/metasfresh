@@ -2,7 +2,7 @@ package de.metas.material.dispo.model;
 
 
 /** Generated Interface for MD_Candidate_Prod_Detail
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_MD_Candidate_Prod_Detail 
@@ -14,6 +14,13 @@ public interface I_MD_Candidate_Prod_Detail
     /** AD_Table_ID=540810 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 1 - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+
+    /** Load Meta Data */
 
 	/**
 	 * Set Istmenge.
@@ -39,8 +46,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_ActualQty = "ActualQty";
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -52,8 +59,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -62,8 +69,8 @@ public interface I_MD_Candidate_Prod_Detail
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -75,8 +82,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -90,8 +97,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -103,7 +110,7 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -112,7 +119,7 @@ public interface I_MD_Candidate_Prod_Detail
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -126,8 +133,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -136,8 +143,8 @@ public interface I_MD_Candidate_Prod_Detail
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -151,7 +158,7 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Geplant.
+	 * Set Vom System vorgeschlagen.
 	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
 	 *
 	 * <br>Type: YesNo
@@ -161,7 +168,7 @@ public interface I_MD_Candidate_Prod_Detail
 	public void setIsAdvised (boolean IsAdvised);
 
 	/**
-	 * Get Geplant.
+	 * Get Vom System vorgeschlagen.
 	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
 	 *
 	 * <br>Type: YesNo
@@ -228,7 +235,7 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
 
 	/**
-	 * Set Dispo-Produktionsdetails.
+	 * Set Dispo-Produktionsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -237,7 +244,7 @@ public interface I_MD_Candidate_Prod_Detail
 	public void setMD_Candidate_Prod_Detail_ID (int MD_Candidate_Prod_Detail_ID);
 
 	/**
-	 * Get Dispo-Produktionsdetails.
+	 * Get Dispo-Produktionsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -434,8 +441,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -449,8 +456,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

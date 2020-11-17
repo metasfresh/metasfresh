@@ -26,13 +26,9 @@ import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 
-import de.metas.organization.OrgId;
-
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Value
-@Builder
 public class InvoiceDetailItem
 {
 	Integer seqNo;
@@ -42,17 +38,25 @@ public class InvoiceDetailItem
 	String description;
 
 	LocalDate date;
-	
-	BigDecimal price;
-	
-	String note;
 
-    OrgId orgId;
+	@Builder
+	public InvoiceDetailItem(
+			final Integer seqNo,
+			final String label,
+			final String description,
+			final LocalDate date)
+	{
+		this.seqNo = seqNo;
+		this.label = label;
+		this.description = description;
+		this.date = date;
+	}
+
 	/**
-	 * @return true if label and description, date and price are blank/null, false otherwise.
+	 * @return true if both label and description are blank, false otherwise.
 	 */
 	public boolean isEmpty()
 	{
-		return StringUtils.isBlank(label) && (StringUtils.isBlank(description) && price == null && date == null );
+		return StringUtils.isBlank(label) && StringUtils.isBlank(description);
 	}
 }

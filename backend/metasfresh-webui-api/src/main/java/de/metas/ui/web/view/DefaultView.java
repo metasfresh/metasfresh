@@ -116,8 +116,8 @@ public final class DefaultView implements IEditableView
 	@Getter
 	private final ViewProfileId profileId;
 
-	private final ViewHeaderPropertiesProvider headerPropertiesProvider;
-	private final SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder;
+	private ViewHeaderPropertiesProvider headerPropertiesProvider;
+	private SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder;
 
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
@@ -197,7 +197,7 @@ public final class DefaultView implements IEditableView
 
 		//
 		// Cache
-		cache_rowsById = CCache.<DocumentId, IViewRow>builder()
+		cache_rowsById = CCache.<DocumentId, IViewRow> builder()
 				.cacheMapType(CacheMapType.LRU)
 				.cacheName("ViewRows#" + viewId)
 				.additionalTableNameToResetFor(viewDataRepository.getTableName())
@@ -510,7 +510,7 @@ public final class DefaultView implements IEditableView
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
 
-			return IteratorUtils.<IViewRow>newPagedIterator()
+			return IteratorUtils.<IViewRow> newPagedIterator()
 					.firstRow(0)
 					.maxRows(1000) // MAX rows to fetch
 					.pageSize(100) // fetch 100items/chunk
@@ -721,7 +721,7 @@ public final class DefaultView implements IEditableView
 		{
 			if (_rowIds.isEmpty())
 			{
-				return ImmutableSet.of();
+				ImmutableSet.of();
 			}
 
 			final ImmutableSet<DocumentId> rowIdsCopy = ImmutableSet.copyOf(_rowIds);
@@ -753,9 +753,8 @@ public final class DefaultView implements IEditableView
 		private DocumentId parentRowId;
 		private final SqlViewDataRepository viewDataRepository;
 
-		private final Set<DocumentFilter> _addedFiltersNoDuplicates = new HashSet<>();
 		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
-		private final LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
+		private LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
 		private boolean refreshViewOnChangeEvents = false;
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
@@ -812,7 +811,7 @@ public final class DefaultView implements IEditableView
 			return viewType;
 		}
 
-		public Builder setProfileId(final ViewProfileId profileId)
+		public Builder setProfileId(ViewProfileId profileId)
 		{
 			this.profileId = profileId;
 			return this;
@@ -840,7 +839,7 @@ public final class DefaultView implements IEditableView
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
 
-		public Builder setDocumentReferenceId(final DocumentReferenceId documentReferenceId)
+		public Builder setDocumentReferenceId(DocumentReferenceId documentReferenceId)
 		{
 			this.documentReferenceId = documentReferenceId;
 			return this;
@@ -866,7 +865,7 @@ public final class DefaultView implements IEditableView
 			return viewDataRepository.getViewFilterDescriptors();
 		}
 
-		public Builder addStickyFilterSkipDuplicates(@Nullable final DocumentFilter stickyFilter)
+		public Builder addStickyFilter(@Nullable final DocumentFilter stickyFilter)
 		{
 			if (stickyFilter == null)
 			{
@@ -877,26 +876,9 @@ public final class DefaultView implements IEditableView
 			{
 				_stickyFiltersById = new LinkedHashMap<>();
 			}
-
-			final boolean notDuplicate = isNotDuplicateDocumentFilter(stickyFilter);
-			if (notDuplicate)
-			{
-				_stickyFiltersById.put(stickyFilter.getFilterId(), stickyFilter);
-			}
+			_stickyFiltersById.put(stickyFilter.getFilterId(), stickyFilter);
 
 			return this;
-		}
-
-		/**
-		 * Check if the filter was already added in this view either as a normal or a sticky filter.
-		 * <p>
-		 * This can be seen as "equals ignoring filterId".
-		 *
-		 * @return true if the filter is a new one
-		 */
-		private boolean isNotDuplicateDocumentFilter(@NonNull final DocumentFilter filterToAdd)
-		{
-			return _addedFiltersNoDuplicates.add(filterToAdd.withId("AvoidDuplicateFiltersThatOnlyDifferInTheirId"));
 		}
 
 		public Builder addStickyFilters(final DocumentFilterList stickyFilters)
@@ -906,7 +888,7 @@ public final class DefaultView implements IEditableView
 				return this;
 			}
 
-			stickyFilters.forEach(this::addStickyFilterSkipDuplicates);
+			stickyFilters.forEach(this::addStickyFilter);
 
 			return this;
 		}
@@ -919,13 +901,7 @@ public final class DefaultView implements IEditableView
 		public Builder setFilters(final DocumentFilterList filters)
 		{
 			_filtersById.clear();
-			filters.forEach(filter -> {
-				final boolean notDuplicate = isNotDuplicateDocumentFilter(filter);
-				if (notDuplicate)
-				{
-					_filtersById.put(filter.getFilterId(), filter);
-				}
-			});
+			filters.forEach(filter -> _filtersById.put(filter.getFilterId(), filter));
 			return this;
 		}
 
@@ -936,13 +912,7 @@ public final class DefaultView implements IEditableView
 
 		public Builder addFiltersIfAbsent(final Collection<DocumentFilter> filters)
 		{
-			filters.forEach(filter -> {
-				final boolean notDuplicate = isNotDuplicateDocumentFilter(filter);
-				if (notDuplicate)
-				{
-					_filtersById.putIfAbsent(filter.getFilterId(), filter);
-				}
-			});
+			filters.forEach(filter -> _filtersById.putIfAbsent(filter.getFilterId(), filter));
 			return this;
 		}
 

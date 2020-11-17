@@ -3,13 +3,14 @@
  */
 package de.metas.replenishment.impexp;
 
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
+
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -75,6 +76,10 @@ import org.compiere.model.I_M_Replenish;
 		replenish.setTimeToMarket(importRecord.getTimeToMarket());
 
 		// optional fields
+		if (importRecord.getM_WarehouseSource_ID() > 0)
+		{
+			replenish.setM_WarehouseSource_ID(importRecord.getM_WarehouseSource_ID());
+		}
 		if (importRecord.getM_Locator_ID() > 0)
 		{
 			replenish.setM_Locator_ID(importRecord.getM_Locator_ID());

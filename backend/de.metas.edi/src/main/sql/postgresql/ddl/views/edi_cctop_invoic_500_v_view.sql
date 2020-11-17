@@ -20,7 +20,6 @@ SELECT
     il.c_invoice_id AS edi_cctop_invoic_v_id,
     il.priceactual,
     il.pricelist,
-    ol.invoicableqtybasedon,
     pp.UPC AS UPC_CU,
     pp.EAN_CU,
     p.value,
@@ -76,8 +75,7 @@ WHERE true
 GROUP BY 
   	il.c_invoice_id, 
 	il.priceactual, 
-	il.pricelist,
-    ol.InvoicableQtyBasedOn,
+	il.pricelist, 
     pp.UPC, 
     pp.EAN_CU, 
     p.value, 

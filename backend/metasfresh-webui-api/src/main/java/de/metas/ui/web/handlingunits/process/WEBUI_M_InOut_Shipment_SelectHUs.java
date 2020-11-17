@@ -97,7 +97,6 @@ public class WEBUI_M_InOut_Shipment_SelectHUs extends JavaProcess implements IPr
 				.records(TableRecordReference.ofCollection(shipmentHandlingUnits))
 				.adWindowId(null)
 				.target(RecordsToOpen.OpenTarget.GridView)
-				.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 				.automaticallySetReferencingDocumentPaths(true)
 				.useAutoFilters(false)
 				.build());

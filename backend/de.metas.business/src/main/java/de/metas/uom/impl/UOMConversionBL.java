@@ -154,7 +154,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		// If the Source UOM of this quantity is the same as the UOM to which we need to convert
 		// we just need to return the Quantity with current/source switched
-		if (Objects.equals(quantity.getSourceUomId(), uomToId))
+		if (quantity.getSource_UOM_ID() == uomToId.getRepoId())
 		{
 			return quantity.switchToSource();
 		}
@@ -244,10 +244,10 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public BigDecimal convertPrice(
 			final int productId,
-			final BigDecimal price,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
-			final int pricePrecision)
+			BigDecimal price,
+			I_C_UOM uomFrom,
+			I_C_UOM uomTo,
+			int pricePrecision)
 	{
 		BigDecimal priceConv = convertQty(
 				ProductId.ofRepoIdOrNull(productId),
@@ -263,7 +263,6 @@ public class UOMConversionBL implements IUOMConversionBL
 		return priceConv;
 	}
 
-	@Nullable
 	@Override
 	public BigDecimal convert(
 			final I_C_UOM fromUOM,
@@ -291,7 +290,6 @@ public class UOMConversionBL implements IUOMConversionBL
 		return rate.convert(qty, precision);
 	}
 
-	@Nullable
 	@Override
 	public BigDecimal convertFromProductUOM(
 			@Nullable final ProductId productId,
@@ -307,7 +305,6 @@ public class UOMConversionBL implements IUOMConversionBL
 		return convertFromProductUOM(productId, uomDest, qtyToConvert);
 	}
 
-	@Nullable
 	@Override
 	public BigDecimal convertFromProductUOM(
 			@Nullable final ProductId productId,
@@ -343,7 +340,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		return uomConversionsDAO.getGenericConversions();
 	}
 
-	private Optional<UOMConversionRate> getGenericRate(final I_C_UOM uomFrom, final I_C_UOM uomTo)
+	private Optional<UOMConversionRate> getGenericRate(I_C_UOM uomFrom, I_C_UOM uomTo)
 	{
 		final UomId fromUomId = UomId.ofRepoId(uomFrom.getC_UOM_ID());
 		final UomId toUomId = UomId.ofRepoId(uomTo.getC_UOM_ID());
@@ -405,19 +402,18 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public BigDecimal convertToProductUOM(
 			final ProductId productId,
-			@Nullable final I_C_UOM uomSource,
+			final I_C_UOM uomSource,
 			final BigDecimal qtyToConvert)
 	{
 		final UomId fromUomId = uomSource != null ? UomId.ofRepoId(uomSource.getC_UOM_ID()) : null;
 		return convertToProductUOM(productId, qtyToConvert, fromUomId);
 	}
 
-	@Nullable
 	@Override
 	public BigDecimal convertToProductUOM(
 			final ProductId productId,
 			final BigDecimal qtyToConvert,
-			@Nullable final UomId fromUomId)
+			final UomId fromUomId)
 	{
 		// No conversion
 		if (qtyToConvert == null || qtyToConvert.signum() == 0 || fromUomId == null || productId == null)
@@ -515,7 +511,6 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	}
 
-	@Nullable
 	@VisibleForTesting
 	BigDecimal getTimeConversionRateAsBigDecimal(@NonNull final I_C_UOM fromTimeUom, @NonNull final I_C_UOM toTimeUom)
 	{
@@ -531,31 +526,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 60.0);
+				return new BigDecimal(1.0 / 60.0);
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 1440.0); // 24 * 60
+				return new BigDecimal(1.0 / 1440.0); // 24 * 60
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 480.0); // 8 * 60
+				return new BigDecimal(1.0 / 480.0); // 8 * 60
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 10080.0); // 7 * 24 * 60
+				return new BigDecimal(1.0 / 10080.0); // 7 * 24 * 60
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 43200.0); // 30 * 24 * 60
+				return new BigDecimal(1.0 / 43200.0); // 30 * 24 * 60
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 9600.0); // 4 * 5 * 8 * 60
+				return new BigDecimal(1.0 / 9600.0); // 4 * 5 * 8 * 60
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 525600.0); // 365 * 24 * 60
+				return new BigDecimal(1.0 / 525600.0); // 365 * 24 * 60
 			}
 		}
 
@@ -564,31 +559,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(60.0);
+				return new BigDecimal(60.0);
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 24.0);
+				return new BigDecimal(1.0 / 24.0);
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 8.0);
+				return new BigDecimal(1.0 / 8.0);
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 168.0); // 7 * 24
+				return new BigDecimal(1.0 / 168.0); // 7 * 24
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 720.0); // 30 * 24
+				return new BigDecimal(1.0 / 720.0); // 30 * 24
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 160.0); // 4 * 5 * 8
+				return new BigDecimal(1.0 / 160.0); // 4 * 5 * 8
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 8760.0); // 365 * 24
+				return new BigDecimal(1.0 / 8760.0); // 365 * 24
 			}
 		}
 
@@ -597,31 +592,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(1440.0); // 24 * 60
+				return new BigDecimal(1440.0); // 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(24.0);
+				return new BigDecimal(24.0);
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(3.0); // 24 / 8
+				return new BigDecimal(3.0); // 24 / 8
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 7.0); // 7
+				return new BigDecimal(1.0 / 7.0); // 7
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 30.0); // 30
+				return new BigDecimal(1.0 / 30.0); // 30
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 20.0); // 4 * 5
+				return new BigDecimal(1.0 / 20.0); // 4 * 5
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 365.0); // 365
+				return new BigDecimal(1.0 / 365.0); // 365
 			}
 		}
 
@@ -630,31 +625,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(480.0); // 8 * 60
+				return new BigDecimal(480.0); // 8 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(8.0); // 8
+				return new BigDecimal(8.0); // 8
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 3.0); // 24 / 8
+				return new BigDecimal(1.0 / 3.0); // 24 / 8
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 5); // 5
+				return new BigDecimal(1.0 / 5); // 5
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 20.0); // 4 * 5
+				return new BigDecimal(1.0 / 20.0); // 4 * 5
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 20.0); // 4 * 5
+				return new BigDecimal(1.0 / 20.0); // 4 * 5
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 240.0); // 4 * 5 * 12
+				return new BigDecimal(1.0 / 240.0); // 4 * 5 * 12
 			}
 		}
 
@@ -663,31 +658,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(10080.0); // 7 * 24 * 60
+				return new BigDecimal(10080.0); // 7 * 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(168.0); // 7 * 24
+				return new BigDecimal(168.0); // 7 * 24
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(7.0);
+				return new BigDecimal(7.0);
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(5.0);
+				return new BigDecimal(5.0);
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 4.0); // 4
+				return new BigDecimal(1.0 / 4.0); // 4
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 4.0); // 4
+				return new BigDecimal(1.0 / 4.0); // 4
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 50.0); // 50
+				return new BigDecimal(1.0 / 50.0); // 50
 			}
 		}
 
@@ -696,31 +691,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(43200.0); // 30 * 24 * 60
+				return new BigDecimal(43200.0); // 30 * 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(720.0); // 30 * 24
+				return new BigDecimal(720.0); // 30 * 24
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(30.0); // 30
+				return new BigDecimal(30.0); // 30
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(20.0); // 4 * 5
+				return new BigDecimal(20.0); // 4 * 5
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return BigDecimal.valueOf(4.0); // 4
+				return new BigDecimal(4.0); // 4
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.5); // 30 / 20
+				return new BigDecimal(1.5); // 30 / 20
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 12.0); // 12
+				return new BigDecimal(1.0 / 12.0); // 12
 			}
 		}
 
@@ -729,31 +724,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(9600.0); // 4 * 5 * 8 * 60
+				return new BigDecimal(9600.0); // 4 * 5 * 8 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(160.0); // 4 * 5 * 8
+				return new BigDecimal(160.0); // 4 * 5 * 8
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(20.0); // 4 * 5
+				return new BigDecimal(20.0); // 4 * 5
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(20.0); // 4 * 5
+				return new BigDecimal(20.0); // 4 * 5
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return BigDecimal.valueOf(4.0); // 4
+				return new BigDecimal(4.0); // 4
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(20.0 / 30.0); // 20 / 30
+				return new BigDecimal(20.0 / 30.0); // 20 / 30
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 12.0); // 12
+				return new BigDecimal(1.0 / 12.0); // 12
 			}
 		}
 
@@ -763,31 +758,31 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(518400.0); // 12 * 30 * 24 * 60
+				return new BigDecimal(518400.0); // 12 * 30 * 24 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(8640.0); // 12 * 30 * 24
+				return new BigDecimal(8640.0); // 12 * 30 * 24
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(365.0); // 365
+				return new BigDecimal(365.0); // 365
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(240.0); // 12 * 4 * 5
+				return new BigDecimal(240.0); // 12 * 4 * 5
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
-				return BigDecimal.valueOf(50.0); // 52
+				return new BigDecimal(50.0); // 52
 			}
 			if (UOMUtil.isMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(12.0); // 12
+				return new BigDecimal(12.0); // 12
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(12.0); // 12
+				return new BigDecimal(12.0); // 12
 			}
 		}
 

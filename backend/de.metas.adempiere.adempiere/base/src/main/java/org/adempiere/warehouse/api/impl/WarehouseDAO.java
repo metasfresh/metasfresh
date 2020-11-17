@@ -1,46 +1,5 @@
 package org.adempiere.warehouse.api.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import de.metas.cache.CCache;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.i18n.ITranslatableString;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehousePickingGroup;
-import org.adempiere.warehouse.WarehousePickingGroupId;
-import org.adempiere.warehouse.WarehouseType;
-import org.adempiere.warehouse.WarehouseTypeId;
-import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_M_Warehouse_PickingGroup;
-import org.compiere.model.I_M_Warehouse_Type;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_M_Warehouse_Routing;
-import org.slf4j.Logger;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -48,6 +7,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -70,6 +31,48 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehouseType;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
+import org.compiere.model.I_M_Warehouse_Type;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_M_Warehouse_Routing;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class WarehouseDAO implements IWarehouseDAO
 {
@@ -600,7 +603,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull()
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(org.adempiere.warehouse.model.I_M_Warehouse.class)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, true)

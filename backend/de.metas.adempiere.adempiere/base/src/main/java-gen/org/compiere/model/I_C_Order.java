@@ -1,28 +1,26 @@
 package org.compiere.model;
 
-/**
- * Generated Interface for C_Order
- *
- * @author Adempiere (generated)
+
+/** Generated Interface for C_Order
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_C_Order
+public interface I_C_Order 
 {
-	/**
-	 * TableName=C_Order
-	 */
-	public static final String Table_Name = "C_Order";
 
-	/** AD_Table_ID=259 */
-	//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** TableName=C_Order */
+    public static final String Table_Name = "C_Order";
 
-	//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+    /** AD_Table_ID=259 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-	/** AccessLevel = 1 - Org
-	 */
-	//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-	/** Load Meta Data */
+    /** AccessLevel = 1 - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+
+    /** Load Meta Data */
 
 	/**
 	 * Get Mandant.
@@ -34,10 +32,8 @@ public interface I_C_Order
 	 */
 	public int getAD_Client_ID();
 
-	/**
-	 * Column name AD_Client_ID
-	 */
-	public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Sektion.
@@ -47,7 +43,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Sektion.
@@ -59,10 +55,8 @@ public interface I_C_Order
 	 */
 	public int getAD_Org_ID();
 
-	/**
-	 * Column name AD_Org_ID
-	 */
-	public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Buchende Organisation.
@@ -72,7 +66,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_OrgTrx_ID(int AD_OrgTrx_ID);
+	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
 
 	/**
 	 * Get Buchende Organisation.
@@ -84,10 +78,8 @@ public interface I_C_Order
 	 */
 	public int getAD_OrgTrx_ID();
 
-	/**
-	 * Column name AD_OrgTrx_ID
-	 */
-	public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
+    /** Column name AD_OrgTrx_ID */
+    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
 	 * Set Ansprechpartner.
@@ -97,7 +89,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID(int AD_User_ID);
+	public void setAD_User_ID (int AD_User_ID);
 
 	/**
 	 * Get Ansprechpartner.
@@ -109,10 +101,8 @@ public interface I_C_Order
 	 */
 	public int getAD_User_ID();
 
-	/**
-	 * Column name AD_User_ID
-	 */
-	public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+    /** Column name AD_User_ID */
+    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Set AmountRefunded.
@@ -121,7 +111,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAmountRefunded(java.math.BigDecimal AmountRefunded);
+	public void setAmountRefunded (java.math.BigDecimal AmountRefunded);
 
 	/**
 	 * Get AmountRefunded.
@@ -132,14 +122,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getAmountRefunded();
 
-	/**
-	 * Column definition for AmountRefunded
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_AmountRefunded = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "AmountRefunded", null);
-	/**
-	 * Column name AmountRefunded
-	 */
-	public static final String COLUMNNAME_AmountRefunded = "AmountRefunded";
+    /** Column definition for AmountRefunded */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_AmountRefunded = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "AmountRefunded", null);
+    /** Column name AmountRefunded */
+    public static final String COLUMNNAME_AmountRefunded = "AmountRefunded";
 
 	/**
 	 * Set AmountTendered.
@@ -148,7 +134,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAmountTendered(java.math.BigDecimal AmountTendered);
+	public void setAmountTendered (java.math.BigDecimal AmountTendered);
 
 	/**
 	 * Get AmountTendered.
@@ -159,14 +145,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getAmountTendered();
 
-	/**
-	 * Column definition for AmountTendered
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_AmountTendered = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "AmountTendered", null);
-	/**
-	 * Column name AmountTendered
-	 */
-	public static final String COLUMNNAME_AmountTendered = "AmountTendered";
+    /** Column definition for AmountTendered */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_AmountTendered = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "AmountTendered", null);
+    /** Column name AmountTendered */
+    public static final String COLUMNNAME_AmountTendered = "AmountTendered";
 
 	/**
 	 * Set Rechnungspartner.
@@ -176,7 +158,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_BPartner_ID(int Bill_BPartner_ID);
+	public void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
 	 * Get Rechnungspartner.
@@ -188,10 +170,8 @@ public interface I_C_Order
 	 */
 	public int getBill_BPartner_ID();
 
-	/**
-	 * Column name Bill_BPartner_ID
-	 */
-	public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+    /** Column name Bill_BPartner_ID */
+    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
 	 * Set Rechnungspartner-Memo.
@@ -199,11 +179,10 @@ public interface I_C_Order
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setBill_BPartner_Memo(java.lang.String Bill_BPartner_Memo);
+	public void setBill_BPartner_Memo (java.lang.String Bill_BPartner_Memo);
 
 	/**
 	 * Get Rechnungspartner-Memo.
@@ -211,20 +190,15 @@ public interface I_C_Order
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
 	public java.lang.String getBill_BPartner_Memo();
 
-	/**
-	 * Column definition for Bill_BPartner_Memo
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Bill_BPartner_Memo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Bill_BPartner_Memo", null);
-	/**
-	 * Column name Bill_BPartner_Memo
-	 */
-	public static final String COLUMNNAME_Bill_BPartner_Memo = "Bill_BPartner_Memo";
+    /** Column definition for Bill_BPartner_Memo */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Bill_BPartner_Memo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Bill_BPartner_Memo", null);
+    /** Column name Bill_BPartner_Memo */
+    public static final String COLUMNNAME_Bill_BPartner_Memo = "Bill_BPartner_Memo";
 
 	/**
 	 * Set Rechnungsstandort.
@@ -234,7 +208,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_Location_ID(int Bill_Location_ID);
+	public void setBill_Location_ID (int Bill_Location_ID);
 
 	/**
 	 * Get Rechnungsstandort.
@@ -246,10 +220,8 @@ public interface I_C_Order
 	 */
 	public int getBill_Location_ID();
 
-	/**
-	 * Column name Bill_Location_ID
-	 */
-	public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+    /** Column name Bill_Location_ID */
+    public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
 	 * Set Abw. Rechnungsadresse.
@@ -258,7 +230,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBillToAddress(java.lang.String BillToAddress);
+	public void setBillToAddress (java.lang.String BillToAddress);
 
 	/**
 	 * Get Abw. Rechnungsadresse.
@@ -269,14 +241,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getBillToAddress();
 
-	/**
-	 * Column definition for BillToAddress
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_BillToAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "BillToAddress", null);
-	/**
-	 * Column name BillToAddress
-	 */
-	public static final String COLUMNNAME_BillToAddress = "BillToAddress";
+    /** Column definition for BillToAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_BillToAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "BillToAddress", null);
+    /** Column name BillToAddress */
+    public static final String COLUMNNAME_BillToAddress = "BillToAddress";
 
 	/**
 	 * Set Rechnungskontakt.
@@ -286,7 +254,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_User_ID(int Bill_User_ID);
+	public void setBill_User_ID (int Bill_User_ID);
 
 	/**
 	 * Get Rechnungskontakt.
@@ -298,10 +266,8 @@ public interface I_C_Order
 	 */
 	public int getBill_User_ID();
 
-	/**
-	 * Column name Bill_User_ID
-	 */
-	public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+    /** Column name Bill_User_ID */
+    public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
 	 * Set Anschrift-Text.
@@ -310,7 +276,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBPartnerAddress(java.lang.String BPartnerAddress);
+	public void setBPartnerAddress (java.lang.String BPartnerAddress);
 
 	/**
 	 * Get Anschrift-Text.
@@ -321,14 +287,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getBPartnerAddress();
 
-	/**
-	 * Column definition for BPartnerAddress
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_BPartnerAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "BPartnerAddress", null);
-	/**
-	 * Column name BPartnerAddress
-	 */
-	public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
+    /** Column definition for BPartnerAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_BPartnerAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "BPartnerAddress", null);
+    /** Column name BPartnerAddress */
+    public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
 	 * Set Kostenstelle.
@@ -338,7 +300,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Activity_ID(int C_Activity_ID);
+	public void setC_Activity_ID (int C_Activity_ID);
 
 	/**
 	 * Get Kostenstelle.
@@ -350,10 +312,8 @@ public interface I_C_Order
 	 */
 	public int getC_Activity_ID();
 
-	/**
-	 * Column name C_Activity_ID
-	 */
-	public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+    /** Column name C_Activity_ID */
+    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -363,7 +323,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
 	 * Get Geschäftspartner.
@@ -375,10 +335,8 @@ public interface I_C_Order
 	 */
 	public int getC_BPartner_ID();
 
-	/**
-	 * Column name C_BPartner_ID
-	 */
-	public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Standort.
@@ -388,7 +346,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID(int C_BPartner_Location_ID);
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
 	 * Get Standort.
@@ -400,10 +358,8 @@ public interface I_C_Order
 	 */
 	public int getC_BPartner_Location_ID();
 
-	/**
-	 * Column name C_BPartner_Location_ID
-	 */
-	public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+    /** Column name C_BPartner_Location_ID */
+    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Set Geschäftspartner-Memo.
@@ -411,11 +367,10 @@ public interface I_C_Order
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setC_BPartner_Memo(java.lang.String C_BPartner_Memo);
+	public void setC_BPartner_Memo (java.lang.String C_BPartner_Memo);
 
 	/**
 	 * Get Geschäftspartner-Memo.
@@ -423,20 +378,15 @@ public interface I_C_Order
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
 	public java.lang.String getC_BPartner_Memo();
 
-	/**
-	 * Column definition for C_BPartner_Memo
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_C_BPartner_Memo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "C_BPartner_Memo", null);
-	/**
-	 * Column name C_BPartner_Memo
-	 */
-	public static final String COLUMNNAME_C_BPartner_Memo = "C_BPartner_Memo";
+    /** Column definition for C_BPartner_Memo */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_C_BPartner_Memo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "C_BPartner_Memo", null);
+    /** Column name C_BPartner_Memo */
+    public static final String COLUMNNAME_C_BPartner_Memo = "C_BPartner_Memo";
 
 	/**
 	 * Set Zugeordneter Vertriebspartner.
@@ -445,7 +395,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_SalesRep_ID(int C_BPartner_SalesRep_ID);
+	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
 
 	/**
 	 * Get Zugeordneter Vertriebspartner.
@@ -456,10 +406,8 @@ public interface I_C_Order
 	 */
 	public int getC_BPartner_SalesRep_ID();
 
-	/**
-	 * Column name C_BPartner_SalesRep_ID
-	 */
-	public static final String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+    /** Column name C_BPartner_SalesRep_ID */
+    public static final String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
 	 * Set Bankverbindung.
@@ -469,7 +417,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_BankAccount_ID(int C_BP_BankAccount_ID);
+	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
 	 * Get Bankverbindung.
@@ -485,14 +433,10 @@ public interface I_C_Order
 
 	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
 
-	/**
-	 * Column definition for C_BP_BankAccount_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_BP_BankAccount>(I_C_Order.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
-	/**
-	 * Column name C_BP_BankAccount_ID
-	 */
-	public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+    /** Column definition for C_BP_BankAccount_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_BP_BankAccount>(I_C_Order.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
+    /** Column name C_BP_BankAccount_ID */
+    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Werbemassnahme.
@@ -502,7 +446,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Campaign_ID(int C_Campaign_ID);
+	public void setC_Campaign_ID (int C_Campaign_ID);
 
 	/**
 	 * Get Werbemassnahme.
@@ -518,14 +462,10 @@ public interface I_C_Order
 
 	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
-	/**
-	 * Column definition for C_Campaign_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Campaign>(I_C_Order.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-	/**
-	 * Column name C_Campaign_ID
-	 */
-	public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+    /** Column definition for C_Campaign_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Campaign>(I_C_Order.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+    /** Column name C_Campaign_ID */
+    public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
 	 * Set Cash Journal Line.
@@ -535,7 +475,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_CashLine_ID(int C_CashLine_ID);
+	public void setC_CashLine_ID (int C_CashLine_ID);
 
 	/**
 	 * Get Cash Journal Line.
@@ -551,14 +491,10 @@ public interface I_C_Order
 
 	public void setC_CashLine(org.compiere.model.I_C_CashLine C_CashLine);
 
-	/**
-	 * Column definition for C_CashLine_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_CashLine> COLUMN_C_CashLine_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_CashLine>(I_C_Order.class, "C_CashLine_ID", org.compiere.model.I_C_CashLine.class);
-	/**
-	 * Column name C_CashLine_ID
-	 */
-	public static final String COLUMNNAME_C_CashLine_ID = "C_CashLine_ID";
+    /** Column definition for C_CashLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_CashLine> COLUMN_C_CashLine_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_CashLine>(I_C_Order.class, "C_CashLine_ID", org.compiere.model.I_C_CashLine.class);
+    /** Column name C_CashLine_ID */
+    public static final String COLUMNNAME_C_CashLine_ID = "C_CashLine_ID";
 
 	/**
 	 * Set Kosten.
@@ -568,7 +504,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Charge_ID(int C_Charge_ID);
+	public void setC_Charge_ID (int C_Charge_ID);
 
 	/**
 	 * Get Kosten.
@@ -580,10 +516,8 @@ public interface I_C_Order
 	 */
 	public int getC_Charge_ID();
 
-	/**
-	 * Column name C_Charge_ID
-	 */
-	public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
+    /** Column name C_Charge_ID */
+    public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
 	 * Set Kursart.
@@ -593,7 +527,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_ConversionType_ID(int C_ConversionType_ID);
+	public void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/**
 	 * Get Kursart.
@@ -605,10 +539,8 @@ public interface I_C_Order
 	 */
 	public int getC_ConversionType_ID();
 
-	/**
-	 * Column name C_ConversionType_ID
-	 */
-	public static final String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
+    /** Column name C_ConversionType_ID */
+    public static final String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
 
 	/**
 	 * Set Währung.
@@ -618,7 +550,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
 	 * Get Währung.
@@ -630,10 +562,8 @@ public interface I_C_Order
 	 */
 	public int getC_Currency_ID();
 
-	/**
-	 * Column name C_Currency_ID
-	 */
-	public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Belegart.
@@ -643,7 +573,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
 	 * Get Belegart.
@@ -655,10 +585,8 @@ public interface I_C_Order
 	 */
 	public int getC_DocType_ID();
 
-	/**
-	 * Column name C_DocType_ID
-	 */
-	public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Set Zielbelegart.
@@ -668,7 +596,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_DocTypeTarget_ID(int C_DocTypeTarget_ID);
+	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
 	 * Get Zielbelegart.
@@ -680,10 +608,8 @@ public interface I_C_Order
 	 */
 	public int getC_DocTypeTarget_ID();
 
-	/**
-	 * Column name C_DocTypeTarget_ID
-	 */
-	public static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
+    /** Column name C_DocTypeTarget_ID */
+    public static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 
 	/**
 	 * Set Gebühr.
@@ -692,7 +618,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setChargeAmt(java.math.BigDecimal ChargeAmt);
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
 
 	/**
 	 * Get Gebühr.
@@ -703,14 +629,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getChargeAmt();
 
-	/**
-	 * Column definition for ChargeAmt
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "ChargeAmt", null);
-	/**
-	 * Column name ChargeAmt
-	 */
-	public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
+    /** Column definition for ChargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "ChargeAmt", null);
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Rabatt %.
@@ -720,7 +642,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCompleteOrderDiscount(java.math.BigDecimal CompleteOrderDiscount);
+	public void setCompleteOrderDiscount (java.math.BigDecimal CompleteOrderDiscount);
 
 	/**
 	 * Get Rabatt %.
@@ -732,14 +654,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getCompleteOrderDiscount();
 
-	/**
-	 * Column definition for CompleteOrderDiscount
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CompleteOrderDiscount = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CompleteOrderDiscount", null);
-	/**
-	 * Column name CompleteOrderDiscount
-	 */
-	public static final String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
+    /** Column definition for CompleteOrderDiscount */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CompleteOrderDiscount = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CompleteOrderDiscount", null);
+    /** Column name CompleteOrderDiscount */
+    public static final String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
 
 	/**
 	 * Set Copy From.
@@ -749,7 +667,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCopyFrom(java.lang.String CopyFrom);
+	public void setCopyFrom (java.lang.String CopyFrom);
 
 	/**
 	 * Get Copy From.
@@ -761,14 +679,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getCopyFrom();
 
-	/**
-	 * Column definition for CopyFrom
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CopyFrom = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CopyFrom", null);
-	/**
-	 * Column name CopyFrom
-	 */
-	public static final String COLUMNNAME_CopyFrom = "CopyFrom";
+    /** Column definition for CopyFrom */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CopyFrom = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CopyFrom", null);
+    /** Column name CopyFrom */
+    public static final String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Auftrag.
@@ -778,7 +692,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Order_ID(int C_Order_ID);
+	public void setC_Order_ID (int C_Order_ID);
 
 	/**
 	 * Get Auftrag.
@@ -790,14 +704,10 @@ public interface I_C_Order
 	 */
 	public int getC_Order_ID();
 
-	/**
-	 * Column definition for C_Order_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "C_Order_ID", null);
-	/**
-	 * Column name C_Order_ID
-	 */
-	public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+    /** Column definition for C_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "C_Order_ID", null);
+    /** Column name C_Order_ID */
+    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Zahlung.
@@ -807,7 +717,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Payment_ID(int C_Payment_ID);
+	public void setC_Payment_ID (int C_Payment_ID);
 
 	/**
 	 * Get Zahlung.
@@ -823,14 +733,10 @@ public interface I_C_Order
 
 	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
 
-	/**
-	 * Column definition for C_Payment_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Payment>(I_C_Order.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
-	/**
-	 * Column name C_Payment_ID
-	 */
-	public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+    /** Column definition for C_Payment_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Payment>(I_C_Order.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
+    /** Column name C_Payment_ID */
+    public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
 	 * Set Zahlungsbedingung.
@@ -840,7 +746,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_PaymentTerm_ID(int C_PaymentTerm_ID);
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
 	 * Get Zahlungsbedingung.
@@ -852,10 +758,8 @@ public interface I_C_Order
 	 */
 	public int getC_PaymentTerm_ID();
 
-	/**
-	 * Column name C_PaymentTerm_ID
-	 */
-	public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+    /** Column name C_PaymentTerm_ID */
+    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
 	 * Set POS-Terminal.
@@ -865,7 +769,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_POS_ID(int C_POS_ID);
+	public void setC_POS_ID (int C_POS_ID);
 
 	/**
 	 * Get POS-Terminal.
@@ -881,14 +785,10 @@ public interface I_C_Order
 
 	public void setC_POS(org.compiere.model.I_C_POS C_POS);
 
-	/**
-	 * Column definition for C_POS_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_POS> COLUMN_C_POS_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_POS>(I_C_Order.class, "C_POS_ID", org.compiere.model.I_C_POS.class);
-	/**
-	 * Column name C_POS_ID
-	 */
-	public static final String COLUMNNAME_C_POS_ID = "C_POS_ID";
+    /** Column definition for C_POS_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_POS> COLUMN_C_POS_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_POS>(I_C_Order.class, "C_POS_ID", org.compiere.model.I_C_POS.class);
+    /** Column name C_POS_ID */
+    public static final String COLUMNNAME_C_POS_ID = "C_POS_ID";
 
 	/**
 	 * Set Projekt.
@@ -898,7 +798,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Project_ID(int C_Project_ID);
+	public void setC_Project_ID (int C_Project_ID);
 
 	/**
 	 * Get Projekt.
@@ -910,10 +810,8 @@ public interface I_C_Order
 	 */
 	public int getC_Project_ID();
 
-	/**
-	 * Column name C_Project_ID
-	 */
-	public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+    /** Column name C_Project_ID */
+    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Set Create Copy.
@@ -922,7 +820,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreateCopy(java.lang.String CreateCopy);
+	public void setCreateCopy (java.lang.String CreateCopy);
 
 	/**
 	 * Get Create Copy.
@@ -933,14 +831,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getCreateCopy();
 
-	/**
-	 * Column definition for CreateCopy
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CreateCopy = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CreateCopy", null);
-	/**
-	 * Column name CreateCopy
-	 */
-	public static final String COLUMNNAME_CreateCopy = "CreateCopy";
+    /** Column definition for CreateCopy */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CreateCopy = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CreateCopy", null);
+    /** Column name CreateCopy */
+    public static final String COLUMNNAME_CreateCopy = "CreateCopy";
 
 	/**
 	 * Get Erstellt.
@@ -952,14 +846,10 @@ public interface I_C_Order
 	 */
 	public java.sql.Timestamp getCreated();
 
-	/**
-	 * Column definition for Created
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Created", null);
-	/**
-	 * Column name Created
-	 */
-	public static final String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Erstellt durch.
@@ -971,10 +861,8 @@ public interface I_C_Order
 	 */
 	public int getCreatedBy();
 
-	/**
-	 * Column name CreatedBy
-	 */
-	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Erzeuge Auftrag.
@@ -984,7 +872,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreateNewFromProposal(java.lang.String CreateNewFromProposal);
+	public void setCreateNewFromProposal (java.lang.String CreateNewFromProposal);
 
 	/**
 	 * Get Erzeuge Auftrag.
@@ -996,14 +884,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getCreateNewFromProposal();
 
-	/**
-	 * Column definition for CreateNewFromProposal
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CreateNewFromProposal = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CreateNewFromProposal", null);
-	/**
-	 * Column name CreateNewFromProposal
-	 */
-	public static final String COLUMNNAME_CreateNewFromProposal = "CreateNewFromProposal";
+    /** Column definition for CreateNewFromProposal */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_CreateNewFromProposal = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "CreateNewFromProposal", null);
+    /** Column name CreateNewFromProposal */
+    public static final String COLUMNNAME_CreateNewFromProposal = "CreateNewFromProposal";
 
 	/**
 	 * Set Buchungsdatum.
@@ -1013,7 +897,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateAcct(java.sql.Timestamp DateAcct);
+	public void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
 	 * Get Buchungsdatum.
@@ -1025,14 +909,10 @@ public interface I_C_Order
 	 */
 	public java.sql.Timestamp getDateAcct();
 
-	/**
-	 * Column definition for DateAcct
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DateAcct", null);
-	/**
-	 * Column name DateAcct
-	 */
-	public static final String COLUMNNAME_DateAcct = "DateAcct";
+    /** Column definition for DateAcct */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DateAcct", null);
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
 	 * Set Auftragsdatum.
@@ -1042,7 +922,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateOrdered(java.sql.Timestamp DateOrdered);
+	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
 	 * Get Auftragsdatum.
@@ -1054,14 +934,10 @@ public interface I_C_Order
 	 */
 	public java.sql.Timestamp getDateOrdered();
 
-	/**
-	 * Column definition for DateOrdered
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DateOrdered = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DateOrdered", null);
-	/**
-	 * Column name DateOrdered
-	 */
-	public static final String COLUMNNAME_DateOrdered = "DateOrdered";
+    /** Column definition for DateOrdered */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DateOrdered = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DateOrdered", null);
+    /** Column name DateOrdered */
+    public static final String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
 	 * Set Date printed.
@@ -1071,7 +947,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDatePrinted(java.sql.Timestamp DatePrinted);
+	public void setDatePrinted (java.sql.Timestamp DatePrinted);
 
 	/**
 	 * Get Date printed.
@@ -1083,14 +959,10 @@ public interface I_C_Order
 	 */
 	public java.sql.Timestamp getDatePrinted();
 
-	/**
-	 * Column definition for DatePrinted
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DatePrinted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DatePrinted", null);
-	/**
-	 * Column name DatePrinted
-	 */
-	public static final String COLUMNNAME_DatePrinted = "DatePrinted";
+    /** Column definition for DatePrinted */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DatePrinted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DatePrinted", null);
+    /** Column name DatePrinted */
+    public static final String COLUMNNAME_DatePrinted = "DatePrinted";
 
 	/**
 	 * Set Zugesagter Termin.
@@ -1100,7 +972,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDatePromised(java.sql.Timestamp DatePromised);
+	public void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
 	 * Get Zugesagter Termin.
@@ -1112,14 +984,10 @@ public interface I_C_Order
 	 */
 	public java.sql.Timestamp getDatePromised();
 
-	/**
-	 * Column definition for DatePromised
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DatePromised", null);
-	/**
-	 * Column name DatePromised
-	 */
-	public static final String COLUMNNAME_DatePromised = "DatePromised";
+    /** Column definition for DatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DatePromised", null);
+    /** Column name DatePromised */
+    public static final String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
 	 * Set Lieferart.
@@ -1129,7 +997,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryRule(java.lang.String DeliveryRule);
+	public void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
 	 * Get Lieferart.
@@ -1141,14 +1009,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getDeliveryRule();
 
-	/**
-	 * Column definition for DeliveryRule
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DeliveryRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DeliveryRule", null);
-	/**
-	 * Column name DeliveryRule
-	 */
-	public static final String COLUMNNAME_DeliveryRule = "DeliveryRule";
+    /** Column definition for DeliveryRule */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DeliveryRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DeliveryRule", null);
+    /** Column name DeliveryRule */
+    public static final String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
 	 * Set Lieferung.
@@ -1158,7 +1022,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryViaRule(java.lang.String DeliveryViaRule);
+	public void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Lieferung.
@@ -1170,14 +1034,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getDeliveryViaRule();
 
-	/**
-	 * Column definition for DeliveryViaRule
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DeliveryViaRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DeliveryViaRule", null);
-	/**
-	 * Column name DeliveryViaRule
-	 */
-	public static final String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
+    /** Column definition for DeliveryViaRule */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DeliveryViaRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DeliveryViaRule", null);
+    /** Column name DeliveryViaRule */
+    public static final String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
 
 	/**
 	 * Set Beschreibung.
@@ -1186,7 +1046,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription(java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Beschreibung.
@@ -1197,14 +1057,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getDescription();
 
-	/**
-	 * Column definition for Description
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Description", null);
-	/**
-	 * Column name Description
-	 */
-	public static final String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Schlusstext.
@@ -1213,7 +1069,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescriptionBottom(java.lang.String DescriptionBottom);
+	public void setDescriptionBottom (java.lang.String DescriptionBottom);
 
 	/**
 	 * Get Schlusstext.
@@ -1224,14 +1080,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getDescriptionBottom();
 
-	/**
-	 * Column definition for DescriptionBottom
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DescriptionBottom = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DescriptionBottom", null);
-	/**
-	 * Column name DescriptionBottom
-	 */
-	public static final String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
+    /** Column definition for DescriptionBottom */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DescriptionBottom = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DescriptionBottom", null);
+    /** Column name DescriptionBottom */
+    public static final String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
 
 	/**
 	 * Set Belegverarbeitung.
@@ -1241,7 +1093,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocAction(java.lang.String DocAction);
+	public void setDocAction (java.lang.String DocAction);
 
 	/**
 	 * Get Belegverarbeitung.
@@ -1253,14 +1105,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getDocAction();
 
-	/**
-	 * Column definition for DocAction
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DocAction", null);
-	/**
-	 * Column name DocAction
-	 */
-	public static final String COLUMNNAME_DocAction = "DocAction";
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
 
 	/**
 	 * Set Belegstatus.
@@ -1270,7 +1118,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocStatus(java.lang.String DocStatus);
+	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
 	 * Get Belegstatus.
@@ -1282,14 +1130,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getDocStatus();
 
-	/**
-	 * Column definition for DocStatus
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DocStatus", null);
-	/**
-	 * Column name DocStatus
-	 */
-	public static final String COLUMNNAME_DocStatus = "DocStatus";
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Nr..
@@ -1299,7 +1143,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo(java.lang.String DocumentNo);
+	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
 	 * Get Nr..
@@ -1311,14 +1155,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getDocumentNo();
 
-	/**
-	 * Column definition for DocumentNo
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DocumentNo", null);
-	/**
-	 * Column name DocumentNo
-	 */
-	public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Lieferempfänger.
@@ -1328,7 +1168,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_BPartner_ID(int DropShip_BPartner_ID);
+	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
 
 	/**
 	 * Get Lieferempfänger.
@@ -1340,10 +1180,8 @@ public interface I_C_Order
 	 */
 	public int getDropShip_BPartner_ID();
 
-	/**
-	 * Column name DropShip_BPartner_ID
-	 */
-	public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+    /** Column name DropShip_BPartner_ID */
+    public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
 
 	/**
 	 * Set Lieferempfänger-Memo.
@@ -1351,11 +1189,10 @@ public interface I_C_Order
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setDropShip_BPartner_Memo(java.lang.String DropShip_BPartner_Memo);
+	public void setDropShip_BPartner_Memo (java.lang.String DropShip_BPartner_Memo);
 
 	/**
 	 * Get Lieferempfänger-Memo.
@@ -1363,20 +1200,15 @@ public interface I_C_Order
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
 	public java.lang.String getDropShip_BPartner_Memo();
 
-	/**
-	 * Column definition for DropShip_BPartner_Memo
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DropShip_BPartner_Memo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DropShip_BPartner_Memo", null);
-	/**
-	 * Column name DropShip_BPartner_Memo
-	 */
-	public static final String COLUMNNAME_DropShip_BPartner_Memo = "DropShip_BPartner_Memo";
+    /** Column definition for DropShip_BPartner_Memo */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DropShip_BPartner_Memo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DropShip_BPartner_Memo", null);
+    /** Column name DropShip_BPartner_Memo */
+    public static final String COLUMNNAME_DropShip_BPartner_Memo = "DropShip_BPartner_Memo";
 
 	/**
 	 * Set Lieferadresse.
@@ -1386,7 +1218,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_Location_ID(int DropShip_Location_ID);
+	public void setDropShip_Location_ID (int DropShip_Location_ID);
 
 	/**
 	 * Get Lieferadresse.
@@ -1398,10 +1230,8 @@ public interface I_C_Order
 	 */
 	public int getDropShip_Location_ID();
 
-	/**
-	 * Column name DropShip_Location_ID
-	 */
-	public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
+    /** Column name DropShip_Location_ID */
+    public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
 	 * Set Lieferkontakt.
@@ -1411,7 +1241,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_User_ID(int DropShip_User_ID);
+	public void setDropShip_User_ID (int DropShip_User_ID);
 
 	/**
 	 * Get Lieferkontakt.
@@ -1423,10 +1253,8 @@ public interface I_C_Order
 	 */
 	public int getDropShip_User_ID();
 
-	/**
-	 * Column name DropShip_User_ID
-	 */
-	public static final String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+    /** Column name DropShip_User_ID */
+    public static final String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
 	 * Set External ID.
@@ -1435,7 +1263,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalId(java.lang.String ExternalId);
+	public void setExternalId (java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
@@ -1446,14 +1274,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getExternalId();
 
-	/**
-	 * Column definition for ExternalId
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "ExternalId", null);
-	/**
-	 * Column name ExternalId
-	 */
-	public static final String COLUMNNAME_ExternalId = "ExternalId";
+    /** Column definition for ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "ExternalId", null);
+    /** Column name ExternalId */
+    public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Frachtbetrag.
@@ -1463,7 +1287,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFreightAmt(java.math.BigDecimal FreightAmt);
+	public void setFreightAmt (java.math.BigDecimal FreightAmt);
 
 	/**
 	 * Get Frachtbetrag.
@@ -1475,14 +1299,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getFreightAmt();
 
-	/**
-	 * Column definition for FreightAmt
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_FreightAmt = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "FreightAmt", null);
-	/**
-	 * Column name FreightAmt
-	 */
-	public static final String COLUMNNAME_FreightAmt = "FreightAmt";
+    /** Column definition for FreightAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_FreightAmt = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "FreightAmt", null);
+    /** Column name FreightAmt */
+    public static final String COLUMNNAME_FreightAmt = "FreightAmt";
 
 	/**
 	 * Set Frachtkostenberechnung.
@@ -1492,7 +1312,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFreightCostRule(java.lang.String FreightCostRule);
+	public void setFreightCostRule (java.lang.String FreightCostRule);
 
 	/**
 	 * Get Frachtkostenberechnung.
@@ -1504,14 +1324,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getFreightCostRule();
 
-	/**
-	 * Column definition for FreightCostRule
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_FreightCostRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "FreightCostRule", null);
-	/**
-	 * Column name FreightCostRule
-	 */
-	public static final String COLUMNNAME_FreightCostRule = "FreightCostRule";
+    /** Column definition for FreightCostRule */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_FreightCostRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "FreightCostRule", null);
+    /** Column name FreightCostRule */
+    public static final String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
 	 * Set Summe Gesamt.
@@ -1521,7 +1337,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setGrandTotal(java.math.BigDecimal GrandTotal);
+	public void setGrandTotal (java.math.BigDecimal GrandTotal);
 
 	/**
 	 * Get Summe Gesamt.
@@ -1533,14 +1349,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getGrandTotal();
 
-	/**
-	 * Column definition for GrandTotal
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_GrandTotal = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "GrandTotal", null);
-	/**
-	 * Column name GrandTotal
-	 */
-	public static final String COLUMNNAME_GrandTotal = "GrandTotal";
+    /** Column definition for GrandTotal */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_GrandTotal = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "GrandTotal", null);
+    /** Column name GrandTotal */
+    public static final String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
 	 * Set Incoterm.
@@ -1550,7 +1362,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIncoterm(java.lang.String Incoterm);
+	public void setIncoterm (java.lang.String Incoterm);
 
 	/**
 	 * Get Incoterm.
@@ -1562,14 +1374,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getIncoterm();
 
-	/**
-	 * Column definition for Incoterm
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Incoterm = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Incoterm", null);
-	/**
-	 * Column name Incoterm
-	 */
-	public static final String COLUMNNAME_Incoterm = "Incoterm";
+    /** Column definition for Incoterm */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Incoterm = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Incoterm", null);
+    /** Column name Incoterm */
+    public static final String COLUMNNAME_Incoterm = "Incoterm";
 
 	/**
 	 * Set IncotermLocation.
@@ -1579,7 +1387,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIncotermLocation(java.lang.String IncotermLocation);
+	public void setIncotermLocation (java.lang.String IncotermLocation);
 
 	/**
 	 * Get IncotermLocation.
@@ -1591,14 +1399,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getIncotermLocation();
 
-	/**
-	 * Column definition for IncotermLocation
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IncotermLocation = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IncotermLocation", null);
-	/**
-	 * Column name IncotermLocation
-	 */
-	public static final String COLUMNNAME_IncotermLocation = "IncotermLocation";
+    /** Column definition for IncotermLocation */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IncotermLocation = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IncotermLocation", null);
+    /** Column name IncotermLocation */
+    public static final String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
 	 * Set Rechnungsstellung.
@@ -1608,7 +1412,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoiceRule(java.lang.String InvoiceRule);
+	public void setInvoiceRule (java.lang.String InvoiceRule);
 
 	/**
 	 * Get Rechnungsstellung.
@@ -1620,14 +1424,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getInvoiceRule();
 
-	/**
-	 * Column definition for InvoiceRule
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_InvoiceRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "InvoiceRule", null);
-	/**
-	 * Column name InvoiceRule
-	 */
-	public static final String COLUMNNAME_InvoiceRule = "InvoiceRule";
+    /** Column definition for InvoiceRule */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_InvoiceRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "InvoiceRule", null);
+    /** Column name InvoiceRule */
+    public static final String COLUMNNAME_InvoiceRule = "InvoiceRule";
 
 	/**
 	 * Set Aktiv.
@@ -1637,7 +1437,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -1649,14 +1449,10 @@ public interface I_C_Order
 	 */
 	public boolean isActive();
 
-	/**
-	 * Column definition for IsActive
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsActive", null);
-	/**
-	 * Column name IsActive
-	 */
-	public static final String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Freigegeben.
@@ -1666,7 +1462,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/**
 	 * Get Freigegeben.
@@ -1678,14 +1474,10 @@ public interface I_C_Order
 	 */
 	public boolean isApproved();
 
-	/**
-	 * Column definition for IsApproved
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsApproved", null);
-	/**
-	 * Column name IsApproved
-	 */
-	public static final String COLUMNNAME_IsApproved = "IsApproved";
+    /** Column definition for IsApproved */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsApproved", null);
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
 	 * Set Kredit gebilligt.
@@ -1695,7 +1487,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCreditApproved(boolean IsCreditApproved);
+	public void setIsCreditApproved (boolean IsCreditApproved);
 
 	/**
 	 * Get Kredit gebilligt.
@@ -1707,14 +1499,10 @@ public interface I_C_Order
 	 */
 	public boolean isCreditApproved();
 
-	/**
-	 * Column definition for IsCreditApproved
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsCreditApproved = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsCreditApproved", null);
-	/**
-	 * Column name IsCreditApproved
-	 */
-	public static final String COLUMNNAME_IsCreditApproved = "IsCreditApproved";
+    /** Column definition for IsCreditApproved */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsCreditApproved = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsCreditApproved", null);
+    /** Column name IsCreditApproved */
+    public static final String COLUMNNAME_IsCreditApproved = "IsCreditApproved";
 
 	/**
 	 * Set Zugestellt.
@@ -1723,7 +1511,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDelivered(boolean IsDelivered);
+	public void setIsDelivered (boolean IsDelivered);
 
 	/**
 	 * Get Zugestellt.
@@ -1734,14 +1522,10 @@ public interface I_C_Order
 	 */
 	public boolean isDelivered();
 
-	/**
-	 * Column definition for IsDelivered
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsDelivered = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsDelivered", null);
-	/**
-	 * Column name IsDelivered
-	 */
-	public static final String COLUMNNAME_IsDelivered = "IsDelivered";
+    /** Column definition for IsDelivered */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsDelivered = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsDelivered", null);
+    /** Column name IsDelivered */
+    public static final String COLUMNNAME_IsDelivered = "IsDelivered";
 
 	/**
 	 * Set Rabatte drucken.
@@ -1751,7 +1535,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDiscountPrinted(boolean IsDiscountPrinted);
+	public void setIsDiscountPrinted (boolean IsDiscountPrinted);
 
 	/**
 	 * Get Rabatte drucken.
@@ -1763,14 +1547,10 @@ public interface I_C_Order
 	 */
 	public boolean isDiscountPrinted();
 
-	/**
-	 * Column definition for IsDiscountPrinted
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsDiscountPrinted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsDiscountPrinted", null);
-	/**
-	 * Column name IsDiscountPrinted
-	 */
-	public static final String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
+    /** Column definition for IsDiscountPrinted */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsDiscountPrinted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsDiscountPrinted", null);
+    /** Column name IsDiscountPrinted */
+    public static final String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
 	 * Set Streckengeschäft.
@@ -1780,7 +1560,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDropShip(boolean IsDropShip);
+	public void setIsDropShip (boolean IsDropShip);
 
 	/**
 	 * Get Streckengeschäft.
@@ -1792,14 +1572,10 @@ public interface I_C_Order
 	 */
 	public boolean isDropShip();
 
-	/**
-	 * Column definition for IsDropShip
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsDropShip = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsDropShip", null);
-	/**
-	 * Column name IsDropShip
-	 */
-	public static final String COLUMNNAME_IsDropShip = "IsDropShip";
+    /** Column definition for IsDropShip */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsDropShip = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsDropShip", null);
+    /** Column name IsDropShip */
+    public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
 	 * Set Berechnete Menge.
@@ -1809,7 +1585,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInvoiced(boolean IsInvoiced);
+	public void setIsInvoiced (boolean IsInvoiced);
 
 	/**
 	 * Get Berechnete Menge.
@@ -1821,14 +1597,10 @@ public interface I_C_Order
 	 */
 	public boolean isInvoiced();
 
-	/**
-	 * Column definition for IsInvoiced
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsInvoiced = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsInvoiced", null);
-	/**
-	 * Column name IsInvoiced
-	 */
-	public static final String COLUMNNAME_IsInvoiced = "IsInvoiced";
+    /** Column definition for IsInvoiced */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsInvoiced = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsInvoiced", null);
+    /** Column name IsInvoiced */
+    public static final String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
 	 * Set andrucken.
@@ -1838,7 +1610,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPrinted(boolean IsPrinted);
+	public void setIsPrinted (boolean IsPrinted);
 
 	/**
 	 * Get andrucken.
@@ -1850,14 +1622,10 @@ public interface I_C_Order
 	 */
 	public boolean isPrinted();
 
-	/**
-	 * Column definition for IsPrinted
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsPrinted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsPrinted", null);
-	/**
-	 * Column name IsPrinted
-	 */
-	public static final String COLUMNNAME_IsPrinted = "IsPrinted";
+    /** Column definition for IsPrinted */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsPrinted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsPrinted", null);
+    /** Column name IsPrinted */
+    public static final String COLUMNNAME_IsPrinted = "IsPrinted";
 
 	/**
 	 * Set Auftrag nur mit Vertriebspartner.
@@ -1867,7 +1635,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSalesPartnerRequired(boolean IsSalesPartnerRequired);
+	public void setIsSalesPartnerRequired (boolean IsSalesPartnerRequired);
 
 	/**
 	 * Get Auftrag nur mit Vertriebspartner.
@@ -1879,14 +1647,10 @@ public interface I_C_Order
 	 */
 	public boolean isSalesPartnerRequired();
 
-	/**
-	 * Column definition for IsSalesPartnerRequired
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSalesPartnerRequired = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSalesPartnerRequired", null);
-	/**
-	 * Column name IsSalesPartnerRequired
-	 */
-	public static final String COLUMNNAME_IsSalesPartnerRequired = "IsSalesPartnerRequired";
+    /** Column definition for IsSalesPartnerRequired */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSalesPartnerRequired = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSalesPartnerRequired", null);
+    /** Column name IsSalesPartnerRequired */
+    public static final String COLUMNNAME_IsSalesPartnerRequired = "IsSalesPartnerRequired";
 
 	/**
 	 * Set Selektiert.
@@ -1895,7 +1659,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSelected(boolean IsSelected);
+	public void setIsSelected (boolean IsSelected);
 
 	/**
 	 * Get Selektiert.
@@ -1906,14 +1670,10 @@ public interface I_C_Order
 	 */
 	public boolean isSelected();
 
-	/**
-	 * Column definition for IsSelected
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSelected = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSelected", null);
-	/**
-	 * Column name IsSelected
-	 */
-	public static final String COLUMNNAME_IsSelected = "IsSelected";
+    /** Column definition for IsSelected */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSelected = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSelected", null);
+    /** Column name IsSelected */
+    public static final String COLUMNNAME_IsSelected = "IsSelected";
 
 	/**
 	 * Set Selbstbedienung.
@@ -1923,7 +1683,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSelfService(boolean IsSelfService);
+	public void setIsSelfService (boolean IsSelfService);
 
 	/**
 	 * Get Selbstbedienung.
@@ -1935,14 +1695,10 @@ public interface I_C_Order
 	 */
 	public boolean isSelfService();
 
-	/**
-	 * Column definition for IsSelfService
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSelfService = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSelfService", null);
-	/**
-	 * Column name IsSelfService
-	 */
-	public static final String COLUMNNAME_IsSelfService = "IsSelfService";
+    /** Column definition for IsSelfService */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSelfService = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSelfService", null);
+    /** Column name IsSelfService */
+    public static final String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
 	 * Set Verkaufs-Transaktion.
@@ -1952,7 +1708,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSOTrx(boolean IsSOTrx);
+	public void setIsSOTrx (boolean IsSOTrx);
 
 	/**
 	 * Get Verkaufs-Transaktion.
@@ -1964,14 +1720,10 @@ public interface I_C_Order
 	 */
 	public boolean isSOTrx();
 
-	/**
-	 * Column definition for IsSOTrx
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSOTrx = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSOTrx", null);
-	/**
-	 * Column name IsSOTrx
-	 */
-	public static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
+    /** Column definition for IsSOTrx */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsSOTrx = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsSOTrx", null);
+    /** Column name IsSOTrx */
+    public static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
 	 * Set Preis inklusive Steuern.
@@ -1981,7 +1733,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsTaxIncluded(boolean IsTaxIncluded);
+	public void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
 	 * Get Preis inklusive Steuern.
@@ -1993,14 +1745,10 @@ public interface I_C_Order
 	 */
 	public boolean isTaxIncluded();
 
-	/**
-	 * Column definition for IsTaxIncluded
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsTaxIncluded = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsTaxIncluded", null);
-	/**
-	 * Column name IsTaxIncluded
-	 */
-	public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+    /** Column definition for IsTaxIncluded */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsTaxIncluded = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsTaxIncluded", null);
+    /** Column name IsTaxIncluded */
+    public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
 	 * Set Transferred.
@@ -2010,7 +1758,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsTransferred(boolean IsTransferred);
+	public void setIsTransferred (boolean IsTransferred);
 
 	/**
 	 * Get Transferred.
@@ -2022,14 +1770,10 @@ public interface I_C_Order
 	 */
 	public boolean isTransferred();
 
-	/**
-	 * Column definition for IsTransferred
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsTransferred = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsTransferred", null);
-	/**
-	 * Column name IsTransferred
-	 */
-	public static final String COLUMNNAME_IsTransferred = "IsTransferred";
+    /** Column definition for IsTransferred */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsTransferred = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsTransferred", null);
+    /** Column name IsTransferred */
+    public static final String COLUMNNAME_IsTransferred = "IsTransferred";
 
 	/**
 	 * Set Benutze abw. Rechnungsadresse.
@@ -2038,7 +1782,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsUseBillToAddress(boolean IsUseBillToAddress);
+	public void setIsUseBillToAddress (boolean IsUseBillToAddress);
 
 	/**
 	 * Get Benutze abw. Rechnungsadresse.
@@ -2049,14 +1793,10 @@ public interface I_C_Order
 	 */
 	public boolean isUseBillToAddress();
 
-	/**
-	 * Column definition for IsUseBillToAddress
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsUseBillToAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsUseBillToAddress", null);
-	/**
-	 * Column name IsUseBillToAddress
-	 */
-	public static final String COLUMNNAME_IsUseBillToAddress = "IsUseBillToAddress";
+    /** Column definition for IsUseBillToAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsUseBillToAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsUseBillToAddress", null);
+    /** Column name IsUseBillToAddress */
+    public static final String COLUMNNAME_IsUseBillToAddress = "IsUseBillToAddress";
 
 	/**
 	 * Set Benutze abw. Adresse.
@@ -2065,7 +1805,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsUseBPartnerAddress(boolean IsUseBPartnerAddress);
+	public void setIsUseBPartnerAddress (boolean IsUseBPartnerAddress);
 
 	/**
 	 * Get Benutze abw. Adresse.
@@ -2076,14 +1816,10 @@ public interface I_C_Order
 	 */
 	public boolean isUseBPartnerAddress();
 
-	/**
-	 * Column definition for IsUseBPartnerAddress
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsUseBPartnerAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsUseBPartnerAddress", null);
-	/**
-	 * Column name IsUseBPartnerAddress
-	 */
-	public static final String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
+    /** Column definition for IsUseBPartnerAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_IsUseBPartnerAddress = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "IsUseBPartnerAddress", null);
+    /** Column name IsUseBPartnerAddress */
+    public static final String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
 	 * Set Zugehörige Bestellung.
@@ -2093,7 +1829,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLink_Order_ID(int Link_Order_ID);
+	public void setLink_Order_ID (int Link_Order_ID);
 
 	/**
 	 * Get Zugehörige Bestellung.
@@ -2109,14 +1845,10 @@ public interface I_C_Order
 
 	public void setLink_Order(org.compiere.model.I_C_Order Link_Order);
 
-	/**
-	 * Column definition for Link_Order_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Link_Order_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order>(I_C_Order.class, "Link_Order_ID", org.compiere.model.I_C_Order.class);
-	/**
-	 * Column name Link_Order_ID
-	 */
-	public static final String COLUMNNAME_Link_Order_ID = "Link_Order_ID";
+    /** Column definition for Link_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Link_Order_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order>(I_C_Order.class, "Link_Order_ID", org.compiere.model.I_C_Order.class);
+    /** Column name Link_Order_ID */
+    public static final String COLUMNNAME_Link_Order_ID = "Link_Order_ID";
 
 	/**
 	 * Set Fracht-Kategorie.
@@ -2126,7 +1858,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_FreightCategory_ID(int M_FreightCategory_ID);
+	public void setM_FreightCategory_ID (int M_FreightCategory_ID);
 
 	/**
 	 * Get Fracht-Kategorie.
@@ -2142,14 +1874,10 @@ public interface I_C_Order
 
 	public void setM_FreightCategory(org.compiere.model.I_M_FreightCategory M_FreightCategory);
 
-	/**
-	 * Column definition for M_FreightCategory_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_FreightCategory> COLUMN_M_FreightCategory_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_FreightCategory>(I_C_Order.class, "M_FreightCategory_ID", org.compiere.model.I_M_FreightCategory.class);
-	/**
-	 * Column name M_FreightCategory_ID
-	 */
-	public static final String COLUMNNAME_M_FreightCategory_ID = "M_FreightCategory_ID";
+    /** Column definition for M_FreightCategory_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_FreightCategory> COLUMN_M_FreightCategory_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_FreightCategory>(I_C_Order.class, "M_FreightCategory_ID", org.compiere.model.I_M_FreightCategory.class);
+    /** Column name M_FreightCategory_ID */
+    public static final String COLUMNNAME_M_FreightCategory_ID = "M_FreightCategory_ID";
 
 	/**
 	 * Set Preisliste.
@@ -2159,7 +1887,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_PriceList_ID(int M_PriceList_ID);
+	public void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
 	 * Get Preisliste.
@@ -2171,10 +1899,8 @@ public interface I_C_Order
 	 */
 	public int getM_PriceList_ID();
 
-	/**
-	 * Column name M_PriceList_ID
-	 */
-	public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+    /** Column name M_PriceList_ID */
+    public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
 	/**
 	 * Set Preissystem.
@@ -2184,7 +1910,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_PricingSystem_ID(int M_PricingSystem_ID);
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
 
 	/**
 	 * Get Preissystem.
@@ -2196,10 +1922,8 @@ public interface I_C_Order
 	 */
 	public int getM_PricingSystem_ID();
 
-	/**
-	 * Column name M_PricingSystem_ID
-	 */
-	public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
+    /** Column name M_PricingSystem_ID */
+    public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
 	 * Set Produkt.
@@ -2209,7 +1933,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID(int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/**
 	 * Get Produkt.
@@ -2221,10 +1945,8 @@ public interface I_C_Order
 	 */
 	public int getM_Product_ID();
 
-	/**
-	 * Column name M_Product_ID
-	 */
-	public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Lieferweg.
@@ -2234,7 +1956,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Shipper_ID(int M_Shipper_ID);
+	public void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
 	 * Get Lieferweg.
@@ -2250,14 +1972,10 @@ public interface I_C_Order
 
 	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
 
-	/**
-	 * Column definition for M_Shipper_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_Shipper>(I_C_Order.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-	/**
-	 * Column name M_Shipper_ID
-	 */
-	public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_M_Shipper>(I_C_Order.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Tour.
@@ -2266,7 +1984,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Tour_ID(int M_Tour_ID);
+	public void setM_Tour_ID (int M_Tour_ID);
 
 	/**
 	 * Get Tour.
@@ -2277,14 +1995,10 @@ public interface I_C_Order
 	 */
 	public int getM_Tour_ID();
 
-	/**
-	 * Column definition for M_Tour_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_M_Tour_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "M_Tour_ID", null);
-	/**
-	 * Column name M_Tour_ID
-	 */
-	public static final String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
+    /** Column definition for M_Tour_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_M_Tour_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "M_Tour_ID", null);
+    /** Column name M_Tour_ID */
+    public static final String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
 
 	/**
 	 * Set Lager.
@@ -2294,7 +2008,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID(int M_Warehouse_ID);
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
 	 * Get Lager.
@@ -2306,10 +2020,8 @@ public interface I_C_Order
 	 */
 	public int getM_Warehouse_ID();
 
-	/**
-	 * Column name M_Warehouse_ID
-	 */
-	public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Orderline_includedTab.
@@ -2318,7 +2030,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOrderline_includedTab(java.lang.String Orderline_includedTab);
+	public void setOrderline_includedTab (java.lang.String Orderline_includedTab);
 
 	/**
 	 * Get Orderline_includedTab.
@@ -2329,14 +2041,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getOrderline_includedTab();
 
-	/**
-	 * Column definition for Orderline_includedTab
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Orderline_includedTab = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Orderline_includedTab", null);
-	/**
-	 * Column name Orderline_includedTab
-	 */
-	public static final String COLUMNNAME_Orderline_includedTab = "Orderline_includedTab";
+    /** Column definition for Orderline_includedTab */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Orderline_includedTab = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Orderline_includedTab", null);
+    /** Column name Orderline_includedTab */
+    public static final String COLUMNNAME_Orderline_includedTab = "Orderline_includedTab";
 
 	/**
 	 * Set OrderType.
@@ -2345,7 +2053,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOrderType(java.lang.String OrderType);
+	public void setOrderType (java.lang.String OrderType);
 
 	/**
 	 * Get OrderType.
@@ -2356,14 +2064,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getOrderType();
 
-	/**
-	 * Column definition for OrderType
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_OrderType = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "OrderType", null);
-	/**
-	 * Column name OrderType
-	 */
-	public static final String COLUMNNAME_OrderType = "OrderType";
+    /** Column definition for OrderType */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_OrderType = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "OrderType", null);
+    /** Column name OrderType */
+    public static final String COLUMNNAME_OrderType = "OrderType";
 
 	/**
 	 * Set Payment BPartner.
@@ -2373,7 +2077,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPay_BPartner_ID(int Pay_BPartner_ID);
+	public void setPay_BPartner_ID (int Pay_BPartner_ID);
 
 	/**
 	 * Get Payment BPartner.
@@ -2385,14 +2089,10 @@ public interface I_C_Order
 	 */
 	public int getPay_BPartner_ID();
 
-	/**
-	 * Column definition for Pay_BPartner_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Pay_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Pay_BPartner_ID", null);
-	/**
-	 * Column name Pay_BPartner_ID
-	 */
-	public static final String COLUMNNAME_Pay_BPartner_ID = "Pay_BPartner_ID";
+    /** Column definition for Pay_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Pay_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Pay_BPartner_ID", null);
+    /** Column name Pay_BPartner_ID */
+    public static final String COLUMNNAME_Pay_BPartner_ID = "Pay_BPartner_ID";
 
 	/**
 	 * Set Payment Location.
@@ -2402,7 +2102,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPay_Location_ID(int Pay_Location_ID);
+	public void setPay_Location_ID (int Pay_Location_ID);
 
 	/**
 	 * Get Payment Location.
@@ -2414,14 +2114,10 @@ public interface I_C_Order
 	 */
 	public int getPay_Location_ID();
 
-	/**
-	 * Column definition for Pay_Location_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Pay_Location_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Pay_Location_ID", null);
-	/**
-	 * Column name Pay_Location_ID
-	 */
-	public static final String COLUMNNAME_Pay_Location_ID = "Pay_Location_ID";
+    /** Column definition for Pay_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Pay_Location_ID = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Pay_Location_ID", null);
+    /** Column name Pay_Location_ID */
+    public static final String COLUMNNAME_Pay_Location_ID = "Pay_Location_ID";
 
 	/**
 	 * Set Zahlungsweise.
@@ -2431,7 +2127,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPaymentRule(java.lang.String PaymentRule);
+	public void setPaymentRule (java.lang.String PaymentRule);
 
 	/**
 	 * Get Zahlungsweise.
@@ -2443,14 +2139,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getPaymentRule();
 
-	/**
-	 * Column definition for PaymentRule
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PaymentRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PaymentRule", null);
-	/**
-	 * Column name PaymentRule
-	 */
-	public static final String COLUMNNAME_PaymentRule = "PaymentRule";
+    /** Column definition for PaymentRule */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PaymentRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PaymentRule", null);
+    /** Column name PaymentRule */
+    public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
 	 * Set Referenz.
@@ -2460,7 +2152,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPOReference(java.lang.String POReference);
+	public void setPOReference (java.lang.String POReference);
 
 	/**
 	 * Get Referenz.
@@ -2472,14 +2164,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getPOReference();
 
-	/**
-	 * Column definition for POReference
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "POReference", null);
-	/**
-	 * Column name POReference
-	 */
-	public static final String COLUMNNAME_POReference = "POReference";
+    /** Column definition for POReference */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "POReference", null);
+    /** Column name POReference */
+    public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Verbucht.
@@ -2489,7 +2177,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPosted(boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/**
 	 * Get Verbucht.
@@ -2501,14 +2189,10 @@ public interface I_C_Order
 	 */
 	public boolean isPosted();
 
-	/**
-	 * Column definition for Posted
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Posted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Posted", null);
-	/**
-	 * Column name Posted
-	 */
-	public static final String COLUMNNAME_Posted = "Posted";
+    /** Column definition for Posted */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Posted = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Posted", null);
+    /** Column name Posted */
+    public static final String COLUMNNAME_Posted = "Posted";
 
 	/**
 	 * Set Bereitstellungsdatum.
@@ -2517,7 +2201,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationDate(java.sql.Timestamp PreparationDate);
+	public void setPreparationDate (java.sql.Timestamp PreparationDate);
 
 	/**
 	 * Get Bereitstellungsdatum.
@@ -2528,14 +2212,10 @@ public interface I_C_Order
 	 */
 	public java.sql.Timestamp getPreparationDate();
 
-	/**
-	 * Column definition for PreparationDate
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PreparationDate = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PreparationDate", null);
-	/**
-	 * Column name PreparationDate
-	 */
-	public static final String COLUMNNAME_PreparationDate = "PreparationDate";
+    /** Column definition for PreparationDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PreparationDate = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PreparationDate", null);
+    /** Column name PreparationDate */
+    public static final String COLUMNNAME_PreparationDate = "PreparationDate";
 
 	/**
 	 * Set Priorität.
@@ -2545,7 +2225,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPriorityRule(java.lang.String PriorityRule);
+	public void setPriorityRule (java.lang.String PriorityRule);
 
 	/**
 	 * Get Priorität.
@@ -2557,14 +2237,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getPriorityRule();
 
-	/**
-	 * Column definition for PriorityRule
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PriorityRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PriorityRule", null);
-	/**
-	 * Column name PriorityRule
-	 */
-	public static final String COLUMNNAME_PriorityRule = "PriorityRule";
+    /** Column definition for PriorityRule */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PriorityRule = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PriorityRule", null);
+    /** Column name PriorityRule */
+    public static final String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
 	 * Set Verarbeitet.
@@ -2574,7 +2250,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
 	 * Get Verarbeitet.
@@ -2586,14 +2262,10 @@ public interface I_C_Order
 	 */
 	public boolean isProcessed();
 
-	/**
-	 * Column definition for Processed
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Processed", null);
-	/**
-	 * Column name Processed
-	 */
-	public static final String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Verarbeiten.
@@ -2602,7 +2274,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/**
 	 * Get Verarbeiten.
@@ -2613,14 +2285,10 @@ public interface I_C_Order
 	 */
 	public boolean isProcessing();
 
-	/**
-	 * Column definition for Processing
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Processing", null);
-	/**
-	 * Column name Processing
-	 */
-	public static final String COLUMNNAME_Processing = "Processing";
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Processing", null);
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Promotion Code.
@@ -2630,7 +2298,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPromotionCode(java.lang.String PromotionCode);
+	public void setPromotionCode (java.lang.String PromotionCode);
 
 	/**
 	 * Get Promotion Code.
@@ -2642,14 +2310,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getPromotionCode();
 
-	/**
-	 * Column definition for PromotionCode
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PromotionCode", null);
-	/**
-	 * Column name PromotionCode
-	 */
-	public static final String COLUMNNAME_PromotionCode = "PromotionCode";
+    /** Column definition for PromotionCode */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "PromotionCode", null);
+    /** Column name PromotionCode */
+    public static final String COLUMNNAME_PromotionCode = "PromotionCode";
 
 	/**
 	 * Set Menge-Schnelleingabe.
@@ -2658,7 +2322,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQty_FastInput(java.math.BigDecimal Qty_FastInput);
+	public void setQty_FastInput (java.math.BigDecimal Qty_FastInput);
 
 	/**
 	 * Get Menge-Schnelleingabe.
@@ -2669,14 +2333,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getQty_FastInput();
 
-	/**
-	 * Column definition for Qty_FastInput
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Qty_FastInput = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Qty_FastInput", null);
-	/**
-	 * Column name Qty_FastInput
-	 */
-	public static final String COLUMNNAME_Qty_FastInput = "Qty_FastInput";
+    /** Column definition for Qty_FastInput */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Qty_FastInput = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Qty_FastInput", null);
+    /** Column name Qty_FastInput */
+    public static final String COLUMNNAME_Qty_FastInput = "Qty_FastInput";
 
 	/**
 	 * Set Eingegangen via.
@@ -2685,7 +2345,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setReceivedVia(java.lang.String ReceivedVia);
+	public void setReceivedVia (java.lang.String ReceivedVia);
 
 	/**
 	 * Get Eingegangen via.
@@ -2696,14 +2356,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getReceivedVia();
 
-	/**
-	 * Column definition for ReceivedVia
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_ReceivedVia = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "ReceivedVia", null);
-	/**
-	 * Column name ReceivedVia
-	 */
-	public static final String COLUMNNAME_ReceivedVia = "ReceivedVia";
+    /** Column definition for ReceivedVia */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_ReceivedVia = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "ReceivedVia", null);
+    /** Column name ReceivedVia */
+    public static final String COLUMNNAME_ReceivedVia = "ReceivedVia";
 
 	/**
 	 * Set Auftragsdatum  (Ref. Auftrag).
@@ -2711,11 +2367,10 @@ public interface I_C_Order
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setRef_DateOrder(java.sql.Timestamp Ref_DateOrder);
+	public void setRef_DateOrder (java.sql.Timestamp Ref_DateOrder);
 
 	/**
 	 * Get Auftragsdatum  (Ref. Auftrag).
@@ -2723,20 +2378,15 @@ public interface I_C_Order
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
-	 *
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
 	public java.sql.Timestamp getRef_DateOrder();
 
-	/**
-	 * Column definition for Ref_DateOrder
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Ref_DateOrder = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Ref_DateOrder", null);
-	/**
-	 * Column name Ref_DateOrder
-	 */
-	public static final String COLUMNNAME_Ref_DateOrder = "Ref_DateOrder";
+    /** Column definition for Ref_DateOrder */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Ref_DateOrder = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Ref_DateOrder", null);
+    /** Column name Ref_DateOrder */
+    public static final String COLUMNNAME_Ref_DateOrder = "Ref_DateOrder";
 
 	/**
 	 * Set Referenced Order.
@@ -2746,7 +2396,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRef_Order_ID(int Ref_Order_ID);
+	public void setRef_Order_ID (int Ref_Order_ID);
 
 	/**
 	 * Get Referenced Order.
@@ -2762,14 +2412,10 @@ public interface I_C_Order
 
 	public void setRef_Order(org.compiere.model.I_C_Order Ref_Order);
 
-	/**
-	 * Column definition for Ref_Order_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Ref_Order_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order>(I_C_Order.class, "Ref_Order_ID", org.compiere.model.I_C_Order.class);
-	/**
-	 * Column name Ref_Order_ID
-	 */
-	public static final String COLUMNNAME_Ref_Order_ID = "Ref_Order_ID";
+    /** Column definition for Ref_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Ref_Order_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order>(I_C_Order.class, "Ref_Order_ID", org.compiere.model.I_C_Order.class);
+    /** Column name Ref_Order_ID */
+    public static final String COLUMNNAME_Ref_Order_ID = "Ref_Order_ID";
 
 	/**
 	 * Set Referenz Angebot/Auftrag.
@@ -2779,7 +2425,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRef_Proposal_ID(int Ref_Proposal_ID);
+	public void setRef_Proposal_ID (int Ref_Proposal_ID);
 
 	/**
 	 * Get Referenz Angebot/Auftrag.
@@ -2795,14 +2441,10 @@ public interface I_C_Order
 
 	public void setRef_Proposal(org.compiere.model.I_C_Order Ref_Proposal);
 
-	/**
-	 * Column definition for Ref_Proposal_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Ref_Proposal_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order>(I_C_Order.class, "Ref_Proposal_ID", org.compiere.model.I_C_Order.class);
-	/**
-	 * Column name Ref_Proposal_ID
-	 */
-	public static final String COLUMNNAME_Ref_Proposal_ID = "Ref_Proposal_ID";
+    /** Column definition for Ref_Proposal_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Ref_Proposal_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_Order>(I_C_Order.class, "Ref_Proposal_ID", org.compiere.model.I_C_Order.class);
+    /** Column name Ref_Proposal_ID */
+    public static final String COLUMNNAME_Ref_Proposal_ID = "Ref_Proposal_ID";
 
 	/**
 	 * Set Vertriebspartnercode.
@@ -2811,7 +2453,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSalesPartnerCode(java.lang.String SalesPartnerCode);
+	public void setSalesPartnerCode (java.lang.String SalesPartnerCode);
 
 	/**
 	 * Get Vertriebspartnercode.
@@ -2822,14 +2464,10 @@ public interface I_C_Order
 	 */
 	public java.lang.String getSalesPartnerCode();
 
-	/**
-	 * Column definition for SalesPartnerCode
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_SalesPartnerCode = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "SalesPartnerCode", null);
-	/**
-	 * Column name SalesPartnerCode
-	 */
-	public static final String COLUMNNAME_SalesPartnerCode = "SalesPartnerCode";
+    /** Column definition for SalesPartnerCode */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_SalesPartnerCode = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "SalesPartnerCode", null);
+    /** Column name SalesPartnerCode */
+    public static final String COLUMNNAME_SalesPartnerCode = "SalesPartnerCode";
 
 	/**
 	 * Set Kundenbetreuer.
@@ -2838,7 +2476,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSalesRep_ID(int SalesRep_ID);
+	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
 	 * Get Kundenbetreuer.
@@ -2849,10 +2487,8 @@ public interface I_C_Order
 	 */
 	public int getSalesRep_ID();
 
-	/**
-	 * Column name SalesRep_ID
-	 */
-	public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+    /** Column name SalesRep_ID */
+    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set E-Mail senden.
@@ -2862,7 +2498,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSendEMail(boolean SendEMail);
+	public void setSendEMail (boolean SendEMail);
 
 	/**
 	 * Get E-Mail senden.
@@ -2874,14 +2510,10 @@ public interface I_C_Order
 	 */
 	public boolean isSendEMail();
 
-	/**
-	 * Column definition for SendEMail
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_SendEMail = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "SendEMail", null);
-	/**
-	 * Column name SendEMail
-	 */
-	public static final String COLUMNNAME_SendEMail = "SendEMail";
+    /** Column definition for SendEMail */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_SendEMail = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "SendEMail", null);
+    /** Column name SendEMail */
+    public static final String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
 	 * Set Summe Zeilen.
@@ -2891,7 +2523,7 @@ public interface I_C_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setTotalLines(java.math.BigDecimal TotalLines);
+	public void setTotalLines (java.math.BigDecimal TotalLines);
 
 	/**
 	 * Get Summe Zeilen.
@@ -2903,14 +2535,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getTotalLines();
 
-	/**
-	 * Column definition for TotalLines
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_TotalLines = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "TotalLines", null);
-	/**
-	 * Column name TotalLines
-	 */
-	public static final String COLUMNNAME_TotalLines = "TotalLines";
+    /** Column definition for TotalLines */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_TotalLines = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "TotalLines", null);
+    /** Column name TotalLines */
+    public static final String COLUMNNAME_TotalLines = "TotalLines";
 
 	/**
 	 * Get Aktualisiert.
@@ -2922,14 +2550,10 @@ public interface I_C_Order
 	 */
 	public java.sql.Timestamp getUpdated();
 
-	/**
-	 * Column definition for Updated
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Updated", null);
-	/**
-	 * Column name Updated
-	 */
-	public static final String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Aktualisiert durch.
@@ -2941,10 +2565,8 @@ public interface I_C_Order
 	 */
 	public int getUpdatedBy();
 
-	/**
-	 * Column name UpdatedBy
-	 */
-	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Nutzer 1.
@@ -2954,7 +2576,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUser1_ID(int User1_ID);
+	public void setUser1_ID (int User1_ID);
 
 	/**
 	 * Get Nutzer 1.
@@ -2970,14 +2592,10 @@ public interface I_C_Order
 
 	public void setUser1(org.compiere.model.I_C_ElementValue User1);
 
-	/**
-	 * Column definition for User1_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue>(I_C_Order.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
-	/**
-	 * Column name User1_ID
-	 */
-	public static final String COLUMNNAME_User1_ID = "User1_ID";
+    /** Column definition for User1_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue>(I_C_Order.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name User1_ID */
+    public static final String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
 	 * Set Nutzer 2.
@@ -2987,7 +2605,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUser2_ID(int User2_ID);
+	public void setUser2_ID (int User2_ID);
 
 	/**
 	 * Get Nutzer 2.
@@ -3003,14 +2621,10 @@ public interface I_C_Order
 
 	public void setUser2(org.compiere.model.I_C_ElementValue User2);
 
-	/**
-	 * Column definition for User2_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue>(I_C_Order.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
-	/**
-	 * Column name User2_ID
-	 */
-	public static final String COLUMNNAME_User2_ID = "User2_ID";
+    /** Column definition for User2_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue>(I_C_Order.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name User2_ID */
+    public static final String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
 	 * Set Volumen.
@@ -3020,7 +2634,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setVolume(java.math.BigDecimal Volume);
+	public void setVolume (java.math.BigDecimal Volume);
 
 	/**
 	 * Get Volumen.
@@ -3032,14 +2646,10 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getVolume();
 
-	/**
-	 * Column definition for Volume
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Volume = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Volume", null);
-	/**
-	 * Column name Volume
-	 */
-	public static final String COLUMNNAME_Volume = "Volume";
+    /** Column definition for Volume */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Volume = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Volume", null);
+    /** Column name Volume */
+    public static final String COLUMNNAME_Volume = "Volume";
 
 	/**
 	 * Set Gewicht.
@@ -3049,7 +2659,7 @@ public interface I_C_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWeight(java.math.BigDecimal Weight);
+	public void setWeight (java.math.BigDecimal Weight);
 
 	/**
 	 * Get Gewicht.
@@ -3061,36 +2671,8 @@ public interface I_C_Order
 	 */
 	public java.math.BigDecimal getWeight();
 
-	/**
-	 * Column definition for Weight
-	 */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Weight = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Weight", null);
-	/**
-	 * Column name Weight
-	 */
-	public static final String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set Delivery info.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDeliveryInfo (java.lang.String DeliveryInfo);
-
-	/**
-	 * Get Delivery info.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDeliveryInfo();
-
-	/** Column definition for DeliveryInfo */
-	public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_DeliveryInfo = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "DeliveryInfo", null);
-	/** Column name DeliveryInfo */
-	public static final String COLUMNNAME_DeliveryInfo = "DeliveryInfo";
-
+    /** Column definition for Weight */
+    public static final org.adempiere.model.ModelColumn<I_C_Order, Object> COLUMN_Weight = new org.adempiere.model.ModelColumn<I_C_Order, Object>(I_C_Order.class, "Weight", null);
+    /** Column name Weight */
+    public static final String COLUMNNAME_Weight = "Weight";
 }

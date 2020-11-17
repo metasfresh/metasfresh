@@ -12,7 +12,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -38,8 +37,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -70,11 +67,11 @@ import javax.annotation.Nullable;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
-	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap>builder()
+	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap> builder()
 			.tableName(I_C_Currency.Table_Name)
 			.build();
 
-	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap>builder()
+	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap> builder()
 			.tableName(I_C_ConversionType.Table_Name)
 			.tableName(I_C_ConversionType_Default.Table_Name)
 			.build();
@@ -193,7 +190,6 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
-	@NonNull
 	public CurrencyConversionTypeId getDefaultConversionTypeId(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
@@ -223,7 +219,6 @@ public class CurrencyDAO implements ICurrencyDAO
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
-				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID, currencyFromId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID_To, currencyToId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
@@ -238,18 +233,18 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addColumn(I_C_Conversion_Rate.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				//
-				.setLimit(QueryLimit.ONE) // first only
-				;
+				.setLimit(1) // first only
+		;
 	}
 
 	@Override
-	public @Nullable BigDecimal retrieveRateOrNull(
+	public BigDecimal retrieveRateOrNull(
 			final CurrencyConversionContext conversionCtx,
 			final CurrencyId currencyFromId,
 			final CurrencyId currencyToId)
 	{
 		final List<Map<String, Object>> recordsList = retrieveRateQuery(conversionCtx, currencyFromId, currencyToId)
-				.setLimit(QueryLimit.ONE)
+				.setLimit(1)
 				.create()
 				.listColumns(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
 

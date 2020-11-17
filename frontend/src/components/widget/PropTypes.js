@@ -2,8 +2,7 @@ import PropTypes from 'prop-types';
 
 /**
  * @typedef {object} Props Component props
- * @prop {func} allowShortcut
- * @prop {func} disableShortcut
+ * @prop {func} dispatch
  * @prop {bool} inProgress
  * @prop {bool} autoFocus
  * @prop {bool} textSelected
@@ -58,8 +57,7 @@ import PropTypes from 'prop-types';
  * @prop {bool} lastFormField
  */
 export const RawWidgetPropTypes = {
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
   inProgress: PropTypes.bool,
   autoFocus: PropTypes.bool,
   textSelected: PropTypes.bool,

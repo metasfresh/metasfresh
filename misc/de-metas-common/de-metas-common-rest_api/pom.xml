@@ -37,7 +37,7 @@
     <version>10.0.0</version>
 
     <properties>
-        <metasfresh-common.version>10.0.0</metasfresh-common.version>
+        <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 
     <dependencies>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>de.metas.common.util</groupId>
             <artifactId>de-metas-common-util</artifactId>
-            <version>${metasfresh-common.version}</version>
+            <version>${metasfresh.version}</version>
         </dependency>
 
         <dependency>
@@ -63,6 +63,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>

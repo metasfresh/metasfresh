@@ -1,6 +1,31 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.SHIPMENT_SCHEDULE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -26,29 +51,6 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.SHIPMENT_SCHEDULE_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -107,16 +109,14 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		stockRepository = new AvailableToPromiseRepository();
 
-		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				supplyCandidateHandler,
+				new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService),
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
 						postMaterialEventService,
 						stockRepository,
-						stockCandidateService,
-						supplyCandidateHandler)));
+						stockCandidateService)));
 
 		ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,

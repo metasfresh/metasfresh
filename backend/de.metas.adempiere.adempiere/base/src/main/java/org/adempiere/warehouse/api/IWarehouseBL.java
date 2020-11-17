@@ -51,6 +51,7 @@ public interface IWarehouseBL extends ISingletonService
 	 * <p>
 	 * In case none found, create a new one, with the coordinates (0,0,0)
 	 *
+	 * @param warehouse
 	 * @return default locator's Id; never return null
 	 */
 	LocatorId getDefaultLocatorId(WarehouseId warehouse);

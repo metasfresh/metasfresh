@@ -86,7 +86,6 @@ public class EDIFeedbackRoute extends RouteBuilder
 		// @formatter:off
 		from(EDIFeedbackRoute.EP_EDI_ERROR_COMMON)
 				.routeId("CommonError")
-				.streamCaching()
 				.to(AbstractEDIRoute.EP_EDI_LOG_ExceptionHandler)
 				.choice()
 					.when(exchangeProperty(AbstractEDIRoute.IS_CREATE_XML_FEEDBACK).isEqualTo(true))
@@ -107,15 +106,17 @@ public class EDIFeedbackRoute extends RouteBuilder
 						.end()
 						.log(LoggingLevel.INFO,"EDI: Marshalling error feedback XML Java Object -> XML document...")
 						.marshal(new JaxbDataFormat(Constants.JAXB_ContextPath))
-
-						// If errors occurred, put the feedback in the error directory, and send it to metasfresh
-						.log(LoggingLevel.INFO, "EDI: Sending error response to metasfresh...")
+						// Add the extension for the Feedback object so that it opens nicely :)
+						// (the extension is hard-coded, as i didn't see a real reason to keep it in properties --
+						// this can be removed at any time)
 						.setHeader(Exchange.FILE_NAME, exchangeProperty(Exchange.FILE_NAME).append(".error.xml"))
-						.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+						// If errors occurred, put the feedback in the error directory
+						.to(EDIFeedbackRoute.EP_EDI_LOCAL_ERROR)
 
-						.multicast() // store the file both locally and send it to the remote folder
-							.to("{{" + Constants.EP_AMQP_TO_MF + "}}", EDIFeedbackRoute.EP_EDI_LOCAL_ERROR)
-						.end()
+						// Send the feedback to metasfresh
+						.log(LoggingLevel.INFO, "EDI: Sending error response to metasfresh...")
+						.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
 				.end();
 		// @formatter:on
 	}

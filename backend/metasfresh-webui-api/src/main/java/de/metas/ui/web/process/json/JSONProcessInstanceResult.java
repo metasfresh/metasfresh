@@ -1,11 +1,16 @@
 package de.metas.ui.web.process.json;
 
+import java.io.Serializable;
+import java.util.Set;
+
+import org.slf4j.Logger;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
@@ -23,10 +28,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
-import org.slf4j.Logger;
-
-import java.io.Serializable;
-import java.util.Set;
 
 /*
  * #%L
@@ -84,9 +85,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		action = toJSONResultAction(result.getAction());
 	}
 
-	/**
-	 * Converts {@link ResultAction} to JSON
-	 */
+	/** Converts {@link ResultAction} to JSON */
 	private static final JSONResultAction toJSONResultAction(final ResultAction resultAction)
 	{
 		if (resultAction == null)
@@ -101,7 +100,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		else if (resultAction instanceof OpenViewAction)
 		{
 			final OpenViewAction openViewAction = (OpenViewAction)resultAction;
-			return new JSONOpenViewAction(openViewAction.getViewId(), openViewAction.getProfileId(), openViewAction.getTargetTab());
+			return new JSONOpenViewAction(openViewAction.getViewId(), openViewAction.getProfileId(), openViewAction.isModalOverlay());
 		}
 		else if (resultAction instanceof OpenIncludedViewAction)
 		{
@@ -112,7 +111,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		{
 			final OpenSingleDocument openDocumentAction = (OpenSingleDocument)resultAction;
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
-			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.getTargetTab());
+			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.isModal());
 		}
 		else if (resultAction instanceof SelectViewRowsAction)
 		{
@@ -173,15 +172,15 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final String viewId;
 		@JsonInclude(JsonInclude.Include.NON_EMPTY)
 		private final String profileId;
-		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab;
+		private final boolean modalOverlay;
 
-		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId, final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab)
+		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId, final boolean modalOverlay)
 		{
 			super("openView");
 			this.windowId = viewId.getWindowId();
 			this.viewId = viewId.getViewId();
 			this.profileId = profileId != null ? profileId.toJson() : null;
-			this.targetTab = targetTab;
+			this.modalOverlay = modalOverlay;
 		}
 	}
 
@@ -210,15 +209,15 @@ public final class JSONProcessInstanceResult implements Serializable
 	{
 		private final WindowId windowId;
 		private final String documentId;
+		private final boolean modal;
 		private final boolean advanced = false;
-		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab;
 
-		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId, final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab)
+		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId, final boolean modal)
 		{
 			super("openDocument");
 			this.windowId = windowId;
 			this.documentId = documentId;
-			this.targetTab = targetTab;
+			this.modal = modal;
 		}
 	}
 

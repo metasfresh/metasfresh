@@ -72,8 +72,4 @@ public interface IHUAttributesBL extends ISingletonService
 	 * @return quality discount percent (between 0...100); never return null
 	 */
 	BigDecimal getQualityDiscountPercent(I_M_HU hu);
-
-	boolean isAutomaticallySetLotNumber();
-
-	boolean isAutomaticallySetBestBeforeDate();
 }

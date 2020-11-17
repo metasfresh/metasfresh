@@ -449,7 +449,7 @@ public class InventoryRepository
 		saveRecord(lineRecord);
 		inventoryLine.setId(extractInventoryLineId(lineRecord));
 
-		saveInventoryLineHURecords(inventoryLine, inventoryId);
+		saveInventoryLineHURecords(inventoryLine);
 	}
 
 	private void updateInventoryLineRecordQuantities(
@@ -488,9 +488,7 @@ public class InventoryRepository
 		lineRecord.setIsCounted(from.isCounted());
 	}
 
-	public void saveInventoryLineHURecords(
-			@NonNull final InventoryLine inventoryLine,
-			@NonNull final InventoryId inventoryId)
+	public void saveInventoryLineHURecords(@NonNull final InventoryLine inventoryLine)
 	{
 		if (inventoryLine.isSingleHUAggregation())
 		{
@@ -515,8 +513,7 @@ public class InventoryRepository
 					lineHURecord = newInstance(I_M_InventoryLine_HU.class);
 				}
 
-				lineHURecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
-				lineHURecord.setM_Inventory_ID(inventoryId.getRepoId());
+				lineHURecord.setAD_Org_ID(inventoryLine.getId().getRepoId());
 				lineHURecord.setM_InventoryLine_ID(inventoryLine.getId().getRepoId());
 				updateInventoryLineHURecord(lineHURecord, lineHU);
 

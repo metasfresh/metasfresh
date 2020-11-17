@@ -2,7 +2,7 @@ package de.metas.material.dispo.model;
 
 
 /** Generated Interface for MD_Candidate_ATP_QueryResult
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_MD_Candidate_ATP_QueryResult 
@@ -14,10 +14,16 @@ public interface I_MD_Candidate_ATP_QueryResult
     /** AD_Table_ID=540859 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 4 - System
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+
+    /** Load Meta Data */
 
 	/**
-	 * Set Business Partner .
-	 * Identifies a Business Partner
+	 * Set Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -26,8 +32,7 @@ public interface I_MD_Candidate_ATP_QueryResult
 	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
 
 	/**
-	 * Get Business Partner .
-	 * Identifies a Business Partner
+	 * Get Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -62,8 +67,8 @@ public interface I_MD_Candidate_ATP_QueryResult
     public static final String COLUMNNAME_DateProjected = "DateProjected";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -72,8 +77,8 @@ public interface I_MD_Candidate_ATP_QueryResult
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -87,8 +92,8 @@ public interface I_MD_Candidate_ATP_QueryResult
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -97,8 +102,8 @@ public interface I_MD_Candidate_ATP_QueryResult
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -112,8 +117,8 @@ public interface I_MD_Candidate_ATP_QueryResult
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Quantity.
-	 * Quantity
+	 * Set Menge.
+	 * Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -122,8 +127,8 @@ public interface I_MD_Candidate_ATP_QueryResult
 	public void setQty (java.math.BigDecimal Qty);
 
 	/**
-	 * Get Quantity.
-	 * Quantity
+	 * Get Menge.
+	 * Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -137,9 +142,9 @@ public interface I_MD_Candidate_ATP_QueryResult
     public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -148,9 +153,9 @@ public interface I_MD_Candidate_ATP_QueryResult
 	public void setSeqNo (int SeqNo);
 
 	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false

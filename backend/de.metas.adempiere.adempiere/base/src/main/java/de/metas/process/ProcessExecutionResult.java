@@ -163,12 +163,9 @@ public class ProcessExecutionResult
 	private String webuiViewId = null;
 
 	@Getter
+	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String stringResult = null;
-
-	@Getter
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String stringResultContentType = null;
+	private String jsonResult = null;
 
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
@@ -198,8 +195,7 @@ public class ProcessExecutionResult
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
 			@JsonProperty("webuiViewId") final String webuiViewId,
-			@JsonProperty("stringResult") final String stringResult,
-			@JsonProperty("stringResultContentType") final String stringResultContentType)
+			@JsonProperty("jsonResult") final String jsonResult)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
@@ -216,8 +212,7 @@ public class ProcessExecutionResult
 		this.webuiViewToOpen = webuiViewToOpen;
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
-		this.stringResult = stringResult;
-		this.stringResultContentType = stringResultContentType;
+		this.jsonResult = jsonResult;
 	}
 
 	@Override
@@ -355,12 +350,6 @@ public class ProcessExecutionResult
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
 	}
 
-	public void setStringResult(@Nullable final String result, @NonNull final String contentType)
-	{
-		this.stringResult = result;
-		this.stringResultContentType = contentType;
-	}
-
 	/**
 	 * @return true if the process logs (if any) shall be displayed to user
 	 */
@@ -440,7 +429,6 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -461,7 +449,6 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -479,7 +466,6 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(null)
 					.target(OpenTarget.GridView)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -488,11 +474,6 @@ public class ProcessExecutionResult
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target)
 	{
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
-	}
-
-	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
-	{
-		setRecordToOpen(record, String.valueOf(adWindowId), target, targetTab);
 	}
 
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target)
@@ -507,25 +488,6 @@ public class ProcessExecutionResult
 					.record(record)
 					.adWindowId(adWindowId)
 					.target(target)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
-					.automaticallySetReferencingDocumentPaths(true)
-					.build());
-		}
-	}
-
-	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
-	{
-		if (record == null)
-		{
-			setRecordToOpen(null);
-		}
-		else
-		{
-			setRecordToOpen(RecordsToOpen.builder()
-					.record(record)
-					.adWindowId(adWindowId)
-					.target(target)
-					.targetTab(targetTab)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -860,15 +822,6 @@ public class ProcessExecutionResult
 		@Nullable
 		String windowIdString;
 
-		public enum TargetTab
-		{
-			SAME_TAB, SAME_TAB_OVERLAY, NEW_TAB,
-		}
-
-		@JsonProperty("targetTab")
-		@JsonInclude(JsonInclude.Include.NON_NULL)
-		TargetTab targetTab;
-
 		public enum OpenTarget
 		{
 			SingleDocument, SingleDocumentModal, GridView,
@@ -890,7 +843,6 @@ public class ProcessExecutionResult
 				@JsonProperty("records") @NonNull @Singular final List<TableRecordReference> records,
 				@JsonProperty("adWindowId") @Nullable final String adWindowId,
 				@JsonProperty("target") @Nullable final OpenTarget target,
-				@JsonProperty("targetTab") final TargetTab targetTab,
 				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths,
 				@JsonProperty("useAutoFilters") @Nullable final Boolean useAutoFilters)
 		{
@@ -899,7 +851,6 @@ public class ProcessExecutionResult
 			this.records = ImmutableList.copyOf(records);
 			this.windowIdString = StringUtils.trimBlankToNull(adWindowId);
 			this.target = target != null ? target : OpenTarget.GridView;
-			this.targetTab = targetTab != null ? targetTab : TargetTab.SAME_TAB;
 			this.automaticallySetReferencingDocumentPaths = automaticallySetReferencingDocumentPaths != null ? automaticallySetReferencingDocumentPaths : true;
 			this.useAutoFilters = useAutoFilters != null ? useAutoFilters : true;
 		}

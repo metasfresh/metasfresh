@@ -1,8 +1,14 @@
+package de.metas.product;
+
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isEmpty;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +26,6 @@
  * #L%
  */
 
-package de.metas.product;
-
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -62,44 +61,34 @@ public interface IProductDAO extends ISingletonService
 	@NonNull
 	ProductCategoryId getDefaultProductCategoryId();
 
-
 	/**
-	 * @return All the active products with the given product planning schema selector
-	 */
-	Set<ImmutablePair<ProductId, OrgId>> retrieveProductsAndOrgsForSchemaSelector(@NonNull ProductPlanningSchemaSelector productPlanningSchemaSelector);
-
-	/**
+	 * @param productId
+	 * @param orgId
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
 	 *         or if there is no pendant in the given <code>org</code>.
-	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
+	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
-	@Nullable
 	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
 
 	/**
 	 * Retrieve all the products from all the organizations that have the same mapping as the given product
 	 *
+	 * @param product
 	 * @return list of the products if found, empty list otherwise
 	 */
 	List<de.metas.product.model.I_M_Product> retrieveAllMappedProducts(I_M_Product product);
 
-	@Nullable
 	I_M_Product retrieveProductByValue(String value);
 
-	/**
-	 * @deprecated assumes that different AD_Orgs always have different {@code M_Product.Value}s. Better use {@link #retrieveProductIdBy(ProductQuery)}.
-	 */
-	@Deprecated
 	@Nullable
 	ProductId retrieveProductIdByValue(String value);
 
-	@Nullable
 	ProductId retrieveProductIdBy(ProductQuery query);
 
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	@Value
-	class ProductQuery
+	public static class ProductQuery
 	{
 		/**
 		 * Applied if not empty. {@code AND}ed with {@code externalId} if given. At least one of {@code value} or {@code externalId} needs to be given.
@@ -141,10 +130,8 @@ public interface IProductDAO extends ISingletonService
 	/**
 	 * @return product category or null
 	 */
-	@Nullable
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
 
-	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
 
 	ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(ProductId productId);
@@ -172,7 +159,4 @@ public interface IProductDAO extends ISingletonService
 	I_M_Product createProduct(CreateProductRequest request);
 
 	void updateProduct(UpdateProductRequest request);
-
-	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
-
 }

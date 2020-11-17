@@ -39,7 +39,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -162,17 +161,6 @@ public class ProcessParams implements IRangeAwareParams
 			return defaultValue;
 		}
 		return processInfoParameter.getParameterAsInt(defaultValue);
-	}
-	
-	@Override
-	public <T extends RepoIdAware> T getParameterAsId(final String parameterName, final Class<T> type)
-	{
-		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		if (processInfoParameter == null)
-		{
-			return null;
-		}
-		return processInfoParameter.getParameterAsRepoId(type);
 	}
 
 	@Override

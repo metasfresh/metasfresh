@@ -1,10 +1,10 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import DebounceInput from 'react-debounce-input';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { debounce } from 'lodash';
 
 import {
   breadcrumbRequest,
@@ -18,7 +18,6 @@ import {
 import { clearMasterData, closeModal } from '../../actions/WindowActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
-import { DEBOUNCE_TIME_SEARCH } from '../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -32,21 +31,6 @@ class MenuOverlay extends Component {
     deepSubNode: null,
     path: '',
     data: {},
-  };
-
-  overlayItems = []; // this is used to hold the references to items from the results - we need to access the first one
-
-  /**
-   * @summary wraps the debounce function and persists the event before returning the debounced function.
-   *          This in order to get rid of synthetic event warnings
-   * @param  {...any} args
-   */
-  debounceEventHandler = (...args) => {
-    const debounced = debounce(...args);
-    return function(e) {
-      e.persist();
-      return debounced(e);
-    };
   };
 
   /**
@@ -343,45 +327,6 @@ class MenuOverlay extends Component {
   };
 
   /**
-   * @method rafAsync
-   * @summary - uses requestAnimationFrame method which tells the browser that you wish to perform an animation and requests
-   *            that the browser calls a specified function to update an animation before the next repaint
-   */
-  rafAsync = () => {
-    return new Promise((resolve) => {
-      requestAnimationFrame(resolve);
-    });
-  };
-
-  /**
-   * @method checkElement
-   * @summary - function used to make sure the element we are looking for is present at the time we access it
-   */
-  checkElement = () => {
-    const selectedElement = document
-      .getElementsByClassName('menu-overlay-query')[0]
-      .getElementsByClassName('js-menu-item')[0];
-    if (!selectedElement) {
-      return this.rafAsync().then(() => this.checkElement());
-    } else {
-      return Promise.resolve(selectedElement);
-    }
-  };
-
-  /**
-   * @method clearResponseFirstElement
-   * @summary - clears the marking of the first response element, used when you use the arrows, up and down
-   */
-  clearResponseFirstElement = () => {
-    this.checkElement().then((firstResponseElement) => {
-      firstResponseElement &&
-        firstResponseElement.classList.remove(
-          'menu-overlay-search-item-focused'
-        );
-    });
-  };
-
-  /**
    * @method handleKeyDown
    * @summary ToDo: Describe the method.
    * @param {object} event
@@ -390,8 +335,7 @@ class MenuOverlay extends Component {
     const { handleMenuOverlay } = this.props;
     const input = this.searchInputQuery;
 
-    const allMenuItems = document.getElementsByClassName('js-menu-item');
-    const firstMenuItem = allMenuItems[0];
+    const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
     const firstQueryItem = document
       .getElementsByClassName('menu-overlay-query')[0]
       .getElementsByClassName('js-menu-item')[0];
@@ -427,8 +371,6 @@ class MenuOverlay extends Component {
             firstMenuItem.focus();
           }
         }
-        this.clearResponseFirstElement();
-
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -453,7 +395,6 @@ class MenuOverlay extends Component {
         if (document.activeElement.classList.contains('js-menu-item')) {
           this.handleArrowUp();
         }
-        this.clearResponseFirstElement();
 
         break;
       case 'Tab':
@@ -467,15 +408,7 @@ class MenuOverlay extends Component {
         break;
       case 'Enter':
         e.preventDefault();
-        if (
-          firstQueryItem.className.includes('menu-overlay-search-item-focused')
-        ) {
-          firstQueryItem.classList.remove('menu-overlay-search-item-focused');
-          if (this.overlayItems.length) {
-            const { props: itemProps } = this.overlayItems[0];
-            this.linkClick(itemProps);
-          }
-        }
+
         document.activeElement.click();
         break;
       case 'Backspace':
@@ -489,19 +422,6 @@ class MenuOverlay extends Component {
         e.preventDefault();
 
         handleMenuOverlay('', '');
-        break;
-      default:
-        // - clear existing focuses
-        for (let menuItem of allMenuItems) {
-          menuItem.classList.remove('menu-overlay-search-item-focused');
-        }
-        // use check element function to check if the element is there - case when only one single char typed (in this case element might not be yet present)
-        this.checkElement().then((firstResponseElement) => {
-          firstResponseElement &&
-            firstResponseElement.classList.add(
-              'menu-overlay-search-item-focused'
-            );
-        });
     }
   };
 
@@ -604,14 +524,6 @@ class MenuOverlay extends Component {
   }
 
   /**
-   * @summary - sets a reference to the search input
-   * @param {*} ref
-   */
-  setSearchInputQuery = (ref) => {
-    this.searchInputQuery = ref;
-  };
-
-  /**
    * @method render
    * @summary ToDo: Describe the method.
    */
@@ -636,22 +548,19 @@ class MenuOverlay extends Component {
                 <div className="input-flex input-primary">
                   <i className="input-icon meta-icon-preview" />
 
-                  <input
+                  <DebounceInput
+                    debounceTimeout={250}
                     type="text"
-                    ref={this.setSearchInputQuery}
-                    className="input-field focus-visible"
+                    inputRef={(ref) => {
+                      this.searchInputQuery = ref;
+                    }}
+                    className="input-field"
                     placeholder={counterpart.translate(
                       'window.type.placeholder'
                     )}
                     autoComplete="new-password"
-                    onChange={this.debounceEventHandler(
-                      this.handleQuery,
-                      DEBOUNCE_TIME_SEARCH
-                    )}
-                    onKeyDown={this.debounceEventHandler(
-                      this.handleKeyDown,
-                      DEBOUNCE_TIME_SEARCH
-                    )}
+                    onChange={this.handleQuery}
+                    onKeyDown={this.handleKeyDown}
                   />
 
                   {query && (
@@ -665,9 +574,6 @@ class MenuOverlay extends Component {
                 {queriedResults &&
                   queriedResults.map((result, index) => (
                     <MenuOverlayItem
-                      ref={(overlayItem) => {
-                        this.overlayItems[index] = overlayItem;
-                      }}
                       key={index}
                       query={true}
                       transparentBookmarks={true}

@@ -52,8 +52,6 @@ public class ReceiptSchedule
 	@Nullable
 	private final OrderId orderId;
 
-	private int numberOfItemsWithSameOrderId;
-
 	@Nullable
 	private final LocalDateTime dateOrdered;
 

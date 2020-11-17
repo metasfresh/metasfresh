@@ -149,17 +149,16 @@ public class MScheduler extends X_AD_Scheduler
 	/**
 	 * Delete old Request Log
 	 *
+	 * @param trxName
 	 * @return number of records deleted
 	 */
 	public int deleteLog(final String trxName)
 	{
 		if (getKeepLogDays() < 1)
-		{
 			return 0;
-		}
-		final String sql = "DELETE FROM AD_SchedulerLog "
+		String sql = "DELETE FROM AD_SchedulerLog "
 			+ "WHERE AD_Scheduler_ID=" + getAD_Scheduler_ID()
-			+ " AND Created > (now() - INTERVAL '" + getKeepLogDays() + " days')";
+			+ " AND (Created+" + getKeepLogDays() + ") < now()";
 		int no = DB.executeUpdateEx(sql, trxName);
 		return no;
 	}	//	deleteLog

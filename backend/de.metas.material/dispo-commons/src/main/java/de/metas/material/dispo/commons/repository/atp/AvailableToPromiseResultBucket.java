@@ -1,8 +1,14 @@
 package de.metas.material.dispo.commons.repository.atp;
 
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
 import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.AccessLevel;
@@ -10,11 +16,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -240,9 +241,7 @@ final class AvailableToPromiseResultBucket
 		}
 		else
 		{
-			final AttributesKeyPattern groupAttributePattern = AttributesKeyPatterns.ofAttributeKey(groupAttributesKey);
-
-			return groupAttributePattern.matches(requestStorageAttributesKey);
+			return requestStorageAttributesKey.contains(groupAttributesKey);
 		}
 	}
 

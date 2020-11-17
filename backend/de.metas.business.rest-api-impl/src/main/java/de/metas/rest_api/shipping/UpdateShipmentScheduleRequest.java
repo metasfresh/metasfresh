@@ -22,20 +22,21 @@
 
 package de.metas.rest_api.shipping;
 
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.DeliveryRule;
-import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
 
 @Value
 class UpdateShipmentScheduleRequest
@@ -61,9 +62,6 @@ class UpdateShipmentScheduleRequest
 	@Nullable
 	DeliveryRule deliveryRule;
 
-	@Nullable
-	ShipperId shipperId;
-
 	@Builder
 	public UpdateShipmentScheduleRequest(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
@@ -72,8 +70,7 @@ class UpdateShipmentScheduleRequest
 			@Nullable final LocationBasicInfo bPartnerLocation,
 			@Nullable final String bPartnerCode,
 			@Nullable final DeliveryRule deliveryRule,
-			@Nullable final List<CreateAttributeInstanceReq> attributes,
-			@Nullable final ShipperId shipperId)
+			@Nullable final List<CreateAttributeInstanceReq> attributes)
 	{
 		if (Check.isNotBlank(bPartnerCode) && bPartnerLocation == null)
 		{
@@ -85,8 +82,7 @@ class UpdateShipmentScheduleRequest
 				&& bPartnerLocation == null
 				&& Check.isBlank(bPartnerCode)
 				&& Check.isEmpty(attributes)
-				&& deliveryRule == null
-		        && shipperId == null)
+				&& deliveryRule == null)
 		{
 			throw new AdempiereException("Empty request");
 		}
@@ -98,6 +94,5 @@ class UpdateShipmentScheduleRequest
 		this.bPartnerCode = bPartnerCode;
 		this.attributes = attributes;
 		this.deliveryRule = deliveryRule;
-		this.shipperId = shipperId;
 	}
 }

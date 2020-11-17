@@ -40,6 +40,7 @@ public interface IHUAndItemsDAO
 	/**
 	 * Gets parent {@link I_M_HU}
 	 *
+	 * @param hu
 	 * @return parent HU or null
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
@@ -73,6 +74,7 @@ public interface IHUAndItemsDAO
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
+
 	 * @see IHandlingUnitsDAO#createAggregateHUItem(I_M_HU)
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);

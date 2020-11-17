@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for I_Inventory
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_I_Inventory 
@@ -14,9 +14,16 @@ public interface I_I_Inventory
     /** AD_Table_ID=572 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 2 - Client
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
@@ -29,7 +36,8 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Issues.
+	 * Set System-Problem.
+	 * Automatically created or manually entered System Issue
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -38,7 +46,8 @@ public interface I_I_Inventory
 	public void setAD_Issue_ID (int AD_Issue_ID);
 
 	/**
-	 * Get Issues.
+	 * Get System-Problem.
+	 * Automatically created or manually entered System Issue
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -56,8 +65,8 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -66,8 +75,8 @@ public interface I_I_Inventory
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -79,191 +88,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Attribute Code 1.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeCode1 (java.lang.String AttributeCode1);
-
-	/**
-	 * Get Attribute Code 1.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeCode1();
-
-    /** Column definition for AttributeCode1 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode1 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode1", null);
-    /** Column name AttributeCode1 */
-    public static final String COLUMNNAME_AttributeCode1 = "AttributeCode1";
-
-	/**
-	 * Set Attribute Code 2.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeCode2 (java.lang.String AttributeCode2);
-
-	/**
-	 * Get Attribute Code 2.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeCode2();
-
-    /** Column definition for AttributeCode2 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode2 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode2", null);
-    /** Column name AttributeCode2 */
-    public static final String COLUMNNAME_AttributeCode2 = "AttributeCode2";
-
-	/**
-	 * Set Attribute Code 3.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeCode3 (java.lang.String AttributeCode3);
-
-	/**
-	 * Get Attribute Code 3.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeCode3();
-
-    /** Column definition for AttributeCode3 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode3 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode3", null);
-    /** Column name AttributeCode3 */
-    public static final String COLUMNNAME_AttributeCode3 = "AttributeCode3";
-
-	/**
-	 * Set Attribute Code 4.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeCode4 (java.lang.String AttributeCode4);
-
-	/**
-	 * Get Attribute Code 4.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeCode4();
-
-    /** Column definition for AttributeCode4 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode4 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode4", null);
-    /** Column name AttributeCode4 */
-    public static final String COLUMNNAME_AttributeCode4 = "AttributeCode4";
-
-	/**
-	 * Set Attribute Value String 1.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeValueString1 (java.lang.String AttributeValueString1);
-
-	/**
-	 * Get Attribute Value String 1.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeValueString1();
-
-    /** Column definition for AttributeValueString1 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString1 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString1", null);
-    /** Column name AttributeValueString1 */
-    public static final String COLUMNNAME_AttributeValueString1 = "AttributeValueString1";
-
-	/**
-	 * Set Attribute Value String 2.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeValueString2 (java.lang.String AttributeValueString2);
-
-	/**
-	 * Get Attribute Value String 2.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeValueString2();
-
-    /** Column definition for AttributeValueString2 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString2 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString2", null);
-    /** Column name AttributeValueString2 */
-    public static final String COLUMNNAME_AttributeValueString2 = "AttributeValueString2";
-
-	/**
-	 * Set Attribute Value String 3.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeValueString3 (java.lang.String AttributeValueString3);
-
-	/**
-	 * Get Attribute Value String 3.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeValueString3();
-
-    /** Column definition for AttributeValueString3 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString3 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString3", null);
-    /** Column name AttributeValueString3 */
-    public static final String COLUMNNAME_AttributeValueString3 = "AttributeValueString3";
-
-	/**
-	 * Set Attribute Value String 4.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAttributeValueString4 (java.lang.String AttributeValueString4);
-
-	/**
-	 * Get Attribute Value String 4.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAttributeValueString4();
-
-    /** Column definition for AttributeValueString4 */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString4 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString4", null);
-    /** Column name AttributeValueString4 */
-    public static final String COLUMNNAME_AttributeValueString4 = "AttributeValueString4";
-
-	/**
-	 * Set Data import.
+	 * Set Daten Import.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -272,7 +97,7 @@ public interface I_I_Inventory
 	public void setC_DataImport_ID (int C_DataImport_ID);
 
 	/**
-	 * Get Data import.
+	 * Get Daten Import.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -317,7 +142,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
 
 	/**
-	 * Set Cost Price.
+	 * Set Cost Preise.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -326,7 +151,7 @@ public interface I_I_Inventory
 	public void setCostPrice (java.math.BigDecimal CostPrice);
 
 	/**
-	 * Get Cost Price.
+	 * Get Cost Preise.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -340,7 +165,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_CostPrice = "CostPrice";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
@@ -355,7 +180,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
@@ -418,7 +243,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_DateReceived = "DateReceived";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -427,7 +252,7 @@ public interface I_I_Inventory
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -441,7 +266,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set External Header ID.
+	 * Set Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -450,7 +275,7 @@ public interface I_I_Inventory
 	public void setExternalHeaderId (java.lang.String ExternalHeaderId);
 
 	/**
-	 * Get External Header ID.
+	 * Get Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -464,7 +289,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
 
 	/**
-	 * Set External Line ID.
+	 * Set Externe Datensatz-Zeilen-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -473,7 +298,7 @@ public interface I_I_Inventory
 	public void setExternalLineId (java.lang.String ExternalLineId);
 
 	/**
-	 * Get External Line ID.
+	 * Get Externe Datensatz-Zeilen-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -487,7 +312,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_ExternalLineId = "ExternalLineId";
 
 	/**
-	 * Set HU best before date.
+	 * Set Mindesthaltbarkeit.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -496,7 +321,7 @@ public interface I_I_Inventory
 	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate);
 
 	/**
-	 * Get HU best before date.
+	 * Get Mindesthaltbarkeit.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -510,32 +335,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_HU_BestBeforeDate = "HU_BestBeforeDate";
 
 	/**
-	 * Set HU aggregation.
-	 * Specifies whether the respective line is about one HU or about potientielly many HUs.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setHUAggregationType (java.lang.String HUAggregationType);
-
-	/**
-	 * Get HU aggregation.
-	 * Specifies whether the respective line is about one HU or about potientielly many HUs.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getHUAggregationType();
-
-    /** Column definition for HUAggregationType */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_HUAggregationType = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "HUAggregationType", null);
-    /** Column name HUAggregationType */
-    public static final String COLUMNNAME_HUAggregationType = "HUAggregationType";
-
-	/**
-	 * Set Import Error Message.
+	 * Set Import-Fehlermeldung.
 	 * Messages generated from import process
 	 *
 	 * <br>Type: String
@@ -545,7 +345,7 @@ public interface I_I_Inventory
 	public void setI_ErrorMsg (java.lang.String I_ErrorMsg);
 
 	/**
-	 * Get Import Error Message.
+	 * Get Import-Fehlermeldung.
 	 * Messages generated from import process
 	 *
 	 * <br>Type: String
@@ -585,7 +385,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_I_Inventory_ID = "I_Inventory_ID";
 
 	/**
-	 * Set Imported.
+	 * Set Importiert.
 	 * Has this import been processed
 	 *
 	 * <br>Type: YesNo
@@ -595,7 +395,7 @@ public interface I_I_Inventory
 	public void setI_IsImported (boolean I_IsImported);
 
 	/**
-	 * Get Imported.
+	 * Get Importiert.
 	 * Has this import been processed
 	 *
 	 * <br>Type: YesNo
@@ -656,8 +456,8 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_I_LineNo = "I_LineNo";
 
 	/**
-	 * Set Date of inventory.
-	 * Document date of the inventory document
+	 * Set Inventurdatum.
+	 * Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -666,8 +466,8 @@ public interface I_I_Inventory
 	public void setInventoryDate (java.sql.Timestamp InventoryDate);
 
 	/**
-	 * Get Date of inventory.
-	 * Document date of the inventory document
+	 * Get Inventurdatum.
+	 * Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -681,7 +481,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_InventoryDate = "InventoryDate";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -691,7 +491,7 @@ public interface I_I_Inventory
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -729,7 +529,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_IsLotBlocked = "IsLotBlocked";
 
 	/**
-	 * Set Locator Key.
+	 * Set Lagerort-Schlüssel.
 	 * Key of the Warehouse Locator
 	 *
 	 * <br>Type: String
@@ -739,7 +539,7 @@ public interface I_I_Inventory
 	public void setLocatorValue (java.lang.String LocatorValue);
 
 	/**
-	 * Get Locator Key.
+	 * Get Lagerort-Schlüssel.
 	 * Key of the Warehouse Locator
 	 *
 	 * <br>Type: String
@@ -779,36 +579,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Lot = "Lot";
 
 	/**
-	 * Set Attributes.
-	 * Attribute Instances for Products
-	 *
-	 * <br>Type: PAttribute
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
-
-	/**
-	 * Get Attributes.
-	 * Attribute Instances for Products
-	 *
-	 * <br>Type: PAttribute
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_AttributeSetInstance_ID();
-
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
-
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
-
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_AttributeSetInstance>(I_I_Inventory.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
-
-	/**
-	 * Set Phys. Inventory.
+	 * Set Inventur.
 	 * Parameters for a Physical Inventory
 	 *
 	 * <br>Type: Table
@@ -818,7 +589,7 @@ public interface I_I_Inventory
 	public void setM_Inventory_ID (int M_Inventory_ID);
 
 	/**
-	 * Get Phys. Inventory.
+	 * Get Inventur.
 	 * Parameters for a Physical Inventory
 	 *
 	 * <br>Type: Table
@@ -837,7 +608,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
 
 	/**
-	 * Set Phys.Inventory Line.
+	 * Set Inventur-Position.
 	 * Unique line in an Inventory document
 	 *
 	 * <br>Type: Table
@@ -847,7 +618,7 @@ public interface I_I_Inventory
 	public void setM_InventoryLine_ID (int M_InventoryLine_ID);
 
 	/**
-	 * Get Phys.Inventory Line.
+	 * Get Inventur-Position.
 	 * Unique line in an Inventory document
 	 *
 	 * <br>Type: Table
@@ -866,7 +637,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
-	 * Set Locator.
+	 * Set Lagerort.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
@@ -876,7 +647,7 @@ public interface I_I_Inventory
 	public void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Locator.
+	 * Get Lagerort.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
@@ -889,8 +660,8 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -899,8 +670,8 @@ public interface I_I_Inventory
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -912,7 +683,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Warehouse.
+	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
@@ -922,7 +693,7 @@ public interface I_I_Inventory
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
+	 * Get Lager.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
@@ -935,7 +706,8 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -944,7 +716,8 @@ public interface I_I_Inventory
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -958,7 +731,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Process Now.
+	 * Set Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -967,7 +740,7 @@ public interface I_I_Inventory
 	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Process Now.
+	 * Get Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -981,9 +754,9 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Product Value.
-	 * Product identifier;
- "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 * Set Produktschlüssel.
+	 * Produkt-Identifikator;
+ "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -992,9 +765,9 @@ public interface I_I_Inventory
 	public void setProductValue (java.lang.String ProductValue);
 
 	/**
-	 * Get Product Value.
-	 * Product identifier;
- "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 * Get Produktschlüssel.
+	 * Produkt-Identifikator;
+ "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1008,7 +781,8 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set Qty Count.
+	 * Set Zählmenge.
+	 * Gezählte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1017,7 +791,8 @@ public interface I_I_Inventory
 	public void setQtyCount (java.math.BigDecimal QtyCount);
 
 	/**
-	 * Get Qty Count.
+	 * Get Zählmenge.
+	 * Gezählte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1056,7 +831,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_SerNo = "SerNo";
 
 	/**
-	 * Set Geschäftspartner.
+	 * Set Unterlieferanten.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1065,7 +840,7 @@ public interface I_I_Inventory
 	public void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
+	 * Get Unterlieferanten.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1124,7 +899,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set UPC.
-	 * Bar Code (Universal Product Code or its superset European Article Number)
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1134,7 +909,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get UPC.
-	 * Bar Code (Universal Product Code or its superset European Article Number)
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1148,7 +923,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_UPC = "UPC";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -1163,7 +938,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
@@ -1177,7 +952,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Warehouse Locator Identifier.
-	 * Text that contains identifier of earehosue and locator
+	 * Text that contains identifier of warehouse. locator and dimensions
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1187,7 +962,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Warehouse Locator Identifier.
-	 * Text that contains identifier of earehosue and locator
+	 * Text that contains identifier of warehouse. locator and dimensions
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1201,7 +976,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_WarehouseLocatorIdentifier = "WarehouseLocatorIdentifier";
 
 	/**
-	 * Set Warehouse Key.
+	 * Set Lager-Schlüssel.
 	 * Key of the Warehouse
 	 *
 	 * <br>Type: String
@@ -1211,7 +986,7 @@ public interface I_I_Inventory
 	public void setWarehouseValue (java.lang.String WarehouseValue);
 
 	/**
-	 * Get Warehouse Key.
+	 * Get Lager-Schlüssel.
 	 * Key of the Warehouse
 	 *
 	 * <br>Type: String
@@ -1226,7 +1001,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_WarehouseValue = "WarehouseValue";
 
 	/**
-	 * Set Aisle.
+	 * Set Gang.
 	 * X-Dimension, z.B. Gang
 	 *
 	 * <br>Type: String
@@ -1236,7 +1011,7 @@ public interface I_I_Inventory
 	public void setX (java.lang.String X);
 
 	/**
-	 * Get Aisle.
+	 * Get Gang.
 	 * X-Dimension, z.B. Gang
 	 *
 	 * <br>Type: String
@@ -1274,7 +1049,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_X1 = "X1";
 
 	/**
-	 * Set Tray.
+	 * Set Fach.
 	 * Y-Dimension, z.B. Fach
 	 *
 	 * <br>Type: String
@@ -1284,7 +1059,7 @@ public interface I_I_Inventory
 	public void setY (java.lang.String Y);
 
 	/**
-	 * Get Tray.
+	 * Get Fach.
 	 * Y-Dimension, z.B. Fach
 	 *
 	 * <br>Type: String
@@ -1299,7 +1074,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Y = "Y";
 
 	/**
-	 * Set Level.
+	 * Set Ebene.
 	 * Z-Dimension, z.B. Ebene
 	 *
 	 * <br>Type: String
@@ -1309,7 +1084,7 @@ public interface I_I_Inventory
 	public void setZ (java.lang.String Z);
 
 	/**
-	 * Get Level.
+	 * Get Ebene.
 	 * Z-Dimension, z.B. Ebene
 	 *
 	 * <br>Type: String

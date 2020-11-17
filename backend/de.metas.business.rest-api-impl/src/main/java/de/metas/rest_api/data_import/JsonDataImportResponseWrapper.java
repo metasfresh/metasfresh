@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.rest_api.utils.JsonErrors;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -38,7 +37,7 @@ import lombok.Value;
 @Value
 public class JsonDataImportResponseWrapper
 {
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable
 	List<JsonErrorItem> errors;
 
@@ -48,20 +47,8 @@ public class JsonDataImportResponseWrapper
 
 	public static JsonDataImportResponseWrapper ok(final JsonDataImportResponse response)
 	{
-		final List<JsonErrorItem> errors = null;
-		return new JsonDataImportResponseWrapper(errors, response);
-	}
-
-	public static JsonDataImportResponseWrapper error(@NonNull final List<JsonErrorItem> errors)
-	{
-		final JsonDataImportResponse response = null;
-		return new JsonDataImportResponseWrapper(errors, response);
-	}
-
-	public static JsonDataImportResponseWrapper error(@NonNull final JsonDataImportResponse response)
-	{
-		final List<JsonErrorItem> errors = null;
-		return new JsonDataImportResponseWrapper(errors, response);
+		final List<JsonErrorItem> error = null;
+		return new JsonDataImportResponseWrapper(error, response);
 	}
 
 	public static JsonDataImportResponseWrapper error(final Throwable throwable, final String adLanguage)

@@ -361,7 +361,6 @@ public class WebuiHUTransformCommand
 				.collect(ImmutableSet.toImmutableSet());
 
 		return WebuiHUTransformCommandResult.builder()
-				.huIdsCreated(huIdsToAddToView)
 				.huIdsToAddToView(huIdsToAddToView)
 				.huIdChanged(tuRow.getHURowId().getTopLevelHUId())
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
@@ -392,8 +391,7 @@ public class WebuiHUTransformCommand
 				.collect(ImmutableSet.toImmutableSet());
 
 		final WebuiHUTransformCommandResultBuilder resultBuilder = WebuiHUTransformCommandResult.builder()
-				.huIdsToAddToView(huIdsToAddToView)
-				.huIdsCreated(huIdsToAddToView);
+				.huIdsToAddToView(huIdsToAddToView);
 
 		if (handlingUnitsBL.isDestroyedRefreshFirst(fromTopLevelHU))
 		{

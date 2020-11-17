@@ -53,8 +53,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 /* package */class WorkPackageBuilder implements IWorkPackageBuilder
 {
 	// Parameters
@@ -128,9 +126,9 @@ import javax.annotation.Nullable;
 					Services.get(IQueueDAO.class).save(asyncBatch);
 				}
 
-				if (userInChargeId != null)
+			if (userInChargeId != null)
 				{
-					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
+				workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
 				}
 
 				// Create workpackage parameters
@@ -299,7 +297,7 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public IWorkPackageBuilder setUserInChargeId(@Nullable final UserId userInChargeId)
+	public IWorkPackageBuilder setUserInChargeId(final UserId userInChargeId)
 	{
 		assertNotBuilt();
 		this.userInChargeId = userInChargeId;

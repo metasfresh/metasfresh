@@ -1,8 +1,10 @@
+package de.metas.currency.impl;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,8 +21,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.currency.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -167,7 +167,7 @@ public class CurrencyBL implements ICurrencyBL
 				.currencyId(currencyToId)
 				.conversionRateOrNull(conversionRateBD)
 				.build();
-	}    // convert
+	}	// convert
 
 	private CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
 	{
@@ -217,7 +217,6 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable final LocalDate conversionDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
@@ -238,7 +237,6 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull final LocalDate convDate,
 			@Nullable final ConversionTypeMethod conversionType,
@@ -272,7 +270,6 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyRate == null ? null : currencyRate.getConversionRate();
 	}
 
-	@Nullable
 	private CurrencyRate getCurrencyRateOrNull(
 			@NonNull final CurrencyConversionContext conversionCtx,
 			@NonNull final CurrencyId currencyFromId,
@@ -299,30 +296,29 @@ public class CurrencyBL implements ICurrencyBL
 			}
 		}
 
-		final CurrencyPrecision toCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyToId));
-		final CurrencyPrecision fromCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyFromId));
+		final CurrencyPrecision currencyPrecision = conversionCtx.getPrecision()
+				.orElseGet(() -> getStdPrecision(currencyToId));
 
 		return CurrencyRate.builder()
 				.conversionRate(conversionRate)
 				.fromCurrencyId(currencyFromId)
 				.toCurrencyId(currencyToId)
-				.toCurrencyPrecision(toCurrencyPrecision)
-				.fromCurrencyPrecision(fromCurrencyPrecision)
+				.currencyPrecision(currencyPrecision)
 				.conversionTypeId(conversionTypeId)
 				.conversionDate(conversionDate)
 				.build();
 	}
 
 	@Override
-	public @NonNull CurrencyRate getCurrencyRate(
+	public CurrencyRate getCurrencyRate(
 			@NonNull final CurrencyConversionContext conversionCtx,
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId)
+			@NonNull final CurrencyId currencyFromId,
+			@NonNull final CurrencyId currencyToId)
 	{
-		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, fromCurrencyId, toCurrencyId);
+		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
 		if (currencyRate == null)
 		{
-			throw new NoCurrencyRateFoundException(conversionCtx, fromCurrencyId, toCurrencyId);
+			throw new NoCurrencyRateFoundException(conversionCtx, currencyFromId, currencyToId);
 		}
 		return currencyRate;
 	}

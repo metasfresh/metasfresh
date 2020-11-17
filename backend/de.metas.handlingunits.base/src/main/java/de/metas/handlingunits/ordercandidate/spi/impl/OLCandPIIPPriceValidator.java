@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -61,11 +60,11 @@ import de.metas.util.Services;
 public class OLCandPIIPPriceValidator implements IOLCandValidator
 {
 
-	/** @return {@code 30}; needs to run after {@link DefaultOLCandValidator} because it needs that validator's results. (concrete example: PricingsystemId) */
+	/** @return {@code 20}; needs to run after {@link DefaultOLCandValidator} because it needs that validator's results. (concrete example: PricingsystemId) */
 	@Override
 	public int getSeqNo()
 	{
-		return 30;
+		return 20;
 	}
 
 	/**
@@ -76,10 +75,11 @@ public class OLCandPIIPPriceValidator implements IOLCandValidator
 	 * </ul>
 	 */
 	@Override
-	public void validate(@NonNull final I_C_OLCand olCand)
+	public void validate(final I_C_OLCand olCand)
 	{
 		// If there is a PIIP, then verify that there is pricing info for the packing material. Otherwise, completing the order will fail later on.
-		final I_M_HU_PI_Item_Product huPIItemProduct = OLCandPIIPUtil.extractHUPIItemProductOrNull(olCand);
+		final OLCandHUPackingAware huPackingWare = new OLCandHUPackingAware(olCand);
+		final I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(huPackingWare);
 		if (huPIItemProduct != null)
 		{
 			final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
@@ -92,7 +92,15 @@ public class OLCandPIIPPriceValidator implements IOLCandValidator
 		}
 	}
 
+	private I_M_HU_PI_Item_Product extractHUPIItemProductOrNull(final IHUPackingAware huPackingAware)
+	{
+		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(huPackingAware.getM_HU_PI_Item_Product_ID());
+		return piItemProductId != null
+				? piPIItemProductBL.getById(piItemProductId)
+				: null;
+	}
 
 	private void checkForPrice(final I_C_OLCand olCand, final ProductId packingMaterialProductId)
 	{

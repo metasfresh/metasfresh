@@ -30,8 +30,6 @@ import org.springframework.util.MultiValueMap;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static de.metas.postgrest.client.PostgRESTResponseFormat.JSON;
-
 @Value
 @Builder
 public class GetRequest
@@ -39,13 +37,9 @@ public class GetRequest
 	@NonNull
 	String baseURL;
 
-	@Builder.Default
-	PostgRESTResponseFormat responseFormat = JSON;
-
 	@Nullable
 	List<String> pathVariables;
 
 	@Nullable
 	MultiValueMap<String, String> queryParameters;
-
 }

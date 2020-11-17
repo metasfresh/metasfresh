@@ -25,7 +25,6 @@ package de.metas.inoutcandidate.async;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.async.api.IQueueDAO;
@@ -40,14 +39,18 @@ import de.metas.util.Services;
 /**
  * Process given models and creates {@link I_M_ReceiptSchedule} records.
  *
- * Input: models (I_C_Order)
+ * Input: models (e.g. I_C_Order etc)
  *
  * Output: {@link I_M_ReceiptSchedule}s
+ *
+ * @author lc
+ *
  */
 public class GenerateReceiptScheduleWorkpackageProcessor implements IWorkpackageProcessor
 {
+
 	@Override
-	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
@@ -68,4 +71,5 @@ public class GenerateReceiptScheduleWorkpackageProcessor implements IWorkpackage
 
 		return Result.SUCCESS;
 	}
+
 }

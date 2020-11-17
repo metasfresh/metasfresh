@@ -66,8 +66,8 @@ class Attachments extends Component {
 }
 
 Attachments.propTypes = {
-  attachments: PropTypes.array,
-  emailId: PropTypes.string,
+  attachments: PropTypes.object,
+  emailId: PropTypes.number,
   getEmail: PropTypes.func,
 };
 

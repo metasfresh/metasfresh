@@ -25,7 +25,6 @@ package de.metas.handlingunits.model.validator;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPackageBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.exceptions.HUException;
@@ -36,7 +35,6 @@ import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
@@ -64,9 +62,6 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-
 	@Init
 	public void init()
 	{
@@ -295,13 +290,9 @@ public class M_InOut
 
 		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
 
-		// the handling units are already created
 		if (!existingHandlingUnits.isEmpty())
 		{
-			final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(customerReturn);
-
-			//make sure they all have status active
-			existingHandlingUnits.forEach(hu -> handlingUnitsBL.setHUStatus(hu, contextProvider, X_M_HU.HUSTATUS_Active));
+			// the handling units are already created
 			return;
 		}
 

@@ -45,7 +45,7 @@ public enum CandidateBusinessCase
 
 	PURCHASE(PurchaseDetail.class);
 
-	CandidateBusinessCase(final Class<? extends BusinessCaseDetail> detailClass)
+	private CandidateBusinessCase(final Class<? extends BusinessCaseDetail> detailClass)
 	{
 		this.detailClass = detailClass;
 	}

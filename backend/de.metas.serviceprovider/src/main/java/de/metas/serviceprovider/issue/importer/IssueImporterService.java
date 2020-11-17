@@ -23,7 +23,6 @@
 package de.metas.serviceprovider.issue.importer;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -82,14 +81,7 @@ public class IssueImporterService
 	private final IADReferenceDAO referenceDAO;
 	private final IssueLabelRepository issueLabelRepository;
 
-	public IssueImporterService(
-			final ImportQueue<ImportIssueInfo> importIssuesQueue,
-			final MilestoneRepository milestoneRepository,
-			final IssueRepository issueRepository,
-			final ExternalReferenceRepository externalReferenceRepository,
-			final ITrxManager trxManager,
-			final IADReferenceDAO referenceDAO,
-			final IssueLabelRepository issueLabelRepository)
+	public IssueImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final MilestoneRepository milestoneRepository, final IssueRepository issueRepository, final ExternalReferenceRepository externalReferenceRepository, final ITrxManager trxManager, final IADReferenceDAO referenceDAO, final IssueLabelRepository issueLabelRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.milestoneRepository = milestoneRepository;
@@ -100,11 +92,10 @@ public class IssueImporterService
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
-	public void importIssues(
-			@NonNull final ImmutableList<ImportIssuesRequest> requestList,
-			@NonNull final IssueImporter issueImporter)
+	public void importIssues(@NonNull final ImmutableList<ImportIssuesRequest> requestList,
+			                 @NonNull final IssueImporter issueImporter)
 	{
-		final CompletableFuture<Void> completableFuture =
+		final CompletableFuture completableFuture =
 				CompletableFuture.runAsync(() -> issueImporter.start(requestList));
 
 		while (!completableFuture.isDone() || !importIssuesQueue.isEmpty())
@@ -113,7 +104,7 @@ public class IssueImporterService
 
 			final ArrayList<IssueId> importedIdsCollector = new ArrayList<>();
 
-			issueInfos.forEach(issue -> trxManager.runInNewTrx(() -> importIssue(issue, importedIdsCollector)));
+			issueInfos.forEach(issue -> trxManager.runInNewTrx( () -> importIssue(issue, importedIdsCollector)));
 
 			issueRepository.invalidateCacheForIds(ImmutableList.copyOf(importedIdsCollector));
 		}
@@ -124,25 +115,10 @@ public class IssueImporterService
 		}
 	}
 
-	@VisibleForTesting
-	void importIssue(
-			@NonNull final ImportIssueInfo importIssueInfo,
-			@NonNull final List<IssueId> importedIdsCollector)
+	private void importIssue(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final List<IssueId> importedIdsCollector)
 	{
 		try
 		{
-			final IssueId existingIssueId = getIssueIdByExternalId(importIssueInfo.getExternalIssueId());
-			final Optional<IssueEntity> existingEffortIssue = existingIssueId != null
-					? Optional.of(issueRepository.getById(existingIssueId))
-					: Optional.empty();
-
-			final boolean processed = existingEffortIssue.map(IssueEntity::isProcessed).orElse(false);
-			if (processed)
-			{
-				log.debug("Skip updating already processed issue: {}", existingEffortIssue);
-				return;
-			}
-
 			createMissingRefListForLabels(importIssueInfo.getIssueLabels());
 
 			if (importIssueInfo.getMilestone() != null)
@@ -150,8 +126,14 @@ public class IssueImporterService
 				importMilestone(importIssueInfo.getMilestone());
 			}
 
+			final IssueId existingIssueId = getIssueIdByExternalId(importIssueInfo.getExternalIssueId());
 
-			final IssueEntity issueEntity = existingEffortIssue
+			final Optional<IssueEntity> existingEffortIssue = existingIssueId != null
+					? Optional.of(issueRepository.getById(existingIssueId))
+					: Optional.empty();
+
+			final IssueEntity issueEntity;
+			issueEntity = existingEffortIssue
 					.map(issue -> mergeIssueInfoWithEntity(importIssueInfo, issue))
 					.orElseGet(() -> buildIssue(importIssueInfo));
 
@@ -241,7 +223,7 @@ public class IssueImporterService
 				.assigneeId(importIssueInfo.getAssigneeId())
 				.milestoneId(milestoneId)
 				.name(importIssueInfo.getName())
-				.searchKey(importIssueInfo.getSearchKey())
+				.searchKey( importIssueInfo.getSearchKey() )
 				.description(importIssueInfo.getDescription())
 				.type(IssueType.EXTERNAL)
 				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
@@ -256,13 +238,11 @@ public class IssueImporterService
 				.status(importIssueInfo.getStatus())
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
-				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.build();
 	}
 
 	@NonNull
-	private IssueEntity mergeIssueInfoWithEntity(
-			@NonNull final ImportIssueInfo importIssueInfo,
+	private IssueEntity mergeIssueInfoWithEntity(@NonNull final ImportIssueInfo importIssueInfo,
 			@NonNull final IssueEntity existingEffortIssue)
 	{
 		final IssueId parentIssueId = importIssueInfo.getParentIssueId() != null
@@ -280,7 +260,6 @@ public class IssueImporterService
 
 		final IssueEntity mergedIssueEntity = existingEffortIssue
 				.toBuilder()
-				.name(importIssueInfo.getName())
 				.parentIssueId(parentIssueId)
 				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
@@ -294,7 +273,6 @@ public class IssueImporterService
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.roughEstimation(importIssueInfo.getRoughEstimation())
-				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.build();
 
 		mergedIssueEntity.setBudgetedEffortIfNotSet(importIssueInfo.getBudget());
@@ -302,6 +280,7 @@ public class IssueImporterService
 
 		return mergedIssueEntity;
 	}
+
 
 	@Nullable
 	private IssueId getIssueIdByExternalId(@Nullable final ExternalId externalId)

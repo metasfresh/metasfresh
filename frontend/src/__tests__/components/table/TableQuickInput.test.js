@@ -4,15 +4,11 @@ import renderer from 'react-test-renderer';
 import nock from 'nock';
 
 import quickInputData from '../../../../test_setup/fixtures/table/table_quickinput.json';
-import { TableQuickInput } from '../../../components/table/TableQuickInput';
+import TableQuickInput from '../../../components/table/TableQuickInput';
 
 const initialProps = {
   ...quickInputData.basicProps,
-  modalVisible: false,
-  timeZone: 'Europe/Berlin',
   addNotification: jest.fn(),
-  allowShortcut: jest.fn(),
-  disableShortcut: jest.fn(),
 };
 
 // leaving this so that I won't have to look it up again in case we need it
@@ -39,7 +35,6 @@ describe('TableQuickInput', () => {
     const wrapperTableCMenu = shallow(
       <TableQuickInput {...initialProps} />
     );
-
     expect(wrapperTableCMenu.find('.quick-input-container').length).toBe(1);
 
     // const nockCalls = nock.recorder.play() // "play" the recording into a variable

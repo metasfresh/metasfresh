@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Value
@@ -42,10 +41,6 @@ public class JSONInvoiceDetailItem
 	String description;
 
 	LocalDate date;
-	
-	BigDecimal price;
-	
-	String note;
 
 	@JsonCreator
 	@Builder
@@ -53,15 +48,11 @@ public class JSONInvoiceDetailItem
 			@JsonProperty("seqNo") @Nullable final Integer seqNo,
 			@JsonProperty("label") @Nullable final String label,
 			@JsonProperty("description") @Nullable final String description,
-			@JsonProperty("date") @Nullable final LocalDate date,
-	        @JsonProperty("price") @Nullable final BigDecimal price,
-	        @JsonProperty("note") @Nullable final String note)
+			@JsonProperty("date") @Nullable final LocalDate date)
 	{
 		this.seqNo = seqNo;
 		this.label = label;
 		this.description = description;
 		this.date = date;
-		this.price = price;
-		this.note = note;
 	}
 }

@@ -22,7 +22,10 @@
 
 package de.metas.handlingunits.impl;
 
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -31,9 +34,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
 @Builder
@@ -46,14 +46,14 @@ public class CreatePackagesForInOutRequest
 	boolean processed;
 
 	@Nullable
-	List<PackageInfo> packageInfos;
+	List<String> trackingNumbers;
 
 	public static CreatePackagesForInOutRequest ofShipment(@NonNull final I_M_InOut shipment)
 	{
 		return CreatePackagesForInOutRequest.builder()
 				.shipment(shipment)
 				.processed(false)
-				.packageInfos(null)
+				.trackingNumbers(null)
 				.build();
 	}
 

@@ -20,7 +20,10 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	int updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest request);
 
 	/**
+	 *
 	 * @return true if updater is currently running in this thread
 	 */
 	boolean isRunning();
+
+	boolean isChangedByUpdateProcess(I_M_ShipmentSchedule sched);
 }

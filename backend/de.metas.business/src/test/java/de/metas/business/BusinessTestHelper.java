@@ -1,23 +1,13 @@
 package de.metas.business;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.ProductType;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -36,12 +26,24 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_UOM;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.product.ProductId;
+import de.metas.product.ProductType;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -90,17 +92,14 @@ public class BusinessTestHelper
 	public I_C_UOM createUomKg()
 	{
 		final I_C_UOM uomKg = createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_3);
-		uomKg.setX12DE355(X12DE355.KILOGRAM.getCode());
+		uomKg.setX12DE355("KGM");
 		saveRecord(uomKg);
 		return uomKg;
 	}
 
 	public I_C_UOM createUomEach()
 	{
-		final I_C_UOM uom = createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
-		uom.setX12DE355(X12DE355.EACH.getCode());
-		saveRecord(uom);
-		return uom;
+		return createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
 	}
 
 	public I_C_UOM createUomPCE()
@@ -128,17 +127,17 @@ public class BusinessTestHelper
 
 	public I_C_UOM createUOM(final String name)
 	{
-		final X12DE355 x12de355 = X12DE355.ofCode(name);
+		final String x12de355 = name;
 		return createUOM(name, x12de355);
 	}
 
-	public I_C_UOM createUOM(final String name, final X12DE355 x12de355)
+	public I_C_UOM createUOM(final String name, final String x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
 		POJOWrapper.setInstanceName(uom, name);
 		uom.setName(name);
 		uom.setUOMSymbol(name);
-		uom.setX12DE355(x12de355 != null ? x12de355.getCode() : null);
+		uom.setX12DE355(x12de355);
 
 		saveRecord(uom);
 

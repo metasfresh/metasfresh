@@ -365,14 +365,14 @@ Actions.propTypes = {
 };
 
 const mapStateToProps = (state) => {
-  const { includedView } = state.viewHandler;
+  const includedView = state.listHandler.includedView;
   const result = {
     plugins: state.pluginsHandler.files,
   };
 
   if (includedView && includedView.viewId) {
     const childViewTableId = getTableId({
-      windowId: includedView.windowId,
+      windowId: includedView.windowType,
       viewId: includedView.viewId,
     });
     const childSelector = getSelection();

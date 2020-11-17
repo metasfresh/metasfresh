@@ -1,18 +1,20 @@
 package de.metas.material.event;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
-import de.metas.logging.LogManager;
-import lombok.NonNull;
+import java.util.Collection;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+
+import de.metas.event.log.EventLogUserService;
+import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -79,7 +81,7 @@ public class MaterialEventHandlerRegistry
 
 		for (final MaterialEventHandler handler : handlersForEventClass)
 		{
-			try (final MDCCloseable ignored = MDC.putCloseable("MaterialEventHandlerClass", handler.getClass().getName()))
+			try (final MDCCloseable eventHandlerMDC = MDC.putCloseable("MaterialEventHandlerClass", handler.getClass().getName()))
 			{
 				@SuppressWarnings("unchecked")
 				final InvokeHandlerAndLogRequest request = InvokeHandlerAndLogRequest.builder()

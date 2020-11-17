@@ -22,9 +22,35 @@
 
 package de.metas.ui.web.window.controller;
 
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
@@ -77,28 +103,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 
 @Api
 @RestController
@@ -106,38 +110,30 @@ import java.util.function.Predicate;
 public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
-
 	private static final String PARAM_Advanced = "advanced";
 	private static final String PARAM_Advanced_DefaultValue = "false";
 	private static final String PARAM_FieldsList = "fields";
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
-	private final UserSession userSession;
-	private final DocumentCollection documentCollection;
-	private final DocumentChangeLogService documentChangeLogService;
-	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
-	private final ProcessRestController processRestController;
-	private final DocumentWebsocketPublisher websocketPublisher;
-	private final CommentsService commentsService;
+	@Autowired
+	private UserSession userSession;
 
-	public WindowRestController(
-			@NonNull final UserSession userSession,
-			@NonNull final DocumentCollection documentCollection,
-			@NonNull final DocumentChangeLogService documentChangeLogService,
-			@NonNull final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
-			@NonNull final ProcessRestController processRestController,
-			@NonNull final DocumentWebsocketPublisher websocketPublisher,
-			@NonNull final CommentsService commentsService)
-	{
-		this.userSession = userSession;
-		this.documentCollection = documentCollection;
-		this.documentChangeLogService = documentChangeLogService;
-		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
-		this.processRestController = processRestController;
-		this.websocketPublisher = websocketPublisher;
-		this.commentsService = commentsService;
-	}
+	@Autowired
+	private DocumentCollection documentCollection;
+	@Autowired
+	private DocumentChangeLogService documentChangeLogService;
+	@Autowired
+	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+
+	@Autowired
+	private ProcessRestController processRestController;
+
+	@Autowired
+	private DocumentWebsocketPublisher websocketPublisher;
+
+	@Autowired
+	private CommentsService commentsService;
 
 	private JSONOptionsBuilder newJSONOptions()
 	{
@@ -206,13 +202,15 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
-			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			@RequestParam(name = "noTabs", required = false, defaultValue = "false") final boolean noTabs)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
 				.showOnlyFieldsListStr(fieldsListStr)
 				.showAdvancedFields(advanced)
+				.doNotFetchIncludedTabs(noTabs)
 				.build();
 		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
 	}
@@ -274,23 +272,12 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public List<JSONDocument> getIncludedTabRow(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
-			@PathVariable("tabId") final String tabIdStr
-			//
-			,
-			@PathVariable("rowId") final String rowIdStr
-			//
-			,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr
-			//
-			,
-			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String tabIdStr //
+			, @PathVariable("rowId") final String rowIdStr //
+			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -343,16 +330,10 @@ public class WindowRestController
 	 */
 	@PatchMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> patchRootDocument(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
-			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
-			//
-			,
-			@RequestBody final List<JSONDocumentChangedEvent> events)
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
+			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setDocumentType(WindowId.fromJson(windowIdStr))
@@ -365,22 +346,12 @@ public class WindowRestController
 
 	@PatchMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public List<JSONDocument> patchIncludedDocument(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
-			@PathVariable("tabId") final String detailIdStr
-			//
-			,
-			@PathVariable("rowId") final String rowIdStr
-			//
-			,
-			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
-			//
-			,
-			@RequestBody final List<JSONDocumentChangedEvent> events)
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String detailIdStr //
+			, @PathVariable("rowId") final String rowIdStr //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
+			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setDocumentType(WindowId.fromJson(windowIdStr))
@@ -446,11 +417,8 @@ public class WindowRestController
 
 	@DeleteMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> deleteRootDocument(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -460,11 +428,8 @@ public class WindowRestController
 
 	@DeleteMapping("/{windowId}")
 	public List<JSONDocument> deleteRootDocumentsList(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@RequestParam(name = "ids") @ApiParam("comma separated documentIds") final String idsListStr
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @RequestParam(name = "ids") @ApiParam("comma separated documentIds") final String idsListStr //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -479,17 +444,10 @@ public class WindowRestController
 
 	@DeleteMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public List<JSONDocument> deleteIncludedDocument(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("tabId") final String tabId
-			//
-			,
-			@PathVariable("rowId") final String rowId
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -499,17 +457,10 @@ public class WindowRestController
 
 	@DeleteMapping("/{windowId}/{documentId}/{tabId}")
 	public List<JSONDocument> deleteIncludedDocumentsList(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("tabId") final String tabId
-			//
-			,
-			@RequestParam(name = "ids") @ApiParam("comma separated rowIds") final String rowIdsListStr
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @RequestParam(name = "ids") @ApiParam("comma separated rowIds") final String rowIdsListStr //
 	)
 	{
 		final DocumentPath documentPath = DocumentPath.builder()
@@ -545,17 +496,10 @@ public class WindowRestController
 	 */
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getDocumentFieldTypeahead(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("fieldName") final String fieldName
-			//
-			,
-			@RequestParam("query") final String query
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("fieldName") final String fieldName //
+			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -568,23 +512,12 @@ public class WindowRestController
 	 */
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getDocumentFieldTypeahead(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("tabId") final String tabId
-			//
-			,
-			@PathVariable("rowId") final String rowId
-			//
-			,
-			@PathVariable("fieldName") final String fieldName
-			//
-			,
-			@RequestParam("query") final String query
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
+			, @PathVariable("fieldName") final String fieldName //
+			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -595,10 +528,7 @@ public class WindowRestController
 	/**
 	 * Typeahead: unified implementation
 	 */
-	private JSONLookupValuesList getDocumentFieldTypeahead(
-			final DocumentPath documentPath,
-			final String fieldName,
-			final String query)
+	private JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
 	{
 		userSession.assertLoggedIn();
 
@@ -613,14 +543,9 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("fieldName") final String fieldName
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("fieldName") final String fieldName //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -630,20 +555,11 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("tabId") final String tabId
-			//
-			,
-			@PathVariable("rowId") final String rowId
-			//
-			,
-			@PathVariable("fieldName") final String fieldName
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
+			, @PathVariable("fieldName") final String fieldName //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -651,9 +567,7 @@ public class WindowRestController
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
 
-	private JSONLookupValuesList getDocumentFieldDropdown(
-			final DocumentPath documentPath,
-			final String fieldName)
+	private JSONLookupValuesList getDocumentFieldDropdown(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
@@ -667,14 +581,9 @@ public class WindowRestController
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("fieldName") final String fieldName
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("fieldName") final String fieldName //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -685,20 +594,11 @@ public class WindowRestController
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentId
-			//
-			,
-			@PathVariable("tabId") final String tabId
-			//
-			,
-			@PathVariable("rowId") final String rowId
-			//
-			,
-			@PathVariable("fieldName") final String fieldName
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
+			, @PathVariable("fieldName") final String fieldName //
 	)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -706,9 +606,7 @@ public class WindowRestController
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
 
-	private JSONZoomInto getDocumentFieldZoomInto(
-			final DocumentPath documentPath,
-			final String fieldName)
+	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
@@ -737,9 +635,7 @@ public class WindowRestController
 				.build();
 	}
 
-	private static DocumentZoomIntoInfo getDocumentFieldZoomInto(
-			@NonNull final Document document,
-			@NonNull final String fieldName)
+	private static DocumentZoomIntoInfo getDocumentFieldZoomInto(@NonNull final Document document, @NonNull final String fieldName)
 	{
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		final DocumentFieldDescriptor singleKeyFieldDescriptor = entityDescriptor.getSingleIdFieldOrNull();
@@ -886,13 +782,9 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")
 	public ResponseEntity<byte[]> getDocumentPrint(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
-			@PathVariable("filename") final String filename)
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("filename") final String filename)
 	{
 		userSession.assertLoggedIn();
 
@@ -907,8 +799,8 @@ public class WindowRestController
 		headers.setContentType(MediaType.parseMediaType(reportContentType));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-		return new ResponseEntity<>(reportData, headers, HttpStatus.OK);
+		final ResponseEntity<byte[]> response = new ResponseEntity<>(reportData, headers, HttpStatus.OK);
+		return response;
 	}
 
 	/**
@@ -916,11 +808,8 @@ public class WindowRestController
 	 */
 	@GetMapping("/{windowId}/{documentId}/processNewRecord")
 	public int processRecord(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -957,15 +846,11 @@ public class WindowRestController
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
-			@PathVariable("tabId") @SuppressWarnings("unused") final String tabIdStr_NOT_USED,
-			@PathVariable("rowId") @SuppressWarnings("unused") final String rowIdStr_NOT_USED)
+			@PathVariable("tabId") final String tabIdStr_NOTUSED,
+			@PathVariable("rowId") final String rowIdStr_NOTUSED)
 	{
-		userSession.assertLoggedIn();
-
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
-
 		// For now it's OK if we invalidate the whole root document
-		documentCollection.invalidateRootDocument(documentPath);
+		discardChanges(windowIdStr, documentIdStr);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/changeLog")

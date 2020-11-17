@@ -2,7 +2,7 @@ package de.metas.handlingunits.model;
 
 
 /** Generated Interface for M_InventoryLine_HU
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_InventoryLine_HU 
@@ -14,10 +14,17 @@ public interface I_M_InventoryLine_HU
     /** AD_Table_ID=541345 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -29,8 +36,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -39,8 +46,8 @@ public interface I_M_InventoryLine_HU
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -52,8 +59,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
+	 * Set Maßeinheit.
+	 * Maßeinheit
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -62,8 +69,8 @@ public interface I_M_InventoryLine_HU
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get UOM.
-	 * Unit of Measure
+	 * Get Maßeinheit.
+	 * Maßeinheit
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -75,8 +82,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -90,8 +97,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -103,8 +110,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -113,8 +120,8 @@ public interface I_M_InventoryLine_HU
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -155,35 +162,6 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Phys. Inventory.
-	 * Parameters for a Physical Inventory
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Inventory_ID (int M_Inventory_ID);
-
-	/**
-	 * Get Phys. Inventory.
-	 * Parameters for a Physical Inventory
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Inventory_ID();
-
-	public org.compiere.model.I_M_Inventory getM_Inventory();
-
-	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory);
-
-    /** Column definition for M_Inventory_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_M_Inventory> COLUMN_M_Inventory_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_M_Inventory>(I_M_InventoryLine_HU.class, "M_Inventory_ID", org.compiere.model.I_M_Inventory.class);
-    /** Column name M_Inventory_ID */
-    public static final String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
-
-	/**
 	 * Set M_InventoryLine_HU.
 	 *
 	 * <br>Type: ID
@@ -207,8 +185,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_M_InventoryLine_HU_ID = "M_InventoryLine_HU_ID";
 
 	/**
-	 * Set Phys.Inventory Line.
-	 * Unique line in an Inventory document
+	 * Set Inventur-Position.
+	 * Eindeutige Position in einem Inventurdokument
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -217,8 +195,8 @@ public interface I_M_InventoryLine_HU
 	public void setM_InventoryLine_ID (int M_InventoryLine_ID);
 
 	/**
-	 * Get Phys.Inventory Line.
-	 * Unique line in an Inventory document
+	 * Get Inventur-Position.
+	 * Eindeutige Position in einem Inventurdokument
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -236,7 +214,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
-	 * Set Qty Book.
+	 * Set Buchmenge.
+	 * Buchmenge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -245,7 +224,8 @@ public interface I_M_InventoryLine_HU
 	public void setQtyBook (java.math.BigDecimal QtyBook);
 
 	/**
-	 * Get Qty Book.
+	 * Get Buchmenge.
+	 * Buchmenge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -259,7 +239,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_QtyBook = "QtyBook";
 
 	/**
-	 * Set Qty Count.
+	 * Set Zählmenge.
+	 * Gezählte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -268,7 +249,8 @@ public interface I_M_InventoryLine_HU
 	public void setQtyCount (java.math.BigDecimal QtyCount);
 
 	/**
-	 * Get Qty Count.
+	 * Get Zählmenge.
+	 * Gezählte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -282,8 +264,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_QtyCount = "QtyCount";
 
 	/**
-	 * Set Quantity count.
-	 * Counted Quantity
+	 * Set Internal Use Qty.
+	 * Internal Use Quantity removed from Inventory
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -292,8 +274,8 @@ public interface I_M_InventoryLine_HU
 	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse);
 
 	/**
-	 * Get Quantity count.
-	 * Counted Quantity
+	 * Get Internal Use Qty.
+	 * Internal Use Quantity removed from Inventory
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -307,8 +289,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -322,8 +304,8 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

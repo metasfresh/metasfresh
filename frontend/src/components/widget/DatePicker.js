@@ -21,7 +21,6 @@ import TetheredDateTime from './TetheredDateTime';
  */
 class DatePicker extends Component {
   static timeZoneRegex = new RegExp(/[+-]{1}\d+:\d+/);
-  debouncedFn = null;
 
   constructor(props) {
     super(props);
@@ -48,20 +47,10 @@ class DatePicker extends Component {
   }
 
   /**
-   * @method setDebounced
-   * @summary store a handle to the debounced click handler function so that it can
-   * be cancelled in case there's a doubleclick
-   * @param {function} debounced
-   */
-  setDebounced = (debounced) => {
-    this.debouncedFn = debounced;
-  };
-
-  /**
    * @method handleBlur
-   * @summary Called on doubleclick of a day field. Sets the date and closes the calendar
-   * widget
+   * @summary ToDo: Describe the method
    * @param {*} date
+   * @todo Write the documentation
    */
   handleBlur = (date) => {
     const {
@@ -73,8 +62,6 @@ class DatePicker extends Component {
       timeZone,
     } = this.props;
     const { cache, open } = this.state;
-
-    this.debouncedFn.cancel();
 
     if (!open) {
       return;
@@ -205,10 +192,6 @@ class DatePicker extends Component {
     );
   };
 
-  setRef = (c) => {
-    this.picker = c;
-  };
-
   /**
    * @method render
    * @summary ToDo: Describe the method
@@ -218,7 +201,7 @@ class DatePicker extends Component {
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
-          ref={this.setRef}
+          ref={(c) => (this.picker = c)}
           closeOnTab={true}
           renderDay={this.renderDay}
           renderInput={this.renderInput}
@@ -227,7 +210,6 @@ class DatePicker extends Component {
           open={this.state.open}
           onFocusInput={this.focusInput}
           closeOnSelect={false}
-          setDebounced={this.setDebounced}
           {...this.props}
         />
         <i className="meta-icon-calendar" key={0} />

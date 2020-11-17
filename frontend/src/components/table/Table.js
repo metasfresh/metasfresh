@@ -6,7 +6,7 @@ import currentDevice from 'current-device';
 import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
 
 import TableHeader from './TableHeader';
-import TableRow from './TableRow';
+import TableItem from './TableItem';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
@@ -151,7 +151,9 @@ export default class Table extends PureComponent {
         id: identifier,
         showIncludedView: item.supportIncludedViews,
         forceClose: false,
-        windowId: item.supportIncludedViews ? item.includedView.windowId : null,
+        windowId: item.supportIncludedViews
+          ? item.includedView.windowType || item.includedView.windowId
+          : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
         isModal,
       });
@@ -350,7 +352,7 @@ export default class Table extends PureComponent {
     }
 
     return renderRows.map((item, i) => (
-      <TableRow
+      <TableItem
         {...item}
         {...{
           page,

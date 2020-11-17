@@ -1,11 +1,30 @@
 package de.metas.bpartner.composite.repository;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.LogEntriesRepository;
+import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
+import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.table.RecordChangeLogEntry;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -34,25 +53,6 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.LogEntriesRepository;
-import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
-import org.adempiere.ad.table.RecordChangeLog;
-import org.adempiere.ad.table.RecordChangeLogEntry;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Postal;
-import org.slf4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static de.metas.util.StringUtils.trimBlankToNull;
 
 /*
  * #%L
@@ -218,25 +218,24 @@ final class BPartnerCompositesLoader
 		return BPartner.builder()
 				.active(bpartnerRecord.isActive())
 				.value(bpartnerRecord.getValue())
-				.companyName(trimBlankToNull(bpartnerRecord.getCompanyName()))
+				.companyName(bpartnerRecord.getCompanyName())
 				.externalId(ExternalId.ofOrNull(bpartnerRecord.getExternalId()))
 				.globalId(bpartnerRecord.getGlobalId())
 				.groupId(BPGroupId.ofRepoId(bpartnerRecord.getC_BP_Group_ID()))
 				.language(Language.asLanguage(bpartnerRecord.getAD_Language()))
 				.id(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
-				.name(trimBlankToNull(bpartnerRecord.getName()))
-				.name2(trimBlankToNull(bpartnerRecord.getName2()))
-				.name3(trimBlankToNull(bpartnerRecord.getName3()))
+				.name(bpartnerRecord.getName())
+				.name2(bpartnerRecord.getName2())
+				.name3(bpartnerRecord.getName3())
 				.parentId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getBPartner_Parent_ID()))
-				.phone(trimBlankToNull(bpartnerRecord.getPhone2()))
-				.url(trimBlankToNull(bpartnerRecord.getURL()))
-				.url2(trimBlankToNull(bpartnerRecord.getURL2()))
-				.url3(trimBlankToNull(bpartnerRecord.getURL3()))
+				.phone(bpartnerRecord.getPhone2())
+				.url(bpartnerRecord.getURL())
+				.url2(bpartnerRecord.getURL2())
+				.url3(bpartnerRecord.getURL3())
 				.invoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
-				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
-				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
+				.vatId(bpartnerRecord.getVATaxID())
 				//
 				.changeLog(recordChangeLog)
 				//
@@ -272,32 +271,32 @@ final class BPartnerCompositesLoader
 
 		final BPartnerLocationBuilder location = BPartnerLocation.builder()
 				.active(bPartnerLocationRecord.isActive())
-				.name(trimBlankToNull(bPartnerLocationRecord.getName()))
-				.bpartnerName(trimBlankToNull(bPartnerLocationRecord.getBPartnerName()))
+				.name(bPartnerLocationRecord.getName())
+				.bpartnerName(bPartnerLocationRecord.getBPartnerName())
 				.locationType(BPartnerLocationType.builder()
 						.billTo(bPartnerLocationRecord.isBillTo())
 						.billToDefault(bPartnerLocationRecord.isBillToDefault())
 						.shipTo(bPartnerLocationRecord.isShipTo())
 						.shipToDefault(bPartnerLocationRecord.isShipToDefault())
 						.build())
-				.address1(trimBlankToNull(locationRecord.getAddress1()))
-				.address2(trimBlankToNull(locationRecord.getAddress2()))
-				.address3(trimBlankToNull(locationRecord.getAddress3()))
-				.address4(trimBlankToNull(locationRecord.getAddress4()))
-				.city(trimBlankToNull(locationRecord.getCity()))
-				.countryCode(trimBlankToNull(countryRecord.getCountryCode()))
+				.address1(locationRecord.getAddress1())
+				.address2(locationRecord.getAddress2())
+				.address3(locationRecord.getAddress3())
+				.address4(locationRecord.getAddress4())
+				.city(locationRecord.getCity())
+				.countryCode(countryRecord.getCountryCode())
 				.externalId(ExternalId.ofOrNull(bPartnerLocationRecord.getExternalId()))
 				.gln(GLN.ofNullableString(bPartnerLocationRecord.getGLN()))
 				.id(BPartnerLocationId.ofRepoId(bPartnerLocationRecord.getC_BPartner_ID(), bPartnerLocationRecord.getC_BPartner_Location_ID()))
-				.poBox(trimBlankToNull(locationRecord.getPOBox()))
-				.postal(trimBlankToNull(locationRecord.getPostal()))
-				.region(trimBlankToNull(locationRecord.getRegionName()))
+				.poBox(locationRecord.getPOBox())
+				.postal(locationRecord.getPostal())
+				.region(locationRecord.getRegionName())
 				.changeLog(changeLog);
 
 		if (locationRecord.getC_Postal_ID() > 0)
 		{
 			final I_C_Postal postalRecord = locationRelatedRecords.getPostalId2Postal().get(locationRecord.getC_Postal_ID());
-			location.district(trimBlankToNull(postalRecord.getDistrict()));
+			location.district(postalRecord.getDistrict());
 		}
 
 		return location.build();
@@ -341,17 +340,17 @@ final class BPartnerCompositesLoader
 						.purchaseDefault(contactRecord.isPurchaseContact_Default())
 						.subjectMatter(contactRecord.isSubjectMatterContact())
 						.build())
-				.email(trimBlankToNull(contactRecord.getEMail()))
+				.email(contactRecord.getEMail())
 				.externalId(ExternalId.ofOrNull(contactRecord.getExternalId()))
-				.value(trimBlankToNull(contactRecord.getValue()))
-				.firstName(trimBlankToNull(contactRecord.getFirstname()))
-				.lastName(trimBlankToNull(contactRecord.getLastname()))
-				.name(trimBlankToNull(contactRecord.getName()))
+				.value(contactRecord.getValue())
+				.firstName(contactRecord.getFirstname())
+				.lastName(contactRecord.getLastname())
+				.name(contactRecord.getName())
 				.newsletter(contactRecord.isNewsletter())
-				.phone(trimBlankToNull(contactRecord.getPhone()))
-				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
-				.description(trimBlankToNull(contactRecord.getDescription()))
-				.fax(trimBlankToNull(contactRecord.getFax()))
+				.phone(contactRecord.getPhone())
+				.mobilePhone(contactRecord.getMobilePhone())
+				.description(contactRecord.getDescription())
+				.fax(contactRecord.getFax())
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
 				.changeLog(changeLog)
 				.build();

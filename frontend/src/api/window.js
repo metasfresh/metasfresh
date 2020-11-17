@@ -104,10 +104,6 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId) {
-  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
-}
-
 /**
  * getAPIUrl function
  */

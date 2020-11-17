@@ -589,7 +589,6 @@ const mapStateToProps = (state, props) => {
   return {
     standardActions: state.windowHandler.master.standardActions,
     selected: selector(state, tableId),
-    activeTab: tabId,
   };
 };
 

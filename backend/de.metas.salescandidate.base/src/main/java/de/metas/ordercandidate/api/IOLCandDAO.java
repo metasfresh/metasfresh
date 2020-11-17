@@ -22,16 +22,14 @@ package de.metas.ordercandidate.api;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
+
+import java.util.List;
+import java.util.Properties;
+
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.ISingletonService;
-import de.metas.util.time.LocalDateInterval;
-
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 public interface IOLCandDAO extends ISingletonService
 {
@@ -68,6 +66,4 @@ public interface IOLCandDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Order_Line_Alloc> retrieveAllOlas(I_C_OLCand olCand);
-
-	ImmutableMap<PoReferenceLookupKey, Integer> getNumberOfRecordsWithTheSamePOReference(Set<PoReferenceLookupKey> targetKeySet, LocalDateInterval searchingTimeWindow);
 }

@@ -183,13 +183,13 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected int lockBySelection(@NonNull final ILockCommand lockCommand)
+	protected int lockBySelection(final ILockCommand lockCommand)
 	{
 		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
-		Check.assume(adTableId > 0, "adTableId > 0; lockCommand={}", lockCommand);
+		Check.assume(adTableId > 0, "adTableId > 0");
 
 		final PInstanceId pinstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
-		Check.assumeNotNull(pinstanceId, "pinstanceId not null; lockCommand={}", lockCommand);
+		Check.assumeNotNull(pinstanceId, "pinstanceId not null");
 
 		final LockOwner lockOwner = lockCommand.getOwner();
 		assertValidLockOwner(lockOwner);

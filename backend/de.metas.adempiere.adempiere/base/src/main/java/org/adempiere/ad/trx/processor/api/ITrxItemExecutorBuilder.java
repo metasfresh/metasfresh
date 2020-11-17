@@ -33,8 +33,6 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 
 import com.google.common.base.Preconditions;
 
-import lombok.NonNull;
-
 /**
  * Helper interface which can assist you configure and execute an {@link ITrxItemProcessor}.<br>
  * Use {@link ITrxItemProcessorExecutorService#createExecutor()} to get an instance of this builder.
@@ -98,7 +96,7 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	 */
 	RT process(Iterator<? extends IT> items);
 
-	default RT process(@NonNull final List<? extends IT> items)
+	default RT process(final List<? extends IT> items)
 	{
 		return process(items.iterator());
 	}

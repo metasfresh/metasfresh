@@ -12,11 +12,6 @@ import {
 } from '../../utils/documentReferencesHelper';
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
-import {
-  DROPDOWN_OFFSET_BIG,
-  TBL_CONTEXT_MENU_HEIGHT,
-  TBL_CONTEXT_MENU_MAX_Y,
-} from '../../constants/Constants';
 
 class TableContextMenu extends Component {
   constructor(props) {
@@ -102,9 +97,11 @@ class TableContextMenu extends Component {
   };
 
   loadReferences = () => {
-    const { windowId, docId, tabId, selected, updateTableHeight } = this.props;
+    const { windowId, docId, tabId, selected } = this.props;
 
-    this.setState({ loadingReferences: true });
+    this.setState({
+      loadingReferences: true,
+    });
 
     this.closeEventSource();
     this.eventSource = referencesEventSource({
@@ -124,46 +121,9 @@ class TableContextMenu extends Component {
       },
 
       onComplete: () => {
-        let offset;
-        const { references, contextMenu } = this.state;
-        const { y: initialY } = contextMenu;
-        const mainPanel = document.querySelector('.panel-vertical-scroll');
-
-        if (references.length > 2) {
-          // for more than 5 links we add scroll, no of links is not limited
-          if (references.length > 5) {
-            this.contextMenu.style.height = TBL_CONTEXT_MENU_HEIGHT;
-            this.contextMenu.style.overflowY = 'auto';
-          }
-          updateTableHeight(DROPDOWN_OFFSET_BIG);
-          offset = DROPDOWN_OFFSET_BIG;
-          mainPanel.scrollTop = mainPanel.scrollHeight;
-
-          this.setState((prevState) => {
-            const { y: lastY } = prevState.contextMenu;
-            return {
-              contextMenu: {
-                ...prevState.contextMenu,
-                y: lastY - offset,
-              },
-            };
-          });
-        } else if (initialY > TBL_CONTEXT_MENU_MAX_Y) {
-          // routine to calculate and adjust position for bottom of the table clicks, also scroll automatically
-          const beforeAssign = mainPanel.scrollTop;
-          mainPanel.scrollTop = mainPanel.scrollHeight;
-          let offset = initialY - mainPanel.scrollTop;
-          this.setState((prevState) => {
-            return {
-              contextMenu: {
-                ...prevState.contextMenu,
-                y: offset + beforeAssign,
-              },
-            };
-          });
-        }
-
-        this.setState({ loadingReferences: false });
+        this.setState({
+          loadingReferences: false,
+        });
       },
     });
   };
@@ -329,7 +289,6 @@ TableContextMenu.propTypes = {
   handleDelete: PropTypes.func,
   handleFieldEdit: PropTypes.func,
   handleZoomInto: PropTypes.func,
-  updateTableHeight: PropTypes.func,
 };
 
 export default connect()(TableContextMenu);

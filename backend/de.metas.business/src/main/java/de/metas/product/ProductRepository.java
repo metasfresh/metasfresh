@@ -65,7 +65,7 @@ public class ProductRepository
 		return products.build();
 	}
 
-	private static Product ofRecord(@NonNull final I_M_Product productRecord)
+	public Product ofRecord(@NonNull final I_M_Product productRecord)
 	{
 		final int manufacturerId = productRecord.getManufacturer_ID();
 
@@ -76,13 +76,10 @@ public class ProductRepository
 				.productNo(productRecord.getValue())
 				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
 				.description(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()))
-				.documentNote(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_DocumentNote, productRecord.getDocumentNote()))
 				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
 				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
 				.packageSize(productRecord.getPackageSize())
 				.weight(productRecord.getWeight())
-				.stocked(productRecord.isStocked())
-				.commodityNumberId(CommodityNumberId.ofRepoIdOrNull(productRecord.getM_CommodityNumber_ID()))
 				.build();
 	}
 }

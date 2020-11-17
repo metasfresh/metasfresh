@@ -7,7 +7,7 @@ import { getTableId, getTable } from '../reducers/tables';
 
 import {
   updateTableSelection,
-  deselectTableRows,
+  deselectTableItems,
   collapseTableRow,
   setActiveSort,
 } from '../actions/TableActions';
@@ -81,7 +81,7 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const { deselectTableRows, windowId, viewId, selected } = this.props;
+    const { deselectTableItems, windowId, viewId, selected } = this.props;
     const tableId = getTableId({ windowId, viewId });
     const index = selected.indexOf(id);
 
@@ -90,22 +90,21 @@ class TableContainer extends PureComponent {
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
     if (!newSelected.length) {
-      deselectTableRows(tableId, [id]);
+      deselectTableItems(tableId, [id]);
     }
 
     return newSelected;
   };
 
   handleDeselectAll = (callback) => {
-    const { deselectTableRows, windowId, viewId, docId, tabId } = this.props;
+    const { deselectTableItems, windowId, viewId, docId, tabId } = this.props;
 
     callback && callback();
 
-    deselectTableRows(getTableId({ windowId, viewId, docId, tabId }), []);
+    deselectTableItems(getTableId({ windowId, viewId, docId, tabId }), []);
   };
 
-  // TODO: This re-fetches quick actions on editing row. Can be cemoved once
-  // we'll properly handle quickactions in the redux store
+  // TODO: This reallydoesn't do anything. Check if it's still a valid solution
   handleItemChange = () => {
     const { onRowEdited } = this.props;
 
@@ -273,7 +272,7 @@ export default connect(
   mapStateToProps,
   {
     collapseTableRow,
-    deselectTableRows,
+    deselectTableItems,
     openModal,
     updateTableSelection,
     updatePropertyValue,

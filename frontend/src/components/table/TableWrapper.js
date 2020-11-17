@@ -3,7 +3,7 @@ import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
-import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
+
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
 
 import Prompt from '../app/Prompt';
@@ -37,7 +37,6 @@ class TableWrapper extends PureComponent {
   }
 
   closeContextMenu = () => {
-    this.fwdUpdateHeight(DROPDOWN_OFFSET_SMALL);
     this.setState({
       contextMenu: {
         ...this.state.contextMenu,
@@ -282,16 +281,6 @@ class TableWrapper extends PureComponent {
     }
   };
 
-  /**
-   * @method fwdUpdateHeight
-   * @summary - Forward the update height to the child component Table.
-   *            This is needed to call the table height update from within TableContextMenu
-   * @param {integer} height
-   */
-  fwdUpdateHeight = (height) => {
-    this.table.updateHeight(height);
-  };
-
   render() {
     const {
       windowId,
@@ -328,7 +317,7 @@ class TableWrapper extends PureComponent {
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
-    let showPagination = !!(page && pageLength);
+    let showPagination = page && pageLength;
     if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
       showPagination = false;
     }
@@ -371,7 +360,6 @@ class TableWrapper extends PureComponent {
                   : null
               }
               handleZoomInto={onHandleZoomInto}
-              updateTableHeight={this.fwdUpdateHeight}
             />
           )}
           {!readonly && (
@@ -409,7 +397,7 @@ class TableWrapper extends PureComponent {
             this.props.children
           }
         </div>
-        {showPagination ? (
+        {showPagination && (
           <div onClick={this.handleClickOutside}>
             <TablePagination
               {...{
@@ -429,7 +417,7 @@ class TableWrapper extends PureComponent {
               onDeselectAll={onDeselectAll}
             />
           </div>
-        ) : null}
+        )}
         {promptOpen && (
           <Prompt
             title="Delete"

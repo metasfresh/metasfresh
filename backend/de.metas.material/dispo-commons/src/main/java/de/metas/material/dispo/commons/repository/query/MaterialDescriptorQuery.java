@@ -1,18 +1,19 @@
 package de.metas.material.dispo.commons.repository.query;
 
-import de.metas.common.util.CoalesceUtil;
+import javax.annotation.Nullable;
+
+import org.adempiere.warehouse.WarehouseId;
+
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,7 +49,7 @@ public class MaterialDescriptorQuery
 		/** This is the default; query for records with the given customer id where zero means "none" and null means "any" */
 		GIVEN_ID_ONLY,
 
-		/** Like {@link #GIVEN_ID_ONLY}, but also include records that have no customerId */
+		/** Like {@link #GIVEN_ID}, but also include records that have no customerId */
 		GIVEN_ID_OR_NULL
 	}
 
@@ -92,6 +93,11 @@ public class MaterialDescriptorQuery
 				.build();
 	}
 
+	/**
+	 * This property specifies how to interpret the date.
+	 */
+	// DateOperator dateOperator;
+
 	WarehouseId warehouseId;
 	int productId;
 	AttributesKey storageAttributesKey;
@@ -105,6 +111,9 @@ public class MaterialDescriptorQuery
 
 	DateAndSeqNo timeRangeEnd;
 
+	/**
+	 * @param customerId zero means "none", null or -1 means "any"; -2 means "none". Also see {@link AvailableToPromiseQuery}.
+	 */
 	@Builder(toBuilder = true)
 	private MaterialDescriptorQuery(
 			final WarehouseId warehouseId,

@@ -4,15 +4,12 @@ import java.time.LocalDate;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -64,7 +61,4 @@ public class PaymentToAllocate
 
 	@NonNull
 	PaymentDirection paymentDirection;
-
-	@Nullable
-	CurrencyConversionTypeId currencyConversionTypeId;
 }

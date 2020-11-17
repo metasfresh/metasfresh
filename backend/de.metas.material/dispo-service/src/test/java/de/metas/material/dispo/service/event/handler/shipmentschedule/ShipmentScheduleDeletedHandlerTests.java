@@ -1,6 +1,18 @@
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static java.math.BigDecimal.ZERO;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -10,20 +22,9 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.List;
-
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -67,20 +68,15 @@ public class ShipmentScheduleDeletedHandlerTests
 
 		atpRepository = Mockito.spy(AvailableToPromiseRepository.class);
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(
-				candidateRepositoryRetrieval,
-				candidateRepositoryCommands);
-
-		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
-
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						postMaterialEventService,
 						atpRepository,
-						stockCandidateService,
-						supplyCandidateHandler)));
+						new StockCandidateService(
+								candidateRepositoryRetrieval,
+								candidateRepositoryCommands))));
 
 		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(
 				candidateChangeHandler,

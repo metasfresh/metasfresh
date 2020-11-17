@@ -22,6 +22,26 @@
 
 package de.metas.ui.web.view.descriptor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.IStringExpressionWrapper;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
@@ -49,29 +69,12 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.IStringExpressionWrapper;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Helper class used to build the SQL queries needed for creating and manipulating the view selections.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  * @see I_T_WEBUI_ViewSelection
  */
 public final class SqlViewSelectionQueryBuilder
@@ -81,7 +84,6 @@ public final class SqlViewSelectionQueryBuilder
 	private final SqlViewBinding _viewBinding;
 	private boolean applySecurityRestrictions = true;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy
-	private boolean useColumnNameAlias = true;
 
 	public static SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
 	{
@@ -499,7 +501,9 @@ public final class SqlViewSelectionQueryBuilder
 	}
 
 	/**
-	 * @return <pre>
+	 * @return
+	 *
+	 *         <pre>
 	 * INSERT INTO T_WEBUI_ViewSelection (UUID, Line, keys)
 	 * SELECT ... FROM T_WEBUI_ViewSelection sel INNER JOIN ourTable WHERE sel.UUID=[fromUUID]
 	 *         </pre>
@@ -553,20 +557,14 @@ public final class SqlViewSelectionQueryBuilder
 				final String fieldName = orderBy.getFieldName();
 
 				final SqlSelectDisplayValue sqlSelectDisplayValue = getSqlSelectDisplayValue(fieldName);
-				final SqlSelectValue sqlSelectValue = getSqlSelectValue(fieldName);
-
-				if (sqlSelectValue.isVirtualColumn())
-				{
-					useColumnNameAlias = false;
-				}
-
-				if (sqlSelectDisplayValue != null && addedFieldNames.add(sqlSelectDisplayValue.getColumnNameAlias()) && !sqlSelectValue.isVirtualColumn())
+				if (sqlSelectDisplayValue != null && addedFieldNames.add(sqlSelectDisplayValue.getColumnNameAlias()))
 				{
 					sqlSourceTableBuilder.append("\n, ").append(sqlSelectDisplayValue
 							.withJoinOnTableNameOrAlias(getTableName())
 							.toSqlStringWithColumnNameAlias(viewEvalCtx.toEvaluatee()));
 				}
 
+				final SqlSelectValue sqlSelectValue = getSqlSelectValue(fieldName);
 				if (sqlSelectValue != null && addedFieldNames.add(sqlSelectValue.getColumnNameAlias()))
 				{
 					sqlSourceTableBuilder.append("\n, ").append(sqlSelectValue
@@ -592,7 +590,7 @@ public final class SqlViewSelectionQueryBuilder
 		// Order BY
 		final String sqlOrderBys = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
 				.joinOnTableNameOrAlias(sqlTableAlias)
-				.useColumnNameAlias(useColumnNameAlias)
+				.useColumnNameAlias(true)
 				.buildSqlOrderBy(orderBysEffective)
 				.map(sqlOrderBysExpr -> sqlOrderBysExpr.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail))
 				.map(sql -> _viewBinding.replaceTableNameWithTableAlias(sql, sqlTableAlias))
@@ -619,9 +617,11 @@ public final class SqlViewSelectionQueryBuilder
 	}
 
 	/**
-	 * @return <pre>
+	 * @return
+	 * 
+	 *         <pre>
 	 * 	INSERT INTO T_WEBUI_ViewSelectionLine (UUID, Line, keys, Line_ID) ...
-	 * 	SELECT ... FROM T_WEBUI_ViewSelectionLine sl INNER JOIN ourTable on (Line_ID)  WHERE sel.UUID=[fromUUID]
+	 *	SELECT ... FROM T_WEBUI_ViewSelectionLine sl INNER JOIN ourTable on (Line_ID)  WHERE sel.UUID=[fromUUID]
 	 *         </pre>
 	 */
 	public SqlAndParams buildSqlCreateSelectionLinesFromSelectionLines(

@@ -48,6 +48,7 @@ class Column extends PureComponent {
       tabId,
       rowId,
       dataId,
+      data,
       isFirst,
       isModal,
       isAdvanced,
@@ -55,8 +56,6 @@ class Column extends PureComponent {
       onBlurWidget,
       addRefToWidgets,
       requestElementGroupFocus,
-      columnIndex,
-      sectionIndex,
     } = this.props;
 
     return groups.map((elementGroupLayout, elementGroupIndex) => {
@@ -69,19 +68,22 @@ class Column extends PureComponent {
       return (
         <ElementGroup
           key={'elemGroups' + elementGroupIndex}
+          //
           elementGroupLayout={elementGroupLayout}
-          elementGroupIndex={elementGroupIndex}
-          columnIndex={columnIndex}
-          sectionIndex={sectionIndex}
+          //
           windowId={windowId}
           tabId={tabId}
           rowId={rowId}
           dataId={dataId}
+          //
+          data={data}
+          //
           shouldBeFocused={shouldBeFocused}
           tabIndex={tabIndex}
           isModal={isModal}
           isAdvanced={isAdvanced}
           isFullScreen={isFullScreen}
+          //
           onBlurWidget={onBlurWidget}
           addRefToWidgets={addRefToWidgets}
           requestElementGroupFocus={requestElementGroupFocus}
@@ -145,19 +147,21 @@ class Column extends PureComponent {
 Column.propTypes = {
   columnLayout: PropTypes.object.isRequired,
   colWidth: PropTypes.number,
-  columnIndex: PropTypes.number,
-  sectionIndex: PropTypes.number,
+  //
   windowId: PropTypes.string.isRequired,
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   dataId: PropTypes.string,
+  //
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   isDataEntry: PropTypes.bool,
   extendedData: PropTypes.object,
+  //
   isFirst: PropTypes.bool,
   isModal: PropTypes.bool,
   isAdvanced: PropTypes.bool,
   isFullScreen: PropTypes.bool,
+  //
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
   requestElementGroupFocus: PropTypes.func.isRequired,

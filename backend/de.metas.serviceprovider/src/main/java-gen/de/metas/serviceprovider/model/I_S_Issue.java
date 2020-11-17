@@ -2,7 +2,7 @@ package de.metas.serviceprovider.model;
 
 
 /** Generated Interface for S_Issue
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_S_Issue 
@@ -14,10 +14,17 @@ public interface I_S_Issue
     /** AD_Table_ID=541468 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 1 - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -29,8 +36,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -39,8 +46,8 @@ public interface I_S_Issue
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -52,7 +59,7 @@ public interface I_S_Issue
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Contact.
+	 * Set Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Search
@@ -62,7 +69,7 @@ public interface I_S_Issue
 	public void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Contact.
+	 * Get Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Search
@@ -100,8 +107,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_AggregatedEffort = "AggregatedEffort";
 
 	/**
-	 * Set Budgeted.
-	 * Budgeted or originally expected effort
+	 * Set Budgetiert.
+	 * Ursprünglich geplanter oder erwarteter Aufwand.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -110,8 +117,8 @@ public interface I_S_Issue
 	public void setBudgetedEffort (java.math.BigDecimal BudgetedEffort);
 
 	/**
-	 * Get Budgeted.
-	 * Budgeted or originally expected effort
+	 * Get Budgetiert.
+	 * Ursprünglich geplanter oder erwarteter Aufwand.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -148,8 +155,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -163,8 +170,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -174,29 +181,6 @@ public interface I_S_Issue
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Delivered date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDeliveredDate (java.sql.Timestamp DeliveredDate);
-
-	/**
-	 * Get Delivered date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDeliveredDate();
-
-    /** Column definition for DeliveredDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_DeliveredDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "DeliveredDate", null);
-    /** Column name DeliveredDate */
-    public static final String COLUMNNAME_DeliveredDate = "DeliveredDate";
 
 	/**
 	 * Set Delivery platform.
@@ -224,7 +208,7 @@ public interface I_S_Issue
     public static final String COLUMNNAME_DeliveryPlatform = "DeliveryPlatform";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -233,7 +217,7 @@ public interface I_S_Issue
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -247,7 +231,7 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Unit.
+	 * Set Einheit.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -256,7 +240,7 @@ public interface I_S_Issue
 	public void setEffort_UOM_ID (int Effort_UOM_ID);
 
 	/**
-	 * Get Unit.
+	 * Get Einheit.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -293,7 +277,7 @@ public interface I_S_Issue
     public static final String COLUMNNAME_EffortDeliveryPlatform = "EffortDeliveryPlatform";
 
 	/**
-	 * Set Estimated effort.
+	 * Set Geschätzter Aufwand.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -302,7 +286,7 @@ public interface I_S_Issue
 	public void setEstimatedEffort (java.math.BigDecimal EstimatedEffort);
 
 	/**
-	 * Get Estimated effort.
+	 * Get Geschätzter Aufwand.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -519,31 +503,6 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Internal_PlannedUATDate = "Internal_PlannedUATDate";
 
 	/**
-	 * Set Internal processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_processed (boolean Internal_processed);
-
-	/**
-	 * Get Internal processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isInternal_processed();
-
-    /** Column definition for Internal_processed */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_processed = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_processed", null);
-    /** Column name Internal_processed */
-    public static final String COLUMNNAME_Internal_processed = "Internal_processed";
-
-	/**
 	 * Set Internal rough estimation.
 	 *
 	 * <br>Type: Number
@@ -599,31 +558,6 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Internal_S_Milestone_ID = "Internal_S_Milestone_ID";
 
 	/**
-	 * Set Internal status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_status (java.lang.String Internal_status);
-
-	/**
-	 * Get Internal status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.lang.String getInternal_status();
-
-    /** Column definition for Internal_status */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_status = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_status", null);
-    /** Column name Internal_status */
-    public static final String COLUMNNAME_Internal_status = "Internal_status";
-
-	/**
 	 * Set Internal-Approved.
 	 *
 	 * <br>Type: YesNo
@@ -672,7 +606,7 @@ public interface I_S_Issue
     public static final String COLUMNNAME_InvoiceableEffort = "InvoiceableEffort";
 
 	/**
-	 * Set Invoice date.
+	 * Set Invoiced date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -681,7 +615,7 @@ public interface I_S_Issue
 	public void setInvoicedDate (java.sql.Timestamp InvoicedDate);
 
 	/**
-	 * Get Invoice date.
+	 * Get Invoiced date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -695,8 +629,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_InvoicedDate = "InvoicedDate";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -705,8 +639,8 @@ public interface I_S_Issue
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -720,8 +654,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Approved.
-	 * Indicates if this document requires approval
+	 * Set Freigegeben.
+	 * Zeigt an, ob dieser Beleg eine Freigabe braucht
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -730,8 +664,8 @@ public interface I_S_Issue
 	public void setIsApproved (boolean IsApproved);
 
 	/**
-	 * Get Approved.
-	 * Indicates if this document requires approval
+	 * Get Freigegeben.
+	 * Zeigt an, ob dieser Beleg eine Freigabe braucht
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -817,7 +751,7 @@ public interface I_S_Issue
 
 	/**
 	 * Set Issue-URL.
-	 * URL of the issue, e.g. on github
+	 * URL der Issue, z.B. auf github
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: false
@@ -827,7 +761,7 @@ public interface I_S_Issue
 
 	/**
 	 * Get Issue-URL.
-	 * URL of the issue, e.g. on github
+	 * URL der Issue, z.B. auf github
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: false
@@ -887,7 +821,7 @@ public interface I_S_Issue
     public static final String COLUMNNAME_LatestActivityOnSubIssues = "LatestActivityOnSubIssues";
 
 	/**
-	 * Set Due date.
+	 * Set Fälligkeitsdatum.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -898,7 +832,7 @@ public interface I_S_Issue
 	public void setMilestone_DueDate (java.sql.Timestamp Milestone_DueDate);
 
 	/**
-	 * Get Due date.
+	 * Get Fälligkeitsdatum.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -958,7 +892,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_PlannedUATDate = "PlannedUATDate";
 
 	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -967,7 +902,8 @@ public interface I_S_Issue
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -979,29 +915,6 @@ public interface I_S_Issue
     public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
-
-	/**
-	 * Set Processed date.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setProcessedDate (java.sql.Timestamp ProcessedDate);
-
-	/**
-	 * Get Processed date.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getProcessedDate();
-
-    /** Column definition for ProcessedDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_ProcessedDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "ProcessedDate", null);
-    /** Column name ProcessedDate */
-    public static final String COLUMNNAME_ProcessedDate = "ProcessedDate";
 
 	/**
 	 * Set Rough estimation.
@@ -1077,7 +990,7 @@ public interface I_S_Issue
     public static final String COLUMNNAME_S_Issue_ID = "S_Issue_ID";
 
 	/**
-	 * Set Milestone.
+	 * Set Meilenstein.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1086,7 +999,7 @@ public interface I_S_Issue
 	public void setS_Milestone_ID (int S_Milestone_ID);
 
 	/**
-	 * Get Milestone.
+	 * Get Meilenstein.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1154,8 +1067,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Status = "Status";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1169,8 +1082,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -1182,8 +1095,8 @@ public interface I_S_Issue
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Search Key.
-	 * Search key for the record in the format required - must be unique
+	 * Set Suchschlüssel.
+	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -1192,8 +1105,8 @@ public interface I_S_Issue
 	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Search Key.
-	 * Search key for the record in the format required - must be unique
+	 * Get Suchschlüssel.
+	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

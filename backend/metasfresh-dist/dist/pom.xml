@@ -137,14 +137,6 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.business</groupId>
-			<artifactId>de.metas.business.rest-api-impl</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
 			<version>${metasfresh.version}</version>
@@ -153,8 +145,8 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.manufacturing</groupId>
-			<artifactId>de.metas.manufacturing</artifactId>
+			<groupId>de.metas.adempiere.libero</groupId>
+			<artifactId>de.metas.adempiere.libero.libero</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>

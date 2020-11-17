@@ -11,7 +11,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.currency.CurrencyRepository;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -32,7 +30,6 @@ public class InvoiceBLSortLinesTests
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.SYSTEM, OrgId.ANY);
 	}

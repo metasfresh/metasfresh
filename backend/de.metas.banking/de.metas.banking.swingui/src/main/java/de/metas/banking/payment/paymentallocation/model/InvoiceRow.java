@@ -26,9 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 
-import de.metas.organization.ClientAndOrgId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.base.Supplier;
@@ -47,7 +45,6 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.compiere.util.Env;
 
 /**
  * Invoice or Prepaid Order.
@@ -536,7 +533,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(invoiceRow.getCurrencyISOCode()).getId();
 
 		return PayableDocument.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), invoiceRow.getOrgId()))
+				.orgId(invoiceRow.getOrgId())
 				.invoiceId(invoiceId)
 				.prepayOrderId(prepayOrderId)
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(invoiceRow.getC_BPartner_ID()))

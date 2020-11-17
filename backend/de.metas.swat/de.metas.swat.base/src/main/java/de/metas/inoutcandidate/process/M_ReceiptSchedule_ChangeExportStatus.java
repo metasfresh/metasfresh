@@ -23,9 +23,7 @@
 package de.metas.inoutcandidate.process;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -42,7 +40,6 @@ import org.adempiere.exceptions.AdempiereException;
 public class M_ReceiptSchedule_ChangeExportStatus extends JavaProcess implements IProcessPrecondition
 {
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private static final AdMessageKey MSG_NO_UNPROCESSED_LINES = AdMessageKey.of("receiptschedule.noUnprocessedLines");
 
@@ -65,7 +62,7 @@ public class M_ReceiptSchedule_ChangeExportStatus extends JavaProcess implements
 	protected void prepare()
 	{
 		final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
-		final IQueryBuilder<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> queryBuilderForShipmentSchedulesSelection = receiptScheduleDAO.createQueryForReceiptScheduleSelection(getCtx(), userSelectionFilter);
+		final IQueryBuilder<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> queryBuilderForShipmentSchedulesSelection = receiptScheduleDAO.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter);
 
 		// Create selection and return how many items were added
 		final int selectionCount = queryBuilderForShipmentSchedulesSelection
@@ -85,7 +82,9 @@ public class M_ReceiptSchedule_ChangeExportStatus extends JavaProcess implements
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
 
-		receiptScheduleBL.updateExportStatus(APIExportStatus.ofCode(exportStatus), pinstanceId);
+		// update delivery date
+		// no invalidation
+		receiptScheduleDAO.updateExportStatus(exportStatus, pinstanceId);
 
 		return MSG_OK;
 	}

@@ -1,8 +1,14 @@
 package de.metas.material.event.commons;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+
+import org.adempiere.warehouse.WarehouseId;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.util.NumberUtils;
 import lombok.AccessLevel;
@@ -12,11 +18,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
-import org.adempiere.warehouse.WarehouseId;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
 
 /*
  * #%L
@@ -48,18 +49,11 @@ public class MaterialDescriptor extends ProductDescriptor
 	WarehouseId warehouseId;
 
 	/**
-	 * Optional, if set and {@code isreservedForCustomer()==true}, then the respective candidate allocated to the respective *customer*
-	 * and is not available to other customers. This means that a possible ATP raise does not affect the ATP for other customers
+	 * Optional, if set, then the respective candidate allocated to the respective *customer*
+	 * and is not available to other customers.
 	 */
 	@Getter
 	BPartnerId customerId;
-
-	/**
-	 * See {@link #customerId}
-	 */
-	@Getter
-	boolean reservedForCustomer;
-
 	@Getter
 	BPartnerId vendorId;
 
@@ -76,7 +70,6 @@ public class MaterialDescriptor extends ProductDescriptor
 	private MaterialDescriptor(
 			final WarehouseId warehouseId,
 			final BPartnerId customerId,
-			final boolean reservedForCustomer,
 			final BPartnerId vendorId,
 			final Instant date,
 			final ProductDescriptor productDescriptor,
@@ -85,7 +78,6 @@ public class MaterialDescriptor extends ProductDescriptor
 		this(
 				warehouseId,
 				customerId,
-				reservedForCustomer,
 				vendorId,
 				quantity,
 				date,
@@ -97,8 +89,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	@JsonCreator
 	public MaterialDescriptor(
 			@JsonProperty("warehouseId") final WarehouseId warehouseId,
-			@JsonProperty("customerId") @Nullable final BPartnerId customerId,
-			@JsonProperty("reservedForCustomer") final boolean reservedForCustomer,
+			@JsonProperty("customerId") final BPartnerId customerId,
 			@JsonProperty("vendorId") final BPartnerId vendorId,
 			@JsonProperty("quantity") final BigDecimal quantity,
 			@JsonProperty("date") final Instant date,
@@ -111,7 +102,6 @@ public class MaterialDescriptor extends ProductDescriptor
 		this.warehouseId = warehouseId;
 
 		this.customerId = customerId;
-		this.reservedForCustomer = reservedForCustomer;
 		this.vendorId = vendorId;
 
 		this.quantity = NumberUtils.stripTrailingDecimalZeros(quantity);
@@ -123,7 +113,7 @@ public class MaterialDescriptor extends ProductDescriptor
 
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
-		Preconditions.checkNotNull(warehouseId, "warehouseId needs to be set");
+		Preconditions.checkNotNull(warehouseId != null, "warehouseId needs to be set");
 
 		// Don't enforce customer/vendor. e.g. in case of Inventory there is no customer/vendor.
 		// Preconditions.checkNotNull(customerId, "customerId needs to be not-null", customerId);
@@ -183,7 +173,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		return result.asssertMaterialDescriptorComplete();
 	}
 
-	public MaterialDescriptor withCustomerId(@Nullable final BPartnerId customerId)
+	public MaterialDescriptor withCustomerId(final BPartnerId customerId)
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.warehouseId(this.warehouseId)
