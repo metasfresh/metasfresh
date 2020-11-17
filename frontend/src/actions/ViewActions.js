@@ -268,10 +268,11 @@ export function setIncludedView({
   windowId,
   viewId,
   viewProfileId = null,
+  parentId = null,
 } = {}) {
   return {
     type: SET_INCLUDED_VIEW,
-    payload: { id: windowId, viewId, viewProfileId },
+    payload: { id: windowId, viewId, viewProfileId, parentId },
   };
 }
 
@@ -408,8 +409,6 @@ export function fetchDocument({
               viewId,
               selectedIds: table.selected,
               viewProfileId: null,
-              parentView: {},
-              childView: {},
             })
           );
         }
@@ -566,7 +565,7 @@ export function showIncludedView({
     }
 
     if (showIncludedView) {
-      dispatch(setIncludedView({ windowId, viewId }));
+      dispatch(setIncludedView({ windowId, viewId, parentId: id }));
     }
 
     if (!showIncludedView) {

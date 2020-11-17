@@ -548,6 +548,7 @@ export function updateTableSelection({
   keyProperty = 'id',
   windowId,
   viewId,
+  isModal,
 }) {
   return (dispatch) => {
     dispatch({
@@ -557,7 +558,7 @@ export function updateTableSelection({
 
     // update quick actions
     if (viewId) {
-      dispatch(getTableActions({ tableId: id, windowId, viewId }));
+      dispatch(getTableActions({ tableId: id, windowId, viewId, isModal }));
     }
 
     return Promise.resolve(selection);
@@ -573,7 +574,13 @@ export function updateTableSelection({
  * @param {number} windowId
  * @param {string} viewId
  */
-export function deselectTableRows({ id, selection, windowId, viewId }) {
+export function deselectTableRows({
+  id,
+  selection,
+  windowId,
+  viewId,
+  isModal,
+}) {
   return (dispatch) => {
     dispatch({
       type: types.DESELECT_TABLE_ROWS,
@@ -581,7 +588,7 @@ export function deselectTableRows({ id, selection, windowId, viewId }) {
     });
 
     if (viewId) {
-      dispatch(getTableActions({ tableId: id, windowId, viewId }));
+      dispatch(getTableActions({ tableId: id, windowId, viewId, isModal }));
     }
   };
 }
