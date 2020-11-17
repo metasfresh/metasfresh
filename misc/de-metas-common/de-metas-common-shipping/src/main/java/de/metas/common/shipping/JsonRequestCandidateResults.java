@@ -25,6 +25,8 @@ package de.metas.common.shipping;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonError;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -34,6 +36,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
+@ApiModel(description = "Data which a an invoker of the Shipment candidate API can send back to metasfresh"
+		+ " to indicate if the exported data could be properly processed further down the road")
 public class JsonRequestCandidateResults
 {
 	String transactionKey;
@@ -45,16 +49,21 @@ public class JsonRequestCandidateResults
 	 */
 	JsonError error;
 
+	@ApiModelProperty("Optional field to communicate the data that was actually forwarded to the target system")
+	String forwardedData;
+
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	private JsonRequestCandidateResults(
 			@JsonProperty("transactionKey") @NonNull final String transactionKey,
 			@JsonProperty("error") @Nullable final JsonError error,
-			@JsonProperty("items") @NonNull @Singular final List<JsonRequestCandidateResult> items)
+			@JsonProperty("items") @NonNull @Singular final List<JsonRequestCandidateResult> items,
+			@JsonProperty("forwardedData") @Nullable final String forwardedData)
 	{
 		this.transactionKey = transactionKey;
 		this.error = error;
 		this.items = items;
+		this.forwardedData = forwardedData;
 	}
 
 	public JsonRequestCandidateResults withError(@NonNull final JsonError error)
@@ -68,6 +77,5 @@ public class JsonRequestCandidateResults
 			result.item(item.withError());
 		}
 		return result.build();
-
 	}
 }

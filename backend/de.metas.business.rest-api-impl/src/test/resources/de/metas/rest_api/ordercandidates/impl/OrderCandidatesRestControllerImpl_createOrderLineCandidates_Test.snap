@@ -1,198 +1,4 @@
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.CreateProductPrice_WarehouseDestId=[
-  {
-    "id": 100031,
-    "externalLineId": "externalLineId",
-    "externalHeaderId": "externalHeaderId",
-    "poReference": "poRef",
-    "org": {
-      "code": "001",
-      "syncAdvise": {
-        "ifNotExists": "FAIL",
-        "ifExists": "DONT_UPDATE"
-      }
-    },
-    "bpartner": {
-      "bpartner": {
-        "metasfreshId": 100025,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpCode-name",
-        "group": "bpCode-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100027,
-        "active": true,
-        "gln": "gln1",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "billBPartner": {
-      "bpartner": {
-        "metasfreshId": 100025,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpCode-name",
-        "group": "bpCode-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100027,
-        "active": true,
-        "gln": "gln1",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dateOrdered": {
-      "year": 2019,
-      "month": 9,
-      "day": 10,
-      "leapYear": false
-    },
-    "datePromised": {
-      "year": 2019,
-      "month": 9,
-      "day": 15,
-      "leapYear": false
-    },
-    "flatrateConditionsId": 0,
-    "productId": 100029,
-    "qty": 66,
-    "uomId": 100004,
-    "qtyItemCapacity": 0,
-    "huPIItemProductId": -1,
-    "pricingSystemId": 100020,
-    "price": 13.24,
-    "discount": 0,
-    "warehouseDestId": 100028
-  }
-]
-
-
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.CreateProductPrice_WarehouseDestId_DirectDebit=[
-  {
-    "id": 100031,
-    "externalLineId": "externalLineId",
-    "externalHeaderId": "externalHeaderId",
-    "poReference": "poRef",
-    "org": {
-      "code": "001",
-      "syncAdvise": {
-        "ifNotExists": "FAIL",
-        "ifExists": "DONT_UPDATE"
-      }
-    },
-    "bpartner": {
-      "bpartner": {
-        "metasfreshId": 100025,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpCode-name",
-        "group": "bpCode-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100027,
-        "active": true,
-        "gln": "gln1",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "billBPartner": {
-      "bpartner": {
-        "metasfreshId": 100025,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpCode-name",
-        "group": "bpCode-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100027,
-        "active": true,
-        "gln": "gln1",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dateOrdered": {
-      "year": 2019,
-      "month": 9,
-      "day": 10,
-      "leapYear": false
-    },
-    "datePromised": {
-      "year": 2019,
-      "month": 9,
-      "day": 15,
-      "leapYear": false
-    },
-    "flatrateConditionsId": 0,
-    "productId": 100029,
-    "qty": 66,
-    "uomId": 100004,
-    "qtyItemCapacity": 0,
-    "huPIItemProductId": -1,
-    "pricingSystemId": 100020,
-    "price": 13.24,
-    "discount": 0,
-    "warehouseDestId": 100028
-  }
-]
-
-
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.billToDefault_exitingBPartner=[
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.billToDefault_exitingBPartner=[
   {
     "id": 100039,
     "externalLineId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2-1",
@@ -215,6 +21,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584400046193
@@ -272,6 +79,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584400046193
@@ -329,6 +137,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584400046193
@@ -398,7 +207,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
 ]
 
 
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.billToDefault_newBPartner=[
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.billToDefault_newBPartner=[
   {
     "id": 100034,
     "externalLineId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2-1",
@@ -420,6 +229,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -476,6 +286,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -532,6 +343,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
         "group": "DefaultGroup",
         "vendor": false,
         "customer": true,
+        "company": false,
         "changeInfo": {
           "createdMillis": 1584396436193,
           "lastUpdatedMillis": 1584396436193
@@ -606,414 +418,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
 ]
 
 
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.no_location_specified=[
-  {
-    "id": 100040,
-    "externalLineId": "externalLineId",
-    "externalHeaderId": "externalHeaderId",
-    "poReference": "poRef",
-    "org": {
-      "code": "001",
-      "syncAdvise": {
-        "ifNotExists": "FAIL",
-        "ifExists": "DONT_UPDATE"
-      }
-    },
-    "bpartner": {
-      "bpartner": {
-        "metasfreshId": 100025,
-        "code": "mainPartner",
-        "active": true,
-        "name": "mainPartner-name",
-        "group": "mainPartner-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100027,
-        "active": true,
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "billBPartner": {
-      "bpartner": {
-        "metasfreshId": 100029,
-        "code": "billPartner",
-        "active": true,
-        "name": "billPartner-name",
-        "group": "billPartner-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100031,
-        "active": true,
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dropShipBPartner": {
-      "bpartner": {
-        "metasfreshId": 100033,
-        "code": "dropShipPartner",
-        "active": true,
-        "name": "dropShipPartner-name",
-        "group": "dropShipPartner-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100037,
-        "active": true,
-        "gln": "expectedDropShipLocation",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dateOrdered": {
-      "year": 2019,
-      "month": 9,
-      "day": 10,
-      "leapYear": false
-    },
-    "datePromised": {
-      "year": 2019,
-      "month": 9,
-      "day": 15,
-      "leapYear": false
-    },
-    "flatrateConditionsId": 0,
-    "productId": 100038,
-    "qty": 66,
-    "uomId": 100004,
-    "qtyItemCapacity": 0,
-    "huPIItemProductId": -1,
-    "pricingSystemId": 100020,
-    "price": 13.24,
-    "discount": 0,
-    "warehouseDestId": -1
-  }
-]
-
-
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.no_location_specified_DirectDebit=[
-  {
-    "id": 100040,
-    "externalLineId": "externalLineId",
-    "externalHeaderId": "externalHeaderId",
-    "poReference": "poRef",
-    "org": {
-      "code": "001",
-      "syncAdvise": {
-        "ifNotExists": "FAIL",
-        "ifExists": "DONT_UPDATE"
-      }
-    },
-    "bpartner": {
-      "bpartner": {
-        "metasfreshId": 100025,
-        "code": "mainPartner",
-        "active": true,
-        "name": "mainPartner-name",
-        "group": "mainPartner-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100027,
-        "active": true,
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "billBPartner": {
-      "bpartner": {
-        "metasfreshId": 100029,
-        "code": "billPartner",
-        "active": true,
-        "name": "billPartner-name",
-        "group": "billPartner-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100031,
-        "active": true,
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dropShipBPartner": {
-      "bpartner": {
-        "metasfreshId": 100033,
-        "code": "dropShipPartner",
-        "active": true,
-        "name": "dropShipPartner-name",
-        "group": "dropShipPartner-name",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100037,
-        "active": true,
-        "gln": "expectedDropShipLocation",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dateOrdered": {
-      "year": 2019,
-      "month": 9,
-      "day": 10,
-      "leapYear": false
-    },
-    "datePromised": {
-      "year": 2019,
-      "month": 9,
-      "day": 15,
-      "leapYear": false
-    },
-    "flatrateConditionsId": 0,
-    "productId": 100038,
-    "qty": 66,
-    "uomId": 100004,
-    "qtyItemCapacity": 0,
-    "huPIItemProductId": -1,
-    "pricingSystemId": 100020,
-    "price": 13.24,
-    "discount": 0,
-    "warehouseDestId": -1
-  }
-]
-
-
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.sameBPartner_DifferentLocations=[
-  {
-    "id": 100030,
-    "externalLineId": "externalLineId",
-    "externalHeaderId": "externalHeaderId",
-    "poReference": "poRef",
-    "org": {
-      "code": "001",
-      "syncAdvise": {
-        "ifNotExists": "FAIL",
-        "ifExists": "DONT_UPDATE"
-      }
-    },
-    "bpartner": {
-      "bpartner": {
-        "metasfreshId": 100021,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpName",
-        "companyName": "bpCompanyName",
-        "group": "bpGroupName",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100023,
-        "active": true,
-        "gln": "gln-ship",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "billBPartner": {
-      "bpartner": {
-        "metasfreshId": 100021,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpName",
-        "companyName": "bpCompanyName",
-        "group": "bpGroupName",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100025,
-        "active": true,
-        "gln": "gln-bill",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dropShipBPartner": {
-      "bpartner": {
-        "metasfreshId": 100021,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpName",
-        "companyName": "bpCompanyName",
-        "group": "bpGroupName",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100027,
-        "active": true,
-        "gln": "gln-dropShip",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "handOverBPartner": {
-      "bpartner": {
-        "metasfreshId": 100021,
-        "code": "bpCode",
-        "active": true,
-        "name": "bpName",
-        "companyName": "bpCompanyName",
-        "group": "bpGroupName",
-        "vendor": false,
-        "customer": true,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      },
-      "location": {
-        "metasfreshId": 100029,
-        "active": true,
-        "gln": "gln-handOver",
-        "countryCode": "DE",
-        "shipTo": false,
-        "shipToDefault": false,
-        "billTo": false,
-        "billToDefault": false,
-        "changeInfo": {
-          "createdMillis": 1584396436193,
-          "lastUpdatedMillis": 1584396436193
-        }
-      }
-    },
-    "dateOrdered": {
-      "year": 2019,
-      "month": 9,
-      "day": 10,
-      "leapYear": false
-    },
-    "datePromised": {
-      "year": 2019,
-      "month": 9,
-      "day": 15,
-      "leapYear": false
-    },
-    "flatrateConditionsId": 0,
-    "productId": 100019,
-    "qty": 66,
-    "uomId": 100004,
-    "qtyItemCapacity": 0,
-    "huPIItemProductId": -1,
-    "pricingSystemId": -1,
-    "price": 0,
-    "discount": 0,
-    "warehouseDestId": -1
-  }
-]
-
-
-de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test.single_customer_address=[
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.createOrderLineCandidates=[
   [
     {
       "id": 100046,
@@ -1038,6 +443,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1071,6 +477,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1134,6 +541,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1167,6 +575,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1230,6 +639,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1263,6 +673,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1326,6 +737,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1359,6 +771,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1422,6 +835,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1455,6 +869,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1518,6 +933,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1551,6 +967,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1614,6 +1031,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1647,6 +1065,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1710,6 +1129,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1743,6 +1163,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1806,6 +1227,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1839,6 +1261,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1902,6 +1325,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1935,6 +1359,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -1998,6 +1423,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2031,6 +1457,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2094,6 +1521,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2127,6 +1555,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2190,6 +1619,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2223,6 +1653,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2286,6 +1717,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2319,6 +1751,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2382,6 +1815,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2415,6 +1849,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2478,6 +1913,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2511,6 +1947,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2574,6 +2011,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2607,6 +2045,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2670,6 +2109,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2703,6 +2143,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2766,6 +2207,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2799,6 +2241,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2862,6 +2305,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2895,6 +2339,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2958,6 +2403,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -2991,6 +2437,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
           "group": "DefaultGroup",
           "vendor": false,
           "customer": true,
+          "company": false,
           "changeInfo": {
             "createdMillis": 1584396436193,
             "lastUpdatedMillis": 1584396436193
@@ -3032,4 +2479,631 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_createO
       "warehouseDestId": -1
     }
   ]
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_CreateProductPrice_WarehouseDestId=[
+  {
+    "id": 100031,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "code": "001",
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100027,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100027,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100029,
+    "qty": 66,
+    "uomId": 100004,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100020,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": 100028
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_CreateProductPrice_WarehouseDestId_DirectDebit=[
+  {
+    "id": 100031,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "code": "001",
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100027,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100027,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100029,
+    "qty": 66,
+    "uomId": 100004,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100020,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": 100028
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_no_location_specified=[
+  {
+    "id": 100040,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "code": "001",
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "mainPartner",
+        "active": true,
+        "name": "mainPartner-name",
+        "group": "mainPartner-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100027,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100029,
+        "code": "billPartner",
+        "active": true,
+        "name": "billPartner-name",
+        "group": "billPartner-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100031,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dropShipBPartner": {
+      "bpartner": {
+        "metasfreshId": 100033,
+        "code": "dropShipPartner",
+        "active": true,
+        "name": "dropShipPartner-name",
+        "group": "dropShipPartner-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100037,
+        "active": true,
+        "gln": "expectedDropShipLocation",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100038,
+    "qty": 66,
+    "uomId": 100004,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100020,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": -1
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_no_location_specified_DirectDebit=[
+  {
+    "id": 100040,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "code": "001",
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "mainPartner",
+        "active": true,
+        "name": "mainPartner-name",
+        "group": "mainPartner-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100027,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100029,
+        "code": "billPartner",
+        "active": true,
+        "name": "billPartner-name",
+        "group": "billPartner-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100031,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dropShipBPartner": {
+      "bpartner": {
+        "metasfreshId": 100033,
+        "code": "dropShipPartner",
+        "active": true,
+        "name": "dropShipPartner-name",
+        "group": "dropShipPartner-name",
+        "vendor": false,
+        "customer": true,
+        "company": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100037,
+        "active": true,
+        "gln": "expectedDropShipLocation",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100038,
+    "qty": 66,
+    "uomId": 100004,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100020,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": -1
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_sameBPartner_DifferentLocations=[
+  {
+    "id": 100030,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "code": "001",
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100021,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "company": true,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100023,
+        "active": true,
+        "gln": "gln-ship",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100021,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "company": true,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100025,
+        "active": true,
+        "gln": "gln-bill",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dropShipBPartner": {
+      "bpartner": {
+        "metasfreshId": 100021,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "company": true,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100027,
+        "active": true,
+        "gln": "gln-dropShip",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "handOverBPartner": {
+      "bpartner": {
+        "metasfreshId": 100021,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "company": true,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      },
+      "location": {
+        "metasfreshId": 100029,
+        "active": true,
+        "gln": "gln-handOver",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584396436193,
+          "lastUpdatedMillis": 1584396436193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100019,
+    "qty": 66,
+    "uomId": 100004,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": -1,
+    "price": 0,
+    "discount": 0,
+    "warehouseDestId": -1
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.toJsonAttachment_Type_URL=[
+  {
+    "externalReference": "externalReference",
+    "dataSourceName": "dataSourceName",
+    "attachmentId": "10",
+    "type": "URL",
+    "filename": "?",
+    "url": "https://metasfresh.com"
+  }
 ]

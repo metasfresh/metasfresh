@@ -231,6 +231,13 @@ public final class DisplayType
 		return false;
 	}	//	isDate
 
+	public static boolean isYesNo (int displayType)
+	{
+		if (displayType == YesNo)
+			return true;
+		return false;
+	}
+
 	/**
 	 *	Returns true if DisplayType is a generic lookup (List, Table, TableDir, Search).
 	 *  (stored as Integer)
