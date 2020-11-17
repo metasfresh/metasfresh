@@ -105,8 +105,6 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
         }
       }
 
-      console.log('fetchIncludedQuickActions: ', isParent, isChild, childView, parentView, fetch, fetchWindowId, fetchViewId)
-
       if ((isParent || isChild) && fetch) {
         dispatch(
           fetchQuickActions({

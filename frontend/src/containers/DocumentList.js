@@ -247,6 +247,7 @@ class DocumentListContainer extends Component {
                 selection: removedRows,
                 windowId,
                 viewId,
+                isModal,
               });
             } else {
               // TODO: Quick actions should probably be handled via redux
@@ -431,6 +432,8 @@ class DocumentListContainer extends Component {
       isModal,
       updateRawModal,
       filters,
+      parentDefaultViewId,
+      parentWindowType,
     } = this.props;
 
     let { filtersActive } = filters;
@@ -452,7 +455,8 @@ class DocumentListContainer extends Component {
         }
 
         if (isIncluded) {
-          setIncludedView({ windowId, viewId: newViewId });
+          const parentId = isModal ? parentWindowType : parentDefaultViewId;
+          setIncludedView({ windowId, viewId: newViewId, parentId });
         }
 
         if (isModal) {
@@ -719,18 +723,16 @@ class DocumentListContainer extends Component {
       table: { rows },
       layout,
       isModal,
-      viewId,
       windowId,
     } = this.props;
     const openIncludedViewOnSelect =
       layout.includedView && layout.includedView.openOnSelect;
-    const identifier = isModal ? viewId : windowId;
 
     if (openIncludedViewOnSelect && selected.length === 1) {
       rows.forEach((item) => {
         if (item.id === selected[0]) {
           showIncludedView({
-            id: identifier,
+            id: windowId,
             showIncludedView: item.supportIncludedViews,
             windowId: item.supportIncludedViews
               ? item.includedView.windowId || item.includedView.windowId
@@ -778,7 +780,6 @@ class DocumentListContainer extends Component {
         onRedirectToDocument={this.redirectToDocument}
         onRedirectToNewDocument={this.onRedirectToNewDocument}
         onResetInitialFilters={this.resetInitialFilters}
-        onUpdateQuickActions={this.updateQuickActions}
       />
     );
   }

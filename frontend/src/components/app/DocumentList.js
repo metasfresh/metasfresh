@@ -59,18 +59,6 @@ export default class DocumentList extends Component {
   };
 
   /**
-   * @method onTableRowEdited
-   * @summary ToDo: Describe the method.
-   * @todo TODO: This triggers re-fetching of quickactions. We should handle that via redux
-   * or in the quickactions component somehow
-   */
-  onTableRowEdited = () => {
-    const { onUpdateQuickActions } = this.props;
-
-    onUpdateQuickActions();
-  };
-
-  /**
    * @method adjustWidth
    * @summary Sets the width of the panel to be of % of the available space.
    * Options available in PANEL_WIDTHS constant. Useful for mobile views.
@@ -134,7 +122,6 @@ export default class DocumentList extends Component {
       table,
       childSelected,
       parentSelected,
-      onUpdateQuickActions,
       filterId,
     } = this.props;
     const {
@@ -327,8 +314,6 @@ export default class DocumentList extends Component {
                 ref={this.setTableRef}
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
-                onRowEdited={this.onTableRowEdited}
-                updateQuickActions={onUpdateQuickActions}
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
                 mainTable={true}
@@ -347,6 +332,7 @@ export default class DocumentList extends Component {
                 focusOnFieldName={layout.focusOnFieldName}
                 toggleState={panelsState}
                 spinnerVisible={triggerSpinner}
+                parentView={isIncluded ? parentWindowType : null}
                 {...{
                   orderBy,
                   pageLength,
@@ -370,7 +356,6 @@ export default class DocumentList extends Component {
                   <DataLayoutWrapper
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
-                    onRowEdited={this.onTableRowEdited}
                     supportAttribute={table.supportAttribute}
                     setClickOutsideLock={this.setClickOutsideLock}
                     {...{ viewId, selected, inBackground, windowId }}

@@ -66,6 +66,7 @@ export const initialState = {
     viewId: null,
     windowId: null,
     viewProfileId: null,
+    parentId: null,
   },
 };
 
@@ -457,7 +458,7 @@ export default function viewHandler(state = initialState, action) {
       return state;
     }
     case SET_INCLUDED_VIEW: {
-      const { id, viewId, viewProfileId } = action.payload;
+      const { id, viewId, viewProfileId, parentId } = action.payload;
 
       return {
         ...state,
@@ -466,6 +467,7 @@ export default function viewHandler(state = initialState, action) {
           viewId,
           windowId: id,
           viewProfileId,
+          parentId,
         },
       };
     }
@@ -481,6 +483,7 @@ export default function viewHandler(state = initialState, action) {
             viewId: null,
             windowId: null,
             viewProfileId: null,
+            parentId: null,
           },
         };
       } else {

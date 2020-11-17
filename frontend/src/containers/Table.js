@@ -50,6 +50,7 @@ class TableContainer extends PureComponent {
       docId,
       tabId,
       keyProperty,
+      isModal,
     } = this.props;
     let newSelected = [];
 
@@ -67,6 +68,7 @@ class TableContainer extends PureComponent {
       keyProperty,
       windowId,
       viewId,
+      isModal,
     }).then(() => {
       cb && cb();
     });
@@ -83,7 +85,13 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const { deselectTableRows, windowId, viewId, selected } = this.props;
+    const {
+      deselectTableRows,
+      windowId,
+      viewId,
+      selected,
+      isModal,
+    } = this.props;
     const tableId = getTableId({ windowId, viewId });
     const index = selected.indexOf(id);
 
@@ -97,6 +105,7 @@ class TableContainer extends PureComponent {
         selection: [id],
         windowId,
         viewId,
+        isModal,
       });
     }
 
@@ -104,7 +113,14 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselectAll = (callback) => {
-    const { deselectTableRows, windowId, viewId, docId, tabId } = this.props;
+    const {
+      deselectTableRows,
+      windowId,
+      viewId,
+      docId,
+      tabId,
+      isModal,
+    } = this.props;
 
     callback && callback();
 
@@ -113,15 +129,8 @@ class TableContainer extends PureComponent {
       selection: [],
       windowId,
       viewId,
+      isModal,
     });
-  };
-
-  // TODO: This re-fetches quick actions on editing row. Can be cemoved once
-  // we'll properly handle quickactions in the redux store
-  handleItemChange = () => {
-    const { onRowEdited } = this.props;
-
-    onRowEdited && onRowEdited(true);
   };
 
   /**
@@ -227,7 +236,6 @@ class TableContainer extends PureComponent {
         {...this.props}
         onHandleZoomInto={this.handleZoomInto}
         onPromptSubmit={this.handlePromptSubmit}
-        onItemChange={this.handleItemChange}
         onSelect={this.handleSelect}
         onSelectAll={this.handleSelectAll}
         onDeselectAll={this.handleDeselectAll}

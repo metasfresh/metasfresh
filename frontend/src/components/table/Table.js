@@ -104,14 +104,11 @@ export default class Table extends PureComponent {
 
   handleClick = (e, item) => {
     const {
-      onSelectionChanged,
       openIncludedViewOnSelect,
       showIncludedView,
       isModal,
-      viewId,
       windowId,
       keyProperty,
-      updateQuickActions,
       selected,
       onSelect,
     } = this.props;
@@ -147,7 +144,6 @@ export default class Table extends PureComponent {
       } else {
         // if row is not selected or multiple rows are selected
         if (!isSelected || (isSelected && selected.length > 1)) {
-          updateQuickActions && updateQuickActions(id);
           newSelection = [id];
           onSelect(id);
         } else {
@@ -157,17 +153,11 @@ export default class Table extends PureComponent {
           newSelection = onSelect(afterDeselect);
         }
       }
-
-      if (onSelectionChanged && newSelection) {
-        onSelectionChanged(newSelection);
-      }
     }
 
     if (openIncludedViewOnSelect) {
-      const identifier = isModal ? viewId : windowId;
-
       showIncludedView({
-        id: identifier,
+        id: windowId,
         showIncludedView: item.supportIncludedViews,
         forceClose: false,
         windowId: item.supportIncludedViews ? item.includedView.windowId : null,
@@ -340,7 +330,6 @@ export default class Table extends PureComponent {
       columns,
       selected,
       rows,
-      onItemChange,
       onSelect,
       onRowCollapse,
       collapsedRows,
@@ -436,7 +425,6 @@ export default class Table extends PureComponent {
         notSaved={item.saveStatus && !item.saveStatus.saved}
         hasComments={item.hasComments}
         onRowCollapse={onRowCollapse}
-        onItemChange={onItemChange}
         onCopy={handleCopy}
       />
     ));

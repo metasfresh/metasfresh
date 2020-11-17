@@ -209,6 +209,7 @@ class TableWrapper extends PureComponent {
       limitOnClickOutside,
       onDeselectAll,
       isModal,
+      parentView,
     } = this.props;
     const parentNode = event.target.parentNode;
     const closeIncluded =
@@ -243,15 +244,15 @@ class TableWrapper extends PureComponent {
 
       onDeselectAll();
 
-      const identifier = isModal ? viewId : windowId;
-
-      showIncludedView({
-        id: identifier,
-        showIncludedView: false,
-        windowId,
-        viewId,
-        isModal,
-      });
+      if (parentView) {
+        showIncludedView({
+          id: parentView,
+          showIncludedView: false,
+          windowId,
+          viewId,
+          isModal,
+        });
+      }
     }
   };
 
