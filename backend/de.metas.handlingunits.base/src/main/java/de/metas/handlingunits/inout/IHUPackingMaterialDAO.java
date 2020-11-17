@@ -28,11 +28,15 @@ package de.metas.handlingunits.inout;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -55,4 +59,7 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PackingMaterial retrivePackingMaterialOfProduct(final I_M_Product product);
+
+	@Nullable
+	I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull I_M_HU_Item huItem);
 }

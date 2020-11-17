@@ -16,9 +16,12 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -30,17 +33,25 @@ import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.generichumodel.HU.HUBuilder;
 import de.metas.handlingunits.impl.HUIterator;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackagingCode;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.quantity.Quantity;
+
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.model.I_C_BPartner_Product;
+import org.slf4j.Logger;
+import java.util.List;
 
 /*
  * #%L
@@ -67,6 +78,8 @@ import lombok.ToString;
 @Repository
 public class HURepository
 {
+	private final static transient Logger logger = LogManager.getLogger(HURepository.class);
+
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	public HU getById(@NonNull final HuId id)
@@ -90,6 +103,8 @@ public class HURepository
 	private static class HUIteratorListener extends HUIteratorListenerAdapter
 	{
 		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
 
 		private final transient HUStack huStack = new HUStack();
@@ -139,7 +154,42 @@ public class HURepository
 					.type(HUType.ofCode(handlingUnitsBL.getHU_UnitType(huRecord)))
 					.packagingCode(extractPackagingCodeId(huRecord))
 					.attributes(attributeStorage)
-					.weightNet(Optional.ofNullable(weightNet));
+					.weightNet(Optional.ofNullable(weightNet))
+					.packagingGTINs(extractPackagingGTINs(huRecord));
+		}
+
+		@NonNull
+		private ImmutableMap<BPartnerId, String> extractPackagingGTINs(@NonNull final I_M_HU huRecord)
+		{
+			final ImmutableSet<ProductId> packagingProductIds = handlingUnitsDAO.retrieveItems(huRecord, HUItemType.PackingMaterial)
+					.stream()
+					.map(packingMaterialDAO::retrieveHUPackingMaterialOrNull)
+					.filter(Predicates.notNull())
+					.map(I_M_HU_PackingMaterial::getM_Product_ID)
+					.map(ProductId::ofRepoIdOrNull)
+					.filter(Predicates.notNull())
+					.collect(ImmutableSet.toImmutableSet());
+
+			final ImmutableMap.Builder<BPartnerId, String> packagingGTINs = ImmutableMap.builder();
+			if (packagingProductIds.size() == 1)
+			{
+				final List<I_C_BPartner_Product> bPartnerProductRecords = Services.get(IBPartnerProductDAO.class).retrieveForProductIds(packagingProductIds);
+				for (final I_C_BPartner_Product bPartnerProductRecord : bPartnerProductRecords)
+				{
+					if (Check.isNotBlank(bPartnerProductRecord.getGTIN()))
+					{
+						packagingGTINs.put(
+								BPartnerId.ofRepoId(bPartnerProductRecord.getC_BPartner_ID()),
+								bPartnerProductRecord.getGTIN());
+					}
+				}
+			}
+			else
+			{
+				logger.debug("M_HU_ID={} has {} packagingProductIds; => not extracting any bpartner-GTINs", huRecord.getM_HU_ID(), packagingProductIds.size());
+			}
+
+			return packagingGTINs.build();
 		}
 
 		@Override

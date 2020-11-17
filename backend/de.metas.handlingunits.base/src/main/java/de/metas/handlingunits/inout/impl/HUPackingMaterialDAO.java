@@ -3,6 +3,8 @@
  */
 package de.metas.handlingunits.inout.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -31,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,10 +43,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -86,5 +92,13 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.create()
 				.setOnlyActiveRecords(true)
 				.firstOnly(I_M_HU_PackingMaterial.class);
+	}
+
+	@Nullable
+	@Override
+	public I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull final I_M_HU_Item huItem)
+	{
+		final int packingMaterialId = huItem.getM_HU_PackingMaterial_ID();
+		return packingMaterialId > 0 ? loadOutOfTrx(packingMaterialId, I_M_HU_PackingMaterial.class) : null;
 	}
 }

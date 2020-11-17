@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.purchasing.api.impl;
 
@@ -13,12 +13,12 @@ package de.metas.purchasing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,6 +27,7 @@ package de.metas.purchasing.api.impl;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,14 +43,18 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import lombok.NonNull;
 
 /**
  * @author cg
- * 
+ *
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
@@ -86,6 +91,28 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.endOrderBy()
 				.create()
 				.list(I_C_BPartner_Product.class);
+	}
+
+	@Override
+	public List<org.compiere.model.I_C_BPartner_Product> retrieveForProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		// InArrayFilter doesn't yet support RepoIdAware
+		final ImmutableList<Integer> productRepoIds = productIds.stream()
+				.map(ProductId::getRepoId)
+				.collect(ImmutableList.toImmutableList());
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productRepoIds)
+				.create()
+				.list(org.compiere.model.I_C_BPartner_Product.class);
 	}
 
 	@Override

@@ -70,6 +70,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
@@ -331,6 +332,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveItems(hu);
+	}
+
+	@Override
+	public List<I_M_HU_Item> retrieveItems(@NonNull final I_M_HU hu, @NonNull final HUItemType type)
+	{
+		return getHUAndItemsDAO().retrieveItems(hu) /*loads&caches all items in one go*/
+				.stream()
+				.filter(item -> type.getCode().equals(item.getItemType()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

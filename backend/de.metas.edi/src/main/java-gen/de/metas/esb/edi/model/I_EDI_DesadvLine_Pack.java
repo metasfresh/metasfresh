@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_DesadvLine_Pack
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_DesadvLine_Pack 
@@ -14,10 +14,17 @@ public interface I_EDI_DesadvLine_Pack
     /** AD_Table_ID=540676 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -25,34 +32,44 @@ public interface I_EDI_DesadvLine_Pack
 	 */
 	public int getAD_Client_ID();
 
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_Client>(I_EDI_DesadvLine_Pack.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_Org>(I_EDI_DesadvLine_Pack.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Best before date.
+	 * Set Mindesthaltbarkeitsdatum.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -61,7 +78,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setBestBeforeDate (java.sql.Timestamp BestBeforeDate);
 
 	/**
-	 * Get Best before date.
+	 * Get Mindesthaltbarkeitsdatum.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -75,8 +92,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -90,8 +107,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -99,12 +116,14 @@ public interface I_EDI_DesadvLine_Pack
 	 */
 	public int getCreatedBy();
 
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_User>(I_EDI_DesadvLine_Pack.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
+	 * Set Maßeinheit.
+	 * Maßeinheit
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -113,8 +132,8 @@ public interface I_EDI_DesadvLine_Pack
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get UOM.
-	 * Unit of Measure
+	 * Get Maßeinheit.
+	 * Maßeinheit
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -122,6 +141,12 @@ public interface I_EDI_DesadvLine_Pack
 	 */
 	public int getC_UOM_ID();
 
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_C_UOM>(I_EDI_DesadvLine_Pack.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
@@ -153,7 +178,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
-	 * Set DESADV Line.
+	 * Set DESADV-Position.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -162,7 +187,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID);
 
 	/**
-	 * Get DESADV Line.
+	 * Get DESADV-Position.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -203,6 +228,56 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_EDI_DesadvLine_Pack_ID = "EDI_DesadvLine_Pack_ID";
 
 	/**
+	 * Set LU Gebinde-GTIN.
+	 * GTIN des verwendeten Gebindes, z.B. Palette. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGTIN_LU_PackingMaterial (java.lang.String GTIN_LU_PackingMaterial);
+
+	/**
+	 * Get LU Gebinde-GTIN.
+	 * GTIN des verwendeten Gebindes, z.B. Palette. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGTIN_LU_PackingMaterial();
+
+    /** Column definition for GTIN_LU_PackingMaterial */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_GTIN_LU_PackingMaterial = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "GTIN_LU_PackingMaterial", null);
+    /** Column name GTIN_LU_PackingMaterial */
+    public static final String COLUMNNAME_GTIN_LU_PackingMaterial = "GTIN_LU_PackingMaterial";
+
+	/**
+	 * Set TU Gebinde-GTIN.
+	 * GTIN des verwendeten Gebindes, z.B. Karton. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGTIN_TU_PackingMaterial (java.lang.String GTIN_TU_PackingMaterial);
+
+	/**
+	 * Get TU Gebinde-GTIN.
+	 * GTIN des verwendeten Gebindes, z.B. Karton. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGTIN_TU_PackingMaterial();
+
+    /** Column definition for GTIN_TU_PackingMaterial */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_GTIN_TU_PackingMaterial = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "GTIN_TU_PackingMaterial", null);
+    /** Column name GTIN_TU_PackingMaterial */
+    public static final String COLUMNNAME_GTIN_TU_PackingMaterial = "GTIN_TU_PackingMaterial";
+
+	/**
 	 * Set SSCC18.
 	 *
 	 * <br>Type: String
@@ -226,8 +301,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_IPA_SSCC18 = "IPA_SSCC18";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -236,8 +311,8 @@ public interface I_EDI_DesadvLine_Pack
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -251,8 +326,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set manual SSCC18.
-	 * metasfresh ticks this flag if there is no HU assigned and the user can manually provide a SSCC18 value.
+	 * Set manuelle SSCC18.
+	 * Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt metasfresh dieses Feld auf "Ja" und der Nutzer kann manuell eine SSCC18 Nummer eintragen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -261,8 +336,8 @@ public interface I_EDI_DesadvLine_Pack
 	public void setIsManual_IPA_SSCC18 (boolean IsManual_IPA_SSCC18);
 
 	/**
-	 * Get manual SSCC18.
-	 * metasfresh ticks this flag if there is no HU assigned and the user can manually provide a SSCC18 value.
+	 * Get manuelle SSCC18.
+	 * Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt metasfresh dieses Feld auf "Ja" und der Nutzer kann manuell eine SSCC18 Nummer eintragen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -276,7 +351,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
 
 	/**
-	 * Set Lot number.
+	 * Set Chargennummer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -285,7 +360,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setLotNumber (java.lang.String LotNumber);
 
 	/**
-	 * Get Lot number.
+	 * Get Chargennummer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -322,7 +397,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set LU packaging code.
+	 * Set LU Verpackungscode.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -331,7 +406,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setM_HU_PackagingCode_LU_ID (int M_HU_PackagingCode_LU_ID);
 
 	/**
-	 * Get LU packaging code.
+	 * Get LU Verpackungscode.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -370,7 +445,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_M_HU_PackagingCode_LU_Text = "M_HU_PackagingCode_LU_Text";
 
 	/**
-	 * Set TU packaging code.
+	 * Set TU Verpackungscode.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -379,7 +454,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setM_HU_PackagingCode_TU_ID (int M_HU_PackagingCode_TU_ID);
 
 	/**
-	 * Get TU packaging code.
+	 * Get TU Verpackungscode.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -418,7 +493,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
 
 	/**
-	 * Set Shipment/ Receipt.
+	 * Set Lieferung/Wareneingang.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
@@ -428,7 +503,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Shipment/ Receipt.
+	 * Get Lieferung/Wareneingang.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
@@ -447,8 +522,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Receipt Line.
-	 * Line on Receipt document
+	 * Set Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -457,8 +532,8 @@ public interface I_EDI_DesadvLine_Pack
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
-	 * Get Receipt Line.
-	 * Line on Receipt document
+	 * Get Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -476,7 +551,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
-	 * Set Qty.
+	 * Set Bewegungs-Menge.
+	 * Menge eines bewegten Produktes.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -485,7 +561,8 @@ public interface I_EDI_DesadvLine_Pack
 	public void setMovementQty (java.math.BigDecimal MovementQty);
 
 	/**
-	 * Get Qty.
+	 * Get Bewegungs-Menge.
+	 * Menge eines bewegten Produktes.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -499,8 +576,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_MovementQty = "MovementQty";
 
 	/**
-	 * Set Qty CU per TU.
-	 * Number of CUs per package (usually TU)
+	 * Set Menge CU/TU.
+	 * Menge der CUs pro Einzelgebinde (normalerweise TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -509,8 +586,8 @@ public interface I_EDI_DesadvLine_Pack
 	public void setQtyCU (java.math.BigDecimal QtyCU);
 
 	/**
-	 * Get Qty CU per TU.
-	 * Number of CUs per package (usually TU)
+	 * Get Menge CU/TU.
+	 * Menge der CUs pro Einzelgebinde (normalerweise TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -547,8 +624,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_QtyCUsPerLU = "QtyCUsPerLU";
 
 	/**
-	 * Set Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
+	 * Set Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -557,8 +634,8 @@ public interface I_EDI_DesadvLine_Pack
 	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
 
 	/**
-	 * Get Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
+	 * Get Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -572,7 +649,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
 
 	/**
-	 * Set Number of TUs.
+	 * Set Menge TU.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -581,7 +658,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setQtyTU (int QtyTU);
 
 	/**
-	 * Get Number of TUs.
+	 * Get Menge TU.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -595,8 +672,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_QtyTU = "QtyTU";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -610,8 +687,8 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -619,6 +696,8 @@ public interface I_EDI_DesadvLine_Pack
 	 */
 	public int getUpdatedBy();
 
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_AD_User>(I_EDI_DesadvLine_Pack.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
