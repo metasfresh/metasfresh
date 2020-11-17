@@ -244,7 +244,7 @@ class ShipmentCandidateAPIService
 					result.item(itemBuilder.build());
 					createExportedAuditItem(shipmentSchedule, auditBuilder);
 				}
-				catch (final ShipmentCandidateExportException e) // don't catch just any exception; just the "functional" ones
+				catch (final RuntimeException e) // catch all RTEs; if we don't catch them here, then the whole export won't proceed, for no shipment candidate
 				{
 					createExportErrorAuditItem(shipmentSchedule, e, auditBuilder);
 				}
@@ -281,9 +281,9 @@ class ShipmentCandidateAPIService
 						.setParameter("C_BPartner_Location_ID", bPartnerLocationId.getRepoId()));
 
 		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(location.getAddress1());
-		if (splitStreetAndHouseNumber == null)
+		if (splitStreetAndHouseNumber == null || splitStreetAndHouseNumber.getLeft() == null || splitStreetAndHouseNumber.getRight() == null)
 		{
-			throw new ShipmentCandidateExportException("BPartner's location needs to have an Address1 with a discernible street and street number")
+			throw new ShipmentCandidateExportException("Unable to extract street and street-number from Address1")
 					.appendParametersToMessage()
 					.setParameter("Address1", location.getAddress1())
 					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
@@ -392,7 +392,7 @@ class ShipmentCandidateAPIService
 
 	private void createExportErrorAuditItem(
 			@NonNull final ShipmentSchedule shipmentSchedule,
-			@NonNull final ShipmentCandidateExportException e,
+			@NonNull final RuntimeException e,
 			@NonNull final APIExportAuditBuilder<ShipmentScheduleExportAuditItem> auditBuilder)
 	{
 		final OrgId orgId = shipmentSchedule.getOrgId();
