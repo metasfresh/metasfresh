@@ -108,6 +108,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -196,6 +197,9 @@ class ShipmentCandidateAPIService
 					bPartnerCompositeRepository.getByIds(idsRegistry.getBPartnerIds()),
 					bp -> bp.getBpartner().getId());
 
+			// keep track about which shipment schedule was successfully exported
+			final HashMap<APIExportStatus, HashSet<ShipmentScheduleId>> status2ShipmentScheduleIds = new HashMap<>();
+
 			for (final ShipmentSchedule shipmentSchedule : shipmentSchedules)
 			{
 				try (final MDC.MDCCloseable ignore1 = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentSchedule.getId()))
@@ -243,15 +247,24 @@ class ShipmentCandidateAPIService
 
 					result.item(itemBuilder.build());
 					createExportedAuditItem(shipmentSchedule, auditBuilder);
+					status2ShipmentScheduleIds
+							.computeIfAbsent(APIExportStatus.Exported, k -> new HashSet<>())
+							.add(shipmentSchedule.getId());
 				}
 				catch (final RuntimeException e) // catch all RTEs; if we don't catch them here, then the whole export won't proceed, for no shipment candidate
 				{
 					createExportErrorAuditItem(shipmentSchedule, e, auditBuilder);
+					status2ShipmentScheduleIds
+							.computeIfAbsent(APIExportStatus.ExportError, k -> new HashSet<>())
+							.add(shipmentSchedule.getId());
 				}
 			}
 
 			shipmentScheduleAuditRepository.save(auditBuilder.build());
-			shipmentScheduleRepository.exportStatusMassUpdate(idsRegistry.getShipmentScheduleIds(), APIExportStatus.Exported);
+			for (final APIExportStatus status : status2ShipmentScheduleIds.keySet())
+			{
+				shipmentScheduleRepository.exportStatusMassUpdate(status2ShipmentScheduleIds.get(status), APIExportStatus.Exported);
+			}
 
 			return result.build();
 		}
@@ -517,8 +530,6 @@ class ShipmentCandidateAPIService
 			@NonNull final APIExportAudit<ShipmentScheduleExportAuditItem> exportAudit,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final ShipmentScheduleExportAuditItemBuilder builder;
-
 		final ShipmentScheduleExportAuditItem existingExportAuditItem = exportAudit.getItemById(shipmentScheduleId);
 		if (existingExportAuditItem == null) // should not happen, but we don't want to make a fuzz in case it does
 		{
@@ -596,7 +607,6 @@ class ShipmentCandidateAPIService
 						orderRecord -> OrderId.ofRepoId(orderRecord.getC_Order_ID()),
 						Function.identity()
 				));
-
 		return orderIdToOrderRecord;
 	}
 
