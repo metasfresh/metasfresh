@@ -22,6 +22,8 @@
 
 package de.metas.ui.web.print;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentPrintOptionDescriptor;
 import de.metas.report.DocumentPrintOptionDescriptorsList;
@@ -46,6 +48,9 @@ import java.util.ArrayList;
 @Service
 public class WebuiDocumentPrintService
 {
+	private static final AdMessageKey MSG_PrintOptions_Caption = AdMessageKey.of("webui.window.Print.caption");
+	private static final AdMessageKey MSG_PrintOptions_OKButtonCaption = AdMessageKey.of("Print");
+
 	private final DocumentCollection documentCollection;
 	private final DocumentReportService documentReportService;
 
@@ -116,12 +121,9 @@ public class WebuiDocumentPrintService
 					.build());
 		}
 
-		if (jsonOptionsList.isEmpty())
-		{
-			return JSONDocumentPrintingOptions.EMPTY;
-		}
-
 		return JSONDocumentPrintingOptions.builder()
+				.caption(TranslatableStrings.adMessage(MSG_PrintOptions_Caption).translate(adLanguage))
+				.okButtonCaption(TranslatableStrings.adMessage(MSG_PrintOptions_OKButtonCaption).translate(adLanguage))
 				.options(jsonOptionsList)
 				.build();
 	}
