@@ -8,7 +8,25 @@ class PrintingOptions extends PureComponent {
           <div className="document-file-dropzone">
             <div className="sections-wrapper">
               <div className="panel panel-spaced panel-distance panel-bordered panel-primary">
-                <div className="row">Options</div>
+                <div>&nbsp;</div>
+
+                <div className="row">
+                  <div className="col-lg-6 col-md-6">
+                    <label className="checkbox-inline">
+                      <input type="checkbox" value="option1" />
+                      Print logo
+                    </label>
+                  </div>
+                </div>
+                <div>&nbsp;</div>
+                <div className="row">
+                  <div className="col-lg-6 col-md-6">
+                    <label className="checkbox-inline">
+                      <input type="checkbox" value="option2" />
+                      Print totals
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

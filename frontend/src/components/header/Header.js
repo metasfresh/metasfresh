@@ -6,7 +6,9 @@ import { push } from 'react-router-redux';
 import classnames from 'classnames';
 
 import { deleteRequest } from '../../api';
-import { duplicateRequest, openFile } from '../../actions/GenericActions';
+import {
+  duplicateRequest /* , openFile */,
+} from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
@@ -356,6 +358,7 @@ class Header extends PureComponent {
    */
   handlePrint = (windowId, docId, docNo) => {
     const { dispatch, viewId } = this.props;
+
     dispatch(
       openModal(
         'Printing options',
@@ -365,7 +368,7 @@ class Header extends PureComponent {
         null,
         false,
         viewId,
-        docNo,
+        [Number(docNo)],
         docId,
         null,
         null,
