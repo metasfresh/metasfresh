@@ -602,4 +602,10 @@ public class ADProcessDAO implements IADProcessDAO
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public void save(final I_AD_Process process)
+	{
+		InterfaceWrapperHelper.save(process);
+	}
 }
