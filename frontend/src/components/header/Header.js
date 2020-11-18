@@ -394,7 +394,7 @@ class Header extends PureComponent {
               null,
               false,
               viewId,
-              [Number(docNo)],
+              [docNo],
               docId,
               null,
               null,

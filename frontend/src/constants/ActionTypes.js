@@ -428,3 +428,9 @@ export const SET_PRINTING_OPTIONS = 'SET_PRINTING_OPTIONS';
  * @type {string} reset the printing options
  */
 export const RESET_PRINTING_OPTIONS = 'RESET_PRINTING_OPTIONS';
+
+/**
+ * @constant
+ * @type {string} toggles specific printing option
+ */
+export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';

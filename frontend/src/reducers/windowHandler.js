@@ -51,6 +51,7 @@ import {
   UPDATE_TAB_LAYOUT,
   SET_PRINTING_OPTIONS,
   RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -769,6 +770,21 @@ export default function windowHandler(state = initialState, action) {
       return {
         ...state,
         printingOptions: {},
+      };
+    }
+    case TOGGLE_PRINTING_OPTION: {
+      const newPrintingOptions = [...state.printingOptions.options];
+
+      newPrintingOptions.map((item) => {
+        if (item.internalName === action.payload) item.value = !item.value;
+        return item;
+      });
+      return {
+        ...state,
+        printingOptions: {
+          ...state.printingOptions,
+          options: newPrintingOptions,
+        },
       };
     }
     default:
