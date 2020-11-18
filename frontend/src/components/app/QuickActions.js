@@ -43,11 +43,6 @@ export class QuickActions extends Component {
     deleteQuickActions(windowId, viewId);
   };
 
-  // TODO: Check this
-  shouldComponentUpdate(nextProps) {
-    return nextProps.shouldNotUpdate !== true;
-  }
-
   /**
    * @method handleClickOPutside
    * @summary ToDo: Describe the method
@@ -84,9 +79,6 @@ export class QuickActions extends Component {
     if (action.disabled) {
       return;
     }
-
-    // this.setState({ loading: true });
-    // TODO: I think we have to disable them after running an action
 
     openModal(
       action.caption,
@@ -161,7 +153,7 @@ export class QuickActions extends Component {
    * @todo Write the documentation
    */
   render() {
-    const { isDropdownOpen, btnTooltip, listTooltip /*loading*/ } = this.state;
+    const { isDropdownOpen, btnTooltip, listTooltip } = this.state;
     const {
       quickActions: { actions, pending },
       shouldNotUpdate,
