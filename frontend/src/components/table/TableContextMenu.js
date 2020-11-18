@@ -137,7 +137,7 @@ class TableContextMenu extends Component {
           }
           updateTableHeight(DROPDOWN_OFFSET_BIG);
           offset = DROPDOWN_OFFSET_BIG;
-          mainPanel.scrollTop = mainPanel.scrollHeight;
+          // mainPanel.scrollTop = mainPanel.scrollHeight;
 
           this.setState((prevState) => {
             const { y: lastY } = prevState.contextMenu;
@@ -151,7 +151,7 @@ class TableContextMenu extends Component {
         } else if (initialY > TBL_CONTEXT_MENU_MAX_Y) {
           // routine to calculate and adjust position for bottom of the table clicks, also scroll automatically
           const beforeAssign = mainPanel.scrollTop;
-          mainPanel.scrollTop = mainPanel.scrollHeight;
+          // mainPanel.scrollTop = mainPanel.scrollHeight;
           let offset = initialY - mainPanel.scrollTop;
           this.setState((prevState) => {
             return {
