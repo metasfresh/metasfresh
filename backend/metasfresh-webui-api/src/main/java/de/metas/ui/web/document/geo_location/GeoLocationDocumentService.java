@@ -1,20 +1,6 @@
 package de.metas.ui.web.document.geo_location;
 
-import java.util.Collection;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -35,6 +21,17 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -185,6 +182,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.setFieldName(GeoLocationFilterConverter.PARAM_CountryId)
 						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_CountryId))
+						.setMandatory(true)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Country.Table_Name).provideForFilter()))
 				.addParameter(DocumentFilterParamDescriptor.builder()

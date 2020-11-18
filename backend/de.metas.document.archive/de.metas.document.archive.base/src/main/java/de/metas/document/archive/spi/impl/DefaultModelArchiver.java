@@ -137,7 +137,7 @@ public class DefaultModelArchiver
 		// PrintInfo (needed for archiving)
 		final ArchiveInfo archiveInfo = reportEngine.getPrintInfo();
 
-		ITableRecordReference reference = archiveInfo.getRecordRef();
+		TableRecordReference reference = archiveInfo.getRecordRef();
 
 		//
 		// Create AD_Archive and save it
@@ -182,18 +182,13 @@ public class DefaultModelArchiver
 		}
 		else
 		{
-			final List<org.compiere.model.I_AD_Archive> lastArchives = Services.get(IArchiveDAO.class).retrieveLastArchives(getCtx(), reference, 1);
+			final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+			final org.compiere.model.I_AD_Archive lastArchive = archiveBL
+					.getLastArchive(reference)
+					.orElseThrow(() -> new AdempiereException("@NoDocPrintFormat@@NoArchive@"));
 
-			if (lastArchives.isEmpty())
-			{
-				throw new AdempiereException("@NoDocPrintFormat@@NoArchive@");
-			}
-
-			final org.compiere.model.I_AD_Archive lastArchive = lastArchives.get(0);
-
-			archive = load(lastArchive.getAD_Archive_ID(), I_AD_Archive.class);
-
-			pdfData = archive == null? null : archive.getBinaryData();
+			archive = InterfaceWrapperHelper.create(lastArchive, I_AD_Archive.class);
+			pdfData = archiveBL.getBinaryData(archive);
 		}
 
 		//

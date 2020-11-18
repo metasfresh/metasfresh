@@ -22,14 +22,18 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
-import java.io.InputStream;
-import java.util.Properties;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
-import org.adempiere.ad.trx.api.ITrx;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,15 +46,14 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_BPartner;
-import org.adempiere.archive.api.ArchiveInfo;
 import org.compiere.model.X_AD_Client;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.service.IBPartnerAware;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfo;
-import de.metas.util.Services;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public class ArchiveBL implements IArchiveBL
 {
@@ -341,5 +344,27 @@ public class ArchiveBL implements IArchiveBL
 	public InputStream getBinaryDataAsStream(final I_AD_Archive archive)
 	{
 		return Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).getBinaryDataAsStream(archive);
+	}
+
+	@Override
+	public Optional<I_AD_Archive> getLastArchive(@NonNull final TableRecordReference reference)
+	{
+		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+		final List<I_AD_Archive> lastArchives = archiveDAO.retrieveLastArchives(Env.getCtx(), reference, QueryLimit.ONE);
+
+		if (lastArchives.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(lastArchives.get(0));
+		}
+	}
+
+	@Override
+	public Optional<byte[]> getLastArchiveBinaryData(@NonNull final TableRecordReference reference)
+	{
+		return getLastArchive(reference).map(this::getBinaryData);
 	}
 }
