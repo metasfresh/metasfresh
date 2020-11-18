@@ -40,8 +40,10 @@ import java.util.StringTokenizer;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.grid.ed.RichTextEditor;
@@ -109,7 +111,6 @@ public class EMailDialog
 	 *
 	 * @param owner calling window
 	 * @param title title
-	 * @param from from
 	 * @param to to
 	 * @param subject subject
 	 * @param message message
@@ -158,7 +159,6 @@ public class EMailDialog
 	/**
 	 * Common Init
 	 *
-	 * @param from from
 	 * @param to to
 	 * @param subject subject
 	 * @param message message
@@ -610,19 +610,19 @@ public class EMailDialog
 			}
 			if (emailSentStatus.isSentOK())
 			{
-				updateDocExchange(msgBL.getMsg(ctx, "MessageSent")); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
+				updateDocExchange(ArchiveEmailSentStatus.MESSAGE_SENT); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
 				ADialog.info(0, this, "MessageSent");
 				dispose();
 			}
 			else
 			{
-				updateDocExchange(msgBL.getMsg(ctx, "MessageNotSent") + " " + status); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
+				updateDocExchange(ArchiveEmailSentStatus.MESSAGE_NOT_SENT); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
 				ADialog.error(0, this, "MessageNotSent", status);
 			}
 		}
 		else
 		{
-			updateDocExchange(msgBL.getMsg(ctx, "MessageNotSent") + " " + status); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
+			updateDocExchange(ArchiveEmailSentStatus.MESSAGE_NOT_SENT); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
 			ADialog.error(0, this, "MessageNotSent", status);
 		}
 		//
@@ -695,7 +695,7 @@ public class EMailDialog
 		commonInit(fromUserEmailConfig, to, subject, message, attachment, textPreset);
 	}	// EmailDialog
 
-	private void updateDocExchange(final String status)
+	private void updateDocExchange(final ArchiveEmailSentStatus status)
 	{
 		if (archive == null)
 		{
@@ -712,12 +712,10 @@ public class EMailDialog
 		{
 			return;
 		}
-		final String action = "eMail";
 		final UserEMailConfig fromUserEMailConfig = getFromUserEMailConfig();
 		Services.get(IArchiveEventManager.class).fireEmailSent(
-				archive, 
-				action, 
-				fromUserEMailConfig, 
+				archive,
+				fromUserEMailConfig,
 				fromUserEMailConfig != null ? fromUserEMailConfig.getEmail() : null, 
 				EMailAddress.ofNullableString(getTo()), 
 				EMailAddress.ofNullableString(getCc()), 

@@ -1,35 +1,14 @@
 package de.metas.document.archive.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.archive.spi.IArchiveEventListener;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -41,24 +20,50 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.i18n.IMsgBL;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.ArchiveAction;
+import org.adempiere.archive.api.ArchiveEmailSentStatus;
+import org.adempiere.archive.api.ArchivePrintOutStatus;
+import org.adempiere.archive.spi.IArchiveEventListener;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Component
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
-	private AttachmentEntryService attachmentEntryService;
+	private final AttachmentEntryService attachmentEntryService;
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	public DocOutboundArchiveEventListener(@NonNull final AttachmentEntryService attachmentEntryService)
+	public DocOutboundArchiveEventListener(
+			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
 	@Override
-	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, final String action)
+	public void onPdfUpdate(
+			@Nullable final I_AD_Archive archive,
+			@Nullable final UserId userId)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -66,7 +71,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		}
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
-		docExchangeLine.setAction(action);
+		docExchangeLine.setAction(ArchiveAction.PDF_EXPORT.getCode());
 		if (userId != null)
 		{
 			docExchangeLine.setAD_User_ID(userId.getRepoId());
@@ -77,13 +82,12 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	@Override
 	public void onEmailSent(
 			@NonNull final I_AD_Archive archive,
-			final String action,
 			@Nullable final UserEMailConfig userMailConfig,
 			final EMailAddress from,
 			final EMailAddress to,
 			final EMailAddress cc,
 			final EMailAddress bcc,
-			final String status)
+			@NonNull final ArchiveEmailSentStatus status)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -91,12 +95,12 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		}
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
-		docExchangeLine.setAction(action);
+		docExchangeLine.setAction(ArchiveAction.EMAIL.getCode());
 		docExchangeLine.setEMail_From(EMailAddress.toStringOrNull(from));
 		docExchangeLine.setEMail_To(EMailAddress.toStringOrNull(to));
 		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
 		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
-		docExchangeLine.setStatus(status);
+		docExchangeLine.setStatus(status.toDisplayText(msgBL, Env.getADLanguageOrBaseLanguage()));
 		if (userMailConfig != null)
 		{
 			docExchangeLine.setAD_User_ID(UserId.toRepoId(userMailConfig.getUserId()));
@@ -110,13 +114,13 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	@Override
 	public void onPrintOut(final I_AD_Archive archive,
-			@Nullable final UserId userId,
-			final String printerName,
-			final int copies,
-			final String status)
+						   @Nullable final UserId userId,
+						   final String printerName,
+						   final int copies,
+						   @NonNull final ArchivePrintOutStatus status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
-		if (IArchiveEventManager.STATUS_Success.equals(status))
+		if (status.isSuccess())
 		{
 			Check.assumeNotNull(archive, "archive not null");
 		}
@@ -127,7 +131,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = createLogLine(archive);
 
-		docOutboundLogLineRecord.setAction(X_C_Doc_Outbound_Log_Line.ACTION_Print);
+		docOutboundLogLineRecord.setAction(ArchiveAction.PRINT.getCode());
 		docOutboundLogLineRecord.setPrinterName(printerName);
 
 		// create stuff
@@ -135,7 +139,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		{
 			docOutboundLogLineRecord.setAD_User_ID(userId.getRepoId());
 		}
-		docOutboundLogLineRecord.setStatus(status);
+		docOutboundLogLineRecord.setStatus(status.getCode());
 
 		save(docOutboundLogLineRecord);
 	}
@@ -146,20 +150,14 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	private boolean isLoggableArchive(@Nullable final I_AD_Archive archive)
 	{
 		// task 05334: be robust against archive==null
-		if (archive == null || archive.getAD_Table_ID() <= 0)
-		{
-			return false;
-		}
-
-		return true;
+		return archive != null && archive.getAD_Table_ID() > 0;
 	}
 
 	/**
 	 * Creates {@link I_C_Doc_Outbound_Log_Line}.
-	 *
+	 * <p>
 	 * NOTE: it is not saving the created log line
 	 *
-	 * @param archive
 	 * @return {@link I_C_Doc_Outbound_Log_Line}
 	 */
 	@VisibleForTesting
