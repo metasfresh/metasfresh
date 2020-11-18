@@ -401,6 +401,10 @@ class Modal extends Component {
     );
   };
 
+  /**
+   * @method handlePrinting
+   * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
+   */
   handlePrinting = () => {
     const {
       windowId,
