@@ -176,8 +176,6 @@ export function createTableData(rawData) {
       ? rawData.defaultOrderBys
       : undefined,
     expandedDepth: rawData.expandedDepth,
-
-    // TODO: We have both `supportTree` and `collapsible` in the layout response.
     collapsible: rawData.collapsible,
     indentSupported: rawData.supportTree,
   };

@@ -202,6 +202,17 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
+/*
+ * @method quickActionsRequest
+ * @summary Do a request for quick actions. If `child/parent` params are available
+ * we're fetching QA related to the corresponding view
+ *
+ * @param {string} viewId
+ * @param {string} viewProfileId
+ * @param {array} selectedIds
+ * @param {object} childView
+ * @param {object} parentView
+ */
 export async function quickActionsRequest({
   windowId,
   viewId,

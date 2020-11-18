@@ -43,10 +43,8 @@ export default class DataLayoutWrapper extends PureComponent {
   };
 
   handlePatch = (prop, value, cb) => {
-    const { windowId, viewId, onRowEdited } = this.props;
+    const { windowId, viewId } = this.props;
     const { dataId: rowId } = this.state;
-
-    onRowEdited && onRowEdited(true);
 
     /*eslint-disable */
     patchViewAttributes(windowId, viewId, rowId, prop, value).then(({ data }) => {
@@ -120,7 +118,6 @@ export default class DataLayoutWrapper extends PureComponent {
 }
 
 DataLayoutWrapper.propTypes = {
-  onRowEdited: PropTypes.func,
   windowId: PropTypes.string,
   viewId: PropTypes.string,
   children: PropTypes.node,
