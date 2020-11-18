@@ -510,8 +510,9 @@ class Modal extends Component {
       layout,
       indicator,
       staticModalType,
-      printBtnCaption,
+      printingOptions,
     } = this.props;
+    const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
     const isNotSaved =
@@ -829,7 +830,6 @@ const mapStateToProps = (state, props) => {
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator: state.windowHandler.indicator,
     parentViewId,
-    printBtnCaption: state.windowHandler.printingOptions.okButtonCaption,
     printingOptions: state.windowHandler.printingOptions,
   };
 };
