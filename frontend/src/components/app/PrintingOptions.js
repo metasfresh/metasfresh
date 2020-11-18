@@ -12,23 +12,25 @@ class PrintingOptions extends PureComponent {
             <div className="sections-wrapper">
               <div className="panel panel-spaced panel-distance panel-bordered panel-primary">
                 {options.map((printOptItem) => (
-                  <div key={printOptItem.caption}>
+                  <div key={printOptItem.internalName}>
                     <div>&nbsp;</div>
 
                     <div className="row">
                       <div className="col-lg-6 col-md-6">
-                        <label className="checkbox-inline">
+                        <label className="input-checkbox">
                           <input
                             type="checkbox"
                             value="printOptItem.value"
                             checked={printOptItem.value}
                           />
-                          {printOptItem.caption}
+                          &nbsp;&nbsp; {printOptItem.caption}
+                          <span className="input-checkbox-tick" />
                         </label>
                       </div>
                     </div>
                   </div>
                 ))}
+                <div>&nbsp;</div>
               </div>
             </div>
           </div>
