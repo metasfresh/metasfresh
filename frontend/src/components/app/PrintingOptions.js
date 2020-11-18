@@ -18,7 +18,11 @@ class PrintingOptions extends PureComponent {
                     <div className="row">
                       <div className="col-lg-6 col-md-6">
                         <label className="checkbox-inline">
-                          <input type="checkbox" value="option1" />
+                          <input
+                            type="checkbox"
+                            value="printOptItem.value"
+                            checked={printOptItem.value}
+                          />
                           {printOptItem.caption}
                         </label>
                       </div>
