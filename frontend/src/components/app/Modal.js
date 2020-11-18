@@ -29,6 +29,7 @@ import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 import CommentsPanel from '../comments/CommentsPanel';
 import PrintingOptions from './PrintingOptions';
+import { openFile } from '../../actions/GenericActions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -400,6 +401,32 @@ class Modal extends Component {
     );
   };
 
+  handlePrinting = () => {
+    const {
+      windowId,
+      modalViewDocumentIds,
+      dataId,
+      printingOptions,
+    } = this.props;
+    const docNo = modalViewDocumentIds[0];
+    const docId = dataId;
+    const { options } = printingOptions;
+
+    let extraParams = '';
+    options.map((item) => {
+      extraParams += `${item.internalName}=${item.value}`;
+    });
+
+    openFile(
+      'window',
+      windowId,
+      docId,
+      'print',
+      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf?${extraParams}`
+    );
+    this.handleClose();
+  };
+
   /**
    * @method renderModalBody
    * @summary ToDo: Describe the method
@@ -594,7 +621,7 @@ class Modal extends Component {
                       'tag-disabled disabled ': pending,
                     }
                   )}
-                  onClick={this.handleStart}
+                  onClick={this.handlePrinting}
                   tabIndex={0}
                 >
                   {printBtnCaption}
@@ -773,6 +800,7 @@ Modal.propTypes = {
   windowId: PropTypes.string,
   viewDocumentIds: PropTypes.array,
   printBtnCaption: PropTypes.string,
+  printingOptions: PropTypes.object,
 };
 
 const mapStateToProps = (state, props) => {
@@ -797,6 +825,7 @@ const mapStateToProps = (state, props) => {
     indicator: state.windowHandler.indicator,
     parentViewId,
     printBtnCaption: state.windowHandler.printingOptions.okButtonCaption,
+    printingOptions: state.windowHandler.printingOptions,
   };
 };
 
