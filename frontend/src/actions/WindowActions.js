@@ -47,6 +47,8 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
@@ -1323,5 +1325,27 @@ export function handleProcessResponse(response, type, id) {
         await dispatch(closeProcessModal());
       }
     }
+  };
+}
+
+/**
+ * @method setPrintingOptions
+ * @summary - action. It updates the store with the printing options fetched from /rest/api/window/{windowId}/{documentId}/printingOptions
+ * @param {object} data
+ */
+export function setPrintingOptions(data) {
+  return {
+    type: SET_PRINTING_OPTIONS,
+    payload: data,
+  };
+}
+
+/**
+ * @method resetPrintingOptions
+ * @summary - action. It reets the printing options in the store
+ */
+export function resetPrintingOptions() {
+  return {
+    type: RESET_PRINTING_OPTIONS,
   };
 }

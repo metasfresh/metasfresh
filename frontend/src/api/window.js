@@ -212,7 +212,7 @@ export function getProcessData({
  * @param {string} tabId
  * @param {string} rowId
  */
-export function getPrintingOptions(entity, windowId, docId, tabId, rowId) {
+export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
   return get(
     config.API_URL +
       '/' +
