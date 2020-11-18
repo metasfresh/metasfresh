@@ -263,7 +263,7 @@ class ShipmentCandidateAPIService
 			shipmentScheduleAuditRepository.save(auditBuilder.build());
 			for (final APIExportStatus status : status2ShipmentScheduleIds.keySet())
 			{
-				shipmentScheduleRepository.exportStatusMassUpdate(status2ShipmentScheduleIds.get(status), APIExportStatus.Exported);
+				shipmentScheduleRepository.exportStatusMassUpdate(status2ShipmentScheduleIds.get(status), status);
 			}
 
 			return result.build();
