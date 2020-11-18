@@ -55,20 +55,6 @@ import de.metas.util.Services;
 public class ArchiveBL implements IArchiveBL
 {
 	@Override
-	public int archive(final byte[] data, final ArchiveInfo archiveInfo)
-	{
-		final boolean force = false;
-		final I_AD_Archive archive = archive(data, archiveInfo, force);
-		return archive == null ? -1 : archive.getAD_Archive_ID();
-	}
-
-	@Override
-	public I_AD_Archive archive(final byte[] data, final ArchiveInfo archiveInfo, final boolean force)
-	{
-		return archive(data, archiveInfo, force, ITrx.TRXNAME_None);
-	}
-
-	@Override
 	public I_AD_Archive archive(final byte[] data,
 			final ArchiveInfo archiveInfo,
 			final boolean force,
@@ -241,7 +227,7 @@ public class ArchiveBL implements IArchiveBL
 		return isToArchive(ctx, archiveInfo);
 	}
 
-	public boolean isToArchive(final Properties ctx, final ArchiveInfo archiveInfo)
+	private boolean isToArchive(final Properties ctx, final ArchiveInfo archiveInfo)
 	{
 		final String autoArchive = getAutoArchiveType(ctx);
 

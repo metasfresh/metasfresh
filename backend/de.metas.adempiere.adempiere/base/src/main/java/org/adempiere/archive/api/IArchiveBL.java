@@ -43,23 +43,9 @@ public interface IArchiveBL extends ISingletonService
 	 * Allow to store the required number of copies per archive. Storing it inside the AD_Archive record (i.e. DB) makes no sense, because one AD_Archive can be printed multiple times.
 	 * The value that is set here will be used in the respective printing queue item
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1240
+	 * Task https://github.com/metasfresh/metasfresh/issues/1240
 	 */
 	ModelDynAttributeAccessor<I_AD_Archive, Integer> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(Integer.class);
-
-
-	/**
-	 * Archives the given binary data. Data is archived only if auto-archive option is enabled (see {@link #isToArchive(ArchiveInfo)})
-	 *
-	 * @param data is it assumed (but not checked) that this is the binary data of a PDF document.
-	 * @param archiveInfo used to determine if the data will be archived at all.
-	 * @return the AD_Archive_ID of the new entry if the data has been archived, -1 otherwise.
-	 * @see #archive(byte[], ArchiveInfo, boolean, String)
-	 */
-	int archive(byte[] data, ArchiveInfo archiveInfo);
-
-	I_AD_Archive archive(byte[] data, ArchiveInfo archiveInfo, boolean force);
-
 	/**
 	 * Archives given <code>data</code>.
 	 *
@@ -77,12 +63,9 @@ public interface IArchiveBL extends ISingletonService
 	/**
 	 * Converts to PDF and archives given <code>layout</code>.
 	 *
-	 * @param layout
-	 * @param archiveInfo
 	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
-	 * @param trxName
-	 * @return
 	 */
+	@Deprecated
 	I_AD_Archive archive(LayoutEngine layout, ArchiveInfo archiveInfo, boolean force, String trxName);
 
 	/**
