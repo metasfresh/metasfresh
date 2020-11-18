@@ -494,7 +494,7 @@ public class DesadvBL implements IDesadvBL
 			// PackagingCodes and PackagingGTINs
 			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
 			packRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
-			packRecord.setGTIN_LU_PackingMaterial(tuPIItemProduct.getPackagingGTIN_LU_Fallback());
+			packRecord.setGTIN_LU_PackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
 
 			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 			packRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
