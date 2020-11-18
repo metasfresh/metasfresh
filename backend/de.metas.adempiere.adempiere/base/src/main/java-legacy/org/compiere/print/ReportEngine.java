@@ -1297,14 +1297,14 @@ public class ReportEngine implements PrintServiceAttributeListener
 	public static final int INVOICE = 2;
 	/** Project = 3 */
 	public static final int PROJECT = 3;
-	/** Remittance = 5 */
-	public static final int REMITTANCE = 5;
-	/** Check = 6 */
+	/** Manufacturing Order = 5 */
+	public static final int MANUFACTURING_ORDER = 5;
+		/** Check = 6 */
 	public static final int CHECK = 6;
 	/** Dunning = 7 */
 	public static final int DUNNING = 7;
-	/** Manufacturing Order = 8 */
-	public static final int MANUFACTURING_ORDER = 8;
+	/** Remittance = 8 */
+	public static final int REMITTANCE = 8;
 	/** Distribution Order = 9 */
 	public static final int DISTRIBUTION_ORDER = 9;
 
