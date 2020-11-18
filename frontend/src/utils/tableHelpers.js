@@ -32,6 +32,7 @@ export const containerPropTypes = {
   limitOnClickOutside: PropTypes.bool,
   supportOpenRecord: PropTypes.bool,
   onSortTable: PropTypes.func,
+  parentView: PropTypes.object,
 
   // from redux
   rows: PropTypes.array.isRequired,

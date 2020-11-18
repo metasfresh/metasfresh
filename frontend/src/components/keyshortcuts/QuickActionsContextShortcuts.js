@@ -58,7 +58,7 @@ export default class QuickActionsContextShortcuts extends Component {
  * @prop {bool} [stopPropagation]
  */
 QuickActionsContextShortcuts.propTypes = {
-  onAction: PropTypes.func.isRequired,
+  onAction: PropTypes.func,
   onClick: PropTypes.func.isRequired,
   stopPropagation: PropTypes.bool,
 };

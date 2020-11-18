@@ -332,7 +332,14 @@ export default class DocumentList extends Component {
                 focusOnFieldName={layout.focusOnFieldName}
                 toggleState={panelsState}
                 spinnerVisible={triggerSpinner}
-                parentView={isIncluded ? parentWindowType : null}
+                parentView={
+                  isIncluded
+                    ? {
+                        viewId: parentDefaultViewId,
+                        windowId: parentWindowType,
+                      }
+                    : null
+                }
                 {...{
                   orderBy,
                   pageLength,
