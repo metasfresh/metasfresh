@@ -49,6 +49,8 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -95,7 +97,7 @@ const initialModalState = {
 
 export const initialState = {
   connectionError: false,
-
+  printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
   modal: initialModalState,
   overlay: {
@@ -755,6 +757,18 @@ export default function windowHandler(state = initialState, action) {
             actions: [],
           },
         },
+      };
+    }
+    case SET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: action.payload,
+      };
+    }
+    case RESET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: {},
       };
     }
     default:

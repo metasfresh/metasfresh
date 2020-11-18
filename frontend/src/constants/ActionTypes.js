@@ -416,3 +416,15 @@ export const DELETE_TOP_ACTIONS = 'DELETE_TOP_ACTIONS';
  * @type {string} set languages in the app handler
  */
 export const SET_LANGUAGES = 'SET_LANGUAGES';
+
+/**
+ * @constant
+ * @type {string} set the printing options
+ */
+export const SET_PRINTING_OPTIONS = 'SET_PRINTING_OPTIONS';
+
+/**
+ * @constant
+ * @type {string} reset the printing options
+ */
+export const RESET_PRINTING_OPTIONS = 'RESET_PRINTING_OPTIONS';

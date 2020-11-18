@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-
 class PrintingOptions extends PureComponent {
   render() {
     return (

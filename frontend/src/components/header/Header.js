@@ -4,12 +4,14 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
-
+import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
+import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import {
-  duplicateRequest /* , openFile */,
-} from '../../actions/GenericActions';
-import { openModal } from '../../actions/WindowActions';
+  openModal,
+  setPrintingOptions,
+  resetPrintingOptions,
+} from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
 import keymap from '../../shortcuts/keymap';
@@ -351,40 +353,62 @@ class Header extends PureComponent {
 
   /**
    * @method handlePrint
-   * @summary ToDo: Describe the method
+   * @summary This does the actual printing, checking first the available options. If no options available will directly print
    * @param {string} windowId
    * @param {string} docId
    * @param {string} docNo
    */
-  handlePrint = (windowId, docId, docNo) => {
+  handlePrint = async (windowId, docId, docNo) => {
     const { dispatch, viewId } = this.props;
 
-    dispatch(
-      openModal(
-        'Printing options',
+    try {
+      const response = await getPrintingOptions({
+        entity: 'window',
         windowId,
-        'static',
-        null,
-        null,
-        false,
-        viewId,
-        [Number(docNo)],
         docId,
-        null,
-        null,
-        null,
-        null,
-        null,
-        'printing'
-      )
-    );
-    // openFile(
-    //   'window',
-    //   windowId,
-    //   docId,
-    //   'print',
-    //   `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
-    // );
+      });
+
+      if (response.status === 200) {
+        const { options, caption } = response.data;
+        // update in the store the printing options
+        dispatch(setPrintingOptions(response.data));
+
+        // in case there are no options we directly print and reset the printing options in the store
+        if (!options) {
+          openFile(
+            'window',
+            windowId,
+            docId,
+            'print',
+            `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
+          );
+          dispatch(resetPrintingOptions());
+        } else {
+          // otherwise we open the modal and we will reset the printing options in the store after the doc is printed
+          dispatch(
+            openModal(
+              caption,
+              windowId,
+              'static',
+              null,
+              null,
+              false,
+              viewId,
+              [Number(docNo)],
+              docId,
+              null,
+              null,
+              null,
+              null,
+              null,
+              'printing'
+            )
+          );
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   /**

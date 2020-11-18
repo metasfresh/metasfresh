@@ -476,6 +476,7 @@ class Modal extends Component {
       layout,
       indicator,
       staticModalType,
+      printBtnCaption,
     } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
@@ -582,7 +583,8 @@ class Modal extends Component {
                 </button>
               )}
 
-              {staticModalType === 'printing' && (
+              {/* Printing button caption value comes form the store */}
+              {staticModalType === 'printing' && printBtnCaption && (
                 <button
                   className={classnames(
                     'btn btn-meta-outline-secondary btn-distance-3 btn-md',
@@ -593,7 +595,7 @@ class Modal extends Component {
                   onClick={this.handleStart}
                   tabIndex={0}
                 >
-                  Caption
+                  {printBtnCaption}
                 </button>
               )}
             </div>
@@ -768,6 +770,7 @@ Modal.propTypes = {
   viewId: PropTypes.string,
   windowId: PropTypes.string,
   viewDocumentIds: PropTypes.array,
+  printBtnCaption: PropTypes.string,
 };
 
 const mapStateToProps = (state, props) => {
@@ -791,6 +794,7 @@ const mapStateToProps = (state, props) => {
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator: state.windowHandler.indicator,
     parentViewId,
+    printBtnCaption: state.windowHandler.printingOptions.okButtonCaption,
   };
 };
 
