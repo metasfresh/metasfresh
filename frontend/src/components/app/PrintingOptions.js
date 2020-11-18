@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 class PrintingOptions extends PureComponent {
   render() {
     const { options } = this.props.printingOptions;
-    console.log(options);
+
     return (
       <div className="panel-modal-content js-panel-modal-content container-fluid">
         <div className="window-wrapper">
