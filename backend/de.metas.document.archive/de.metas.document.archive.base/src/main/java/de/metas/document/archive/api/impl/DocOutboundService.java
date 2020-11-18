@@ -1,10 +1,8 @@
-package org.adempiere.archive.api.impl;
-
 /*
  * #%L
  * de.metas.document.archive.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,45 +11,48 @@ package org.adempiere.archive.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Archive;
+package de.metas.document.archive.api.impl;
 
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.archive.api.IPDFArchiveProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Archive;
+import org.springframework.stereotype.Service;
 
-public class DocumentArchiveDAO extends ArchiveDAO
+import java.util.Optional;
+
+@Service
+public class DocOutboundService implements IPDFArchiveProvider
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
+
 	@Override
-	public <T extends I_AD_Archive> T retrievePDFArchiveForModel(final Object model, final Class<T> archiveClass)
+	public <T extends I_AD_Archive> Optional<T> getPDFArchiveForModel(
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final Class<T> archiveClass)
 	{
-		Check.assumeNotNull(model, "model not null");
-		Check.assumeNotNull(archiveClass, "archiveClass not null");
+		final AdTableId adTableId = recordRef.getAdTableId();
+		final int recordId = recordRef.getRecord_ID();
 
-		//
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
-
-		final Object contextProvider = model;
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
-		final int recordId = InterfaceWrapperHelper.getId(model);
-
-		final IQueryBuilder<I_C_Doc_Outbound_Log> docOutboundLogQueryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
+		final IQueryBuilder<I_C_Doc_Outbound_Log> docOutboundLogQueryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, recordId);
@@ -66,9 +67,9 @@ public class DocumentArchiveDAO extends ArchiveDAO
 
 		if (pdfLine == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 		final T archive = InterfaceWrapperHelper.create(pdfLine.getAD_Archive(), archiveClass);
-		return archive;
+		return Optional.of(archive);
 	}
 }

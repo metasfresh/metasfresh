@@ -60,7 +60,7 @@ public class ArchiveStorageFactoryTest
 
 	public static class DummyArchiveStorage extends DBArchiveStorage
 	{
-	};
+	}
 
 	@Before
 	public void init()
@@ -175,8 +175,8 @@ public class ArchiveStorageFactoryTest
 		client.setStoreArchiveOnFileSystem(true);
 		InterfaceWrapperHelper.save(client);
 
-		factory.registerArchiveStorage(IArchiveStorageFactory.STORAGETYPE_Filesystem, AccessMode.ALL, FilesystemArchiveStorage.class);
-		factory.registerArchiveStorage(IArchiveStorageFactory.STORAGETYPE_Filesystem, AccessMode.CLIENT, DummyArchiveStorage.class);
+		factory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.ALL, FilesystemArchiveStorage.class);
+		factory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, DummyArchiveStorage.class);
 
 		Ini.setClient(true);
 		Assert.assertEquals("Invalid storage class when accessing as client",

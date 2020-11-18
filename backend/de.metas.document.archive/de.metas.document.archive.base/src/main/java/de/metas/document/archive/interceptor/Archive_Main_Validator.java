@@ -87,18 +87,13 @@ public class Archive_Main_Validator implements ModelValidator
 		final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 		final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-		//
-		// Register services
-		Services.registerService(de.metas.document.archive.api.IDocOutboundDAO.class, new de.metas.document.archive.api.impl.DocOutboundDAO());
-		Services.registerService(org.adempiere.archive.api.IArchiveDAO.class, new org.adempiere.archive.api.impl.DocumentArchiveDAO());
-
 		// Register RemoteArchiveStorage
-		archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.STORAGETYPE_Filesystem, AccessMode.CLIENT, RemoteArchiveStorage.class);
+		archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, RemoteArchiveStorage.class);
 
 		// NOTE: if we are in developer mode, in most of the cases Remote storage is not accessible but the filesystem storage is on our machine
 		if (developerModeBL.isEnabled())
 		{
-			archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.STORAGETYPE_Filesystem, AccessMode.CLIENT, FilesystemArchiveStorage.class);
+			archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, FilesystemArchiveStorage.class);
 		}
 
 		final DocOutboundArchiveEventListener docOutboundArchiveEventListener = Adempiere.getBean(DocOutboundArchiveEventListener.class);

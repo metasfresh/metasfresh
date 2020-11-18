@@ -106,15 +106,15 @@ public class RemoteArchiveStorageTests
 		// Configure storages
 		storageFactory = Services.get(IArchiveStorageFactory.class);
 		storageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.STORAGETYPE_Database,
+				IArchiveStorageFactory.StorageType.Database,
 				AccessMode.ALL,
 				DBArchiveStorage.class);
 		storageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.STORAGETYPE_Filesystem,
+				IArchiveStorageFactory.StorageType.Filesystem,
 				AccessMode.ALL,
 				FilesystemArchiveStorage.class);
 		storageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.STORAGETYPE_Filesystem,
+				IArchiveStorageFactory.StorageType.Filesystem,
 				AccessMode.CLIENT,
 				RemoteArchiveStorage.class);
 	}
@@ -149,7 +149,7 @@ public class RemoteArchiveStorageTests
 		assertConfigStorageClass(false, true, FilesystemArchiveStorage.class);
 
 		// Test that remote endpoint is well configured
-		final RemoteArchiveStorage remoteStorage = (RemoteArchiveStorage)storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.STORAGETYPE_Filesystem, AccessMode.CLIENT);
+		final RemoteArchiveStorage remoteStorage = (RemoteArchiveStorage)storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT);
 		Assert.assertEquals("Invalid endpoint class configured for " + remoteStorage,
 				StaticMockedArchiveEndpoint.class, remoteStorage.getEndpoint().getClass());
 	}
@@ -178,7 +178,7 @@ public class RemoteArchiveStorageTests
 		// Create archive on server
 		{
 			Ini.setClient(false);
-			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.STORAGETYPE_Filesystem);
+			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem);
 			archive = storage.newArchive(ctx, ITrx.TRXNAME_None);
 			storage.setBinaryData(archive, data);
 			InterfaceWrapperHelper.save(archive);
@@ -187,7 +187,7 @@ public class RemoteArchiveStorageTests
 		// Retrieve archive on client
 		{
 			Ini.setClient(true);
-			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.STORAGETYPE_Filesystem);
+			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem);
 			final byte[] dataActual = storage.getBinaryData(archive);
 			Assert.assertArrayEquals("Invalid binary data", data, dataActual);
 		}
@@ -200,7 +200,7 @@ public class RemoteArchiveStorageTests
 
 		final byte[] data = createTestData();
 
-		final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.STORAGETYPE_Filesystem, AccessMode.CLIENT);
+		final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT);
 		final I_AD_Archive archive = storage.newArchive(ctx, ITrx.TRXNAME_None);
 		storage.setBinaryData(archive, data);
 		InterfaceWrapperHelper.save(archive);

@@ -21,11 +21,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.Env;
@@ -77,14 +79,14 @@ final class DocumentAttachments
 	private final AttachmentEntryService attachmentEntryService;
 
 	private final DocumentPath documentPath;
-	private final ITableRecordReference recordRef;
+	private final TableRecordReference recordRef;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final DocumentWebsocketPublisher websocketPublisher;
 
 	@Builder
 	private DocumentAttachments(
 			@NonNull final DocumentPath documentPath,
-			@NonNull final ITableRecordReference recordRef,
+			@NonNull final TableRecordReference recordRef,
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
 			@NonNull final AttachmentEntryService attachmentEntryService,
@@ -111,7 +113,7 @@ final class DocumentAttachments
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId().getRepoId()), entry));
 
-		final Stream<DocumentArchiveEntry> archives = Services.get(IArchiveDAO.class).retrieveLastArchives(Env.getCtx(), recordRef, 10)
+		final Stream<DocumentArchiveEntry> archives = Services.get(IArchiveDAO.class).retrieveLastArchives(Env.getCtx(), recordRef, QueryLimit.ofInt(10))
 				.stream()
 				.map(archive -> DocumentArchiveEntry.of(buildId(ID_PREFIX_Archive, archive.getAD_Archive_ID()), archive));
 
@@ -155,7 +157,8 @@ final class DocumentAttachments
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
-			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(Env.getCtx(), recordRef, entryId);
+			final ArchiveId archiveId = ArchiveId.ofRepoId(entryId);
+			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(recordRef, archiveId);
 			if (archive == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -184,7 +187,8 @@ final class DocumentAttachments
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
-			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(Env.getCtx(), recordRef, entryId);
+			final ArchiveId archiveId = ArchiveId.ofRepoId(entryId);
+			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(recordRef, archiveId);
 			if (archive == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -225,7 +229,7 @@ final class DocumentAttachments
 		final ImmutableSet<DetailId> attachmentRelatedTabIds = entityDescriptor
 				.getIncludedEntities().stream()
 				.filter(includedEntityDescriptor -> Objects.equals(includedEntityDescriptor.getTableNameOrNull(), I_AD_AttachmentEntry.Table_Name))
-				.map(includedEntityDescriptor -> includedEntityDescriptor.getDetailId())
+				.map(DocumentEntityDescriptor::getDetailId)
 				.collect(ImmutableSet.toImmutableSet());
 		if (attachmentRelatedTabIds.isEmpty())
 		{

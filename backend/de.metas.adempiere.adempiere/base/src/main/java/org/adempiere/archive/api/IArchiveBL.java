@@ -23,8 +23,11 @@ package org.adempiere.archive.api;
  */
 
 import java.io.InputStream;
+import java.util.Optional;
 
+import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.print.layout.LayoutEngine;
 
@@ -89,4 +92,8 @@ public interface IArchiveBL extends ISingletonService
 	InputStream getBinaryDataAsStream(I_AD_Archive archive);
 
 	void setBinaryData(I_AD_Archive archive, byte[] data);
+
+	Optional<I_AD_Archive> getLastArchive(@NonNull TableRecordReference reference);
+
+	Optional<byte[]> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
 }
