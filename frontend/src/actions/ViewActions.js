@@ -345,7 +345,6 @@ export function fetchDocument({
 
         const state = getState();
         const view = getView(state, windowId, isModal);
-
         const filterId = getEntityRelatedId({ windowId, viewId });
         const activeFiltersCaptions = populateFiltersCaptions({
           filterData: view.layout.filters,
@@ -367,6 +366,10 @@ export function fetchDocument({
           })
         );
 
+        const table = getTable(state, tableId);
+        let shouldFetchQuickActions = true;
+        let viewProfileId = null;
+
         // set the Layout for the view
         const openIncludedViewOnSelect =
           view.layout &&
@@ -378,37 +381,44 @@ export function fetchDocument({
           response.data.result &&
           response.data.result.length
         ) {
-          const row = response.data.result[0];
-          const includedWindowId = row.supportIncludedViews
+          const { includedView, supportIncludedViews } = response.data.result[0];
+          const includedWindowId = supportIncludedViews
             ? state.viewHandler.includedView.windowId ||
-              row.includedView.windowType ||
-              row.includedView.windowId
+              includedView.windowType ||
+              includedView.windowId
             : null;
-          const includedViewId = row.supportIncludedViews
-            ? state.viewHandler.includedView.viewId || row.includedView.viewId
+          const includedViewId = supportIncludedViews
+            ? state.viewHandler.includedView.viewId || includedView.viewId
             : null;
+          viewProfileId =
+            includedView.viewProfileId ||
+            state.viewHandler.includedView.viewProfileId;
 
           dispatch(
             showIncludedView({
               id: windowId,
-              showIncludedView: row.supportIncludedViews,
+              showIncludedView: supportIncludedViews,
               windowId: includedWindowId,
               viewId: includedViewId,
+              viewProfileId,
               isModal,
             })
           );
+
+          if (isModal) {
+            // modals without included views shouldn't fetch quick actions on init
+            shouldFetchQuickActions = !(includedWindowId && includedViewId);
+          }
         }
 
-        const table = getTable(state, tableId);
-
         // get quickactions
-        if (viewId) {
+        if (viewId && shouldFetchQuickActions) {
           dispatch(
             fetchQuickActions({
               windowId,
               viewId,
               selectedIds: table.selected,
-              viewProfileId: null,
+              viewProfileId,
             })
           );
         }
@@ -558,6 +568,7 @@ export function showIncludedView({
   viewId,
   forceClose,
   isModal,
+  viewProfileId,
 } = {}) {
   return (dispatch) => {
     if (id) {
@@ -565,7 +576,7 @@ export function showIncludedView({
     }
 
     if (showIncludedView) {
-      dispatch(setIncludedView({ windowId, viewId, parentId: id }));
+      dispatch(setIncludedView({ windowId, viewId, parentId: id, viewProfileId }));
     }
 
     if (!showIncludedView) {

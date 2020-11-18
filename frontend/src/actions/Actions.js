@@ -19,16 +19,22 @@ import { getView } from '../reducers/viewHandler';
  * @summary Action creator that calls the quick actions fetch internally for
  * when we're updating the table selection 
  
- * @param {string} id - table id
+ * @param {string} tableId
  * @param {number} windowId
  * @param {string} viewId
+ * @param {boolean} isModal
  */
 export function getTableActions({ tableId, windowId, viewId, isModal }) {
   return (dispatch, getState) => {
     const state = getState();
     const table = getTable(state, tableId);
     const selectedIds = table.selected;
-    const viewProfileId = null;
+    const { includedView } = state.viewHandler;
+    let viewProfileId = null;
+
+    if (includedView.windowId === windowId) {
+      viewProfileId = includedView.viewProfileId;
+    }
 
     dispatch(
       fetchQuickActions({
@@ -54,7 +60,7 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
  * @summary Action creator that calls the quick actions fetch internally for parent/child
  * quick actions, when a table selection has changed
  *
- * @param {string} id - table id
+ * @param {string} windowId
  * @param {array} selectedIds
  * @param {boolean} isModal
  */
@@ -73,8 +79,13 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
       let fetchViewId = null;
       let parentView = null;
       let childView = null;
+      let viewProfileId = null;
       const isParent = includedView.parentId === windowId;
       const isChild = includedView.windowId === windowId;
+
+      if (includedView.windowId === windowId) {
+        viewProfileId = includedView.viewProfileId;
+      }
 
       if (isParent) {
         fetchWindowId = includedView.windowId;
@@ -110,7 +121,7 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
           fetchQuickActions({
             windowId: fetchWindowId,
             viewId: fetchViewId,
-            viewProfileId: null,
+            viewProfileId,
             selectedIds,
             parentView,
             childView,
@@ -125,12 +136,12 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
  * @method fetchQuickActions
  * @summary Fetches the quick actions
  *
- * @param {*} windowId
- * @param {*} viewId
- * @param {*} viewProfileId
- * @param {*} selectedIds
- * @param {*} childView
- * @param {*} parentView
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} viewProfileId
+ * @param {array} selectedIds
+ * @param {object} childView
+ * @param {object} parentView
  */
 export function fetchQuickActions({
   windowId,
@@ -183,8 +194,8 @@ export function fetchQuickActions({
  * @method deleteQuickActions
  * @summary Action creator to delete quick actions from the store
  *
- * @param {*} windowId
- * @param {*} viewId
+ * @param {number} windowId
+ * @param {string} viewId
  */
 export function deleteQuickActions(windowId, viewId) {
   const id = getQuickActionsId({ windowId, viewId });

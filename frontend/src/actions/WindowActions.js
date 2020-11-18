@@ -66,7 +66,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { setIncludedView } from './ViewActions';
+import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -1096,7 +1096,7 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
-          await dispatch(handleProcessResponse(response, processType, pid));
+          await dispatch(handleProcessResponse(response, processType, pid, type));
         } catch (error) {
           await dispatch(closeModal());
           await dispatch(setProcessSaved());
@@ -1134,7 +1134,7 @@ export function createProcess({
   };
 }
 
-export function handleProcessResponse(response, type, id) {
+export function handleProcessResponse(response, type, id, parentId) {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -1220,13 +1220,14 @@ export function handleProcessResponse(response, type, id) {
                 windowId: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
+                parentId,
               })
             );
 
             break;
           case 'closeIncludedView':
             await dispatch(
-              setIncludedView({
+              unsetIncludedView({
                 windowId: action.windowId,
                 viewId: action.viewId,
               })

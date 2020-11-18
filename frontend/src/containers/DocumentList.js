@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { Map as iMap, Set as iSet } from 'immutable';
@@ -39,6 +39,7 @@ import {
 import { updateRawModal, indicatorState } from '../actions/WindowActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { deleteFilter } from '../actions/FiltersActions';
+import { fetchQuickActions } from '../actions/Actions';
 
 import {
   DLpropTypes,
@@ -62,7 +63,6 @@ class DocumentListContainer extends Component {
       currentDevice.type === 'mobile' || currentDevice.type === 'tablet'
         ? 9999
         : 20;
-    this.quickActionsComponent = createRef();
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
@@ -217,7 +217,9 @@ class DocumentListContainer extends Component {
       deselectTableRows,
       updateGridTableData,
       fetchHeaderProperties,
+      fetchQuickActions,
       isModal,
+      viewProfileId,
     } = this.props;
     const viewId = customViewId ? customViewId : this.props.viewId;
 
@@ -250,8 +252,12 @@ class DocumentListContainer extends Component {
                 isModal,
               });
             } else {
-              // TODO: Quick actions should probably be handled via redux
-              this.updateQuickActions();
+              fetchQuickActions({
+                windowId,
+                viewId,
+                selectedIds: table.selected,
+                viewProfileId,
+              });
             }
 
             updateGridTableData(tableId, rows);
@@ -265,20 +271,8 @@ class DocumentListContainer extends Component {
 
       if (fullyChanged === true) {
         this.browseView();
-        this.updateQuickActions();
       }
     });
-  };
-
-  /**
-   * @method updateQuickActions
-   * @summary Trigger the QuickActions component to fetch quick actions for the new selection
-   */
-  updateQuickActions = (childSelection) => {
-    console.log('DocumentListContainer.updateQuickActions')
-    // if (this.quickActionsComponent) {
-    //   this.quickActionsComponent.updateActions(childSelection);
-    // }
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
@@ -434,6 +428,7 @@ class DocumentListContainer extends Component {
       filters,
       parentDefaultViewId,
       parentWindowType,
+      viewProfileId,
     } = this.props;
 
     let { filtersActive } = filters;
@@ -456,7 +451,7 @@ class DocumentListContainer extends Component {
 
         if (isIncluded) {
           const parentId = isModal ? parentWindowType : parentDefaultViewId;
-          setIncludedView({ windowId, viewId: newViewId, parentId });
+          setIncludedView({ windowId, viewId: newViewId, parentId, viewProfileId });
         }
 
         if (isModal) {
@@ -816,6 +811,7 @@ export default connect(
     updateGridTableData,
     fetchHeaderProperties,
     setBreadcrumb,
+    fetchQuickActions,
   },
   null,
   { forwardRef: true }
