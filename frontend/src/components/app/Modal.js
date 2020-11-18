@@ -416,6 +416,7 @@ class Modal extends Component {
     options.map((item) => {
       extraParams += `${item.internalName}=${item.value}&`;
     });
+    extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
 
     openFile(
       'window',
