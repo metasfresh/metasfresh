@@ -39,6 +39,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -126,7 +127,7 @@ public class C_Print_Job_Instructions
 	 * <p>
 	 * The goal is to notify users about timeout problems with the printing client.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
+	 * Task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -158,7 +159,7 @@ public class C_Print_Job_Instructions
 	 * If that is the case, the print-receiver will be notified, because in this case something is wrong with the printing client.<br>
 	 * If the integer value of the given <code>sysConfigName</code> is less or equal to zero, then the method does nothing.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
+	 * Task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
 	 */
 	private void scheduleTimeoutCheck(
 			@NonNull final I_C_Print_Job_Instructions jobInstructions,
@@ -239,7 +240,7 @@ public class C_Print_Job_Instructions
 					userToPrintId,
 					printerName,
 					IArchiveEventManager.COPIES_ONE,
-					IArchiveEventManager.STATUS_Success);
+					ArchivePrintOutStatus.Success);
 		}
 	}
 }

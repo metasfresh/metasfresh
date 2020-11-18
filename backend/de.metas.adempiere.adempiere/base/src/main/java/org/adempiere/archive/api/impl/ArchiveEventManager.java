@@ -26,7 +26,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.archive.api.ArchiveEmailSentStatus;
+import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.compiere.model.I_AD_Archive;
 import de.metas.email.EMailAddress;
@@ -47,29 +50,27 @@ public class ArchiveEventManager implements IArchiveEventManager
 	@Override
 	public void firePdfUpdate(
 			@NonNull final I_AD_Archive archive,
-			@Nullable final UserId userId,
-			@NonNull final String action)
+			@Nullable final UserId userId)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{
-			listener.onPdfUpdate(archive, userId, action);
+			listener.onPdfUpdate(archive, userId);
 		}
 	}
 
 	@Override
 	public void fireEmailSent(
 			final I_AD_Archive archive,
-			final String action,
 			final UserEMailConfig user,
 			final EMailAddress emailFrom,
 			final EMailAddress emailTo,
 			final EMailAddress emailCc,
 			final EMailAddress emailBcc,
-			final String status)
+			final ArchiveEmailSentStatus status)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{
-			listener.onEmailSent(archive, action, user, emailFrom, emailTo, emailCc, emailBcc, status);
+			listener.onEmailSent(archive, user, emailFrom, emailTo, emailCc, emailBcc, status);
 		}
 	}
 
@@ -79,7 +80,7 @@ public class ArchiveEventManager implements IArchiveEventManager
 			@Nullable final UserId userId,
 			final String printerName,
 			final int copies,
-			final String status)
+			@NonNull final ArchivePrintOutStatus status)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{

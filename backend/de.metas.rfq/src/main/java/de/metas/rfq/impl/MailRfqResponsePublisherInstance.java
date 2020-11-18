@@ -2,7 +2,9 @@ package de.metas.rfq.impl;
 
 import java.sql.Timestamp;
 
+import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -11,7 +13,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
@@ -146,13 +147,12 @@ import de.metas.util.Services;
 			final EMailAddress to = email.getTo();
 			archiveEventManager.fireEmailSent(
 					pdfArchive, // archive
-					X_C_Doc_Outbound_Log_Line.ACTION_EMail, // action
 					(UserEMailConfig)null, // user
 					from, // from
 					to, // to
 					(EMailAddress)null, // cc
 					(EMailAddress)null, // bcc
-					emailSentStatus.getSentMsg() // status
+					ArchiveEmailSentStatus.ofEMailSentStatus(emailSentStatus) // status
 			);
 		}
 
