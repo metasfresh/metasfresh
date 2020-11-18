@@ -15,6 +15,7 @@ import {
   fetchChangeLog,
   callAPI,
   patch,
+  resetPrintingOptions,
 } from '../../actions/WindowActions';
 import { getTableId, getSelection } from '../../reducers/tables';
 
@@ -325,7 +326,7 @@ class Modal extends Component {
    * @summary Handle closing modal when the `done` button is clicked or `{esc}` key pressed
    */
   handleClose = () => {
-    const { modalSaveStatus, modalType } = this.props;
+    const { modalSaveStatus, modalType, dispatch } = this.props;
 
     if (modalType === 'process') {
       return this.closeModal(modalSaveStatus);
@@ -334,6 +335,7 @@ class Modal extends Component {
     if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
       this.closeModal(modalSaveStatus);
     }
+    dispatch(resetPrintingOptions());
   };
 
   /**
