@@ -1,7 +1,16 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { togglePrintingOption } from '../../actions/WindowActions';
+
 class PrintingOptions extends PureComponent {
+  handleClick = (e) => {
+    const { togglePrintingOption } = this.props;
+    // update the store with the toggled printing value
+    togglePrintingOption(e.target.value);
+  };
+  handleChange = () => false; // just a dummy placeholder that prevents any warnings in the console
+
   render() {
     const { options } = this.props.printingOptions;
 
@@ -11,25 +20,28 @@ class PrintingOptions extends PureComponent {
           <div className="document-file-dropzone">
             <div className="sections-wrapper">
               <div className="panel panel-spaced panel-distance panel-bordered panel-primary">
-                {options.map((printOptItem) => (
-                  <div key={printOptItem.internalName}>
-                    <div>&nbsp;</div>
+                {options &&
+                  options.map((printOptItem) => (
+                    <div key={printOptItem.internalName}>
+                      <div>&nbsp;</div>
 
-                    <div className="row">
-                      <div className="col-lg-6 col-md-6">
-                        <label className="input-checkbox">
-                          <input
-                            type="checkbox"
-                            value="printOptItem.value"
-                            checked={printOptItem.value}
-                          />
-                          &nbsp;&nbsp; {printOptItem.caption}
-                          <span className="input-checkbox-tick" />
-                        </label>
+                      <div className="row">
+                        <div className="col-lg-6 col-md-6">
+                          <label className="input-checkbox">
+                            <input
+                              type="checkbox"
+                              value={printOptItem.internalName}
+                              checked={printOptItem.value}
+                              onClick={this.handleClick}
+                              onChange={this.handleChange}
+                            />
+                            &nbsp;&nbsp; {printOptItem.caption}
+                            <span className="input-checkbox-tick" />
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
                 <div>&nbsp;</div>
               </div>
             </div>
@@ -42,6 +54,7 @@ class PrintingOptions extends PureComponent {
 
 PrintingOptions.propTypes = {
   printingOptions: PropTypes.object.isRequired,
+  togglePrintingOption: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => {
@@ -50,4 +63,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(PrintingOptions);
+export default connect(
+  mapStateToProps,
+  { togglePrintingOption }
+)(PrintingOptions);
