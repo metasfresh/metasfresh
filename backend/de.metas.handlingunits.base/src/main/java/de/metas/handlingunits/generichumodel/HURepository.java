@@ -103,8 +103,10 @@ public class HURepository
 		private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
+		private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 		private final transient HUStack huStack = new HUStack();
+
 
 		private IPair<HuId, HUBuilder> currentIdAndBuilder;
 
@@ -155,6 +157,7 @@ public class HURepository
 					.packagingGTINs(extractPackagingGTINs(huRecord));
 		}
 
+		/** This is a bad case of the n+1 problem; feel free to reimplement properly when needed. */
 		@NonNull
 		private ImmutableMap<BPartnerId, String> extractPackagingGTINs(@NonNull final I_M_HU huRecord)
 		{
@@ -170,7 +173,7 @@ public class HURepository
 			final ImmutableMap.Builder<BPartnerId, String> packagingGTINs = ImmutableMap.builder();
 			if (packagingProductIds.size() == 1)
 			{
-				final List<I_C_BPartner_Product> bPartnerProductRecords = Services.get(IBPartnerProductDAO.class).retrieveForProductIds(packagingProductIds);
+				final List<I_C_BPartner_Product> bPartnerProductRecords = partnerProductDAO.retrieveForProductIds(packagingProductIds);
 				for (final I_C_BPartner_Product bPartnerProductRecord : bPartnerProductRecords)
 				{
 					if (isNotBlank(bPartnerProductRecord.getGTIN()))

@@ -27,9 +27,11 @@ import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.generichumodel.HU;
 import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.handlingunits.generichumodel.PackagingCode;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -69,6 +71,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -96,7 +99,9 @@ public class DesadvBL implements IDesadvBL
 {
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 
-	/** Process used to print the {@link I_EDI_DesadvLine_Pack}s labels */
+	/**
+	 * Process used to print the {@link I_EDI_DesadvLine_Pack}s labels
+	 */
 	private static final String AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print = "EDI_DesadvLine_SSCC_Print";
 
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -115,6 +120,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
 	private final transient HURepository huRepository;
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private I_C_BPartner_Product bPartnerProductRecord;
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
@@ -420,11 +426,13 @@ public class DesadvBL implements IDesadvBL
 		final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
 		final I_M_HU_PI_Item_Product tuPIItemProduct = extractHUPIItemProduct(orderRecord, orderLineRecord);
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+
 		final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				productId,
 				qtyToAdd.getStockQty().getUomId(),
-				BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
+				bpartnerId,
 				false/* noLUForVirtualTU */);
 
 		final StockQtyAndUOMQty maxQtyCUsPerLU;
@@ -483,12 +491,27 @@ public class DesadvBL implements IDesadvBL
 			packRecord.setIPA_SSCC18(sscc18);
 			packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
 
-			// PackagingCodes
+			// PackagingCodes and PackagingGTINs
 			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
 			packRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+			packRecord.setGTIN_LU_PackingMaterial(tuPIItemProduct.getPackagingGTIN_LU_Fallback());
 
 			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 			packRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
+
+			final List<I_M_HU_PackingMaterial> huPackingMaterials = Services.get(IHUPackingMaterialDAO.class).retrievePackingMaterials(tuPIItemProduct);
+			if (huPackingMaterials.size() == 1)
+			{
+				final I_C_BPartner_Product bPartnerProductRecord = Services.get(IBPartnerProductDAO.class)
+						.retrieveBPartnerProductAssociation(Env.getCtx(),
+								bpartnerId,
+								ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+								OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+				if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
+				{
+					packRecord.setGTIN_TU_PackingMaterial(bPartnerProductRecord.getGTIN());
+				}
+			}
 
 			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
 
