@@ -120,7 +120,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
 	private final transient HURepository huRepository;
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private I_C_BPartner_Product bPartnerProductRecord;
+	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
@@ -502,7 +502,7 @@ public class DesadvBL implements IDesadvBL
 			final List<I_M_HU_PackingMaterial> huPackingMaterials = Services.get(IHUPackingMaterialDAO.class).retrievePackingMaterials(tuPIItemProduct);
 			if (huPackingMaterials.size() == 1)
 			{
-				final I_C_BPartner_Product bPartnerProductRecord = Services.get(IBPartnerProductDAO.class)
+				final I_C_BPartner_Product bPartnerProductRecord = partnerProductDAO
 						.retrieveBPartnerProductAssociation(Env.getCtx(),
 								bpartnerId,
 								ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
