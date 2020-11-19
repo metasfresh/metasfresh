@@ -1,4 +1,4 @@
-import { reduce, cloneDeep } from 'lodash';
+import { reduce, cloneDeep, get, find } from 'lodash';
 
 import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
@@ -7,7 +7,7 @@ import { getTableActions } from '../actions/Actions';
 import { showIncludedView } from '../actions/ViewActions';
 
 import { getView } from '../reducers/viewHandler';
-import { getTable, getTableId } from '../reducers/tables';
+import { getTable } from '../reducers/tables';
 
 /**
  * @method createTable
@@ -570,64 +570,6 @@ export function updateTableSelection({
 }
 
 /**
- * @method handleToggleIncludedView
- * @summary Depending on the parameters call the AC responsible for toggling
- * the included view.
- *
- * @param {number} windowId
- * @param {string} tableId
- * @param {array} selection - array of selected/deselected items
- * @param {boolean} isModal
- */
-function handleToggleIncludedView({ windowId, tableId, selection, isModal }) {
-  return (dispatch, getState) => {
-    const state = getState();
-    const includedView = state.viewHandler.includedView;
-    const view = getView(state, windowId, isModal);
-    const layout = view.layout;
-    const table = getTable(state, tableId);
-    let forceClose = false;
-    let showIncluded = true;
-    let openIncludedViewOnSelect = true;
-    let includedWindowId = null;
-    let includedViewId = null;
-
-    // selection is empty, so we're closing the included view
-    if (table.selected.length === 0 && includedView.parentId === windowId) {
-      showIncluded = false;
-      forceClose = true;
-      includedWindowId = includedView.windowId;
-      includedViewId = includedView.viewId;
-    } else {
-      const item = selection[selection.length - 1];
-      includedWindowId = item.supportIncludedViews
-        ? item.includedView.windowId
-        : null;
-      includedViewId = item.supportIncludedViews
-        ? item.includedView.viewId
-        : null;
-
-      showIncluded = item.supportIncludedViews;
-      openIncludedViewOnSelect =
-        layout.includedView && layout.includedView.openOnSelect;
-    }
-
-    if (openIncludedViewOnSelect) {
-      dispatch(
-        showIncludedView({
-          id: windowId,
-          showIncludedView: showIncluded,
-          forceClose,
-          windowId: includedWindowId,
-          viewId: includedViewId,
-          isModal,
-        })
-      );
-    }
-  };
-}
-
-/**
  * @method deselectTableRows
  * @summary deselect rows or deselect all if an empty `ids` array is provided
  *
@@ -654,6 +596,69 @@ export function deselectTableRows({
       dispatch(getTableActions({ tableId: id, windowId, viewId, isModal }));
       dispatch(
         handleToggleIncludedView({ windowId, tableId: id, selection, isModal })
+      );
+    }
+  };
+}
+
+/**
+ * @method handleToggleIncludedView
+ * @summary Depending on the parameters call the AC responsible for toggling
+ * the included view.
+ *
+ * @param {number} windowId
+ * @param {string} tableId
+ * @param {array} selection - array of selected/deselected items
+ * @param {boolean} isModal
+ */
+function handleToggleIncludedView({ windowId, tableId, selection, isModal }) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const includedView = state.viewHandler.includedView;
+    const view = getView(state, windowId, isModal);
+    const layout = view.layout;
+    const { selected, keyProperty, rows } = getTable(state, tableId);
+    let forceClose = false;
+    let showIncluded = true;
+    let openIncludedViewOnSelect = true;
+    let includedWindowId = null;
+    let includedViewId = null;
+    let item = {};
+
+    // selection is empty, so we're closing the included view
+    if (selected.length === 0 && includedView.parentId === windowId) {
+      showIncluded = false;
+      forceClose = true;
+      includedWindowId = includedView.windowId;
+      includedViewId = includedView.viewId;
+    } else {
+      const itemId = selection[selection.length - 1];
+      item = find(rows, (row) => row[keyProperty] === itemId);
+
+      showIncluded = get(item, ['supportIncludedViews'], false);
+      includedWindowId = showIncluded
+        ? get(item, ['includedView', 'windowId'], null)
+        : null;
+      includedViewId = showIncluded
+        ? get(item, ['includedView', 'viewId'], null)
+        : null;
+      openIncludedViewOnSelect = get(
+        layout,
+        ['includedView', 'openOnSelect'],
+        false
+      );
+    }
+
+    if (openIncludedViewOnSelect) {
+      dispatch(
+        showIncludedView({
+          id: windowId,
+          showIncludedView: showIncluded,
+          forceClose,
+          windowId: includedWindowId,
+          viewId: includedViewId,
+          isModal,
+        })
       );
     }
   };

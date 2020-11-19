@@ -248,14 +248,6 @@ class TableWrapper extends PureComponent {
       onDeselectAll();
 
       if (parentView) {
-        showIncludedView({
-          id: parentView.windowId,
-          showIncludedView: false,
-          windowId,
-          viewId,
-          isModal,
-        });
-
         const {
           windowId: parentWindowId,
           viewId: parentViewId,
