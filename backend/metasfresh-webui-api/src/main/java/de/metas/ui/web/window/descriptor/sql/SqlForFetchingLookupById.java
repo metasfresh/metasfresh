@@ -23,12 +23,12 @@ import java.util.Set;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,6 @@ import java.util.Set;
 public class SqlForFetchingLookupById
 {
 	public static final CtxName SQL_PARAM_KeyId = CtxNames.parse("SqlKeyId");
-	public static final CtxName SQL_PARAM_FilterSql = CtxNames.parse("FilterSql");
 
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
 	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
@@ -64,7 +63,6 @@ public class SqlForFetchingLookupById
 	{
 		return sql.resolvePartial(Evaluatees
 				.mapBuilder()
-				.put(SQL_PARAM_FilterSql, joinOnColumnNameFQ)
 				.put(SQL_PARAM_KeyId, joinOnColumnNameFQ)
 				.put(SQL_PARAM_ShowInactive, SQL_PARAM_VALUE_ShowInactive_Yes)
 				.build());

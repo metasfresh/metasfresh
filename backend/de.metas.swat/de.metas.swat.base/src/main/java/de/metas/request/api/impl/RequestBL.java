@@ -2,13 +2,13 @@ package de.metas.request.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.QualityNoteId;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.request.RequestTypeId;
@@ -33,6 +33,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -59,7 +61,7 @@ import org.eevolution.model.I_DD_OrderLine;
 public class RequestBL implements IRequestBL
 {
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@VisibleForTesting
 	protected static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
@@ -171,14 +173,14 @@ public class RequestBL implements IRequestBL
 	@Override
 	public I_R_Request createRequestFromOrder(@NonNull final I_C_Order order)
 	{
-		final int requestTypeId = docTypeDAO.getById(order.getC_DocTypeTarget_ID()).getR_RequestType_ID();
+		final Optional<RequestTypeId> requestType = orderBL.getRequestTypeForCreatingNewRequestsAfterComplete(order);
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(order.getDescription() != null ? order.getDescription() : " ")
 				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.recordRef(TableRecordReference.of(order))
-				.requestTypeId(requestTypeId > 0 ? RequestTypeId.ofRepoId(requestTypeId) : getRequestTypeId(SOTrx.ofBoolean(order.isSOTrx())))
+				.requestTypeId(requestType.orElseGet(() -> getRequestTypeId(SOTrx.ofBoolean(order.isSOTrx()))))
 				.partnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.userId(UserId.ofRepoIdOrNull(order.getAD_User_ID()))
 				.dateDelivered(TimeUtil.asZonedDateTime(order.getDatePromised()))

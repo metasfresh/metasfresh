@@ -169,7 +169,7 @@ public class RequestBLTest
 		order.setC_BPartner_ID(createPartner("Partner 3").getC_BPartner_ID());
 		order.setAD_User_ID(createUser("User 3").getAD_User_ID());
 		order.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
-		order.setC_DocTypeTarget_ID(createDocType().getC_DocType_ID());
+		order.setC_DocType_ID(createDocType().getC_DocType_ID());
 		save(order);
 		return order;
 	}
