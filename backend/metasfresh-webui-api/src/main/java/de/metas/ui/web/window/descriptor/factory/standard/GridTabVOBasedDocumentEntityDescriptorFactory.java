@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -612,9 +613,14 @@ import lombok.NonNull;
 			return null;
 		}
 		else if (widgetType.isDateOrTime()
-				&& DocumentFieldDefaultFilterDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
+				&& DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
 		{
-			return DocumentFieldDefaultFilterDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
+			return DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
+		}
+		else if(widgetType.isLookup()
+				&& DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
+		{
+			return DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER;
 		}
 		else
 		{
