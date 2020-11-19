@@ -54,6 +54,8 @@ import { filtersActiveContains } from '../utils/filterHelpers';
 
 import DocumentList from '../components/app/DocumentList';
 
+// TODO: This can be further simplified by extracting methods that are not responsible
+// for fetching data to a child container/component (or maybe back to DocumentList component)
 class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
@@ -196,14 +198,6 @@ class DocumentListContainer extends Component {
           }
         );
       }
-    }
-
-    const stateChanges = {};
-
-    if (Object.keys(stateChanges).length) {
-      this.setState({
-        ...stateChanges,
-      });
     }
   }
 
@@ -527,9 +521,6 @@ class DocumentListContainer extends Component {
         );
 
         if (this.mounted) {
-          const newState = {
-            pageColumnInfosByFieldName,
-          };
           const locationSearchFilter = filtersActiveContains({
             filtersActive,
             key: LOCATION_SEARCH_NAME,
@@ -539,7 +530,7 @@ class DocumentListContainer extends Component {
             this.getLocationData(resultById);
           }
 
-          this.setState({ ...newState });
+          this.setState({ pageColumnInfosByFieldName });
 
           if (rawModalVisible) {
             // process modal specific
@@ -666,8 +657,12 @@ class DocumentListContainer extends Component {
     });
   };
 
-  // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
-
+  /**
+   * @method toggleState
+   *
+   * @param {string} state - name of the panels layout to use
+   * @summary Changes how the panels are laid out
+   */
   toggleState = (state) => {
     this.setState({ panelsState: state });
   };
@@ -705,7 +700,7 @@ class DocumentListContainer extends Component {
   };
 
   /**
-   * @method redirectToDocument
+   * @method redirectToNewDocument
    * @summary Redirect to a new document
    */
   redirectToNewDocument = () => {

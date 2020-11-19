@@ -381,7 +381,10 @@ export function fetchDocument({
           response.data.result &&
           response.data.result.length
         ) {
-          const { includedView, supportIncludedViews } = response.data.result[0];
+          const {
+            includedView,
+            supportIncludedViews,
+          } = response.data.result[0];
           const includedWindowId = supportIncludedViews
             ? state.viewHandler.includedView.windowId ||
               includedView.windowType ||
@@ -576,7 +579,9 @@ export function showIncludedView({
     }
 
     if (showIncludedView) {
-      dispatch(setIncludedView({ windowId, viewId, parentId: id, viewProfileId }));
+      dispatch(
+        setIncludedView({ windowId, viewId, parentId: id, viewProfileId })
+      );
     }
 
     if (!showIncludedView) {
