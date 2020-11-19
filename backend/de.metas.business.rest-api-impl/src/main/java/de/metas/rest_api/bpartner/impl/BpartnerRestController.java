@@ -80,6 +80,7 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
 public class BpartnerRestController implements BPartnerRestEndpoint
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner";
+	public static final String ORG_CODE_PARAMETER_DOC = "`AD_Org.Value` of the BPartner identified by the bpartnerIdentifier";
 
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final JsonServiceFactory jsonServiceFactory;
@@ -106,6 +107,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{bpartnerIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
+
 			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
@@ -116,6 +118,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{orgCode}/{bpartnerIdentifier}")
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
@@ -158,6 +161,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{orgCode}/{bpartnerIdentifier}/location/{locationIdentifier}")
 	public ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
@@ -205,6 +209,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{orgCode}/{bpartnerIdentifier}/contact/{contactIdentifier}")
 	public ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
@@ -262,6 +267,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	})
 	@PutMapping("{orgCode}")
 	public ResponseEntity<JsonResponseBPartnerCompositeUpsert> createOrUpdateBPartner(
+
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
@@ -310,7 +317,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
+	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then those of its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/location")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
@@ -332,6 +339,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{orgCode}/{bpartnerIdentifier}/location")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
+
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
@@ -386,6 +395,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@PutMapping("{orgCode}/{bpartnerIdentifier}/contact")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
@@ -441,6 +451,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@PutMapping("{orgCode}/{bpartnerIdentifier}/bankAccount")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateBankAccount(
 
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
