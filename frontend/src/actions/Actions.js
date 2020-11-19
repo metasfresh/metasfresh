@@ -30,20 +30,32 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
     const table = getTable(state, tableId);
     const selectedIds = table.selected;
     const { includedView } = state.viewHandler;
+    let fetchActions = true;
     let viewProfileId = null;
 
     if (includedView.windowId === windowId) {
       viewProfileId = includedView.viewProfileId;
     }
 
-    dispatch(
-      fetchQuickActions({
+    if (viewId) {
+      const quickActionsId = getQuickActionsId({
         windowId,
         viewId,
-        viewProfileId,
-        selectedIds,
-      })
-    );
+      });
+      const quickActions = getQuickActions(state, quickActionsId);
+      fetch = !quickActions.pending;
+    }
+
+    if (fetch) {
+      dispatch(
+        fetchQuickActions({
+          windowId,
+          viewId,
+          viewProfileId,
+          selectedIds,
+        })
+      );
+    }
 
     dispatch(
       fetchIncludedQuickActions({
