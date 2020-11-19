@@ -34,6 +34,21 @@ UPDATE AD_Process_Trl SET Description='Produktpreise (de)aktivieren', Help='Prod
 UPDATE AD_Process_Trl SET Description='(De)Activate product prices', Help='(De)Activate product prices', Name='(De)Activate product prices',Updated=TO_TIMESTAMP('2020-11-18 13:15:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584763
 ;
 
+-- 2020-11-19T14:16:43.734Z
+-- URL zum Konzept
+UPDATE AD_Process SET IsActive='Y',Updated=TO_TIMESTAMP('2020-11-19 16:16:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584763
+;
+
+-- 2020-11-19T14:17:14.727Z
+-- URL zum Konzept
+UPDATE AD_Table_Process SET IsActive='Y',Updated=TO_TIMESTAMP('2020-11-19 16:17:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540870
+;
+
+-- 2020-11-19T14:24:08.766Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='Produktpreise (de)aktivieren', Help='Produktpreise (de)aktivieren', IsTranslated='Y', Name='Produktpreise (de)aktivieren',Updated=TO_TIMESTAMP('2020-11-19 16:24:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584763
+;
+
 -- 2020-11-18T14:11:03.313Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Table_Process SET IsActive='N',Updated=TO_TIMESTAMP('2020-11-18 16:11:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540870
