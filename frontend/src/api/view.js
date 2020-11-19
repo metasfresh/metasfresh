@@ -202,6 +202,61 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
+// export async function quickActionsRequest(
+//   windowId,
+//   viewId,
+//   viewProfileId,
+//   selectedIds,
+//   childView,
+//   parentView
+// ) {
+//   const requests = [];
+//   const query = getQueryString({
+//     viewProfileId,
+//     selectedIds,
+//     childViewId: childView.viewId,
+//     childViewSelectedIds: childView.viewSelectedIds,
+//     parentViewId: parentView.viewId,
+//     parentViewSelectedIds: parentView.viewSelectedIds,
+//   });
+
+//   if (parentView.viewId) {
+//     const parentQuery = getQueryString({
+//       viewProfileId,
+//       selectedIds: parentView.viewSelectedIds,
+//       childViewId: viewId,
+//       childViewSelectedIds: selectedIds,
+//     });
+
+//     const r1 = get(`
+//       ${config.API_URL}/documentView/${parentView.windowType}/${
+//       parentView.viewId
+//     }/quickActions${parentQuery ? `?${parentQuery}` : ''}`);
+//     requests.push(r1);
+//   } else if (childView.viewId) {
+//     const childQuery = getQueryString({
+//       viewProfileId,
+//       selectedIds: childView.selectedIds,
+//       parentViewId: viewId,
+//       parentViewSelectedIds: selectedIds,
+//     });
+
+//     const r2 = get(`
+//       ${config.API_URL}/documentView/${childView.windowType}/${
+//       childView.viewId
+//     }/quickActions${childQuery ? `?${childQuery}` : ''}`);
+//     requests.push(r2);
+//   }
+
+//   const r3 = get(`
+//     ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
+//     query ? `?${query}` : ''
+//   }`);
+//   requests.push(r3);
+
+//   return await Promise.all(requests);
+// }
+
 export async function quickActionsRequest(
   windowId,
   viewId,
@@ -210,49 +265,55 @@ export async function quickActionsRequest(
   childView,
   parentView
 ) {
-  const requests = [];
-  const query = getQueryString({
-    viewProfileId,
-    selectedIds,
-    childViewId: childView.viewId,
-    childViewSelectedIds: childView.viewSelectedIds,
-    parentViewId: parentView.viewId,
-    parentViewSelectedIds: parentView.viewSelectedIds,
-  });
+  // const requests = [];
+  let request = null;
+  let query = null;
 
   if (parentView.viewId) {
-    const parentQuery = getQueryString({
+    query = getQueryString({
       viewProfileId,
       selectedIds: parentView.viewSelectedIds,
       childViewId: viewId,
       childViewSelectedIds: selectedIds,
     });
 
-    const r1 = get(`
+    request = get(`
       ${config.API_URL}/documentView/${parentView.windowType}/${
       parentView.viewId
-    }/quickActions${parentQuery ? `?${parentQuery}` : ''}`);
-    requests.push(r1);
+    }/quickActions${query ? `?${query}` : ''}`);
+    // requests.push(r1);
   } else if (childView.viewId) {
-    const childQuery = getQueryString({
+    query = getQueryString({
       viewProfileId,
       selectedIds: childView.selectedIds,
       parentViewId: viewId,
       parentViewSelectedIds: selectedIds,
     });
 
-    const r2 = get(`
+    request = get(`
       ${config.API_URL}/documentView/${childView.windowType}/${
       childView.viewId
-    }/quickActions${childQuery ? `?${childQuery}` : ''}`);
-    requests.push(r2);
+    }/quickActions${query ? `?${query}` : ''}`);
+    // requests.push(r2);
+  } else {
+    query = getQueryString({
+      viewProfileId,
+      selectedIds,
+      childViewId: childView.viewId,
+      childViewSelectedIds: childView.viewSelectedIds,
+      parentViewId: parentView.viewId,
+      parentViewSelectedIds: parentView.viewSelectedIds,
+    });
+
+    request = get(`
+      ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
+      query ? `?${query}` : ''
+    }`);
   }
 
-  const r3 = get(`
-    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
-    query ? `?${query}` : ''
-  }`);
-  requests.push(r3);
+  // requests.push(r3);
 
-  return await Promise.all(requests);
+  // return await Promise.all(requests);
+  // return await request;
+  return request;
 }

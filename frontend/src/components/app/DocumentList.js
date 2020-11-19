@@ -290,7 +290,7 @@ export default class DocumentList extends Component {
                 ref={setQuickActionsComponentRef}
                 selected={selected}
                 viewId={viewId}
-                windowType={windowId}
+                windowId={windowId}
                 viewProfileId={viewProfileId}
                 fetchOnInit={fetchQuickActionsOnInit}
                 disabled={hasIncluded && blurWhenOpen}

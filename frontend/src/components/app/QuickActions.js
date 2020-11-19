@@ -2,18 +2,21 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Queue from 'simple-promise-queue';
+// import Queue from 'simple-promise-queue';
 import cx from 'classnames';
-import _ from 'lodash';
-import { quickActionsRequest } from '../../api';
-import { getQuickactions } from '../../reducers/windowHandler';
-import {
-  openModal,
-  fetchedQuickActions,
-  deleteQuickActions,
-} from '../../actions/WindowActions';
+// import _ from 'lodash';
+
+// import { quickActionsRequest } from '../../api';
 import keymap from '../../shortcuts/keymap';
 import QuickActionsContextShortcuts from '../keyshortcuts/QuickActionsContextShortcuts';
+
+import {
+  getQuickActions,
+  getQuickActionsId,
+} from '../../reducers/windowHandler';
+import { openModal } from '../../actions/WindowActions';
+import { fetchQuickActions, deleteQuickActions } from '../../actions/Actions';
+
 import Tooltips from '../tooltips/Tooltips.js';
 import QuickActionsDropdown from './QuickActionsDropdown';
 
@@ -21,7 +24,7 @@ const initialState = {
   isDropdownOpen: false,
   btnTooltip: false,
   listTooltip: false,
-  loading: false,
+  // loading: false,
 };
 
 /**
@@ -37,41 +40,41 @@ export class QuickActions extends Component {
 
     this.state = initialState;
 
-    this.fetchActions = this.fetchActions.bind(this);
+    // this.fetchActions = this.fetchActions.bind(this);
 
-    this.queue = new Queue({
-      autoStart: true,
-    });
+    // this.queue = new Queue({
+    //   autoStart: true,
+    // });
   }
 
-  componentDidMount = () => {
-    this.mounted = true;
+  // componentDidMount = () => {
+  //   this.mounted = true;
 
-    const {
-      fetchOnInit,
-      selected,
-      windowType,
-      viewId,
-      viewProfileId,
-      childView,
-      parentView,
-    } = this.props;
+  //   const {
+  //     fetchOnInit,
+  //     selected,
+  //     windowType,
+  //     viewId,
+  //     viewProfileId,
+  //     childView,
+  //     parentView,
+  //   } = this.props;
 
-    if (fetchOnInit) {
-      this.queue.pushTask((res, rej) => {
-        this.fetchActions(
-          windowType,
-          viewId,
-          viewProfileId,
-          selected,
-          childView,
-          parentView,
-          res,
-          rej
-        );
-      });
-    }
-  };
+  //   if (fetchOnInit) {
+  //     this.queue.pushTask((res, rej) => {
+  //       this.fetchActions(
+  //         windowType,
+  //         viewId,
+  //         viewProfileId,
+  //         selected,
+  //         childView,
+  //         parentView,
+  //         res,
+  //         rej
+  //       );
+  //     });
+  //   }
+  // };
 
   componentWillUnmount = () => {
     const { deleteQuickActions, viewId, windowType } = this.props;
@@ -81,47 +84,48 @@ export class QuickActions extends Component {
     deleteQuickActions(windowType, viewId);
   };
 
-  UNSAFE_componentWillReceiveProps = (nextProps) => {
-    const { selected, viewId, windowType } = this.props;
+  // UNSAFE_componentWillReceiveProps = (nextProps) => {
+  //   const { selected, viewId, windowType } = this.props;
 
-    if (
-      ((selected || nextProps.selected) &&
-        JSON.stringify(nextProps.selected) !== JSON.stringify(selected)) ||
-      (nextProps.viewId && nextProps.viewId !== viewId) ||
-      (nextProps.windowType && nextProps.windowType !== windowType)
-    ) {
-      this.queue.pushTask((res, rej) => {
-        this.fetchActions(
-          nextProps.windowType,
-          nextProps.viewId,
-          nextProps.viewProfileId,
-          nextProps.selected,
-          nextProps.childView,
-          nextProps.parentView,
-          res,
-          rej
-        );
-      });
-    }
-  };
+  //   if (
+  //     ((selected || nextProps.selected) &&
+  //       JSON.stringify(nextProps.selected) !== JSON.stringify(selected)) ||
+  //     (nextProps.viewId && nextProps.viewId !== viewId) ||
+  //     (nextProps.windowType && nextProps.windowType !== windowType)
+  //   ) {
+  //     this.queue.pushTask((res, rej) => {
+  //       this.fetchActions(
+  //         nextProps.windowType,
+  //         nextProps.viewId,
+  //         nextProps.viewProfileId,
+  //         nextProps.selected,
+  //         nextProps.childView,
+  //         nextProps.parentView,
+  //         res,
+  //         rej
+  //       );
+  //     });
+  //   }
+  // };
 
+  // TODO: Check this
   shouldComponentUpdate(nextProps) {
     return nextProps.shouldNotUpdate !== true;
   }
 
-  componentDidUpdate = (prevProps) => {
-    const { inBackground, inModal } = this.props;
+  // componentDidUpdate = (prevProps) => {
+  //   const { inBackground, inModal } = this.props;
 
-    if (inModal === false && prevProps.inModal === true) {
-      // gained focus after sub-modal closed
-      this.setState({ loading: false });
-    }
+  //   if (inModal === false && prevProps.inModal === true) {
+  //     // gained focus after sub-modal closed
+  //     this.setState({ loading: false });
+  //   }
 
-    if (inBackground === true && prevProps.inBackground === false) {
-      // gained focus after modal closed
-      this.setState({ loading: false });
-    }
-  };
+  //   if (inBackground === true && prevProps.inBackground === false) {
+  //     // gained focus after modal closed
+  //     this.setState({ loading: false });
+  //   }
+  // };
 
   /**
    * @method updateActions
@@ -129,29 +133,29 @@ export class QuickActions extends Component {
    * @param {*} childSelection
    * @todo Write the documentation
    */
-  updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
-    const {
-      windowType,
-      viewId,
-      viewProfileId,
-      selected,
-      childView,
-      parentView,
-    } = this.props;
+  // updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
+  //   const {
+  //     windowType,
+  //     viewId,
+  //     viewProfileId,
+  //     selected,
+  //     childView,
+  //     parentView,
+  //   } = this.props;
 
-    this.queue.pushTask((res, rej) => {
-      this.fetchActions(
-        windowType,
-        viewId,
-        viewProfileId,
-        selected,
-        { ...childView, viewSelectedIds: childSelection },
-        parentView,
-        res,
-        rej
-      );
-    });
-  };
+  //   this.queue.pushTask((res, rej) => {
+  //     this.fetchActions(
+  //       windowType,
+  //       viewId,
+  //       viewProfileId,
+  //       selected,
+  //       { ...childView, viewSelectedIds: childSelection },
+  //       parentView,
+  //       res,
+  //       rej
+  //     );
+  //   });
+  // };
 
   /**
    * @method handleClickOPutside
@@ -210,101 +214,101 @@ export class QuickActions extends Component {
     this.toggleDropdown(action);
   };
 
-  /**
-   * @async
-   * @method renderCancelButton
-   * @summary ToDo: Describe the method
-   * @param {*} windowId
-   * @param {*} viewId
-   * @param {*} viewProfileId
-   * @param {*} selected
-   * @param {*} childView
-   * @param {*} parentView
-   * @param {*} resolve
-   * @param {*} reject
-   * @todo Rewrite this as an action creator
-   */
-  async fetchActions(
-    windowId,
-    viewId,
-    viewProfileId,
-    selected,
-    childView,
-    parentView,
-    resolve,
-    reject
-  ) {
-    const { fetchedQuickActions } = this.props;
-    if (!this.mounted) {
-      return resolve();
-    }
+  // /**
+  //  * @async
+  //  * @method renderCancelButton
+  //  * @summary ToDo: Describe the method
+  //  * @param {*} windowId
+  //  * @param {*} viewId
+  //  * @param {*} viewProfileId
+  //  * @param {*} selected
+  //  * @param {*} childView
+  //  * @param {*} parentView
+  //  * @param {*} resolve
+  //  * @param {*} reject
+  //  * @todo Rewrite this as an action creator
+  //  */
+  // async fetchActions(
+  //   windowId,
+  //   viewId,
+  //   viewProfileId,
+  //   selected,
+  //   childView,
+  //   parentView,
+  //   resolve,
+  //   reject
+  // ) {
+  //   const { fetchedQuickActions } = this.props;
+  //   if (!this.mounted) {
+  //     return resolve();
+  //   }
 
-    if (windowId && viewId) {
-      await quickActionsRequest(
-        windowId,
-        viewId,
-        viewProfileId,
-        selected,
-        childView,
-        parentView
-      )
-        .then((result) => {
-          const [respRel, resp] = result;
+  //   if (windowId && viewId) {
+  //     await quickActionsRequest(
+  //       windowId,
+  //       viewId,
+  //       viewProfileId,
+  //       selected,
+  //       childView,
+  //       parentView
+  //     )
+  //       .then((result) => {
+  //         const [respRel, resp] = result;
 
-          if (this.mounted) {
-            const currentActions =
-              resp && resp.data ? resp.data.actions : respRel.data.actions;
-            const relatedActions =
-              resp && resp.data ? respRel.data.actions : null;
+  //         if (this.mounted) {
+  //           const currentActions =
+  //             resp && resp.data ? resp.data.actions : respRel.data.actions;
+  //           const relatedActions =
+  //             resp && resp.data ? respRel.data.actions : null;
 
-            if (
-              (parentView.viewId || childView.viewId) &&
-              relatedActions &&
-              !_.isEmpty(parentView)
-            ) {
-              const windowType = parentView.windowType
-                ? parentView.windowType
-                : childView.windowType;
-              const id = parentView.viewId
-                ? parentView.viewId
-                : childView.viewId;
-              fetchedQuickActions(windowType, id, relatedActions);
-            }
+  //           if (
+  //             (parentView.viewId || childView.viewId) &&
+  //             relatedActions &&
+  //             !_.isEmpty(parentView)
+  //           ) {
+  //             const windowType = parentView.windowType
+  //               ? parentView.windowType
+  //               : childView.windowType;
+  //             const id = parentView.viewId
+  //               ? parentView.viewId
+  //               : childView.viewId;
+  //             fetchedQuickActions(windowType, id, relatedActions);
+  //           }
 
-            fetchedQuickActions(windowId, viewId, currentActions);
+  //           fetchedQuickActions(windowId, viewId, currentActions);
 
-            return this.setState(
-              {
-                loading: false,
-              },
-              resolve
-            );
-          }
-        })
-        .catch((e) => {
-          // eslint-disable-next-line no-console
-          console.error(e);
+  //           return this.setState(
+  //             {
+  //               loading: false,
+  //             },
+  //             resolve
+  //           );
+  //         }
+  //       })
+  //       .catch((e) => {
+  //         // eslint-disable-next-line no-console
+  //         console.error(e);
 
-          if (this.mounted) {
-            return this.setState(
-              {
-                loading: false,
-              },
-              reject
-            );
-          }
-        });
-    } else {
-      if (this.mounted) {
-        return this.setState(
-          {
-            loading: false,
-          },
-          resolve
-        );
-      }
-    }
-  }
+  //         if (this.mounted) {
+  //           return this.setState(
+  //             {
+  //               loading: false,
+  //             },
+  //             reject
+  //           );
+  //         }
+  //       });
+  //   } else {
+  //     if (this.mounted) {
+  //       return this.setState(
+  //         {
+  //           loading: false,
+  //         },
+  //         resolve
+  //       );
+  //     }
+  //   }
+  // }
 
   /**
    * @method toggleDropdown
@@ -461,7 +465,7 @@ QuickActions.propTypes = {
   // from @connect
   actions: PropTypes.array,
   openModal: PropTypes.func.isRequired,
-  fetchedQuickActions: PropTypes.func.isRequired,
+  fetchQuickActions: PropTypes.func.isRequired,
   deleteQuickActions: PropTypes.func.isRequired,
 
   // from <DocumentList>
@@ -482,13 +486,16 @@ QuickActions.propTypes = {
   onInvalidViewId: PropTypes.func,
 };
 
-const mapStateToProps = (state, { viewId, windowType }) => ({
-  actions: getQuickactions(state, { viewId, windowType }),
-});
+const mapStateToProps = (state, { viewId, windowId }) => {
+  const id = getQuickActionsId({ windowId, viewId });
+  return {
+    actions: getQuickActions(state, id),
+  };
+};
 
 export default connect(
   mapStateToProps,
-  { openModal, fetchedQuickActions, deleteQuickActions },
+  { openModal, fetchQuickActions, deleteQuickActions },
   false,
   { forwardRef: true }
 )(QuickActions);

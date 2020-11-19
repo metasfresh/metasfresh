@@ -277,9 +277,10 @@ class DocumentListContainer extends Component {
    * @summary Trigger the QuickActions component to fetch quick actions for the new selection
    */
   updateQuickActions = (childSelection) => {
-    if (this.quickActionsComponent) {
-      this.quickActionsComponent.updateActions(childSelection);
-    }
+    console.log('DocumentListContainer.updateQuickActions')
+    // if (this.quickActionsComponent) {
+    //   this.quickActionsComponent.updateActions(childSelection);
+    // }
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
