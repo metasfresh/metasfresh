@@ -3,6 +3,7 @@ package de.metas.request.api.impl;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.IDocTypeDAO;
 import de.metas.inout.api.impl.QualityNoteDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -11,6 +12,7 @@ import de.metas.request.api.IRequestBL;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_R_Request;
@@ -54,6 +56,7 @@ public class RequestBLTest
 {
 	private IRequestBL requestBL;
 	private IRequestTypeDAO requestTypeDAO;
+	private IDocTypeDAO docTypeDAO;
 
 	@BeforeEach
 	public void init()
@@ -62,6 +65,7 @@ public class RequestBLTest
 
 		this.requestBL = Services.get(IRequestBL.class);
 		this.requestTypeDAO = Services.get(IRequestTypeDAO.class);
+		this.docTypeDAO = Services.get(IDocTypeDAO.class);
 	}
 
 	@Test
@@ -119,23 +123,24 @@ public class RequestBLTest
 	}
 
 	@Test
-	public void createTestApplianceRequestFromOrder()
+	public void createRequestFromOrder()
 	{
 		final I_C_Order order = createOrder();
+		final I_R_RequestType soRequestType = createRequestType("RequestType");
 
-		final I_R_Request request = requestBL.createTestApplianceRequestFromOrder(order);
+		final I_R_Request request = requestBL.createRequestFromOrder(order);
 
 		assertThat(request.getAD_Org_ID()).isEqualTo(order.getAD_Org_ID());
-		assertThat(request.getM_Product_ID()).isEqualTo(order.getM_Product_ID());
-		assertThat(request.getR_RequestType_ID()).isEqualTo(requestTypeDAO.retrieveTestApplianceRequestTypeId());
+		assertThat(request.getM_Product_ID()).isEqualTo(-1);
+		assertThat(request.getR_RequestType_ID()).isEqualTo(soRequestType.getR_RequestType_ID());
 		assertThat(request.getAD_Table_ID()).isEqualTo(getTableId(I_C_Order.class));
 		assertThat(request.getRecord_ID()).isEqualTo(order.getC_Order_ID());
 		assertThat(request.getC_BPartner_ID()).isEqualTo(order.getC_BPartner_ID());
 		assertThat(request.getAD_User_ID()).isEqualTo(order.getAD_User_ID());
 		assertThat(request.getDateDelivered()).isEqualTo(order.getDatePromised());
-		assertThat(request.getSummary()).isEqualTo(order.getDescription());
+		assertThat(request.getSummary()).isEqualTo(" ");
 		assertThat(request.getConfidentialType()).isEqualTo(X_R_Request.CONFIDENTIALTYPE_Internal);
-		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(0);
+		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(-1);
 		assertThat(request.getPerformanceType()).isNullOrEmpty();
 
 	}
@@ -164,9 +169,17 @@ public class RequestBLTest
 		order.setC_BPartner_ID(createPartner("Partner 3").getC_BPartner_ID());
 		order.setAD_User_ID(createUser("User 3").getAD_User_ID());
 		order.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
-
+		order.setC_DocTypeTarget_ID(createDocType().getC_DocType_ID());
 		save(order);
 		return order;
+	}
+
+	private I_C_DocType createDocType()
+	{
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+
+		save(docType);
+		return docType;
 	}
 
 	private I_DD_OrderLine createDDOrderLine(final I_DD_Order ddOrder)

@@ -2,6 +2,7 @@ package de.metas.request.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.QualityNoteId;
 import de.metas.inout.api.IQualityNoteDAO;
@@ -57,8 +58,8 @@ import org.eevolution.model.I_DD_OrderLine;
 
 public class RequestBL implements IRequestBL
 {
-
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@VisibleForTesting
 	protected static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
@@ -168,16 +169,16 @@ public class RequestBL implements IRequestBL
 	}
 
 	@Override
-	public I_R_Request createTestApplianceRequestFromOrder(@NonNull final I_C_Order order)
+	public I_R_Request createRequestFromOrder(@NonNull final I_C_Order order)
 	{
-		final RequestTypeId requestTypeId = requestTypeDAO.retrieveTestApplianceRequestTypeId();
+		final int requestTypeId = docTypeDAO.getById(order.getC_DocTypeTarget_ID()).getR_RequestType_ID();
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
-				.summary(order.getDescription()) // TODO: Decide what to put here
+				.summary(order.getDescription() != null ? order.getDescription() : " ")
 				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.recordRef(TableRecordReference.of(order))
-				.requestTypeId(requestTypeId)
+				.requestTypeId(requestTypeId > 0 ? RequestTypeId.ofRepoId(requestTypeId) : getRequestTypeId(SOTrx.ofBoolean(order.isSOTrx())))
 				.partnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.userId(UserId.ofRepoIdOrNull(order.getAD_User_ID()))
 				.dateDelivered(TimeUtil.asZonedDateTime(order.getDatePromised()))

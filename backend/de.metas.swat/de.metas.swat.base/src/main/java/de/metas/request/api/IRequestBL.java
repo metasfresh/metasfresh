@@ -51,5 +51,5 @@ public interface IRequestBL extends ISingletonService
 
 	I_R_Request createRequestFromDDOrderLine(I_DD_OrderLine line);
 
-	I_R_Request createTestApplianceRequestFromOrder(I_C_Order order);
+	I_R_Request createRequestFromOrder(I_C_Order order);
 }

@@ -136,7 +136,9 @@ import java.lang.ref.WeakReference;
 	@Override
 	public boolean isLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
 	{
-		return getDocument().getLookupValueById(columnName, id).isPresent();
+		//Querying all values because getLookupValueById doesn't take validation rul into consideration.
+		// TODO: Implement possibility to fetch sqllookupbyid with validation rule considered.
+		return getDocument().getFieldLookupValues(columnName).containsId(id);
 	}
 
 }

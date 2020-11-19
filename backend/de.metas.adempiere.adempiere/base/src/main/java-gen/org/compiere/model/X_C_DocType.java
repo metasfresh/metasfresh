@@ -1422,4 +1422,31 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PrintName);
 	}
+
+	@Override
+	public org.compiere.model.I_R_RequestType getR_RequestType()
+	{
+		return get_ValueAsPO(COLUMNNAME_R_RequestType_ID, org.compiere.model.I_R_RequestType.class);
+	}
+
+	@Override
+	public void setR_RequestType(final org.compiere.model.I_R_RequestType R_RequestType)
+	{
+		set_ValueFromPO(COLUMNNAME_R_RequestType_ID, org.compiere.model.I_R_RequestType.class, R_RequestType);
+	}
+
+	@Override
+	public void setR_RequestType_ID(final int R_RequestType_ID)
+	{
+		if (R_RequestType_ID < 1)
+			set_Value(COLUMNNAME_R_RequestType_ID, null);
+		else
+			set_Value(COLUMNNAME_R_RequestType_ID, R_RequestType_ID);
+	}
+
+	@Override
+	public int getR_RequestType_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_R_RequestType_ID);
+	}
 }

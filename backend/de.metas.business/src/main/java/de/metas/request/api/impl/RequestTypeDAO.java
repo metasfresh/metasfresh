@@ -1,17 +1,15 @@
 package de.metas.request.api.impl;
 
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_R_RequestType;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_R_RequestType;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -41,8 +39,6 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	static final String InternalName_CustomerComplaint = "A_CustomerComplaint";
 	@VisibleForTesting
 	static final String InternalName_VendorComplaint = "B_VendorComplaint";
-	@VisibleForTesting
-	static final String InternalName_TestAppliance = "T_TestAppliance";
 
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -56,12 +52,6 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public RequestTypeId retrieveCustomerRequestTypeId()
 	{
 		return retrieveRequestTypeIdByInternalName(InternalName_CustomerComplaint);
-	}
-
-	@Override
-	public RequestTypeId retrieveTestApplianceRequestTypeId()
-	{
-		return retrieveRequestTypeIdByInternalName(InternalName_TestAppliance);
 	}
 
 	private RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)

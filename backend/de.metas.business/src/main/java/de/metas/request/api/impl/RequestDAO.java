@@ -2,6 +2,7 @@ package de.metas.request.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.QualityNoteId;
+import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestDAO;
@@ -46,7 +47,7 @@ public class RequestDAO implements IRequestDAO
 	public I_R_Request createRequest(@NonNull final RequestCandidate candidate)
 	{
 		final I_R_Request request = newInstance(I_R_Request.class);
-;
+		;
 		request.setSummary(candidate.getSummary());
 		request.setConfidentialType(candidate.getConfidentialType());
 		request.setAD_Org_ID(candidate.getOrgId().getRepoId());
@@ -54,7 +55,9 @@ public class RequestDAO implements IRequestDAO
 		request.setAD_Table_ID(candidate.getRecordRef() != null ? candidate.getRecordRef().getAD_Table_ID() : -1);
 		request.setRecord_ID(candidate.getRecordRef() != null ? candidate.getRecordRef().getRecord_ID() : -1);
 		request.setC_BPartner_ID(BPartnerId.toRepoId(candidate.getPartnerId()));
-		request.setC_Order_ID(candidate.getOrderId() != null ? candidate.getOrderId().getRepoId() : 0);
+		request.setC_Order_ID(candidate.getRecordRef() != null ?
+				candidate.getRecordRef().getTableName().equals(I_C_Order.Table_Name) ? candidate.getRecordRef().getRecord_ID() : -1
+				: -1);
 		request.setAD_User_ID(UserId.toRepoId(candidate.getUserId()));
 		request.setR_RequestType_ID(candidate.getRequestTypeId().getRepoId());
 		request.setM_QualityNote_ID(QualityNoteId.toRepoId(candidate.getQualityNoteId()));

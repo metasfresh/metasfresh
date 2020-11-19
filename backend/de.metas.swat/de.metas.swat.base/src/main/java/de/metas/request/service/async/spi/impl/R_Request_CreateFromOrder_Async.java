@@ -26,7 +26,6 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.order.IOrderDAO;
 import de.metas.request.api.IRequestBL;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
@@ -36,27 +35,18 @@ import org.compiere.util.Env;
 
 import java.util.Properties;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 public class R_Request_CreateFromOrder_Async extends WorkpackageProcessorAdapter
 {
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IRequestBL requestBL = Services.get(IRequestBL.class);
 
 	/**
 	 * Schedule the request creation based on the given order id
 	 * <p>
 	 * The request will contain information taken from the order
 	 */
-	public static void createWorkpackage(final int orderId)
+	public static void createWorkpackage(final I_C_Order order)
 	{
-		if (orderId == 0)
-		{
-			// no order to process
-			return;
-		}
-
-		final I_C_Order order = load(orderId, I_C_Order.class);
-
 		SCHEDULER.schedule(order);
 	}
 
@@ -90,15 +80,9 @@ public class R_Request_CreateFromOrder_Async extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		// Services
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-		final IRequestBL requestBL = Services.get(IRequestBL.class);
-
-		// retrieve the order
-		final I_C_Order order = queueDAO.retrieveItems(workPackage, I_C_Order.class, localTrxName).get(0);
-
-		// create a request based on the order's information.
-		requestBL.createTestApplianceRequestFromOrder(order);
+		// retrieve the order and generate requests
+		queueDAO.retrieveItems(workPackage, I_C_Order.class, localTrxName)
+				.forEach(requestBL::createRequestFromOrder);
 
 		return Result.SUCCESS;
 	}
