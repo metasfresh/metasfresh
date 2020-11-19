@@ -83,7 +83,7 @@ final class BPartnerEndpointAdapter
 	public BPartnerInfo getCreateBPartnerInfoInTrx(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final boolean billTo,
-			@NonNull final String orgCode)
+			@Nullable final String orgCode)
 	{
 		return getCreateBPartnerInfo0(jsonBPartnerInfo, billTo, orgCode);
 	}
@@ -269,7 +269,7 @@ final class BPartnerEndpointAdapter
 	}
 
 	private BPartnerInfo asBPartnerInfo(
-			@NonNull final String orgCode,
+			@Nullable final String orgCode,
 			@NonNull final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response,
 			final boolean billTo)
 	{
