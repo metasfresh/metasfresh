@@ -854,9 +854,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public BPartnerLocationId getBillToLocationIdOrNull(@NonNull final I_C_Order order)
+	public BPartnerLocationId getBillToLocationId(@NonNull final I_C_Order order)
 	{
 		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+
 		return billToBPLocationId != null
 				? billToBPLocationId
 				: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());

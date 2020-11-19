@@ -50,13 +50,22 @@ public class ShipmentSchedule
 	private final OrgId orgId;
 
 	@NonNull
-	private final BPartnerId customerId;
+	private final BPartnerId shipBPartnerId;
 
 	@NonNull
-	private final BPartnerLocationId locationId;
+	private final BPartnerLocationId shipLocationId;
 
 	@Nullable
-	private final BPartnerContactId contactId;
+	private final BPartnerContactId shipContactId;
+
+	@Nullable
+	private final BPartnerId billBPartnerId;
+
+	@Nullable
+	private final BPartnerLocationId billLocationId;
+
+	@Nullable
+	private final BPartnerContactId billContactId;
 
 	@Nullable
 	private final OrderAndLineId orderAndLineId;

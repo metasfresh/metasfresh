@@ -9,6 +9,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       "group": "bpGroupRecord.name",
       "vendor": false,
       "customer": false,
+      "company": true,
       "changeInfo": {
         "createdMillis": 1563553074,
         "createdBy": 30,
@@ -65,14 +66,15 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "leftToRight": true,
         "baseLanguage": true,
-        "decimalPoint": false
+        "decimalPoint": false,
+        "leftToRight": true
       },
       "url": "bPartner.url",
       "groupId": 15,
       "vendor": false,
       "customer": false,
+      "company": true,
       "vatId": "bPartner.vatId",
       "changeLog": {
         "tableName": "C_BPartner",
@@ -402,6 +404,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "company": false,
       "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
@@ -678,6 +681,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "company": false,
       "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
@@ -885,6 +889,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "company": false,
       "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
@@ -1092,6 +1097,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
       "groupId": 15,
       "vendor": true,
       "customer": true,
+      "company": false,
       "vatId": "VATaxID",
       "changeLog": {
         "tableName": "C_BPartner",
@@ -1381,6 +1387,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
       "group": "bpGroupRecord.name",
       "vendor": true,
       "customer": true,
+      "company": false,
       "vatId": "VATaxID",
       "changeInfo": {
         "createdMillis": 1561133544,
@@ -1458,6 +1465,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
       "group": "bpGroupRecord.name",
       "vendor": true,
       "customer": true,
+      "company": false,
       "vatId": "VATaxID",
       "changeInfo": {
         "createdMillis": 1561133544,
@@ -1535,6 +1543,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
       "group": "bpGroupRecord.name",
       "vendor": true,
       "customer": true,
+      "company": false,
       "vatId": "VATaxID",
       "changeInfo": {
         "createdMillis": 1561133544,
@@ -1618,6 +1627,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "company": false,
           "vatId": "VATaxID",
           "changeInfo": {
             "createdMillis": 1561133544,
@@ -1691,6 +1701,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "company": false,
           "vatId": "VATaxID_1",
           "changeInfo": {
             "createdMillis": 1561133544,
@@ -1772,6 +1783,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "company": false,
           "vatId": "VATaxID_2",
           "changeInfo": {
             "createdMillis": 1561133544,
@@ -1845,6 +1857,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "company": false,
           "vatId": "VATaxID_3",
           "changeInfo": {
             "createdMillis": 1561133544,
@@ -1925,6 +1938,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "group": "bpGroupRecord.name",
           "vendor": true,
           "customer": true,
+          "company": false,
           "vatId": "VATaxID_4",
           "changeInfo": {
             "createdMillis": 1561133544,

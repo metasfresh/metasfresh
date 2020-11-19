@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import de.metas.handlingunits.IMutableHUContext;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 
@@ -45,6 +46,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 
 /*
  * #%L
@@ -117,13 +120,13 @@ public class SyncInventoryQtyToHUsCommand
 		}
 	}
 
-	private final void transferAttributesToHU(
+	private void transferAttributesToHU(
 			@NonNull final InventoryLine inventoryLine,
 			@NonNull final I_M_HU hu)
 	{
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
 
-		executor.run((IHUContextProcessor)huContext -> {
+		executor.run(huContext -> {
 
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
@@ -243,9 +246,12 @@ public class SyncInventoryQtyToHUsCommand
 					inventoryLineRecord);
 		}
 
+		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(inventoryLineRecord);
+		final IMutableHUContext huContextwithOrgId = huContextFactory.createMutableHUContext(contextAware);
+
 		HULoader.of(source, destination)
 				.load(AllocationUtils.createAllocationRequestBuilder()
-						.setHUContext(huContextFactory.createMutableHUContext())
+						.setHUContext(huContextwithOrgId)
 						.setDateAsToday()
 						.setProduct(inventoryLine.getProductId())
 						.setQuantity(qtyToTransfer)
