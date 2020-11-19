@@ -116,7 +116,6 @@ export default class DocumentList extends Component {
       onResetInitialFilters,
       hasIncluded,
       onRedirectToNewDocument,
-      onShowIncludedViewOnSelect,
       onSortData,
       onShowSelectedIncludedView,
       table,
@@ -323,10 +322,6 @@ export default class DocumentList extends Component {
                 disableOnClickOutside={clickOutsideLock}
                 limitOnClickOutside={isModal}
                 queryLimitHit={queryLimitHit}
-                showIncludedViewOnSelect={onShowIncludedViewOnSelect}
-                openIncludedViewOnSelect={
-                  layout.includedView && layout.includedView.openOnSelect
-                }
                 showSelectedIncludedView={onShowSelectedIncludedView}
                 blurOnIncludedView={blurWhenOpen}
                 focusOnFieldName={layout.focusOnFieldName}
@@ -394,7 +389,6 @@ DocumentList.propTypes = {
   triggerSpinner: PropTypes.bool,
   onToggleState: PropTypes.func,
   onGetSelected: PropTypes.func,
-  onShowIncludedViewOnSelect: PropTypes.func,
   onSortData: PropTypes.func,
   onFetchLayoutAndData: PropTypes.func,
   onChangePage: PropTypes.func,

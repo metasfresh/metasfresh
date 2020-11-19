@@ -451,7 +451,12 @@ class DocumentListContainer extends Component {
 
         if (isIncluded) {
           const parentId = isModal ? parentWindowType : parentDefaultViewId;
-          setIncludedView({ windowId, viewId: newViewId, parentId, viewProfileId });
+          setIncludedView({
+            windowId,
+            viewId: newViewId,
+            parentId,
+            viewProfileId,
+          });
         }
 
         if (isModal) {
