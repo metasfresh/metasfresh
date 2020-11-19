@@ -1,10 +1,5 @@
 package de.metas.rest_api.bpartner.impl;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
@@ -19,6 +14,10 @@ import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,6 +47,10 @@ import lombok.NonNull;
 @Service
 public class JsonRequestConsolidateService
 {
+	/**
+	 * Puts the request's identifier string also into the request's item.
+	 * E.g. if the identifier string is val-123 and the request's item's value is empty, then it puts item's value = "123"
+	 */
 	public void consolidateWithIdentifier(@NonNull final JsonRequestBPartnerUpsertItem requestItem)
 	{
 		final IdentifierString identifierString = IdentifierString.of(requestItem.getBpartnerIdentifier());

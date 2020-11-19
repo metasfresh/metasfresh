@@ -83,7 +83,7 @@ final class BPartnerEndpointAdapter
 	public BPartnerInfo getCreateBPartnerInfoInTrx(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final boolean billTo,
-			@Nullable final String orgCode)
+			@NonNull final String orgCode)
 	{
 		return getCreateBPartnerInfo0(jsonBPartnerInfo, billTo, orgCode);
 	}
@@ -102,10 +102,10 @@ final class BPartnerEndpointAdapter
 
 		// Invoke bpartner-endpoint in trx to make sure it is committed and can be found on the next invokation.
 		// Otherwise we would need to give them all at once to the endpoint but then we'd need to sort out which is which
-		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response = trxManager.callInNewTrx(() -> bpartnerRestController.createOrUpdateBPartner(jsonRequestBPartnerUpsert));
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response = trxManager.callInNewTrx(() -> bpartnerRestController.createOrUpdateBPartner(orgCode, jsonRequestBPartnerUpsert));
 
 		// repackage result
-		return asBPartnerInfo(response, billTo);
+		return asBPartnerInfo(orgCode, response, billTo);
 	}
 
 	/**
@@ -269,6 +269,7 @@ final class BPartnerEndpointAdapter
 	}
 
 	private BPartnerInfo asBPartnerInfo(
+			@NonNull final String orgCode,
 			@NonNull final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response,
 			final boolean billTo)
 	{
@@ -288,7 +289,9 @@ final class BPartnerEndpointAdapter
 		{
 			final Comparator<JsonResponseLocation> c = billTo ? createBillToLocationComparator() : createShipToLocationComparator();
 
-			final Optional<JsonResponseLocation> location = bpartnerRestController.retrieveBPartner(Integer.toString(bpartnerId.getRepoId())).getBody().getLocations().stream()
+			final Optional<JsonResponseLocation> location = bpartnerRestController
+					.retrieveBPartner(orgCode, Integer.toString(bpartnerId.getRepoId()))
+					.getBody().getLocations().stream()
 					.sorted(c)
 					.findFirst();
 			if (location.isPresent())
@@ -321,24 +324,27 @@ final class BPartnerEndpointAdapter
 						Comparator.comparing(l -> !l.isShipToDefault())/* shipToDefault=true first */);
 	}
 
-	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
+	public JsonResponseBPartner getJsonBPartnerById(@Nullable String orgCode, @NonNull final BPartnerId bpartnerId)
 	{
 		final ResponseEntity<JsonResponseComposite> bpartner = bpartnerRestController.retrieveBPartner(
+				orgCode,
 				Integer.toString(bpartnerId.getRepoId()));
 		return bpartner.getBody().getBpartner();
 	}
 
-	public JsonResponseLocation getJsonBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public JsonResponseLocation getJsonBPartnerLocationById(@Nullable String orgCode, @NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final ResponseEntity<JsonResponseLocation> location = bpartnerRestController.retrieveBPartnerLocation(
+				orgCode,
 				Integer.toString(bpartnerLocationId.getBpartnerId().getRepoId()),
 				Integer.toString(bpartnerLocationId.getRepoId()));
 		return location.getBody();
 	}
 
-	public JsonResponseContact getJsonBPartnerContactById(@NonNull final BPartnerContactId bpartnerContactId)
+	public JsonResponseContact getJsonBPartnerContactById(@Nullable String orgCode, @NonNull final BPartnerContactId bpartnerContactId)
 	{
 		final ResponseEntity<JsonResponseContact> contact = bpartnerRestController.retrieveBPartnerContact(
+				orgCode,
 				Integer.toString(bpartnerContactId.getBpartnerId().getRepoId()),
 				Integer.toString(bpartnerContactId.getRepoId()));
 		return contact.getBody();

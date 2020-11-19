@@ -1,62 +1,8 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_BPartner_ID;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_Location_ID;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_ID;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
-
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.table.MockLogEntriesRepository;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.MimeType;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
-import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.bpartner.BPGroupRepository;
@@ -128,6 +74,59 @@ import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.MimeType;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_Location_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 /*
  * #%L
@@ -171,6 +170,7 @@ public class OrderCandidatesRestControllerImplTest
 
 	private static final String COUNTRY_CODE_DE = "DE";
 	private CountryId countryId_DE;
+	private OrgId defaultOrgId;
 
 	private static final DocBaseAndSubType DOCTYPE_SALES_INVOICE = DocBaseAndSubType.of("ARI", "KV");
 
@@ -217,6 +217,8 @@ public class OrderCandidatesRestControllerImplTest
 			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
 			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
 			saveRecord(orgInfo);
+
+			defaultOrgId = OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID());
 
 			countryId_DE = BusinessTestHelper.createCountry(COUNTRY_CODE_DE);
 
@@ -418,6 +420,7 @@ public class OrderCandidatesRestControllerImplTest
 	public void test_DateOrdered(final String dateOrderedStr)
 	{
 		testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("bpCode")
 				.countryId(countryId_DE)
 				.build();
@@ -501,6 +504,7 @@ public class OrderCandidatesRestControllerImplTest
 				final Optional<String> newVatId)
 		{
 			testMasterdata.prepareBPartnerAndLocation()
+					.orgId(defaultOrgId)
 					.bpValue("bpCode")
 					.countryId(countryId_DE)
 					.vatId(currentVatId)
@@ -605,6 +609,7 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: BPartner & Location
 		testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("bpCode")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
@@ -690,6 +695,7 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: BPartner & Location
 		testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("bpCode")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
@@ -871,24 +877,29 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: BPartner & Location
 		final BPartnerLocationId bpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("mainPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
 				.build();
 
 		final BPartnerLocationId billBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("billPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
 				.build();
 
 		final BPartnerLocationId dropShipBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("dropShipPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.gln(GLN.ofString("redHerring!"))
 				.countryId(countryId_DE)
 				.build();
-		final BPartnerLocationId expectedDropShipLocation = testMasterdata.prepareBPartnerLocation().bpartnerId(dropShipBpartnerAndLocation.getBpartnerId())
+		final BPartnerLocationId expectedDropShipLocation = testMasterdata.prepareBPartnerLocation()
+				.orgId(defaultOrgId)
+				.bpartnerId(dropShipBpartnerAndLocation.getBpartnerId())
 				.countryId(countryId_DE)
 				.gln(GLN.ofString("expectedDropShipLocation"))
 				.build();
@@ -985,24 +996,28 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: BPartner & Location
 		final BPartnerLocationId bpartnerLocationId = testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("mainPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
 				.build();
 
 		final BPartnerLocationId billBpartnerLocationId = testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("billPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
 				.build();
 
 		final BPartnerLocationId dropShipBpartnerLocationId = testMasterdata.prepareBPartnerAndLocation()
+				.orgId(defaultOrgId)
 				.bpValue("dropShipPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.gln(GLN.ofString("redHerring!"))
 				.countryId(countryId_DE)
 				.build();
 		final BPartnerLocationId expectedDropShipLocationId = testMasterdata.prepareBPartnerLocation().bpartnerId(dropShipBpartnerLocationId.getBpartnerId())
+				.orgId(defaultOrgId)
 				.countryId(countryId_DE)
 				.gln(GLN.ofString("expectedDropShipLocation"))
 				.build();
@@ -1124,7 +1139,9 @@ public class OrderCandidatesRestControllerImplTest
 						tuple("shipToId-1-2", true, false, false));
 	}
 
-	/** existing bpartner with location "billToId-1-2" that is updated */
+	/**
+	 * existing bpartner with location "billToId-1-2" that is updated
+	 */
 	@Test
 	public void billToDefault_exitingBPartner()
 	{
@@ -1138,6 +1155,7 @@ public class OrderCandidatesRestControllerImplTest
 		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
 
 		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
+				.orgId(defaultOrgId)
 				.bpValue("bpValue")
 				.bpExternalId("1-2")
 				.bpGroupExistingName("DefaultGroup")

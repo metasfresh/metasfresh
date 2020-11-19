@@ -254,23 +254,23 @@ final class MasterdataProvider
 		return bpartnerEndpointAdapter.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, billTo, orgDAO.retrieveOrgValue(orgId));
 	}
 
-	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
+	public JsonResponseBPartner getJsonBPartnerById(@Nullable String orgCode, @NonNull final BPartnerId bpartnerId)
 	{
-		return bpartnerEndpointAdapter.getJsonBPartnerById(bpartnerId);
+		return bpartnerEndpointAdapter.getJsonBPartnerById(orgCode, bpartnerId);
 	}
 
-	public JsonResponseLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
+	public JsonResponseLocation getJsonBPartnerLocationById(@Nullable String orgCode, @NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		return bpartnerEndpointAdapter.getJsonBPartnerLocationById(bpartnerLocationId);
+		return bpartnerEndpointAdapter.getJsonBPartnerLocationById(orgCode, bpartnerLocationId);
 	}
 
-	public JsonResponseContact getJsonBPartnerContactById(@Nullable final BPartnerContactId bpartnerContactId)
+	public JsonResponseContact getJsonBPartnerContactById(@Nullable String orgCode, @Nullable final BPartnerContactId bpartnerContactId)
 	{
 		if (bpartnerContactId == null)
 		{
 			return null;
 		}
-		return bpartnerEndpointAdapter.getJsonBPartnerContactById(bpartnerContactId);
+		return bpartnerEndpointAdapter.getJsonBPartnerContactById(orgCode, bpartnerContactId);
 	}
 
 	public ProductInfo getCreateProductInfo(

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.organization.IOrgDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -75,6 +76,7 @@ public class JsonConverters
 	private final DocTypeService docTypeService;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -232,6 +234,7 @@ public class JsonConverters
 	}
 
 	private final JsonResponseBPartnerLocationAndContact toJson(
+			@Nullable String orgCode,
 			@Nullable final BPartnerInfo bpartnerInfo,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
@@ -245,9 +248,9 @@ public class JsonConverters
 		final BPartnerContactId contactId = bpartnerInfo.getContactId();
 
 		return JsonResponseBPartnerLocationAndContact.builder()
-				.bpartner(masterdataProvider.getJsonBPartnerById(bpartnerId))
-				.location(masterdataProvider.getJsonBPartnerLocationById(bpartnerLocationId))
-				.contact(masterdataProvider.getJsonBPartnerContactById(contactId))
+				.bpartner(masterdataProvider.getJsonBPartnerById(orgCode, bpartnerId))
+				.location(masterdataProvider.getJsonBPartnerLocationById(orgCode, bpartnerLocationId))
+				.contact(masterdataProvider.getJsonBPartnerContactById(orgCode, contactId))
 				.build();
 	}
 
@@ -266,6 +269,7 @@ public class JsonConverters
 	{
 		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
+		final String orgCode = orgDAO.retrieveOrgValue(orgId);
 
 		return JsonOLCand.builder()
 				.id(olCand.getId())
@@ -275,10 +279,10 @@ public class JsonConverters
 				//
 				.org(masterdataProvider.getJsonOrganizationById(orgId))
 				//
-				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
-				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
-				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
-				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
+				.bpartner(toJson(orgCode, olCand.getBPartnerInfo(), masterdataProvider))
+				.billBPartner(toJson(orgCode, olCand.getBillBPartnerInfo(), masterdataProvider))
+				.dropShipBPartner(toJson(orgCode, olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
+				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
