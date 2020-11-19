@@ -83,8 +83,15 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const { deselectTableRows, windowId, viewId, isModal } = this.props;
-    const tableId = getTableId({ windowId, viewId });
+    const {
+      deselectTableRows,
+      windowId,
+      viewId,
+      docId,
+      tabId,
+      isModal,
+    } = this.props;
+    const tableId = getTableId({ windowId, viewId, docId, tabId });
 
     deselectTableRows({
       id: tableId,

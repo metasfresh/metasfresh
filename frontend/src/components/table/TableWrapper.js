@@ -203,9 +203,6 @@ class TableWrapper extends PureComponent {
 
   handleClickOutside = (event) => {
     const {
-      showIncludedView,
-      viewId,
-      windowId,
       inBackground,
       allowOutsideClick,
       limitOnClickOutside,
@@ -213,6 +210,7 @@ class TableWrapper extends PureComponent {
       isModal,
       parentView,
       deselectTableRows,
+      selected,
     } = this.props;
     const parentNode = event.target.parentNode;
     const closeIncluded =
@@ -245,21 +243,23 @@ class TableWrapper extends PureComponent {
         return;
       }
 
-      onDeselectAll();
+      if (selected.length) {
+        onDeselectAll();
 
-      if (parentView) {
-        const {
-          windowId: parentWindowId,
-          viewId: parentViewId,
-        } = this.props.parentView;
+        if (parentView) {
+          const {
+            windowId: parentWindowId,
+            viewId: parentViewId,
+          } = this.props.parentView;
 
-        deselectTableRows({
-          id: getTableId({ windowId: parentWindowId, viewId: parentViewId }),
-          selection: [],
-          windowId: parentWindowId,
-          viewId: parentViewId,
-          isModal,
-        });
+          deselectTableRows({
+            id: getTableId({ windowId: parentWindowId, viewId: parentViewId }),
+            selection: [],
+            windowId: parentWindowId,
+            viewId: parentViewId,
+            isModal,
+          });
+        }
       }
     }
   };
