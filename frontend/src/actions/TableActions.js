@@ -4,9 +4,10 @@ import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
 
 import { getTableActions } from '../actions/Actions';
+import { showIncludedView } from '../actions/ViewActions';
 
 import { getView } from '../reducers/viewHandler';
-import { getTable } from '../reducers/tables';
+import { getTable, getTableId } from '../reducers/tables';
 
 /**
  * @method createTable
@@ -539,6 +540,7 @@ export function collapseTableRow({ tableId, collapse, node }) {
  * @param {string} keyProperty=id - `id` or `rowId` depending on the table type
  * @param {number} windowId
  * @param {string} viewId
+ * @param {boolean} isModal
  */
 export function updateTableSelection({
   id,
@@ -554,12 +556,74 @@ export function updateTableSelection({
       payload: { id, selection, keyProperty },
     });
 
-    // update quick actions
     if (viewId) {
+      // update quick actions
       dispatch(getTableActions({ tableId: id, windowId, viewId, isModal }));
+      // show included view
+      dispatch(
+        handleToggleIncludedView({ windowId, tableId: id, selection, isModal })
+      );
     }
 
     return Promise.resolve(selection);
+  };
+}
+
+/**
+ * @method handleToggleIncludedView
+ * @summary Depending on the parameters call the AC responsible for toggling
+ * the included view.
+ *
+ * @param {number} windowId
+ * @param {string} tableId
+ * @param {array} selection - array of selected/deselected items
+ * @param {boolean} isModal
+ */
+function handleToggleIncludedView({ windowId, tableId, selection, isModal }) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const includedView = state.viewHandler.includedView;
+    const view = getView(state, windowId, isModal);
+    const layout = view.layout;
+    const table = getTable(state, tableId);
+    let forceClose = false;
+    let showIncluded = true;
+    let openIncludedViewOnSelect = true;
+    let includedWindowId = null;
+    let includedViewId = null;
+
+    // selection is empty, so we're closing the included view
+    if (table.selected.length === 0 && includedView.parentId === windowId) {
+      showIncluded = false;
+      forceClose = true;
+      includedWindowId = includedView.windowId;
+      includedViewId = includedView.viewId;
+    } else {
+      const item = selection[selection.length - 1];
+      includedWindowId = item.supportIncludedViews
+        ? item.includedView.windowId
+        : null;
+      includedViewId = item.supportIncludedViews
+        ? item.includedView.viewId
+        : null;
+
+      showIncluded = item.supportIncludedViews;
+      openIncludedViewOnSelect =
+        layout.includedView && layout.includedView.openOnSelect;
+    }
+
+    if (openIncludedViewOnSelect) {
+      dispatch(
+        showIncludedView({
+          id: windowId,
+          showIncludedView: showIncluded,
+          forceClose,
+          windowId: includedWindowId,
+          viewId: includedViewId,
+          isModal,
+        })
+      );
+    }
   };
 }
 
@@ -571,6 +635,7 @@ export function updateTableSelection({
  * @param {array} selection - array of items to deselect
  * @param {number} windowId
  * @param {string} viewId
+ * @param {boolean} isModal
  */
 export function deselectTableRows({
   id,
@@ -587,6 +652,9 @@ export function deselectTableRows({
 
     if (viewId) {
       dispatch(getTableActions({ tableId: id, windowId, viewId, isModal }));
+      dispatch(
+        handleToggleIncludedView({ windowId, tableId: id, selection, isModal })
+      );
     }
   };
 }

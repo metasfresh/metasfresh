@@ -103,15 +103,7 @@ export default class Table extends PureComponent {
   };
 
   handleClick = (e, item) => {
-    const {
-      openIncludedViewOnSelect,
-      showIncludedView,
-      isModal,
-      windowId,
-      keyProperty,
-      selected,
-      onSelect,
-    } = this.props;
+    const { keyProperty, selected, onSelect, onDeselect } = this.props;
     const id = item[keyProperty];
 
     if (e && e.button === 0) {
@@ -120,50 +112,29 @@ export default class Table extends PureComponent {
       const isSelected = selected.indexOf(id) > -1;
       const isAnySelected = selected.length > 0;
 
-      let newSelection;
-
       if (selectMore || isMobileOrTablet) {
         if (isSelected) {
-          let afterDeselect = Array.isArray(selected)
-            ? selected.filter((selItem) => selItem !== id)
-            : id;
-          newSelection = onSelect(afterDeselect);
+          onDeselect(id);
         } else {
           let newSelectionItems =
             selected && !selected.includes(id) ? [...selected, id] : [id];
-          newSelection = onSelect(newSelectionItems);
+          onSelect(newSelectionItems);
         }
       } else if (selectRange) {
         if (isAnySelected) {
-          newSelection = this.getProductRange(id);
+          const newSelection = this.getProductRange(id);
           onSelect(newSelection);
         } else {
-          newSelection = [id];
           onSelect(id);
         }
       } else {
         // if row is not selected or multiple rows are selected
         if (!isSelected || (isSelected && selected.length > 1)) {
-          newSelection = [id];
           onSelect(id);
         } else {
-          let afterDeselect = Array.isArray(selected)
-            ? selected.filter((selItem) => selItem !== id)
-            : id;
-          newSelection = onSelect(afterDeselect);
+          onDeselect(id);
         }
       }
-    }
-
-    if (openIncludedViewOnSelect) {
-      showIncludedView({
-        id: windowId,
-        showIncludedView: item.supportIncludedViews,
-        forceClose: false,
-        windowId: item.supportIncludedViews ? item.includedView.windowId : null,
-        viewId: item.supportIncludedViews ? item.includedView.viewId : '',
-        isModal,
-      });
     }
   };
 

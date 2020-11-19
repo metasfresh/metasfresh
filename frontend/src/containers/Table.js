@@ -1,10 +1,11 @@
-import update from 'immutability-helper';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { getZoomIntoWindow, deleteRequest } from '../api';
-import { getTableId, getTable } from '../reducers/tables';
+import { containerPropTypes } from '../utils/tableHelpers';
+import { mapIncluded } from '../utils/documentListHelper';
 
+import { getTableId, getTable } from '../reducers/tables';
 import {
   updateTableSelection,
   deselectTableRows,
@@ -13,9 +14,6 @@ import {
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
 import { openModal, updatePropertyValue } from '../actions/WindowActions';
-
-import { containerPropTypes } from '../utils/tableHelpers';
-import { mapIncluded } from '../utils/documentListHelper';
 
 import Table from '../components/table/TableWrapper';
 
@@ -51,6 +49,7 @@ class TableContainer extends PureComponent {
       tabId,
       keyProperty,
       isModal,
+      parentView,
     } = this.props;
     let newSelected = [];
 
@@ -69,11 +68,10 @@ class TableContainer extends PureComponent {
       windowId,
       viewId,
       isModal,
+      parentView,
     }).then(() => {
       cb && cb();
     });
-
-    return newSelected;
   };
 
   handleSelectAll = () => {
@@ -85,31 +83,16 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const {
-      deselectTableRows,
+    const { deselectTableRows, windowId, viewId, isModal } = this.props;
+    const tableId = getTableId({ windowId, viewId });
+
+    deselectTableRows({
+      id: tableId,
+      selection: [id],
       windowId,
       viewId,
-      selected,
       isModal,
-    } = this.props;
-    const tableId = getTableId({ windowId, viewId });
-    const index = selected.indexOf(id);
-
-    // TODO: Do we need this returned value ? Maybe we can handle
-    // this in redux only?
-    const newSelected = update(selected, { $splice: [[index, 1]] });
-
-    if (!newSelected.length) {
-      deselectTableRows({
-        id: tableId,
-        selection: [id],
-        windowId,
-        viewId,
-        isModal,
-      });
-    }
-
-    return newSelected;
+    });
   };
 
   handleDeselectAll = (callback) => {
