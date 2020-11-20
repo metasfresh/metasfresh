@@ -78,7 +78,7 @@ public class OrgAndBPartnerCompositeLookupKeyList
 
 		final ImmutableList.Builder<BPartnerCompositeLookupKey> result = ImmutableList.builder();
 		OrgId orgId = null;
-		for (OrgAndBPartnerCompositeLookupKey singleQueryLookupKey : singleQueryLookupKeys)
+		for (final OrgAndBPartnerCompositeLookupKey singleQueryLookupKey : singleQueryLookupKeys)
 		{
 			result.add(singleQueryLookupKey.getCompositeLookupKey());
 
