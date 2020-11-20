@@ -1,7 +1,6 @@
 package de.metas.rest_api.bpartner.impl;
 
 import de.metas.Profiles;
-import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
@@ -77,7 +76,7 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
 @RestController
 @Profile(Profiles.PROFILE_App)
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
-public class BpartnerRestController implements BPartnerRestEndpoint
+public class BpartnerRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner";
 	public static final String ORG_CODE_PARAMETER_DOC = "`AD_Org.Value` of the BPartner identified by the bpartnerIdentifier";
@@ -98,6 +97,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	}
 
 	//
+	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved bpartner"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -105,7 +105,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{bpartnerIdentifier}")
-	@Override
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 
 			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
@@ -132,6 +131,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	}
 
 	//
+	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved location"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -180,6 +180,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		return okOrNotFound(location);
 	}
 
+	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -235,7 +236,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
 	})
 	@GetMapping
-	@Override
 	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSince(
 
 			@ApiParam(SINCE_DOC) //
@@ -296,6 +296,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
 	}
 
+	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
@@ -303,7 +304,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@PutMapping
-	@Override
 	public ResponseEntity<JsonResponseBPartnerCompositeUpsert> createOrUpdateBPartner(
 			@RequestBody @NonNull final JsonRequestBPartnerUpsert bpartnerUpsertRequest)
 	{
@@ -317,7 +317,9 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then those of its properties that are *not* specified are left untouched.")
+	@ApiOperation("Create or update a locations for a particular bpartner.\n"
+			+ "The identified bpartner needs to be in the current user's organisation.\n"
+			+ "If a location exists, then those of its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/location")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
@@ -371,7 +373,9 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a contacts for a particular bpartner. If a contact exists, then its properties that are *not* specified are left untouched.")
+	@ApiOperation("Create or update a contacts for a particular bpartner.\n"
+			+ "The identified bpartner needs to be in the current user's organisation.\n"
+			+ "If a contact exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/contact")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
@@ -391,7 +395,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a contacts for a particular bpartner. If a contact exists, then its properties that are *not* specified are left untouched.")
+	@ApiOperation("Create or update a contacts for a particular bpartner.\n"
+			+ "If a contact exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{orgCode}/{bpartnerIdentifier}/contact")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
@@ -427,7 +432,9 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a bank account for a particular bpartner. If a bank account exists, then its properties that are *not* specified are left untouched.")
+	@ApiOperation("Create or update a bank account for a particular bpartner.\n"
+			+ "The identified bpartner needs to be in the current user's organisation.\n"
+			+ "If a bank account exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/bankAccount")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateBankAccount(
 
@@ -476,7 +483,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)
 	{
 		return optionalResult
-				.map(result -> ResponseEntity.ok(result))
+				.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 

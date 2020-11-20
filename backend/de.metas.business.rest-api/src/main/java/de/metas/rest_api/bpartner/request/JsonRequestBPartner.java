@@ -83,7 +83,7 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean name3Set;
 
-	@ApiModelProperty(position = 60, required = false, //
+	@ApiModelProperty(position = 60, //
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	private String companyName;
@@ -101,7 +101,7 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean customerSet;
 
-	@ApiModelProperty(position = 70, required = false, //
+	@ApiModelProperty(position = 70, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
 	private MetasfreshId parentId;
