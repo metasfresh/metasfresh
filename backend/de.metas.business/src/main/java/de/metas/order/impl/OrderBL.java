@@ -1034,12 +1034,12 @@ public class OrderBL implements IOrderBL
 	{
 		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
 
-		if (docType.getR_RequestType_ID() == 0)
+		if (docType.getR_RequestType_ID() <= 0)
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(RequestTypeId.ofRepoId(docType.getR_RequestType_ID()));
+		return Optional.ofNullable(RequestTypeId.ofRepoIdOrNull(docType.getR_RequestType_ID()));
 	}
 
 	@Override
