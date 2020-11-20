@@ -193,133 +193,133 @@ public class JsonRequestContact
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
-	public void setExternalId(JsonExternalId externalId)
+	public void setExternalId(final JsonExternalId externalId)
 	{
 		this.externalId = externalId;
 		this.externalIdSet = true;
 	}
 
-	public void setMetasfreshBPartnerId(MetasfreshId metasfreshBPartnerId)
+	public void setMetasfreshBPartnerId(final MetasfreshId metasfreshBPartnerId)
 	{
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
 		this.metasfreshBPartnerIdSet = true;
 	}
 
-	public void setCode(String code)
+	public void setCode(final String code)
 	{
 		this.code = code;
 		this.codeSet = true;
 	}
 
-	public void setActive(Boolean active)
+	public void setActive(final Boolean active)
 	{
 		this.active = active;
 		this.activeSet = true;
 	}
 
-	public void setName(String name)
+	public void setName(final String name)
 	{
 		this.name = name;
 		this.nameSet = true;
 	}
 
-	public void setFirstName(String firstName)
+	public void setFirstName(final String firstName)
 	{
 		this.firstName = firstName;
 		this.firstNameSet = true;
 	}
 
-	public void setLastName(String lastName)
+	public void setLastName(final String lastName)
 	{
 		this.lastName = lastName;
 		this.lastNameSet = true;
 	}
 
-	public void setEmail(String email)
+	public void setEmail(final String email)
 	{
 		this.email = email;
 		this.emailSet = true;
 	}
 
-	public void setPhone(String phone)
+	public void setPhone(final String phone)
 	{
 		this.phone = phone;
 		this.phoneSet = true;
 	}
 
-	public void setFax(String fax)
+	public void setFax(final String fax)
 	{
 		this.fax = fax;
 		this.faxSet = true;
 	}
 
-	public void setMobilePhone(String mobilePhone)
+	public void setMobilePhone(final String mobilePhone)
 	{
 		this.mobilePhone = mobilePhone;
 		this.mobilePhoneSet = true;
 	}
 
-	public void setDefaultContact(Boolean defaultContact)
+	public void setDefaultContact(final Boolean defaultContact)
 	{
 		this.defaultContact = defaultContact;
 		this.defaultContactSet = true;
 	}
 
-	public void setShipToDefault(Boolean shipToDefault)
+	public void setShipToDefault(final Boolean shipToDefault)
 	{
 		this.shipToDefault = shipToDefault;
 		this.shipToDefaultSet = true;
 	}
 
-	public void setBillToDefault(Boolean billToDefault)
+	public void setBillToDefault(final Boolean billToDefault)
 	{
 		this.billToDefault = billToDefault;
 		this.billToDefaultSet = true;
 	}
 
-	public void setNewsletter(Boolean newsletter)
+	public void setNewsletter(final Boolean newsletter)
 	{
 		this.newsletter = newsletter;
 		this.newsletterSet = true;
 	}
 
-	public void setDescription(String description)
+	public void setDescription(final String description)
 	{
 		this.description = description;
 		this.descriptionSet = true;
 	}
 
-	public void setSales(Boolean sales)
+	public void setSales(final Boolean sales)
 	{
 		this.sales = sales;
 		this.salesSet = true;
 	}
 
-	public void setSalesDefault(Boolean salesDefault)
+	public void setSalesDefault(final Boolean salesDefault)
 	{
 		this.salesDefault = salesDefault;
 		this.salesDefaultSet = true;
 	}
 
-	public void setPurchase(Boolean purchase)
+	public void setPurchase(final Boolean purchase)
 	{
 		this.purchase = purchase;
 		this.purchaseSet = true;
 	}
 
-	public void setPurchaseDefault(Boolean purchaseDefault)
+	public void setPurchaseDefault(final Boolean purchaseDefault)
 	{
 		this.purchaseDefault = purchaseDefault;
 		this.purchaseDefaultSet = true;
 	}
 
-	public void setSubjectMatter(Boolean subjectMatter)
+	public void setSubjectMatter(final Boolean subjectMatter)
 	{
 		this.subjectMatter = subjectMatter;
 		this.subjectMatterSet = true;
 	}
 
-	public void setSyncAdvise(SyncAdvise syncAdvise)
+	public void setSyncAdvise(final SyncAdvise syncAdvise)
 	{
 		this.syncAdvise = syncAdvise;
 		this.syncAdviseSet = true;

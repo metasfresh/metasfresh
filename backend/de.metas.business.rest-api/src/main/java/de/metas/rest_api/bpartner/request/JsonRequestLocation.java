@@ -181,121 +181,121 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
-	public void setExternalId(JsonExternalId externalId)
+	public void setExternalId(final JsonExternalId externalId)
 	{
 		this.externalId = externalId;
 		this.externalIdSet = true;
 	}
 
-	public void setActive(Boolean active)
+	public void setActive(final Boolean active)
 	{
 		this.active = active;
 		this.activeSet = true;
 	}
 
-	public void setName(String name)
+	public void setName(final String name)
 	{
 		this.name = name;
 		this.nameSet = true;
 	}
 
-	public void setBpartnerName(String bpartnerName)
+	public void setBpartnerName(final String bpartnerName)
 	{
 		this.bpartnerName = bpartnerName;
 		this.bpartnerNameSet = true;
 	}
 
-	public void setAddress1(String address1)
+	public void setAddress1(final String address1)
 	{
 		this.address1 = address1;
 		this.address1Set = true;
 	}
 
-	public void setAddress2(String address2)
+	public void setAddress2(final String address2)
 	{
 		this.address2 = address2;
 		this.address2Set = true;
 	}
 
-	public void setAddress3(String address3)
+	public void setAddress3(final String address3)
 	{
 		this.address3 = address3;
 		this.address3Set = true;
 	}
 
-	public void setAddress4(String address4)
+	public void setAddress4(final String address4)
 	{
 		this.address4 = address4;
 		this.address4Set = true;
 	}
 
-	public void setPoBox(String poBox)
+	public void setPoBox(final String poBox)
 	{
 		this.poBox = poBox;
 		this.poBoxSet = true;
 	}
 
-	public void setPostal(String postal)
+	public void setPostal(final String postal)
 	{
 		this.postal = postal;
 		this.postalSet = true;
 	}
 
-	public void setCity(String city)
+	public void setCity(final String city)
 	{
 		this.city = city;
 		this.citySet = true;
 	}
 
-	public void setDistrict(String district)
+	public void setDistrict(final String district)
 	{
 		this.district = district;
 		this.districtSet = true;
 	}
 
-	public void setRegion(String region)
+	public void setRegion(final String region)
 	{
 		this.region = region;
 		this.regionSet = true;
 	}
 
-	public void setCountryCode(String countryCode)
+	public void setCountryCode(final String countryCode)
 	{
 		this.countryCode = countryCode;
 		this.countryCodeSet = true;
 	}
 
-	public void setGln(String gln)
+	public void setGln(final String gln)
 	{
 		this.gln = gln;
 		this.glnSet = true;
 	}
 
-	public void setShipTo(Boolean shipTo)
+	public void setShipTo(final Boolean shipTo)
 	{
 		this.shipTo = shipTo;
 		this.shipToSet = true;
 	}
 
-	public void setShipToDefault(Boolean shipToDefault)
+	public void setShipToDefault(final Boolean shipToDefault)
 	{
 		this.shipToDefault = shipToDefault;
 		this.shipToDefaultSet = true;
 	}
 
-	public void setBillTo(Boolean billTo)
+	public void setBillTo(final Boolean billTo)
 	{
 		this.billTo = billTo;
 		this.billToSet = true;
 	}
 
-	public void setBillToDefault(Boolean billToDefault)
+	public void setBillToDefault(final Boolean billToDefault)
 	{
 		this.billToDefault = billToDefault;
 		this.billToDefaultSet = true;
 	}
 
-	public void setSyncAdvise(SyncAdvise syncAdvise)
+	public void setSyncAdvise(final SyncAdvise syncAdvise)
 	{
 		this.syncAdvise = syncAdvise;
 		this.syncAdviseSet = true;
