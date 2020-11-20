@@ -1,6 +1,7 @@
 package de.metas.banking.impexp;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -34,7 +35,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.Properties;
-import java.util.StringJoiner;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -284,13 +284,14 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	private static void updateDescription(@NonNull final I_I_BankStatement importRecord)
 	{
-		final String lineDescription = new StringJoiner(" / ")
-				.add(importRecord.getLineDescription())
-				.add(importRecord.getLineDescriptionExtra_1())
-				.add(importRecord.getLineDescriptionExtra_2())
-				.add(importRecord.getLineDescriptionExtra_3())
-				.add(importRecord.getLineDescriptionExtra_4())
-				.toString();
+		final String lineDescription = Joiner.on(" / ")
+				.skipNulls()
+				.join(importRecord.getLineDescription(),
+					  importRecord.getLineDescriptionExtra_1(),
+					  importRecord.getLineDescriptionExtra_2(),
+					  importRecord.getLineDescriptionExtra_3(),
+					  importRecord.getLineDescriptionExtra_4());
+
 		importRecord.setLineDescription(lineDescription);
 	}
 
