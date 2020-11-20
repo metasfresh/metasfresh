@@ -85,6 +85,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.Check.isNotBlank;
 import static java.math.BigDecimal.ONE;
@@ -630,9 +631,9 @@ public class DesadvBL implements IDesadvBL
 
 		final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
 				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
-				hu -> hu.getPackagingCode().orElse(null),
-				null);
-		if (tuPackagingCode != null)
+				hu -> hu.getPackagingCode().orElse(PackagingCode.NONE), // don't use null because CollectionUtils runs with ImmutableList
+				PackagingCode.NONE);
+		if (!tuPackagingCode.isNone())
 		{
 			packRecord.setM_HU_PackagingCode_TU_ID(tuPackagingCode.getId().getRepoId());
 		}
@@ -651,8 +652,8 @@ public class DesadvBL implements IDesadvBL
 
 		final String tuPackagingGTIN = CollectionUtils.extractSingleElementOrDefault(
 				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
-				hu -> hu.getPackagingGTINs().get(bPartnerId),
-				null);
+				hu -> coalesce(hu.getPackagingGTINs().get(bPartnerId), ""),
+				"");
 		if (isNotBlank(tuPackagingGTIN))
 		{
 			packRecord.setGTIN_TU_PackingMaterial(tuPackagingGTIN);

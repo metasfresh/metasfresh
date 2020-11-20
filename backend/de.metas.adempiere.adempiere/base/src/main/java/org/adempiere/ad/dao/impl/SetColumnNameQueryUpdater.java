@@ -25,6 +25,7 @@ package org.adempiere.ad.dao.impl;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.util.StringUtils;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
@@ -104,6 +105,10 @@ import lombok.NonNull;
 		else if (TimeUtil.isDateOrTimeObject(value))
 		{
 			return TimeUtil.asTimestamp(value);
+		}
+		else if (value instanceof Boolean)
+		{
+			return StringUtils.ofBoolean((Boolean)value);
 		}
 		else
 		{
