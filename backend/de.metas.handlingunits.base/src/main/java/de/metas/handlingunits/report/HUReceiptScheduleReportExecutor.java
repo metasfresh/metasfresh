@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import de.metas.printing.IMassPrintingService;
+import de.metas.report.PrintCopies;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
@@ -115,10 +116,10 @@ public class HUReceiptScheduleReportExecutor
 
 		//
 		// get number of copies from SysConfig (default=1)
-		final int copies = sysConfigBL.getIntValue(SYSCONFIG_ReceiptScheduleHUPOSJasper_Copies,
+		final PrintCopies copies = PrintCopies.ofInt(sysConfigBL.getIntValue(SYSCONFIG_ReceiptScheduleHUPOSJasper_Copies,
 				1, // default
 				receiptSchedule.getAD_Client_ID(),
-				receiptSchedule.getAD_Org_ID());
+				receiptSchedule.getAD_Org_ID()));
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 
@@ -139,7 +140,7 @@ public class HUReceiptScheduleReportExecutor
 				.setReportLanguage(bpartnerLaguage)
 				.addParameter(PARA_C_Orderline_ID, orderLineId)
 				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
-				.addParameter(IMassPrintingService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, copies.toInt())
 
 				//
 				// Execute report in a new AD_PInstance

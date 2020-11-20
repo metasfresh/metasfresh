@@ -42,7 +42,6 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.print.ReportEngine;
 import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -647,7 +646,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	public File createPDF()
 	{
 		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-		final ReportResultData report = documentReportService.createStandardDocumentReport(getCtx(), StandardDocumentReportType.SHIPMENT, getM_InOut_ID());
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.SHIPMENT, getM_InOut_ID());
 		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}
 

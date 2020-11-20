@@ -28,6 +28,7 @@ import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
+import de.metas.report.PrintCopies;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,14 +68,13 @@ public final class MassPrintingService implements IMassPrintingService
 		// because we want to first set the two flags below, and we want the model interceptor to be fired only once
 		final boolean save = false;
 
-		final String trxName = ITrx.TRXNAME_None;
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
 				archiveService.archive(
 						executeReportResult.getReportData(),
 						archiveInfo,
 						forceArchiving,
 						save,
-						trxName),
+						ITrx.TRXNAME_None),
 				I_AD_Archive.class);
 
 		Check.assumeNotNull(archive,
@@ -104,7 +104,7 @@ public final class MassPrintingService implements IMassPrintingService
 		// original document while the java printing API thinks of copies as
 		// the absolute number of printouts and thus doesn't accept any
 		// number <=0.
-		int numberOfPrintouts = 1;
+		PrintCopies numberOfPrintouts = PrintCopies.ONE;
 		ArchiveInfo archiveInfo = null;
 
 		if (pi.getParameter() != null)
@@ -124,20 +124,22 @@ public final class MassPrintingService implements IMassPrintingService
 					archiveInfo = (ArchiveInfo)objParam;
 					numberOfPrintouts = archiveInfo.getCopies();
 
-					if (numberOfPrintouts <= 0)
+					if (numberOfPrintouts.isZero())
 					{
 						logger.debug("Setting numberOfPrintouts from 0 (specified by archiveInfo) to 1");
-						numberOfPrintouts = 1;
+						numberOfPrintouts = PrintCopies.ONE;
 					}
 					break;
 				}
 				else if (PARAM_PrintCopies.equals(parameterName))
 				{
-					numberOfPrintouts = param.getParameterAsInt();
-					if (numberOfPrintouts <= 0)
+					numberOfPrintouts = param.getParameterAsInt() > 0
+							? PrintCopies.ofInt(param.getParameterAsInt())
+							: PrintCopies.ZERO;
+					if (numberOfPrintouts.isZero())
 					{
 						logger.debug("Setting numberOfPrintouts from 0 (specified by " + PARAM_PrintCopies + ") to 1");
-						numberOfPrintouts = 1;
+						numberOfPrintouts = PrintCopies.ONE;
 					}
 				}
 			}
@@ -155,7 +157,7 @@ public final class MassPrintingService implements IMassPrintingService
 		}
 
 		// Update archiveInfo
-		archiveInfo.setCopies(numberOfPrintouts < 1 ? 1 : numberOfPrintouts);
+		archiveInfo.setCopies(numberOfPrintouts.minimumOne());
 
 		return archiveInfo;
 	}

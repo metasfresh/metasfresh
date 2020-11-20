@@ -24,6 +24,7 @@ package de.metas.report;
 
 import de.metas.process.AdProcessId;
 import lombok.Getter;
+import lombok.NonNull;
 import org.compiere.model.I_C_DunningRunEntry;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -42,22 +43,23 @@ public enum StandardDocumentReportType
 	SHIPMENT(I_M_InOut.Table_Name, I_M_InOut.COLUMNNAME_M_InOut_ID),
 	INVOICE(I_C_Invoice.Table_Name, I_C_Invoice.COLUMNNAME_C_Invoice_ID),
 	PROJECT(I_C_Project.Table_Name, I_C_Project.COLUMNNAME_C_Project_ID),
-	REMITTANCE(null, null),
-	CHECK(null, null),
+	//REMITTANCE(null, null),
+	//CHECK(null, null),
 	DUNNING(I_C_DunningRunEntry.Table_Name, I_C_DunningRunEntry.COLUMNNAME_C_DunningRunEntry_ID),
 	MANUFACTURING_ORDER(I_PP_Order.Table_Name, I_PP_Order.COLUMNNAME_PP_Order_ID),
 	DISTRIBUTION_ORDER(I_DD_Order.Table_Name, I_DD_Order.COLUMNNAME_DD_Order_ID);
 
 	@Getter
-	@Nullable
+	@NonNull
 	private final String baseTableName;
+
 	@Getter
-	@Nullable
+	@NonNull
 	private final String keyColumnName;
 
 	StandardDocumentReportType(
-			@Nullable final String baseTableName,
-			@Nullable final String keyColumnName)
+			@NonNull final String baseTableName,
+			@NonNull final String keyColumnName)
 	{
 		this.baseTableName = baseTableName;
 		this.keyColumnName = keyColumnName;
@@ -106,4 +108,17 @@ public enum StandardDocumentReportType
 		}
 	}
 
+	@Nullable
+	public static StandardDocumentReportType ofTableNameOrNull(@NonNull final String tableName)
+	{
+		for (StandardDocumentReportType type : values())
+		{
+			if (tableName.equals(type.getBaseTableName()))
+			{
+				return type;
+			}
+		}
+
+		return null;
+	}
 }

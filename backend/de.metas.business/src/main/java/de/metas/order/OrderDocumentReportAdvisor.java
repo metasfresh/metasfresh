@@ -23,18 +23,15 @@
 package de.metas.order;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.Language;
-import de.metas.report.DefaultPrintFormatsRepository;
 import de.metas.report.DocumentPrintOptions;
 import de.metas.report.DocumentReportAdvisor;
+import de.metas.report.DocumentReportAdvisorUtil;
 import de.metas.report.PrintFormatId;
-import de.metas.report.StandardDocumentReportInfo;
+import de.metas.report.DocumentReportInfo;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -45,27 +42,20 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-
-import static de.metas.report.DocumentReportAdvisorUtil.getDocumentCopies;
-import static de.metas.report.DocumentReportAdvisorUtil.getReportProcessIdByPrintFormatId;
 
 @Component
 public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IBPartnerBL bpartnerBL;
-	private final DefaultPrintFormatsRepository defaultPrintFormatsRepository;
+	private final DocumentReportAdvisorUtil util;
 
-	public OrderDocumentReportAdvisor(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final DefaultPrintFormatsRepository defaultPrintFormatsRepository)
+	public OrderDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util)
 	{
-		this.bpartnerBL = bpartnerBL;
-		this.defaultPrintFormatsRepository = defaultPrintFormatsRepository;
+		this.util = util;
 	}
 
 	@Override
@@ -80,44 +70,39 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 		return StandardDocumentReportType.ORDER;
 	}
 
+	@Override
 	@NonNull
-	public StandardDocumentReportInfo getDocumentReportInfo(
-			@NonNull final StandardDocumentReportType type,
-			final int recordId,
+	public DocumentReportInfo getDocumentReportInfo(
+			@NonNull final TableRecordReference recordRef,
 			@Nullable final PrintFormatId adPrintFormatToUseId)
 	{
-		Check.assumeEquals(type, StandardDocumentReportType.ORDER, "type");
-
-		final OrderId orderId = OrderId.ofRepoId(recordId);
+		final OrderId orderId = recordRef.getIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
 		final I_C_Order order = orderBL.getById(orderId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
+		final I_C_BPartner bpartner = util.getBPartnerById(bpartnerId);
 
 		final DocTypeId docTypeId = extractDocTypeId(order);
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final I_C_DocType docType = util.getDocTypeById(docTypeId);
 
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
 
 		final PrintFormatId printFormatId = CoalesceUtil.coalesceSuppliers(
 				() -> adPrintFormatToUseId,
-				() -> bpartnerBL.getPrintFormats(bpartnerId).getPrintFormatIdByDocTypeId(docTypeId).orElse(null),
+				() -> util.getBPartnerPrintFormats(bpartnerId).getPrintFormatIdByDocTypeId(docTypeId).orElse(null),
 				() -> PrintFormatId.ofRepoIdOrNull(docType.getAD_PrintFormat_ID()),
-				() -> defaultPrintFormatsRepository.getByClientId(clientId).getOrderPrintFormatId());
+				() -> util.getDefaultPrintFormats(clientId).getOrderPrintFormatId());
 		if (printFormatId == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_PrintFormat_ID@");
 		}
 
-		final int documentCopies = getDocumentCopies(bpartner, docType);
+		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
 
-		final String adLanguage = bpartner.getAD_Language();
-		final Language language = Check.isNotBlank(adLanguage) ? Language.getLanguage(adLanguage) : null;
-
-		return StandardDocumentReportInfo.builder()
+		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
 				.printFormatId(printFormatId)
-				.reportProcessId(getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(documentCopies)
+				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
+				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(order.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
@@ -145,8 +130,8 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 
 	private DocumentPrintOptions getDocumentPrintOptions(@NonNull final I_C_Order order)
 	{
-		final OptionalBoolean printTotals = StringUtils.toOptionalBoolean(order.getPRINTER_OPTS_IsPrintTotals());
-		if(printTotals.isPresent())
+		final OptionalBoolean printTotals = getPrintTotalsOption(order);
+		if (printTotals.isPresent())
 		{
 			return DocumentPrintOptions.builder()
 					.option(DocumentPrintOptions.OPTION_IsPrintTotals, printTotals.isTrue())
@@ -158,5 +143,18 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 		}
 	}
 
+	private OptionalBoolean getPrintTotalsOption(@NonNull final I_C_Order order)
+	{
+		final String docSubType = order.getOrderType();
+		if (X_C_DocType.DOCSUBTYPE_Proposal.equals(docSubType)
+				|| X_C_DocType.DOCSUBTYPE_Quotation.equals(docSubType))
+		{
+			return StringUtils.toOptionalBoolean(order.getPRINTER_OPTS_IsPrintTotals());
+		}
+		else
+		{
+			return OptionalBoolean.TRUE;
+		}
+	}
 
 }

@@ -59,7 +59,7 @@ public class ExecuteReportStrategyUtil
 				.setAD_Process_ID(jasperProcessId)
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
-				.addParameter(IMassPrintingService.PARAM_PrintCopies, 1)
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, PrintCopies.ONE.toInt())
 				.setArchiveReportData(false) // don't archive it! just give us the PDF data
 				.setPrintPreview(false)
 
@@ -70,7 +70,7 @@ public class ExecuteReportStrategyUtil
 				.onErrorThrowException(true)
 				.executeSync();
 
-		return processExecutor.getResult().getReportData();
+		return processExecutor.getResult().getReportDataAsByteArray();
 	}
 
 	/**

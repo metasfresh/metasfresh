@@ -22,54 +22,114 @@
 
 package de.metas.report;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerPrintFormatMap;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
+import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
-import org.compiere.print.MPrintFormat;
-import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
-@UtilityClass
+import javax.annotation.Nullable;
+import java.util.Optional;
+
+@Component
 public class DocumentReportAdvisorUtil
 {
-	public static AdProcessId getReportProcessIdByPrintFormatId(@NonNull final PrintFormatId printFormatId)
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IBPartnerBL bpartnerBL;
+	private final PrintFormatRepository printFormatRepository;
+	private final DefaultPrintFormatsRepository defaultPrintFormatsRepository;
+
+	public DocumentReportAdvisorUtil(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final PrintFormatRepository printFormatRepository,
+			@NonNull final DefaultPrintFormatsRepository defaultPrintFormatsRepository)
 	{
-		final MPrintFormat adPrintFormat = MPrintFormat.get(Env.getCtx(), printFormatId.getRepoId(), false);
-		if (adPrintFormat == null)
-		{
-			throw new AdempiereException("No print format found for AD_PrintFormat_ID=" + printFormatId);
-		}
-
-		final AdProcessId reportProcessId = AdProcessId.ofRepoIdOrNull(adPrintFormat.getJasperProcess_ID());
-		if (reportProcessId == null)
-		{
-			throw new AdempiereException("No report process found");
-		}
-
-		return reportProcessId;
+		this.bpartnerBL = bpartnerBL;
+		this.printFormatRepository = printFormatRepository;
+		this.defaultPrintFormatsRepository = defaultPrintFormatsRepository;
 	}
 
-	public static int getDocumentCopies(
-			@NonNull final I_C_BPartner bpartner,
-			@NonNull final I_C_DocType docType)
+	public Optional<BPartnerId> getBPartnerIdForModel(@NonNull final Object model)
 	{
-		return getDocumentCopies(docType, 0) + getDocumentCopies(bpartner, 1); // for now, preserving the legacy logic
+		return bpartnerBL.getBPartnerIdForModel(model);
 	}
 
-	public static Integer getDocumentCopies(@NonNull final I_C_BPartner bpartner, final Integer defaultValue)
+	public I_C_BPartner getBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
-		return !InterfaceWrapperHelper.isNull(bpartner, I_C_BPartner.COLUMNNAME_DocumentCopies)
-				? bpartner.getDocumentCopies()
+		return bpartnerBL.getById(bpartnerId);
+	}
+
+	public Optional<Language> getBPartnerLanguage(@NonNull final I_C_BPartner bpartner)
+	{
+		return bpartnerBL.getLanguage(bpartner);
+	}
+
+	public BPartnerPrintFormatMap getBPartnerPrintFormats(final BPartnerId bpartnerId)
+	{
+		return bpartnerBL.getPrintFormats(bpartnerId);
+	}
+
+	@NonNull
+	public DefaultPrintFormats getDefaultPrintFormats(@NonNull final ClientId clientId)
+	{
+		return defaultPrintFormatsRepository.getByClientId(clientId);
+	}
+
+	@NonNull
+	public AdProcessId getReportProcessIdByPrintFormatId(@NonNull final PrintFormatId printFormatId)
+	{
+		return getReportProcessIdByPrintFormatIdIfExists(printFormatId).get();
+	}
+
+	@NonNull
+	public ExplainedOptional<AdProcessId> getReportProcessIdByPrintFormatIdIfExists(@NonNull final PrintFormatId printFormatId)
+	{
+		final PrintFormat printFormat = printFormatRepository.getById(printFormatId);
+		final AdProcessId reportProcessId = printFormat.getReportProcessId();
+		return reportProcessId != null
+				? ExplainedOptional.of(reportProcessId)
+				: ExplainedOptional.emptyBecause("No report process defined by " + printFormat);
+	}
+
+	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypeDAO.getById(docTypeId);
+	}
+
+	public PrintCopies getDocumentCopies(
+			@Nullable final I_C_BPartner bpartner,
+			@Nullable final I_C_DocType docType)
+	{
+		// for now, preserving the legacy logic
+		return getDocumentCopies(docType, PrintCopies.ZERO)
+				.plus(getDocumentCopies(bpartner, PrintCopies.ONE));
+	}
+
+	private static PrintCopies getDocumentCopies(
+			@Nullable final I_C_BPartner bpartner,
+			@NonNull final PrintCopies defaultValue)
+	{
+		return bpartner != null && !InterfaceWrapperHelper.isNull(bpartner, I_C_BPartner.COLUMNNAME_DocumentCopies)
+				? PrintCopies.ofInt(bpartner.getDocumentCopies())
 				: defaultValue;
 	}
 
-	public static Integer getDocumentCopies(@NonNull final I_C_DocType docType, final Integer defaultValue)
+	private static PrintCopies getDocumentCopies(
+			@Nullable final I_C_DocType docType,
+			@NonNull final PrintCopies defaultValue)
 	{
-		return !InterfaceWrapperHelper.isNull(docType, I_C_BPartner.COLUMNNAME_DocumentCopies)
-				? docType.getDocumentCopies()
+		return docType != null && !InterfaceWrapperHelper.isNull(docType, I_C_BPartner.COLUMNNAME_DocumentCopies)
+				? PrintCopies.ofInt(docType.getDocumentCopies())
 				: defaultValue;
 	}
 }

@@ -63,7 +63,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.print.ReportEngine;
 import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -71,7 +70,6 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -800,7 +798,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public File createPDF()
 	{
 		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-		final ReportResultData report = documentReportService.createStandardDocumentReport(getCtx(), StandardDocumentReportType.INVOICE, getC_Invoice_ID());
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.INVOICE, getC_Invoice_ID());
 		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}    // getPDF
 

@@ -41,7 +41,6 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.print.ReportEngine;
 import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -235,7 +234,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	public File createPDF()
 	{
 		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-		final ReportResultData report = documentReportService.createStandardDocumentReport(getCtx(), StandardDocumentReportType.DISTRIBUTION_ORDER, getDD_Order_ID());
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.DISTRIBUTION_ORDER, getDD_Order_ID());
 		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}
 

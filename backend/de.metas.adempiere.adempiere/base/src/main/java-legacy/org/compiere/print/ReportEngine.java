@@ -22,14 +22,9 @@ import de.metas.i18n.Msg;
 import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
 import de.metas.printing.IMassPrintingService;
-import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
-import de.metas.report.DocumentReportService;
-import de.metas.report.PrintFormatId;
-import de.metas.report.StandardDocumentReportInfo;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -42,7 +37,6 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.XhtmlDocument;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.link;
@@ -51,7 +45,6 @@ import org.apache.ecs.xhtml.table;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.th;
 import org.apache.ecs.xhtml.tr;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
@@ -130,16 +123,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		this(ctx, pf, query, info, null);
 	}    // ReportEngine
 
-	/**
-	 * Constructor
-	 *
-	 * @param ctx     context
-	 * @param pf      Print Format
-	 * @param query   Optional Query
-	 * @param info    print info
-	 * @param trxName
-	 */
-	public ReportEngine(Properties ctx, @Nullable final MPrintFormat pf, MQuery query, ArchiveInfo info, String trxName)
+	public ReportEngine(Properties ctx, @Nullable final MPrintFormat pf, MQuery query, ArchiveInfo archiveInfo, String trxName)
 	{
 
 		if (pf != null)
@@ -153,7 +137,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		m_ctx = ctx;
 		//
 		m_printFormat = pf;
-		m_info = info;
+		this.archiveInfo = archiveInfo;
 		m_trxName = trxName;
 		setQuery(query);        // loads Data
 
@@ -176,7 +160,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	/**
 	 * Print Info
 	 */
-	private ArchiveInfo m_info;
+	private final ArchiveInfo archiveInfo;
 	/**
 	 * Query
 	 */
@@ -315,7 +299,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		final PrintData printData = getPrintData();
 		if (printData == null)
 			throw new IllegalStateException("No print data (Delete Print Format and restart)");
-		m_layout = new LayoutEngine(m_printFormat, printData, m_query, m_info, m_trxName);
+		m_layout = new LayoutEngine(m_printFormat, printData, m_query, archiveInfo, m_trxName);
 	}    // layout
 
 	/**
@@ -357,7 +341,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 */
 	public ArchiveInfo getPrintInfo()
 	{
-		return m_info;
+		return archiveInfo;
 	}    // getPrintInfo
 
 	/**
@@ -411,7 +395,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 */
 	public void print()
 	{
-		log.info("print: {}", m_info);
+		log.info("print: {}", archiveInfo);
 
 		if (m_layout == null)
 			layout();
@@ -419,24 +403,24 @@ public class ReportEngine implements PrintServiceAttributeListener
 		// Paper Attributes: media-printable-area, orientation-requested, media
 		PrintRequestAttributeSet prats = m_layout.getPaper().getPrintRequestAttributeSet();
 		// add: copies, job-name, priority
-		if (m_info.isDocumentCopy() || m_info.getCopies() < 1)
+		if (archiveInfo.isDocumentCopy() || archiveInfo.getCopies().isZero())
 			prats.add(new Copies(1));
 		else
-			prats.add(new Copies(m_info.getCopies()));
+			prats.add(new Copies(archiveInfo.getCopies().toInt()));
 		Locale locale = Language.getLoginLanguage().getLocale();
 		prats.add(new JobName(m_printFormat.getName(), locale));
-		prats.add(PrintUtil.getJobPriority(m_layout.getNumberOfPages(), m_info.getCopies(), true));
+		prats.add(PrintUtil.getJobPriority(m_layout.getNumberOfPages(), archiveInfo.getCopies().toInt(), true));
 
 		try
 		{
 			// PrinterJob
-			PrinterJob job = getPrinterJob(m_info.getPrinterName());
+			PrinterJob job = getPrinterJob(archiveInfo.getPrinterName());
 			// job.getPrintService().addPrintServiceAttributeListener(this);
 			job.setPageable(m_layout.getPageable(false));    // no copy
 			// Dialog
 			try
 			{
-				if (m_info.isWithDialog() && !job.printDialog(prats))
+				if (archiveInfo.isWithDialog() && !job.printDialog(prats))
 					return;
 			}
 			catch (Exception e)
@@ -446,17 +430,17 @@ public class ReportEngine implements PrintServiceAttributeListener
 			}
 
 			// submit
-			boolean printCopy = m_info.isDocumentCopy() && m_info.getCopies() > 1;
-			Services.get(IArchiveBL.class).archive(m_layout, m_info, false, ITrx.TRXNAME_None);
+			boolean printCopy = archiveInfo.isDocumentCopy() && archiveInfo.getCopies().isGreaterThanOne();
+			Services.get(IArchiveBL.class).archive(m_layout, archiveInfo, false, ITrx.TRXNAME_None);
 			// ArchiveEngine.get().archive(m_layout, m_info);
 			PrintUtil.print(job, prats, false, printCopy);
 
 			// Document: Print Copies
 			if (printCopy)
 			{
-				log.info("Copy " + (m_info.getCopies() - 1));
-				prats.add(new Copies(m_info.getCopies() - 1));
-				job = getPrinterJob(m_info.getPrinterName());
+				log.info("Copy " + (archiveInfo.getCopies().toInt() - 1));
+				prats.add(new Copies(archiveInfo.getCopies().toInt() - 1));
+				job = getPrinterJob(archiveInfo.getPrinterName());
 				// job.getPrintService().addPrintServiceAttributeListener(this);
 				job.setPageable(m_layout.getPageable(true));        // Copy
 				PrintUtil.print(job, prats, false, false);
@@ -993,7 +977,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 				// 03744: end
 				if (m_layout == null)
 					layout();
-				Services.get(IArchiveBL.class).archive(m_layout, m_info, false, ITrx.TRXNAME_None);
+				Services.get(IArchiveBL.class).archive(m_layout, archiveInfo, false, ITrx.TRXNAME_None);
 				// ArchiveEngine.get().archive(m_layout, m_info);
 				Document.getPDFAsFile(fileName, m_layout.getPageable(false));
 			} // 03744
@@ -1042,13 +1026,13 @@ public class ReportEngine implements PrintServiceAttributeListener
 				.setCtx(ctx)
 				.setAD_Process_ID(getPrintFormat().getJasperProcess_ID())
 				.setRecord(getPrintInfo().getRecordRef())
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
-				.addParameter(IMassPrintingService.PARAM_PrintCopies, getPrintInfo().getCopies())
+				//.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, getPrintInfo().getCopies().toInt())
 				.setPrintPreview(true) // don't archive it! just give us the PDF data
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
 				.executeSync();
-		return processExecutor.getResult().getReportData();
+		return processExecutor.getResult().getReportDataAsByteArray();
 	}
 
 	/**************************************************************************
@@ -1290,54 +1274,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 		return new ReportEngine(ctx, format, query, info);
 	}    // get
 
-	@Nullable
-	public static ReportEngine get(
-			final Properties ctx,
-			StandardDocumentReportType type,
-			int Record_ID,
-			final PInstanceId pInstanceId,
-			final int adPrintFormatToUseId,
-			final String trxName)
-	{
-		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-		final StandardDocumentReportInfo standardReportInfo = documentReportService.getDocumentReportInfo(
-				type,
-				Record_ID,
-				PrintFormatId.ofRepoIdOrNull(adPrintFormatToUseId));
-
-		// Get Format & Data
-		MPrintFormat format = MPrintFormat.get(Env.getCtx(), standardReportInfo.getPrintFormatId().getRepoId(), false);
-		format.setLanguage(standardReportInfo.getLanguage());        // BP Language if Multi-Lingual
-		// if (!Env.isBaseLanguage(language, DOC_TABLES[type]))
-		format.setTranslationLanguage(standardReportInfo.getLanguage());
-		// query
-		MQuery query = new MQuery(format.getAD_Table_ID());
-		query.addRestriction(type.getKeyColumnName(), Operator.EQUAL, Record_ID);
-		// log.info( "ReportCtrl.startDocumentPrint - " + format, query + " - " + language.getAD_Language());
-		//
-
-		String DocumentNo = standardReportInfo.getDocumentNo();
-		if (Check.isBlank(DocumentNo))
-			DocumentNo = "DocPrint";
-
-		final int adTableId = type.getBaseTableName() != null
-				? Services.get(IADTableDAO.class).retrieveTableId(type.getBaseTableName())
-				: -1;
-		ArchiveInfo info = new ArchiveInfo(
-				DocumentNo,
-				TableRecordReference.ofOrNull(adTableId, Record_ID));
-		info.setBpartnerId(standardReportInfo.getBpartnerId());
-		info.setCopies(standardReportInfo.getCopies());
-		info.setDocumentCopy(false);        // true prints "Copy" on second
-		info.setPrinterName(format.getPrinterName());
-
-		info.setPInstanceId(pInstanceId);
-
-		// Engine
-		return new ReportEngine(ctx, format, query, info, trxName);
-	}    // get
-
-
 	/**
 	 * Print Confirm.
 	 * Update Date Printed
@@ -1400,15 +1336,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 			return null;
 		}
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
-
-		for (StandardDocumentReportType type : StandardDocumentReportType.values())
-		{
-			if (tableName.equals(type.getBaseTableName()))
-			{
-				return type;
-			}
-		}
-
-		return null;
+		return StandardDocumentReportType.ofTableNameOrNull(tableName);
 	}
 }    // ReportEngine

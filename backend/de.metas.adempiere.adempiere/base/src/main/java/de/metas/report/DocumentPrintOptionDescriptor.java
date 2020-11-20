@@ -41,4 +41,6 @@ public class DocumentPrintOptionDescriptor
 
 	@NonNull
 	ITranslatableString description;
+
+	Boolean defaultValue;
 }

@@ -15,6 +15,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.report.DocumentReportService;
+import de.metas.report.PrintCopies;
 import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -74,7 +75,7 @@ public class HUReportExecutor
 
 	private final Properties ctx;
 	private int windowNo = Env.WINDOW_None;
-	private int numberOfCopies = 1;
+	private PrintCopies numberOfCopies = PrintCopies.ONE;
 	private Boolean printPreview = null;
 
 	private HUReportExecutor(final Properties ctx)
@@ -96,7 +97,15 @@ public class HUReportExecutor
 	 */
 	public HUReportExecutor numberOfCopies(final int numberOfCopies)
 	{
-		Check.assume(numberOfCopies > 0, "numberOfCopies > 0");
+		return numberOfCopies(PrintCopies.ofInt(numberOfCopies));
+	}
+
+	/**
+	 * Specify the number of copies. One means one printout. The default is one.
+	 */
+	public HUReportExecutor numberOfCopies(@NonNull final PrintCopies numberOfCopies)
+	{
+		Check.assume(numberOfCopies.isGreaterThanZero(), "numberOfCopies > 0");
 		this.numberOfCopies = numberOfCopies;
 		return this;
 	}
@@ -199,7 +208,7 @@ public class HUReportExecutor
 		if (huBPartnerIds.size() == 1)
 		{
 			final BPartnerId bpartnerId = huBPartnerIds.iterator().next();
-			final Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId.getRepoId());
+			final Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(bpartnerId).orElse(null);
 			return reportLanguage == null ? REPORT_LANG_NONE : reportLanguage.getAD_Language();
 		}
 		else
@@ -223,7 +232,7 @@ public class HUReportExecutor
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguageToUse)
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
-				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies())
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies().toInt())
 				.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction
@@ -243,7 +252,7 @@ public class HUReportExecutor
 		private final Properties ctx;
 		private final AdProcessId adProcessId;
 		private final int windowNo;
-		private final int copies;
+		private final PrintCopies copies;
 
 		private final Set<HuId> huIdsToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
 
@@ -265,7 +274,7 @@ public class HUReportExecutor
 				@NonNull final Properties ctx,
 				final AdProcessId adProcessId,
 				final int windowNo,
-				final int copies)
+				final PrintCopies copies)
 		{
 			this.ctx = ctx;
 			this.adProcessId = adProcessId;
@@ -353,7 +362,7 @@ public class HUReportExecutor
 		Properties ctx;
 		AdProcessId adProcessId;
 		int windowNo;
-		int copies;
+		PrintCopies copies;
 		Boolean printPreview;
 		String adLanguage;
 		boolean onErrorThrowException;
@@ -364,13 +373,13 @@ public class HUReportExecutor
 				@NonNull final Properties ctx,
 				@NonNull final AdProcessId adProcessId,
 				final int windowNo,
-				final int copies,
+				@NonNull final PrintCopies copies,
 				@Nullable final Boolean printPreview,
 				@NonNull final String adLanguage,
 				final boolean onErrorThrowException,
 				final ImmutableSet<HuId> huIdsToProcess)
 		{
-			Check.assume(copies > 0, "copies > 0");
+			Check.assume(copies.toInt() > 0, "copies > 0");
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 			Check.assumeNotEmpty(huIdsToProcess, "huIdsToProcess is not empty");
 

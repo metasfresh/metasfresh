@@ -27,12 +27,18 @@ import de.metas.report.PrintFormatId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.table.api.AdTableId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class BPartnerPrintFormat
 {
 	@NonNull DocTypeId docTypeId;
+
+	@Nullable
+	AdTableId adTableId;
 
 	@NonNull PrintFormatId printFormatId;
 }

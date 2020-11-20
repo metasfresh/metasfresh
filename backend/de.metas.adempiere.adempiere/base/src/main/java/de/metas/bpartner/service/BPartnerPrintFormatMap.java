@@ -29,6 +29,7 @@ import de.metas.document.DocTypeId;
 import de.metas.report.PrintFormatId;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.table.api.AdTableId;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,4 +56,14 @@ public class BPartnerPrintFormatMap
 		return Optional.ofNullable(byDocTypeId.get(docTypeId))
 				.map(BPartnerPrintFormat::getPrintFormatId);
 	}
+
+	public Optional<PrintFormatId> getFirstByTableId(@NonNull final AdTableId tableId)
+	{
+		return byDocTypeId.values()
+				.stream()
+				.filter(item -> AdTableId.equals(item.getAdTableId(), tableId))
+				.findFirst()
+				.map(BPartnerPrintFormat::getPrintFormatId);
+	}
+
 }

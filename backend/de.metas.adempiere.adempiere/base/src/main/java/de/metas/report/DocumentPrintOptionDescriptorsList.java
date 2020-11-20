@@ -35,16 +35,33 @@ public class DocumentPrintOptionDescriptorsList
 
 	ImmutableList<DocumentPrintOptionDescriptor> options;
 
-	private DocumentPrintOptionDescriptorsList(@NonNull List<DocumentPrintOptionDescriptor> options)
+	private DocumentPrintOptionDescriptorsList(@NonNull final List<DocumentPrintOptionDescriptor> options)
 	{
 		this.options = ImmutableList.copyOf(options);
 	}
 
-	public static DocumentPrintOptionDescriptorsList of(@NonNull List<DocumentPrintOptionDescriptor> options)
+	public static DocumentPrintOptionDescriptorsList of(@NonNull final List<DocumentPrintOptionDescriptor> options)
 	{
 		return !options.isEmpty()
 				? new DocumentPrintOptionDescriptorsList(options)
 				: EMPTY;
+	}
+
+	public DocumentPrintOptions getDefaults()
+	{
+		final DocumentPrintOptions.DocumentPrintOptionsBuilder builder = DocumentPrintOptions.builder();
+
+		for (final DocumentPrintOptionDescriptor option : options)
+		{
+			if (option.getDefaultValue() == null)
+			{
+				continue;
+			}
+
+			builder.option(option.getInternalName(), option.getDefaultValue());
+		}
+
+		return builder.build();
 	}
 
 }

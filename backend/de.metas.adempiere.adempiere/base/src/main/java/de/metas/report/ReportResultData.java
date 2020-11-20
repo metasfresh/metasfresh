@@ -1,5 +1,8 @@
 package de.metas.report;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.io.Files;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -7,6 +10,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
+import org.compiere.util.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,12 +41,12 @@ import java.io.IOException;
  * Tiny and hopefully helpful class to exchange reporting data.
  */
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonDeserialize(builder = ReportResultData.ReportResultDataBuilder.class)
 public class ReportResultData
 {
 	byte[] reportData;
-
 	String reportFilename;
-
 	String reportContentType;
 
 	@Builder
@@ -54,6 +58,27 @@ public class ReportResultData
 		this.reportData = reportData;
 		this.reportFilename = reportFilename;
 		this.reportContentType = reportContentType;
+	}
+
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class ReportResultDataBuilder
+	{
+	}
+
+	public static ReportResultData ofFile(@NonNull final File file)
+	{
+		final String reportFilename = file.getName();
+
+		return ReportResultData.builder()
+				.reportData(Util.readBytes(file))
+				.reportFilename(reportFilename)
+				.reportContentType(MimeType.getMimeType(reportFilename))
+				.build();
+	}
+
+	public boolean isEmpty()
+	{
+		return reportData == null || reportData.length <= 0;
 	}
 
 	public File writeToTemporaryFile(final String filenamePrefix)
@@ -86,5 +111,4 @@ public class ReportResultData
 			throw new AdempiereException("Failed creating temporary file with `" + filenamePrefix + "` prefix", ex);
 		}
 	}
-
 }

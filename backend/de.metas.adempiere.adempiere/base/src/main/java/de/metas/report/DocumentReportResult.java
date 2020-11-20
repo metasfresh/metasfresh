@@ -22,21 +22,58 @@
 
 package de.metas.report;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Language;
+import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.With;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
-public interface DocumentReportAdvisor
+@Value
+@Builder
+public class DocumentReportResult
 {
+	@Nullable
+	ReportResultData data;
+
+	@Nullable
+	TableRecordReference documentRef;
+
+	@Nullable
+	AdProcessId reportProcessId;
+	@Nullable
+	PInstanceId reportPInstanceId;
+
+	@Nullable
+	@With
+	BPartnerId bpartnerId;
+
+	@Nullable
+	Language language;
+
 	@NonNull
-	String getHandledTableName();
+	@Builder.Default
+	PrintCopies copies = PrintCopies.ONE;
 
-	StandardDocumentReportType getStandardDocumentReportType();
+	@Nullable
+	public String getFilename()
+	{
+		return data != null ? data.getReportFilename() : null;
+	}
 
-	@NonNull
-	DocumentReportInfo getDocumentReportInfo(
-			@NonNull TableRecordReference recordRef,
-			@Nullable PrintFormatId adPrintFormatToUseId);
+	public boolean isNoData()
+	{
+		return data == null || data.isEmpty();
+	}
 
+	@Nullable
+	public byte[] getDataAsByteArray()
+	{
+		return data != null ? data.getReportData() : null;
+	}
 }

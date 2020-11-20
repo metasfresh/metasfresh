@@ -66,7 +66,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -75,9 +74,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.print.ReportEngine;
 import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -684,7 +681,7 @@ public class MOrder extends X_C_Order implements IDocument
 	public File createPDF()
 	{
 		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-		final ReportResultData report = documentReportService.createStandardDocumentReport(getCtx(), StandardDocumentReportType.ORDER, getC_Order_ID());
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.ORDER, getC_Order_ID());
 		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}    // getPDF
 

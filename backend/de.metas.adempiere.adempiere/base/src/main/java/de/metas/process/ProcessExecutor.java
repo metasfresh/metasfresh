@@ -8,6 +8,8 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.organization.OrgId;
+import de.metas.report.DocumentReportRequest;
+import de.metas.report.DocumentReportResult;
 import de.metas.report.DocumentReportService;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
@@ -238,17 +240,19 @@ public final class ProcessExecutor
 				//
 				// Prepare report
 				final boolean isReport = pi.isReportingProcess();
-				final boolean hasProcessClass = !Check.isEmpty(pi.getClassName());
+				final boolean hasProcessClass = !Check.isBlank(pi.getClassName());
 				if (isReport && hasProcessClass)
 				{
-					// nothing do to, the Jasper process class implementation is responsible for triggering the report preview if any
+					// nothing to do, the Jasper process class implementation is responsible for triggering the report preview if any
 					return;
 				}
 				else if (isReport)
 				{
+					// TODO: check if this case is still valid. I think we always have a process classname set
 					final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-					documentReportService.createReport(pi);
+					final DocumentReportResult reportResult = documentReportService.createReport(toDocumentReportRequest(pi));
 					pi.getResult().setSummary("Report");
+					pi.getResult().setReportData(reportResult.getData());
 				}
 			}
 
@@ -318,6 +322,22 @@ public final class ProcessExecutor
 		{
 			pi.getResult().propagateErrorIfAny();
 		}
+	}
+
+	private static DocumentReportRequest toDocumentReportRequest(final ProcessInfo processInfo)
+	{
+		return DocumentReportRequest.builder()
+				.reportProcessId(processInfo.getAdProcessId())
+				.documentRef(processInfo.getRecordRefOrNull())
+				.clientId(processInfo.getClientId())
+				.orgId(processInfo.getOrgId())
+				.userId(processInfo.getUserId())
+				.roleId(processInfo.getRoleId())
+				.windowNo(processInfo.getWindowNo())
+				.tabNo(processInfo.getTabNo())
+				.printPreview(processInfo.isPrintPreview())
+				.reportLanguage(processInfo.getReportLanguage())
+				.build();
 	}
 
 	private IAutoCloseable switchContextIfNeeded()

@@ -23,17 +23,14 @@
 package de.metas.inout;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.Language;
-import de.metas.report.DefaultPrintFormatsRepository;
 import de.metas.report.DocumentReportAdvisor;
+import de.metas.report.DocumentReportAdvisorUtil;
 import de.metas.report.PrintFormatId;
-import de.metas.report.StandardDocumentReportInfo;
+import de.metas.report.DocumentReportInfo;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,23 +43,15 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
-import static de.metas.report.DocumentReportAdvisorUtil.getDocumentCopies;
-import static de.metas.report.DocumentReportAdvisorUtil.getReportProcessIdByPrintFormatId;
-
 @Component
 public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 {
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IBPartnerBL bpartnerBL;
-	private final DefaultPrintFormatsRepository defaultPrintFormatsRepository;
+	private final DocumentReportAdvisorUtil util;
 
-	public InOutDocumentReportAdvisor(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final DefaultPrintFormatsRepository defaultPrintFormatsRepository)
+	public InOutDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util)
 	{
-		this.bpartnerBL = bpartnerBL;
-		this.defaultPrintFormatsRepository = defaultPrintFormatsRepository;
+		this.util = util;
 	}
 
 	@Override
@@ -78,43 +67,37 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 	}
 
 	@Override
-	public @NonNull StandardDocumentReportInfo getDocumentReportInfo(
-			final @NonNull StandardDocumentReportType type,
-			final int recordId,
+	public @NonNull DocumentReportInfo getDocumentReportInfo(
+			@NonNull final TableRecordReference recordRef,
 			@Nullable final PrintFormatId adPrintFormatToUseId)
 	{
-		Check.assumeEquals(type, StandardDocumentReportType.SHIPMENT, "type");
-
-		final InOutId inoutId = InOutId.ofRepoId(recordId);
+		final InOutId inoutId = recordRef.getIdAssumingTableName(I_M_InOut.Table_Name, InOutId::ofRepoId);
 		final I_M_InOut inout = inoutBL.getById(inoutId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
-		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
+		final I_C_BPartner bpartner = util.getBPartnerById(bpartnerId);
 
 		final DocTypeId docTypeId = extractDocTypeId(inout);
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final I_C_DocType docType = util.getDocTypeById(docTypeId);
 
 		final ClientId clientId = ClientId.ofRepoId(inout.getAD_Client_ID());
 
 		final PrintFormatId printFormatId = CoalesceUtil.coalesceSuppliers(
 				() -> adPrintFormatToUseId,
-				() -> bpartnerBL.getPrintFormats(bpartnerId).getPrintFormatIdByDocTypeId(docTypeId).orElse(null),
+				() -> util.getBPartnerPrintFormats(bpartnerId).getPrintFormatIdByDocTypeId(docTypeId).orElse(null),
 				() -> PrintFormatId.ofRepoIdOrNull(docType.getAD_PrintFormat_ID()),
-				() -> defaultPrintFormatsRepository.getByClientId(clientId).getShipmentPrintFormatId());
+				() -> util.getDefaultPrintFormats(clientId).getShipmentPrintFormatId());
 		if (printFormatId == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_PrintFormat_ID@");
 		}
 
-		final int documentCopies = getDocumentCopies(bpartner, docType);
+		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
 
-		final String adLanguage = bpartner.getAD_Language();
-		final Language language = Check.isNotBlank(adLanguage) ? Language.getLanguage(adLanguage) : null;
-
-		return StandardDocumentReportInfo.builder()
+		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_M_InOut.Table_Name, inoutId))
 				.printFormatId(printFormatId)
-				.reportProcessId(getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(documentCopies)
+				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
+				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(inout.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
@@ -129,6 +112,9 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 		{
 			return docTypeId;
 		}
-		throw new AdempiereException("No document type set");
+		else
+		{
+			throw new AdempiereException("No document type set");
+		}
 	}
 }

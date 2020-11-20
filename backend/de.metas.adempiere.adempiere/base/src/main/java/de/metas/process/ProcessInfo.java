@@ -1370,7 +1370,7 @@ public final class ProcessInfo implements Serializable
 		 *
 		 * @param reportLanguage optional report language
 		 */
-		public ProcessInfoBuilder setReportLanguage(final Language reportLanguage)
+		public ProcessInfoBuilder setReportLanguage(@Nullable final Language reportLanguage)
 		{
 			this.reportLanguage = reportLanguage;
 			return this;

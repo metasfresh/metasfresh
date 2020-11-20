@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 public class PrintFormatId implements RepoIdAware
@@ -42,6 +43,11 @@ public class PrintFormatId implements RepoIdAware
 	public static PrintFormatId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new PrintFormatId(repoId) : null;
+	}
+
+	public static Optional<PrintFormatId> optionalOfRepoId(@Nullable final Integer repoId)
+	{
+		return repoId != null ? Optional.ofNullable(ofRepoIdOrNull(repoId)) : Optional.empty();
 	}
 
 	int repoId;

@@ -74,6 +74,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -1677,6 +1678,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return BPartnerPrintFormat.builder()
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
+				.adTableId(AdTableId.ofRepoIdOrNull(record.getAD_Table_ID()))
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
 	}

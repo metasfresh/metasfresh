@@ -20,23 +20,56 @@
  * #L%
  */
 
-package de.metas.report;
+package org.adempiere.archive.api;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Language;
+import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.Properties;
 
-public interface DocumentReportAdvisor
+@Value
+@Builder
+public class ArchiveRequest
 {
+	byte[] data;
+
+	/**
+	 * if true, the document will be archived anyway (even if auto-archive is not activated)
+	 */
+	boolean force;
+
+	/**
+	 * save I_AD_Archive record
+	 */
+	boolean save;
+
 	@NonNull
-	String getHandledTableName();
+	@Builder.Default
+	Properties ctx = Env.getCtx();
 
-	StandardDocumentReportType getStandardDocumentReportType();
+	String trxName;
 
-	@NonNull
-	DocumentReportInfo getDocumentReportInfo(
-			@NonNull TableRecordReference recordRef,
-			@Nullable PrintFormatId adPrintFormatToUseId);
+	// ported from ArchiveInfo
+	boolean isReport;
+	@Nullable
+	TableRecordReference recordRef;
+	@Nullable
+	AdProcessId processId;
+	@Nullable
+	PInstanceId pinstanceId;
+	@Nullable
+	String archiveName;
+	@Nullable
+	BPartnerId bpartnerId;
 
+	@Nullable
+	Language language;
 }

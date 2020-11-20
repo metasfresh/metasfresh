@@ -25,6 +25,7 @@ package org.adempiere.archive.api;
 import java.io.InputStream;
 import java.util.Optional;
 
+import de.metas.report.PrintCopies;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -33,6 +34,8 @@ import org.compiere.print.layout.LayoutEngine;
 
 import de.metas.process.ProcessInfo;
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 /**
  * Archive related business logic
@@ -48,20 +51,31 @@ public interface IArchiveBL extends ISingletonService
 	 *
 	 * Task https://github.com/metasfresh/metasfresh/issues/1240
 	 */
-	ModelDynAttributeAccessor<I_AD_Archive, Integer> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(Integer.class);
+	ModelDynAttributeAccessor<I_AD_Archive, PrintCopies> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(PrintCopies.class);
 	/**
 	 * Archives given <code>data</code>.
 	 *
 	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
+	 *
+	 * @deprecated Please use {@link #archive(ArchiveRequest)}
 	 */
+	@Nullable
+	@Deprecated
 	I_AD_Archive archive(byte[] data, ArchiveInfo archiveInfo, boolean force, String trxName);
 
 	/**
 	 * Like {@link #archive(LayoutEngine, ArchiveInfo, boolean, String)}, but allows to only create the <code>AD_Archive</code> without saving the record.
 	 *
 	 * Task http://dewiki908/mediawiki/index.php/09752_For_Umsatzreport_and_Mengenstatistiken%2C_two_printing_queue..._%28107420055849%29
+	 *
+	 * @deprecated Please use {@link #archive(ArchiveRequest)}
 	 */
+	@Nullable
+	@Deprecated
 	I_AD_Archive archive(byte[] data, ArchiveInfo archiveInfo, boolean force, boolean save, String trxName);
+
+	@NonNull
+	ArchiveResult archive(@NonNull ArchiveRequest request);
 
 	/**
 	 * Converts to PDF and archives given <code>layout</code>.
@@ -70,20 +84,6 @@ public interface IArchiveBL extends ISingletonService
 	 */
 	@Deprecated
 	I_AD_Archive archive(LayoutEngine layout, ArchiveInfo archiveInfo, boolean force, String trxName);
-
-	/**
-	 * Do we need to Auto-Archive ?
-	 *
-	 * @return true if we need to auto-archive
-	 */
-	boolean isToArchive(ArchiveInfo archiveInfo);
-
-	/**
-	 * Do we need to Auto-Archive ?
-	 *
-	 * @return true if we need to auto-archive
-	 */
-	boolean isToArchive(ProcessInfo processInfo);
 
 	String getContentType(I_AD_Archive archive);
 

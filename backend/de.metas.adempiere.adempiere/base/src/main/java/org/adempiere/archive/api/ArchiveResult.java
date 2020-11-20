@@ -20,23 +20,24 @@
  * #L%
  */
 
-package de.metas.report;
+package org.adempiere.archive.api;
 
-import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import lombok.Builder;
+import lombok.Value;
+import org.compiere.model.I_AD_Archive;
 
 import javax.annotation.Nullable;
 
-public interface DocumentReportAdvisor
+@Value
+@Builder
+public class ArchiveResult
 {
-	@NonNull
-	String getHandledTableName();
+	public static final ArchiveResult EMPTY = ArchiveResult.builder().build();
 
-	StandardDocumentReportType getStandardDocumentReportType();
+	@Nullable
+	I_AD_Archive archiveRecord;
 
-	@NonNull
-	DocumentReportInfo getDocumentReportInfo(
-			@NonNull TableRecordReference recordRef,
-			@Nullable PrintFormatId adPrintFormatToUseId);
+	byte[] data;
 
+	public boolean isNoArchive() { return archiveRecord == null; }
 }

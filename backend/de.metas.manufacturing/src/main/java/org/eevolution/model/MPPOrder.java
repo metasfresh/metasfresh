@@ -62,7 +62,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
-import org.compiere.print.ReportEngine;
 import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -76,7 +75,6 @@ import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
@@ -505,7 +503,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public File createPDF()
 	{
 		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
-		final ReportResultData report = documentReportService.createStandardDocumentReport(getCtx(), StandardDocumentReportType.MANUFACTURING_ORDER, getPP_Order_ID());
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.MANUFACTURING_ORDER, getPP_Order_ID());
 		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}
 

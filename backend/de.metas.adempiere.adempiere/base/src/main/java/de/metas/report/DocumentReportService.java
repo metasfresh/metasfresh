@@ -22,18 +22,24 @@
 
 package de.metas.report;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.server.ReportConstants;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -54,116 +60,159 @@ public class DocumentReportService
 	private final DocTypePrintOptionsRepository docTypePrintOptionsRepository;
 
 	private final ImmutableMap<StandardDocumentReportType, DocumentReportAdvisor> advisorsByType;
+	private final ImmutableMap<String, DocumentReportAdvisor> advisorsByTableName;
 	private final FallbackDocumentReportAdvisor fallbackAdvisor;
+	private final DocumentReportAdvisorUtil util;
 
-	DocumentReportService(
+	public DocumentReportService(
 			@NonNull final List<DocumentReportAdvisor> advisors,
 			@NonNull final DocumentPrintOptionDescriptorsRepository documentPrintOptionDescriptorsRepository,
-			@NonNull final DocTypePrintOptionsRepository docTypePrintOptionsRepository)
+			@NonNull final DocTypePrintOptionsRepository docTypePrintOptionsRepository,
+			@NonNull final DocumentReportAdvisorUtil util)
 	{
 		this.advisorsByType = Maps.uniqueIndex(advisors, DocumentReportAdvisor::getStandardDocumentReportType);
-		this.fallbackAdvisor = new FallbackDocumentReportAdvisor();
+		this.advisorsByTableName = Maps.uniqueIndex(advisors, DocumentReportAdvisor::getHandledTableName);
+		this.fallbackAdvisor = new FallbackDocumentReportAdvisor(util);
 		logger.info("Advisors: {}", advisors);
 
 		this.documentPrintOptionDescriptorsRepository = documentPrintOptionDescriptorsRepository;
 		this.docTypePrintOptionsRepository = docTypePrintOptionsRepository;
+		this.util = util;
 	}
 
+	@NonNull
 	private DocumentReportAdvisor getAdvisorByType(@NonNull final StandardDocumentReportType type)
 	{
 		final DocumentReportAdvisor advisor = advisorsByType.get(type);
 		return advisor != null ? advisor : fallbackAdvisor;
 	}
 
-	public void createReport(@NonNull final ProcessInfo callerProcessInfo)
+	@NonNull
+	private DocumentReportAdvisor getAdvisorByTableName(@NonNull final String tableName)
 	{
-		final ReportResultData documentReportResult = createReport(toDocumentReportRequest(callerProcessInfo));
-
-		final ProcessExecutionResult callerProcessResult = callerProcessInfo.getResult();
-		callerProcessResult.setReportData(
-				documentReportResult.getReportData(),
-				documentReportResult.getReportFilename(),
-				documentReportResult.getReportContentType());
+		final DocumentReportAdvisor advisor = advisorsByTableName.get(tableName);
+		return advisor != null ? advisor : fallbackAdvisor;
 	}
 
-	private static DocumentReportRequest toDocumentReportRequest(final ProcessInfo processInfo)
-	{
-		return DocumentReportRequest.builder()
-				.callingFromProcessId(processInfo.getAdProcessId())
-				.documentRef(processInfo.getRecordRefOrNull())
-				.clientId(processInfo.getClientId())
-				.orgId(processInfo.getOrgId())
-				.userId(processInfo.getUserId())
-				.roleId(processInfo.getRoleId())
-				.windowNo(processInfo.getWindowNo())
-				.tabNo(processInfo.getTabNo())
-				.printPreview(processInfo.isPrintPreview())
-				.reportLanguage(processInfo.getReportLanguage())
-				.build();
-	}
-
-	public ReportResultData createStandardDocumentReport(
+	@Nullable
+	@Deprecated
+	public ReportResultData createStandardDocumentReportData(
 			@NonNull final Properties ctx,
 			@NonNull final StandardDocumentReportType type,
 			final int recordId)
 	{
-		final String tableName = type.getBaseTableName();
-		if (tableName == null)
-		{
-			throw new AdempiereException("Cannot determine table name for " + type);
-		}
-
-		final StandardDocumentReportInfo standardDocumentReportInfo = getDocumentReportInfo(
-				type,
-				recordId,
-				null // adPrintFormatToUseId
-		);
-
-		final DocumentReportRequest request = DocumentReportRequest.builder()
-				.documentRef(TableRecordReference.of(tableName, recordId))
+		final DocumentReportResult result = createReport(DocumentReportRequest.builder()
+				.documentRef(TableRecordReference.of(type.getBaseTableName(), recordId))
 				.clientId(Env.getClientId(ctx))
 				.orgId(Env.getOrgId(ctx))
 				.userId(Env.getLoggedUserId(ctx))
 				.roleId(Env.getLoggedRoleId(ctx))
 				.printPreview(true)
-				.build();
+				.build());
 
-		return startReportProcess(request, standardDocumentReportInfo.getReportProcessId());
+		return result.getData();
 	}
 
-	public ReportResultData createReport(@NonNull final DocumentReportRequest request)
+	public DocumentReportResult createReport(@NonNull final DocumentReportRequest request)
 	{
-		final AdProcessId callingFromProcessId = request.getCallingFromProcessId();
-		final StandardDocumentReportType standardDocumentReportType = StandardDocumentReportType.ofProcessIdOrNull(callingFromProcessId);
+		final StandardDocumentReportType standardDocumentReportType = computeStandardDocumentReportTypeOrNull(request);
+
+		//
+		final DocumentReportAdvisor advisor;
+		DocumentReportRequest requestEffective = request;
 		if (standardDocumentReportType != null)
 		{
-			final StandardDocumentReportInfo reportInfo = getDocumentReportInfo(
-					standardDocumentReportType,
-					request.getDocumentRef().getRecord_ID(),
-					null // adPrintFormatToUseId
-			);
-
-			final DocumentPrintOptions printOptions = request.getPrintOptions()
-					.mergeWithFallback(reportInfo.getPrintOptions());
-
-			return startReportProcess(
-					request.withPrintOptions(printOptions),
-					reportInfo.getReportProcessId());
+			advisor = getAdvisorByType(standardDocumentReportType);
 		}
-		else if (callingFromProcessId != null)
+		else if (requestEffective.getReportProcessId() != null)
 		{
-			// TODO: handle printing options
-			return startReportProcess(request, callingFromProcessId);
+			advisor = getAdvisorByTableName(requestEffective.getDocumentRef().getTableName());
+		}
+		else if (requestEffective.getPrintFormatIdToUse() != null)
+		{
+			final AdProcessId reportProcessId = util.getReportProcessIdByPrintFormatId(requestEffective.getPrintFormatIdToUse());
+			requestEffective = requestEffective.withReportProcessId(reportProcessId);
+
+			advisor = getAdvisorByTableName(requestEffective.getDocumentRef().getTableName());
 		}
 		else
 		{
-			throw new AdempiereException("No reporting process found for " + request);
+			// TODO retrieve last archive
+			throw new AdempiereException("No reporting process found for " + requestEffective);
 		}
+
+		//
+		final DocumentReportInfo reportInfo = getDocumentReportInfo(
+				advisor,
+				requestEffective.getDocumentRef(),
+				requestEffective.getPrintFormatIdToUse());
+
+		requestEffective = requestEffective
+				.withPrintOptionsFallback(reportInfo.getPrintOptions())
+				.withPrintOptionsFallback(documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportInfo.getReportProcessId()).getDefaults())
+				.withReportProcessId(reportInfo.getReportProcessId())
+				.withReportLanguage(reportInfo.getLanguage());
+
+		//
+		final DocumentReportResult report = executeReportProcessAndComputeResult(requestEffective);
+		return report.withBpartnerId(reportInfo.getBpartnerId());
 	}
 
-	private ReportResultData startReportProcess(
-			@NonNull final DocumentReportRequest request,
-			@NonNull final AdProcessId reportProcessId)
+	@Nullable
+	private static StandardDocumentReportType computeStandardDocumentReportTypeOrNull(@NonNull final DocumentReportRequest request)
+	{
+		if (request.getReportProcessId() != null)
+		{
+			final StandardDocumentReportType standardDocumentReportType = StandardDocumentReportType.ofProcessIdOrNull(request.getReportProcessId());
+			if (standardDocumentReportType != null)
+			{
+				return standardDocumentReportType;
+			}
+		}
+
+		if (request.getDocumentRef() != null)
+		{
+			final StandardDocumentReportType standardDocumentReportType = StandardDocumentReportType.ofTableNameOrNull(request.getDocumentRef().getTableName());
+			if (standardDocumentReportType != null)
+			{
+				return standardDocumentReportType;
+			}
+		}
+
+		return null;
+	}
+
+	@NonNull
+	private DocumentReportResult executeReportProcessAndComputeResult(@NonNull final DocumentReportRequest request)
+	{
+		final ExecuteReportProcessResult processResult = executeReportProcess(request);
+
+		return DocumentReportResult.builder()
+				.data(processResult.getReportData())
+				.reportPInstanceId(processResult.getReportPInstanceId())
+				//
+				.documentRef(request.getDocumentRef())
+				.reportProcessId(request.getReportProcessId())
+				.language(request.getReportLanguage())
+				.copies(request.getPrintCopies())
+				//
+				.build();
+	}
+
+	@Value
+	@Builder
+	@VisibleForTesting
+	protected static class ExecuteReportProcessResult
+	{
+		@Nullable
+		ReportResultData reportData;
+
+		@NonNull
+		PInstanceId reportPInstanceId;
+	}
+
+	@VisibleForTesting
+	protected ExecuteReportProcessResult executeReportProcess(@NonNull final DocumentReportRequest request)
 	{
 		final ProcessExecutionResult reportProcessResult = ProcessInfo.builder()
 				//
@@ -176,11 +225,11 @@ public class DocumentReportService
 				.setTabNo(request.getTabNo())
 				.setPrintPreview(request.isPrintPreview())
 				//
-				.setAD_Process_ID(reportProcessId)
+				.setAD_Process_ID(request.getReportProcessId())
 				.setRecord(request.getDocumentRef())
 				.setReportLanguage(request.getReportLanguage())
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(request.getClientId(), request.getOrgId()))
-				// TODO .addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getPrintCopies().toInt())
 				.addParameters(toProcessInfoParameters(request.getPrintOptions()))
 				//
 				// Execute Process
@@ -192,10 +241,9 @@ public class DocumentReportService
 		// Throw exception in case of failure
 		reportProcessResult.propagateErrorIfAny();
 
-		return ReportResultData.builder()
-				.reportFilename(reportProcessResult.getReportFilename())
-				.reportContentType(reportProcessResult.getReportContentType())
+		return ExecuteReportProcessResult.builder()
 				.reportData(reportProcessResult.getReportData())
+				.reportPInstanceId(reportProcessResult.getPinstanceId())
 				.build();
 	}
 
@@ -216,44 +264,50 @@ public class DocumentReportService
 		return result.build();
 	}
 
-	@NonNull
-	public StandardDocumentReportInfo getDocumentReportInfo(
-			@NonNull final AdProcessId printProcessId,
+	public DocumentPrintOptionsIncludingDescriptors getDocumentPrintOptionsIncludingDescriptors(
+			@NonNull final AdProcessId reportProcessId,
 			@NonNull final TableRecordReference recordRef)
 	{
-		final StandardDocumentReportType type = StandardDocumentReportType.ofProcessIdOrNull(printProcessId);
+		final StandardDocumentReportType type = StandardDocumentReportType.ofProcessIdOrNull(reportProcessId);
 		if (type != null)
 		{
-			return getDocumentReportInfo(type, recordRef.getRecord_ID(), null);
+			final DocumentReportAdvisor advisor = getAdvisorByType(type);
+			final DocumentReportInfo reportInfo = getDocumentReportInfo(advisor, recordRef, null);
+
+			final DocumentPrintOptionDescriptorsList printOptionDescriptors = documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportInfo.getReportProcessId());
+			final DocumentPrintOptions printOptions = reportInfo.getPrintOptions()
+					.mergeWithFallback(printOptionDescriptors.getDefaults());
+
+			return DocumentPrintOptionsIncludingDescriptors.builder()
+					.descriptors(printOptionDescriptors)
+					.values(printOptions)
+					.build();
 		}
 		else
 		{
-			// TODO implement
-			throw new UnsupportedOperationException();
+			final DocumentPrintOptionDescriptorsList printOptionDescriptors = documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportProcessId);
+			return DocumentPrintOptionsIncludingDescriptors.builder()
+					.descriptors(printOptionDescriptors)
+					.values(printOptionDescriptors.getDefaults())
+					.build();
 		}
 	}
 
-	@NonNull
-	public StandardDocumentReportInfo getDocumentReportInfo(
-			@NonNull final StandardDocumentReportType type,
-			final int recordId,
-			@Nullable final PrintFormatId adPrintFormatToUseId)
+	private DocumentReportInfo getDocumentReportInfo(
+			@NonNull final DocumentReportAdvisor advisor,
+			@NonNull final TableRecordReference recordRef,
+			@Nullable final PrintFormatId printFormatIdToUse)
 	{
-		final StandardDocumentReportInfo reportInfo = getAdvisorByType(type).getDocumentReportInfo(type, recordId, adPrintFormatToUseId);
+		final DocumentReportInfo reportInfo = advisor.getDocumentReportInfo(recordRef, printFormatIdToUse);
 
-		final DocumentPrintOptionDescriptorsList printOptionDescriptors = documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportInfo.getReportProcessId());
+		return reportInfo.withPrintOptionsFallback(getDocTypePrintOptions(reportInfo.getDocTypeId()));
+	}
 
-		DocumentPrintOptions printOptions = reportInfo.getPrintOptions();
-		if (reportInfo.getDocTypeId() != null)
-		{
-			final DocumentPrintOptions docTypePrintOptions = docTypePrintOptionsRepository.getByDocTypeId(reportInfo.getDocTypeId());
-			printOptions = printOptions.mergeWithFallback(docTypePrintOptions);
-		}
-
-		return reportInfo.toBuilder()
-				.printOptionsDescriptor(printOptionDescriptors)
-				.printOptions(printOptions)
-				.build();
+	private DocumentPrintOptions getDocTypePrintOptions(@Nullable final DocTypeId docTypeId)
+	{
+		return docTypeId != null
+				? docTypePrintOptionsRepository.getByDocTypeId(docTypeId)
+				: DocumentPrintOptions.NONE;
 	}
 
 	public static String getBarcodeServlet(

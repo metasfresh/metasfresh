@@ -22,38 +22,20 @@
 
 package de.metas.report;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
 
 @Value
-@Builder(toBuilder = true)
-public class StandardDocumentReportInfo
+@Builder
+public class PrintFormat
 {
-	@NonNull TableRecordReference recordRef;
+	@NonNull
+	PrintFormatId id;
 
-	@NonNull PrintFormatId printFormatId;
+	@Nullable
 	AdProcessId reportProcessId;
-
-	int copies;
-
-	String documentNo;
-	BPartnerId bpartnerId;
-	DocTypeId docTypeId;
-	Language language;
-
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptionDescriptorsList printOptionsDescriptor = DocumentPrintOptionDescriptorsList.EMPTY;
-
-	@With
-	@NonNull
-	@Builder.Default
-	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
 }

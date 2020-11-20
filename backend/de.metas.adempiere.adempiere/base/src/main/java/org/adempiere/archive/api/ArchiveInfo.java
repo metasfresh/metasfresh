@@ -25,6 +25,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
+import de.metas.report.PrintCopies;
 import de.metas.util.Check;
 import lombok.Data;
 import lombok.NonNull;
@@ -36,7 +37,7 @@ import javax.annotation.Nullable;
 public class ArchiveInfo
 {
 	private boolean withDialog = false;
-	private int copies = 1;
+	private PrintCopies copies = PrintCopies.ONE;
 	private boolean isDocumentCopy = false;
 	private String printerName = null;
 	//
@@ -52,9 +53,9 @@ public class ArchiveInfo
 
 	public ArchiveInfo(@NonNull final ProcessInfo processInfo)
 	{
-		this.name = processInfo.getTitle();
-		this.processId = processInfo.getAdProcessId();
+		this.name = normalizeName(processInfo.getTitle());
 		this.recordRef = processInfo.getRecordRefOrNull();
+		this.processId = processInfo.getAdProcessId();
 		this.pInstanceId = processInfo.getPinstanceId();
 	}
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.printing.IMassPrintingService;
+import de.metas.report.PrintCopies;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -213,7 +214,7 @@ public class DerKurierClient implements ShipperGatewayClient
 					.setRecord(deliveryOrderTableRecordReference) // we want the jasper to be archived and attached to the delivery order
 					.addParameter(
 							IMassPrintingService.PARAM_PrintCopies,
-							1)
+							PrintCopies.ONE.toInt())
 					.addParameter(
 							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,
 							deliveryOrderTableRecordReference.getRecord_ID())

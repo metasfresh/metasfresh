@@ -285,7 +285,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		if (docOutboundLogRecord.getC_BPartner_ID() > 0)
 		{
-			final Language bPartnerLanguage = Services.get(IBPartnerBL.class).getLanguageForModel(docOutboundLogRecord);
+			final Language bPartnerLanguage = Services.get(IBPartnerBL.class).getLanguageForModel(docOutboundLogRecord).orElse(null);
 			if (bPartnerLanguage != null)
 			{
 				Loggables.addLog(

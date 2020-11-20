@@ -26,12 +26,11 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentPrintOptionDescriptor;
-import de.metas.report.DocumentPrintOptionDescriptorsList;
-import de.metas.report.DocumentPrintOptions;
+import de.metas.report.DocumentPrintOptionsIncludingDescriptors;
 import de.metas.report.DocumentReportRequest;
+import de.metas.report.DocumentReportResult;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
-import de.metas.report.StandardDocumentReportInfo;
 import de.metas.ui.web.print.json.JSONDocumentPrintingOption;
 import de.metas.ui.web.print.json.JSONDocumentPrintingOptions;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -72,8 +71,8 @@ public class WebuiDocumentPrintService
 		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 
-		return documentReportService.createReport(DocumentReportRequest.builder()
-				.callingFromProcessId(printProcessId)
+		final DocumentReportResult result = documentReportService.createReport(DocumentReportRequest.builder()
+				.reportProcessId(printProcessId)
 				.documentRef(recordRef)
 				.clientId(document.getClientId())
 				.orgId(document.getOrgId())
@@ -84,6 +83,8 @@ public class WebuiDocumentPrintService
 				.printOptions(request.getPrintOptions())
 				//.setJRDesiredOutputType(OutputType.PDF)
 				.build());
+
+		return result.getData();
 	}
 
 	public JSONDocumentPrintingOptions getPrintingOptions(
@@ -94,24 +95,23 @@ public class WebuiDocumentPrintService
 		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 
-		final StandardDocumentReportInfo info = documentReportService.getDocumentReportInfo(printProcessId, recordRef);
+		final DocumentPrintOptionsIncludingDescriptors printOptions = documentReportService.getDocumentPrintOptionsIncludingDescriptors(printProcessId, recordRef);
 
-		return toJSONDocumentPrintingOptions(info.getPrintOptionsDescriptor(), info.getPrintOptions(), adLanguage);
+		return toJSONDocumentPrintingOptions(printOptions, adLanguage);
 	}
 
 	private static JSONDocumentPrintingOptions toJSONDocumentPrintingOptions(
-			@NonNull final DocumentPrintOptionDescriptorsList printOptionsDescriptor,
-			@NonNull final DocumentPrintOptions printOptions,
+			@NonNull DocumentPrintOptionsIncludingDescriptors printOptions,
 			@NonNull final String adLanguage)
 	{
 		final ArrayList<JSONDocumentPrintingOption> jsonOptionsList = new ArrayList<>();
 
-		for (final DocumentPrintOptionDescriptor option : printOptionsDescriptor.getOptions())
+		for (final DocumentPrintOptionDescriptor option : printOptions.getOptionDescriptors())
 		{
 			final String caption = option.getName().translate(adLanguage);
 			final String description = option.getDescription().translate(adLanguage);
 			final String internalName = option.getInternalName();
-			final OptionalBoolean value = printOptions.getOption(internalName);
+			final OptionalBoolean value = printOptions.getOptionValue(internalName);
 
 			jsonOptionsList.add(JSONDocumentPrintingOption.builder()
 					.caption(caption)
