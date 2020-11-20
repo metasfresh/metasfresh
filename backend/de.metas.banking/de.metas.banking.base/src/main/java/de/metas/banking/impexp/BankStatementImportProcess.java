@@ -242,7 +242,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	@VisibleForTesting
 	static void computeUpdateLineAmts(@NonNull final I_I_BankStatement importRecord)
 	{
-		final String amtFormat = importRecord.getAmtFormat();
+		final String amtFormat = getAmtFormat(importRecord);
 
 		if (X_I_BankStatement.AMTFORMAT_AmountPlusIndicator.equals(amtFormat))
 		{
@@ -292,5 +292,34 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 				.add(importRecord.getLineDescriptionExtra_4())
 				.toString();
 		importRecord.setLineDescription(lineDescription);
+	}
+
+	/**
+	 * @return {@link I_I_BankStatement#getAmtFormat()} if exists. Try to autodetect if not exists.
+	 */
+	@NonNull
+	private static String getAmtFormat(@NonNull final I_I_BankStatement importRecord)
+	{
+		if (Check.isNotBlank(importRecord.getAmtFormat()))
+		{
+			//noinspection ConstantConditions
+			return importRecord.getAmtFormat();
+		}
+
+		// try to autodetect the current format
+		if (Check.isNotBlank(importRecord.getDebitOrCreditIndicator()) && importRecord.getDebitOrCreditAmt().signum() != 0)
+		{
+			return X_I_BankStatement.AMTFORMAT_AmountPlusIndicator;
+		}
+		else if (importRecord.getDebitStmtAmt().signum() != 0 || importRecord.getCreditStmtAmt().signum() != 0)
+		{
+			return X_I_BankStatement.AMTFORMAT_DebitPlusCredit;
+		}
+		else if (importRecord.getTrxAmt().signum() != 0 || importRecord.getStmtAmt().signum() != 0)
+		{
+			return X_I_BankStatement.AMTFORMAT_Straight;
+		}
+
+		throw new AdempiereException("Invalid Amount format.");
 	}
 }
