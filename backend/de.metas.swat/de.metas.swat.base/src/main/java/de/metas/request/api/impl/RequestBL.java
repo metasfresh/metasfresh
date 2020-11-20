@@ -1,20 +1,6 @@
 package de.metas.request.api.impl;
 
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.QualityNoteId;
@@ -22,6 +8,7 @@ import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.request.RequestTypeId;
@@ -33,6 +20,21 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_R_Request;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -58,6 +60,9 @@ import lombok.NonNull;
 
 public class RequestBL implements IRequestBL
 {
+	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@VisibleForTesting
 	protected static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
 
@@ -138,7 +143,6 @@ public class RequestBL implements IRequestBL
 
 	private RequestTypeId getRequestTypeId(final SOTrx soTrx)
 	{
-		final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 		return soTrx.isSales()
 				? requestTypeDAO.retrieveCustomerRequestTypeId()
 				: requestTypeDAO.retrieveVendorRequestTypeId();
@@ -161,6 +165,25 @@ public class RequestBL implements IRequestBL
 				.partnerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.userId(UserId.ofRepoIdOrNull(ddOrder.getAD_User_ID()))
 				.dateDelivered(TimeUtil.asZonedDateTime(ddOrder.getDatePromised()))
+				.build();
+
+		return createRequest(requestCandidate);
+	}
+
+	@Override
+	public I_R_Request createRequestFromOrder(@NonNull final I_C_Order order)
+	{
+		final Optional<RequestTypeId> requestType = orderBL.getRequestTypeForCreatingNewRequestsAfterComplete(order);
+
+		final RequestCandidate requestCandidate = RequestCandidate.builder()
+				.summary(order.getDescription() != null ? order.getDescription() : " ")
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
+				.recordRef(TableRecordReference.of(order))
+				.requestTypeId(requestType.orElseGet(() -> getRequestTypeId(SOTrx.ofBoolean(order.isSOTrx()))))
+				.partnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.userId(UserId.ofRepoIdOrNull(order.getAD_User_ID()))
+				.dateDelivered(TimeUtil.asZonedDateTime(order.getDatePromised()))
 				.build();
 
 		return createRequest(requestCandidate);
