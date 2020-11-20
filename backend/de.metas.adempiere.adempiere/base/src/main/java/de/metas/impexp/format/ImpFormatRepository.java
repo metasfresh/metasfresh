@@ -69,6 +69,8 @@ public class ImpFormatRepository
 				.manualImport(impFormatRecord.isManualImport())
 				.importTableDescriptor(importTableDescriptor)
 				.columns(columns)
+				.charset(impFormatRecord.getFileCharset())
+				.skipFirstNRows(impFormatRecord.getSkipFirstNRows())
 				.build();
 	}
 

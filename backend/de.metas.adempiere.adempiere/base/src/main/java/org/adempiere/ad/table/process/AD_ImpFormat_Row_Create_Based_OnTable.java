@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ImpFormat;
@@ -54,7 +55,7 @@ public class AD_ImpFormat_Row_Create_Based_OnTable extends JavaProcess
 	{
 		final I_AD_ImpFormat impFormat = getRecord(I_AD_ImpFormat.class);
 
-		final I_AD_Table table = impFormat.getAD_Table();
+		final I_AD_Table table = tableDAO.retrieveTable(AdTableId.ofRepoId(impFormat.getAD_Table_ID()));
 		final List<I_AD_Column> columns = tableDAO.retrieveColumnsForTable(table);
 		final AtomicInteger index = new AtomicInteger(1);
 		columns.stream().filter(column -> !DisplayType.isLookup(column.getAD_Reference_ID()))
