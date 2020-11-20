@@ -1,20 +1,6 @@
 package de.metas.banking.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.sql.ResultSet;
-import java.time.LocalDate;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_I_BankStatement;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.X_I_BankStatement;
-import org.compiere.util.TimeUtil;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -23,6 +9,7 @@ import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.impexp.processing.IImportInterceptor;
@@ -33,8 +20,23 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_I_BankStatement;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_I_BankStatement;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.util.Properties;
+import java.util.StringJoiner;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -127,6 +129,9 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 			importRecord.setC_BankStatement_ID(existingBankStatementId.getRepoId());
 		}
 
+		computeUpdateLineAmts(importRecord);
+		updateDescription(importRecord);
+
 		createBankStatementLine(importRecord);
 
 		save(importRecord);
@@ -175,44 +180,45 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
-		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
-				.bankStatementId(BankStatementId.ofRepoId(importRecord.getC_BankStatement_ID()))
-				.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
-				.lineNo(importRecord.getLine())
-				//
-				.bpartnerId(BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID()))
-				.importedBillPartnerName(importRecord.getBill_BPartner_Name())
-				.importedBillPartnerIBAN(importRecord.getIBAN_To())
-				//
-				.referenceNo(importRecord.getReferenceNo())
-				.lineDescription(importRecord.getLineDescription())
-				.memo(importRecord.getMemo())
-				//
-				.statementLineDate(TimeUtil.asLocalDate(CoalesceUtil.coalesce(importRecord.getStatementLineDate(), importRecord.getStatementDate())))
-				.dateAcct(TimeUtil.asLocalDate(CoalesceUtil.coalesce(importRecord.getDateAcct(), importRecord.getStatementDate())))
-				.valutaDate(TimeUtil.asLocalDate(importRecord.getValutaDate()))
-				//
-				.statementAmt(Money.of(importRecord.getStmtAmt(), currencyId))
-				.trxAmt(Money.of(importRecord.getTrxAmt(), currencyId))
-				.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
-				.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
-				.chargeId(ChargeId.ofRepoIdOrNull(importRecord.getC_Charge_ID()))
-				//
-				.eft(ElectronicFundsTransfer.builder()
-						.trxId(importRecord.getEftTrxID())
-						.trxType(importRecord.getEftTrxType())
-						.checkNo(importRecord.getEftCheckNo())
-						.reference(importRecord.getEftReference())
-						.memo(importRecord.getEftMemo())
-						.payee(importRecord.getEftPayee())
-						.payeeAccount(importRecord.getEftPayeeAccount())
-						.statementLineDate(TimeUtil.asLocalDate(importRecord.getEftStatementLineDate()))
-						.valutaDate(TimeUtil.asLocalDate(importRecord.getEftValutaDate()))
-						.currency(importRecord.getEftCurrency())
-						.amt(importRecord.getEftAmt())
-						.build())
-				//
-				.build());
+		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(
+				BankStatementLineCreateRequest.builder()
+						.bankStatementId(BankStatementId.ofRepoId(importRecord.getC_BankStatement_ID()))
+						.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+						.lineNo(importRecord.getLine())
+						//
+						.bpartnerId(BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID()))
+						.importedBillPartnerName(importRecord.getBill_BPartner_Name())
+						.importedBillPartnerIBAN(importRecord.getIBAN_To())
+						//
+						.referenceNo(importRecord.getReferenceNo())
+						.lineDescription(importRecord.getLineDescription())
+						.memo(importRecord.getMemo())
+						//
+						.statementLineDate(TimeUtil.asLocalDate(CoalesceUtil.coalesce(importRecord.getStatementLineDate(), importRecord.getStatementDate())))
+						.dateAcct(TimeUtil.asLocalDate(CoalesceUtil.coalesce(importRecord.getDateAcct(), importRecord.getStatementDate())))
+						.valutaDate(TimeUtil.asLocalDate(importRecord.getValutaDate()))
+						//
+						.statementAmt(Money.of(importRecord.getStmtAmt(), currencyId))
+						.trxAmt(Money.of(importRecord.getTrxAmt(), currencyId))
+						.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
+						.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
+						.chargeId(ChargeId.ofRepoIdOrNull(importRecord.getC_Charge_ID()))
+						//
+						.eft(ElectronicFundsTransfer.builder()
+									 .trxId(importRecord.getEftTrxID())
+									 .trxType(importRecord.getEftTrxType())
+									 .checkNo(importRecord.getEftCheckNo())
+									 .reference(importRecord.getEftReference())
+									 .memo(importRecord.getEftMemo())
+									 .payee(importRecord.getEftPayee())
+									 .payeeAccount(importRecord.getEftPayeeAccount())
+									 .statementLineDate(TimeUtil.asLocalDate(importRecord.getEftStatementLineDate()))
+									 .valutaDate(TimeUtil.asLocalDate(importRecord.getEftValutaDate()))
+									 .currency(importRecord.getEftCurrency())
+									 .amt(importRecord.getEftAmt())
+									 .build())
+						//
+						.build());
 
 		importRecord.setC_BankStatementLine_ID(bankStatementLineId.getRepoId());
 	}
@@ -220,17 +226,71 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	private BankStatementId createBankStatement(@NonNull final I_I_BankStatement importBankStatement)
 	{
 		return bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
-				.orgId(OrgId.ofRepoId(importBankStatement.getAD_Org_ID()))
-				.orgBankAccountId(BankAccountId.ofRepoId(importBankStatement.getC_BP_BankAccount_ID()))
-				// TODO add documentNo to import
-				.statementDate(TimeUtil.asLocalDate(importBankStatement.getStatementDate()))
-				.name(importBankStatement.getName())
-				.description(importBankStatement.getDescription())
-				.eft(BankStatementCreateRequest.ElectronicFundsTransfer.builder()
-						.statementDate(TimeUtil.asLocalDate(importBankStatement.getEftStatementDate()))
-						.statementReference(importBankStatement.getEftStatementReference())
-						.build())
-				.build());
+															.orgId(OrgId.ofRepoId(importBankStatement.getAD_Org_ID()))
+															.orgBankAccountId(BankAccountId.ofRepoId(importBankStatement.getC_BP_BankAccount_ID()))
+															// TODO add documentNo to import
+															.statementDate(TimeUtil.asLocalDate(importBankStatement.getStatementDate()))
+															.name(importBankStatement.getName())
+															.description(importBankStatement.getDescription())
+															.eft(BankStatementCreateRequest.ElectronicFundsTransfer.builder()
+																		 .statementDate(TimeUtil.asLocalDate(importBankStatement.getEftStatementDate()))
+																		 .statementReference(importBankStatement.getEftStatementReference())
+																		 .build())
+															.build());
 	}
 
+	@VisibleForTesting
+	static void computeUpdateLineAmts(@NonNull final I_I_BankStatement importRecord)
+	{
+		final String amtFormat = importRecord.getAmtFormat();
+
+		if (X_I_BankStatement.AMTFORMAT_AmountPlusIndicator.equals(amtFormat))
+		{
+			final BigDecimal trxAmt;
+			final boolean isDebit = "S".equals(importRecord.getDebitOrCreditIndicator());
+			if (isDebit)
+			{
+				trxAmt = importRecord.getDebitOrCreditAmt().negate();
+			}
+			else
+			{
+				trxAmt = importRecord.getDebitOrCreditAmt();
+			}
+
+			importRecord.setTrxAmt(trxAmt);
+			final BigDecimal stmtAmt = trxAmt.add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
+			importRecord.setStmtAmt(stmtAmt);
+		}
+		else if (X_I_BankStatement.AMTFORMAT_DebitPlusCredit.equals(amtFormat))
+		{
+			final BigDecimal stmtAmt = importRecord.getCreditStmtAmt().subtract(importRecord.getDebitStmtAmt());
+			importRecord.setStmtAmt(stmtAmt);
+			final BigDecimal trxAmt = stmtAmt.subtract(importRecord.getInterestAmt()).subtract(importRecord.getChargeAmt());
+			importRecord.setTrxAmt(trxAmt);
+		}
+		else if (X_I_BankStatement.AMTFORMAT_Straight.equals(amtFormat))
+		{
+			importRecord.setStmtAmt(importRecord.getTrxAmt());
+		}
+
+		{
+			final BigDecimal sum = importRecord.getTrxAmt().add(importRecord.getInterestAmt()).add(importRecord.getChargeAmt());
+			if (importRecord.getStmtAmt().compareTo(sum) != 0)
+			{
+				throw new AdempiereException("Invalid amount");
+			}
+		}
+	}
+
+	private static void updateDescription(@NonNull final I_I_BankStatement importRecord)
+	{
+		final String lineDescription = new StringJoiner(" / ")
+				.add(importRecord.getLineDescription())
+				.add(importRecord.getLineDescriptionExtra_1())
+				.add(importRecord.getLineDescriptionExtra_2())
+				.add(importRecord.getLineDescriptionExtra_3())
+				.add(importRecord.getLineDescriptionExtra_4())
+				.toString();
+		importRecord.setLineDescription(lineDescription);
+	}
 }
