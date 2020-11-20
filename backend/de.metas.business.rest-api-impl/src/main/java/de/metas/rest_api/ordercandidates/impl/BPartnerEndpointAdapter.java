@@ -1,15 +1,5 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import java.util.Comparator;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.http.ResponseEntity;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -45,6 +35,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.http.ResponseEntity;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Optional;
 
 /*
  * #%L
@@ -147,7 +145,7 @@ final class BPartnerEndpointAdapter
 
 		// bpartner - make sure that we have isCustomer=true unless explicitly specified otherwise
 		final JsonRequestBPartner bPartner = jsonBPartnerInfo.getBpartner();
-		if (!bPartner.isCustomerSet())
+		if (bPartner != null && !bPartner.isCustomerSet())
 		{
 			bPartner.setCustomer(true);
 		}
@@ -219,7 +217,7 @@ final class BPartnerEndpointAdapter
 
 	private String constructBPartnerIdentifier(@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
 	{
-		final JsonRequestBPartner bpartner = jsonBPartnerInfo.getBpartner();
+		final JsonRequestBPartner bpartnerOrNull = jsonBPartnerInfo.getBpartner();
 
 		BPartnerLookupAdvise bpartnerLookupAdvise = jsonBPartnerInfo.getBpartnerLookupAdvise();
 		if (bpartnerLookupAdvise != null)
@@ -229,10 +227,10 @@ final class BPartnerEndpointAdapter
 			switch (bpartnerLookupAdvise)
 			{
 				case Code:
-					result = IdentifierString.PREFIX_VALUE + bpartner.getCode();
+					result = IdentifierString.PREFIX_VALUE + bpartnerOrNull.getCode();
 					break;
 				case ExternalId:
-					result = IdentifierString.PREFIX_EXTERNAL_ID + bpartner.getExternalId().getValue();
+					result = IdentifierString.PREFIX_EXTERNAL_ID + bpartnerOrNull.getExternalId().getValue();
 					break;
 				case GLN:
 					result = IdentifierString.PREFIX_GLN + jsonBPartnerInfo.getLocation().getGln();
@@ -244,9 +242,9 @@ final class BPartnerEndpointAdapter
 			return result;
 		}
 
-		if (bpartner.getExternalId() != null)
+		if (bpartnerOrNull != null && bpartnerOrNull.getExternalId() != null)
 		{
-			final String result = IdentifierString.PREFIX_EXTERNAL_ID + bpartner.getExternalId().getValue();
+			final String result = IdentifierString.PREFIX_EXTERNAL_ID + bpartnerOrNull.getExternalId().getValue();
 			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but an externalId; -> return identifierString={}", bpartnerLookupAdvise, result);
 			return result;
 		}
@@ -256,16 +254,16 @@ final class BPartnerEndpointAdapter
 			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but a GLN; -> return identifierString={}", bpartnerLookupAdvise, result);
 			return result;
 		}
-		else if (!Check.isEmpty(bpartner.getCode(), true))
+		else if (bpartnerOrNull != null && !Check.isEmpty(bpartnerOrNull.getCode(), true))
 		{
-			final String result = IdentifierString.PREFIX_VALUE + bpartner.getCode();
+			final String result = IdentifierString.PREFIX_VALUE + bpartnerOrNull.getCode();
 			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but a code; -> return identifierString={}", bpartnerLookupAdvise, result);
 			return result;
 		}
 
 		throw new InvalidEntityException(TranslatableStrings.constant("JsonRequestBPartner needs either an externalId, code or location with a GLN"))
 				.appendParametersToMessage()
-				.setParameter("jsonRequestBPartner", bpartner);
+				.setParameter("jsonRequestBPartner", bpartnerOrNull);
 	}
 
 	private BPartnerInfo asBPartnerInfo(
