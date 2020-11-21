@@ -28,6 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -55,6 +58,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -72,6 +76,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -103,6 +108,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class PriceListDAO implements IPriceListDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_PricingSystem getPricingSystemById(final PricingSystemId pricingSystemId)
@@ -239,7 +245,6 @@ public class PriceListDAO implements IPriceListDAO
 			@NonNull @CacheCtx final Properties ctx,
 			@NonNull final PricingSystemId pricingSystemId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ImmutableList<I_M_PriceList> priceLists = queryBL.createQueryBuilder(I_M_PriceList.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
@@ -478,7 +483,6 @@ public class PriceListDAO implements IPriceListDAO
 
 	private final ICompositeQueryFilter<I_M_ProductPrice> createPriceProductQueryFilter(@NonNull final LocalDate date)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_M_ProductPrice> filters = queryBL.createCompositeQueryFilter(I_M_ProductPrice.class);
 
 		filters.addOnlyActiveRecordsFilter();
@@ -791,8 +795,6 @@ public class PriceListDAO implements IPriceListDAO
 	@VisibleForTesting
 	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final PriceListId basePriceListId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final StringBuilder maxValidFromTypedFilter = new StringBuilder()
 				.append(I_M_PriceList_Version.Table_Name)
 				.append(".")
@@ -855,5 +857,87 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList priceList = getById(priceListId);
 		return PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID());
+	}
+
+	/**
+	 * @param productFilter    when running from a process, you can get an instance of this filter with {@code final IQueryFilter<I_M_Product> queryFilterOrElseFalse = getProcessInfo().getQueryFilterOrElseFalse();}
+	 * @param dateFrom         the method updates product-prices with a PLV that is valid at or after the given date.
+	 * @param newIsActiveValue {@code M_ProductPrice.IsActive} is set this the given value for all matching product prices.
+	 */
+	public void updateProductPricesIsActive(
+			@NonNull final IQueryFilter<I_M_Product> productFilter,
+			@NonNull final LocalDate dateFrom,
+			final boolean newIsActiveValue)
+	{
+
+		final IQuery<I_M_ProductPrice> productPriceQuery = createProductPriceQueryForDiscontinuedProduct(productFilter, dateFrom);
+		final int updatedRecords = productPriceQuery
+				.updateDirectly()
+				.addSetColumnValue(I_M_ProductPrice.COLUMNNAME_IsActive, newIsActiveValue)
+				.execute();
+		logger.debug("Updated {} M_ProductPrice records", updatedRecords);
+
+		invalidateCacheForProductPrice(updatedRecords, productPriceQuery);
+	}
+
+	private IQuery<I_M_PriceList_Version> currentPriceListVersionQuery(@NonNull final LocalDate dateFrom)
+	{
+		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						Operator.LESS_OR_EQUAL,
+						dateFrom,
+						DateTruncQueryFilterModifier.DAY)
+				.orderByDescending(I_M_PriceList_Version.COLUMN_ValidFrom)
+				.setLimit(QueryLimit.ONE)
+				.create();
+	}
+
+	private IQueryFilter<I_M_PriceList_Version> futurePriceListVersionFilter(@NonNull final LocalDate dateFrom)
+	{
+		return queryBL.createCompositeQueryFilter(I_M_PriceList_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						Operator.GREATER,
+						dateFrom,
+						DateTruncQueryFilterModifier.DAY);
+	}
+
+	private IQuery<I_M_ProductPrice> createProductPriceQueryForDiscontinuedProduct(@NonNull final IQueryFilter<I_M_Product> productFilter, @NonNull final LocalDate dateFrom)
+	{
+		final IQuery<I_M_PriceList_Version> currentPriceListVersionQuery = currentPriceListVersionQuery(dateFrom);
+
+		final IQueryFilter<I_M_PriceList_Version> futurePriceListVersionFilter = futurePriceListVersionFilter(dateFrom);
+
+		final IQuery<I_M_PriceList_Version> priceListVersionQuery = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.setJoinOr()
+				.addInSubQueryFilter(I_M_PriceList_Version.COLUMN_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMN_M_PriceList_Version_ID, currentPriceListVersionQuery)
+				.filter(futurePriceListVersionFilter)
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.filter(productFilter)
+				.andCollectChildren(I_M_ProductPrice.COLUMN_M_Product_ID)
+				.addInSubQueryFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMN_M_PriceList_Version_ID, priceListVersionQuery)
+				.create();
+
+	}
+
+	private void invalidateCacheForProductPrice(final int updatedRecords, final IQuery<I_M_ProductPrice> productPriceQuery)
+	{
+		final CacheInvalidateMultiRequest cacheInvalidateMultiRequest;
+		if (updatedRecords > 100)
+		{
+			cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ProductPrice.Table_Name);
+		}
+		else
+		{
+			cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ProductPrice.Table_Name, productPriceQuery.listIds());
+		}
+		Services
+				.get(IModelCacheInvalidationService.class)
+				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
 }

@@ -865,7 +865,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@Override
-	public int calculateESRCheckDigit(final String text)
+	public int calculateESRCheckDigit(@NonNull final String text)
 	{
 		return new ESRCheckDigitBuilder().calculateESRCheckDigit(text);
 	}
@@ -1100,9 +1100,6 @@ public class ESRImportBL implements IESRImportBL
 	 * the given {@code esrImportLine}.
 	 * <p>
 	 * <b>IMPORTANT:</b> as written this method might update the given {@code esrImportLine}, but does <b>not</b> save it. The decision to save or not is left to the caller.
-	 *
-	 * @param esrImportLine
-	 * @param invoice
 	 */
 	/* package */
 	void updateLinesOpenAmt(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
