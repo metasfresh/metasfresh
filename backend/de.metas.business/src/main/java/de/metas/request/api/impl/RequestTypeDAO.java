@@ -1,17 +1,15 @@
 package de.metas.request.api.impl;
 
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_R_RequestType;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_R_RequestType;
+
+import java.util.Optional;
 
 /*
  * #%L

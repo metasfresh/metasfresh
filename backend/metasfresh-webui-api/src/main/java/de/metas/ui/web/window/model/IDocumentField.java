@@ -1,11 +1,15 @@
 package de.metas.ui.web.window.model;
 
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.model.Document.CopyMode;
+import java.util.Optional;
 
 /*
  * #%L
@@ -31,7 +35,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 /* package */interface IDocumentField extends IDocumentFieldView
 {
-	public static enum FieldInitializationMode
+	enum FieldInitializationMode
 	{
 		NewDocument, Refresh, Load,
 	}
@@ -49,16 +53,14 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	 * 
 	 * This method is also:
 	 * <ul>
-	 * <li>updating the field value (see {@link #setValue(Object)}).
-	 * <li>setting the validStatus to {@link DocumentValidStatus#fieldInitiallyStaled()}
+	 * <li>updating the field value (see {@link #setValue(Object, IDocumentChangesCollector)}
+	 * <li>updating the validStatus
 	 * </ul>
 	 */
 	void setInitialValue(Object initialValue, IDocumentChangesCollector changesCollector);
 
 	/**
 	 * Set field's current value.
-	 *
-	 * @param value
 	 */
 	void setValue(Object value, IDocumentChangesCollector changesCollector);
 
@@ -70,15 +72,14 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/**
 	 * Notify this instance that it's lookup values are staled. So next time they are needed, they need to be reloaded.
-	 * 
-	 * @param triggeringFieldName
-	 * @return
 	 */
 	boolean setLookupValuesStaled(String triggeringFieldName);
 
 	LookupValuesList getLookupValues();
 
 	LookupValuesList getLookupValuesForQuery(String query);
+
+	Optional<LookupValue> getLookupValueById(@NonNull RepoIdAware id);
 
 	ICalloutField asCalloutField();
 

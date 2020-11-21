@@ -69,6 +69,7 @@ public final class DocumentFilterParamDescriptor
 	private final Optional<LookupDescriptor> lookupDescriptor;
 
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
+	public static final String AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER = new String("@#AD_User_ID@");
 	private final Object autoFilterInitialValue;
 
 	private final BarcodeScannerType barcodeScannerType;
@@ -164,6 +165,11 @@ public final class DocumentFilterParamDescriptor
 	public boolean isAutoFilterInitialValueIsDateNow()
 	{
 		return widgetType.isDateOrTime() && AUTOFILTER_INITIALVALUE_DATE_NOW.equals(autoFilterInitialValue);
+	}
+
+	public boolean isAutoFilterInitialValueIsCurrentLoggedUser()
+	{
+		return widgetType.isLookup() && AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER.equals(autoFilterInitialValue);
 	}
 
 	public static final class Builder

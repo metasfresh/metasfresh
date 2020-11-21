@@ -1506,8 +1506,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// must be one of Mengendifferenz or Preisdifferenz
-		if (X_C_DocType.DOCSUBTYPE_NB_Mengendifferenz.compareTo(docSubType) != 0
-				&& X_C_DocType.DOCSUBTYPE_NB_Preisdifferenz.compareTo(docSubType) != 0)
+		if (X_C_DocType.DOCSUBTYPE_AQ.compareTo(docSubType) != 0
+				&& X_C_DocType.DOCSUBTYPE_AP.compareTo(docSubType) != 0)
 		{
 			return false;
 		}
@@ -1778,8 +1778,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void allocateCreditMemo(final I_C_Invoice invoice,
-										 final I_C_Invoice creditMemo,
-										 final BigDecimal openAmt)
+			final I_C_Invoice creditMemo,
+			final BigDecimal openAmt)
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
