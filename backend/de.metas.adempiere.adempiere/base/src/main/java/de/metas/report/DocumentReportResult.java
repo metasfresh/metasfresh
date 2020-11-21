@@ -38,6 +38,10 @@ import javax.annotation.Nullable;
 @Builder
 public class DocumentReportResult
 {
+	@NonNull
+	@Builder.Default
+	DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
+
 	@Nullable
 	ReportResultData data;
 

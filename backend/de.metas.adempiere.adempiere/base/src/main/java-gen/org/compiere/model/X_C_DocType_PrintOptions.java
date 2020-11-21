@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I_C_DocType_PrintOptions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 389041262L;
+	private static final long serialVersionUID = -67888006L;
 
     /** Standard Constructor */
     public X_C_DocType_PrintOptions (final Properties ctx, final int C_DocType_PrintOptions_ID, @Nullable final String trxName)
@@ -73,6 +73,27 @@ public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * DocumentFlavor AD_Reference_ID=541225
+	 * Reference name: C_DocType_PrintOptions_DocumentFlavor
+	 */
+	public static final int DOCUMENTFLAVOR_AD_Reference_ID=541225;
+	/** EMail = E */
+	public static final String DOCUMENTFLAVOR_EMail = "E";
+	/** Print = P */
+	public static final String DOCUMENTFLAVOR_Print = "P";
+	@Override
+	public void setDocumentFlavor (final java.lang.String DocumentFlavor)
+	{
+		set_Value (COLUMNNAME_DocumentFlavor, DocumentFlavor);
+	}
+
+	@Override
+	public java.lang.String getDocumentFlavor() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocumentFlavor);
 	}
 
 	@Override

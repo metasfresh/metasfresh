@@ -45,6 +45,9 @@ public class DocumentReportRequest
 	AdProcessId reportProcessId;
 	@Nullable
 	PrintFormatId printFormatIdToUse;
+	@NonNull
+	@Builder.Default
+	DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
 
 	@NonNull TableRecordReference documentRef;
 

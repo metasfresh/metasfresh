@@ -14,6 +14,7 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.report.ReportResultData;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.mail.WebuiEmail.WebuiEmailBuilder;
@@ -176,6 +177,7 @@ public class MailRestController
 			try
 			{
 				final ReportResultData contextDocumentPrint = documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
+						.flavor(DocumentReportFlavor.EMAIL)
 						.documentPath(contextDocumentPath)
 						.userId(userSession.getLoggedUserId())
 						.roleId(userSession.getLoggedRoleId())

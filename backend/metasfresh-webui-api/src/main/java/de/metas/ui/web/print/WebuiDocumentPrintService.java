@@ -27,6 +27,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentPrintOptionDescriptor;
 import de.metas.report.DocumentPrintOptionsIncludingDescriptors;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
 import de.metas.report.DocumentReportResult;
 import de.metas.report.DocumentReportService;
@@ -72,6 +73,7 @@ public class WebuiDocumentPrintService
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 
 		final DocumentReportResult result = documentReportService.createReport(DocumentReportRequest.builder()
+				.flavor(request.getFlavor())
 				.reportProcessId(printProcessId)
 				.documentRef(recordRef)
 				.clientId(document.getClientId())
@@ -95,7 +97,10 @@ public class WebuiDocumentPrintService
 		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 
-		final DocumentPrintOptionsIncludingDescriptors printOptions = documentReportService.getDocumentPrintOptionsIncludingDescriptors(printProcessId, recordRef);
+		final DocumentPrintOptionsIncludingDescriptors printOptions = documentReportService.getDocumentPrintOptionsIncludingDescriptors(
+				printProcessId,
+				recordRef,
+				DocumentReportFlavor.PRINT);
 
 		return toJSONDocumentPrintingOptions(printOptions, adLanguage);
 	}

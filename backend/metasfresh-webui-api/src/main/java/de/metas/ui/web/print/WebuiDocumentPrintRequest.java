@@ -23,6 +23,7 @@
 package de.metas.ui.web.print;
 
 import de.metas.report.DocumentPrintOptions;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.security.RoleId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.user.UserId;
@@ -35,14 +36,18 @@ import lombok.Value;
 public class WebuiDocumentPrintRequest
 {
 	@NonNull
-	final DocumentPath documentPath;
+	DocumentPath documentPath;
 
 	@NonNull
-	final UserId userId;
+	UserId userId;
 	@NonNull
-	final RoleId roleId;
+	RoleId roleId;
 
 	@NonNull
 	@Builder.Default
-	final DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
+	DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
+
+	@NonNull
+	@Builder.Default
+	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
 }

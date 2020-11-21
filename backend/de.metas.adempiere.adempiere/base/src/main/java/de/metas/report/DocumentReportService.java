@@ -102,6 +102,7 @@ public class DocumentReportService
 			final int recordId)
 	{
 		final DocumentReportResult result = createReport(DocumentReportRequest.builder()
+				.flavor(DocumentReportFlavor.PRINT)
 				.documentRef(TableRecordReference.of(type.getBaseTableName(), recordId))
 				.clientId(Env.getClientId(ctx))
 				.orgId(Env.getOrgId(ctx))
@@ -145,7 +146,8 @@ public class DocumentReportService
 		final DocumentReportInfo reportInfo = getDocumentReportInfo(
 				advisor,
 				requestEffective.getDocumentRef(),
-				requestEffective.getPrintFormatIdToUse());
+				requestEffective.getPrintFormatIdToUse(),
+				requestEffective.getFlavor());
 
 		requestEffective = requestEffective
 				.withPrintOptionsFallback(reportInfo.getPrintOptions())
@@ -188,6 +190,7 @@ public class DocumentReportService
 		final ExecuteReportProcessResult processResult = executeReportProcess(request);
 
 		return DocumentReportResult.builder()
+				.flavor(request.getFlavor())
 				.data(processResult.getReportData())
 				.reportPInstanceId(processResult.getReportPInstanceId())
 				//
@@ -266,13 +269,14 @@ public class DocumentReportService
 
 	public DocumentPrintOptionsIncludingDescriptors getDocumentPrintOptionsIncludingDescriptors(
 			@NonNull final AdProcessId reportProcessId,
-			@NonNull final TableRecordReference recordRef)
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final DocumentReportFlavor flavor)
 	{
 		final StandardDocumentReportType type = StandardDocumentReportType.ofProcessIdOrNull(reportProcessId);
 		if (type != null)
 		{
 			final DocumentReportAdvisor advisor = getAdvisorByType(type);
-			final DocumentReportInfo reportInfo = getDocumentReportInfo(advisor, recordRef, null);
+			final DocumentReportInfo reportInfo = getDocumentReportInfo(advisor, recordRef, null, flavor);
 
 			final DocumentPrintOptionDescriptorsList printOptionDescriptors = documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportInfo.getReportProcessId());
 			final DocumentPrintOptions printOptions = reportInfo.getPrintOptions()
@@ -296,17 +300,20 @@ public class DocumentReportService
 	private DocumentReportInfo getDocumentReportInfo(
 			@NonNull final DocumentReportAdvisor advisor,
 			@NonNull final TableRecordReference recordRef,
-			@Nullable final PrintFormatId printFormatIdToUse)
+			@Nullable final PrintFormatId printFormatIdToUse,
+			@NonNull final DocumentReportFlavor flavor)
 	{
 		final DocumentReportInfo reportInfo = advisor.getDocumentReportInfo(recordRef, printFormatIdToUse);
 
-		return reportInfo.withPrintOptionsFallback(getDocTypePrintOptions(reportInfo.getDocTypeId()));
+		return reportInfo.withPrintOptionsFallback(getDocTypePrintOptions(reportInfo.getDocTypeId(), flavor));
 	}
 
-	private DocumentPrintOptions getDocTypePrintOptions(@Nullable final DocTypeId docTypeId)
+	private DocumentPrintOptions getDocTypePrintOptions(
+			@Nullable final DocTypeId docTypeId,
+			@Nullable final DocumentReportFlavor flavor)
 	{
-		return docTypeId != null
-				? docTypePrintOptionsRepository.getByDocTypeId(docTypeId)
+		return docTypeId != null && flavor != null
+				? docTypePrintOptionsRepository.getByDocTypeAndFlavor(docTypeId, flavor)
 				: DocumentPrintOptions.NONE;
 	}
 

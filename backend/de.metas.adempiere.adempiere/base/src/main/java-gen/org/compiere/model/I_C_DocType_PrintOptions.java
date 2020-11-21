@@ -139,6 +139,27 @@ public interface I_C_DocType_PrintOptions
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Flavor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentFlavor (@Nullable java.lang.String DocumentFlavor);
+
+	/**
+	 * Get Flavor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocumentFlavor();
+
+	ModelColumn<I_C_DocType_PrintOptions, Object> COLUMN_DocumentFlavor = new ModelColumn<>(I_C_DocType_PrintOptions.class, "DocumentFlavor", null);
+	String COLUMNNAME_DocumentFlavor = "DocumentFlavor";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

@@ -23,6 +23,7 @@
 package de.metas.ui.web.print;
 
 import de.metas.report.DocumentPrintOptions;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.report.ReportResultData;
 import de.metas.ui.web.print.json.JSONDocumentPrintingOptions;
 import de.metas.ui.web.session.UserSession;
@@ -74,6 +75,7 @@ public class DocumentPrintRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
 		final ReportResultData documentPrint = documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
+				.flavor(DocumentReportFlavor.EMAIL)
 				.documentPath(documentPath)
 				.userId(userSession.getLoggedUserId())
 				.roleId(userSession.getLoggedRoleId())

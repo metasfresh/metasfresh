@@ -8,6 +8,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.organization.OrgId;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
 import de.metas.report.DocumentReportResult;
 import de.metas.report.DocumentReportService;
@@ -327,6 +328,7 @@ public final class ProcessExecutor
 	private static DocumentReportRequest toDocumentReportRequest(final ProcessInfo processInfo)
 	{
 		return DocumentReportRequest.builder()
+				.flavor(DocumentReportFlavor.PRINT)
 				.reportProcessId(processInfo.getAdProcessId())
 				.documentRef(processInfo.getRecordRefOrNull())
 				.clientId(processInfo.getClientId())
