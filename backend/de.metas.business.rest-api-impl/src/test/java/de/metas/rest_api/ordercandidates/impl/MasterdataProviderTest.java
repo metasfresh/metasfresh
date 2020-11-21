@@ -1,32 +1,5 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.adempiere.ad.table.MockLogEntriesRepository;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -56,6 +29,31 @@ import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
+import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -200,9 +198,11 @@ public class MasterdataProviderTest
 	@Test
 	void getCreateBPartnerInfo()
 	{
+		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
+
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setName("bpGroup");
-		save(bpGroupRecord);
+		saveRecord(bpGroupRecord);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setValue("jsonBPartner.code");
@@ -241,11 +241,11 @@ public class MasterdataProviderTest
 				.contact(jsonContact)
 				.build();
 
-		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, OrgId.ofRepoId(10));
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, orgId);
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 
-		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, OrgId.ofRepoId(10));
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, orgId);
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 	}
