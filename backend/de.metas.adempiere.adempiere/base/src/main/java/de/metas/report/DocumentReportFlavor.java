@@ -55,4 +55,10 @@ public enum DocumentReportFlavor implements ReferenceListAwareEnum
 	{
 		return index.ofNullableCode(code);
 	}
+
+	@Nullable
+	public static String toCode(@Nullable final DocumentReportFlavor flavor)
+	{
+		return flavor != null ? flavor.getCode() : null;
+	}
 }

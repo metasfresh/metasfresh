@@ -24,6 +24,7 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
@@ -207,13 +208,18 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 	}
 
-	private void createArchive(I_C_Print_Package printPackage, byte[] data, final I_C_Async_Batch asyncBatch, final int current)
+	private void createArchive(
+			final I_C_Print_Package printPackage,
+			final byte[] data,
+			final I_C_Async_Batch asyncBatch,
+			final int current)
 	{
 		final TableRecordReference printPackageRef = TableRecordReference.of(printPackage);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 
 		final org.adempiere.archive.api.IArchiveBL archiveService = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 		final ArchiveResult archiveResult = archiveService.archive(ArchiveRequest.builder()
+				.flavor(DocumentReportFlavor.PRINT)
 				.data(data)
 				.trxName(ITrx.TRXNAME_ThreadInherited)
 				.archiveName(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat())

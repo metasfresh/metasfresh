@@ -49,16 +49,6 @@ public interface IArchiveBL extends ISingletonService
 	 * Task https://github.com/metasfresh/metasfresh/issues/1240
 	 */
 	ModelDynAttributeAccessor<I_AD_Archive, PrintCopies> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(PrintCopies.class);
-	/**
-	 * Archives given <code>data</code>.
-	 *
-	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
-	 *
-	 * @deprecated Please use {@link #archive(ArchiveRequest)}
-	 */
-	@Nullable
-	@Deprecated
-	I_AD_Archive archive(byte[] data, ArchiveInfo archiveInfo, boolean force, String trxName);
 
 	/**
 	 * Task http://dewiki908/mediawiki/index.php/09752_For_Umsatzreport_and_Mengenstatistiken%2C_two_printing_queue..._%28107420055849%29

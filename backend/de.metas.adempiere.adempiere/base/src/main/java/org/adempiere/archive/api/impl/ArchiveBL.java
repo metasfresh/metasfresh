@@ -29,6 +29,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -48,7 +49,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
-import org.compiere.print.layout.LayoutEngine;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -59,18 +59,6 @@ import java.util.Properties;
 
 public class ArchiveBL implements IArchiveBL
 {
-	@Override
-	@Nullable
-	public I_AD_Archive archive(final byte[] data,
-								final ArchiveInfo archiveInfo,
-								final boolean force,
-								final String trxName)
-	{
-		final boolean save = true;
-		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
-		return archive(request).getArchiveRecord();
-	}
-
 	@Override
 	@Nullable
 	public I_AD_Archive archive(final byte[] data,
@@ -132,6 +120,7 @@ public class ArchiveBL implements IArchiveBL
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctxToUse);
 		final I_AD_Archive archive = storage.newArchive(ctxToUse, request.getTrxName());
+		archive.setDocumentFlavor(DocumentReportFlavor.toCode(request.getFlavor()));
 
 		// FRESH-218: extract and set the language to the archive
 		final String language = getLanguageFromReport(ctxToUse, request);

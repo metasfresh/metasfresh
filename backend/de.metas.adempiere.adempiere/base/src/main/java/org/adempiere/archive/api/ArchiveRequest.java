@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
+import de.metas.report.DocumentReportFlavor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,6 +40,9 @@ import java.util.Properties;
 @Builder
 public class ArchiveRequest
 {
+	@Nullable
+	DocumentReportFlavor flavor;
+
 	byte[] data;
 
 	/**

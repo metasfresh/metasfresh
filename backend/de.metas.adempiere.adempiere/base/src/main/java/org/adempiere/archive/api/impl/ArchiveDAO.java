@@ -85,7 +85,7 @@ public class ArchiveDAO implements IArchiveDAO
 	public I_AD_Archive retrieveArchiveOrNull(final TableRecordReference recordRef, final ArchiveId archiveId)
 	{
 		return retrieveArchivesQuery(Env.getCtx(), recordRef)
-				.addEqualsFilter(I_AD_Archive.COLUMN_AD_Archive_ID, archiveId)
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Archive_ID, archiveId)
 				.create()
 				.firstOnly(I_AD_Archive.class);
 	}
@@ -95,8 +95,8 @@ public class ArchiveDAO implements IArchiveDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Archive.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Archive.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
-				.addEqualsFilter(I_AD_Archive.COLUMN_Record_ID, recordRef.getRecord_ID());
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
 	}
 
 	@Override

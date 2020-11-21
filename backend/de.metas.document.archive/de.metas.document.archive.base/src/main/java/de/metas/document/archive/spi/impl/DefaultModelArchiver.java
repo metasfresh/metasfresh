@@ -182,6 +182,7 @@ public class DefaultModelArchiver
 		}
 
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
+				.flavor(report.getFlavor())
 				.data(report.getDataAsByteArray())
 				.force(true)
 				.save(true)
