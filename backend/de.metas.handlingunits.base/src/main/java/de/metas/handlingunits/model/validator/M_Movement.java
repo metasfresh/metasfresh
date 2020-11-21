@@ -1,28 +1,5 @@
 package de.metas.handlingunits.model.validator;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -31,32 +8,25 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.ModelValidator;
 
 import de.metas.event.IEventBusFactory;
-import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.movement.event.MovementUserNotificationsProducer;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 @Interceptor(I_M_Movement.class)
 public class M_Movement
 {
 	public static final transient M_Movement instance = new M_Movement();
+
+	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
 	@Init
 	public void onInit()
@@ -169,93 +139,14 @@ public class M_Movement
 	public void moveHandlingUnits(final I_M_Movement movement)
 	{
 		final boolean doReversal = false;
-		moveHandlingUnits(movement, doReversal);
+		huMovementBL.moveHandlingUnits(movement, doReversal);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void unmoveHandlingUnits(final I_M_Movement movement)
 	{
 		final boolean doReversal = true;
-		moveHandlingUnits(movement, doReversal);
-	}
-
-	private void moveHandlingUnits(final I_M_Movement movement, final boolean doReversal)
-	{
-		final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
-		final Date movementDate = movement.getMovementDate();
-
-		try (final ITemporaryDateTrx dateTrx = IHUContext.DateTrxProvider.temporarySet(movementDate))
-		{
-			for (final I_M_MovementLine movementLine : movementDAO.retrieveLines(movement, I_M_MovementLine.class))
-			{
-				moveHandlingUnits(movementLine, doReversal);
-			}
-		}
-	}
-
-	private void moveHandlingUnits(final I_M_MovementLine movementLine, final boolean doReversal)
-	{
-		final I_M_Locator locatorFrom;
-		final I_M_Locator locatorTo;
-		if (!doReversal)
-		{
-			locatorFrom = movementLine.getM_Locator();
-			locatorTo = movementLine.getM_LocatorTo();
-		}
-		else
-		{
-			locatorFrom = movementLine.getM_LocatorTo();
-			locatorTo = movementLine.getM_Locator();
-		}
-
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(movementLine);
-		for (final I_M_HU hu : hus)
-		{
-			moveHandlingUnit(hu, locatorFrom, locatorTo, doReversal);
-		}
-	}
-
-	private void moveHandlingUnit(
-			final I_M_HU hu,
-			final I_M_Locator locatorFrom, final I_M_Locator locatorTo,
-			final boolean doReversal)
-	{
-		//
-		// Make sure hu's current locator is the locator from which we need to move
-		final int huLocatorIdOld = hu.getM_Locator_ID();
-		final int locatorFromId = locatorFrom.getM_Locator_ID();
-		final int locatorToId = locatorTo.getM_Locator_ID();
-		Check.assume(huLocatorIdOld > 0
-				&& (huLocatorIdOld == locatorFromId || huLocatorIdOld == locatorToId),
-				"HU Locator was supposed to be {} or {}, but was {}", locatorFrom, locatorTo, hu.getM_Locator_ID());
-
-		// If already moved, then do nothing.
-		if (huLocatorIdOld == locatorToId)
-		{
-			return;
-		}
-
-		//
-		// Update HU's Locator
-		// FIXME: refactor this and have a common way of setting HU's locator
-		hu.setM_Locator_ID(locatorToId);
-
-		// Activate HU (not needed, but we want to be sure)
-		// (even if we do reversals)
-
-		// NOTE: as far as we know, HUContext won't be used by setHUStatus, because the status "active" doesn't
-		// trigger a movement to/from empties warehouse. In this case a movement is already created from a lager to another.
-		// So no HU leftovers.
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
-		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-
-		// Save changed HU
-		handlingUnitsDAO.saveHU(hu);
+		huMovementBL.moveHandlingUnits(movement, doReversal);
 	}
 
 }
